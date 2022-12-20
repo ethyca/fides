@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -33,8 +32,6 @@ from fides.api.ops.util.saas_util import encode_file_contents, load_config
 
 router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 
-logger = logging.getLogger(__name__)
-
 
 def get_connection_types(
     search: Optional[str] = None, system_type: Optional[SystemType] = None
@@ -56,6 +53,7 @@ def get_connection_types(
                     ConnectionType.manual,
                     ConnectionType.email,
                     ConnectionType.manual_webhook,
+                    ConnectionType.fides,
                 ]
                 and is_match(conn_type.value)
             ]

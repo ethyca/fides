@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List
 
 import requests
@@ -17,7 +16,6 @@ from fides.api.ops.util.saas_util import to_pascal_case
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @register("twilio_user_update", [SaaSRequestType.UPDATE])
@@ -62,7 +60,9 @@ def twilio_user_update(
                     f"Operational Error connecting to Twilio Conversations API with error: {e}"
                 )
             else:
-                raise ConnectionException("Operational Error connecting to Twilio Conversations API.")
+                raise ConnectionException(
+                    "Operational Error connecting to Twilio Conversations API."
+                )
         if not response.ok:
             raise ClientUnsuccessfulException(status_code=response.status_code)
 

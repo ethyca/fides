@@ -1,10 +1,6 @@
 [
   {
-    "name": "createNewConnection",
-    "isActive": true
-  },
-  {
-    "name": "configWizardFlag",
+    "name": "configWizardStepper",
     "isActive": false
   }
 ]

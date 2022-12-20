@@ -1,6 +1,5 @@
-import logging
-
 from fideslang.validation import FidesKey
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import MessagingConfigNotFoundException
@@ -9,8 +8,6 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingConfigResponse,
 )
-
-logger = logging.getLogger(__name__)
 
 
 def update_messaging_config(
@@ -49,7 +46,7 @@ def create_or_update_messaging_config(
 
 
 def delete_messaging_config(db: Session, key: FidesKey) -> None:
-    logger.info("Finding messaging config with key '%s'", key)
+    logger.info("Finding messaging config with key '{}'", key)
     messaging_config: MessagingConfig = MessagingConfig.get_by(
         db, field="key", value=key
     )
@@ -57,7 +54,7 @@ def delete_messaging_config(db: Session, key: FidesKey) -> None:
         raise MessagingConfigNotFoundException(
             f"No messaging config found with key {key}"
         )
-    logger.info("Deleting messaging config with key '%s'", key)
+    logger.info("Deleting messaging config with key '{}'", key)
     messaging_config.delete(db)
 
 

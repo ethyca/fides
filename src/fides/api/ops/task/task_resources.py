@@ -1,6 +1,6 @@
-import logging
 from typing import Any, Dict, List, Optional
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import ConnectorNotFoundException
@@ -17,6 +17,7 @@ from fides.api.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
     EmailConnector,
+    FidesConnector,
     ManualConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
@@ -30,8 +31,6 @@ from fides.api.ops.service.connectors import (
 )
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import Row
-
-logger = logging.getLogger(__name__)
 
 
 class Connections:
@@ -50,7 +49,7 @@ class Connections:
         return self.connections[key]
 
     @staticmethod
-    def build_connector(  # pylint: disable=R0911
+    def build_connector(  # pylint: disable=R0911,R0912
         connection_config: ConnectionConfig,
     ) -> BaseConnector:
         """Factory method to build the appropriately typed connector from the config."""
@@ -78,6 +77,8 @@ class Connections:
             return EmailConnector(connection_config)
         if connection_config.connection_type == ConnectionType.timescale:
             return TimescaleConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.fides:
+            return FidesConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )
@@ -189,5 +190,5 @@ class TaskResources:
 
     def close(self) -> None:
         """Close any held resources"""
-        logger.debug("Closing all task resources for %s", self.request.id)
+        logger.debug("Closing all task resources for {}", self.request.id)
         self.connections.close()

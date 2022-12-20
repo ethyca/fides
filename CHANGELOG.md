@@ -15,20 +15,112 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-
-## [Unreleased](https://github.com/ethyca/fides/compare/2.1.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.3.1...main)
 
 ### Added
-* Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
-* Adds access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
+Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+
+## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
 ### Fixed
+
+* Resolved an issue where the root_user was not being created [#2082](https://github.com/ethyca/fides/pull/2082)
+
+### Added
+
+* Nav redesign with sidebar groups. Feature flagged to only be visible in dev mode until release. [#2030](https://github.com/ethyca/fides/pull/2047)
+
+### Fixed
+
+* Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
+
+
+## [2.3.0](https://github.com/ethyca/fides/compare/2.2.2...2.3.0)
+
+### Added
+
+* Common Subscriptions for app-wide data and feature checks. [#2030](https://github.com/ethyca/fides/pull/2030)
+* Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
+* DSR Notifications (toast) [#1895](https://github.com/ethyca/fides/pull/1895)
+* DSR configure alerts btn [#1895](https://github.com/ethyca/fides/pull/1895)
+* DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
+* Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
+
+### Changed
+
+* Updated to use `loguru` logging library throughout codebase [#2031](https://github.com/ethyca/fides/pull/2031)
+* Do not always create a `fides.toml` by default [#2023](https://github.com/ethyca/fides/pull/2023)
+* The `fideslib` module has been merged into `fides`, code redundancies have been removed [#1859](https://github.com/ethyca/fides/pull/1859)
+* Replace 'ingress' and 'egress' with 'sources' and 'destinations' across UI [#2044](https://github.com/ethyca/fides/pull/2044)
+
+### Fixed
+
+* Timing issues with bulk DSR reprocessing, specifically when analytics are enabled [#2015](https://github.com/ethyca/fides/pull/2015)
+* Error caused by running erasure requests with disabled connectors [#2045](https://github.com/ethyca/fides/pull/2045)
+* Changes the SlowAPI ratelimiter's backend to use memory instead of Redis [#2054](https://github.com/ethyca/fides/pull/2058)
+
+## [2.2.2](https://github.com/ethyca/fides/compare/2.2.1...2.2.2)
+
+### Docs
+
+* Updated the readme to use new new [docs site](http://docs.ethyca.com) [#2020](https://github.com/ethyca/fides/pull/2020)
+
+### Deprecated
+
+* The documentation site hosted in the `/docs` directory has been deprecated. All documentation updates will be hosted at the new [docs site](http://docs.ethyca.com) [#2020](https://github.com/ethyca/fides/pull/2020)
+
+### Fixed
+
+* Fixed mypy and pylint errors [#2013](https://github.com/ethyca/fides/pull/2013)
+* Update connection test endpoint to be effectively non-blocking [#2000](https://github.com/ethyca/fides/pull/2000)
+* Update Fides connector to better handle children with no access results [#2012](https://github.com/ethyca/fides/pull/2012)
+
+## [2.2.1](https://github.com/ethyca/fides/compare/2.2.0...2.2.1)
+
+### Added
+
+* Add health check indicator for data flow scanning option [#1973](https://github.com/ethyca/fides/pull/1973)
+
+### Changed
+
+* The `celery.toml` is no longer used, instead it is a subsection of the `fides.toml` file [#1990](https://github.com/ethyca/fides/pull/1990)
+* Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
+* `get` and `ls` CLI commands now return valid `fides` object YAML [#1991](https://github.com/ethyca/fides/pull/1991)
+
+### Developer Experience
+
+* Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
+
+## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
+
+### Added
+
+* Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
+* Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
+* Enable the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
+* Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
+* Add function to poll privacy request for completion [#1860](https://github.com/ethyca/fides/pull/1860)
+* Added rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
+* Add rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
+* Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
+* Classification UI now polls for updates to classifications [#1908](https://github.com/ethyca/fides/pull/1908)
+
+### Changed
+
+* The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
+* Removed the description column from the classify systems page. [#1867](https://github.com/ethyca/fides/pull/1867)
+* Retrieve child results during fides connector execution [#1967](https://github.com/ethyca/fides/pull/1967)
+
+### Fixed
+
 * Fix error in parent user creation seeding. [#1832](https://github.com/ethyca/fides/issues/1832)
+* Fix DSR error due to unfiltered empty identities [#1901](https://github.com/ethyca/fides/pull/1907)
 
 ### Docs
 
 * Remove documentation about no-longer used connection string override [#1824](https://github.com/ethyca/fides/pull/1824)
 * Fix typo in headings [#1824](https://github.com/ethyca/fides/pull/1824)
+* Update documentation to reflect configs necessary for mailgun, twilio_sms and twilio_email service types [#1846](https://github.com/ethyca/fides/pull/1846)
 
 ...
 
@@ -37,7 +129,7 @@ The types of changes are:
 ### Added
 
 * Classification flow for system data flows
-  * Classification is now triggered as part of data flow scanning
+* Classification is now triggered as part of data flow scanning
 * Include `ingress` and `egress` fields on system export and `datamap/` endpoint [#1740](https://github.com/ethyca/fides/pull/1740)
 * Repeatable unique identifier for dataset fides_keys and metadata [#1786](https://github.com/ethyca/fides/pull/1786)
 * Adds SMS support for identity verification notifications [#1726](https://github.com/ethyca/fides/pull/1726)
@@ -46,6 +138,7 @@ The types of changes are:
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
 * Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
 * Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
+* Webserver port can now be configured via the CLI command [#1858](https://github.com/ethyca/fides/pull/1858)
 
 ### Changed
 

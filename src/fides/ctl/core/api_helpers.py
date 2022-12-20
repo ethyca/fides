@@ -47,11 +47,11 @@ def get_server_resource(
     resource_key: str,
     headers: Dict[str, str],
     raw: bool = False,
-) -> Optional[Union[FidesModel, Dict]]:
+) -> Union[FidesModel, Dict]:
     """
     Attempt to get a given resource from the server.
 
-    Returns None if the object does not exist on the server.
+    Returns {} if the object does not exist on the server.
 
     As we don't always have a way to attribute fides_keys to the
     right resource, this function helps check what resource
@@ -74,7 +74,7 @@ def get_server_resource(
             from_server=True,
         )
 
-    return server_resource
+    return server_resource or {}
 
 
 def list_server_resources(

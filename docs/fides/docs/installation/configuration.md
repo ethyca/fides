@@ -95,6 +95,13 @@ Fides will filter out any sensitive configuration variables. The full list of va
 - `require_manual_request_approval`
 - `masking_strict`
 
+#### Notification settings
+
+- `send_request_completion_notification`
+- `send_request_receipt_notification`
+- `send_request_review_notification`
+- `notification_service_type`
+
 For more information, see the [API docs](../api/index.md).
 
 ## Configuration file
@@ -151,6 +158,11 @@ task_retry_delay = 1
 
 [admin_ui]
 enabled = true
+
+[celery]
+event_queue_prefix = "fides_worker"
+task_default_queue = "fides"
+task_always_eager = true
 
 ```
 
@@ -250,11 +262,24 @@ The credentials section uses custom keys which can be referenced in certain comm
 | `my_okta.orgUrl` | String | Sets the `orgUrl` for `my_okta` credentials |
 | `my_okta.token` | String | Sets the `token` for `my_okta` credentials |
 
+#### Celery
+
+The celery section is a place for user-defined key-value overrides that get passed directly to Celery and are not validated by `fides`.
+
 #### Admin UI
 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `enabled` | bool | `True` | Toggle whether the Admin UI is served from `/`. |
+
+#### Notifications
+
+| Name | Type   | Default | Description                                                                                                       |
+|:---- |:-------|:--------|:------------------------------------------------------------------------------------------------------------------|
+| `send_request_completion_notification` | bool   | `False` | When set to `True`, enables subject notifications upon privacy request completion.                                |
+| `send_request_receipt_notification` | bool   | `False` | When set to `True`, enables subject notifications upon privacy request receipt.                                   |
+| `send_request_review_notification` | bool   | `False` | When set to `True`, enables subject notifications upon privacy request review.                                    |
+| `notification_service_type` | String | N/A     | Sets the notification service type used to send notifications. Accepts `mailgun`, `twilio_sms`, or `twilio_email`.|
 
 ## Set environment variables
 

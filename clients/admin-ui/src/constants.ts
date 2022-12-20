@@ -77,11 +77,23 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "user:create",
   },
   {
-    privilege: "Create roles",
+    privilege: "Update users",
+    scope: "user:update",
+  },
+  {
+    privilege: "Reset their own password",
+    scope: "user:reset-password",
+  },
+  {
+    privilege: "Assign user permissions",
     scope: "user-permission:create",
   },
   {
-    privilege: "View roles",
+    privilege: "Update user permissions",
+    scope: "user-permission:update",
+  },
+  {
+    privilege: "Read user permissions",
     scope: "user-permission:read",
   },
   {
@@ -121,7 +133,7 @@ export const CONNECTION_ROUTE = "/connection";
 export const CONNECTION_TYPE_ROUTE = "/connection_type";
 
 // UI ROUTES
-export const CONFIG_WIZARD_ROUTE = "/config-wizard";
+export const CONFIG_WIZARD_ROUTE = "/add-systems";
 export const DATAMAP_ROUTE = "/datamap";
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const SYSTEM_ROUTE = "/system";

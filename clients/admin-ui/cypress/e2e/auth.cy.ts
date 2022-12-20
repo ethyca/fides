@@ -1,5 +1,3 @@
-import { stubHomePage } from "cypress/support/stubs";
-
 import { USER_PRIVILEGES } from "~/constants";
 
 describe("User Authentication", () => {
@@ -21,7 +19,7 @@ describe("User Authentication", () => {
       cy.visit("/login");
       cy.getByTestId("Login");
 
-      stubHomePage();
+      cy.intercept("GET", "/api/v1/system", { body: [] });
       cy.fixture("login.json").then((body) => {
         cy.intercept("POST", "/api/v1/login", body).as("postLogin");
         cy.intercept("/api/v1/user/*/permission", {
@@ -36,14 +34,13 @@ describe("User Authentication", () => {
       cy.get("#email").type("cypress-user@ethyca.com");
       cy.get("#password").type("FakePassword123!{Enter}");
 
-      cy.getByTestId("Privacy Requests");
+      cy.getByTestId("nav-bar");
     });
   });
 
   describe("when the user is logged in", () => {
     beforeEach(() => {
       cy.login();
-      stubHomePage();
     });
 
     it("lets them navigate to protected routes", () => {
@@ -70,6 +67,21 @@ describe("User Authentication", () => {
 
       cy.location("pathname").should("eq", "/login");
       cy.getByTestId("Login");
+    });
+
+    it("/login redirects to the onboarding flow if the user has no systems", () => {
+      cy.intercept("GET", "/api/v1/system", { body: [] });
+      cy.visit("/login");
+      cy.getByTestId("setup");
+    });
+
+    it("/login redirects to the systems page if the user has systems", () => {
+      cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
+        "getSystems"
+      );
+      cy.visit("/login");
+      cy.wait("@getSystems");
+      cy.getByTestId("system-management");
     });
   });
 });

@@ -1,24 +1,17 @@
-# pylint: disable=R0401
+# pylint: disable=R0401, C0302
 
 from __future__ import annotations
 
 import json
-import logging
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Union
 
 from celery.result import AsyncResult
-from fideslib.cryptography.cryptographic_util import hash_with_salt
-from fideslib.db.base import Base
-from fideslib.db.base_class import FidesBase
-from fideslib.models.audit_log import AuditLog
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.jwt import generate_jwe
+from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
@@ -70,9 +63,15 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
 from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.ctl.core.config import get_config
+from fides.lib.cryptography.cryptographic_util import hash_with_salt
+from fides.lib.db.base import Base  # type: ignore[attr-defined]
+from fides.lib.models.audit_log import AuditLog
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.oauth.jwt import generate_jwe
 
-logger = logging.getLogger(__name__)
 CONFIG = get_config()
+
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -145,8 +144,9 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
 
 class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     """
-    The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
-    database record representing the request's progression within the Fides system.
+    The DB ORM model to describe current and historic PrivacyRequests.
+    A privacy request is a database record representing the request's
+    progression within the Fides system.
     """
 
     external_id = Column(String, index=True)
@@ -211,6 +211,12 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         primaryjoin="foreign(AuditLog.privacy_request_id)==PrivacyRequest.id",
     )
 
+    privacy_request_error = relationship(
+        "PrivacyRequestError",
+        back_populates="privacy_request",
+        cascade="delete, delete-orphan",
+    )
+
     reviewer = relationship(
         FidesUser, backref=backref("privacy_request", passive_deletes=True)
     )
@@ -227,7 +233,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         return delta.days
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> PrivacyRequest:
         """
         Check whether this object has been passed a `requested_at` value. Default to
         the current datetime if not.
@@ -235,17 +241,20 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         if data.get("requested_at", None) is None:
             data["requested_at"] = datetime.utcnow()
 
-        policy: Policy = Policy.get_by(
+        policy: Optional[Policy] = Policy.get_by(
             db=db,
             field="id",
             value=data["policy_id"],
         )
 
-        if policy.execution_timeframe:
-            requested_at = data["requested_at"]
-            if isinstance(requested_at, str):
-                requested_at = datetime.strptime(requested_at, API_DATE_FORMAT)
-            data["due_date"] = requested_at + timedelta(days=policy.execution_timeframe)
+        if policy:
+            if policy.execution_timeframe:
+                requested_at = data["requested_at"]
+                if isinstance(requested_at, str):
+                    requested_at = datetime.strptime(requested_at, API_DATE_FORMAT)
+                data["due_date"] = requested_at + timedelta(
+                    days=policy.execution_timeframe
+                )
 
         return super().create(db=db, data=data)
 
@@ -281,7 +290,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         """
         identity_dict: Dict[str, Any] = dict(identity)
         for key, value in identity_dict.items():
-            if value is not None:
+            if value:
                 hashed_value = ProvidedIdentity.hash_value(value)
                 ProvidedIdentity.create(
                     db=db,
@@ -493,7 +502,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data: BaseSchema = manual_webhook.fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.fields_schema.parse_obj(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}",
@@ -626,16 +635,16 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         )
 
         headers = {}
-        is_pre_webhook = webhook.__class__ == PolicyPreWebhook
+        is_pre_webhook = isinstance(webhook, PolicyPreWebhook)
         response_expected = webhook.direction == WebhookDirection.two_way
         if is_pre_webhook and response_expected:
             headers = {
                 "reply-to": f"/privacy-request/{self.id}/resume",
-                "reply-to-token": generate_request_callback_jwe(webhook),
+                "reply-to-token": generate_request_callback_jwe(webhook),  # type: ignore[arg-type]
             }
 
         logger.info(
-            "Calling webhook '%s' for privacy_request '%s'", webhook.key, self.id
+            "Calling webhook '{}' for privacy_request '{}'", webhook.key, self.id
         )
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
             request_body.dict(),
@@ -652,7 +661,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             [response_body.derived_identity.dict().values()]
         ):
             logger.info(
-                "Updating known identities on privacy request '%s' from webhook '%s'.",
+                "Updating known identities on privacy request '{}' from webhook '{}'.",
                 self.id,
                 webhook.key,
             )
@@ -696,7 +705,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
             task_id = self.get_cached_task_id()
             if task_id:
-                logger.info("Revoking task %s for request %s", task_id, self.id)
+                logger.info("Revoking task {} for request {}", task_id, self.id)
                 # Only revokes if execution is not already in progress
                 celery_app.control.revoke(task_id, terminate=False)
 
@@ -709,6 +718,25 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 "finished_processing_at": datetime.utcnow(),
             },
         )
+
+        PrivacyRequestError.create(
+            db=db, data={"message_sent": False, "privacy_request_id": self.id}
+        )
+
+
+class PrivacyRequestError(Base):
+    """The DB ORM model to track PrivacyRequests error message status."""
+
+    message_sent = Column(Boolean, nullable=False, default=False)
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id_field_path),
+        nullable=False,
+    )
+
+    privacy_request = relationship(
+        PrivacyRequest, back_populates="privacy_request_error"
+    )
 
 
 def _get_manual_input_from_cache(
@@ -725,6 +753,11 @@ def _get_manual_input_from_cache(
     if cached_results:
         return list(cached_results.values())[0]
     return None
+
+
+class PrivacyRequestNotifications(Base):
+    email = Column(String, nullable=False)
+    notify_after_failures = Column(Integer, nullable=False)
 
 
 class ProvidedIdentityType(EnumType):
@@ -785,7 +818,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         cls,
         value: str,
         encoding: str = "UTF-8",
-    ) -> tuple[str, str]:
+    ) -> str:
         """Utility function to hash a user's password with a generated salt"""
         SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
         hashed_value = hash_with_salt(

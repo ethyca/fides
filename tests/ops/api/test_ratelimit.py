@@ -24,7 +24,6 @@ def api_client_for_rate_limiting() -> Generator:
         key_prefix=CONFIG.security.rate_limit_prefix,
         key_func=get_remote_address,
         retry_after="http-date",
-        storage_uri=CONFIG.redis.connection_url,
     )
     with TestClient(app) as c:
         yield c
@@ -34,11 +33,10 @@ def api_client_for_rate_limiting() -> Generator:
             key_prefix=CONFIG.security.rate_limit_prefix,
             key_func=get_remote_address,
             retry_after="http-date",
-            storage_uri=CONFIG.redis.connection_url,
         )
 
 
-def test_requests_rate_limited(api_client_for_rate_limiting, cache):
+def test_requests_rate_limited(api_client_for_rate_limiting):
     """
     Asserts that incremental HTTP requests above the ratelimit threshold are
     rebuffed from the API with a 429 response.
@@ -53,14 +51,6 @@ def test_requests_rate_limited(api_client_for_rate_limiting, cache):
 
     response = api_client_for_rate_limiting.get(HEALTH)
     assert response.status_code == 429
-
-    ratelimiter_cache_keys = [key for key in cache.keys() if key.startswith("LIMITER/")]
-    for key in ratelimiter_cache_keys:
-        # Depending on what requests have been stored previously, the ratelimtier will
-        # store keys in the format `LIMITER/fides-/127.0.0.1//health/100/1/minute`
-        assert key.startswith(f"LIMITER/{CONFIG.security.rate_limit_prefix}")
-        # Reset the cache to not interere with any other tests
-        cache.delete(key)
 
 
 def test_rate_limit_validation():

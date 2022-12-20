@@ -1,19 +1,19 @@
 from typing import List
 
 from fastapi import HTTPException
-from fideslib.oauth.schemas.user_permission import (
-    UserPermissionsCreate as UserPermissionsCreateLib,
-)
-from fideslib.oauth.schemas.user_permission import (
-    UserPermissionsEdit as UserPermissionsEditLib,
-)
-from fideslib.oauth.schemas.user_permission import (
-    UserPermissionsResponse as UserPermissionsResponseLib,
-)
 from pydantic import validator
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.lib.oauth.schemas.user_permission import (
+    UserPermissionsCreate as UserPermissionsCreateLib,
+)
+from fides.lib.oauth.schemas.user_permission import (
+    UserPermissionsEdit as UserPermissionsEditLib,
+)
+from fides.lib.oauth.schemas.user_permission import (
+    UserPermissionsResponse as UserPermissionsResponseLib,
+)
 
 
 class UserPermissionsCreate(UserPermissionsCreateLib):

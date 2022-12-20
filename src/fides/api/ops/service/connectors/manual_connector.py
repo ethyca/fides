@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List, Optional
 
 from fides.api.ops.common_exceptions import PrivacyRequestPaused
@@ -8,8 +7,6 @@ from fides.api.ops.models.privacy_request import ManualAction, PrivacyRequest
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.query_config import ManualQueryConfig
 from fides.api.ops.util.collection_util import Row
-
-logger = logging.getLogger(__name__)
 
 
 class ManualConnector(BaseConnector[None]):

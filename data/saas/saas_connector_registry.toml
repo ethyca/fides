@@ -7,25 +7,31 @@ human_readable = "Adobe Campaign"
 [auth0]
 config = "data/saas/config/auth0_config.yml"
 dataset = "data/saas/dataset/auth0_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/auth0.svg"
 human_readable = "Auth0"
 
 [datadog]
 config = "data/saas/config/datadog_config.yml"
 dataset = "data/saas/dataset/datadog_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/datadog.svg"
 human_readable = "Datadog"
 
 [doordash]
 config = "data/saas/config/doordash_config.yml"
 dataset = "data/saas/dataset/doordash_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/doordash.svg"
 human_readable = "Doordash"
+
+[fullstory]
+config = "data/saas/config/fullstory_config.yml"
+dataset = "data/saas/dataset/fullstory_dataset.yml"
+icon = "data/saas/icon/fullstory.svg"
+human_readable = "Fullstory"
 
 [firebase_auth]
 config = "data/saas/config/firebase_auth_config.yml"
 dataset = "data/saas/dataset/firebase_auth_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/firebase.svg"
 human_readable = "Firebase Auth"
 
 [hubspot]
@@ -61,7 +67,7 @@ human_readable = "Segment"
 [sendgrid]
 config = "data/saas/config/sendgrid_config.yml"
 dataset = "data/saas/dataset/sendgrid_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/sendgrid.svg"
 human_readable = "SendGrid"
 
 [sentry]
@@ -73,13 +79,13 @@ human_readable = "Sentry"
 [shopify]
 config = "data/saas/config/shopify_config.yml"
 dataset = "data/saas/dataset/shopify_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/shopify.svg"
 human_readable = "Shopify"
 
 [square]
 config = "data/saas/config/square_config.yml"
 dataset = "data/saas/dataset/square_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/square.svg"
 human_readable = "Square"
 
 [stripe]
@@ -91,7 +97,7 @@ human_readable = "Stripe"
 [twilio_conversations]
 config = "data/saas/config/twilio_conversations_config.yml"
 dataset = "data/saas/dataset/twilio_conversations_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/twilio.svg"
 human_readable = "Twilio Conversations"
 
 [zendesk]
@@ -103,25 +109,25 @@ human_readable = "Zendesk"
 [rollbar]
 config = "data/saas/config/rollbar_config.yml"
 dataset = "data/saas/dataset/rollbar_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/rollbar.svg"
 human_readable = "Rollbar"
 
 [braze]
 config = "data/saas/config/braze_config.yml"
 dataset = "data/saas/dataset/braze_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/braze.svg"
 human_readable = "Braze"
 
 [domo]
 config = "data/saas/config/domo_config.yml"
 dataset = "data/saas/dataset/domo_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/domo.svg"
 human_readable = "Domo"
 
 [slack_enterprise]
 config = "data/saas/config/slack_enterprise_config.yml"
 dataset = "data/saas/dataset/slack_enterprise_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/slack.svg"
 human_readable = "Slack Enterprise"
 
 [recharge]

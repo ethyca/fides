@@ -31,8 +31,8 @@
     "@chakra-ui/utils": "^2.0.9",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
+    "@fidesui/components": "^0.2.0",
     "@fidesui/react": "^0.0.19",
-    "@fidesui/components": "^0.1.0",
     "@fontsource/inter": "^4.5.4",
     "@monaco-editor/react": "^4.4.5",
     "@reduxjs/toolkit": "^1.8.0",
@@ -47,7 +47,7 @@
     "lodash.debounce": "^4.0.8",
     "msw": "^0.47.4",
     "narrow-minded": "^1.1.1",
-    "next": "12.1.0",
+    "next": "^12.3.4",
     "next-redux-wrapper": "^7.0.5",
     "next-remove-imports": "^1.0.7",
     "react": "^17.0.2",
@@ -59,6 +59,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@jest/globals": "^29.3.1",
     "@next/bundle-analyzer": "^12.0.10",
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.3",

@@ -7,6 +7,7 @@ import { CloseSolidIcon } from "~/features/common/Icon";
 import DescribeSystemStep from "~/features/system/DescribeSystemStep";
 import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
 import ReviewSystemStep from "~/features/system/ReviewSystemStep";
+import FlagValues from "~/flags.json";
 import { System } from "~/types/api";
 
 import AddSystemForm from "./AddSystemForm";
@@ -26,6 +27,10 @@ import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import ScanResults from "./ScanResults";
 import SuccessPage from "./SuccessPage";
+
+const isStepperActive = FlagValues.some(
+  (flag) => flag.name === "configWizardStepper" && flag.isActive
+);
 
 const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
@@ -58,8 +63,14 @@ const ConfigWizardWalkthrough = () => {
       </Box>
       <Divider orientation="horizontal" />
       <Stack direction={["column", "row"]}>
-        <Stack bg="white" height="100vh">
-          <Stack mt={10} mb={10} direction="row" spacing="24px">
+        <Stack bg="white" height="100vh" width="100%">
+          <Stack
+            mt={10}
+            mb={10}
+            direction="row"
+            spacing="24px"
+            justifyContent={isStepperActive ? undefined : "center"}
+          >
             <Box flexShrink={0}>
               <Stepper
                 activeStep={step}

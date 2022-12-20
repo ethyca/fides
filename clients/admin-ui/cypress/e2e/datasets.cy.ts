@@ -1,7 +1,6 @@
 import {
   CONNECTION_STRING,
   stubDatasetCrud,
-  stubHomePage,
   stubPlus,
 } from "cypress/support/stubs";
 
@@ -15,7 +14,6 @@ describe("Dataset", () => {
 
   describe("List of datasets view", () => {
     it("Can navigate to the datasets list view", () => {
-      stubHomePage();
       cy.visit("/");
       cy.getByTestId("nav-link-Datasets").click();
       cy.wait("@getDatasets");
@@ -25,6 +23,9 @@ describe("Dataset", () => {
 
       // The classifier toggle should not be available.
       cy.get("input-classify").should("not.exist");
+
+      cy.getByTestId("dataset-table__status-table-header").should("not.exist");
+      cy.getByTestId("classification-status-badge").should("not.exist");
     });
 
     it("Can navigate to the datasets view via URL", () => {
