@@ -160,8 +160,6 @@ def dispatch_message(
             f"Notification service type is not valid: {CONFIG.notifications.notification_service_type}"
         )
     messaging_service: MessagingServiceType = messaging_config.service_type  # type: ignore
-    # fixme: do we want to support multiple message service types i.e. either email or phone number identities are accepted
-    # or both are accepted, using one message service type as default?
     logger.info(
         "Retrieving appropriate dispatcher for email service: {}", messaging_service
     )
@@ -202,9 +200,9 @@ def _build_sms(  # pylint: disable=too-many-return-statements
         )
     if action_type == MessagingActionType.CONSENT_REQUEST:
         return (
-            "Your consent request verification code is {{code}}. "
+            f"Your consent request verification code is {body_params.verification_code}. "
             "Please return to the consent request page and enter the code to continue. "
-            "This code will expire in {{minutes}} minutes"
+            f"This code will expire in {body_params.get_verification_code_ttl_minutes()} minutes"
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         if len(body_params.request_types) > 1:

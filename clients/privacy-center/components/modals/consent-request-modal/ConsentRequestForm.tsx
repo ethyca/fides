@@ -22,8 +22,8 @@ import { addCommonHeaders } from "~/common/CommonHeaders";
 
 import {config, hostUrl} from "~/constants";
 import dynamic from "next/dynamic";
-import { ModalViews, VerificationType } from "../types";
 import * as Yup from "yup";
+import { ModalViews, VerificationType } from "../types";
 
 const PhoneInput = dynamic(() => import("react-phone-number-input"), {
   ssr: false,
@@ -202,8 +202,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                       name="email"
                       type="email"
                       focusBorderColor="primary.500"
-                      placeholder="Email*"
-                      isRequired
+                      placeholder="test-email@example.com"
                       onChange={handleChange}
                       onBlur={handleBlur}
                       value={values.email}
@@ -228,7 +227,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                       name="phone"
                       type="tel"
                       focusBorderColor="primary.500"
-                      placeholder="+1 000 000 0000"
+                      placeholder="000 000 0000"
                       defaultCountry="US"
                       onChange={(value) => {
                         setFieldValue("phone", value, true);
