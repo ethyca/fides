@@ -5,8 +5,8 @@ import pytest
 
 from fides.api.ctl import sql_models
 from fides.api.ctl.database.crud import delete_resource, list_resource
-from fides.ctl.core import api as _api
-from fides.ctl.core.config import FidesConfig
+from fides.core import api as _api
+from fides.core.config import FidesConfig
 from tests.ctl.types import FixtureRequest
 
 
