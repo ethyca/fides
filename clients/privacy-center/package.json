@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "npm run build:fides-consent",
+    "postinstall": "npm run build:fides-consent",
     "build": "next build",
     "build:fides-consent": "npm run --workspace=fides-consent build",
     "start": "next start",
