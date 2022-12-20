@@ -1,23 +1,21 @@
 import { Center, Flex, SimpleGrid, Text } from "@fidesui/react";
 import Link from "next/link";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features.slice";
 
-import { MODULE_CARD_ITEMS, ModuleCardKeys } from "./constants";
-import { ModuleCard } from "./types";
+import { ModuleCardKeys, MODULE_CARD_ITEMS } from "./constants";
+
+const DEFAULT_CARD_ITEMS = MODULE_CARD_ITEMS.filter((item) =>
+  [
+    ModuleCardKeys.ADD_SYSTEMS,
+    ModuleCardKeys.CONFIGURE_PRIVACY_REQUESTS,
+  ].includes(item.key)
+);
 
 const HomeContent: React.FC = () => {
   const COLUMNS = 3;
-  const [list, setList] = useState<ModuleCard[]>(
-    MODULE_CARD_ITEMS.filter((item) =>
-      [
-        ModuleCardKeys.ADD_SYSTEMS,
-        ModuleCardKeys.CONFIGURE_PRIVACY_REQUESTS,
-      ].includes(item.key)
-    )
-  );
   const { connectionsCount, systemsCount } = useFeatures();
   const hasConnections = connectionsCount > 0;
   const hasSystems = systemsCount > 0;
@@ -27,22 +25,25 @@ const HomeContent: React.FC = () => {
     return cardItem;
   };
 
-  useEffect(() => {
-    if (hasConnections || hasSystems) {
-      if (hasConnections) {
-        const card = getCardItem(ModuleCardKeys.REVIEW_PRIVACY_REQUESTS);
-        if (card && !list.includes(card)) {
-          setList((prev) => [...prev, card as ModuleCard]);
+  const getCardList = useMemo(
+    () => () => {
+      const list = [...DEFAULT_CARD_ITEMS];
+      if (hasConnections || hasSystems) {
+        if (hasConnections) {
+          const card = getCardItem(ModuleCardKeys.REVIEW_PRIVACY_REQUESTS);
+          list.push(card!);
+        }
+        if (hasSystems) {
+          const card = getCardItem(ModuleCardKeys.MANAGE_SYSTEMS);
+          list.push(card!);
         }
       }
-      if (hasSystems) {
-        const card = getCardItem(ModuleCardKeys.MANAGE_SYSTEMS);
-        if (card && !list.includes(card)) {
-          setList((prev) => [...prev, card as ModuleCard]);
-        }
-      }
-    }
-  }, [hasConnections, hasSystems, list]);
+      return list;
+    },
+    [hasConnections, hasSystems]
+  );
+
+  const list = getCardList();
 
   return (
     <Center>
