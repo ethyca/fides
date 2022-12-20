@@ -47,7 +47,6 @@ def manual_dataset_config(
         data={
             "connection_config_id": integration_manual_config.id,
             "fides_key": fides_key,
-            "dataset": manual_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

@@ -142,7 +142,6 @@ def saas_example_dataset_config(
         data={
             "connection_config_id": saas_example_connection_config.id,
             "fides_key": fides_key,
-            "dataset": saas_example_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
@@ -169,7 +168,6 @@ def saas_external_example_dataset_config(
         data={
             "connection_config_id": saas_external_example_connection_config.id,
             "fides_key": fides_key,
-            "dataset": saas_external_example_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

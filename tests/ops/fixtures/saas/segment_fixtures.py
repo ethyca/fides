@@ -110,7 +110,6 @@ def segment_dataset_config(
         data={
             "connection_config_id": segment_connection_config.id,
             "fides_key": fides_key,
-            "dataset": segment_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

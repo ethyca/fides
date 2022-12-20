@@ -115,7 +115,6 @@ def adobe_campaign_dataset_config(
         data={
             "connection_config_id": adobe_campaign_connection_config.id,
             "fides_key": fides_key,
-            "dataset": adobe_campaign_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

@@ -103,7 +103,6 @@ def dataset_config_hubspot(
         data={
             "connection_config_id": connection_config_hubspot.id,
             "fides_key": fides_key,
-            "dataset": hubspot_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

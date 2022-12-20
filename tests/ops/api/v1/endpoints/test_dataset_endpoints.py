@@ -475,9 +475,6 @@ class TestPutDatasetConfigs:
         assert (
             dataset_config.ctl_dataset.fides_key == ctl_dataset.fides_key
         ), "Differs from datasetconfig.fides_key in this case"
-        assert (
-            dataset_config.dataset["fides_key"] == ctl_dataset.fides_key
-        ), "Differs from datasetconfig.fides_key in this case"
 
         succeeded = response.json()["succeeded"][0]
         assert (
@@ -493,6 +490,22 @@ class TestPutDatasetConfigs:
         path = V1_URL_PREFIX + DATASETS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=request_body
+        )
+        assert response.status_code == 404
+
+    def test_patch_datasets_ctl_dataset_id_does_not_exist(
+        self, request_body, api_client: TestClient, generate_auth_header, datasets_url
+    ) -> None:
+        request_body.append(
+            {
+                "fides_key": "second_dataset_config",
+                "ctl_dataset_fides_key": "bad_ctl_dataset_key",
+            }
+        )
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
@@ -550,28 +563,20 @@ class TestPutDatasetConfigs:
         assert first_dataset_config.ctl_dataset == ctl_dataset
         assert (
             response_body["succeeded"][0]["collections"]
-            == first_dataset_config.dataset["collections"]
+            == Dataset.from_orm(first_dataset_config.ctl_dataset).collections
         )
         assert response_body["succeeded"][0]["fides_key"] == ctl_dataset.fides_key
-        assert (
-            first_dataset_config.dataset["collections"]
-            == Dataset.from_orm(ctl_dataset).collections
-        )
-        assert len(first_dataset_config.dataset["collections"]) == 1
+        assert len(first_dataset_config.ctl_dataset.collections) == 1
 
         second_dataset_config = DatasetConfig.get_by(
             db=db, field="fides_key", value="second_dataset_config"
         )
         assert (
             response_body["succeeded"][1]["collections"]
-            == first_dataset_config.dataset["collections"]
+            == Dataset.from_orm(second_dataset_config.ctl_dataset).collections
         )
         assert response_body["succeeded"][1]["fides_key"] == ctl_dataset.fides_key
         assert second_dataset_config.ctl_dataset == ctl_dataset
-        assert (
-            second_dataset_config.dataset["collections"]
-            == Dataset.from_orm(ctl_dataset).collections
-        )
 
         first_dataset_config.delete(db)
         second_dataset_config.delete(db)
@@ -623,8 +628,8 @@ class TestPutDatasetConfigs:
         assert dataset_config.updated_at != updated
         assert response_body["succeeded"][0]["fides_key"] == "new_ctl_dataset"
         assert response_body["succeeded"][0]["description"] == "updated description"
-        assert dataset_config.dataset["description"] == "updated description"
-        assert len(dataset_config.dataset["collections"]) == 1
+        assert dataset_config.ctl_dataset.description == "updated description"
+        assert len(dataset_config.ctl_dataset.collections) == 1
 
     @pytest.mark.unit_saas
     def test_patch_datasets_missing_saas_config(
@@ -1622,9 +1627,6 @@ class TestDeleteDataset:
             data={
                 "connection_config_id": connection_config.id,
                 "fides_key": "postgres_example_subscriptions",
-                "dataset": Dataset.from_orm(
-                    ctl_dataset
-                ).dict(),  # Temporary, soon remove writing to this field.
                 "ctl_dataset_id": ctl_dataset.id,
             },
         )

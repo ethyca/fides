@@ -113,7 +113,6 @@ def square_dataset_config(
         data={
             "connection_config_id": square_connection_config.id,
             "fides_key": fides_key,
-            "dataset": square_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

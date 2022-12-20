@@ -117,7 +117,6 @@ def twilio_conversations_dataset_config(
         data={
             "connection_config_id": twilio_conversations_connection_config.id,
             "fides_key": fides_key,
-            "dataset": twilio_conversations_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
@@ -169,7 +168,6 @@ def twilio_postgres_dataset_config(
         data={
             "connection_config_id": connection_config.id,
             "fides_key": fides_key,
-            "dataset": twilio_postgres_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

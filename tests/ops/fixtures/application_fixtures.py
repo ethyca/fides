@@ -1260,31 +1260,6 @@ def dataset_config(
             "connection_config_id": connection_config.id,
             "fides_key": "postgres_example_subscriptions_dataset",
             "ctl_dataset_id": ctl_dataset.id,
-            "dataset": {
-                "fides_key": "postgres_example_subscriptions_dataset",
-                "name": "Postgres Example Subscribers Dataset",
-                "description": "Example Postgres dataset created in test fixtures",
-                "dataset_type": "PostgreSQL",
-                "location": "postgres_example.test",
-                "collections": [
-                    {
-                        "name": "subscriptions",
-                        "fields": [
-                            {
-                                "name": "id",
-                                "data_categories": ["system.operations"],
-                            },
-                            {
-                                "name": "email",
-                                "data_categories": ["user.contact.email"],
-                                "fidesops_meta": {
-                                    "identity": "email",
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
         },
     )
     yield dataset_config
@@ -1304,31 +1279,6 @@ def dataset_config_preview(
             "connection_config_id": connection_config.id,
             "fides_key": "postgres",
             "ctl_dataset_id": ctl_dataset.id,
-            "dataset": {
-                "fides_key": "postgres",
-                "name": "Postgres Example Subscribers Dataset",
-                "description": "Example Postgres dataset created in test fixtures",
-                "dataset_type": "PostgreSQL",
-                "location": "postgres_example.test",
-                "collections": [
-                    {
-                        "name": "subscriptions",
-                        "fields": [
-                            {
-                                "name": "id",
-                                "data_categories": ["system.operations"],
-                            },
-                            {
-                                "name": "email",
-                                "data_categories": ["user.contact.email"],
-                                "fidesops_meta": {
-                                    "identity": "email",
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
         },
     )
     yield dataset_config

@@ -176,8 +176,8 @@ def patch_dataset_configs(
     1) A DatasetConfig fides_key
     2) The corresponding CtlDataset fides_key which stores the bulk of the actual dataset
 
-    Currently this endpoint looks up the ctl dataset and writes its contents back to the DatasetConfig.dataset
-    field for backwards compatibility but soon DatasetConfig.dataset will go away.
+    The CtlDataset contents are retrieved for extra validation before linking this
+    to the the DatasetConfig.
 
     """
     created_or_updated: List[Dataset] = []
@@ -193,12 +193,16 @@ def patch_dataset_configs(
             .filter_by(fides_key=dataset_pair.ctl_dataset_fides_key)
             .first()
         )
+        if not ctl_dataset:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=f"No ctl dataset with key '{dataset_pair.ctl_dataset_fides_key}'",
+            )
         fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
 
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": dataset_pair.fides_key,
-            "dataset": fetched_dataset.dict(),
             "ctl_dataset_id": ctl_dataset.id,
         }
 
@@ -233,7 +237,7 @@ def patch_datasets(
     Given a list of dataset elements, create or update corresponding Dataset objects
     or report failure
 
-    Use for bulk creating and/or updating DatasetConfig resources.
+    This endpoint upserts the DatasetConfig and associated CTL Dataset.  Will shortly be deprecated.
 
     If the fides_key for a given DatasetConfig exists, it will be treated as an update.
     Otherwise, a new DatasetConfig will be created.
@@ -256,7 +260,7 @@ def patch_datasets(
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": dataset.fides_key,
-            "dataset": dataset.dict(),
+            "dataset": dataset.dict(),  # Currently used for upserting a CTL Dataset
         }
         create_or_update_dataset(
             connection_config,
@@ -310,7 +314,7 @@ async def patch_yaml_datasets(
             data: dict = {
                 "connection_config_id": connection_config.id,
                 "fides_key": dataset["fides_key"],
-                "dataset": dataset,
+                "dataset": dataset,  # Currently used for upserting a CTL Dataset
             }
             create_or_update_dataset(
                 connection_config,

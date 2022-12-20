@@ -41,7 +41,6 @@ def mssql_example_test_dataset_config(
         data={
             "connection_config_id": connection_config_mssql.id,
             "fides_key": fides_key,
-            "dataset": mssql_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

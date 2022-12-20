@@ -108,7 +108,6 @@ def rollbar_dataset_config(
         data={
             "connection_config_id": rollbar_connection_config.id,
             "fides_key": fides_key,
-            "dataset": rollbar_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

@@ -110,7 +110,6 @@ def doordash_dataset_config(
         data={
             "connection_config_id": doordash_connection_config.id,
             "fides_key": fides_key,
-            "dataset": doordash_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
@@ -162,7 +161,6 @@ def doordash_postgres_dataset_config(
         data={
             "connection_config_id": connection_config.id,
             "fides_key": fides_key,
-            "dataset": doordash_postgres_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
