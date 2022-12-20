@@ -160,6 +160,8 @@ def dispatch_message(
             f"Notification service type is not valid: {CONFIG.notifications.notification_service_type}"
         )
     messaging_service: MessagingServiceType = messaging_config.service_type  # type: ignore
+    # fixme: do we want to support multiple message service types i.e. either email or phone number identities are accepted
+    # or both are accepted, using one message service type as default?
     logger.info(
         "Retrieving appropriate dispatcher for email service: {}", messaging_service
     )

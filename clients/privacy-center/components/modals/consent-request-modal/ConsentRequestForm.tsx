@@ -3,7 +3,7 @@ import {
   Button,
   chakra,
   FormControl,
-  FormErrorMessage,
+  FormErrorMessage, FormLabel,
   Input,
   ModalBody,
   ModalFooter,
@@ -20,8 +20,14 @@ import { ErrorToastOptions } from "~/common/toast-options";
 import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
-import { hostUrl } from "~/constants";
+import {config, hostUrl} from "~/constants";
+import dynamic from "next/dynamic";
 import { ModalViews, VerificationType } from "../types";
+import * as Yup from "yup";
+
+const PhoneInput = dynamic(() => import("react-phone-number-input"), {
+  ssr: false,
+});
 
 const useConsentRequestForm = ({
   onClose,
@@ -41,12 +47,14 @@ const useConsentRequestForm = ({
   const formik = useFormik({
     initialValues: {
       email: "",
+      phone: "",
     },
     onSubmit: async (values) => {
       setIsLoading(true);
 
       const body = {
         email: values.email,
+        phone_number: values.phone,
       };
       const handleError = ({
         title,
@@ -102,18 +110,27 @@ const useConsentRequestForm = ({
         handleError({ title: "An unhandled exception occurred." });
       }
     },
-    validate: (values) => {
-      const errors: {
-        email?: string;
-        phone?: string;
-      } = {};
-
-      if (!values.email) {
-        errors.email = "Required";
-      }
-
-      return errors;
-    },
+    validationSchema: Yup.object().shape({
+      email: (() => {
+        let validation = Yup.string();
+        if (config.consent?.identity_inputs?.email === "required") {
+          validation = validation
+              .email("Email is invalid")
+              .required("Email is required");
+        }
+        return validation;
+      })(),
+      phone: (() => {
+        let validation = Yup.string();
+        if (config.consent?.identity_inputs?.phone === "required") {
+          validation = validation
+              .required("Phone is required")
+              // E.164 international standard format
+              .matches(/^\+[1-9]\d{1,14}$/, "Phone is invalid");
+        }
+        return validation;
+      })(),
+    }),
   });
 
   return { ...formik, isLoading };
@@ -145,6 +162,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     values,
     isValid,
     dirty,
+    setFieldValue,
     resetForm,
   } = useConsentRequestForm({
     onClose,
@@ -165,28 +183,62 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
         <ModalBody>
           {isVerificationRequired ? (
             <Text fontSize="sm" color="gray.500" mb={4}>
-              We will email you a verification code.
+              We will send you a verification code.
             </Text>
           ) : null}
           <Stack spacing={3}>
-            <FormControl
-              id="email"
-              isInvalid={touched.email && Boolean(errors.email)}
-            >
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                focusBorderColor="primary.500"
-                placeholder="Email*"
-                isRequired
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.email}
-                isInvalid={touched.email && Boolean(errors.email)}
-              />
-              <FormErrorMessage>{errors.email}</FormErrorMessage>
-            </FormControl>
+            {config.consent?.identity_inputs.email ? (
+                <FormControl
+                    id="email"
+                    isInvalid={touched.email && Boolean(errors.email)}
+                >
+                  <FormLabel>
+                    {config.consent?.identity_inputs.email === "required"
+                        ? "Email*"
+                        : "Email"}
+                  </FormLabel>
+                  <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      focusBorderColor="primary.500"
+                      placeholder="Email*"
+                      isRequired
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.email}
+                      isInvalid={touched.email && Boolean(errors.email)}
+                  />
+                  <FormErrorMessage>{errors.email}</FormErrorMessage>
+                </FormControl>
+            ) : null}
+            {config.consent?.identity_inputs.phone ? (
+                <FormControl
+                    id="phone"
+                    isInvalid={touched.phone && Boolean(errors.phone)}
+                >
+                  <FormLabel>
+                    {config.consent?.identity_inputs.phone === "required"
+                        ? "Phone*"
+                        : "Phone"}
+                  </FormLabel>
+                  <Input
+                      as={PhoneInput}
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      focusBorderColor="primary.500"
+                      placeholder="+1 000 000 0000"
+                      defaultCountry="US"
+                      onChange={(value) => {
+                        setFieldValue("phone", value, true);
+                      }}
+                      onBlur={handleBlur}
+                      value={values.phone}
+                  />
+                  <FormErrorMessage>{errors.phone}</FormErrorMessage>
+                </FormControl>
+            ) : null}
           </Stack>
         </ModalBody>
 

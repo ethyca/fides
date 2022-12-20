@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
@@ -28,12 +28,14 @@ from fides.api.ops.common_exceptions import (
     IdentityVerificationException,
     MessageDispatchException,
 )
+from fides.api.ops.models.messaging import get_messaging_method
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.ops.schemas.messaging.messaging import MessagingMethod
 from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
@@ -69,26 +71,23 @@ def create_consent_request(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if not data.email:
-        raise HTTPException(HTTP_400_BAD_REQUEST, detail="An email address is required")
+    if not data.email and not data.phone_number:
+        raise HTTPException(HTTP_400_BAD_REQUEST, detail="An email address or phone number identity is required")
 
-    identity = ProvidedIdentity.filter(
-        db=db,
-        conditions=(
-            (ProvidedIdentity.field_name == ProvidedIdentityType.email)
-            & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(data.email))
-            & (ProvidedIdentity.privacy_request_id.is_(None))
-        ),
-    ).first()
-
-    if not identity:
-        provided_identity_data = {
-            "privacy_request_id": None,
-            "field_name": "email",
-            "hashed_value": ProvidedIdentity.hash_value(data.email),
-            "encrypted_value": {"value": data.email},
-        }
-        identity = ProvidedIdentity.create(db, data=provided_identity_data)
+    # consent requests, unlike privacy requests, only accept 1 identity type- email or phone
+    # if both identity types are provided, use identity type if defined in CONFIG.notifications.notification_service_type, else default to email
+    if data.email and data.phone_number:
+        messaging_method = get_messaging_method(CONFIG.notifications.notification_service_type)
+        if messaging_method == MessagingMethod.EMAIL:
+            identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.email.value)
+        elif messaging_method == MessagingMethod.SMS:
+            identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.phone_number.value)
+        else:
+            identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.email.value)
+    elif data.email:
+        identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.email.value)
+    elif data.phone_number:
+        identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.phone_number.value)
 
     consent_request_data = {
         "provided_identity_id": identity.id,
@@ -128,7 +127,7 @@ def consent_request_verify(
 
     if not provided_identity.hashed_value:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
     return _prepare_consent_preferences(db, provided_identity)
@@ -184,7 +183,7 @@ def get_consent_preferences_no_id(
 
     if not provided_identity.hashed_value:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
     return _prepare_consent_preferences(db, provided_identity)
@@ -243,7 +242,7 @@ def set_consent_preferences(
 
     if not provided_identity.hashed_value:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
     for preference in data.consent:
@@ -266,6 +265,49 @@ def set_consent_preferences(
                 )
 
     return _prepare_consent_preferences(db, provided_identity)
+
+
+def _get_or_create_provided_identity(
+        db: Session,
+        identity_data: Identity,
+        identity_type: str,
+) -> ProvidedIdentity:
+    """Based on desired identity type, retrieves or creates associated ProvidedIdentity"""
+    # fixme- should we store both identities if both exist?
+    identity: Optional[ProvidedIdentity] = None
+    if identity_type == ProvidedIdentityType.email.value:
+        identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                    (ProvidedIdentity.field_name == ProvidedIdentityType.email)
+                    & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(identity_data.email))
+                    & (ProvidedIdentity.privacy_request_id.is_(None))
+            ),
+        ).first()
+        if not identity:
+            identity = ProvidedIdentity.create(db, data={
+                "privacy_request_id": None,
+                "field_name": ProvidedIdentityType.email.value,
+                "hashed_value": ProvidedIdentity.hash_value(identity_data.email),
+                "encrypted_value": {"value": identity_data.email},
+            })
+    if identity_type == ProvidedIdentityType.phone_number.value:
+        identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                    (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number)
+                    & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(identity_data.phone_number))
+                    & (ProvidedIdentity.privacy_request_id.is_(None))
+            ),
+        ).first()
+        if not identity:
+            identity = ProvidedIdentity.create(db, data={
+                "privacy_request_id": None,
+                "field_name": ProvidedIdentityType.phone_number.value,
+                "hashed_value": ProvidedIdentity.hash_value(identity_data.phone_number),
+                "encrypted_value": {"value": identity_data.phone_number},
+            })
+    return identity
 
 
 def _get_consent_request_and_provided_identity(
