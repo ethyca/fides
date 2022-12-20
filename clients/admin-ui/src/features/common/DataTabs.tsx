@@ -8,6 +8,8 @@ import {
 } from "@fidesui/react";
 import { ReactNode } from "react";
 
+export type TabListBorder = "full-width" | "partial";
+
 export interface TabData {
   label: string;
   content: ReactNode;
@@ -16,11 +18,16 @@ export interface TabData {
 
 interface Props {
   data: TabData[];
+  border?: TabListBorder;
 }
 
-const DataTabs = ({ data, ...other }: Props & Omit<TabsProps, "children">) => (
+const DataTabs = ({
+  data,
+  border = "partial",
+  ...other
+}: Props & Omit<TabsProps, "children">) => (
   <Tabs colorScheme="complimentary" {...other}>
-    <TabList>
+    <TabList width={border === "partial" ? "max-content" : undefined}>
       {data.map((tab) => (
         <Tab
           key={tab.label}
