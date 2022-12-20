@@ -2,11 +2,14 @@
 from typing import Dict, List, Optional
 
 import yaml
+from fideslang import model_list
 from fideslang.manifests import load_yaml_into_dict
 
 from fides.cli.utils import print_divider
 from fides.ctl.core.api_helpers import get_server_resource, list_server_resources
 from fides.ctl.core.utils import echo_green, get_manifest_list
+
+MODEL_LIST = model_list
 
 
 def write_manifest_file(manifest_path: str, manifest: Dict) -> None:
@@ -63,7 +66,10 @@ def pull_existing_resources(
 
 
 def pull_missing_resources(
-    manifest_path: str, url: str, headers: Dict[str, str], existing_keys: List[str]
+    manifest_path: str,
+    url: str,
+    headers: Dict[str, str],
+    existing_keys: List[str],
 ) -> bool:
     """
     Writes all "system", "dataset" and "policy" resources out locally
@@ -71,7 +77,6 @@ def pull_missing_resources(
     """
 
     print(f"Writing out new resources to file: '{manifest_path}'...")
-    resources_to_pull = ["system", "dataset", "policy"]
     resource_manifest = {
         resource: list_server_resources(
             url=url,
@@ -80,7 +85,11 @@ def pull_missing_resources(
             exclude_keys=existing_keys,
             raw=True,
         )
-        for resource in resources_to_pull
+        for resource in MODEL_LIST
+    }
+
+    resource_manifest = {
+        key: value for key, value in resource_manifest.items() if value
     }
 
     # Write out the resources in a file
@@ -93,20 +102,22 @@ def pull(
     manifests_dir: str,
     url: str,
     headers: Dict[str, str],
-    all_resources: Optional[str],
+    all_resources_file: Optional[str],
 ) -> None:
     """
     If a resource in a local file has a matching resource on the server,
     write the server version into the local file.
 
-    If the 'all' flag is passed, additionally pull all other server resources
-    into local files as well.
+    If the 'all_resources_file' option is present, pull all other server resources
+    into a local file.
     """
-    existing_keys = pull_existing_resources(manifests_dir, url, headers)
+    existing_keys = pull_existing_resources(
+        manifests_dir=manifests_dir, url=url, headers=headers
+    )
 
-    if all_resources:
+    if all_resources_file:
         pull_missing_resources(
-            manifest_path=all_resources,
+            manifest_path=all_resources_file,
             url=url,
             headers=headers,
             existing_keys=existing_keys,
