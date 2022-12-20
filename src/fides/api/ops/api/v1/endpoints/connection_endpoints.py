@@ -38,7 +38,6 @@ from fides.api.ops.api.v1.urn_registry import (
 from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
-    NoSuchConnectionTypeSecretSchemaError,
 )
 from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.ops.models.connectionconfig import (
@@ -52,7 +51,6 @@ from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration import (
     connection_secrets_schemas,
     get_connection_secrets_schema,
-    secrets_schemas,
 )
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
@@ -73,18 +71,14 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_saas impo
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-    ConnectorTemplate,
     create_connection_config_from_template_no_save,
     load_registry,
     registry_file,
-    upsert_dataset_config_from_template,
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.connection_type import connection_type_secret_schema
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.lib.exceptions import KeyOrNameAlreadyExists
