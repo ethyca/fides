@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.3.1...main)
 
+### Added
+Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
@@ -27,7 +29,6 @@ The types of changes are:
 ### Added
 
 * Nav redesign with sidebar groups. Feature flagged to only be visible in dev mode until release. [#2030](https://github.com/ethyca/fides/pull/2047)
-* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 
 ### Fixed
 
