@@ -18,8 +18,10 @@ from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     ProvidedIdentity,
+    ProvidedIdentityType,
 )
 from fides.core.config import get_config
+from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
 
 CONFIG = get_config()
 
@@ -56,6 +58,24 @@ class TestConsentRequest:
     @pytest.fixture(scope="function")
     def url(self) -> str:
         return f"{V1_URL_PREFIX}{CONSENT_REQUEST}"
+
+    @pytest.fixture(scope="function")
+    def set_notification_service_type_to_none(self):
+        """Overrides autouse fixture to remove default notification service type"""
+        original_value = CONFIG.notifications.notification_service_type
+        CONFIG.notifications.notification_service_type = None
+        yield
+        CONFIG.notifications.notification_service_type = original_value
+
+    @pytest.fixture(scope="function")
+    def set_notification_service_type_to_twilio_sms(self):
+        """Overrides autouse fixture to set notification service type to twilio sms"""
+        original_value = CONFIG.notifications.notification_service_type
+        CONFIG.notifications.notification_service_type = (
+            MessagingServiceType.TWILIO_TEXT.value
+        )
+        yield
+        CONFIG.notifications.notification_service_type = original_value
 
     @pytest.mark.usefixtures(
         "messaging_config",
@@ -123,11 +143,68 @@ class TestConsentRequest:
         "email_dataset_config",
         "subject_identity_verification_required",
     )
-    def test_consent_request_no_email(self, api_client, url):
+    @patch("fides.api.ops.service._verification.dispatch_message")
+    def test_consent_request_phone_number(self, mock_dispatch_message, api_client, url):
         data = {"phone_number": "+3368675309"}
         response = api_client.post(url, json=data)
-        assert response.status_code == 400
-        assert "email address is required" in response.json()["detail"]
+        assert response.status_code == 200
+        assert mock_dispatch_message.called
+
+    @pytest.mark.usefixtures(
+        "messaging_config",
+        "email_connection_config",
+        "email_dataset_config",
+        "subject_identity_verification_required",
+    )
+    @patch("fides.api.ops.service._verification.dispatch_message")
+    def test_consent_request_email_and_phone_use_config(
+        self,
+        mock_dispatch_message,
+        set_notification_service_type_to_twilio_sms,
+        api_client,
+        db,
+        url,
+    ):
+        data = {"email": "test@example.com", "phone_number": "+235624563"}
+        response = api_client.post(url, json=data)
+        assert response.status_code == 200
+        assert mock_dispatch_message.called
+        provided_identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                ProvidedIdentity.hashed_value
+                == ProvidedIdentity.hash_value("+235624563")
+            ),
+        ).first()
+        assert provided_identity
+
+    @pytest.mark.usefixtures(
+        "messaging_config",
+        "email_connection_config",
+        "email_dataset_config",
+        "subject_identity_verification_required",
+    )
+    @patch("fides.api.ops.service._verification.dispatch_message")
+    def test_consent_request_email_and_phone_default_to_email(
+        self,
+        mock_dispatch_message,
+        set_notification_service_type_to_none,
+        api_client,
+        db,
+        url,
+    ):
+        data = {"email": "testing_123@example.com", "phone_number": "+3368675309"}
+        response = api_client.post(url, json=data)
+        assert response.status_code == 200
+        assert mock_dispatch_message.called
+        provided_identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                ProvidedIdentity.hashed_value
+                == ProvidedIdentity.hash_value("testing_123@example.com")
+            ),
+        ).first()
+        assert provided_identity is not None
 
 
 class TestConsentVerify:
@@ -208,7 +285,7 @@ class TestConsentVerify:
 
         assert response.status_code == 404
         mock_verify_identity.assert_called_with(verification_code)
-        assert "missing email" in response.json()["detail"]
+        assert "missing" in response.json()["detail"]
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
@@ -320,7 +397,7 @@ class TestGetConsentUnverified:
 
         assert response.status_code == 404
         assert not mock_verify_identity.called
-        assert "missing email" in response.json()["detail"]
+        assert "missing" in response.json()["detail"]
 
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_unverified_no_consent_present(
@@ -557,7 +634,7 @@ class TestSaveConsent:
 
         assert response.status_code == 404
         assert mock_verify_identity.called
-        assert "missing email" in response.json()["detail"]
+        assert "missing" in response.json()["detail"]
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",

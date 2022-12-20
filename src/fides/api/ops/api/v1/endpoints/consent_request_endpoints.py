@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Dict, Any
+from typing import Optional
 
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
@@ -12,6 +12,7 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 from fides.api.ops.api.deps import get_db
@@ -72,22 +73,45 @@ def create_consent_request(
         )
 
     if not data.email and not data.phone_number:
-        raise HTTPException(HTTP_400_BAD_REQUEST, detail="An email address or phone number identity is required")
+        raise HTTPException(
+            HTTP_400_BAD_REQUEST,
+            detail="An email address or phone number identity is required",
+        )
 
     # consent requests, unlike privacy requests, only accept 1 identity type- email or phone
     # if both identity types are provided, use identity type if defined in CONFIG.notifications.notification_service_type, else default to email
     if data.email and data.phone_number:
-        messaging_method = get_messaging_method(CONFIG.notifications.notification_service_type)
+        messaging_method = get_messaging_method(
+            CONFIG.notifications.notification_service_type
+        )
         if messaging_method == MessagingMethod.EMAIL:
-            identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.email.value)
+            identity = _get_or_create_provided_identity(
+                db=db,
+                identity_data=data,
+                identity_type=ProvidedIdentityType.email.value,
+            )
         elif messaging_method == MessagingMethod.SMS:
-            identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.phone_number.value)
+            identity = _get_or_create_provided_identity(
+                db=db,
+                identity_data=data,
+                identity_type=ProvidedIdentityType.phone_number.value,
+            )
         else:
-            identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.email.value)
+            identity = _get_or_create_provided_identity(
+                db=db,
+                identity_data=data,
+                identity_type=ProvidedIdentityType.email.value,
+            )
     elif data.email:
-        identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.email.value)
+        identity = _get_or_create_provided_identity(
+            db=db, identity_data=data, identity_type=ProvidedIdentityType.email.value
+        )
     elif data.phone_number:
-        identity = _get_or_create_provided_identity(db=db, identity_data=data, identity_type=ProvidedIdentityType.phone_number.value)
+        identity = _get_or_create_provided_identity(
+            db=db,
+            identity_data=data,
+            identity_type=ProvidedIdentityType.phone_number.value,
+        )
 
     consent_request_data = {
         "provided_identity_id": identity.id,
@@ -268,45 +292,65 @@ def set_consent_preferences(
 
 
 def _get_or_create_provided_identity(
-        db: Session,
-        identity_data: Identity,
-        identity_type: str,
+    db: Session,
+    identity_data: Identity,
+    identity_type: str,
 ) -> ProvidedIdentity:
     """Based on desired identity type, retrieves or creates associated ProvidedIdentity"""
-    # fixme- should we store both identities if both exist?
-    identity: Optional[ProvidedIdentity] = None
-    if identity_type == ProvidedIdentityType.email.value:
+    if identity_type == ProvidedIdentityType.email.value and identity_data.email:
         identity = ProvidedIdentity.filter(
             db=db,
             conditions=(
-                    (ProvidedIdentity.field_name == ProvidedIdentityType.email)
-                    & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(identity_data.email))
-                    & (ProvidedIdentity.privacy_request_id.is_(None))
+                (ProvidedIdentity.field_name == ProvidedIdentityType.email)
+                & (
+                    ProvidedIdentity.hashed_value
+                    == ProvidedIdentity.hash_value(identity_data.email)
+                )
+                & (ProvidedIdentity.privacy_request_id.is_(None))
             ),
         ).first()
         if not identity:
-            identity = ProvidedIdentity.create(db, data={
-                "privacy_request_id": None,
-                "field_name": ProvidedIdentityType.email.value,
-                "hashed_value": ProvidedIdentity.hash_value(identity_data.email),
-                "encrypted_value": {"value": identity_data.email},
-            })
-    if identity_type == ProvidedIdentityType.phone_number.value:
+            identity = ProvidedIdentity.create(
+                db,
+                data={
+                    "privacy_request_id": None,
+                    "field_name": ProvidedIdentityType.email.value,
+                    "hashed_value": ProvidedIdentity.hash_value(identity_data.email),
+                    "encrypted_value": {"value": identity_data.email},
+                },
+            )
+    elif (
+        identity_type == ProvidedIdentityType.phone_number.value
+        and identity_data.phone_number
+    ):
         identity = ProvidedIdentity.filter(
             db=db,
             conditions=(
-                    (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number)
-                    & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(identity_data.phone_number))
-                    & (ProvidedIdentity.privacy_request_id.is_(None))
+                (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number)
+                & (
+                    ProvidedIdentity.hashed_value
+                    == ProvidedIdentity.hash_value(identity_data.phone_number)
+                )
+                & (ProvidedIdentity.privacy_request_id.is_(None))
             ),
         ).first()
         if not identity:
-            identity = ProvidedIdentity.create(db, data={
-                "privacy_request_id": None,
-                "field_name": ProvidedIdentityType.phone_number.value,
-                "hashed_value": ProvidedIdentity.hash_value(identity_data.phone_number),
-                "encrypted_value": {"value": identity_data.phone_number},
-            })
+            identity = ProvidedIdentity.create(
+                db,
+                data={
+                    "privacy_request_id": None,
+                    "field_name": ProvidedIdentityType.phone_number.value,
+                    "hashed_value": ProvidedIdentity.hash_value(
+                        identity_data.phone_number
+                    ),
+                    "encrypted_value": {"value": identity_data.phone_number},
+                },
+            )
+    else:
+        raise HTTPException(
+            HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Identity type not found in identity data",
+        )
     return identity
 
 
