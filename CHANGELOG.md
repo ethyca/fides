@@ -19,6 +19,7 @@ The types of changes are:
 ### Added
 
 * Common Subscriptions for app-wide data and feature checks. [#2030](https://github.com/ethyca/fides/pull/2030)
+* New datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
 
 ### Added
 * Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)

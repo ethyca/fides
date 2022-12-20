@@ -592,9 +592,7 @@ class TestPutDatasetConfigs:
         updated = dataset_config.updated_at
 
         db.expunge(ctl_dataset)
-        make_transient(
-            ctl_dataset
-        )  # http://docs.sqlalchemy.org/en/rel_1_1/orm/session_api.html#sqlalchemy.orm.session.make_transient
+        make_transient(ctl_dataset)
 
         ctl_dataset.id = str(uuid.uuid4())
         ctl_dataset.fides_key = "new_ctl_dataset"
