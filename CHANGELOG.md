@@ -48,6 +48,10 @@ Adds new erasure policy for complete user data masking [#1839](https://github.co
 * DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
 * Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
 
+### Added
+
+* Adds notifications section to toml files [#2026](https://github.com/ethyca/fides/pull/2060)
+
 ### Changed
 
 * Updated to use `loguru` logging library throughout codebase [#2031](https://github.com/ethyca/fides/pull/2031)
