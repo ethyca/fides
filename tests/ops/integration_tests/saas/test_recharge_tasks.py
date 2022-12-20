@@ -243,7 +243,7 @@ async def test_recharge_erasure_request_task(
         db,
     )
 
-    assert x == {"recharge_instance:addresses": 1, "recharge_instance:customer": 1}
+    assert x == {f"{dataset_name}:addresses": 1, f"{dataset_name}:customer": 1}
 
     address = recharge_test_client.get_addresses(
         recharge_erasure_data[1].json().get("address", {}).get("id")
