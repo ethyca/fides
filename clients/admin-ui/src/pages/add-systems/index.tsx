@@ -25,21 +25,25 @@ const ConfigWizard: NextPage = () => {
   }, [dispatch, features.navV2]);
 
   return (
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
-      {features.navV2 && (
+      {features.navV2 ? (
         <Layout title="Config Wizard">
           <ConfigWizardWalkthrough />
-        </Layout>
-      )}
-      {!features.navV2 && step === 0 ? (
-        <Layout title="Config Wizard">
-          <Setup />
         </Layout>
       ) : (
-        <>
-          <Header />
-          <ConfigWizardWalkthrough />
-        </>
+        [
+          step === 0 ? (
+            <Layout title="Config Wizard">
+              <Setup />
+            </Layout>
+          ) : (
+            <>
+              <Header />
+              <ConfigWizardWalkthrough />
+            </>
+          ),
+        ]
       )}
     </>
   );
