@@ -1,4 +1,5 @@
 import {
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -98,11 +99,13 @@ const CustomInput = ({
         <FormErrorMessage>{meta.error}</FormErrorMessage>
       </VStack>
       {displayHelpIcon && (
-        <CircleHelpIcon
-          marginLeft="8px"
+        <Flex
+          alignContent="center"
+          h="32px"
           visibility={helpIconVisibility ? "visible" : "hidden"}
-          _hover={{ cursor: "pointer" }}
-        />
+        >
+          <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
+        </Flex>
       )}
     </FormControl>
   );

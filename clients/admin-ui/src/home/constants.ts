@@ -2,7 +2,7 @@ import {
   CONFIG_WIZARD_ROUTE,
   DATASTORE_CONNECTION_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
-  SYSTEM_ROUTE
+  SYSTEM_ROUTE,
 } from "~/constants";
 
 import { ModuleCard } from "./types";

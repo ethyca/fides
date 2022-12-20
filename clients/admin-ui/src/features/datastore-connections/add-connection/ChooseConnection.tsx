@@ -72,12 +72,7 @@ const ChooseConnection: React.FC = () => {
           {step.description}
         </Box>
       </Flex>
-      <Flex
-        alignItems="center"
-        gap="4"
-        mb="24px"
-        minWidth="fit-content"
-      >
+      <Flex alignItems="center" gap="4" mb="24px" minWidth="fit-content">
         <ConnectionTypeFilter />
         <InputGroup size="sm">
           <InputLeftElement pointerEvents="none">

@@ -5,6 +5,7 @@ import { useFeatures } from "~/features/common/features.slice";
 
 const HomeBanner: React.FC = () => {
   const { systemsCount } = useFeatures();
+  const hasSystems = systemsCount > 0;
 
   return (
     <Flex
@@ -12,7 +13,7 @@ const HomeBanner: React.FC = () => {
       h="300px"
     >
       <Box h="128px" px="36px" w="597px">
-        {systemsCount > 0 && (
+        {hasSystems && (
           <>
             <Text
               fontWeight="semibold"
@@ -39,7 +40,7 @@ const HomeBanner: React.FC = () => {
             </Text>
           </>
         )}
-        {!(systemsCount > 0) && (
+        {!hasSystems && (
           <>
             <Text
               fontWeight="semibold"

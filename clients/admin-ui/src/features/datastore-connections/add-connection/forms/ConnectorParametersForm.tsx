@@ -3,6 +3,7 @@ import { isNumeric } from "@chakra-ui/utils";
 import {
   Button,
   ButtonGroup,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -173,11 +174,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             placement="right-start"
             openDelay={500}
           >
-            <CircleHelpIcon
-              marginLeft="8px"
-              _hover={{ cursor: "pointer" }}
+            <Flex
+              alignItems="center"
+              h="32px"
               visibility={item.description ? "visible" : "hidden"}
-            />
+            >
+              <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
+            </Flex>
           </Tooltip>
         </FormControl>
       )}
@@ -286,7 +289,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     />
                     <FormErrorMessage>{props.errors.name}</FormErrorMessage>
                   </VStack>
-                  <CircleHelpIcon marginLeft="8px" visibility="hidden" />
+                  <Flex alignItems="center" h="32px" visibility="hidden">
+                    <CircleHelpIcon marginLeft="8px" />
+                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -304,7 +309,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     resize="none"
                     size="sm"
                   />
-                  <CircleHelpIcon marginLeft="8px" visibility="hidden" />
+                  <Flex alignItems="center" h="32px" visibility="hidden">
+                    <CircleHelpIcon marginLeft="8px" />
+                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -345,10 +352,12 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     placement="right-start"
                     openDelay={500}
                   >
-                    <CircleHelpIcon
-                      marginLeft="8px"
-                      _hover={{ cursor: "pointer" }}
-                    />
+                    <Flex alignItems="center" h="32px">
+                      <CircleHelpIcon
+                        marginLeft="8px"
+                        _hover={{ cursor: "pointer" }}
+                      />
+                    </Flex>
                   </Tooltip>
                 </FormControl>
               )}

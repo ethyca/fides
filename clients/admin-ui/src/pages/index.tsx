@@ -10,11 +10,7 @@ const Home: NextPage = () => {
 
   return (
     <>
-      {navV2 && (
-        <Layout title="Home">
-          <HomeContainer />
-        </Layout>
-      )}
+      {navV2 && <HomeContainer />}
       {!navV2 && (
         <Layout title="Privacy Requests">
           <PrivacyRequestsContainer />
