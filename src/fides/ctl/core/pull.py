@@ -109,7 +109,7 @@ def pull(
     write the server version into the local file.
 
     If the 'all_resources_file' option is present, pull all other server resources
-    into local a file.
+    into a local file.
     """
     existing_keys = pull_existing_resources(
         manifests_dir=manifests_dir, url=url, headers=headers
