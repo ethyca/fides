@@ -20,6 +20,11 @@ The types of changes are:
 ### Added
 Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 
+### Changed
+* Remove several fidesops schemas for DSR's in favor of updated Fideslang schemas [#2009](https://github.com/ethyca/fides/pull/2009)
+* New datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
+
+
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
 ### Fixed
@@ -93,7 +98,6 @@ Adds new erasure policy for complete user data masking [#1839](https://github.co
 * The `celery.toml` is no longer used, instead it is a subsection of the `fides.toml` file [#1990](https://github.com/ethyca/fides/pull/1990)
 * Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
 * `get` and `ls` CLI commands now return valid `fides` object YAML [#1991](https://github.com/ethyca/fides/pull/1991)
-* Remove several fidesops schemas for DSR's in favor of updated Fideslang schemas [#2009](https://github.com/ethyca/fides/pull/2009)
 
 ### Developer Experience
 
