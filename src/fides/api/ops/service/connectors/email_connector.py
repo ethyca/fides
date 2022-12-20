@@ -177,7 +177,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
         template_values: List[
             CheckpointActionRequired
         ] = privacy_request.get_email_connector_template_contents_by_dataset(
-            CurrentStep.erasure, ds.dataset.get("fides_key")
+            CurrentStep.erasure, ds.ctl_dataset.fides_key
         )
 
         if not template_values:

@@ -110,6 +110,7 @@ ACCESS_MANUAL_WEBHOOK = CONNECTION_BY_KEY + "/access_manual_webhook"
 # Collection URLs
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 DATASETS = CONNECTION_BY_KEY + "/dataset"
+DATASET_CONFIGS = CONNECTION_BY_KEY + "/datasetconfig"
 DATASET_BY_KEY = CONNECTION_BY_KEY + "/dataset/{fides_key}"
 
 # YAML Collection URLs

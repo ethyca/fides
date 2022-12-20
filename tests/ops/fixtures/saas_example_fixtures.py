@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy.orm import Session
 from toml import load as load_toml
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -51,6 +52,14 @@ def saas_external_example_config() -> Dict:
 @pytest.fixture
 def saas_example_dataset() -> Dict:
     return load_dataset("data/saas/dataset/saas_example_dataset.yml")[0]
+
+
+@pytest.fixture
+def saas_ctl_dataset(db: Session) -> Dict:
+    dataset = load_dataset("data/saas/dataset/saas_example_dataset.yml")[0]
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
+    yield ctl_dataset
+    ctl_dataset.delete(db)
 
 
 @pytest.fixture
@@ -112,16 +121,21 @@ def saas_example_dataset_config(
     saas_example_connection_config.name = fides_key
     saas_example_connection_config.key = fides_key
     saas_example_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, saas_example_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": saas_example_connection_config.id,
             "fides_key": fides_key,
             "dataset": saas_example_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db)
 
 
 @pytest.fixture
@@ -134,16 +148,21 @@ def saas_external_example_dataset_config(
     saas_external_example_connection_config.name = fides_key
     saas_external_example_connection_config.key = fides_key
     saas_external_example_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, saas_external_example_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": saas_external_example_connection_config.id,
             "fides_key": fides_key,
             "dataset": saas_external_example_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")

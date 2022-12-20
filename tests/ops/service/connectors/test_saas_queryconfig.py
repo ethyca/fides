@@ -47,7 +47,7 @@ class TestSaaSQueryConfig:
         assert (
             CollectionAddress(
                 saas_external_example_dataset_config.fides_key,
-                saas_external_example_dataset_config.dataset["collections"][0]["name"],
+                saas_external_example_dataset_config.ctl_dataset.collections[0]["name"],
             )
             in customer.parents.keys()
         )

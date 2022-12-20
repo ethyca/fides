@@ -13,7 +13,9 @@ from fides.api.ops.models.datasetconfig import (
 from ..graph.graph_test_util import field
 
 
-def test_create_dataset(example_datasets, connection_config, db: Session) -> None:
+def test_create_dataset(
+    example_datasets, connection_config, db: Session, ctl_dataset
+) -> None:
     postgres_dataset = example_datasets[0]
     dataset_config = DatasetConfig.create(
         db=db,
@@ -21,9 +23,12 @@ def test_create_dataset(example_datasets, connection_config, db: Session) -> Non
             "connection_config_id": connection_config.id,
             "fides_key": postgres_dataset["fides_key"],
             "dataset": postgres_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     assert dataset_config.id is not None
+    assert dataset_config.ctl_dataset_id is not None
+    assert dataset_config.ctl_dataset == ctl_dataset
 
     assert dataset_config.connection_config_id == connection_config.id
     assert dataset_config.fides_key == postgres_dataset["fides_key"]
@@ -157,8 +162,8 @@ def test_validate_dataset_reference(db: Session, dataset_config: DatasetConfig):
     Happy path, test valid reference to existing dataset
     """
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
-    field_name = dataset_config.dataset["collections"][0]["fields"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
+    field_name = dataset_config.ctl_dataset.collections[0]["fields"][0]["name"]
     dsr = FidesDatasetReference(
         dataset=dataset_key, field=f"{collection_name}.{field_name}"
     )
@@ -181,7 +186,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
 
     dataset_key = dataset_config.fides_key
     collection_name = "fake_collection"
-    field_name = dataset_config.dataset["collections"][0]["fields"][0]["name"]
+    field_name = dataset_config.ctl_dataset.collections[0]["fields"][0]["name"]
     dsr = FidesDatasetReference(
         dataset=dataset_key, field=f"{collection_name}.{field_name}"
     )
@@ -190,7 +195,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "Unknown collection" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(
         dataset=dataset_key, field=f"{collection_name}.{field_name}"
@@ -200,7 +205,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "Unknown field" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field=f"{collection_name}.")
     with pytest.raises(ValidationError) as e:
@@ -208,7 +213,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field=f".{field_name}")
     with pytest.raises(ValidationError) as e:
@@ -216,7 +221,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field=f"{collection_name}")
     with pytest.raises(ValidationError) as e:
@@ -224,7 +229,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field=f".")
     with pytest.raises(ValidationError) as e:
@@ -232,9 +237,182 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field="")
     with pytest.raises(ValidationError) as e:
         validate_dataset_reference(db, dsr)
     assert "must include at least two dot-separated components" in e.value.message
+
+
+class TestUpsertWithCtlDataset:
+    def test_no_existing_dataset_config_or_ctl_dataset(
+        self, db, example_datasets, connection_config
+    ):
+        """Ctl Dataset is created"""
+        postgres_dataset = example_datasets[0]
+
+        dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "brand_new_fides_key",
+                "dataset": postgres_dataset,
+            },
+        )
+        assert dataset_config.fides_key == "brand_new_fides_key"
+        assert dataset_config.ctl_dataset_id is not None
+
+        ctl_dataset = dataset_config.ctl_dataset
+
+        assert (
+            ctl_dataset.fides_key == "postgres_example_test_dataset"
+        ), "New ctl dataset record created"
+        assert ctl_dataset.description == postgres_dataset["description"]
+        assert ctl_dataset.organization_fides_key == "default_organization"
+        assert ctl_dataset.data_categories == postgres_dataset.get("data_categories")
+        assert ctl_dataset.collections is not None
+
+        dataset = dataset_config.dataset
+        assert dataset["description"] == postgres_dataset["description"]
+        assert (
+            dataset.get("organization_fides_key") is None
+        ), "Existing behavior, DatasetConfig.dataset not validated by Fideslang Dataset first"
+        assert dataset["collections"] is not None
+
+        dataset_config.delete(db)
+        ctl_dataset.delete(db)
+
+    def test_no_existing_dataset_config_but_ctl_dataset_exists(
+        self, db, ctl_dataset, connection_config
+    ):
+        """Ctl Dataset is created"""
+
+        assert (
+            ctl_dataset.description
+            == "Example Postgres dataset created in test fixtures"
+        )
+        assert ctl_dataset.name == "Postgres Example Subscribers Dataset"
+        current_ctl_dataset_id = ctl_dataset.id
+
+        dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "brand_new_fides_key",
+                "dataset": {
+                    "fides_key": "postgres_example_subscriptions_dataset",
+                    "name": "New Dataset Name",
+                    "description": "New Dataset Description",
+                    "dataset_type": "PostgreSQL",
+                    "location": "postgres_example.test",
+                    "collections": [
+                        {
+                            "name": "subscriptions",
+                            "fields": [
+                                {
+                                    "name": "id",
+                                    "data_categories": ["system.operations"],
+                                },
+                                {
+                                    "name": "email",
+                                    "data_categories": ["user.contact.email"],
+                                    "fidesops_meta": {
+                                        "identity": "email",
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        )
+        assert dataset_config.fides_key == "brand_new_fides_key"
+        assert (
+            dataset_config.ctl_dataset_id == current_ctl_dataset_id
+        ), "Dataset config linked to existing ctl dataset"
+
+        ctl_dataset = dataset_config.ctl_dataset
+
+        assert (
+            ctl_dataset.fides_key == "postgres_example_subscriptions_dataset"
+        ), "Existing ctl dataset fides key"
+        assert (
+            ctl_dataset.description == "New Dataset Description"
+        ), "Updated description"
+        assert ctl_dataset.name == "New Dataset Name", "Updated name"
+
+        assert ctl_dataset.organization_fides_key == "default_organization"
+        assert ctl_dataset.data_categories is None
+        assert ctl_dataset.collections is not None
+
+        dataset = dataset_config.dataset
+        assert dataset["description"] == "New Dataset Description"
+        assert (
+            dataset.get("organization_fides_key") is None
+        ), "Existing behavior, DatasetConfig.dataset not validated by Fideslang Dataset first"
+        assert dataset["collections"] is not None
+
+        dataset_config.delete(db)
+        ctl_dataset.delete(db)
+
+    def test_existing_dataset_config_and_ctl_dataset(self, dataset_config, db):
+        existing_dataset_config_id = dataset_config.id
+        existing_ctl_dataset_id = dataset_config.ctl_dataset_id
+        existing_ctl_dataset_fides_key = dataset_config.ctl_dataset.fides_key
+
+        updated_dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+            db=db,
+            data={
+                "connection_config_id": dataset_config.connection_config_id,
+                "fides_key": dataset_config.fides_key,
+                "dataset": {
+                    "fides_key": "brand_new_fides_key",
+                    "name": "New Dataset Name",
+                    "description": "New Dataset Description",
+                    "dataset_type": "PostgreSQL",
+                    "location": "postgres_example.test",
+                    "collections": [
+                        {
+                            "name": "subscriptions",
+                            "fields": [
+                                {
+                                    "name": "id",
+                                    "data_categories": ["system.operations"],
+                                },
+                                {
+                                    "name": "email",
+                                    "data_categories": ["user.contact.email"],
+                                    "fidesops_meta": {
+                                        "identity": "email",
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        )
+
+        assert updated_dataset_config.id == existing_dataset_config_id
+        assert updated_dataset_config.ctl_dataset_id == existing_ctl_dataset_id
+        updated_ctl_dataset = updated_dataset_config.ctl_dataset
+
+        assert (
+            updated_ctl_dataset.fides_key != existing_ctl_dataset_fides_key
+        ), "Because we updated based on the ctl_dataset.id, the fides key got changed"
+
+        assert (
+            updated_ctl_dataset.description == "New Dataset Description"
+        ), "Updated description"
+        assert updated_ctl_dataset.name == "New Dataset Name", "Updated name"
+
+        assert updated_ctl_dataset.collections is not None
+
+        dataset = updated_dataset_config.dataset
+
+        assert dataset["description"] == "New Dataset Description"
+        assert (
+            dataset.get("organization_fides_key") is None
+        ), "Existing behavior, DatasetConfig.dataset not validated by Fideslang Dataset first"
+        assert dataset["collections"] is not None
