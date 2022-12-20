@@ -249,7 +249,7 @@ def patch_connections(
                         db, config.secrets, connection_config_check
                     )
                 else:
-                    if not config.saas_config:
+                    if not config.saas_connection_type:
                         raise HTTPException(
                             status_code=HTTP_404_NOT_FOUND,
                             detail="SAAS config type is missing",
@@ -257,12 +257,12 @@ def patch_connections(
 
                     registry = load_registry(registry_file)
                     connector_template = registry.get_connector_template(
-                        config.connection_type  # This is "saas" so it isn't going to work
+                        config.saas_connection_type
                     )
                     if not connector_template:
                         raise HTTPException(
                             status_code=HTTP_404_NOT_FOUND,
-                            detail=f"SaaS connector type '{config.saas_config.type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+                            detail=f"SaaS connector type '{config.saas_connection_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
                         )
                     try:
                         template_values = SaasConnectionTemplateValues(
@@ -291,10 +291,11 @@ def patch_connections(
                     continue
 
         orig_data = config.dict().copy()
+        config_dict = config.dict()
+        config_dict.pop("saas_connection_type", None)
+
         try:
-            connection_config = ConnectionConfig.create_or_update(
-                db, data=config.dict()
-            )
+            connection_config = ConnectionConfig.create_or_update(db, data=config_dict)
             created_or_updated.append(connection_config)
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
@@ -304,6 +305,7 @@ def patch_connections(
             )
             # remove secrets information from the return for secuirty reasons.
             orig_data.pop("secrets", None)
+            orig_data.pop("saas_connection_type", None)
             failed.append(
                 BulkUpdateFailed(
                     message=exc.args[0],
@@ -316,7 +318,7 @@ def patch_connections(
             )
             # remove secrets information from the return for secuirty reasons.
             orig_data.pop("secrets", None)
-            orig_data.pop("secrets", None)
+            orig_data.pop("saas_connection_type", None)
             failed.append(
                 BulkUpdateFailed(
                     message="This connection configuration could not be added.",

@@ -137,7 +137,7 @@ class TestPatchConnections:
         assert body["succeeded"][0]["connection_type"] == payload[0]["connection_type"]
 
     def test_patch_connection_saas_with_secrets_new(
-        self, url, api_client, generate_auth_header, db, mailchimp_config
+        self, url, api_client, generate_auth_header
     ):
         payload = [
             {
@@ -150,6 +150,7 @@ class TestPatchConnections:
                 "description": "Mailchimp ConnectionConfig description",
                 "key": "mailchimp_1",
                 "connection_type": "saas",
+                "saas_connection_type": "mailchimp",
                 "access": "read",
             },
         ]
@@ -170,9 +171,12 @@ class TestPatchConnections:
                     "connection_type": "postgres",
                     "access": "write",
                     "secrets": {
-                        "host": "localhost",
-                        "bad": "bad",
+                        "username": "test",
+                        "password": "test",
+                        "dbname": "test",
+                        "db_schema": "test",
                     },
+                    "port": 5432,
                 },
             ],
             [
@@ -183,6 +187,7 @@ class TestPatchConnections:
                     },
                     "name": "My Mailchimp Test",
                     "description": "Mailchimp ConnectionConfig description",
+                    "saas_connection_type": "mailchimp",
                     "key": "mailchimp_1",
                 },
             ],
