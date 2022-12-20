@@ -94,6 +94,7 @@ const CustomInput = ({
             placeholder={props.placeholder}
             resize="none"
             size="sm"
+            value={field.value || ""}
           />
         )}
         <FormErrorMessage>{meta.error}</FormErrorMessage>

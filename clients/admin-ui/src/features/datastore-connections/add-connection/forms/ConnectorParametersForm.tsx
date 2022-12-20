@@ -25,7 +25,7 @@ import {
   ConnectionTypeSecretSchemaReponse,
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
-import { Field, Form, Formik, FormikProps } from "formik";
+import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -133,7 +133,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           : false
       }
     >
-      {({ field, form }: { field: any; form: any }) => (
+      {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
         <FormControl
           display="flex"
           isRequired={data.required?.includes(key)}
@@ -269,7 +269,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               name="name"
               validate={(value: string) => validateField("Name", value)}
             >
-              {({ field }: { field: any }) => (
+              {({ field }: { field: FieldInputProps<string> }) => (
                 <FormControl
                   display="flex"
                   isRequired
@@ -297,7 +297,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             </Field>
             {/* Description */}
             <Field id="description" name="description">
-              {({ field }: { field: any }) => (
+              {({ field }: { field: FieldInputProps<string> }) => (
                 <FormControl display="flex">
                   {getFormLabel("description", "Description")}
                   <Textarea
@@ -308,6 +308,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     } connection`}
                     resize="none"
                     size="sm"
+                    value={field.value || ""}
                   />
                   <Flex alignItems="center" h="32px" visibility="hidden">
                     <CircleHelpIcon marginLeft="8px" />
@@ -321,7 +322,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               name="instance_key"
               validate={validateConnectionIdentifier}
             >
-              {({ field }: { field: any }) => (
+              {({ field }: { field: FieldInputProps<string> }) => (
                 <FormControl
                   display="flex"
                   isRequired
