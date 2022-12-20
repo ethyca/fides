@@ -115,7 +115,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     if (item.allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
       return "Enter dataset.collection.field";
     }
-    return null;
+    return undefined;
   };
 
   const getFormField = (
@@ -336,7 +336,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       {...field}
                       autoComplete="off"
                       color="gray.700"
-                      isDisabled={connection?.key}
+                      isDisabled={!!connection?.key}
                       placeholder={`A unique identifier for your new ${
                         connectionOption!.human_readable
                       } connection`}
