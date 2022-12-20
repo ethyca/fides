@@ -18,7 +18,12 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.3.1...main)
 
 ### Added
-Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+
+* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+
+### Fixed
+
+* Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
