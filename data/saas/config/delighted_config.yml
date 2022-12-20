@@ -1,0 +1,55 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Delighted SaaS Config
+  type: delighted
+  description: A sample schema representing the Delighted connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <api_key>
+
+
+  test_request:
+    method: GET
+    path: /v1/people
+
+  endpoints:
+    - name: people
+      requests:
+        read:
+          method: GET
+          path: /v1/people.json
+          query_params:
+          - name: per_page
+            value: '100'
+          - name: email
+            value: <email>
+          param_values:
+            - name: email
+              identity: email
+    - name: survey_response
+      requests:
+        read:
+          method: GET
+          path: /v1/survey_responses.json
+          query_params:
+            - name: per_page
+              value: 100
+            - name: person_id
+              value: <person_id>
+          param_values:
+            - name: person_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: person.id
+                  direction: from
+

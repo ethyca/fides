@@ -130,6 +130,12 @@ dataset = "data/saas/dataset/domo_dataset.yml"
 icon = "data/saas/icon/domo.svg"
 human_readable = "Domo"
 
+[delighted]
+config = "data/saas/config/delighted_config.yml"
+dataset = "data/saas/dataset/delighted_dataset.yml"
+icon = "data/saas/icon/domo.svg"
+human_readable = "Delighted"
+
 [slack_enterprise]
 config = "data/saas/config/slack_enterprise_config.yml"
 dataset = "data/saas/dataset/slack_enterprise_dataset.yml"

@@ -1,0 +1,67 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Delighted Dataset
+    description: A sample dataset representing the Delighted connector for Fidesops
+    collections:
+      - name: people
+        fields:
+          - name: id
+            data_categories: [ user.unique_id ]
+            fidesops_meta:
+              data_type: string
+              primary_key: True
+          - name: name
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [ user.contact.email ]
+            fidesops_meta:
+              data_type: string
+          - name: created_at
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: last_sent_at
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: last_responded_at
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: next_survey_scheduled_at
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+      - name: survey_response
+        fields:
+          - name: id
+            data_categories: [ user.unique_id ]
+            fidesops_meta:
+              data_type: string
+              primary_key: True
+          - name: person
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: survey_type
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: created_at
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: score
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: permalink
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string

@@ -188,6 +188,7 @@ markers = [
     "integration_hubspot",
     "integration_datadog",
     "integration_domo",
+    "integration_delighted",
     "integration_doordash",
     "integration_fullstory",
     "integration_segment",
