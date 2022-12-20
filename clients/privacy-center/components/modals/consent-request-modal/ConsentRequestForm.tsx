@@ -3,7 +3,8 @@ import {
   Button,
   chakra,
   FormControl,
-  FormErrorMessage, FormLabel,
+  FormErrorMessage,
+  FormLabel,
   Input,
   ModalBody,
   ModalFooter,
@@ -20,7 +21,7 @@ import { ErrorToastOptions } from "~/common/toast-options";
 import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
-import {config, hostUrl} from "~/constants";
+import { config, hostUrl } from "~/constants";
 import dynamic from "next/dynamic";
 import * as Yup from "yup";
 import { ModalViews, VerificationType } from "../types";
@@ -115,8 +116,8 @@ const useConsentRequestForm = ({
         let validation = Yup.string();
         if (config.consent?.identity_inputs?.email === "required") {
           validation = validation
-              .email("Email is invalid")
-              .required("Email is required");
+            .email("Email is invalid")
+            .required("Email is required");
         }
         return validation;
       })(),
@@ -124,9 +125,9 @@ const useConsentRequestForm = ({
         let validation = Yup.string();
         if (config.consent?.identity_inputs?.phone === "required") {
           validation = validation
-              .required("Phone is required")
-              // E.164 international standard format
-              .matches(/^\+[1-9]\d{1,14}$/, "Phone is invalid");
+            .required("Phone is required")
+            // E.164 international standard format
+            .matches(/^\+[1-9]\d{1,14}$/, "Phone is invalid");
         }
         return validation;
       })(),
@@ -188,55 +189,55 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
           ) : null}
           <Stack spacing={3}>
             {config.consent?.identity_inputs.email ? (
-                <FormControl
-                    id="email"
-                    isInvalid={touched.email && Boolean(errors.email)}
-                >
-                  <FormLabel>
-                    {config.consent?.identity_inputs.email === "required"
-                        ? "Email*"
-                        : "Email"}
-                  </FormLabel>
-                  <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      focusBorderColor="primary.500"
-                      placeholder="test-email@example.com"
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      value={values.email}
-                      isInvalid={touched.email && Boolean(errors.email)}
-                  />
-                  <FormErrorMessage>{errors.email}</FormErrorMessage>
-                </FormControl>
+              <FormControl
+                id="email"
+                isInvalid={touched.email && Boolean(errors.email)}
+              >
+                <FormLabel>
+                  {config.consent?.identity_inputs.email === "required"
+                    ? "Email*"
+                    : "Email"}
+                </FormLabel>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  focusBorderColor="primary.500"
+                  placeholder="test-email@example.com"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.email}
+                  isInvalid={touched.email && Boolean(errors.email)}
+                />
+                <FormErrorMessage>{errors.email}</FormErrorMessage>
+              </FormControl>
             ) : null}
             {config.consent?.identity_inputs.phone ? (
-                <FormControl
-                    id="phone"
-                    isInvalid={touched.phone && Boolean(errors.phone)}
-                >
-                  <FormLabel>
-                    {config.consent?.identity_inputs.phone === "required"
-                        ? "Phone*"
-                        : "Phone"}
-                  </FormLabel>
-                  <Input
-                      as={PhoneInput}
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      focusBorderColor="primary.500"
-                      placeholder="000 000 0000"
-                      defaultCountry="US"
-                      onChange={(value) => {
-                        setFieldValue("phone", value, true);
-                      }}
-                      onBlur={handleBlur}
-                      value={values.phone}
-                  />
-                  <FormErrorMessage>{errors.phone}</FormErrorMessage>
-                </FormControl>
+              <FormControl
+                id="phone"
+                isInvalid={touched.phone && Boolean(errors.phone)}
+              >
+                <FormLabel>
+                  {config.consent?.identity_inputs.phone === "required"
+                    ? "Phone*"
+                    : "Phone"}
+                </FormLabel>
+                <Input
+                  as={PhoneInput}
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  focusBorderColor="primary.500"
+                  placeholder="000 000 0000"
+                  defaultCountry="US"
+                  onChange={(value) => {
+                    setFieldValue("phone", value, true);
+                  }}
+                  onBlur={handleBlur}
+                  value={values.phone}
+                />
+                <FormErrorMessage>{errors.phone}</FormErrorMessage>
+              </FormControl>
             ) : null}
           </Stack>
         </ModalBody>
