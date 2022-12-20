@@ -5,7 +5,7 @@ import { useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features.slice";
 
-import { MODULE_CARD_ITEMS,ModuleCardKeys } from "./constants";
+import { MODULE_CARD_ITEMS, ModuleCardKeys } from "./constants";
 
 const DEFAULT_CARD_ITEMS = MODULE_CARD_ITEMS.filter((item) =>
   [
