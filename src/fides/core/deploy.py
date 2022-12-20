@@ -9,7 +9,7 @@ from click import echo
 
 import fides
 from fides.cli.utils import FIDES_ASCII_ART
-from fides.ctl.core.utils import echo_green, echo_red
+from fides.core.utils import echo_green, echo_red
 
 FIDES_UPLOADS_DIR = getcwd() + "/fides_uploads/"
 REQUIRED_DOCKER_VERSION = "20.10.17"

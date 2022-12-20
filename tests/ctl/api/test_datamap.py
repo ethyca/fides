@@ -3,7 +3,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.ctl.core.config import FidesConfig
+from fides.core.config import FidesConfig
 
 
 @pytest.mark.integration

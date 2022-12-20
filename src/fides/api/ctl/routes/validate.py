@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.ctl.connectors.models import (
+from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,
     ConnectorAuthFailureException,
