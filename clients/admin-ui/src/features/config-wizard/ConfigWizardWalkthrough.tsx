@@ -63,12 +63,7 @@ const ConfigWizardWalkthrough = () => {
       <Divider orientation="horizontal" />
       <Stack direction={["column", "row"]}>
         <Stack bg="white" height="100vh" width="100%">
-          <Stack
-            mt={10}
-            mb={10}
-            direction="row"
-            spacing="24px"
-          >
+          <Stack mt={10} mb={10} direction="row" spacing="24px">
             <Box flexShrink={0}>
               <Stepper
                 activeStep={step}
