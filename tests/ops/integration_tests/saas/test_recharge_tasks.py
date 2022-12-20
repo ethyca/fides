@@ -24,11 +24,11 @@ def test_recharge_connection_test(recharge_connection_config) -> None:
 @pytest.mark.integration_recharge
 @pytest.mark.asyncio
 async def test_recharge_access_request_task(
-        db,
-        policy,
-        recharge_connection_config,
-        recharge_dataset_config,
-        recharge_identity_email,
+    db,
+    policy,
+    recharge_connection_config,
+    recharge_dataset_config,
+    recharge_identity_email,
 ) -> None:
     """Full access request based on the Recharge SaaS config"""
 
@@ -129,14 +129,14 @@ async def test_recharge_access_request_task(
 @pytest.mark.integration_recharge
 @pytest.mark.asyncio
 async def test_recharge_erasure_request_task(
-        db,
-        policy,
-        erasure_policy_complete_mask,
-        recharge_connection_config,
-        recharge_dataset_config,
-        recharge_erasure_identity_email,
-        recharge_erasure_data,
-        recharge_test_client,
+    db,
+    policy,
+    erasure_policy_complete_mask,
+    recharge_connection_config,
+    recharge_dataset_config,
+    recharge_erasure_identity_email,
+    recharge_erasure_data,
+    recharge_test_client,
 ) -> None:
     privacy_request = PrivacyRequest(
         id=f"test_recharge_erasure_request_task_{random.randint(0, 1000)}"
@@ -243,10 +243,7 @@ async def test_recharge_erasure_request_task(
         db,
     )
 
-    assert x == {
-        'recharge_instance:addresses': 1,
-        'recharge_instance:customer': 1
-    }
+    assert x == {"recharge_instance:addresses": 1, "recharge_instance:customer": 1}
 
     address = recharge_test_client.get_addresses(
         recharge_erasure_data[1].json().get("address", {}).get("id")

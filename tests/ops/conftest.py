@@ -52,9 +52,9 @@ from .fixtures.saas.fullstory_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.outreach_fixtures import *
+from .fixtures.saas.recharge_fixtures import *
 from .fixtures.saas.request_override.firebase_auth_fixtures import *
 from .fixtures.saas.request_override.mailchimp_override_fixtures import *
-from .fixtures.saas.recharge_fixtures import *
 from .fixtures.saas.rollbar_fixtures import *
 from .fixtures.saas.salesforce_fixtures import *
 from .fixtures.saas.segment_fixtures import *

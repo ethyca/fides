@@ -50,7 +50,6 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-
     - name: addresses
       requests:
         read:
@@ -71,7 +70,9 @@ saas_config:
           path: /addresses/<address_id>
           body: |
             {
-              "address": {<masked_object_fields>}
+              "address": {
+                <masked_object_fields>
+              }
             }
           param_values:
             - name: address_id
