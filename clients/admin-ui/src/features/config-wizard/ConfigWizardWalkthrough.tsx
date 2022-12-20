@@ -48,19 +48,21 @@ const ConfigWizardWalkthrough = () => {
   return (
     <>
       {!features.navV2 && (
-        <Box bg="white">
-          <Button
-            bg="transparent"
-            fontWeight="500"
-            m={2}
-            ml={6}
-            onClick={handleCancelSetup}
-          >
-            <CloseSolidIcon /> Cancel setup
-          </Button>
-        </Box>
+        <>
+          <Box bg="white">
+            <Button
+              bg="transparent"
+              fontWeight="500"
+              m={2}
+              ml={6}
+              onClick={handleCancelSetup}
+            >
+              <CloseSolidIcon /> Cancel setup
+            </Button>
+          </Box>
+          <Divider orientation="horizontal" />
+        </>
       )}
-      <Divider orientation="horizontal" />
       <Stack direction={["column", "row"]}>
         <Stack bg="white" height="100vh" width="100%">
           <Stack mt={10} mb={10} direction="row" spacing="24px">
