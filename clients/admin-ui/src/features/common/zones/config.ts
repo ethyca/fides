@@ -46,7 +46,10 @@ export const resolveZone = ({
     };
   }
 
-  if (process.env.NODE_ENV === "development" && zoneConfig.development) {
+  if (
+    process.env.NEXT_PUBLIC_APP_ENV === "development" &&
+    zoneConfig.development
+  ) {
     const externalZoneUrl = new URL(window.location.href);
     externalZoneUrl.pathname = href;
     externalZoneUrl.host = zoneConfig.development.host;
