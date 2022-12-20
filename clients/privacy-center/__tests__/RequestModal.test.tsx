@@ -116,7 +116,7 @@ describe("RequestModal", () => {
         target: { value: "testing@ethyca.com" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("+1 000 000 0000"), {
+      fireEvent.change(screen.getByPlaceholderText("000 000 0000"), {
         target: { value: "0000000000" },
       });
     });
@@ -151,7 +151,7 @@ describe("RequestModal", () => {
         target: { value: "testing@ethyca.com" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("+1 000 000 0000"), {
+      fireEvent.change(screen.getByPlaceholderText("000 000 0000"), {
         target: { value: "0000000000" },
       });
     });
@@ -189,7 +189,7 @@ describe("RequestModal", () => {
         target: { value: "testing@ethyca.com" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("+1 000 000 0000"), {
+      fireEvent.change(screen.getByPlaceholderText("000 000 0000"), {
         target: { value: "0000000000" },
       });
     });
