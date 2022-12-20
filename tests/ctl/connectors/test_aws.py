@@ -6,7 +6,7 @@ import pytest
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
-import fides.ctl.connectors.aws as aws_connector
+import fides.connectors.aws as aws_connector
 from fides.connectors.models import AWSConfig
 from fides.core.config import FidesConfig
 
