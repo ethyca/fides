@@ -26,7 +26,9 @@ The types of changes are:
 * Move the `fides.ctl.core.` and `fides.ctl.connectors` modules into `fides.core` and `fides.connectors` respectively [#2097](https://github.com/ethyca/fides/pull/2097)
 
 ### Added
-
+* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+* New Fides Home page [#1864](https://github.com/ethyca/fides/pull/2050)
+* Nav 2.0 - Replace form flow side navs with top tabs [#2037](https://github.com/ethyca/fides/pull/2050)
 * Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
