@@ -19,7 +19,7 @@ from fides.api.ops.service.privacy_request.request_service import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.wrappers import sync
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.oauth.schemas.user import UserLogin
 
 CONFIG = get_config()

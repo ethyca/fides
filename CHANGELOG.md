@@ -21,9 +21,13 @@ The types of changes are:
 
 * Include a pre-check workflow that collects the pytest suite [#2098](https://github.com/ethyca/fides/pull/2098)
 
+### Changed
+
+* Move the `fides.ctl.core.` and `fides.ctl.connectors` modules into `fides.core` and `fides.connectors` respectively [#2097](https://github.com/ethyca/fides/pull/2097)
+
 ### Added
 
-Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 

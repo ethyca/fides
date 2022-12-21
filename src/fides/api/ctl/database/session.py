@@ -2,7 +2,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 config = get_config()
 engine = create_async_engine(
