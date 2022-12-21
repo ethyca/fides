@@ -1,6 +1,6 @@
 """Contains the groups and setup for the CLI."""
 from importlib.metadata import version
-from platform import system, foo
+from platform import system
 
 import click
 from fideslog.sdk.python.client import AnalyticsClient
