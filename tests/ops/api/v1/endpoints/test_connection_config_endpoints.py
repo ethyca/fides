@@ -96,6 +96,7 @@ class TestPatchConnections:
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         body = json.loads(response.text)
+        print(body)
         assert body["succeeded"][0]["connection_type"] == "https"
         http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
         http_config.delete(db)
@@ -127,17 +128,26 @@ class TestPatchConnections:
                 "access": AccessLevel.write,
                 "secrets": {"domain": "test", "username": "test", "api_key": "test"},
                 "saas_config": mailchimp_config,
+                "description": "some description",
             },
         )
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
-        body = json.loads(response.text)
-        assert body["succeeded"][0]["connection_type"] == payload[0]["connection_type"]
+        assert (
+            response.json()["succeeded"][0]["connection_type"]
+            == payload[0]["connection_type"]
+        )
+        assert (
+            response.json()["succeeded"][0]["description"] == payload[0]["description"]
+        )
+
+        config = ConnectionConfig.get_by(db, field="key", value=payload[0]["key"])
+        assert config.secrets == payload[0]["secrets"]
 
     def test_patch_connection_saas_with_secrets_new(
-        self, url, api_client, generate_auth_header
+        self, url, api_client, generate_auth_header, db
     ):
         payload = [
             {
@@ -150,7 +160,7 @@ class TestPatchConnections:
                 "description": "Mailchimp ConnectionConfig description",
                 "key": "mailchimp_1",
                 "connection_type": "saas",
-                "saas_connection_type": "mailchimp",
+                "saas_connector_type": "mailchimp",
                 "access": "read",
             },
         ]
@@ -160,6 +170,12 @@ class TestPatchConnections:
         assert 200 == response.status_code
         body = json.loads(response.text)
         assert body["succeeded"][0]["connection_type"] == payload[0]["connection_type"]
+        assert (
+            response.json()["succeeded"][0]["description"] == payload[0]["description"]
+        )
+
+        config = ConnectionConfig.get_by(db, field="key", value=payload[0]["key"])
+        assert config.secrets == payload[0]["secrets"]
 
     @pytest.mark.parametrize(
         "payload",
@@ -536,7 +552,9 @@ class TestPatchConnections:
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:
-        mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
+        mock_create.side_effect = HTTPException(
+            mock.Mock(status_code=400), "Test error"
+        )
 
         payload = [
             {

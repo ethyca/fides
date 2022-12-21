@@ -38,7 +38,7 @@ class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
     """Schema for creatnig a connection configuration including secrets."""
 
     secrets: Optional[connection_secrets_schemas] = None
-    saas_connection_type: Optional[str]
+    saas_connector_type: Optional[str]
 
     class Config:
         orm_mode = True
@@ -108,20 +108,6 @@ class ConnectionConfigurationResponse(BaseModel):
         orm_mode = True
 
 
-class ConnectionConfigurationWithSecretsResponse(ConnectionConfigurationResponse):
-    """Describes the returned schema for a ConnectionConfiguration.
-
-    Secrets are included.
-    """
-
-    secrets: Optional[connection_secrets_schemas] = None
-
-    class Config:
-        """Set orm_mode to support mapping to ConnectionConfig"""
-
-        orm_mode = True
-
-
 class BulkPutConnectionConfiguration(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of ConnectionConfiguration responses."""
 
@@ -132,7 +118,7 @@ class BulkPutConnectionConfiguration(BulkResponse):
 class BulkPatchConnectionConfigurationWithSecrets(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of ConnectionConfigurationWithSecrets responses."""
 
-    succeeded: List[ConnectionConfigurationWithSecretsResponse]
+    succeeded: List[ConnectionConfigurationResponse]
     failed: List[BulkUpdateFailed]
 
 

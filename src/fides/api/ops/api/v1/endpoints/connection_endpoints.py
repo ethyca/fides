@@ -55,7 +55,6 @@ from fides.api.ops.schemas.connection_configuration import (
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
-    ConnectionConfigurationWithSecretsResponse,
     CreateConnectionConfigurationWithSecrets,
     SaasConnectionTemplateValues,
     SystemType,
@@ -220,20 +219,16 @@ def patch_connections(
     If the key in the payload exists, it will be used to update an existing ConnectionConfiguration.
     Otherwise, a new ConnectionConfiguration will be created for you.
     """
-    created_or_updated: List[ConnectionConfigurationWithSecretsResponse] = []
+    created_or_updated: List[ConnectionConfigurationResponse] = []
     failed: List[BulkUpdateFailed] = []
     logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
 
     for config in configs:
         if config.connection_type == "saas":
             if config.secrets:
-                try:
-                    connection_config_check = get_connection_config_or_error(
-                        db, config.key
-                    )
-                except HTTPException:
-                    # New config so nothing to validate against
-                    connection_config_check = None
+                connection_config_check = ConnectionConfig.get_by(
+                    db, field="key", value=config.key
+                )
 
                 # This is here rather than with the get_connection_config_or_error because
                 # it will also throw an HTTPException if validation fails and we don't want
@@ -243,20 +238,20 @@ def patch_connections(
                         db, config.secrets, connection_config_check
                     )
                 else:
-                    if not config.saas_connection_type:
+                    if not config.saas_connector_type:
                         raise HTTPException(
-                            status_code=HTTP_404_NOT_FOUND,
-                            detail="SAAS config type is missing",
+                            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="saas_connector_type is missing",
                         )
 
                     registry = load_registry(registry_file)
                     connector_template = registry.get_connector_template(
-                        config.saas_connection_type
+                        config.saas_connector_type
                     )
                     if not connector_template:
                         raise HTTPException(
                             status_code=HTTP_404_NOT_FOUND,
-                            detail=f"SaaS connector type '{config.saas_connection_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+                            detail=f"SaaS connector type '{config.saas_connector_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
                         )
                     try:
                         template_values = SaasConnectionTemplateValues(
@@ -281,16 +276,20 @@ def patch_connections(
                         db, template_values.secrets, connection_config
                     ).dict()
                     connection_config.save(db=db)
-                    created_or_updated.append(connection_config)
+                    created_or_updated.append(
+                        ConnectionConfigurationResponse(**connection_config.__dict__)
+                    )
                     continue
 
         orig_data = config.dict().copy()
         config_dict = config.dict()
-        config_dict.pop("saas_connection_type", None)
+        config_dict.pop("saas_connector_type", None)
 
         try:
             connection_config = ConnectionConfig.create_or_update(db, data=config_dict)
-            created_or_updated.append(connection_config)
+            created_or_updated.append(
+                ConnectionConfigurationResponse(**connection_config.__dict__)
+            )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
                 "Create/update failed for connection config with key '{}': {}",
@@ -299,7 +298,7 @@ def patch_connections(
             )
             # remove secrets information from the return for secuirty reasons.
             orig_data.pop("secrets", None)
-            orig_data.pop("saas_connection_type", None)
+            orig_data.pop("saas_connector_type", None)
             failed.append(
                 BulkUpdateFailed(
                     message=exc.args[0],
@@ -312,7 +311,7 @@ def patch_connections(
             )
             # remove secrets information from the return for secuirty reasons.
             orig_data.pop("secrets", None)
-            orig_data.pop("saas_connection_type", None)
+            orig_data.pop("saas_connector_type", None)
             failed.append(
                 BulkUpdateFailed(
                     message="This connection configuration could not be added.",
