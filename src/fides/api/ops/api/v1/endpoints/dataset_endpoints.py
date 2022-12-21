@@ -64,7 +64,7 @@ from fides.api.ops.util.saas_util import merge_datasets
 
 X_YAML = "application/x-yaml"
 
-router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
+router = APIRouter(tags=["Dataset Configs"], prefix=V1_URL_PREFIX)
 
 
 # Helper method to inject the parent ConnectionConfig into these child routes
@@ -177,7 +177,7 @@ def patch_dataset_configs(
     2) The corresponding CtlDataset fides_key which stores the bulk of the actual dataset
 
     The CtlDataset contents are retrieved for extra validation before linking this
-    to the the DatasetConfig.
+    to the DatasetConfig.
 
     """
     created_or_updated: List[Dataset] = []
