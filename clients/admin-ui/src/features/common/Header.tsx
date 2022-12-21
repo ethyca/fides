@@ -82,6 +82,9 @@ const Header: React.FC = () => {
                   onClick={() => featuresPanelDisclosure.onOpen()}
                 >
                   Features
+                  <Text as="i" ml={2}>
+                    Beta
+                  </Text>{" "}
                 </MenuItem>
 
                 <MenuDivider />

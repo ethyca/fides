@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Divider,
   Drawer,
   DrawerBody,
   DrawerContent,
@@ -85,10 +86,22 @@ const FeaturesPanel = ({
         </Box>
 
         <DrawerHeader py={2} display="flex" alignItems="center">
-          <Text>Feature Flags</Text>
+          Feature Flags
+          <Text as="i" ml={2}>
+            Beta
+          </Text>
         </DrawerHeader>
 
         <DrawerBody>
+          <Text fontSize="sm">
+            Some features are in beta and are disabled by default. You can test
+            out these features by enabling them below, which may result in a
+            degraded (or extra amazing) experience. Use the &quot;Reset&quot;
+            button to return the recommended configuration.
+          </Text>
+
+          <Divider my={4} />
+
           <Grid gridTemplateColumns="1fr 2fr">
             {FLAG_NAMES.map((flag) => (
               <FlagControl
