@@ -17,8 +17,8 @@ from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.ctl.core.api import db_action
-from fides.ctl.core.config import get_config
+from fides.core.api import db_action
+from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -48,6 +48,7 @@ from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
 from .fixtures.saas.domo_fixtures import *
 from .fixtures.saas.doordash_fixtures import *
+from .fixtures.saas.friendbuy_fixtures import *
 from .fixtures.saas.fullstory_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *

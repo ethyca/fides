@@ -6,7 +6,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session, sessionmaker
 
-from fides.ctl.core.config import FidesConfig
+from fides.core.config import FidesConfig
 from fides.lib.exceptions import MissingConfig
 
 

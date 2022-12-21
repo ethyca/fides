@@ -33,7 +33,7 @@ from fides.api.ops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
