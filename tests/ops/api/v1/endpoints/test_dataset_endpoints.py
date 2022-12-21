@@ -484,6 +484,37 @@ class TestPutDatasetConfigs:
 
         dataset_config.delete(db)
 
+    def test_patch_create_datasetconfig_bad_data_category(
+        self,
+        ctl_dataset,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        db,
+        request_body,
+    ):
+        ctl_dataset.collections[0]["fields"][0]["data_categories"] = ["bad_category"]
+        flag_modified(ctl_dataset, "collections")
+        db.add(ctl_dataset)
+        db.commit()
+        db.refresh(ctl_dataset)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=request_body,
+        )
+        assert response.status_code == 422
+        dataset_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="test_fides_key"
+        )
+        assert dataset_config is None
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "The data category bad_category is not supported."
+        )
+
     def test_patch_datasets_invalid_connection_key(
         self, request_body, api_client: TestClient, generate_auth_header
     ) -> None:

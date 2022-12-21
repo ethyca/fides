@@ -199,6 +199,7 @@ def patch_dataset_configs(
                 detail=f"No ctl dataset with key '{dataset_pair.ctl_dataset_fides_key}'",
             )
         fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
+        validate_data_categories(fetched_dataset, db)
 
         data = {
             "connection_config_id": connection_config.id,
