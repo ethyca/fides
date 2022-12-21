@@ -2,7 +2,7 @@ import { Box, Flex } from "@fidesui/react";
 import Head from "next/head";
 import React from "react";
 
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import Header from "~/features/common/Header";
 import NavBar from "~/features/common/nav/NavBar";
 import { NavSideBar } from "~/features/common/nav/v2/NavSideBar";
@@ -26,7 +26,7 @@ const Layout = ({
       </Head>
       <Header />
 
-      {features.navV2 ? (
+      {features.flags.navV2 ? (
         <>
           <NavTopBar />
           <Flex as="main" px={9} py={10} gap="40px">

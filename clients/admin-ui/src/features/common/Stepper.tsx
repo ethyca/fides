@@ -6,7 +6,7 @@ import {
 } from "common/Icon";
 import React from "react";
 
-import { useFeatures } from "./features.slice";
+import { useFeatures } from "~/features/common/features";
 
 interface Props {
   activeStep: number | null;
@@ -17,7 +17,7 @@ interface Props {
 const Stepper = ({ activeStep, setActiveStep, steps }: Props) => {
   const features = useFeatures();
 
-  if (!features.configWizardStepper) {
+  if (!features.flags.configWizardStepper) {
     return null;
   }
 
