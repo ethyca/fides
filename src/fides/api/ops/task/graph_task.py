@@ -337,6 +337,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     ) -> None:
         """Update status activities"""
         self.resources.write_execution_log(
+            self.traversal_node.node.dataset.connection_key,
             self.traversal_node.address,
             fields_affected,
             action_type,
