@@ -1,6 +1,6 @@
 import { Button, Grid, GridItem, Stack, Text, VStack } from "@fidesui/react";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
@@ -64,77 +64,51 @@ const ManualSystemFlow = () => {
     [currentStepIndex, dispatch]
   );
 
-  const getTabs = useMemo(
-    () => () => {
-      const result: TabData[] = [];
-      STEPS.forEach((step, index) => {
-        let data: TabData | undefined;
-        switch (index) {
-          case 0:
-            data = {
-              label: step,
-              content: (
-                <DescribeSystemStep
-                  onSuccess={handleSuccess}
-                  system={activeSystem}
-                />
-              ),
-            };
-            break;
-          case 1:
-            data = {
-              label: step,
-              content: activeSystem ? (
-                <PrivacyDeclarationStep
-                  system={activeSystem as System}
-                  onSuccess={handleSuccess}
-                />
-              ) : null,
-              isDisabled: !activeSystem,
-            };
-            break;
-          case 2:
-            data = {
-              label: step,
-              content: activeSystem ? (
-                <ReviewSystemStep
-                  system={activeSystem as System}
-                  onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
-                />
-              ) : null,
-              isDisabled: !activeSystem,
-            };
-            break;
-          case 3:
-            data = {
-              label: step,
-              content: activeSystem ? (
-                <SystemRegisterSuccess
-                  system={activeSystem as System}
-                  onAddNextSystem={goBack}
-                />
-              ) : null,
-              isDisabled: !activeSystem,
-            };
-            break;
-          default:
-            break;
-        }
-        if (data) {
-          result.push(data);
-        }
-      });
-      return result;
+  const TABS: TabData[] = [
+    {
+      label: STEPS[0],
+      content: (
+        <DescribeSystemStep onSuccess={handleSuccess} system={activeSystem} />
+      ),
     },
-    [activeSystem, currentStepIndex, goBack, handleSuccess]
-  );
+    {
+      label: STEPS[1],
+      content: activeSystem ? (
+        <PrivacyDeclarationStep
+          system={activeSystem as System}
+          onSuccess={handleSuccess}
+        />
+      ) : null,
+      isDisabled: !activeSystem,
+    },
+    {
+      label: STEPS[2],
+      content: activeSystem ? (
+        <ReviewSystemStep
+          system={activeSystem as System}
+          onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
+        />
+      ) : null,
+      isDisabled: !activeSystem,
+    },
+    {
+      label: STEPS[3],
+      content: activeSystem ? (
+        <SystemRegisterSuccess
+          system={activeSystem as System}
+          onAddNextSystem={goBack}
+        />
+      ) : null,
+      isDisabled: !activeSystem,
+    },
+  ];
 
   return (
     <>
       {navV2 && (
         <VStack alignItems="stretch" flex="1" gap="18px" maxWidth="70vw">
           <DataTabs
-            data={getTabs()}
+            data={TABS}
             data-testid="settings"
             flexGrow={1}
             index={currentStepIndex}
