@@ -137,7 +137,9 @@ const ManualSystemFlow = () => {
             data={getTabs()}
             data-testid="settings"
             flexGrow={1}
+            index={currentStepIndex}
             isLazy
+            onChange={setCurrentStepIndex}
           />
         </VStack>
       )}

@@ -152,7 +152,14 @@ const ConfigureConnector: React.FC = () => {
       <Breadcrumb steps={steps} />
       {navV2 && (
         <VStack alignItems="stretch" gap="18px">
-          <DataTabs data={getTabs()} flexGrow={1} isLazy />
+          <DataTabs
+            data={getTabs()}
+            flexGrow={1}
+            index={connector?.options.findIndex(
+              (option) => option === selectedItem
+            )}
+            isLazy
+          />
         </VStack>
       )}
       {!navV2 && (
