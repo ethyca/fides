@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from sqlalchemy_utils.functions import create_database, database_exists
 from starlette.testclient import TestClient
 
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -42,6 +42,12 @@ def config():
 @pytest.fixture
 def db(config):
     """Yield a connection to the test DB."""
+    # Included so that `AccessManualWebhook` can be located when
+    # `ConnectionConfig` is instantiated.
+    from fides.api.ops.models.manual_webhook import (  # pylint: disable=unused-import
+        AccessManualWebhook,
+    )
+
     # Create the test DB engine
     assert config.is_test_mode
     engine = get_db_engine(

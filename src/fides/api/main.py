@@ -52,8 +52,9 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.ctl.core.config import FidesConfig, get_config
-from fides.ctl.core.config.helpers import check_required_webserver_config_values
+from fides.api.ops.util.logger import _log_exception
+from fides.core.config import FidesConfig, get_config
+from fides.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
 CONFIG: FidesConfig = get_config()
@@ -65,7 +66,6 @@ app.state.limiter = Limiter(
     key_prefix=CONFIG.security.rate_limit_prefix,
     key_func=get_remote_address,
     retry_after="http-date",
-    storage_uri=CONFIG.redis.connection_url,
 )
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
@@ -117,6 +117,7 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         await prepare_and_log_request(
             endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
         )
+        _log_exception(e, CONFIG.dev_mode)
         raise
 
 

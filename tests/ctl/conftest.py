@@ -21,8 +21,8 @@ from starlette.testclient import TestClient
 from fides.api import main
 from fides.api.ctl.database.session import engine, sync_session
 from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
-from fides.ctl.core import api
-from fides.ctl.core.config import FidesConfig, get_config
+from fides.core import api
+from fides.core.config import FidesConfig, get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

@@ -19,7 +19,7 @@ import {
   useDisclosure,
   VStack,
 } from "@fidesui/react";
-import { Field, Form, Formik } from "formik";
+import { Field, FieldInputProps, Form, Formik } from "formik";
 import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
 import React, { useRef } from "react";
 import * as Yup from "yup";
@@ -40,7 +40,7 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
   onSaveClick,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const firstField = useRef();
+  const firstField = useRef(null);
 
   const handleSubmit = async (values: any, _actions: any) => {
     const params: PatchUploadManualWebhookDataRequest = {
@@ -93,7 +93,6 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
           <Drawer
             isOpen={isOpen}
             placement="right"
-            // @ts-ignore
             initialFocusRef={firstField}
             onClose={onClose}
             size="lg"
@@ -122,7 +121,7 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
                     {Object.entries(data.fields).map(([key], index) => (
                       <HStack key={key}>
                         <Field id={key} name={key}>
-                          {({ field }: { field: any }) => (
+                          {({ field }: { field: FieldInputProps<string> }) => (
                             <FormControl
                               alignItems="baseline"
                               display="inline-flex"

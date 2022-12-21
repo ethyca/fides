@@ -1,12 +1,9 @@
-import { stubHomePage } from "cypress/support/stubs";
-
 describe("Nav Bar", () => {
   beforeEach(() => {
     cy.login();
   });
 
   it("Renders all page links", () => {
-    stubHomePage();
     cy.visit("/");
 
     cy.getByTestId("nav-link-Privacy Requests");

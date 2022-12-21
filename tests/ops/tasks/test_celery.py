@@ -1,5 +1,5 @@
 from fides.api.ops.tasks import _create_celery
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 

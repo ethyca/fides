@@ -9,10 +9,11 @@ from alembic.runtime import migration
 from loguru import logger as log
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists
+from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
 
 from fides.api.ctl.utils.errors import get_full_exception_name
-from fides.ctl.core.config import get_config
-from fides.ctl.core.utils import get_db_engine
+from fides.core.config import get_config
+from fides.core.utils import get_db_engine
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 from .seed import load_default_resources
@@ -99,6 +100,13 @@ async def configure_db(database_url: str) -> None:
     try:
         create_db_if_not_exists(database_url)
         await init_db(database_url)
+    except InvalidCiphertextError as cipher_error:
+        log.error(
+            "Unable to configure database due to a decryption error! Check to ensure your `app_encryption_key` has not changed."
+        )
+        log.opt(exception=True).error(cipher_error)
+
     except Exception as error:  # pylint: disable=broad-except
         error_type = get_full_exception_name(error)
         log.error("Unable to configure database: {}: {}", error_type, error)
+        log.opt(exception=True).error(error)

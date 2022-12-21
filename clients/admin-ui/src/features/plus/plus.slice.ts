@@ -160,11 +160,6 @@ export const {
   useLazyGetLatestScanDiffQuery,
 } = plusApi;
 
-export const useHasPlus = () => {
-  const { isSuccess: hasPlus } = useGetHealthQuery();
-  return hasPlus;
-};
-
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
   createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
 

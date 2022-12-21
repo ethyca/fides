@@ -4,7 +4,7 @@ from typing import Dict
 from fides.api.ctl.database import database
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.ctl.core.config import FidesConfig, get_config
+from fides.core.config import FidesConfig, get_config
 
 CONFIG: FidesConfig = get_config()
 router = APIRouter(prefix=API_PREFIX, tags=["Admin"])

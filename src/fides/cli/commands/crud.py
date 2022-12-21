@@ -4,9 +4,9 @@ import yaml
 
 from fides.cli.options import fides_key_argument, resource_type_argument
 from fides.cli.utils import handle_cli_response, print_divider, with_analytics
-from fides.ctl.core import api as _api
-from fides.ctl.core.api_helpers import get_server_resource, list_server_resources
-from fides.ctl.core.utils import echo_green
+from fides.core import api as _api
+from fides.core.api_helpers import get_server_resource, list_server_resources
+from fides.core.utils import echo_green
 
 
 @click.command()
