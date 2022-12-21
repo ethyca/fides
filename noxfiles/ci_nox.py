@@ -164,6 +164,15 @@ def minimal_config_startup(session: nox.Session) -> None:
 
 # Pytest
 @nox.session()
+def collect_tests(session: nox.Session) -> None:
+    """Run the 'pylint' code linter."""
+    session.install(".")
+    install_requirements(session)
+    command = ("pytest", "tests/", "--collect-only")
+    session.run(*command)
+
+
+@nox.session()
 def pytest_lib(session: nox.Session) -> None:
     """Runs ctl tests."""
     session.notify("teardown")

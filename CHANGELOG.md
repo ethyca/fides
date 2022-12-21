@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.3.1...main)
 
+### Developer Experience
+
+* Include a pre-check workflow that collects the pytest suite [#2098](https://github.com/ethyca/fides/pull/2098)
+
 ### Changed
 
 * Move the `fides.ctl.core.` and `fides.ctl.connectors` modules into `fides.core` and `fides.connectors` respectively [#2097](https://github.com/ethyca/fides/pull/2097)
