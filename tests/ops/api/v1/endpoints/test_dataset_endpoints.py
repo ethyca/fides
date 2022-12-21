@@ -23,6 +23,7 @@ from fides.api.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,
+    DATASETCONFIG_BY_KEY,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
@@ -1521,6 +1522,53 @@ class TestGetDatasets:
         assert response_body["size"] == Params().size
 
 
+class TestGetDatasetConfigs:
+    @pytest.fixture
+    def datasets_url(self, connection_config) -> str:
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": connection_config.key}
+        return path.format(**path_params)
+
+    def test_get_dataset_configs_not_authenticated(
+        self, datasets_url, api_client: TestClient
+    ) -> None:
+        response = api_client.get(datasets_url, headers={})
+        assert response.status_code == 401
+
+    def test_get_dataset_configs_invalid_connection_key(
+        self, datasets_url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": "nonexistent_key"}
+        datasets_url = path.format(**path_params)
+
+        response = api_client.get(datasets_url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_get_dataset_configs(
+        self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(datasets_url, headers=auth_header)
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert len(response_body["items"]) == 1
+        dataset_response = response_body["items"][0]
+        assert dataset_response["fides_key"] == "postgres_example_subscriptions_dataset"
+
+        assert (
+            dataset_response["ctl_dataset"]["fides_key"]
+            == "postgres_example_subscriptions_dataset"
+        )
+        assert len(dataset_response["ctl_dataset"]["collections"]) == 1
+
+        assert response_body["total"] == 1
+        assert response_body["page"] == 1
+        assert response_body["size"] == Params().size
+
+
 def get_dataset_url(
     connection_config: Optional[ConnectionConfig] = None,
     dataset_config: Optional[DatasetConfig] = None,
@@ -1597,6 +1645,88 @@ class TestGetDataset:
         response_body = json.loads(response.text)
         assert response_body["fides_key"] == dataset_config.fides_key
         assert len(response_body["collections"]) == 1
+
+
+def get_dataset_config_url(
+    connection_config: Optional[ConnectionConfig] = None,
+    dataset_config: Optional[DatasetConfig] = None,
+) -> str:
+    """Helper to construct the DATASETCONFIG_BY_KEY URL, substituting valid/invalid keys in the path"""
+    path = V1_URL_PREFIX + DATASETCONFIG_BY_KEY
+    connection_key = "nonexistent_key"
+    if connection_config:
+        connection_key = connection_config.key
+    fides_key = "nonexistent_key"
+    if dataset_config:
+        fides_key = dataset_config.fides_key
+    path_params = {"connection_key": connection_key, "fides_key": fides_key}
+    return path.format(**path_params)
+
+
+class TestGetDatasetConfig:
+    def test_get_dataset_config_not_authenticated(
+        self, dataset_config, connection_config, api_client
+    ) -> None:
+        dataset_url = get_dataset_config_url(connection_config, dataset_config)
+        response = api_client.get(dataset_url, headers={})
+        assert response.status_code == 401
+
+    def test_get_dataset_config_wrong_scope(
+        self,
+        dataset_config,
+        connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_dataset_config_url(connection_config, dataset_config)
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.get(dataset_url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_dataset_config_does_not_exist(
+        self,
+        dataset_config,
+        connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_dataset_config_url(connection_config, None)
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(dataset_url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_get_dataset_config_invalid_connection_key(
+        self,
+        dataset_config,
+        connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_dataset_config_url(None, dataset_config)
+        dataset_url.replace(connection_config.key, "nonexistent_key")
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(dataset_url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_get_dataset_config(
+        self,
+        dataset_config,
+        connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        dataset_url = get_dataset_config_url(connection_config, dataset_config)
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(dataset_url, headers=auth_header)
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert response_body["fides_key"] == dataset_config.fides_key
+        assert (
+            response_body["ctl_dataset"]["fides_key"]
+            == dataset_config.ctl_dataset.fides_key
+        )
+        assert len(response_body["ctl_dataset"]["collections"]) == 1
 
 
 class TestDeleteDataset:

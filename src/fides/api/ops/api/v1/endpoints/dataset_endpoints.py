@@ -33,6 +33,7 @@ from fides.api.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,
+    DATASETCONFIG_BY_KEY,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
@@ -54,6 +55,7 @@ from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
+    DatasetConfigSchema,
     DatasetTraversalDetails,
     ValidateDatasetResponse,
     validate_data_categories_against_db,
@@ -416,7 +418,10 @@ def get_datasets(
     params: Params = Depends(),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> AbstractPage[Dataset]:
-    """Returns all DatasetConfig datasets in the database."""
+    """Returns all CTL datasets attached to the ConnectionConfig via the Dataset Config.
+
+    Soon to be deprecated.
+    """
 
     logger.info(
         "Finding all datasets for connection '{}' with pagination params {}",
@@ -448,7 +453,10 @@ def get_dataset(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> Dataset:
-    """Returns a single dataset based on the given key."""
+    """Returns a single ctl dataset linked to the given DatasetConfig.
+
+    Soon to be deprecated
+    """
 
     logger.info(
         "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
@@ -466,6 +474,62 @@ def get_dataset(
             detail=f"No dataset with fides_key '{fides_key}' and connection key {connection_config.key}'",
         )
     return dataset_config.ctl_dataset
+
+
+@router.get(
+    DATASET_CONFIGS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=Page[DatasetConfigSchema],
+)
+def get_dataset_configs(
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> AbstractPage[DatasetConfig]:
+    """Returns all Dataset Configs attached to current Connection Config."""
+
+    logger.info(
+        "Finding all dataset configs for connection '{}' with pagination params {}",
+        connection_config.key,
+        params,
+    )
+    dataset_configs = DatasetConfig.filter(
+        db=db, conditions=(DatasetConfig.connection_config_id == connection_config.id)
+    ).order_by(DatasetConfig.created_at.desc())
+
+    return paginate(dataset_configs, params)
+
+
+@router.get(
+    DATASETCONFIG_BY_KEY,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=DatasetConfigSchema,
+)
+def get_dataset_config(
+    fides_key: FidesKey,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> DatasetConfig:
+    """Returns the specific Dataset Config linked to the Connection Config."""
+
+    logger.info(
+        "Finding dataset config '{}' for connection '{}'",
+        fides_key,
+        connection_config.key,
+    )
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == fides_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{fides_key}' and connection key {connection_config.key}'",
+        )
+    return dataset_config
 
 
 @router.delete(
