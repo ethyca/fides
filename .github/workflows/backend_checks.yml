@@ -12,6 +12,7 @@ env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.7"
 
+# Add another job that collects tests
 jobs:
   Build:
     strategy:
