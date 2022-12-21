@@ -12,7 +12,6 @@ env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.7"
 
-# Add another job that collects tests
 jobs:
   Build:
     strategy:
@@ -46,6 +45,24 @@ jobs:
           path: /tmp/python-${{ matrix.python_version }}.tar
           retention-days: 1
 
+  Collect-Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run Static Check
+        run: nox -s collect_tests
+
   ###################
   ## Static Checks ##
   ###################
@@ -76,8 +93,9 @@ jobs:
   ## Safe Checks ##
   #################
   Safe-Tests:
-    needs: Build
-
+    needs:
+      - Build
+      - Collect-Tests
     strategy:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
@@ -146,7 +164,9 @@ jobs:
   # NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
 
   Pytest-Ctl-External:
-    needs: Build
+    needs:
+      - Build
+      - Collect-Tests
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
@@ -184,7 +204,9 @@ jobs:
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
   External-Datastores:
-    needs: Build
+    needs:
+      - Build
+      - Collect-Tests
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
@@ -220,7 +242,9 @@ jobs:
         run: nox -s "pytest_ops(external-datastores)"
 
   External-SaaS-Connectors:
-    needs: Build
+    needs:
+      - Build
+      - Collect-Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     continue-on-error: true
