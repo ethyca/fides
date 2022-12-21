@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
