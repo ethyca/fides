@@ -60,6 +60,8 @@ export const STEPS: AddConnectionStep[] = [
   {
     stepId: 1,
     label: "Choose your connection",
+    description:
+      "The building blocks of your data map are the list of systems that exist in your organization. Think of systems as anything that might store or process data in your organization, from a web application, to a database, or data warehouse.",
     href: `${DATASTORE_CONNECTION_ROUTE}/new?step=1`,
     parentStepId: 0,
   },

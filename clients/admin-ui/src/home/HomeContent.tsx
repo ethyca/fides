@@ -46,7 +46,7 @@ const HomeContent: React.FC = () => {
   const list = getCardList();
 
   return (
-    <Center>
+    <Center px="36px">
       <SimpleGrid
         columns={list.length >= COLUMNS ? COLUMNS : list.length}
         spacing="24px"
