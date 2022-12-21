@@ -25,7 +25,7 @@ from fides.api.ops.util.saas_util import (
     PRIVACY_REQUEST_ID,
     unflatten_dict,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 

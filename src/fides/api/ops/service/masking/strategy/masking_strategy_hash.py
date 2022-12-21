@@ -18,7 +18,7 @@ from fides.api.ops.service.masking.strategy.format_preservation import (
 )
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.ops.util.encryption.secrets_util import SecretsUtil
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 

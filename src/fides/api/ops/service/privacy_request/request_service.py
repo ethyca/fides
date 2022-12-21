@@ -15,7 +15,7 @@ from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.privacy_request import PrivacyRequestResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 

@@ -7,12 +7,12 @@ from typing import Dict, List, Tuple
 import pandas as pd
 from fideslang.models import ContactDetails, FidesModel
 
-from fides.ctl.core.api_helpers import (
+from fides.core.api_helpers import (
     get_server_resource,
     get_server_resources,
     list_server_resources,
 )
-from fides.ctl.core.export_helpers import (
+from fides.core.export_helpers import (
     convert_tuple_to_string,
     export_datamap_to_excel,
     export_to_csv,
@@ -22,7 +22,7 @@ from fides.ctl.core.export_helpers import (
     get_formatted_data_protection_impact_assessment,
     union_data_categories_in_joined_dataframe,
 )
-from fides.ctl.core.utils import echo_green, get_all_level_fields
+from fides.core.utils import echo_green, get_all_level_fields
 
 EMPTY_COLUMN_PLACEHOLDER = "N/A"
 

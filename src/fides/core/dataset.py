@@ -7,10 +7,10 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 
-from fides.ctl.connectors.bigquery import get_bigquery_engine
-from fides.ctl.connectors.models import BigQueryConfig
-from fides.ctl.core.api_helpers import list_server_resources
-from fides.ctl.core.parse import parse
+from fides.connectors.bigquery import get_bigquery_engine
+from fides.connectors.models import BigQueryConfig
+from fides.core.api_helpers import list_server_resources
+from fides.core.parse import parse
 
 from .utils import (
     check_fides_key,

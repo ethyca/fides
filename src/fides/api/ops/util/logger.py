@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from loguru import logger
 
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 MASKED = "MASKED"
 

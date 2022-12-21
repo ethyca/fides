@@ -4,7 +4,7 @@ from fastapi import Depends, Security
 from fastapi.security import SecurityScopes
 from sqlalchemy.orm import Session
 
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.db.session import get_db_session
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.api.urn_registry import TOKEN, V1_URL_PREFIX

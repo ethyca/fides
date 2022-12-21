@@ -17,9 +17,14 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.3.1...main)
 
+### Changed
+
+* Move the `fides.ctl.core.` and `fides.ctl.connectors` modules into `fides.core` and `fides.connectors` respectively [#2097](https://github.com/ethyca/fides/pull/2097)
+
 ### Added
-Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
-Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
+
+* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+* Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
@@ -31,11 +36,11 @@ Added the connection key to the execution log [#2100](https://github.com/ethyca/
 
 * Nav redesign with sidebar groups. Feature flagged to only be visible in dev mode until release. [#2030](https://github.com/ethyca/fides/pull/2047)
 * Improved error handling for incorrect app encryption key [#2089](https://github.com/ethyca/fides/pull/2089)
+* Access and erasure support for Friendbuy API [#2019](https://github.com/ethyca/fides/pull/2019)
 
 ### Fixed
 
 * Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
-
 
 ## [2.3.0](https://github.com/ethyca/fides/compare/2.2.2...2.3.0)
 
@@ -48,12 +53,17 @@ Added the connection key to the execution log [#2100](https://github.com/ethyca/
 * DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
 * Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
 
+### Added
+
+* Adds notifications section to toml files [#2026](https://github.com/ethyca/fides/pull/2060)
+
 ### Changed
 
 * Updated to use `loguru` logging library throughout codebase [#2031](https://github.com/ethyca/fides/pull/2031)
 * Do not always create a `fides.toml` by default [#2023](https://github.com/ethyca/fides/pull/2023)
 * The `fideslib` module has been merged into `fides`, code redundancies have been removed [#1859](https://github.com/ethyca/fides/pull/1859)
 * Replace 'ingress' and 'egress' with 'sources' and 'destinations' across UI [#2044](https://github.com/ethyca/fides/pull/2044)
+* Update the functionality of `fides pull -a <filename>` to include _all_ resource types. [#2083](https://github.com/ethyca/fides/pull/2083)
 
 ### Fixed
 
