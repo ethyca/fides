@@ -200,7 +200,13 @@ def patch_dataset_configs(
                 status_code=HTTP_404_NOT_FOUND,
                 detail=f"No ctl dataset with key '{dataset_pair.ctl_dataset_fides_key}'",
             )
-        fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
+
+        try:
+            fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
+        except PydanticValidationError as e:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+            )
         validate_data_categories(fetched_dataset, db)
 
         data = {

@@ -434,13 +434,13 @@ class TestPutDatasetConfigs:
             }
         ]
 
-    def test_patch_datasets_not_authenticated(
+    def test_patch_dataset_configs_not_authenticated(
         self, datasets_url, api_client, request_body
     ) -> None:
         response = api_client.patch(datasets_url, headers={}, json=request_body)
         assert response.status_code == 401
 
-    def test_patch_datasets_wrong_scope(
+    def test_patch_dataset_configs_wrong_scope(
         self,
         request_body,
         datasets_url,
@@ -453,7 +453,7 @@ class TestPutDatasetConfigs:
         )
         assert response.status_code == 403
 
-    def test_patch_create_datasets_by_ctl_dataset_key(
+    def test_create_dataset_configs_by_ctl_dataset_key(
         self,
         ctl_dataset,
         generate_auth_header,
@@ -485,7 +485,7 @@ class TestPutDatasetConfigs:
 
         dataset_config.delete(db)
 
-    def test_patch_create_datasetconfig_bad_data_category(
+    def test_create_datasetconfigs_bad_data_category(
         self,
         ctl_dataset,
         generate_auth_header,
@@ -516,10 +516,10 @@ class TestPutDatasetConfigs:
             == "The data category bad_category is not supported."
         )
 
-    def test_patch_datasets_invalid_connection_key(
+    def test_create_datasets_configs_invalid_connection_key(
         self, request_body, api_client: TestClient, generate_auth_header
     ) -> None:
-        path = V1_URL_PREFIX + DATASETS
+        path = V1_URL_PREFIX + DATASET_CONFIGS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
 
@@ -529,7 +529,7 @@ class TestPutDatasetConfigs:
         )
         assert response.status_code == 404
 
-    def test_patch_datasets_ctl_dataset_id_does_not_exist(
+    def test_patch_dataset_configs_ctl_dataset_id_does_not_exist(
         self, request_body, api_client: TestClient, generate_auth_header, datasets_url
     ) -> None:
         request_body.append(
@@ -545,7 +545,7 @@ class TestPutDatasetConfigs:
         )
         assert response.status_code == 404
 
-    def test_patch_datasets_bulk_create_limit_exceeded(
+    def test_patch_dataset_configs_bulk_create_limit_exceeded(
         self, api_client: TestClient, request_body, generate_auth_header, datasets_url
     ):
         payload = []
@@ -561,7 +561,7 @@ class TestPutDatasetConfigs:
             == "ensure this value has at most 50 items"
         )
 
-    def test_patch_create_datasets_bulk_create(
+    def test_patch_create_dataset_configs_bulk_create(
         self,
         ctl_dataset,
         generate_auth_header,
@@ -664,7 +664,7 @@ class TestPutDatasetConfigs:
         assert len(dataset_config.ctl_dataset.collections) == 1
 
     @pytest.mark.unit_saas
-    def test_patch_datasets_missing_saas_config(
+    def test_patch_dataset_configs_missing_saas_config(
         self,
         saas_example_connection_config_without_saas_config,
         saas_ctl_dataset,
@@ -700,7 +700,7 @@ class TestPutDatasetConfigs:
         )
 
     @pytest.mark.unit_saas
-    def test_patch_datasets_extra_reference(
+    def test_patch_dataset_configs_extra_reference(
         self,
         saas_example_connection_config,
         saas_ctl_dataset,
@@ -748,7 +748,7 @@ class TestPutDatasetConfigs:
         )
 
     @pytest.mark.unit_saas
-    def test_patch_datasets_extra_identity(
+    def test_patch_dataset_configs_extra_identity(
         self,
         saas_example_connection_config,
         saas_ctl_dataset,
@@ -790,7 +790,7 @@ class TestPutDatasetConfigs:
         ), "Validation is done when attaching dataset to Saas Config"
 
     @pytest.mark.unit_saas
-    def test_patch_datasets_fides_key_mismatch(
+    def test_patch_dataset_configs_fides_key_mismatch(
         self,
         saas_example_connection_config,
         saas_ctl_dataset,
@@ -832,7 +832,7 @@ class TestPutDatasetConfigs:
         )
 
     @mock.patch("fides.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
-    def test_patch_datasets_failed_response(
+    def test_patch_dataset_configs_failed_response(
         self,
         mock_create: Mock,
         request_body,
@@ -856,6 +856,28 @@ class TestPutDatasetConfigs:
 
         for index, failed in enumerate(response_body["failed"]):
             assert failed["data"]["fides_key"] == request_body[0]["fides_key"]
+
+    def test_patch_dataset_configs_failed_ctl_dataset_validation(
+        self,
+        ctl_dataset,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        db,
+        request_body,
+    ):
+        ctl_dataset.organization_fides_key = None
+        db.add(ctl_dataset)
+        db.commit()
+        db.refresh(ctl_dataset)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=request_body,
+        )
+        assert response.status_code == 422
 
 
 class TestPutDatasets:
