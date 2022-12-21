@@ -17,7 +17,7 @@ from loguru import logger
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from fides.ctl.connectors.models import ConnectorAuthFailureException
+from fides.connectors.models import ConnectorAuthFailureException
 
 logger.bind(name="server_api")
 

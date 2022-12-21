@@ -7,7 +7,7 @@ from fastapi.security import SecurityScopes
 from jose import exceptions, jwe
 from sqlalchemy.orm import Session
 
-from fides.ctl.core.config import FidesConfig
+from fides.core.config import FidesConfig
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

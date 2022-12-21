@@ -2,7 +2,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.urn_registry import ID_VERIFICATION_CONFIG, V1_URL_PREFIX
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 
 class TestGetIdentityVerificationConfig:

@@ -5,8 +5,8 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from fides.ctl.core.config import get_config
-from fides.ctl.core.config.database_settings import DatabaseSettings
+from fides.core.config import get_config
+from fides.core.config.database_settings import DatabaseSettings
 from fides.lib.exceptions import MissingConfig
 
 REQUIRED_ENV_VARS = {

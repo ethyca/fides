@@ -9,7 +9,7 @@ from loguru import logger as log
 
 from fides import __version__ as fides_version
 from fides.api.ops.models.registration import UserRegistration
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 

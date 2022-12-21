@@ -6,8 +6,8 @@ from fideslang import model_list
 from fideslang.manifests import load_yaml_into_dict
 
 from fides.cli.utils import print_divider
-from fides.ctl.core.api_helpers import get_server_resource, list_server_resources
-from fides.ctl.core.utils import echo_green, get_manifest_list
+from fides.core.api_helpers import get_server_resource, list_server_resources
+from fides.core.utils import echo_green, get_manifest_list
 
 MODEL_LIST = model_list
 

@@ -6,7 +6,7 @@ from typing import Dict, Optional
 
 from pydantic import PostgresDsn, validator
 
-from fides.ctl.core.config.utils import get_test_mode
+from fides.core.config.utils import get_test_mode
 
 from .fides_settings import FidesSettings
 

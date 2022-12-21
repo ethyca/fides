@@ -8,7 +8,7 @@ from starlette.testclient import TestClient
 
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.routes.validate import ValidateResponse
-from fides.ctl.core.config import FidesConfig
+from fides.core.config import FidesConfig
 
 EXTERNAL_CONFIG_BODY = {
     "aws": {
