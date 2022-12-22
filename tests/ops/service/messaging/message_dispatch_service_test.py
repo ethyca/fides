@@ -115,6 +115,10 @@ def test_email_dispatch_mailgun_config_no_secrets(
 
 def test_email_dispatch_mailgun_failed_email(db: Session, messaging_config) -> None:
     with requests_mock.Mocker() as mock_response:
+        mock_response.get(
+            f"https://api.mailgun.net/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{messaging_config.details[MessagingServiceDetails.DOMAIN.value]}/templates/fides",
+            status_code=404,
+        )
         mock_response.post(
             f"https://api.mailgun.net/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{messaging_config.details[MessagingServiceDetails.DOMAIN.value]}/messages",
             json={

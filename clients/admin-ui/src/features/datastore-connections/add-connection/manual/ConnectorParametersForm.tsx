@@ -55,7 +55,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       })}
     >
       <Form noValidate>
-        <VStack align="stretch" gap="24px">
+        <VStack align="stretch" gap="16px">
           {/* Name */}
           <CustomInput
             autoFocus

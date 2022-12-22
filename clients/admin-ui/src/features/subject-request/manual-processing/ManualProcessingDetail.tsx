@@ -19,7 +19,7 @@ import {
   useDisclosure,
   VStack,
 } from "@fidesui/react";
-import { Field, Form, Formik } from "formik";
+import { Field, FieldInputProps, Form, Formik } from "formik";
 import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
 import React, { useRef } from "react";
 import * as Yup from "yup";
@@ -121,7 +121,7 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
                     {Object.entries(data.fields).map(([key], index) => (
                       <HStack key={key}>
                         <Field id={key} name={key}>
-                          {({ field }: { field: any }) => (
+                          {({ field }: { field: FieldInputProps<string> }) => (
                             <FormControl
                               alignItems="baseline"
                               display="inline-flex"

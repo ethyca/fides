@@ -1,37 +1,22 @@
-import { Flex, Heading, Spacer } from "@fidesui/react";
 import type { NextPage } from "next";
-import dynamic from "next/dynamic";
-import RequestFilters from "privacy-requests/RequestFilters";
-import RequestTable from "privacy-requests/RequestTable";
-import { useEffect } from "react";
 
+import { useFeatures } from "~/features/common/features.slice";
 import Layout from "~/features/common/Layout";
-import { useDSRErrorAlert } from "~/features/privacy-requests/hooks/useDSRErrorAlert";
-
-const ActionButtons = dynamic(
-  () => import("~/features/privacy-requests/buttons/ActionButtons"),
-  { loading: () => <div>Loading...</div> }
-);
+import PrivacyRequestsContainer from "~/features/privacy-requests/PrivacyRequestsContainer";
+import HomeContainer from "~/home/HomeContainer";
 
 const Home: NextPage = () => {
-  const { processing } = useDSRErrorAlert();
-
-  useEffect(() => {
-    processing();
-  }, [processing]);
+  const { navV2 } = useFeatures();
 
   return (
-    <Layout title="Privacy Requests">
-      <Flex>
-        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-          Privacy Requests
-        </Heading>
-        <Spacer />
-        <ActionButtons />
-      </Flex>
-      <RequestFilters />
-      <RequestTable />
-    </Layout>
+    <>
+      {navV2 && <HomeContainer />}
+      {!navV2 && (
+        <Layout title="Privacy Requests">
+          <PrivacyRequestsContainer />
+        </Layout>
+      )}
+    </>
   );
 };
 
