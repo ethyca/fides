@@ -2,7 +2,11 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 
-import { SystemType } from "~/types/api";
+import {
+  BulkPutDataset,
+  Page_DatasetConfigSchema_,
+  SystemType,
+} from "~/types/api";
 
 import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_ROUTE } from "../../constants";
@@ -13,7 +17,6 @@ import {
   CreateAccessManualWebhookResponse,
   CreateSassConnectionConfigRequest,
   CreateSassConnectionConfigResponse,
-  DatasetsReponse,
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionRequest,
@@ -26,7 +29,7 @@ import {
   GetAllEnabledAccessManualWebhooksResponse,
   PatchAccessManualWebhookRequest,
   PatchAccessManualWebhookResponse,
-  PatchDatasetsRequest,
+  PatchDatasetsConfigRequest,
 } from "./types";
 
 function mapFiltersToSearchParams({
@@ -223,9 +226,9 @@ export const datastoreConnectionApi = createApi({
       ],
       keepUnusedDataFor: 1,
     }),
-    getDatasets: build.query<DatasetsReponse, string>({
+    getDatasetConfigs: build.query<Page_DatasetConfigSchema_, string>({
       query: (key) => ({
-        url: `${CONNECTION_ROUTE}/${key}/dataset`,
+        url: `${CONNECTION_ROUTE}/${key}/datasetconfig`,
       }),
       providesTags: () => ["DatastoreConnection"],
     }),
@@ -284,11 +287,14 @@ export const datastoreConnectionApi = createApi({
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
-    patchDataset: build.mutation<any, PatchDatasetsRequest>({
+    patchDatasetConfigs: build.mutation<
+      BulkPutDataset,
+      PatchDatasetsConfigRequest
+    >({
       query: (params) => ({
-        url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset`,
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/datasetconfig`,
         method: "PATCH",
-        body: params.datasets,
+        body: params.dataset_pairs,
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
@@ -331,12 +337,12 @@ export const {
   useGetAccessManualHookQuery,
   useGetAllEnabledAccessManualHooksQuery,
   useGetAllDatastoreConnectionsQuery,
-  useGetDatasetsQuery,
+  useGetDatasetConfigsQuery,
   useGetDatastoreConnectionByKeyQuery,
   useDeleteDatastoreConnectionMutation,
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchAccessManualWebhookMutation,
-  usePatchDatasetMutation,
+  usePatchDatasetConfigsMutation,
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionsMutation,
   useUpdateDatastoreConnectionSecretsMutation,

@@ -2,7 +2,12 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
-import { Dataset, GenerateRequestPayload, GenerateResponse } from "~/types/api";
+import {
+  BulkPutDataset,
+  Dataset,
+  GenerateRequestPayload,
+  GenerateResponse,
+} from "~/types/api";
 
 import { EditableType } from "./types";
 
@@ -59,6 +64,14 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Datasets"],
     }),
+    upsertDatasets: build.mutation<BulkPutDataset, Dataset[]>({
+      query: (datasets) => ({
+        url: `dataset/upsert`,
+        method: "POST",
+        body: datasets,
+      }),
+      invalidatesTags: ["Datasets"],
+    }),
     deleteDataset: build.mutation<DatasetDeleteResponse, string>({
       query: (key) => ({
         url: `dataset/${key}`,
@@ -81,6 +94,7 @@ export const {
   useGetAllDatasetsQuery,
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
+  useUpsertDatasetsMutation,
   useCreateDatasetMutation,
   useDeleteDatasetMutation,
   useGenerateDatasetMutation,
