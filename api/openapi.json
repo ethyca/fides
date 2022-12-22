@@ -10494,7 +10494,7 @@
             "type": "string"
           },
           "keyfile_creds": {
-            "$ref": "#/components/schemas/fides__ctl__connectors__models__KeyfileCreds"
+            "$ref": "#/components/schemas/fides__connectors__models__KeyfileCreds"
           }
         },
         "description": "The model for the connection config for BigQuery"
@@ -16213,7 +16213,7 @@
         },
         "description": "An external representation of a Fidesops Policy"
       },
-      "fides__ctl__connectors__models__KeyfileCreds": {
+      "fides__connectors__models__KeyfileCreds": {
         "title": "KeyfileCreds",
         "required": [
           "project_id"
