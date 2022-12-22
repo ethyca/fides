@@ -18,10 +18,9 @@ from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     ProvidedIdentity,
-    ProvidedIdentityType,
 )
-from fides.core.config import get_config
 from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
+from fides.core.config import get_config
 
 CONFIG = get_config()
 
