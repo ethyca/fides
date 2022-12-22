@@ -15,7 +15,9 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.3.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.4.0...main)
+
+## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
 ### Developer Experience
 
@@ -27,6 +29,7 @@ The types of changes are:
 * Fides: Skip cypress tests due to nav bar 2.0 [#2102](https://github.com/ethyca/fides/pull/2103)
 
 ### Added
+
 * Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 * New Fides Home page [#1864](https://github.com/ethyca/fides/pull/2050)
 * Nav 2.0 - Replace form flow side navs with top tabs [#2037](https://github.com/ethyca/fides/pull/2050)
