@@ -33,6 +33,10 @@ The types of changes are:
 * Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 * Added ability to use Mailgun templates when sending emails. [#2039](https://github.com/ethyca/fides/pull/2039)
 
+### Fixed
+
+* Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
+
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
 ### Fixed
@@ -44,10 +48,6 @@ The types of changes are:
 * Nav redesign with sidebar groups. Feature flagged to only be visible in dev mode until release. [#2030](https://github.com/ethyca/fides/pull/2047)
 * Improved error handling for incorrect app encryption key [#2089](https://github.com/ethyca/fides/pull/2089)
 * Access and erasure support for Friendbuy API [#2019](https://github.com/ethyca/fides/pull/2019)
-
-### Fixed
-
-* Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
 
 ## [2.3.0](https://github.com/ethyca/fides/compare/2.2.2...2.3.0)
 
