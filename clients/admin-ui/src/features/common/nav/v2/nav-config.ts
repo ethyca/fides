@@ -25,7 +25,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Privacy requests",
-    requiresConnections: true,
+    requiresConnections: false,
     routes: [
       { title: "Request manager", path: "/privacy-requests" },
       { title: "Connection manager", path: "/datastore-connection" },
@@ -33,7 +33,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Data map",
-    requiresSystems: true,
+    requiresSystems: false,
     routes: [
       { title: "View map", path: "/datamap", requiresPlus: true },
       { title: "View systems", path: "/system" },
