@@ -146,7 +146,7 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 

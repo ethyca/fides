@@ -46,7 +46,7 @@ from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 

@@ -3,7 +3,7 @@ import os
 import pytest
 
 from fides.api.ops.util.logger import MASKED, Pii
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 

@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from fides.ctl.core.config import FidesConfig, get_config
+from fides.core.config import FidesConfig, get_config
 from fides.lib.db.base import (  # type: ignore[attr-defined]
     Base,
     ClientDetail,

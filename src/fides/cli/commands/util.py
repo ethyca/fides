@@ -13,8 +13,8 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
-from fides.ctl.core.config.helpers import create_config_file
-from fides.ctl.core.deploy import (
+from fides.core.config.helpers import create_config_file
+from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,
     print_deploy_success,
@@ -23,7 +23,7 @@ from fides.ctl.core.deploy import (
     start_application,
     teardown_application,
 )
-from fides.ctl.core.utils import echo_green
+from fides.core.utils import echo_green
 
 
 @click.command()

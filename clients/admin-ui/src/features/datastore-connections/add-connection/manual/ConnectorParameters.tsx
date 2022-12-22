@@ -73,7 +73,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
   };
 
   return (
-    <VStack align="stretch" gap="24px">
+    <VStack align="stretch" gap="16px">
       <Box color="gray.700" fontSize="14px">
         To begin setting up your new {connectionOption!.human_readable}{" "}
         connector you must first assign a name to the connector and a

@@ -8,10 +8,10 @@ from fideslang.models import Organization, System
 from pydantic import AnyHttpUrl
 
 from fides.cli.utils import handle_cli_response
-from fides.ctl.connectors.models import AWSConfig, OktaConfig
-from fides.ctl.core import api
-from fides.ctl.core.api_helpers import get_server_resource, get_server_resources
-from fides.ctl.core.parse import parse
+from fides.connectors.models import AWSConfig, OktaConfig
+from fides.core import api
+from fides.core.api_helpers import get_server_resource, get_server_resources
+from fides.core.parse import parse
 
 from .filters import filter_aws_systems
 from .utils import echo_green, echo_red
@@ -23,7 +23,7 @@ def generate_redshift_systems(
     """
     Fetches Redshift clusters from AWS and returns the transformed System representations.
     """
-    import fides.ctl.connectors.aws as aws_connector
+    import fides.connectors.aws as aws_connector
 
     client = aws_connector.get_aws_client(service="redshift", aws_config=aws_config)
     describe_clusters = aws_connector.describe_redshift_clusters(client=client)
@@ -39,7 +39,7 @@ def generate_rds_systems(
     """
     Fetches RDS clusters and instances from AWS and returns the transformed System representations.
     """
-    import fides.ctl.connectors.aws as aws_connector
+    import fides.connectors.aws as aws_connector
 
     client = aws_connector.get_aws_client(service="rds", aws_config=aws_config)
     describe_clusters = aws_connector.describe_rds_clusters(client=client)
@@ -58,7 +58,7 @@ def generate_resource_tagging_systems(
     """
     Fetches AWS Resources from the resource tagging api and returns the transformed System representations.
     """
-    import fides.ctl.connectors.aws as aws_connector
+    import fides.connectors.aws as aws_connector
 
     client = aws_connector.get_aws_client(
         service="resourcegroupstaggingapi", aws_config=aws_config
@@ -182,7 +182,7 @@ async def generate_okta_systems(
     applications and returns the corresponding systems.
     """
 
-    import fides.ctl.connectors.okta as okta_connector
+    import fides.connectors.okta as okta_connector
 
     okta_client = okta_connector.get_okta_client(okta_config)
     okta_applications = await okta_connector.list_okta_applications(

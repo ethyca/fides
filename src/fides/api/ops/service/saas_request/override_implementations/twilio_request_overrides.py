@@ -13,7 +13,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.ops.util.saas_util import to_pascal_case
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 

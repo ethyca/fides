@@ -20,7 +20,7 @@ from fides.api.ops.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
