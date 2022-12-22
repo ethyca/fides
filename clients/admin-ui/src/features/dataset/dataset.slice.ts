@@ -64,7 +64,10 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Datasets"],
     }),
-    upsertDatasets: build.mutation<BulkPutDataset, Dataset[]>({
+    /**
+     * Also accepts unknown for the same reason as above
+     */
+    upsertDatasets: build.mutation<BulkPutDataset, Dataset[] | unknown>({
       query: (datasets) => ({
         url: `dataset/upsert`,
         method: "POST",

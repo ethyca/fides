@@ -21,7 +21,7 @@ import React, { useRef, useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useFeatures } from "~/features/common/features.slice";
-import { DatasetConfigSchema } from "~/types/api";
+import { Dataset } from "~/types/api";
 
 const Editor = dynamic(
   // @ts-ignore
@@ -33,9 +33,9 @@ const isYamlException = (error: unknown): error is YAMLException =>
   narrow({ name: "string" }, error) && error.name === "YAMLException";
 
 type YamlEditorFormProps = {
-  data: DatasetConfigSchema[];
+  data: Dataset[];
   isSubmitting: boolean;
-  onSubmit: (value: any) => void;
+  onSubmit: (value: unknown) => void;
 };
 
 const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
