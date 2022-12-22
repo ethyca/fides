@@ -330,7 +330,9 @@ def infer_target_identity_type(
 ) -> str:
     """
     Consent requests, unlike privacy requests, only accept 1 identity type- email or phone.
-    If both identity types are provided, use identity type if defined in CONFIG.notifications.notification_service_type, else default to email
+    These identity types are configurable as optional/required within the privacy center config.json.
+    If both identity types are provided, we'll use identity type if defined in
+    CONFIG.notifications.notification_service_type, else default to email.
     """
     if identity_data.email and identity_data.phone_number:
         messaging_method = get_messaging_method(
