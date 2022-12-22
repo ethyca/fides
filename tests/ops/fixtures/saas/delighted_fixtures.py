@@ -27,13 +27,15 @@ faker = Faker()
 def delighted_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "delighted.domain") or secrets["domain"],
-        "api_key": pydash.get(saas_config, "delighted.api_key") or secrets["api_key"]
+        "api_key": pydash.get(saas_config, "delighted.api_key") or secrets["api_key"],
     }
 
 
 @pytest.fixture(scope="session")
 def delighted_identity_email(saas_config):
-    return pydash.get(saas_config, "delighted.identity_email") or secrets["identity_email"]
+    return (
+        pydash.get(saas_config, "delighted.identity_email") or secrets["identity_email"]
+    )
 
 
 @pytest.fixture

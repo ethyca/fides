@@ -77,8 +77,7 @@ async def test_delighted_access_request_task(
             "survey_type",
             "score",
             "comment",
-            "permalink"
-            "created_at",
+            "permalink" "created_at",
             "updated_at",
         ],
     )

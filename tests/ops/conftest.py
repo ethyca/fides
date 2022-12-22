@@ -46,8 +46,8 @@ from .fixtures.saas.auth0_fixtures import *
 from .fixtures.saas.braze_fixtures import *
 from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
-from .fixtures.saas.domo_fixtures import *
 from .fixtures.saas.delighted_fixtures import *
+from .fixtures.saas.domo_fixtures import *
 from .fixtures.saas.doordash_fixtures import *
 from .fixtures.saas.friendbuy_fixtures import *
 from .fixtures.saas.fullstory_fixtures import *
