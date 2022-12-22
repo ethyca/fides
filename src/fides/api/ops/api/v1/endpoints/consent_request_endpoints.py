@@ -296,7 +296,9 @@ def _get_or_create_provided_identity(
     identity_data: Identity,
     identity_type: str,
 ) -> ProvidedIdentity:
-    """Based on desired identity type, retrieves or creates associated ProvidedIdentity"""
+    """Based on target identity type, retrieves or creates associated ProvidedIdentity"""
+    identity_type: str = infer_target_identity_type(identity_data, identity_type)
+
     if identity_type == ProvidedIdentityType.email.value and identity_data.email:
         identity = ProvidedIdentity.filter(
             db=db,
@@ -352,6 +354,31 @@ def _get_or_create_provided_identity(
             detail="Identity type not found in identity data",
         )
     return identity
+
+
+def infer_target_identity_type(
+    identity_data: Identity,
+    identity_type: str,
+) -> str:
+    """
+    Consent requests, unlike privacy requests, only accept 1 identity type- email or phone.
+    If both identity types are provided, use identity type if defined in CONFIG.notifications.notification_service_type, else default to email
+    """
+    if identity_data.email and identity_data.phone_number:
+        messaging_method = get_messaging_method(
+            CONFIG.notifications.notification_service_type
+        )
+        if messaging_method == MessagingMethod.EMAIL:
+            identity_type = ProvidedIdentityType.email.value
+        elif messaging_method == MessagingMethod.SMS:
+            identity_type = ProvidedIdentityType.phone_number.value
+        else:
+            identity_type = ProvidedIdentityType.email.value
+    elif identity_data.email:
+        identity_type = ProvidedIdentityType.email.value
+    elif identity_data.phone_number:
+        identity_type = ProvidedIdentityType.phone_number.value
+    return identity_type
 
 
 def _get_consent_request_and_provided_identity(
