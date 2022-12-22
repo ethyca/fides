@@ -11,7 +11,7 @@ from loguru import logger
 from pydantic import BaseSettings
 from toml import dump, load
 
-from fides.ctl.core.utils import echo_red
+from fides.core.utils import echo_red
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 

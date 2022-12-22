@@ -5,7 +5,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 from toml import load as load_toml
 
-from fides.ctl.core.config import FidesConfig, get_config
+from fides.core.config import FidesConfig, get_config
 from fides.lib.db.session import get_db_session
 
 CONFIG = get_config()

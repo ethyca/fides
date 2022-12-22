@@ -12,8 +12,8 @@ from sqlalchemy_utils.functions import create_database, database_exists
 from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
 
 from fides.api.ctl.utils.errors import get_full_exception_name
-from fides.ctl.core.config import get_config
-from fides.ctl.core.utils import get_db_engine
+from fides.core.config import get_config
+from fides.core.utils import get_db_engine
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 from .seed import load_default_resources

@@ -20,7 +20,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 
@@ -115,6 +115,10 @@ def test_email_dispatch_mailgun_config_no_secrets(
 
 def test_email_dispatch_mailgun_failed_email(db: Session, messaging_config) -> None:
     with requests_mock.Mocker() as mock_response:
+        mock_response.get(
+            f"https://api.mailgun.net/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{messaging_config.details[MessagingServiceDetails.DOMAIN.value]}/templates/fides",
+            status_code=404,
+        )
         mock_response.post(
             f"https://api.mailgun.net/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{messaging_config.details[MessagingServiceDetails.DOMAIN.value]}/messages",
             json={

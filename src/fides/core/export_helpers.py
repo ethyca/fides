@@ -10,7 +10,7 @@ from fideslang.validation import FidesKey
 
 DATAMAP_TEMPLATE = join(
     dirname(__file__),
-    "../../templates",
+    "../templates",
     "fides_datamap_template.xlsx",
 )
 

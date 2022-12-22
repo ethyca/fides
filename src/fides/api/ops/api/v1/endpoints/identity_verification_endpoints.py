@@ -10,7 +10,7 @@ from fides.api.ops.schemas.identity_verification import (
     IdentityVerificationConfigResponse,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
 

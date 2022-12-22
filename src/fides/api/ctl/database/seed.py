@@ -22,7 +22,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser

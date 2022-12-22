@@ -18,7 +18,7 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.models.audit_log import AuditLogAction
 from fides.lib.oauth.schemas.user import PrivacyRequestReviewer
 

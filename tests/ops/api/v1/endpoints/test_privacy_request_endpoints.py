@@ -84,7 +84,7 @@ from fides.api.ops.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

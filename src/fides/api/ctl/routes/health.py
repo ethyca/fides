@@ -13,7 +13,7 @@ from fides.api.ops.common_exceptions import RedisConnectionError
 from fides.api.ops.tasks import celery_app, get_worker_ids
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii
-from fides.ctl.core.config import FidesConfig, get_config
+from fides.core.config import FidesConfig, get_config
 
 CONFIG: FidesConfig = get_config()
 
