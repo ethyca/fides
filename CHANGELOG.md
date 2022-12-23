@@ -20,6 +20,7 @@ The types of changes are:
 ### Developer Experience
 
 * Include a pre-check workflow that collects the pytest suite [#2098](https://github.com/ethyca/fides/pull/2098)
+* Write to the application db when running the app locally. Write to the test db when running pytest [#1731](https://github.com/ethyca/fides/pull/1731)
 
 ### Changed
 
@@ -109,9 +110,6 @@ The types of changes are:
 ### Developer Experience
 
 * Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
-
-### Developer Experience
-* Write to the application db when running the app locally. Write to the test db when running pytest [#1731](https://github.com/ethyca/fides/pull/1731)
 
 
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
