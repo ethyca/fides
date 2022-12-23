@@ -1,0 +1,58 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Friendbuy SaaS Config
+  type: friendbuy
+  description: A sample schema representing the Friendbuy connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: token
+
+  external_references:
+    - name: friendbuy_user_id
+      label: Friendbuy User ID
+      description: Dataset reference to the location of Friendbuy User IDs
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <token>
+
+  test_request:
+    method: GET
+    path: /v2/customers
+    query_params:
+      - name: limit
+        value: 20
+
+  endpoints:
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /v2/customers/<id>
+          param_values:
+            - name: id
+              references:
+                - friendbuy_user_id
+          data_path: customer
+        delete:
+          method: POST
+          path: /v2/user_data/delete
+          body: |
+            {
+              "email_addresses": [
+                  "<email>"
+              ],
+              "notification_email": "<email>"
+            }
+          param_values:
+            - name: email
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.email_address
+                  direction: from

@@ -11,7 +11,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.service.connectors import TimescaleConnector
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.db.session import get_db_engine, get_db_session
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 

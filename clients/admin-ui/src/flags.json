@@ -2,5 +2,9 @@
   {
     "name": "configWizardStepper",
     "isActive": false
+  },
+  {
+    "name": "navV2",
+    "isActive": true
   }
 ]

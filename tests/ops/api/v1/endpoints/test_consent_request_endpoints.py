@@ -19,7 +19,7 @@ from fides.api.ops.models.privacy_request import (
     ConsentRequest,
     ProvidedIdentity,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 

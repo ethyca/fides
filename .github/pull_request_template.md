@@ -1,4 +1,4 @@
-Closes <issue>
+Closes #<issue>
 
 ### Code Changes
 
@@ -6,14 +6,14 @@ Closes <issue>
 
 ### Steps to Confirm
 
-* [ ] _list any manual steps taken to confirm the changes_
+* [ ] _list any manual steps for reviewers to confirm the changes_
 
 ### Pre-Merge Checklist
 
 * [ ] All CI Pipelines Succeeded
 * Documentation:
-  * [ ] documentation complete, PR opened in [fidesdocs](https://github.com/ethyca/fidesdocs)
-  * [ ] documentation issue created in [fidesdocs](https://github.com/ethyca/fidesdocs)
+  * [ ] documentation complete, [PR opened in fidesdocs](https://github.com/ethyca/fidesdocs/pulls)
+  * [ ] documentation [issue created in fidesdocs](https://github.com/ethyca/fidesdocs/issues/new/choose)
 * [ ] Issue Requirements are Met
 * [ ] Relevant Follow-Up Issues Created
 * [ ] Update `CHANGELOG.md`

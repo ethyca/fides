@@ -136,4 +136,5 @@ export const CONNECTION_TYPE_ROUTE = "/connection_type";
 export const CONFIG_WIZARD_ROUTE = "/add-systems";
 export const DATAMAP_ROUTE = "/datamap";
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
+export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
 export const SYSTEM_ROUTE = "/system";

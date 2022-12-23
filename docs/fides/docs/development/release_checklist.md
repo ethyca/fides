@@ -13,6 +13,7 @@ This checklist should be copy/pasted into the final pre-release PR, and checked 
 - [ ] `nox -s test_env` works (verify the admin UI, privacy center, CLI and webserver)
 - [ ] `nox -s "build(sample)"` works on the release branch, creating the sample images (this is also prereq for `fides deploy up`)
 - [ ] `fides deploy up --no-pull` works using the images built in previous step (verify the admin UI, privacy center, CLI and webserver)
+
 ```
 mkdir ~/fides-2-1-0-test
 cd ~/fides-2-1-0-test
@@ -33,11 +34,13 @@ exit
 
 ### CLI
 
+Run these from within `nox -s dev -- shell`
+
 - [ ] Run a `fides push`
 - [ ] Run a `fides pull`
 - [ ] Run a `fides evaluate`
-- [ ] Generate a dataset with `fides generate dataset db`
-- [ ] Scan a database with `fides scan dataset db`
+- [ ] Generate a dataset with `fides generate dataset db --credentials-id app_postgres test.yml`
+- [ ] Scan a database with `fides scan dataset db --credentials-id app_postgres`
 
 ### Admin UI
 
@@ -58,8 +61,8 @@ exit
 
 ## Post-Release Steps
 
-- [ ] Verify the ethyca-fides release is published to PyPi: https://pypi.org/project/ethyca-fides/#history
-- [ ] Verify the fides release is published to DockerHub: https://hub.docker.com/r/ethyca/fides
-- [ ] Verify the fides-privacy-center release is published to DockerHub: https://hub.docker.com/r/ethyca/fides-privacy-center
-- [ ] Verify the fides-sample-app release is published to DockerHub: https://hub.docker.com/r/ethyca/fides-sample-app
+- [ ] Verify the ethyca-fides release is published to PyPi: <https://pypi.org/project/ethyca-fides/#history>
+- [ ] Verify the fides release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides>
+- [ ] Verify the fides-privacy-center release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides-privacy-center>
+- [ ] Verify the fides-sample-app release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides-sample-app>
 - [ ] Smoke test the PyPi & DockerHub releases with a clean `pip install ethyca-fides` and `fides deploy up`

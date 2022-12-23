@@ -81,6 +81,11 @@ const useLogin = () => {
       return undefined;
     }
 
+    if (features.navV2) {
+      return "/";
+    }
+
+    // TODO: Remove the following code snippet once the navV2 flag is permanently removed.
     if (systems && systems.length > 0) {
       const datamapRoute = resolveLink({
         href: DATAMAP_ROUTE,

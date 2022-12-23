@@ -15,15 +15,34 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.3.1...main)
-
-### Added
-
-* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.4.0...main)
 
 ### Fixed
 
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
+
+## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
+
+### Developer Experience
+
+* Include a pre-check workflow that collects the pytest suite [#2098](https://github.com/ethyca/fides/pull/2098)
+
+### Changed
+
+* Move the `fides.ctl.core.` and `fides.ctl.connectors` modules into `fides.core` and `fides.connectors` respectively [#2097](https://github.com/ethyca/fides/pull/2097)
+* Fides: Skip cypress tests due to nav bar 2.0 [#2102](https://github.com/ethyca/fides/pull/2103)
+
+### Added
+
+* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+* New Fides Home page [#1864](https://github.com/ethyca/fides/pull/2050)
+* Nav 2.0 - Replace form flow side navs with top tabs [#2037](https://github.com/ethyca/fides/pull/2050)
+* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+* Added ability to use Mailgun templates when sending emails. [#2039](https://github.com/ethyca/fides/pull/2039)
+
+### Fixed
+
+* Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
@@ -34,11 +53,8 @@ The types of changes are:
 ### Added
 
 * Nav redesign with sidebar groups. Feature flagged to only be visible in dev mode until release. [#2030](https://github.com/ethyca/fides/pull/2047)
-
-### Fixed
-
-* Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
-
+* Improved error handling for incorrect app encryption key [#2089](https://github.com/ethyca/fides/pull/2089)
+* Access and erasure support for Friendbuy API [#2019](https://github.com/ethyca/fides/pull/2019)
 
 ## [2.3.0](https://github.com/ethyca/fides/compare/2.2.2...2.3.0)
 
@@ -51,12 +67,17 @@ The types of changes are:
 * DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
 * Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
 
+### Added
+
+* Adds notifications section to toml files [#2026](https://github.com/ethyca/fides/pull/2060)
+
 ### Changed
 
 * Updated to use `loguru` logging library throughout codebase [#2031](https://github.com/ethyca/fides/pull/2031)
 * Do not always create a `fides.toml` by default [#2023](https://github.com/ethyca/fides/pull/2023)
 * The `fideslib` module has been merged into `fides`, code redundancies have been removed [#1859](https://github.com/ethyca/fides/pull/1859)
 * Replace 'ingress' and 'egress' with 'sources' and 'destinations' across UI [#2044](https://github.com/ethyca/fides/pull/2044)
+* Update the functionality of `fides pull -a <filename>` to include _all_ resource types. [#2083](https://github.com/ethyca/fides/pull/2083)
 
 ### Fixed
 

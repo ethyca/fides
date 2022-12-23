@@ -28,7 +28,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.db.session import get_db_session
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
