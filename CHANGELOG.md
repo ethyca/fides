@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.4.0...main)
 
+### Fixed
+
+* Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
+
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
 ### Developer Experience
