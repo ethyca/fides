@@ -1,7 +1,7 @@
-import logging
 from typing import Any, Dict, List, Union
 
 import pydash
+from loguru import logger
 
 from fides.api.ops.schemas.saas.strategy_configuration import (
     UnwrapPostProcessorConfiguration,
@@ -9,8 +9,6 @@ from fides.api.ops.schemas.saas.strategy_configuration import (
 from fides.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class UnwrapPostProcessorStrategy(PostProcessorStrategy):
@@ -56,7 +54,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
             unwrapped = pydash.get(data, self.data_path)
             if unwrapped is None:
                 logger.warning(
-                    "%s could not be found for the following post processing strategy: %s",
+                    "{} could not be found for the following post processing strategy: {}",
                     self.data_path,
                     self.name,
                 )
@@ -67,7 +65,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
                 unwrapped = pydash.get(item, self.data_path)
                 if unwrapped is None:
                     logger.warning(
-                        "%s could not be found for the following post processing strategy: %s",
+                        "{} could not be found for the following post processing strategy: {}",
                         self.data_path,
                         self.name,
                     )

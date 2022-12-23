@@ -15,8 +15,8 @@ from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ctl.utils.errors import DatabaseUnavailableError, NotFoundError
-from fides.ctl.core.export import build_joined_dataframe
-from fides.ctl.core.export_helpers import DATAMAP_COLUMNS
+from fides.core.export import build_joined_dataframe
+from fides.core.export_helpers import DATAMAP_COLUMNS
 
 API_EXTRA_COLUMNS = {
     "system.fides_key": "System Fides Key",

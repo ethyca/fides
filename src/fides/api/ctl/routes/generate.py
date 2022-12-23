@@ -15,7 +15,7 @@ from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.ctl.connectors.models import (
+from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,
     ConnectorAuthFailureException,
@@ -23,9 +23,9 @@ from fides.ctl.connectors.models import (
     DatabaseConfig,
     OktaConfig,
 )
-from fides.ctl.core.dataset import generate_bigquery_datasets, generate_db_datasets
-from fides.ctl.core.system import generate_aws_systems, generate_okta_systems
-from fides.ctl.core.utils import validate_db_engine
+from fides.core.dataset import generate_bigquery_datasets, generate_db_datasets
+from fides.core.system import generate_aws_systems, generate_okta_systems
+from fides.core.utils import validate_db_engine
 
 
 class ValidTargets(str, Enum):
@@ -177,7 +177,7 @@ def generate_aws(
     """
     Returns a list of Systems found in AWS.
     """
-    from fides.ctl.connectors.aws import validate_credentials
+    from fides.connectors.aws import validate_credentials
 
     log.info("Validating AWS credentials")
     try:
@@ -200,7 +200,7 @@ async def generate_okta(
     """
     Returns a list of Systems found in Okta.
     """
-    from fides.ctl.connectors.okta import validate_credentials
+    from fides.connectors.okta import validate_credentials
 
     log.info("Validating Okta credentials")
     try:

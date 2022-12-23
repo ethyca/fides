@@ -41,7 +41,6 @@ module = [
   "dask.*",
   "deepdiff.*",
   "fideslang.*",
-  "fideslib.*",
   "fideslog.*",
   "firebase_admin.*",
   "google.api_core.*",
@@ -156,7 +155,7 @@ log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
 log_level = "INFO"
-addopts = ["--cov=fides.ctl.core",
+addopts = ["--cov=fides.core",
             "--cov=fides.cli",
             "--cov=fides.api",
             "--cov-report=term-missing",
@@ -193,6 +192,7 @@ markers = [
     "integration_fullstory",
     "integration_segment",
     "integration_sendgrid",
+    "integration_friendbuy",
     "integration_auth0",
     "integration_shopify",
     "integration_square",

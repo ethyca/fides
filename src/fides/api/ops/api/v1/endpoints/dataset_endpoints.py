@@ -1,4 +1,3 @@
-import logging
 from typing import List
 
 import yaml
@@ -7,6 +6,7 @@ from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -58,7 +58,6 @@ from fides.api.ops.util.saas_util import merge_datasets
 
 X_YAML = "application/x-yaml"
 
-logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
 
 
@@ -66,7 +65,7 @@ router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
 def _get_connection_config(
     connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
-    logger.info("Finding connection config with key '%s'", connection_key)
+    logger.info("Finding connection config with key '{}'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     if not connection_config:
         raise HTTPException(
@@ -119,7 +118,7 @@ def validate_dataset(
         Traversal(complete_graph, {k: None for k in unique_identities})
     except (TraversalError, ValidationError) as err:
         logger.warning(
-            "Traversal validation failed for dataset '%s': %s", dataset.fides_key, err
+            "Traversal validation failed for dataset '{}': {}", dataset.fides_key, err
         )
         return ValidateDatasetResponse(
             dataset=dataset,
@@ -129,7 +128,7 @@ def validate_dataset(
             ),
         )
 
-    logger.info("Validation successful for dataset '%s'!", dataset.fides_key)
+    logger.info("Validation successful for dataset '{}'!", dataset.fides_key)
     return ValidateDatasetResponse(
         dataset=dataset,
         traversal_details=DatasetTraversalDetails(
@@ -162,7 +161,7 @@ def patch_datasets(
 
     created_or_updated: List[FidesopsDataset] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for %s datasets", len(datasets))
+    logger.info("Starting bulk upsert for {} datasets", len(datasets))
 
     # warn if there are duplicate fides_keys within the datasets
     # valid datasets with the same fides_key will override each other
@@ -274,7 +273,7 @@ def create_or_update_dataset(
             )
         )
     except Exception:
-        logger.warning("Create/update failed for dataset '%s'.", data["fides_key"])
+        logger.warning("Create/update failed for dataset '{}'.", data["fides_key"])
         failed.append(
             BulkUpdateFailed(
                 message="Dataset create/update failed.",
@@ -323,7 +322,7 @@ def get_datasets(
     """Returns all datasets in the database."""
 
     logger.info(
-        "Finding all datasets for connection '%s' with pagination params %s",
+        "Finding all datasets for connection '{}' with pagination params {}",
         connection_config.key,
         params,
     )
@@ -355,7 +354,7 @@ def get_dataset(
     """Returns a single dataset based on the given key."""
 
     logger.info(
-        "Finding dataset '%s' for connection '%s'", fides_key, connection_config.key
+        "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
         db=db,
@@ -386,7 +385,7 @@ def delete_dataset(
     """Removes the dataset based on the given key."""
 
     logger.info(
-        "Finding dataset '%s' for connection '%s'", fides_key, connection_config.key
+        "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
         db=db,
@@ -402,6 +401,6 @@ def delete_dataset(
         )
 
     logger.info(
-        "Deleting dataset '%s' for connection '%s'", fides_key, connection_config.key
+        "Deleting dataset '{}' for connection '{}'", fides_key, connection_config.key
     )
     dataset_config.delete(db)

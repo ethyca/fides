@@ -12,11 +12,9 @@ import {
   useConsentRequestModal,
   ConsentRequestModal,
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
-import { hostUrl } from "~/constants";
+import { hostUrl, config } from "~/constants";
 import PrivacyCard from "../components/PrivacyCard";
 import ConsentCard from "../components/ConsentCard";
-
-import config from "../config/config.json";
 
 const Home: NextPage = () => {
   const [isVerificationRequired, setIsVerificationRequired] =

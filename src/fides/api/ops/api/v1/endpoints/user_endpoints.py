@@ -1,16 +1,9 @@
 import json
-import logging
 from typing import Optional
 
 import jose.exceptions
 from fastapi import Depends, HTTPException, Security
-from fideslib.cryptography.cryptographic_util import b64_str_to_str
-from fideslib.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
-from fideslib.exceptions import AuthenticationError
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.oauth_util import extract_payload
-from fideslib.oauth.schemas.user import UserPasswordReset, UserResponse, UserUpdate
+from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -34,10 +27,16 @@ from fides.api.ops.util.oauth_util import (
     oauth2_scheme,
     verify_oauth_client,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
+from fides.lib.cryptography.cryptographic_util import b64_str_to_str
+from fides.lib.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
+from fides.lib.exceptions import AuthenticationError
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.oauth.oauth_util import extract_payload
+from fides.lib.oauth.schemas.user import UserPasswordReset, UserResponse, UserUpdate
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
 
@@ -78,7 +77,7 @@ def update_user(
         )
 
     user.update(db=db, data=data.dict())
-    logger.info("Updated user with id: '%s'.", user.id)
+    logger.info("Updated user with id: '{}'.", user.id)
     return user
 
 
@@ -110,7 +109,7 @@ def update_user_password(
 
     current_user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
 
-    logger.info("Updated user with id: '%s'.", current_user.id)
+    logger.info("Updated user with id: '{}'.", current_user.id)
     return current_user
 
 

@@ -1,11 +1,11 @@
-import logging
 from typing import Optional
+
+from loguru import logger
 
 from fides.api.ops.common_exceptions import IdentityVerificationException
 from fides.api.ops.util.cache import FidesopsRedis, get_cache
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
-logger = logging.getLogger(__name__)
 CONFIG = get_config()
 
 
@@ -69,7 +69,7 @@ class IdentityVerificationMixin:
     def purge_verification_code(self) -> None:
         """Removes any verification codes from the cache so they can no longer be used."""
         logger.debug(
-            "Removing cached identity verification code for record with ID: %s",
+            "Removing cached identity verification code for record with ID: {}",
             self.id,  # type: ignore
         )
         cache = get_cache()
@@ -87,7 +87,7 @@ class IdentityVerificationMixin:
         attempt_count: int = self._get_cached_verification_code_attempt_count()
         if attempt_count >= CONFIG.security.identity_verification_attempt_limit:
             logger.debug(
-                "Failed identity verification attempt limit exceeded for record with ID: %s",
+                "Failed identity verification attempt limit exceeded for record with ID: {}",
                 self.id,  # type: ignore
             )
             # When the attempt_count we can remove the verification code entirely

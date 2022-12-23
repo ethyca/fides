@@ -4,11 +4,6 @@ Provides functions that seed the application with data.
 from typing import List
 
 from fideslang import DEFAULT_TAXONOMY
-from fideslib.exceptions import KeyOrNameAlreadyExists
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.models.fides_user_permissions import FidesUserPermissions
-from fideslib.utils.text import to_snake_case
 from loguru import logger as log
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,7 +23,12 @@ from fides.api.ops.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
+from fides.lib.exceptions import KeyOrNameAlreadyExists
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.utils.text import to_snake_case
 
 from .crud import create_resource, list_resource
 

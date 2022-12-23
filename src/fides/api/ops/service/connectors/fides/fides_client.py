@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 import requests
-from fideslib.oauth.schemas.user import UserLogin
 from httpx import AsyncClient
-from loguru import logger as log
+from loguru import logger
 from requests import PreparedRequest, Request, RequestException, Session
 
 from fides.api.ctl.utils.errors import FidesError
@@ -21,7 +20,8 @@ from fides.api.ops.service.privacy_request.request_service import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.wrappers import sync
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
+from fides.lib.oauth.schemas.user import UserLogin
 
 CONFIG = get_config()
 
@@ -52,18 +52,28 @@ class FidesClient:
 
     def login(self) -> None:
         ul: UserLogin = UserLogin(username=self.username, password=self.password)
+        logger.info(
+            "Logging in to remote fides {} with username '{}'...",
+            self.uri,
+            self.username,
+        )
         try:
             response = requests.post(
                 f"{self.uri}{urls.V1_URL_PREFIX}{urls.LOGIN}", json=ul.dict()
             )
         except RequestException as e:
-            log.error(f"Error logging in on remote Fides {self.uri}: {str(e)}")
+            logger.error("Error logging in on remote Fides {}: {}", self.uri, str(e))
             raise e
 
         if response.ok:
             self.token = response.json()["token_data"]["access_token"]
+            logger.info(
+                "Successfully logged in to remote fides {} with username '{}'",
+                self.uri,
+                self.username,
+            )
         else:
-            log.error(f"Error logging in on remote Fides {self.uri}")
+            logger.error("Error logging in on remote Fides {}", self.uri)
             response.raise_for_status()
 
     def authenticated_request(
@@ -105,6 +115,11 @@ class FidesClient:
             policy_key=policy_key,
         )
 
+        logger.info(
+            "Creating privacy request with external_id {} on remote fides {}...",
+            external_id,
+            self.uri,
+        )
         request: PreparedRequest = self.authenticated_request(
             method="POST",
             path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUEST_AUTHENTICATED,
@@ -112,14 +127,22 @@ class FidesClient:
         )
         response = self.session.send(request)
         if not response.ok:
-            log.error(f"Error creating privacy request on remote Fides {self.uri}")
+            logger.error("Error creating privacy request on remote Fides {}", self.uri)
             response.raise_for_status()
         if response.json()["failed"]:
             # TODO better handle errored state here?
             raise FidesError(
                 f"Failed privacy request creation on remote Fides {self.uri} with failure message: {response.json()['failed'][0]['message']}"
             )
-        return response.json()["succeeded"][0]["id"]
+
+        pr_id = response.json()["succeeded"][0]["id"]
+        logger.info(
+            "Successfully created privacy request with id {} and external_id {} on remote fides {}",
+            pr_id,
+            external_id,
+            self.uri,
+        )
+        return pr_id
 
     @sync
     async def poll_for_request_completion(
@@ -142,6 +165,11 @@ class FidesClient:
                 f"Unable to poll for request completion. No token for Fides connector for server {self.uri}"
             )
 
+        logger.info(
+            "Polling remote fides {} for completion of privacy request with id {}...",
+            self.uri,
+            privacy_request_id,
+        )
         status: PrivacyRequestResponse = await poll_server_for_completion(
             privacy_request_id=privacy_request_id,
             server_url=self.uri,
@@ -163,8 +191,10 @@ class FidesClient:
                 f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} was denied. Look at the remote Fides for more information."
             )
         if status.status == PrivacyRequestStatus.complete:
-            log.debug(
-                f"Privacy request [{privacy_request_id}] is complete on remote Fides {self.uri}!",
+            logger.info(
+                "Privacy request [{}] is complete on remote Fides {}!",
+                privacy_request_id,
+                self.uri,
             )
             return status
 
@@ -176,6 +206,18 @@ class FidesClient:
         """
         Return privacy request object that tracks its status
         """
+        if privacy_request_id:
+            logger.info(
+                "Retrieving request status for privacy request {} on remote fides {}...",
+                privacy_request_id,
+                self.uri,
+            )
+        else:
+            logger.info(
+                "Retrieving request status for all privacy requests on remote fides {}...",
+                self.uri,
+            )
+
         request: PreparedRequest = self.authenticated_request(
             method="GET",
             path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUESTS,
@@ -183,13 +225,26 @@ class FidesClient:
             if privacy_request_id
             else None,
         )
-        response = self.session.send(request)
+        response = self.session.send(request, timeout=5)
         if not response.ok:
-            log.error(
-                f"Error retrieving status of privacy request [{privacy_request_id}] on remote Fides {self.uri}",
+            logger.error(
+                "Error retrieving status of privacy request [{}] on remote Fides {}",
+                privacy_request_id,
+                self.uri,
             )
             response.raise_for_status()
 
+        if privacy_request_id:
+            logger.info(
+                "Retrieved request status for privacy request {} on remote fides {}",
+                privacy_request_id,
+                self.uri,
+            )
+        else:
+            logger.info(
+                "Retrieved request status for all privacy requests on remote fides {}",
+                self.uri,
+            )
         return response.json()["items"]
 
     def retrieve_request_results(
@@ -203,6 +258,11 @@ class FidesClient:
         Returns the filtered access results as a `Dict[str, List[Row]]
         """
         try:
+            logger.info(
+                "Retrieving request results for privacy request {} on remote fides {}...",
+                privacy_request_id,
+                self.uri,
+            )
             request = self.authenticated_request(
                 method="get",
                 path=f"{urls.V1_URL_PREFIX}{urls.PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
@@ -210,17 +270,23 @@ class FidesClient:
             )
             response = self.session.send(request)
         except requests.exceptions.HTTPError as e:
-            log.error(
-                "Error retrieving data from child server for privacy request %s: %s",
+            logger.error(
+                "Error retrieving data from child server for privacy request {}: {}",
                 privacy_request_id,
                 e,
             )
 
         if response.status_code != 200:
-            log.error(
-                "Error retrieving data from child server for privacy request %s: %s",
+            logger.error(
+                "Error retrieving data from child server for privacy request {}: {}",
                 privacy_request_id,
-                response.json(),
+                response.text,
             )
+            return {}
 
+        logger.info(
+            "Retrieved request results for privacy request {} on remote fides {}",
+            privacy_request_id,
+            self.uri,
+        )
         return response.json()

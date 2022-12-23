@@ -1,4 +1,5 @@
 import {
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -48,7 +49,7 @@ const CustomInput = ({
           fontSize="14px"
           fontWeight="semibold"
           htmlFor={props.id || props.name}
-          minWidth="141px"
+          minWidth="150px"
         >
           {label}
         </FormLabel>
@@ -93,16 +94,19 @@ const CustomInput = ({
             placeholder={props.placeholder}
             resize="none"
             size="sm"
+            value={field.value || ""}
           />
         )}
         <FormErrorMessage>{meta.error}</FormErrorMessage>
       </VStack>
       {displayHelpIcon && (
-        <CircleHelpIcon
-          marginLeft="8px"
+        <Flex
+          alignContent="center"
+          h="32px"
           visibility={helpIconVisibility ? "visible" : "hidden"}
-          _hover={{ cursor: "pointer" }}
-        />
+        >
+          <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
+        </Flex>
       )}
     </FormControl>
   );

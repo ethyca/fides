@@ -1,4 +1,4 @@
-import { Box, Center, SimpleGrid, Text } from "@fidesui/react";
+import { Box, Flex, SimpleGrid, Text } from "@fidesui/react";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import Link from "next/link";
 import React from "react";
@@ -30,7 +30,10 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
             cursor: "pointer",
           }}
         >
-          <Center
+          <Flex
+            alignItems="center"
+            justifyContent="start"
+            pl="24px"
             color="gray.700"
             fontSize="14px"
             fontStyle="normal"
@@ -40,7 +43,7 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
           >
             <ConnectionTypeLogo data={i.identifier} />
             <Text ml="12px">{i.human_readable}</Text>
-          </Center>
+          </Flex>
         </Box>
       </Link>
     ))}

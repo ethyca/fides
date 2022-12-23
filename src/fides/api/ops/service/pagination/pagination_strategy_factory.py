@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List
 
@@ -21,8 +20,6 @@ from fides.api.ops.service.pagination.pagination_strategy_offset import (
 if TYPE_CHECKING:
     from fides.api.ops.schemas.saas.strategy_configuration import StrategyConfiguration
     from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
-
-logger = logging.getLogger(__name__)
 
 
 class SupportedPaginationStrategies(Enum):

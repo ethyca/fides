@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import email
-import logging
 import re
 import time
 from functools import wraps
 from time import sleep
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
+from loguru import logger
 from requests import PreparedRequest, Request, Response, Session
 
 from fides.api.ops.common_exceptions import (
@@ -20,7 +20,7 @@ from fides.api.ops.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
@@ -29,7 +29,6 @@ if TYPE_CHECKING:
     from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 
-logger = logging.getLogger(__name__)
 CONFIG = get_config()
 
 
@@ -135,7 +134,7 @@ class AuthenticatedClient:
 
                     if attempt < retry_count:
                         logger.warning(
-                            "Retrying http request in %s seconds", sleep_time
+                            "Retrying http request in {} seconds", sleep_time
                         )
                         sleep(sleep_time)
 
@@ -189,7 +188,7 @@ class AuthenticatedClient:
         if not response.ok:
             if ignore_errors:
                 logger.info(
-                    "Ignoring errors on response with status code %s as configured.",
+                    "Ignoring errors on response with status code {} as configured.",
                     response.status_code,
                 )
                 return response
@@ -214,10 +213,10 @@ def log_request_and_response_for_debugging(
     if CONFIG.dev_mode:
         logger.info(
             "\n\n-----------SAAS REQUEST-----------"
-            "\n%s %s"
-            "\nheaders: %s"
-            "\nbody: %s"
-            "\nresponse: %s",
+            "\n{} {}"
+            "\nheaders: {}"
+            "\nbody: {}"
+            "\nresponse: {}",
             prepared_request.method,
             prepared_request.url,
             prepared_request.headers,

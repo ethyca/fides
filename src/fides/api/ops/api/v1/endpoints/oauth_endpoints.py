@@ -1,10 +1,8 @@
-import logging
-from typing import List
+from typing import List, Optional
 
 from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
-from fideslib.models.client import ClientDetail
-from fideslib.oauth.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
+from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -49,11 +47,15 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_authori
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.schemas.oauth import (
+    AccessToken,
+    OAuth2ClientCredentialsRequestForm,
+)
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 
-logger = logging.getLogger(__name__)
 
 CONFIG = get_config()
 
@@ -111,7 +113,7 @@ def create_client(
     scopes: List[str] = Body([]),
 ) -> ClientCreatedResponse:
     """Creates a new client and returns the credentials"""
-    logging.info("Creating new client")
+    logger.info("Creating new client")
     if not all(scope in SCOPE_REGISTRY for scope in scopes):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -136,7 +138,7 @@ def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
     if not client:
         return
-    logging.info("Deleting client")
+    logger.info("Deleting client")
     client.delete(db)
 
 
@@ -151,7 +153,7 @@ def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str
     if not client:
         return []
 
-    logging.info("Getting client scopes")
+    logger.info("Getting client scopes")
     return client.scopes
 
 
@@ -176,7 +178,7 @@ def set_client_scopes(
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
         )
 
-    logging.info("Updating client scopes")
+    logger.info("Updating client scopes")
     client.update(db, data={"scopes": scopes})
 
 
@@ -187,7 +189,7 @@ def set_client_scopes(
 )
 def read_scopes() -> List[str]:
     """Returns a list of all scopes available for assignment in the system"""
-    logging.info("Getting all available scopes")
+    logger.info("Getting all available scopes")
     return SCOPE_REGISTRY
 
 
@@ -199,9 +201,9 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
     """
 
     # find authentication request by state
-    authentication_request: AuthenticationRequest = AuthenticationRequest.get_by(
-        db, field="state", value=state
-    )
+    authentication_request: Optional[
+        AuthenticationRequest
+    ] = AuthenticationRequest.get_by(db, field="state", value=state)
     if not authentication_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

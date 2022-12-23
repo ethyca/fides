@@ -1,8 +1,8 @@
 import json
-import logging
 from typing import Any, Dict, List, Optional
 
 import requests
+from loguru import logger
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fides.api.ops.common_exceptions import ClientUnsuccessfulException
@@ -14,8 +14,6 @@ from fides.api.ops.schemas.connection_configuration import HttpsSchema
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.query_config import QueryConfig
 from fides.api.ops.util.collection_util import Row
-
-logger = logging.getLogger(__name__)
 
 
 class HTTPSConnector(BaseConnector[None]):

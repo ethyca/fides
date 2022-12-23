@@ -2,12 +2,12 @@ from typing import Generator
 
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory
-from fideslib.models.fides_user import FidesUser
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database import seed
-from fides.ctl.core import api as _api
-from fides.ctl.core.config import FidesConfig, get_config
+from fides.core import api as _api
+from fides.core.config import FidesConfig, get_config
+from fides.lib.models.fides_user import FidesUser
 
 CONFIG = get_config()
 

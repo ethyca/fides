@@ -1,9 +1,9 @@
 import copy
-import logging
 from collections import defaultdict
 from typing import Any, Dict, List
 
 import pydash
+from loguru import logger
 
 from fides.api.ops.task.refine_target_path import (
     DetailedPath,
@@ -13,8 +13,6 @@ from fides.api.ops.task.refine_target_path import (
 )
 from fides.api.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
 from fides.api.ops.util.logger import Pii
-
-logger = logging.getLogger(__name__)
 
 
 def filter_element_match(
@@ -103,7 +101,7 @@ def _remove_paths_from_row(
         if matched_array is None:
             # This case shouldn't happen - if this gets logged, we've done something wrong
             logger.info(
-                "_remove_paths_from_row call: Path %s in row %s not found.",
+                "_remove_paths_from_row call: Path {} in row {} not found.",
                 path,
                 Pii(row),
             )

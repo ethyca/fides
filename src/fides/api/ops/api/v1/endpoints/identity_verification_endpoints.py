@@ -1,4 +1,3 @@
-import logging
 from typing import Optional
 
 from fastapi import Depends
@@ -11,9 +10,8 @@ from fides.api.ops.schemas.identity_verification import (
     IdentityVerificationConfigResponse,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
-logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
 
 

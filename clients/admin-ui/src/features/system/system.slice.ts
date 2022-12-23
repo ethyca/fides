@@ -156,14 +156,19 @@ export const selectActiveClassifySystemFidesKey = createSelector(
   selectSystem,
   (state) => state.activeClassifySystemFidesKey
 );
+
+export const selectAllSystems = createSelector(
+  systemApi.endpoints.getAllSystems.select(),
+  ({ data }) => data
+);
+
 export const selectActiveClassifySystem = createSelector(
-  [(RootState) => RootState, selectActiveClassifySystemFidesKey],
-  (RootState, fidesKey) => {
+  [selectAllSystems, selectActiveClassifySystemFidesKey],
+  (allSystems, fidesKey) => {
     if (fidesKey === undefined) {
       return undefined;
     }
-    const allSystems: System[] | undefined =
-      systemApi.endpoints.getAllSystems.select()(RootState).data;
+
     const system = allSystems?.find((s) => s.fides_key === fidesKey);
     return system;
   }

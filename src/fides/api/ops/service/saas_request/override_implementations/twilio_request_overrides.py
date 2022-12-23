@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List
 
 import requests
@@ -14,10 +13,9 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.ops.util.saas_util import to_pascal_case
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @register("twilio_user_update", [SaaSRequestType.UPDATE])

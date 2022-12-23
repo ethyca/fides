@@ -159,6 +159,11 @@ task_retry_delay = 1
 [admin_ui]
 enabled = true
 
+[celery]
+event_queue_prefix = "fides_worker"
+task_default_queue = "fides"
+task_always_eager = true
+
 ```
 
 ## Configuration variable reference
@@ -256,6 +261,10 @@ The credentials section uses custom keys which can be referenced in certain comm
 | `my_aws.region_name` | String | Sets the `region_name` for `my_aws` credentials |
 | `my_okta.orgUrl` | String | Sets the `orgUrl` for `my_okta` credentials |
 | `my_okta.token` | String | Sets the `token` for `my_okta` credentials |
+
+#### Celery
+
+The celery section is a place for user-defined key-value overrides that get passed directly to Celery and are not validated by `fides`.
 
 #### Admin UI
 

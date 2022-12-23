@@ -1,7 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from fideslib.db.base_class import Base
-from fideslib.schemas.base_class import BaseSchema
 from pydantic import BaseConfig, create_model
 from sqlalchemy import Column, ForeignKey, String, text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -9,6 +7,8 @@ from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.lib.db.base_class import Base
+from fides.lib.schemas.base_class import BaseSchema
 
 
 class AccessManualWebhook(Base):
@@ -55,7 +55,8 @@ class AccessManualWebhook(Base):
         """Returns a dynamic Pydantic Schema for webhook fields that can keep the overlap between
         fields that are saved and fields that are defined here."""
         schema: BaseSchema = self.fields_schema
-        schema.__config__ = BaseConfig  # Extra is "ignore" on BaseConfig
+        # Extra is set to "ignore" on the BaseConfig
+        schema.__config__ = BaseConfig  # type: ignore[misc]
         return schema
 
     @property

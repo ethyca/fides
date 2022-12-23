@@ -72,6 +72,11 @@ which fidesops can communicate.
             "human_readable": "Fullstory"
         },
         {
+            "identifier": "friendbuy",
+            "type": "saas",
+            "human_readable": "Friendbuy"
+        },
+        {
             "identifier": "hubspot",
             "type": "saas",
             "human_readable": "HubSpot"

@@ -1,7 +1,6 @@
 from typing import Dict, List
 
 from fideslang import FidesModelType
-from fideslib.db.base import Base
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database.crud import get_resource, list_resource
@@ -10,6 +9,7 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
 )
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 API_PREFIX = "/api/v1"
 

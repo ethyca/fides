@@ -19,6 +19,9 @@ type ConfigurationSettingsNavProps = {
   selectedItem: string;
 };
 
+/**
+ * TODO: This file can be deleted once the navbar 2.0 is implemented.
+ */
 const ConfigurationSettingsNav: React.FC<ConfigurationSettingsNavProps> = ({
   menuOptions = [],
   onChange,

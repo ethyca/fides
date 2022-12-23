@@ -1,12 +1,12 @@
 from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
 
 from celery import Celery, Task
-from fideslib.core.config import load_toml
-from fideslib.db.session import get_db_session
 from loguru import logger
 from sqlalchemy.orm import Session
+from toml import load as load_toml
 
-from fides.ctl.core.config import get_config
+from fides.core.config import FidesConfig, get_config
+from fides.lib.db.session import get_db_session
 
 CONFIG = get_config()
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
@@ -25,7 +25,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         return self._session
 
 
-def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Celery:
+def _create_celery(config: FidesConfig = get_config()) -> Celery:
     """
     Returns a configured version of the Celery application
     """
@@ -34,21 +34,16 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
 
     celery_config: Dict[str, Any] = {
         # Defaults for the celery config
-        "broker_url": CONFIG.redis.connection_url,
-        "result_backend": CONFIG.redis.connection_url,
+        "broker_url": config.redis.connection_url,
+        "result_backend": config.redis.connection_url,
         "event_queue_prefix": "fides_worker",
         "task_always_eager": True,
-        # Fidesops requires this to route emails to separate queues
+        # Ops requires this to route emails to separate queues
         "task_create_missing_queues": True,
         "task_default_queue": "fides",
     }
 
-    try:
-        celery_config_overrides: MutableMapping[str, Any] = load_toml([config_path])
-    except FileNotFoundError as e:
-        logger.warning(f"{config_path} could not be loaded: %s", e)
-    else:
-        celery_config.update(celery_config_overrides)
+    celery_config.update(config.celery)
 
     app.conf.update(celery_config)
 
@@ -58,6 +53,7 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
             "fides.api.ops.tasks",
             "fides.api.ops.tasks.scheduled",
             "fides.api.ops.service.privacy_request",
+            "fides.api.ops.service.privacy_request.request_runner_service",
         ]
     )
     return app

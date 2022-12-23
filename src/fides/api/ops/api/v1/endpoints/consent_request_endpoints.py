@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import logging
 from typing import Optional
 
 from fastapi import Depends, HTTPException, Security
+from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -46,12 +46,11 @@ from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -100,7 +99,7 @@ def create_consent_request(
         try:
             send_verification_code_to_user(db, consent_request, data)
         except MessageDispatchException as exc:
-            logger.error("Error sending the verification code message: %s", str(exc))
+            logger.error("Error sending the verification code message: {}", str(exc))
             raise HTTPException(
                 status_code=HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error sending the verification code message: {str(exc)}",
@@ -291,7 +290,7 @@ def _get_consent_request_and_provided_identity(
             raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
         except PermissionError as exc:
             logger.info(
-                "Invalid verification code provided for %s.", consent_request.id
+                "Invalid verification code provided for {}.", consent_request.id
             )
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 

@@ -20,6 +20,8 @@ from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequest,
+    PrivacyRequestError,
+    PrivacyRequestNotifications,
     PrivacyRequestStatus,
     ProvidedIdentity,
     can_run_checkpoint,
@@ -800,3 +802,35 @@ def test_consent_request(db):
 
     assert Consent.get(db, object_id=consent_1.id) is None
     assert Consent.get(db, object_id=consent_2.id) is None
+
+
+def test_privacy_request_error_notification(db, policy):
+    PrivacyRequestNotifications.create(
+        db=db,
+        data={
+            "email": "some@email.com, another@email.com",
+            "notify_after_failures": 2,
+        },
+    )
+
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 1, 1),
+            "finished_processing_at": datetime(2021, 1, 1),
+            "requested_at": datetime(2021, 1, 1),
+            "status": PrivacyRequestStatus.error,
+            "origin": "https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+
+    privacy_request.error_processing(db)
+
+    unsent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
+    ).all()
+
+    assert len(unsent_errors) == 1

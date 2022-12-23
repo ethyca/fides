@@ -7,17 +7,9 @@ from typing import Any, Callable, Dict, Generator, List
 
 import pytest
 from fastapi.testclient import TestClient
-from fideslib.core.config import load_toml
-from fideslib.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fideslib.db.session import Session, get_db_engine, get_db_session
-from fideslib.models.client import ClientDetail
-from fideslib.oauth.jwt import generate_jwe
 from httpx import AsyncClient
 from sqlalchemy.exc import IntegrityError
+from toml import load as load_toml
 
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
@@ -25,7 +17,16 @@ from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.ctl.core.config import get_config
+from fides.core.api import db_action
+from fides.core.config import get_config
+from fides.lib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fides.lib.db.session import Session, get_db_engine, get_db_session
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.jwt import generate_jwe
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
@@ -47,6 +48,7 @@ from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
 from .fixtures.saas.domo_fixtures import *
 from .fixtures.saas.doordash_fixtures import *
+from .fixtures.saas.friendbuy_fixtures import *
 from .fixtures.saas.fullstory_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
@@ -249,7 +251,7 @@ def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
 
 @pytest.fixture(scope="session")
 def integration_config():
-    yield load_toml(["tests/ops/integration_test_config.toml"])
+    yield load_toml("tests/ops/integration_test_config.toml")
 
 
 @pytest.fixture(scope="session")

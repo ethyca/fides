@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import json
-import logging
 from itertools import product
 from typing import Any, Dict, List, Literal, Optional, TypeVar
 
 import pydash
+from loguru import logger
 
 from fides.api.ops.common_exceptions import FidesopsException
 from fides.api.ops.graph.config import ScalarField
@@ -25,10 +25,9 @@ from fides.api.ops.util.saas_util import (
     PRIVACY_REQUEST_ID,
     unflatten_dict,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
@@ -62,7 +61,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         try:
             requests = self.endpoints[collection_name].requests
         except KeyError:
-            logger.error("The '%s' endpoint is not defined", collection_name)
+            logger.error("The '{}' endpoint is not defined", collection_name)
             return []
 
         if not requests.read:
@@ -104,11 +103,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         )
         if request:
             logger.info(
-                "Found matching endpoint to %s '%s' collection", action, collection_name
+                "Found matching endpoint to {} '{}' collection", action, collection_name
             )
         else:
             logger.info(
-                "Unable to find matching endpoint to %s '%s' collection",
+                "Unable to find matching endpoint to {} '{}' collection",
                 action,
                 collection_name,
             )
@@ -145,7 +144,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action = action_type
 
             logger.info(
-                "Selecting '%s' action to perform masking request for '%s' collection.",
+                "Selecting '{}' action to perform masking request for '{}' collection.",
                 action_type,
                 self.collection_name,
             )
@@ -313,7 +312,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, self.current_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for %s", self.current_request.path)
+        logger.info("Populated request params for {}", self.current_request.path)
 
         return saas_request_params
 
@@ -429,7 +428,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, masking_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for %s", masking_request.path)
+        logger.info("Populated request params for {}", masking_request.path)
 
         return saas_request_params
 
