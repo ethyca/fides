@@ -96,7 +96,6 @@ class TestPatchConnections:
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         body = json.loads(response.text)
-        print(body)
         assert body["succeeded"][0]["connection_type"] == "https"
         http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
         http_config.delete(db)
