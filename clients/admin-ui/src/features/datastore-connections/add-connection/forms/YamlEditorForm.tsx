@@ -13,7 +13,6 @@ import {
 } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
 import { ErrorWarningIcon } from "common/Icon";
-import { Dataset } from "datastore-connections/types";
 import yaml, { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
 import dynamic from "next/dynamic";
@@ -22,6 +21,7 @@ import React, { useRef, useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useFeatures } from "~/features/common/features.slice";
+import { Dataset } from "~/types/api";
 
 const Editor = dynamic(
   // @ts-ignore
@@ -35,7 +35,7 @@ const isYamlException = (error: unknown): error is YAMLException =>
 type YamlEditorFormProps = {
   data: Dataset[];
   isSubmitting: boolean;
-  onSubmit: (value: any) => void;
+  onSubmit: (value: unknown) => void;
 };
 
 const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
@@ -131,6 +131,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
             _active={{ bg: "primary.500" }}
             _disabled={{ opacity: "inherit" }}
             _hover={{ bg: "primary.400" }}
+            data-testid="save-btn"
           >
             Save Yaml system
           </Button>
