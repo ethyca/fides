@@ -131,6 +131,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
             _active={{ bg: "primary.500" }}
             _disabled={{ opacity: "inherit" }}
             _hover={{ bg: "primary.400" }}
+            data-testid="save-btn"
           >
             Save Yaml system
           </Button>
