@@ -286,6 +286,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                         connectionOption!.human_readable
                       } connection`}
                       size="sm"
+                      data-testid="input-name"
                     />
                     <FormErrorMessage>{props.errors.name}</FormErrorMessage>
                   </VStack>

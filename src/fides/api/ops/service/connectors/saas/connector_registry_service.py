@@ -129,7 +129,7 @@ def upsert_dataset_config_from_template(
     data = {
         "connection_config_id": connection_config.id,
         "fides_key": template_values.instance_key,
-        "dataset": dataset_from_template,
+        "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
     }
     dataset_config = DatasetConfig.upsert_with_ctl_dataset(db, data=data)
     return dataset_config

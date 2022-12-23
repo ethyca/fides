@@ -183,7 +183,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
         if not template_values:
             logger.info(
                 "No email sent: no template values saved for '{}'",
-                ds.dataset.get("fides_key"),
+                ds.ctl_dataset.fides_key,
             )
             return
 
@@ -196,7 +196,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
             )
         ):
             logger.info(
-                "No email sent: no masking needed on '{}'", ds.dataset.get("fides_key")
+                "No email sent: no masking needed on '{}'", ds.ctl_dataset.fides_key
             )
             return
 
@@ -213,7 +213,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
         logger.info(
             "Email send succeeded for request '{}' for dataset: '{}'",
             privacy_request.id,
-            ds.dataset.get("fides_key"),
+            ds.ctl_dataset.fides_key,
         )
         AuditLog.create(
             db=db,
@@ -221,7 +221,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
                 "user_id": "system",
                 "privacy_request_id": privacy_request.id,
                 "action": AuditLogAction.email_sent,
-                "message": f"Erasure email instructions dispatched for '{ds.dataset.get('fides_key')}'",
+                "message": f"Erasure email instructions dispatched for '{ds.ctl_dataset.fides_key}'",
             },
         )
 

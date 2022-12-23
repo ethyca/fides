@@ -71,7 +71,6 @@ def mailchimp_override_dataset_config(
         data={
             "connection_config_id": mailchimp_override_connection_config.id,
             "fides_key": fides_key,
-            "dataset": mailchimp_override_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

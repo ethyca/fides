@@ -94,7 +94,6 @@ def auth0_dataset_config(
         data={
             "connection_config_id": auth0_connection_config.id,
             "fides_key": fides_key,
-            "dataset": auth0_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

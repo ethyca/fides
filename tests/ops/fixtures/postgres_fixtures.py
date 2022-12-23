@@ -49,7 +49,6 @@ def postgres_example_test_dataset_config(
         data={
             "connection_config_id": connection_config.id,
             "fides_key": fides_key,
-            "dataset": postgres_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
@@ -74,7 +73,6 @@ def postgres_example_test_dataset_config_read_access(
         data={
             "connection_config_id": read_connection_config.id,
             "fides_key": fides_key,
-            "dataset": postgres_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

@@ -116,7 +116,6 @@ def fullstory_dataset_config(
         data={
             "connection_config_id": fullstory_connection_config.id,
             "fides_key": fides_key,
-            "dataset": fullstory_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
@@ -168,7 +167,6 @@ def fullstory_postgres_dataset_config(
         data={
             "connection_config_id": connection_config.id,
             "fides_key": fides_key,
-            "dataset": fullstory_postgres_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

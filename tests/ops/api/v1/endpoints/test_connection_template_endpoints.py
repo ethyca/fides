@@ -735,7 +735,8 @@ class TestInstantiateConnectionFromTemplate:
         assert connection_config.last_test_succeeded is None
 
         assert dataset_config.connection_config_id == connection_config.id
-        assert dataset_config.dataset is not None
+        assert dataset_config.ctl_dataset_id is not None
 
         dataset_config.delete(db)
         connection_config.delete(db)
+        dataset_config.ctl_dataset.delete(db=db)

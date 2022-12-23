@@ -104,7 +104,6 @@ def shopify_dataset_config(
         data={
             "connection_config_id": shopify_connection_config.id,
             "fides_key": fides_key,
-            "dataset": shopify_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

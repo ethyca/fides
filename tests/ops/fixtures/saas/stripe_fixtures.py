@@ -106,7 +106,6 @@ def stripe_dataset_config(
         data={
             "connection_config_id": stripe_connection_config.id,
             "fides_key": fides_key,
-            "dataset": stripe_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

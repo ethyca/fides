@@ -1031,9 +1031,6 @@ dataset:
     - name: created_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: dataset
-      data_categories: [system.operations]
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: fides_key
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

@@ -167,7 +167,6 @@ def firebase_auth_dataset_config(
         data={
             "connection_config_id": firebase_auth_connection_config.id,
             "fides_key": fides_key,
-            "dataset": firebase_auth_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

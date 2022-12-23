@@ -80,7 +80,6 @@ def mariadb_example_test_dataset_config(
         data={
             "connection_config_id": connection_config_mariadb.id,
             "fides_key": fides_key,
-            "dataset": mariadb_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

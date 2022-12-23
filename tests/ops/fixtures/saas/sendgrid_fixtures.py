@@ -103,7 +103,6 @@ def sendgrid_dataset_config(
         data={
             "connection_config_id": sendgrid_connection_config.id,
             "fides_key": fides_key,
-            "dataset": sendgrid_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

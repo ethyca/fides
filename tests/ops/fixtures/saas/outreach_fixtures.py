@@ -108,7 +108,6 @@ def outreach_dataset_config(
         data={
             "connection_config_id": outreach_connection_config.id,
             "fides_key": fides_key,
-            "dataset": outreach_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

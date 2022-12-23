@@ -104,6 +104,18 @@ class DatasetConfigCtlDataset(BaseSchema):
     ctl_dataset_fides_key: FidesKey  # The fides_key for the ctl_datasets record
 
 
+class DatasetConfigSchema(BaseSchema):
+    """Returns the DatasetConfig fides key and the linked Ctl Dataset"""
+
+    fides_key: FidesKey
+    ctl_dataset: Dataset
+
+    class Config:
+        """Set ORM Mode to True."""
+
+        orm_mode = True
+
+
 class BulkPutDataset(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of Datasets."""
 

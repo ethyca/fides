@@ -107,7 +107,6 @@ def braze_dataset_config(
         data={
             "connection_config_id": braze_connection_config.id,
             "fides_key": fides_key,
-            "dataset": braze_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

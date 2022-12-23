@@ -4,8 +4,6 @@ from fideslang.models import Dataset, DatasetField, FidesDatasetReference
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
@@ -38,9 +36,6 @@ class DatasetConfig(Base):
         String, ForeignKey(ConnectionConfig.id_field_path), nullable=False
     )
     fides_key = Column(String, index=True, unique=True, nullable=False)
-    dataset = Column(
-        MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=False
-    )
     ctl_dataset_id = Column(
         String, ForeignKey(CtlDataset.id), index=True, nullable=False
     )
@@ -104,6 +99,7 @@ class DatasetConfig(Base):
             upsert_ctl_dataset(
                 dataset.ctl_dataset
             )  # Update existing ctl_dataset first.
+            data.pop("dataset", None)
             dataset.update(db=db, data=data)
         else:
             fetched_ctl_dataset = (
@@ -117,6 +113,7 @@ class DatasetConfig(Base):
                 fetched_ctl_dataset
             )  # Create/update existing ctl_dataset first
             data["ctl_dataset_id"] = ctl_dataset.id
+            data.pop("dataset", None)
             dataset = cls.create(db=db, data=data)
 
         return dataset

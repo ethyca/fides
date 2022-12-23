@@ -59,7 +59,6 @@ def dataset_config_mysql(
         data={
             "connection_config_id": connection_config.id,
             "fides_key": "mysql_example_subscriptions_dataset",
-            "dataset": dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
@@ -88,7 +87,6 @@ def mysql_example_test_dataset_config(
         data={
             "connection_config_id": connection_config_mysql.id,
             "fides_key": fides_key,
-            "dataset": mysql_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

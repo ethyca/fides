@@ -33,6 +33,7 @@ from fides.api.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,
+    DATASETCONFIG_BY_KEY,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
@@ -54,6 +55,7 @@ from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
+    DatasetConfigSchema,
     DatasetTraversalDetails,
     ValidateDatasetResponse,
     validate_data_categories_against_db,
@@ -64,7 +66,7 @@ from fides.api.ops.util.saas_util import merge_datasets
 
 X_YAML = "application/x-yaml"
 
-router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
+router = APIRouter(tags=["Dataset Configs"], prefix=V1_URL_PREFIX)
 
 
 # Helper method to inject the parent ConnectionConfig into these child routes
@@ -176,8 +178,8 @@ def patch_dataset_configs(
     1) A DatasetConfig fides_key
     2) The corresponding CtlDataset fides_key which stores the bulk of the actual dataset
 
-    Currently this endpoint looks up the ctl dataset and writes its contents back to the DatasetConfig.dataset
-    field for backwards compatibility but soon DatasetConfig.dataset will go away.
+    The CtlDataset contents are retrieved for extra validation before linking this
+    to the DatasetConfig.
 
     """
     created_or_updated: List[Dataset] = []
@@ -193,12 +195,23 @@ def patch_dataset_configs(
             .filter_by(fides_key=dataset_pair.ctl_dataset_fides_key)
             .first()
         )
-        fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
+        if not ctl_dataset:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=f"No ctl dataset with key '{dataset_pair.ctl_dataset_fides_key}'",
+            )
+
+        try:
+            fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
+        except PydanticValidationError as e:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+            )
+        validate_data_categories(fetched_dataset, db)
 
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": dataset_pair.fides_key,
-            "dataset": fetched_dataset.dict(),
             "ctl_dataset_id": ctl_dataset.id,
         }
 
@@ -233,7 +246,7 @@ def patch_datasets(
     Given a list of dataset elements, create or update corresponding Dataset objects
     or report failure
 
-    Use for bulk creating and/or updating DatasetConfig resources.
+    This endpoint upserts the DatasetConfig and associated CTL Dataset.  Will shortly be deprecated.
 
     If the fides_key for a given DatasetConfig exists, it will be treated as an update.
     Otherwise, a new DatasetConfig will be created.
@@ -256,7 +269,7 @@ def patch_datasets(
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": dataset.fides_key,
-            "dataset": dataset.dict(),
+            "dataset": dataset.dict(),  # Currently used for upserting a CTL Dataset
         }
         create_or_update_dataset(
             connection_config,
@@ -310,7 +323,7 @@ async def patch_yaml_datasets(
             data: dict = {
                 "connection_config_id": connection_config.id,
                 "fides_key": dataset["fides_key"],
-                "dataset": dataset,
+                "dataset": dataset,  # Currently used for upserting a CTL Dataset
             }
             create_or_update_dataset(
                 connection_config,
@@ -411,7 +424,10 @@ def get_datasets(
     params: Params = Depends(),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> AbstractPage[Dataset]:
-    """Returns all DatasetConfig datasets in the database."""
+    """Returns all CTL datasets attached to the ConnectionConfig via the Dataset Config.
+
+    Soon to be deprecated.
+    """
 
     logger.info(
         "Finding all datasets for connection '{}' with pagination params {}",
@@ -443,7 +459,10 @@ def get_dataset(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> Dataset:
-    """Returns a single dataset based on the given key."""
+    """Returns a single ctl dataset linked to the given DatasetConfig.
+
+    Soon to be deprecated
+    """
 
     logger.info(
         "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
@@ -461,6 +480,62 @@ def get_dataset(
             detail=f"No dataset with fides_key '{fides_key}' and connection key {connection_config.key}'",
         )
     return dataset_config.ctl_dataset
+
+
+@router.get(
+    DATASET_CONFIGS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=Page[DatasetConfigSchema],
+)
+def get_dataset_configs(
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> AbstractPage[DatasetConfig]:
+    """Returns all Dataset Configs attached to current Connection Config."""
+
+    logger.info(
+        "Finding all dataset configs for connection '{}' with pagination params {}",
+        connection_config.key,
+        params,
+    )
+    dataset_configs = DatasetConfig.filter(
+        db=db, conditions=(DatasetConfig.connection_config_id == connection_config.id)
+    ).order_by(DatasetConfig.created_at.desc())
+
+    return paginate(dataset_configs, params)
+
+
+@router.get(
+    DATASETCONFIG_BY_KEY,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=DatasetConfigSchema,
+)
+def get_dataset_config(
+    fides_key: FidesKey,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> DatasetConfig:
+    """Returns the specific Dataset Config linked to the Connection Config."""
+
+    logger.info(
+        "Finding dataset config '{}' for connection '{}'",
+        fides_key,
+        connection_config.key,
+    )
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == fides_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{fides_key}' and connection key {connection_config.key}'",
+        )
+    return dataset_config
 
 
 @router.delete(

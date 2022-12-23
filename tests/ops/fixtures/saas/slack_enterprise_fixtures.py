@@ -98,7 +98,6 @@ def slack_enterprise_dataset_config(
         data={
             "connection_config_id": slack_enterprise_connection_config.id,
             "fides_key": fides_key,
-            "dataset": slack_enterprise_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )

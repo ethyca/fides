@@ -33,17 +33,29 @@ const ConnectionMenu: React.FC<ConnectionMenuProps> = ({
   name,
 }) => (
   <Menu>
-    <MenuButton as={Button} size="xs" bg="white">
+    <MenuButton
+      as={Button}
+      size="xs"
+      bg="white"
+      data-testid="connection-menu-btn"
+    >
       <MoreIcon color="gray.700" w={18} h={18} />
     </MenuButton>
     <Portal>
-      <MenuList fontSize="sm" shadow="xl">
+      <MenuList
+        fontSize="sm"
+        shadow="xl"
+        data-testid={`connection-menu-${name}`}
+      >
         <NextLink
           href={`${DATASTORE_CONNECTION_ROUTE}/${encodeURIComponent(
             connection_key
           )}`}
         >
-          <MenuItem _focus={{ color: "complimentary.500", bg: "gray.100" }}>
+          <MenuItem
+            _focus={{ color: "complimentary.500", bg: "gray.100" }}
+            data-testid="configure-btn"
+          >
             Configure
           </MenuItem>
         </NextLink>

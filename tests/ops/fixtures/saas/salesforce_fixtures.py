@@ -120,7 +120,6 @@ def salesforce_dataset_config(
         data={
             "connection_config_id": salesforce_connection_config.id,
             "fides_key": fides_key,
-            "dataset": salesforce_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
