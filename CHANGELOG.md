@@ -43,6 +43,7 @@ The types of changes are:
 ### Fixed
 
 * Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
+* Properly set the expire-time for verification codes [#2105](https://github.com/ethyca/fides/pull/2105)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
