@@ -2,6 +2,7 @@ import uuid
 from typing import Tuple
 
 import pytest
+from requests import Session
 
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
@@ -15,6 +16,7 @@ from fides.api.ops.service.connectors.fides_connector import (
     FidesConnector,
     filter_fides_connector_datasets,
 )
+from fides.api.ops.service.privacy_request import request_service
 from tests.ops.graph.graph_test_util import assert_rows_match, generate_node
 
 
@@ -99,6 +101,10 @@ class TestFidesConnectorIntegration:
         self,
         test_fides_connector: FidesConnector,
         policy_local_storage: Policy,
+        monkeypatch,
+        authenticated_fides_client,
+        async_api_client,
+        api_client,
     ):
         # not working currently - need to look more closely.
         # maybe this type of integration would be better with a proper
@@ -114,9 +120,17 @@ class TestFidesConnectorIntegration:
         )
 
         # fides connector functionality does not really make use of the node
-        # so we can create just a placehodler
+        # so we can create just a placeholder
         node = TraversalNode(
             generate_node("fides_dataset", "fides_collection", "test_field")
+        )
+
+        # Monkey patch both Session.send and the httpx.AsyncClient. Both of these will just
+        # make requests to the running webserver which is connected to the application db,
+        # but we need them to talk to the test db in pytest
+        monkeypatch.setattr(Session, "send", api_client.send)
+        monkeypatch.setattr(
+            request_service, "get_async_client", lambda: async_api_client
         )
 
         result = test_fides_connector.retrieve_data(
@@ -126,7 +140,7 @@ class TestFidesConnectorIntegration:
             input_data=[],
         )
 
-        # there should be only one "row" per connnector result
+        # there should be only one "row" per connector result
         assert len(result) == 1
         for rule in policy_local_storage.get_rules_for_action(
             action_type=ActionType.access
