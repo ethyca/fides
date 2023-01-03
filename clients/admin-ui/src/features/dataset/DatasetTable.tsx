@@ -1,17 +1,10 @@
 import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
-import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import {
-  checkIsClassificationFinished,
-  POLL_INTERVAL_SECONDS,
-} from "~/features/common/classifications";
+import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features.slice";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
-import {
-  selectDatasetClassifyInstanceMap,
-  useGetAllClassifyInstancesQuery,
-} from "~/features/plus/plus.slice";
+import { selectDatasetClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes } from "~/types/api";
 
 import {
@@ -26,24 +19,11 @@ const DatasetsTable = () => {
 
   const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
-  const [shouldPoll, setShouldPoll] = useState(true);
-  const { data } = useGetAllClassifyInstancesQuery(
-    {
-      resource_type: GenerateTypes.DATASETS,
-    },
-    {
-      skip: !features.plus,
-      pollingInterval: shouldPoll ? POLL_INTERVAL_SECONDS * 1000 : undefined,
-    }
-  );
-  const isClassificationFinished = checkIsClassificationFinished(data);
+  usePollForClassifications({
+    resourceType: GenerateTypes.DATASETS,
+    skip: !features.plus,
+  });
   const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
-
-  useEffect(() => {
-    if (isClassificationFinished) {
-      setShouldPoll(false);
-    }
-  }, [isClassificationFinished]);
 
   const handleRowClick = (dataset: Dataset) => {
     // toggle the active dataset

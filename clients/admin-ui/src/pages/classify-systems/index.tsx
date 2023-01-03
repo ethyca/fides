@@ -2,20 +2,14 @@ import { Button, Heading, HStack, Spinner, Stack, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  checkIsClassificationFinished,
-  POLL_INTERVAL_SECONDS,
-} from "~/features/common/classifications";
+import { usePollForClassifications } from "~/features/common/classifications";
 import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
 import Layout from "~/features/common/Layout";
-import {
-  useGetAllClassifyInstancesQuery,
-  useGetHealthQuery,
-} from "~/features/plus/plus.slice";
+import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   selectSystemsToClassify,
   setSystemsToClassify,
@@ -60,19 +54,15 @@ const ClassifySystems: NextPage = () => {
     }
   }, [dispatch, allSystems]);
 
-  // Poll for updates to classification until all classifications are finished
-  const [shouldPoll, setShouldPoll] = useState(true);
-  const { isLoading: isLoadingClassifications, data: classifications } =
-    useGetAllClassifyInstancesQuery(
-      {
-        resource_type: GenerateTypes.SYSTEMS,
-        fides_keys: systems?.map((s) => s.fides_key),
-      },
-      {
-        skip: !hasPlus,
-        pollingInterval: shouldPoll ? POLL_INTERVAL_SECONDS * 1000 : undefined,
-      }
-    );
+  const {
+    isLoading: isLoadingClassifications,
+    data: classifications,
+    isClassificationFinished,
+  } = usePollForClassifications({
+    resourceType: GenerateTypes.SYSTEMS,
+    fidesKeys: systems?.map((s) => s.fides_key),
+    skip: !hasPlus,
+  });
 
   useEffect(() => {
     if (!isLoadingPlus && !hasPlus) {
@@ -81,15 +71,6 @@ const ClassifySystems: NextPage = () => {
   }, [router, hasPlus, isLoadingPlus]);
 
   const isLoading = isLoadingSystems || isLoadingClassifications;
-
-  const isClassificationFinished =
-    checkIsClassificationFinished(classifications);
-
-  useEffect(() => {
-    if (isClassificationFinished) {
-      setShouldPoll(false);
-    }
-  }, [isClassificationFinished]);
 
   if (isLoading) {
     return (
