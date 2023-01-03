@@ -1,6 +1,11 @@
 import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import {
+  checkIsClassificationFinished,
+  POLL_INTERVAL_SECONDS,
+} from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features.slice";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import {
@@ -21,13 +26,24 @@ const DatasetsTable = () => {
 
   const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
-  useGetAllClassifyInstancesQuery(
-    { resource_type: GenerateTypes.DATASETS },
+  const [shouldPoll, setShouldPoll] = useState(true);
+  const { data } = useGetAllClassifyInstancesQuery(
+    {
+      resource_type: GenerateTypes.DATASETS,
+    },
     {
       skip: !features.plus,
+      pollingInterval: shouldPoll ? POLL_INTERVAL_SECONDS * 1000 : undefined,
     }
   );
+  const isClassificationFinished = checkIsClassificationFinished(data);
   const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
+
+  useEffect(() => {
+    if (isClassificationFinished) {
+      setShouldPoll(false);
+    }
+  }, [isClassificationFinished]);
 
   const handleRowClick = (dataset: Dataset) => {
     // toggle the active dataset
