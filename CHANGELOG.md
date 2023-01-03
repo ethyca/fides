@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.4.0...main)
 
+### Added
+
+* Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
+
 ### Fixed
 
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
