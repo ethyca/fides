@@ -1,5 +1,9 @@
 {
-  "navV2": true,
+  "navV2": {
+    "development": true,
+    "test": false,
+    "production": true
+  },
   "featuresPanel": {
     "development": true,
     "test": true,
