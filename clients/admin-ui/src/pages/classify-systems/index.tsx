@@ -6,6 +6,10 @@ import { ReactNode, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import {
+  checkIsClassificationFinished,
+  POLL_INTERVAL_SECONDS,
+} from "~/features/common/classifications";
 import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
 import Layout from "~/features/common/Layout";
 import {
@@ -18,9 +22,7 @@ import {
   useGetAllSystemsQuery,
 } from "~/features/system";
 import ClassifySystemsTable from "~/features/system/ClassifySystemsTable";
-import { ClassificationStatus, GenerateTypes } from "~/types/api";
-
-const POLL_INTERVAL_SECONDS = 3;
+import { GenerateTypes } from "~/types/api";
 
 const ClassifySystemsLayout = ({ children }: { children: ReactNode }) => (
   <Layout title="Classify Systems">
@@ -80,14 +82,8 @@ const ClassifySystems: NextPage = () => {
 
   const isLoading = isLoadingSystems || isLoadingClassifications;
 
-  const isClassificationFinished = classifications
-    ? classifications.every(
-        (c) =>
-          c.status === ClassificationStatus.COMPLETE ||
-          c.status === ClassificationStatus.FAILED ||
-          c.status === ClassificationStatus.REVIEWED
-      )
-    : false;
+  const isClassificationFinished =
+    checkIsClassificationFinished(classifications);
 
   useEffect(() => {
     if (isClassificationFinished) {
