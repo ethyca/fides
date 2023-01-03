@@ -155,8 +155,8 @@ def get_rule_or_error(
     Helper method to load Rule or throw a 404 if it can't be found.
     Also throws a 404 if a `Policy` with the given key can't be found.
     """
-    logger.info("Finding rule with key '{}'", rule_key)
     policy = get_policy_or_error(db, policy_key)
+    logger.info("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
         db=db,
         conditions=((Rule.policy_id == policy.id) & (Rule.key == rule_key)),
@@ -164,7 +164,7 @@ def get_rule_or_error(
     if not rule:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No Rule found for key {rule_key}.",
+            detail=f"No Rule found for key {rule_key} attached to policy {policy_key}",
         )
 
     return rule
@@ -186,12 +186,12 @@ def get_rule_list(
     Return a paginated list of all `Rule` records associated with the given `Policy`.
     Throws a 404 if the given `Policy` can't be found.
     """
+    policy = get_policy_or_error(db, policy_key)
     logger.info(
         "Finding all rules for policy {} with pagination params '{}'",
         policy_key,
         params,
     )
-    policy = get_policy_or_error(db, policy_key)
     rules = Rule.filter(
         db=db,
         conditions=(Rule.policy_id == policy.id),
@@ -387,7 +387,7 @@ def get_rule_target_or_error(
     if not rule_target:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No Rule Target found for key {rule_target_key}.",
+            detail=f"No Rule Target found for key {rule_target_key} attached to rule {rule_key}.",
         )
 
     return rule_target
@@ -410,12 +410,12 @@ def get_rule_target_list(
     Return a paginated list of all `Rule Target` records associated with the given `Rule`
     Throws a 404 if the given `Rule` or `Policy` can't be found.
     """
+    rule = get_rule_or_error(db, policy_key, rule_key)
     logger.info(
         "Finding all rule targets for rule {} with pagination params '{}'",
         rule_key,
         params,
     )
-    rule = get_rule_or_error(db, policy_key, rule_key)
     rule_targets = RuleTarget.filter(
         db=db,
         conditions=(RuleTarget.rule_id == rule.id),
