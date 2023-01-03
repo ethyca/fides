@@ -4,12 +4,14 @@ Contains all of the endpoints required to manage generating resources.
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
 from pydantic import BaseModel, root_validator
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database.crud import get_resource
+from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
@@ -111,6 +113,7 @@ router = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 )
 async def generate(
     generate_request_payload: GenerateRequestPayload,
+    db: AsyncSession = Depends(get_async_db),
 ) -> GenerateResponse:
     """
     A multi-purpose endpoint to generate Fides resources based on existing
@@ -129,7 +132,7 @@ async def generate(
     All production deployments should implement HTTPS for security purposes
     """
     organization = await get_resource(
-        sql_model_map["organization"], generate_request_payload.organization_key
+        sql_model_map["organization"], generate_request_payload.organization_key, db
     )
     generate_config = generate_request_payload.generate.config
     generate_target = generate_request_payload.generate.target.lower()

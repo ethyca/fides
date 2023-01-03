@@ -163,7 +163,7 @@ def connection_config(
 
 @pytest.mark.unit
 async def test_upsert_db_datasets(
-    test_config: FidesConfig, db: Session, connection_config
+    test_config: FidesConfig, db: Session, connection_config, async_session
 ) -> None:
     """
     Upsert a CTL Dataset, link this to a DatasetConfig and then upsert that CTL Dataset again.
@@ -223,7 +223,7 @@ async def test_upsert_db_datasets(
     assert resp.status_code == 201
     assert resp.json()["inserted"] == 1
 
-    ds: CtlDataset = await get_resource(CtlDataset, "ds")
+    ds: CtlDataset = await get_resource(CtlDataset, "ds", async_session)
 
     # Create a DatasetConfig that links to the created CTL Dataset
     dataset_config = DatasetConfig.create(
