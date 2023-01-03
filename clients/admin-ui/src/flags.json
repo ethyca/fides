@@ -1,5 +1,10 @@
 {
   "navV2": true,
+  "featuresPanel": {
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "configWizardStepper": {
     "development": true,
     "test": false,

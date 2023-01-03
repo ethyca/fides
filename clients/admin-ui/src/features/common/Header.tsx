@@ -15,11 +15,12 @@ import NextLink from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { INDEX_ROUTE } from "../../constants";
-import { logout, selectUser, useLogoutMutation } from "../auth";
-import FeaturesPanel from "./features/FeaturesPanel";
-import { QuestionIcon, UserIcon } from "./Icon";
-import Image from "./Image";
+import { INDEX_ROUTE } from "~/constants";
+import { logout, selectUser, useLogoutMutation } from "~/features/auth";
+import { useFeatures } from "~/features/common/features";
+import FeaturesPanel from "~/features/common/features/FeaturesPanel";
+import { QuestionIcon, UserIcon } from "~/features/common/Icon";
+import Image from "~/features/common/Image";
 
 const useHeader = () => {
   const { username } = useSelector(selectUser) ?? { username: "" };
@@ -27,6 +28,8 @@ const useHeader = () => {
 };
 
 const Header: React.FC = () => {
+  const features = useFeatures();
+
   const { username } = useHeader();
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useDispatch();
@@ -77,15 +80,17 @@ const Header: React.FC = () => {
                 </Stack>
 
                 <MenuDivider />
-                <MenuItem
-                  _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                  onClick={() => featuresPanelDisclosure.onOpen()}
-                >
-                  Features
-                  <Text as="i" ml={2}>
-                    Beta
-                  </Text>{" "}
-                </MenuItem>
+                {features.flags.featuresPanel ? (
+                  <MenuItem
+                    _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                    onClick={() => featuresPanelDisclosure.onOpen()}
+                  >
+                    Features
+                    <Text as="i" ml={2}>
+                      Beta
+                    </Text>{" "}
+                  </MenuItem>
+                ) : null}
 
                 <MenuDivider />
                 <MenuItem
