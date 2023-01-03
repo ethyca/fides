@@ -76,19 +76,21 @@ CONFIG = get_config()
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_db():
+def setup_db(api_client):
     """Apply migrations at beginning and end of testing session"""
     logger.debug("Setting up the database...")
     assert CONFIG.test_mode
-    yield db_action(CONFIG.cli.server_url, "reset")
+    assert requests.post != api_client.post
+    yield api_client.post(url=f"{CONFIG.cli.server_url}/v1/admin/db/reset")
     logger.debug("Migrations successfully applied")
 
 
 @pytest.fixture(scope="session")
-def db() -> Generator:
+def db(api_client) -> Generator:
     """Return a connection to the test DB"""
     # Create the test DB engine
     assert CONFIG.test_mode
+    assert requests.post != api_client.post
     engine = get_db_engine(
         database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )
@@ -138,7 +140,7 @@ def cache() -> Generator:
     yield get_cache()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def api_client() -> Generator:
     """Return a client used to make API requests"""
     with TestClient(app) as c:

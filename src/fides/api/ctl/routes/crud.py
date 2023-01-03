@@ -8,8 +8,9 @@ generated programmatically for each resource.
 
 from typing import Dict, List
 
-from fastapi import Response, status
+from fastapi import Depends, Response, status
 from fideslang import model_map
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database.crud import (
     create_resource,
@@ -19,6 +20,7 @@ from fides.api.ctl.database.crud import (
     update_resource,
     upsert_resources,
 )
+from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import (
     API_PREFIX,
     forbid_if_default,
@@ -32,16 +34,16 @@ from fides.api.ctl.utils.api_router import APIRouter
 
 # CRUD Endpoints
 routers = []
-for resource_type, resource_model in model_map.items():
+for model_type, fides_model in model_map.items():
     # Programmatically define routers for each resource type
     router = APIRouter(
-        tags=[resource_model.__name__],
-        prefix=f"{API_PREFIX}/{resource_type}",
+        tags=[fides_model.__name__],
+        prefix=f"{API_PREFIX}/{model_type}",
     )
 
     @router.post(
         "/",
-        response_model=resource_model,
+        response_model=fides_model,
         status_code=status.HTTP_201_CREATED,
         responses={
             status.HTTP_403_FORBIDDEN: {
@@ -50,7 +52,7 @@ for resource_type, resource_model in model_map.items():
                         "example": {
                             "detail": {
                                 "error": "user does not have permission to modify this resource",
-                                "resource_type": resource_type,
+                                "resource_type": model_type,
                                 "fides_key": "example.key",
                             }
                         }
@@ -60,8 +62,9 @@ for resource_type, resource_model in model_map.items():
         },
     )
     async def create(
-        resource: resource_model,
+        resource: fides_model,
         resource_type: str = get_resource_type(router),
+        db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """
         Create a resource.
@@ -72,27 +75,30 @@ for resource_type, resource_model in model_map.items():
         sql_model = sql_model_map[resource_type]
         if sql_model in models_with_default_field and resource.is_default:
             raise errors.ForbiddenError(resource_type, resource.fides_key)
-        return await create_resource(sql_model, resource.dict())
+        return await create_resource(sql_model, resource.dict(), db)
 
-    @router.get("/", response_model=List[resource_model], name="List")
+    @router.get("/", response_model=List[fides_model], name="List")
     async def ls(  # pylint: disable=invalid-name
         resource_type: str = get_resource_type(router),
+        db: AsyncSession = Depends(get_async_db),
     ) -> List:
         """Get a list of all of the resources of this type."""
         sql_model = sql_model_map[resource_type]
-        return await list_resource(sql_model)
+        return await list_resource(sql_model, db)
 
-    @router.get("/{fides_key}", response_model=resource_model)
+    @router.get("/{fides_key}", response_model=fides_model)
     async def get(
-        fides_key: str, resource_type: str = get_resource_type(router)
+        fides_key: str,
+        resource_type: str = get_resource_type(router),
+        db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """Get a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        return await get_resource(sql_model, fides_key)
+        return await get_resource(sql_model, fides_key, db)
 
     @router.put(
         "/",
-        response_model=resource_model,
+        response_model=fides_model,
         responses={
             status.HTTP_403_FORBIDDEN: {
                 "content": {
@@ -100,7 +106,7 @@ for resource_type, resource_model in model_map.items():
                         "example": {
                             "detail": {
                                 "error": "user does not have permission to modify this resource",
-                                "resource_type": resource_type,
+                                "resource_type": model_type,
                                 "fides_key": "example.key",
                             }
                         }
@@ -110,8 +116,9 @@ for resource_type, resource_model in model_map.items():
         },
     )
     async def update(
-        resource: resource_model,
+        resource: fides_model,
         resource_type: str = get_resource_type(router),
+        db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """
         Update a resource by its fides_key.
@@ -120,8 +127,8 @@ for resource_type, resource_model in model_map.items():
         with a `403 Forbidden` if attempted.
         """
         sql_model = sql_model_map[resource_type]
-        await forbid_if_editing_is_default(sql_model, resource.fides_key, resource)
-        return await update_resource(sql_model, resource.dict())
+        await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
+        return await update_resource(sql_model, resource.dict(), db)
 
     @router.post(
         "/upsert",
@@ -130,7 +137,7 @@ for resource_type, resource_model in model_map.items():
                 "content": {
                     "application/json": {
                         "example": {
-                            "message": f"Upserted 3 {resource_type}(s)",
+                            "message": f"Upserted 3 {model_type}(s)",
                             "inserted": 0,
                             "updated": 3,
                         }
@@ -141,7 +148,7 @@ for resource_type, resource_model in model_map.items():
                 "content": {
                     "application/json": {
                         "example": {
-                            "message": f"Upserted 3 {resource_type}(s)",
+                            "message": f"Upserted 3 {model_type}(s)",
                             "inserted": 1,
                             "updated": 2,
                         }
@@ -167,6 +174,7 @@ for resource_type, resource_model in model_map.items():
         resources: List[Dict],
         response: Response,
         resource_type: str = get_resource_type(router),
+        db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """
         For any resource in `resources` that already exists in the database,
@@ -180,8 +188,8 @@ for resource_type, resource_model in model_map.items():
         """
 
         sql_model = sql_model_map[resource_type]
-        await forbid_if_editing_any_is_default(sql_model, resources)
-        result = await upsert_resources(sql_model, resources)
+        await forbid_if_editing_any_is_default(sql_model, resources, db)
+        result = await upsert_resources(sql_model, resources, db)
         response.status_code = (
             status.HTTP_201_CREATED if result[0] > 0 else response.status_code
         )
@@ -201,7 +209,7 @@ for resource_type, resource_model in model_map.items():
                         "example": {
                             "detail": {
                                 "error": "user does not have permission to modify this resource",
-                                "resource_type": resource_type,
+                                "resource_type": model_type,
                                 "fides_key": "example.key",
                             }
                         }
@@ -211,7 +219,9 @@ for resource_type, resource_model in model_map.items():
         },
     )
     async def delete(
-        fides_key: str, resource_type: str = get_resource_type(router)
+        fides_key: str,
+        resource_type: str = get_resource_type(router),
+        db: AsyncSession = Depends(get_async_db),
     ) -> Dict:
         """
         Delete a resource by its fides_key.
@@ -220,8 +230,8 @@ for resource_type, resource_model in model_map.items():
         with a `403 Forbidden`.
         """
         sql_model = sql_model_map[resource_type]
-        await forbid_if_default(sql_model, fides_key)
-        deleted_resource = await delete_resource(sql_model, fides_key)
+        await forbid_if_default(sql_model, fides_key, db)
+        deleted_resource = await delete_resource(sql_model, fides_key, db)
         # Convert the resource to a dict explicitly for the response
         deleted_resource_dict = (
             model_map[resource_type].from_orm(deleted_resource).dict()

@@ -179,7 +179,7 @@ The `fides.toml` file should specify the following variables:
 | `server` | String | `fides-db` | The hostname of the Postgres database server. |
 | `port` | String | `5432` | The port at which the Postgres database will be accessible. |
 | `db` | String | `fides` | The name of the Postgres database. |
-| `test_db` | String | `""` | Used instead of the `db` config when the `FIDES_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. |
+| `test_db` | String | `""` | Used instead of the `db` config when the `FIDES__TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. |
 
 #### Redis cache
 
