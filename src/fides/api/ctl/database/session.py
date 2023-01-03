@@ -1,10 +1,13 @@
-from sqlalchemy.engine import create_engine
+from typing import AsyncGenerator
+
+from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from fides.core.config import get_config
 
 config = get_config()
+
 engine = create_async_engine(
     config.database.async_database_uri,
     echo=False,
@@ -18,3 +21,9 @@ sync_session = sessionmaker(
     expire_on_commit=False,
     autocommit=False,
 )
+
+
+async def get_async_db() -> AsyncGenerator:
+    """Return an async session generator for dependency injection into API endpoints"""
+    async with async_session() as session:
+        yield session
