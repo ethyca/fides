@@ -13,8 +13,8 @@ from typing import Dict, Generator, Union
 import pytest
 import requests
 import yaml
-from _pytest.monkeypatch import MonkeyPatch
 from fideslang import models
+from pytest import MonkeyPatch
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.exc import ObjectDeletedError
@@ -57,6 +57,10 @@ def monkeysession():
 
 @pytest.fixture(autouse=True, scope="session")
 def monkeypatch_requests(test_client, monkeysession) -> None:
+    """The requests library makes requests against the running webserver
+    which talks to the application db.  This monkeypatching operation
+    makes `requests` calls from src/fides/core/api.py in a test
+    context talk to the test db instead"""
     monkeysession.setattr(requests, "get", test_client.get)
     monkeysession.setattr(requests, "post", test_client.post)
     monkeysession.setattr(requests, "put", test_client.put)
