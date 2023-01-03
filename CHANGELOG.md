@@ -21,11 +21,16 @@ The types of changes are:
 
 * Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
 
+### Fixed
+
+* Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
+
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
 ### Developer Experience
 
 * Include a pre-check workflow that collects the pytest suite [#2098](https://github.com/ethyca/fides/pull/2098)
+* Write to the application db when running the app locally. Write to the test db when running pytest [#1731](https://github.com/ethyca/fides/pull/1731)
 
 ### Changed
 
@@ -39,10 +44,12 @@ The types of changes are:
 * Nav 2.0 - Replace form flow side navs with top tabs [#2037](https://github.com/ethyca/fides/pull/2050)
 * Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 * Added ability to use Mailgun templates when sending emails. [#2039](https://github.com/ethyca/fides/pull/2039)
+* Adds SMS id verification for consent [#2094](https://github.com/ethyca/fides/pull/2094)
 
 ### Fixed
 
 * Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
+* Properly set the expire-time for verification codes [#2105](https://github.com/ethyca/fides/pull/2105)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
@@ -116,6 +123,7 @@ The types of changes are:
 ### Developer Experience
 
 * Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
+
 
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
@@ -198,6 +206,7 @@ The types of changes are:
 ### Security
 
 * Bumped versions of packages that use OpenSSL [#1683](https://github.com/ethyca/fides/pull/1683)
+
 
 ## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
 

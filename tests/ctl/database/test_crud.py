@@ -2,6 +2,7 @@ from json import dumps
 from typing import Generator, List
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl import sql_models
 from fides.api.ctl.database.crud import delete_resource, list_resource
@@ -51,11 +52,13 @@ def fixture_created_resources(
     ["data_category", "data_use", "data_qualifier"],
     indirect=["created_resources"],
 )
-async def test_cascade_delete_taxonomy_children(created_resources: List) -> None:
+async def test_cascade_delete_taxonomy_children(
+    created_resources: List, async_session: AsyncSession
+) -> None:
     """Deleting a parent taxonomy should delete all of its children too"""
     resource_type, keys = created_resources
     sql_model = sql_models.sql_model_map[resource_type]
-    await delete_resource(sql_model, keys[0])
-    resources = await list_resource(sql_model)
+    await delete_resource(sql_model, keys[0], async_session)
+    resources = await list_resource(sql_model, async_session)
     remaining_keys = {resource.fides_key for resource in resources}
     assert len(set(keys).intersection(remaining_keys)) == 0

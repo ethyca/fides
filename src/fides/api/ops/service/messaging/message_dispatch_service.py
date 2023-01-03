@@ -200,9 +200,9 @@ def _build_sms(  # pylint: disable=too-many-return-statements
         )
     if action_type == MessagingActionType.CONSENT_REQUEST:
         return (
-            "Your consent request verification code is {{code}}. "
+            f"Your consent request verification code is {body_params.verification_code}. "
             "Please return to the consent request page and enter the code to continue. "
-            "This code will expire in {{minutes}} minutes"
+            f"This code will expire in {body_params.get_verification_code_ttl_minutes()} minutes"
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         if len(body_params.request_types) > 1:
