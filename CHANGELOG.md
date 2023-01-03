@@ -40,6 +40,7 @@ The types of changes are:
 * Nav 2.0 - Replace form flow side navs with top tabs [#2037](https://github.com/ethyca/fides/pull/2050)
 * Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 * Added ability to use Mailgun templates when sending emails. [#2039](https://github.com/ethyca/fides/pull/2039)
+* Adds SMS id verification for consent [#2094](https://github.com/ethyca/fides/pull/2094)
 
 ### Fixed
 
