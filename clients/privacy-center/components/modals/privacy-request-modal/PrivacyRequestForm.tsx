@@ -290,7 +290,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   name="phone"
                   type="tel"
                   focusBorderColor="primary.500"
-                  placeholder="+1 000 000 0000"
+                  placeholder="000 000 0000"
                   defaultCountry="US"
                   onChange={(value) => {
                     setFieldValue("phone", value, true);

@@ -2,6 +2,7 @@ from typing import Generator
 
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database import seed
 from fides.core import api as _api
@@ -191,6 +192,7 @@ class TestLoadDefaultTaxonomy:
         monkeypatch: pytest.MonkeyPatch,
         test_config: FidesConfig,
         data_category: DataCategory,
+        async_session: AsyncSession,
     ) -> None:
         """Should be able to add to the existing default taxonomy"""
         result = _api.get(
@@ -205,7 +207,7 @@ class TestLoadDefaultTaxonomy:
         updated_default_taxonomy.data_category.append(data_category)
 
         monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
-        await seed.load_default_resources()
+        await seed.load_default_resources(async_session)
 
         result = _api.get(
             test_config.cli.server_url,
@@ -216,7 +218,7 @@ class TestLoadDefaultTaxonomy:
         assert result.status_code == 200
 
     async def test_does_not_override_user_changes(
-        self, test_config: FidesConfig
+        self, test_config: FidesConfig, async_session: AsyncSession
     ) -> None:
         """
         Loading the default taxonomy should not override user changes
@@ -233,7 +235,7 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.status_code == 200
 
-        await seed.load_default_resources()
+        await seed.load_default_resources(async_session)
         result = _api.get(
             test_config.cli.server_url,
             "data_category",
@@ -243,20 +245,23 @@ class TestLoadDefaultTaxonomy:
         assert result.json()["description"] == new_description
 
     async def test_does_not_remove_user_added_taxonomies(
-        self, test_config: FidesConfig, data_category: DataCategory
+        self,
+        test_config: FidesConfig,
+        data_category: DataCategory,
+        async_session: AsyncSession,
     ) -> None:
         """
         Loading the default taxonomy should not delete user additions
         to their default taxonomy
         """
-        result = _api.create(
+        _api.create(
             test_config.cli.server_url,
             "data_category",
             json_resource=data_category.json(),
             headers=test_config.user.request_headers,
         )
 
-        await seed.load_default_resources()
+        await seed.load_default_resources(async_session)
 
         result = _api.get(
             test_config.cli.server_url,

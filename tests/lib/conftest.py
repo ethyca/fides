@@ -66,7 +66,6 @@ def db(config):
     yield session
 
     session.close()
-    Base.metadata.drop_all(bind=engine)
 
     engine.dispose()
 
@@ -143,6 +142,7 @@ def user(db):
     db.commit()
     db.refresh(client)
     yield user
+    user.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -160,3 +160,4 @@ def application_user(db, oauth_client):
     oauth_client.user_id = user.id
     oauth_client.save(db=db)
     yield user
+    user.delete(db)

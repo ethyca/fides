@@ -6,13 +6,18 @@ from requests_mock import Mocker
 import fides.cli.utils as utils
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.core.config import FidesConfig
+from tests.ctl.conftest import orig_requests_get
 
 
 @pytest.mark.unit
-def test_check_server_bad_ping() -> None:
-    "Check for an exception if the server isn't up."
+def test_check_server_bad_ping(test_client, monkeypatch) -> None:
+    """Check for an exception if the server isn't up."""
+    import requests
+
+    monkeypatch.setattr(requests, "get", orig_requests_get)
     with pytest.raises(SystemExit):
         utils.check_server("foo", "http://fake_address:8080")
+    monkeypatch.setattr(requests, "get", test_client.get)
 
 
 @pytest.mark.unit

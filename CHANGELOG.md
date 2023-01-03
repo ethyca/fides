@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 
 * Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
+* Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
 
 ### Fixed
 
@@ -30,6 +31,7 @@ The types of changes are:
 ### Developer Experience
 
 * Include a pre-check workflow that collects the pytest suite [#2098](https://github.com/ethyca/fides/pull/2098)
+* Write to the application db when running the app locally. Write to the test db when running pytest [#1731](https://github.com/ethyca/fides/pull/1731)
 
 ### Changed
 
@@ -43,6 +45,7 @@ The types of changes are:
 * Nav 2.0 - Replace form flow side navs with top tabs [#2037](https://github.com/ethyca/fides/pull/2050)
 * Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 * Added ability to use Mailgun templates when sending emails. [#2039](https://github.com/ethyca/fides/pull/2039)
+* Adds SMS id verification for consent [#2094](https://github.com/ethyca/fides/pull/2094)
 
 ### Fixed
 
@@ -121,6 +124,7 @@ The types of changes are:
 ### Developer Experience
 
 * Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
+
 
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
@@ -203,6 +207,7 @@ The types of changes are:
 ### Security
 
 * Bumped versions of packages that use OpenSSL [#1683](https://github.com/ethyca/fides/pull/1683)
+
 
 ## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
 

@@ -17,6 +17,7 @@ from fides.core.utils import get_db_engine
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 from .seed import load_default_resources
+from .session import async_session
 
 CONFIG = get_config()
 
@@ -47,7 +48,9 @@ async def init_db(database_url: str) -> None:
     log.info("Initializing database")
     alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
-    await load_default_resources()
+
+    async with async_session() as session:
+        await load_default_resources(session)
 
 
 def create_db_if_not_exists(database_url: str) -> None:
