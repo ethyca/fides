@@ -2129,20 +2129,20 @@ You're not viewing the latest version.
 <h2 id="basic-installation">Basic installation</h2>
 <p>The Fides team recommends using <a href="https://pypa.github.io/pipx/"><code>pipx</code></a> over <code>pip</code> for environment isolation. The following documentation assumes <code>pipx</code> is installed, but <code>pip</code> commands can be substituted when needed.</p>
 <p>To install Fides, run:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pipx install fides
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pipx<span class="w"> </span>install<span class="w"> </span>fides
 </code></pre></div></td></tr></table></div>
 <h3 id="verify-your-installation">Verify your installation</h3>
 <p>With Fides installed, verify the installation:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides --version
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides<span class="w"> </span>--version
 </code></pre></div></td></tr></table></div>
 <p>A correct installation will print the current version of Fides to your console.</p>
 <h3 id="install-dangerous-dependencies">Install dangerous dependencies</h3>
 <p>Fides is designed to ship with all possible dependencies, however there are some packages which may break on certain machines. To solve this, Fides supports optional requirements for potentially dangerous dependencies that aren't required to run the application, but may restrict certain functionality.</p>
 <p>To install optional dependencies, use the following syntax:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pipx install <span class="s2">&quot;fides[extra_1]&quot;</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pipx<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;fides[extra_1]&quot;</span>
 </code></pre></div></td></tr></table></div>
 <p>For multiple dependencies:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pipx install <span class="s2">&quot;fides[extra_1, extra_2]&quot;</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pipx<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;fides[extra_1, extra_2]&quot;</span>
 </code></pre></div></td></tr></table></div>
 <p>The optional "dangerous" dependencies are as follows:</p>
 <ul>
@@ -2155,7 +2155,7 @@ You're not viewing the latest version.
 </div>
 <h2 id="initialize-fides">Initialize Fides</h2>
 <p>Initializing the project will create a configuration file with default values, and generate a directory to house your Fides resources.</p>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Initialize Fides</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides init
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Initialize Fides</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides<span class="w"> </span>init
 </code></pre></div></td></tr></table></div>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Expected Output</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -2184,11 +2184,11 @@ Fides initialization complete.
 <h3 id="run-standalone-mode">Run standalone mode</h3>
 <p>Once Fides is installed and initialized, it is possible to run the project in "standalone mode," which requires zero dependencies outside of the pip installation. This does not provide webserver connectivity or database persistence, but allows you to experiment with CLI commands.</p>
 <p>Use one of the following methods to enable standalone mode:</p>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">CLI flag</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides --local &lt;subcommand&gt;
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">CLI flag</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides<span class="w"> </span>--local<span class="w"> </span>&lt;subcommand&gt;
 </code></pre></div></td></tr></table></div>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">fides.toml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[cli]</span><span class="w"></span>
-<span class="n">local_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[cli]</span>
+<span class="n">local_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
 </code></pre></div></td></tr></table></div>
 <h2 id="set-up-your-database">Set up your database</h2>
 <p>Configure your own Postgres database according to the configuration of your choice, ensuring it satisfies the project <a href="../requirements/">requirements</a>. Enable a username and password, and keep track of your connection credentials.</p>
@@ -2199,7 +2199,7 @@ Fides initialization complete.
 <p>See the <a href="../configuration/">Configuration guide</a> for a full list of settings, and a sample <code>fides.toml</code>.</p>
 <h2 id="running-the-webserver">Running the webserver</h2>
 <p>In a shell, run the following command:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides webserver
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides<span class="w"> </span>webserver
 </code></pre></div></td></tr></table></div>
 <p>With the Fides webserver running, the hosted UI is available at <code>http://{server_url}/</code> (e.g. <code>http://localhost:8080/</code>).</p>
 

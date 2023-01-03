@@ -2253,26 +2253,26 @@ updated with the same masked values across all sources.</p>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
 <span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">     </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;test@example.com&quot;</span><span class="p">],</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;masking_strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;random_string_rewrite&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;format_preservation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;suffix&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;@masked.com&quot;</span><span class="w"></span>
-<span class="w">                </span><span class="p">}</span><span class="w"></span>
-<span class="w">            </span><span class="p">}</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">     </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;values&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;test@example.com&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;masking_strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;random_string_rewrite&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;format_preservation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;suffix&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;@masked.com&quot;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>Response 200 OK</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;plain&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;test@example.com&quot;</span><span class="p">],</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;masked_value&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;idkeaotbrub346ycbmpo@masked.com&quot;</span><span class="p">]</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;plain&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;test@example.com&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;masked_value&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;idkeaotbrub346ycbmpo@masked.com&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.</p>
 <p>See the <a href="../../api/#operations-tag-Masking">masking values</a> API on how to use Fides to as a masking service.</p>
@@ -2293,20 +2293,20 @@ that captures that strategy for the Policy.</p>
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">[{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Global erasure rule&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;action_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;erasure&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string_rewrite_rule&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;masking_strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;random_string_rewrite&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="nt">&quot;format_preservation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                    </span><span class="nt">&quot;suffix&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;@masked.com&quot;</span><span class="w"></span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">[{</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Global erasure rule&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;action_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;erasure&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string_rewrite_rule&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;masking_strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;random_string_rewrite&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">&quot;length&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">&quot;format_preservation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">&quot;suffix&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;@masked.com&quot;</span>
 <span class="w">                </span><span class="p">}</span><span class="w">   </span>
-<span class="w">            </span><span class="p">}</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">}]</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}]</span>
 </code></pre></div></td></tr></table></div>
 <h2 id="supported-masking-strategies">Supported masking strategies</h2>
 <h3 id="null-rewrite">Null rewrite</h3>
@@ -2435,7 +2435,7 @@ strategies available, along with their configuration options.</p>
 
 <span class="nd">@MaskingStrategyFactory</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">RANDOM_STRING_REWRITE_STRATEGY_NAME</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">RandomStringRewriteMaskingStrategy</span><span class="p">(</span><span class="n">MaskingStrategy</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Masks a value with a random string of the length specified in the configuration.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Masks a value with a random string of the length specified in the configuration.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2445,7 +2445,7 @@ strategies available, along with their configuration options.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">format_preservation</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">format_preservation</span>
 
     <span class="k">def</span> <span class="nf">mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">privacy_request_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;Replaces the value with a random lowercase string of the configured length&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replaces the value with a random lowercase string of the configured length&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="n">masked_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2464,15 +2464,15 @@ strategies available, along with their configuration options.</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_configuration_model</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">MaskingConfiguration</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Not covered in this example&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Not covered in this example&quot;&quot;&quot;</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_description</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">MaskingStrategyDescription</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Not covered in this example&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Not covered in this example&quot;&quot;&quot;</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">data_type_supported</span><span class="p">(</span><span class="n">data_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Not covered in this example&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Not covered in this example&quot;&quot;&quot;</span>
 </code></pre></div></td></tr></table></div>
 <p>The <code>mask</code> method will be called with the list of values to be masked and the masked values will be the output. In this case, we want to replace the supplied values with a random mixture of ascii lowercase letters and digits of the
 specified length. If format preservation is specified, for example, we still want to know that an email was an email,

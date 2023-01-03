@@ -2153,17 +2153,17 @@ You're not viewing the latest version.
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">  </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;external_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a-user-defined-id&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;requested_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-10-31T16:00:00.000Z&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;policy_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a-demo-policy&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;identity@example.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;+1 (123) 456 7891&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;external_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a-user-defined-id&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;requested_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-10-31T16:00:00.000Z&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;policy_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a-demo-policy&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;identity@example.com&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;+1 (123) 456 7891&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div></td></tr></table></div>
 <p>The above request will apply the <code>a-demo-policy</code> execution policy to all target data that can be generated from the email address <code>identity@example.com</code>, and the phone number <code>+1 (123) 456 7891</code>. </p>
 <table>
@@ -2201,7 +2201,7 @@ You're not viewing the latest version.
 </ol>
 <p>With identify verification enabled, a user will be sent a six-digit code when they submit a privacy request. They must supply that verification code to Fides to continue privacy request execution.  </p>
 <p>Until the Privacy Request identity is verified, it will have a status of <code>identity_unverified</code>:</p>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST api/v1/privacy-request/<privacy_request_id>/verify</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;verification code here&gt;&quot;</span><span class="p">}</span><span class="w"></span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST api/v1/privacy-request/<privacy_request_id>/verify</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;verification code here&gt;&quot;</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <h2 id="privacy-request-actions">Privacy request actions</h2>
 <h3 id="approve-and-deny-privacy-requests">Approve and deny privacy requests</h3>
@@ -2212,12 +2212,12 @@ You're not viewing the latest version.
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;request_ids&quot;</span><span class="p">:[</span><span class="w"></span>
-<span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">]</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;request_ids&quot;</span><span class="p">:[</span>
+<span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>An optional denial reason can be provided when denying a privacy request:
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PATCH api/v1/privacy-request/administrate/deny</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2226,13 +2226,13 @@ You're not viewing the latest version.
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;request_ids&quot;</span><span class="p">:[</span><span class="w"></span>
-<span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">],</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Requests denied because they&#39;re duplicates&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;request_ids&quot;</span><span class="p">:[</span>
+<span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;pri_2d181f15-486d-4bcf-a871-f50ed9f95673&quot;</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Requests denied because they&#39;re duplicates&quot;</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="monitor-ongoing-requests">Monitor ongoing requests</h3>
 <p>Privacy requests can be monitored at any time throughout their execution by calling either of the following endpoints:</p>
@@ -2256,14 +2256,14 @@ to the encrypted data.</p>
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;requested_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-08-30T16:09:37.359Z&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@example.com&quot;</span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;policy_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my_access_policy&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;encryption_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test--encryption&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;requested_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-08-30T16:09:37.359Z&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@example.com&quot;</span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;policy_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my_access_policy&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;encryption_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test--encryption&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="decrypt-your-results">Decrypt your results</h3>
 <p>If you specified an encryption key, Fides encrypted the result data using your key and an internally-generated <code>nonce</code> with an AES 256 algorithm in GCM mode. The return value is a 12-byte nonce plus the encrypted data that is b64 encoded together.</p>

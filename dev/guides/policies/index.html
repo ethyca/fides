@@ -2224,63 +2224,63 @@ You're not viewing the latest version.
 <span class="normal">54</span>
 <span class="normal">55</span>
 <span class="normal">56</span>
-<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flaskr_policy</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Flaskr Privacy Policy</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A privacy policy for the example Flask app</span><span class="w"></span>
-<span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">minimize_user_identifiable_data</span><span class="w"></span>
-<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Minimize User Identifiable Data</span><span class="w"></span>
-<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject collecting any user identifiable data for uses other than system operations</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">personalize</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flaskr_policy</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Flaskr Privacy Policy</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A privacy policy for the example Flask app</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">minimize_user_identifiable_data</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Minimize User Identifiable Data</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject collecting any user identifiable data for uses other than system operations</span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable</span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">personalize</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
 
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reject_sensitive_data</span><span class="w"></span>
-<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject Sensitive Data</span><span class="w"></span>
-<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject collecting sensitive user data for any use</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.biometric</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.childrens</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.genetic</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.health_and_medical</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.political_opinion</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.race</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.religious_belief</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.sexual_orientation</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">personalize</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reject_sensitive_data</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject Sensitive Data</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject collecting sensitive user data for any use</span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.biometric</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.childrens</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.genetic</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.health_and_medical</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.political_opinion</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.race</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.religious_belief</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.sexual_orientation</span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">personalize</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated</span>
 </code></pre></div></td></tr></table></div>
 <p>This Fides policy is relatively restrictive. The two rules (<code>minimize_user_identifiable_data</code> and <code>reject_sensitive_data</code>) can be interpreted as:</p>
 <ol>
@@ -2316,28 +2316,28 @@ You're not viewing the latest version.
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data_sharing_policy</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Data Sharing</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">The privacy policy that governs sharing of data with third parties.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow Third-Party Marketing</span><span class="w"></span>
-<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow collecting any user contact info to use for marketing.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">account</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the use of the data is for third-party sharing</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is a customer</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
-<span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data_sharing_policy</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Data Sharing</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">The privacy policy that governs sharing of data with third parties.</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow Third-Party Marketing</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow collecting any user contact info to use for marketing.</span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">account</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user</span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the use of the data is for third-party sharing</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is a customer</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span>
+<span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="respecting-employee-data-privacy">Respecting Employee Data Privacy</h3>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">employee_data_processing_policy.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2362,29 +2362,29 @@ You're not viewing the latest version.
 <span class="normal">20</span>
 <span class="normal">21</span>
 <span class="normal">22</span>
-<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">employee_data_processing</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Employee Data Processing</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Restrict employee data processing only to that which is required for systematic business functions.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow Non-System Use of Employee Data</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">account</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OTHER</span><span class="w"> </span><span class="c1"># And the use of the data is something other than...</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide.service.operations</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve.system</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is an employee</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">employee</span><span class="w"></span>
-<span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">employee_data_processing</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Employee Data Processing</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Restrict employee data processing only to that which is required for systematic business functions.</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow Non-System Use of Employee Data</span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">account</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user</span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OTHER</span><span class="w"> </span><span class="c1"># And the use of the data is something other than...</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide.service.operations</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve.system</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is an employee</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">employee</span>
+<span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="respecting-biometric-pii">Respecting Biometric PII</h3>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">biometric_data_policy.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2412,32 +2412,32 @@ You're not viewing the latest version.
 <span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
-<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">biometric_data_policy</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Biometric Data</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Policy that describes valid uses of biometric and health data.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow Biometrics for Profit.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow the use of biometric data for profit-related purposes.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.credentials.biometric_credentials</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.biometric</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the use of the data is for any of the following...</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is a customer</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
-<span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">biometric_data_policy</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Biometric Data</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Policy that describes valid uses of biometric and health data.</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow Biometrics for Profit.</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow the use of biometric data for profit-related purposes.</span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.credentials.biometric_credentials</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.biometric</span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the use of the data is for any of the following...</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is a customer</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span>
+<span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="anonymous-derived-user-contact-data">Anonymous Derived User Contact Data</h3>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">derived_user_data_policy.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2460,27 +2460,27 @@ You're not viewing the latest version.
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span>
-<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_derived_user_data</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Protect Derived User Data</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Policy that describes the proper use of derived user data.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow Non-Anonymized Derived User Data.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Require that any use of derived user data must be de-identified to the anonymous level, as opposed to the pseudonymous.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">account</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NONE</span><span class="w"> </span><span class="c1"># And for any data use</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is a customer</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
-<span class="w">        </span><span class="c1"># And the data is either pseudonymized or more identifiable, trigger a violation</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span><span class="w"></span>
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">protect_derived_user_data</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Protect Derived User Data</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Policy that describes the proper use of derived user data.</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Disallow Non-Anonymized Derived User Data.</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Require that any use of derived user data must be de-identified to the anonymous level, as opposed to the pseudonymous.</span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">account</span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NONE</span><span class="w"> </span><span class="c1"># And for any data use</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is a customer</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span>
+<span class="w">        </span><span class="c1"># And the data is either pseudonymized or more identifiable, trigger a violation</span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="phone-numbers-for-transactional-messaging">Phone Numbers for Transactional Messaging</h3>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">transactional_messaging_policy.yaml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2502,26 +2502,26 @@ You're not viewing the latest version.
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">transactional_messaging_policy</span><span class="w"></span>
-<span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Transactional Messaging only for phone numbers.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allows use of phone numbers for transactional messaging only.</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact.phone_number</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OTHER</span><span class="w"> </span><span class="c1"># And a data use other than these have been declared</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide.service.operations</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide.service.operations.support</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is a customer</span><span class="w"></span>
-<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
-<span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span><span class="w"></span>
-<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">transactional_messaging_policy</span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Transactional Messaging only for phone numbers.</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Allows use of phone numbers for transactional messaging only.</span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># If any of these data categories are being used</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.contact.phone_number</span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OTHER</span><span class="w"> </span><span class="c1"># And a data use other than these have been declared</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide.service.operations</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide.service.operations.support</span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"> </span><span class="c1"># And the data subject is a customer</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span>
+<span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
 </code></pre></div></td></tr></table></div>
 
               

@@ -2179,11 +2179,11 @@ You're not viewing the latest version.
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nx">FIDES__EXECUTION__SUBJECT_IDENTITY_VERIFICATION_REQUIRED</span><span class="o">=</span><span class="kc">true</span><span class="w"></span>
-<span class="nx">FIDES__NOTIFICATIONS__NOTIFICATION_SERVICE_TYPE</span><span class="o">=</span><span class="s2">&quot;mailgun&quot;</span><span class="w"></span>
-<span class="nx">FIDES__NOTIFICATIONS__SEND_REQUEST_COMPLETION_NOTIFICATION</span><span class="o">=</span><span class="kc">true</span><span class="w"></span>
-<span class="nx">FIDES__NOTIFICATIONS__SEND_REQUEST_RECEIPT_NOTIFICATION</span><span class="o">=</span><span class="kc">true</span><span class="w"></span>
-<span class="nx">FIDES__NOTIFICATIONS__SEND_REQUEST_REVIEW_NOTIFICATION</span><span class="o">=</span><span class="kc">true</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nx">FIDES__EXECUTION__SUBJECT_IDENTITY_VERIFICATION_REQUIRED</span><span class="o">=</span><span class="kc">true</span>
+<span class="nx">FIDES__NOTIFICATIONS__NOTIFICATION_SERVICE_TYPE</span><span class="o">=</span><span class="s2">&quot;mailgun&quot;</span>
+<span class="nx">FIDES__NOTIFICATIONS__SEND_REQUEST_COMPLETION_NOTIFICATION</span><span class="o">=</span><span class="kc">true</span>
+<span class="nx">FIDES__NOTIFICATIONS__SEND_REQUEST_RECEIPT_NOTIFICATION</span><span class="o">=</span><span class="kc">true</span>
+<span class="nx">FIDES__NOTIFICATIONS__SEND_REQUEST_REVIEW_NOTIFICATION</span><span class="o">=</span><span class="kc">true</span>
 </code></pre></div></td></tr></table></div>
 <p>For the <code>FIDES__NOTIFICATIONS__NOTIFICATION_SERVICE_TYPE</code> variable, we currently support the following service types:</p>
 <ul>
@@ -2201,25 +2201,25 @@ You're not viewing the latest version.
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{messaging_config_key}}&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mailgun&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;service_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mailgun&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;domain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your.mailgun.domain&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{messaging_config_key}}&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mailgun&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;service_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mailgun&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;domain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your.mailgun.domain&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <h4 id="twilio-sms-config">Twilio SMS Config</h4>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST api/v1/messaging/config</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_config_key}}&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;twilio&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;service_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;twilio_text&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_config_key}}&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;twilio&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;service_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;twilio_text&quot;</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <table>
 <thead>
@@ -2263,27 +2263,27 @@ You're not viewing the latest version.
 <h4 id="mailgun-secrets">Mailgun Secrets</h4>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PUT api/v1/messaging/config/{{messaging_config_key}}/secret</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;mailgun_api_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{mailgun_api_key}}&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;mailgun_api_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{mailgun_api_key}}&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <h4 id="twilio-sms-secrets">Twilio SMS Secrets</h4>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PUT api/v1/messaging/config/{{messaging_config_key}}/secret</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;twilio_account_sid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_account_sid}}&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;twilio_auth_token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_auth_token}}&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;twilio_messaging_service_sid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_messaging_service_id}}&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;twilio_account_sid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_account_sid}}&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;twilio_auth_token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_auth_token}}&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;twilio_messaging_service_sid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_messaging_service_id}}&quot;</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <h4 id="twilio-email-secrets">Twilio Email Secrets</h4>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PUT api/v1/messaging/config/{{messaging_config_key}}/secret</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;twilio_api_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_api_key}}&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;twilio_api_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_api_key}}&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <table>
 <thead>

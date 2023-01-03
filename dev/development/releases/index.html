@@ -2113,7 +2113,7 @@ You're not viewing the latest version.
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on main</span>
-git describe --abbrev<span class="o">=</span><span class="m">0</span> --tags
+git<span class="w"> </span>describe<span class="w"> </span>--abbrev<span class="o">=</span><span class="m">0</span><span class="w"> </span>--tags
 
 <span class="c1">#=&gt; 1.2.3</span>
 </code></pre></div></td></tr></table></div>
@@ -2141,7 +2141,7 @@ git describe --abbrev<span class="o">=</span><span class="m">0</span> --tags
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">#fides on main</span>
-git checkout <span class="m">1</span>.2.3
+git<span class="w"> </span>checkout<span class="w"> </span><span class="m">1</span>.2.3
 
 <span class="c1">#=&gt; Note: switching to &#39;1.2.3&#39;.</span>
 <span class="c1">#</span>
@@ -2188,7 +2188,7 @@ git checkout <span class="m">1</span>.2.3
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on main</span>
-git checkout <span class="k">$(</span>git describe --abbrev<span class="o">=</span><span class="m">0</span> --tags<span class="k">)</span>
+git<span class="w"> </span>checkout<span class="w"> </span><span class="k">$(</span>git<span class="w"> </span>describe<span class="w"> </span>--abbrev<span class="o">=</span><span class="m">0</span><span class="w"> </span>--tags<span class="k">)</span>
 
 <span class="c1">#=&gt; Note: switching to &#39;1.2.3&#39;.</span>
 <span class="c1">#</span>
@@ -2217,7 +2217,7 @@ git checkout <span class="k">$(</span>git describe --abbrev<span class="o">=</sp
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on tags/1.2.3</span>
-git checkout -b release-v1.2.4
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>release-v1.2.4
 
 <span class="c1">#=&gt; Switched to a new branch &#39;release-v1.2.4&#39;</span>
 </code></pre></div></td></tr></table></div>
@@ -2232,7 +2232,7 @@ git checkout -b release-v1.2.4
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on release-v1.2.4</span>
-git checkout -b prepare-release-v1.2.4
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>prepare-release-v1.2.4
 
 <span class="c1">#=&gt; Switched to a new branch &#39;prepare-release-v1.2.4&#39;</span>
 </code></pre></div></td></tr></table></div>
@@ -2241,7 +2241,7 @@ git checkout -b prepare-release-v1.2.4
 <p><strong>Optional:</strong> Incorporate any additional specific changes required for the patch release by running:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on prepare-release-v1.2.4</span>
-git cherry-pick &lt;commit&gt;...
+git<span class="w"> </span>cherry-pick<span class="w"> </span>&lt;commit&gt;...
 </code></pre></div></td></tr></table></div>
 </li>
 <li>
@@ -2277,15 +2277,15 @@ git cherry-pick &lt;commit&gt;...
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>git checkout main
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>main
 <span class="c1">#=&gt; Switched to branch &#39;main&#39;...</span>
 
-git pull
+git<span class="w"> </span>pull
 </code></pre></div></td></tr></table></div>
 </li>
 <li>
 <p>Merge the new release tag into <code>main</code>:</p>
-<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>git merge tags/1.2.4
+<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>git<span class="w"> </span>merge<span class="w"> </span>tags/1.2.4
 </code></pre></div></td></tr></table></div>
     1. Handle any merge conflicts, and push to the remote <code>main</code> branch</p>
 </li>

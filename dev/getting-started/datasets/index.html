@@ -2169,20 +2169,20 @@ You're not viewing the latest version.
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">CUSTOMER</span><span class="w"> </span><span class="p">(</span><span class="w"></span>
-<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="n">name</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="n">email</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="n">address_id</span><span class="w"> </span><span class="nb">int</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">ADDRESS</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"></span>
-<span class="p">);</span><span class="w"></span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">CUSTOMER</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">  </span><span class="n">name</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span>
+<span class="w">  </span><span class="n">email</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span>
+<span class="w">  </span><span class="n">address_id</span><span class="w"> </span><span class="nb">int</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">ADDRESS</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+<span class="p">);</span>
 
-<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">ADDRESS</span><span class="p">(</span><span class="w"></span>
-<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="n">street</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="n">city</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="k">state</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="n">zip</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="w"></span>
-<span class="p">);</span><span class="w"></span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">ADDRESS</span><span class="p">(</span>
+<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">  </span><span class="n">street</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span>
+<span class="w">  </span><span class="n">city</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span>
+<span class="w">  </span><span class="k">state</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">,</span>
+<span class="w">  </span><span class="n">zip</span><span class="w"> </span><span class="nb">VARCHAR</span>
+<span class="p">);</span>
 </code></pre></div></td></tr></table></div>
 <p>A Fides Dataset contains a map of the database's fields, and <em>metadata</em> describing how those fields are related. Fides uses this relationship information to navigate between different collections and fulfill privacy requests. The Dataset declaration for the above schema looks like:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2237,59 +2237,59 @@ You're not viewing the latest version.
 <span class="normal">50</span>
 <span class="normal">51</span>
 <span class="normal">52</span>
-<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal database</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">our internal database of customer data</span><span class="w"></span>
-<span class="w">    </span><span class="nt">collections</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">address</span><span class="w"></span>
-<span class="w">        </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">primary_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">street</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.address.street</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">city</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.address.city</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">state</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.address.state</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zip</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.address.postal_code</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
+<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal database</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">our internal database of customer data</span>
+<span class="w">    </span><span class="nt">collections</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">address</span>
+<span class="w">        </span><span class="nt">fields</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">primary_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">street</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.address.street</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">city</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.address.city</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">state</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.address.state</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zip</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.address.postal_code</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
 
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
-<span class="w">        </span><span class="nt">after</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase.address</span><span class="w"></span>
-<span class="w">        </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">address_id</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">references</span><span class="p">:</span><span class="w"></span>
-<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">address.id</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">to</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.email</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
-<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.unique_id</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">primary_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">name</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.name</span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span>
+<span class="w">        </span><span class="nt">after</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase.address</span>
+<span class="w">        </span><span class="nt">fields</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">address_id</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">references</span><span class="p">:</span>
+<span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydatabase</span>
+<span class="w">                  </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">address.id</span>
+<span class="w">                  </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">to</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">system.operations</span><span class="p p-Indicator">]</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.contact.email</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
+<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.unique_id</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">primary_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">name</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user.name</span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
 </code></pre></div></td></tr></table></div>
 <h4 id="dataset-members">Dataset members</h4>
 <table>
@@ -2419,22 +2419,22 @@ defined as the unit's <a href="#field-members">identity</a>, which will then be 
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
-<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">manual_input</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Manual Dataset</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example of a Dataset whose data must be manually retrieved</span><span class="w"></span>
-<span class="w">    </span><span class="nt">collections</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">storage_unit</span><span class="w"></span>
-<span class="w">        </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">box_id</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">user</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">primary_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
-<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">user.contact.email</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"></span>
-<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
-<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span><span class="w"></span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">manual_input</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Manual Dataset</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Example of a Dataset whose data must be manually retrieved</span>
+<span class="w">    </span><span class="nt">collections</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">storage_unit</span>
+<span class="w">        </span><span class="nt">fields</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">box_id</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">user</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">primary_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
+<span class="w">            </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">user.contact.email</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">            </span><span class="nt">fidesops_meta</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
+<span class="w">              </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="resume-a-paused-access-privacy-request">Resume a paused access privacy request</h3>
 <p>A privacy request will pause execution when it reaches a manual collection in an access request.  An administrator
@@ -2444,21 +2444,21 @@ should match the fields on the paused collection.  </p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST {{host}}/privacy-request/{{privacy_request_id}}/manual_input</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;box_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@example.com&quot;</span><span class="w"></span>
-<span class="p">}]</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[{</span>
+<span class="w">    </span><span class="nt">&quot;box_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@example.com&quot;</span>
+<span class="p">}]</span>
 </code></pre></div></td></tr></table></div>
 <p>If no manual data can be found, pass in an empty list to resume the privacy request:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[]</span><span class="w"></span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[]</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="resume-a-paused-erasure-privacy-request">Resume a paused erasure privacy request</h3>
 <p>A privacy request will pause execution when it reaches a manual collection in an erasure request.  An administrator
 should manually mask the records in question, and send confirmation of the rows affected in a POST request.  </p>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST {{host}}/privacy-request/{{privacy_request_id}}/erasure_confirm</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;row_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w"></span>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST {{host}}/privacy-request/{{privacy_request_id}}/erasure_confirm</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;row_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>If no manual data was destroyed, pass in a count of 0 to resume the privacy request:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;row_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">}</span><span class="w"></span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;row_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 
               

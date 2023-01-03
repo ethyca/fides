@@ -2152,23 +2152,23 @@ You're not viewing the latest version.
 <span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">endpoints</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">messages</span><span class="w"></span>
-<span class="w">    </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span><span class="w"></span>
-<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/conversations/&lt;id&gt;/messages</span><span class="w"></span>
-<span class="w">        </span><span class="nt">param_values</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
-<span class="w">        </span><span class="nt">postprocessors</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unwrap</span><span class="w"></span>
-<span class="w">            </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">conversation_messages</span><span class="w"></span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span><span class="w"></span>
-<span class="w">            </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from_email</span><span class="w"></span>
-<span class="w">              </span><span class="nt">value</span><span class="p">:</span><span class="w"></span>
-<span class="w">                </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">endpoints</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">messages</span>
+<span class="w">    </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">read</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GET</span>
+<span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/conversations/&lt;id&gt;/messages</span>
+<span class="w">        </span><span class="nt">param_values</span><span class="p">:</span>
+<span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">        </span><span class="nt">postprocessors</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unwrap</span>
+<span class="w">            </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">conversation_messages</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span>
+<span class="w">            </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">from_email</span>
+<span class="w">              </span><span class="nt">value</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
 </code></pre></div></td></tr></table></div>
 <p>Note: Order matters as it's defined in the config. In the above example, unwrap will be run first, then the output of unwrap will be used in the filter strategy.</p>
 <h3 id="format-subsequent-requests">Format subsequent requests</h3>
@@ -2178,11 +2178,11 @@ You're not viewing the latest version.
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;recipient&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test@email.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;subscriptions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;123&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;subscribed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TRUE&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">}]}</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;recipient&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test@email.com&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;subscriptions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span>
+<span class="w">    </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;123&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;subscribed&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TRUE&quot;</span>
+<span class="w">  </span><span class="p">}]}</span>
 </code></pre></div></td></tr></table></div>
 <p>And we needed to perform an update request for each item within <code>subscriptions</code>, where <code>subscribed</code> = <code>TRUE</code>, then we'd need the following config for our update request:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2192,14 +2192,14 @@ You're not viewing the latest version.
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">update</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">data_path</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subscriptionStatuses</span><span class="w"></span>
-<span class="w">    </span><span class="nt">postprocessors</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span><span class="w"></span>
-<span class="w">        </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subscribed</span><span class="w"></span>
-<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TRUE</span><span class="w"></span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">update</span><span class="p">:</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">data_path</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subscriptionStatuses</span>
+<span class="w">    </span><span class="nt">postprocessors</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span>
+<span class="w">        </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">subscribed</span>
+<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TRUE</span>
 </code></pre></div></td></tr></table></div>
 <h2 id="supported-strategies">Supported Strategies</h2>
 <ul>
@@ -2226,18 +2226,18 @@ You're not viewing the latest version.
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span><span class="w"></span>
-<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email_contact</span><span class="w"></span>
-<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span>
+<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email_contact</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
 </code></pre></div></td></tr></table></div></p>
 <p>Identity data passed in through request:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>Data to be processed:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2251,18 +2251,18 @@ You're not viewing the latest version.
 <span class="normal"> 9</span>
 <span class="normal">10</span>
 <span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429347</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">238475234</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody-else@email.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Cool&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429347</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">238475234</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody-else@email.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Cool&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div></td></tr></table></div></p>
 <p>Result:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2271,13 +2271,13 @@ You're not viewing the latest version.
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429347</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429347</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div></td></tr></table></div>
 By default, this filter is exact and case-sensitive.</p>
 <p>Post-Processor Config:
@@ -2287,20 +2287,20 @@ By default, this filter is exact and case-sensitive.</p>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span><span class="w"></span>
-<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email_contact</span><span class="w"></span>
-<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
-<span class="w">    </span><span class="nt">exact</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span><span class="w"></span>
-<span class="w">    </span><span class="nt">case_sensitive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter</span>
+<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email_contact</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
+<span class="w">    </span><span class="nt">exact</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">    </span><span class="nt">case_sensitive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
 </code></pre></div></td></tr></table></div></p>
 <p>Identity data passed in through request:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>Data to be processed:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2314,18 +2314,18 @@ By default, this filter is exact and case-sensitive.</p>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
 <span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429347</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;[Somebody Awesome] SOMEBODY@email.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429348</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429347</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;[Somebody Awesome] SOMEBODY@email.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429348</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div></td></tr></table></div></p>
 <p>Result:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2339,18 +2339,18 @@ By default, this filter is exact and case-sensitive.</p>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
 <span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429347</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;[Somebody Awesome] SOMEBODY@email.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429348</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429347</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;[Somebody Awesome] SOMEBODY@email.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1397429348</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;email_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;somebody@email.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Somebody Awesome&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div></td></tr></table></div>
 We can configure how strict the filter is by setting <code>exact</code> and <code>case_sensitive</code> both to False. This allows our value to be a substring of a longer string, and to ignore case (upper vs lower case).</p>
 <p>Note: Type casting is not supported at this time. We currently only support filtering by string values. e.g. <code>bob@mail.com</code> and not <code>12344245</code>.</p>
@@ -2366,9 +2366,9 @@ We can configure how strict the filter is by setting <code>exact</code> and <cod
 <p>Post-Processor Config:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unwrap</span><span class="w"></span>
-<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exact_matches.members</span><span class="w"></span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unwrap</span>
+<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">data_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exact_matches.members</span>
 </code></pre></div></td></tr></table></div></p>
 <p>Data to be processed:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2378,23 +2378,23 @@ We can configure how strict the filter is by setting <code>exact</code> and <cod
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;exact_matches&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;members&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;howdy&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123</span><span class="w"> </span><span class="p">},</span><span class="w"></span>
-<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;meow&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">841</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">]</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;exact_matches&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;members&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;howdy&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;meow&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">841</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
 <span class="p">}</span><span class="w">   </span>
 </code></pre></div></td></tr></table></div>
 Result:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;howdy&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123</span><span class="w"> </span><span class="p">},</span><span class="w"></span>
-<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;meow&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">841</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;howdy&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;meow&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">841</span><span class="w"> </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div></td></tr></table></div></p>
 
               

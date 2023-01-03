@@ -2411,20 +2411,20 @@ You're not viewing the latest version.
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code>docker run <span class="se">\</span>
-  -p <span class="m">8080</span>:8080 <span class="se">\</span>
-  --env <span class="nv">FIDES__SECURITY__APP_ENCRYPTION_KEY</span><span class="o">=</span><span class="s2">&quot;athirtytwocharacterencryptionkey&quot;</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID</span><span class="o">=</span><span class="s2">&quot;fidesadmin&quot;</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET</span><span class="o">=</span><span class="s2">&quot;fidesadminsecret&quot;</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__DATABASE__SERVER</span><span class="o">=</span><span class="s2">&quot;postgres.internal&quot;</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__DATABASE__PORT</span><span class="o">=</span><span class="s2">&quot;5432&quot;</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__DATABASE__USER</span><span class="o">=</span><span class="s2">&quot;fides&quot;</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__DATABASE__PASSWORD</span><span class="o">=</span><span class="s2">&quot;fidessecret&quot;</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__DATABASE__DB</span><span class="o">=</span><span class="s2">&quot;fides&quot;</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__REDIS__HOST</span><span class="o">=</span><span class="s2">&quot;redis.internal&quot;</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__REDIS__PORT</span><span class="o">=</span><span class="m">6379</span> <span class="se">\</span>
-  --env <span class="nv">FIDES__REDIS__PASSWORD</span><span class="o">=</span><span class="s2">&quot;fidessecret&quot;</span> <span class="se">\</span>
-  ethyca/fides
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__SECURITY__APP_ENCRYPTION_KEY</span><span class="o">=</span><span class="s2">&quot;athirtytwocharacterencryptionkey&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID</span><span class="o">=</span><span class="s2">&quot;fidesadmin&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET</span><span class="o">=</span><span class="s2">&quot;fidesadminsecret&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__DATABASE__SERVER</span><span class="o">=</span><span class="s2">&quot;postgres.internal&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__DATABASE__PORT</span><span class="o">=</span><span class="s2">&quot;5432&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__DATABASE__USER</span><span class="o">=</span><span class="s2">&quot;fides&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__DATABASE__PASSWORD</span><span class="o">=</span><span class="s2">&quot;fidessecret&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__DATABASE__DB</span><span class="o">=</span><span class="s2">&quot;fides&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__REDIS__HOST</span><span class="o">=</span><span class="s2">&quot;redis.internal&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__REDIS__PORT</span><span class="o">=</span><span class="m">6379</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env<span class="w"> </span><span class="nv">FIDES__REDIS__PASSWORD</span><span class="o">=</span><span class="s2">&quot;fidessecret&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>ethyca/fides
 </code></pre></div></td></tr></table></div></p>
 <p>If you prefer to create your .env file and pass an <code>--env-file</code> variable: 
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2472,9 +2472,9 @@ FIDES__REDIS__PASSWORD=&quot;fidessecret&quot;
 <p>Once pulled and configured, you can run the following within your project to start the server: </p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>docker run --rm <span class="se">\</span>
-  -v <span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/config:/app/config <span class="se">\</span>
-  -p <span class="m">3000</span>:3000 ethyca/fides-privacy-center:latest
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/config:/app/config<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>ethyca/fides-privacy-center:latest
 </code></pre></div></td></tr></table></div>
 
               

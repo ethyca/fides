@@ -2079,21 +2079,21 @@ You're not viewing the latest version.
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{oauth_root_client_id}&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{oauth_root_client_secret}&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;grant_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;client_credentials&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{oauth_root_client_id}&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{oauth_root_client_secret}&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;grant_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;client_credentials&quot;</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Curl options</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>curl <span class="se">\</span>
-  -X POST <span class="s1">&#39;http://&lt;HOST&gt;:8080/api/v1/oauth/token&#39;</span> <span class="se">\</span>
-  -d <span class="nv">client_id</span><span class="o">={</span>oauth_root_client_id<span class="o">}</span> <span class="se">\</span>
-  -d <span class="nv">client_secret</span><span class="o">={</span>oauth_root_client_secret<span class="o">}</span> <span class="se">\</span>
-  -d <span class="nv">grant_type</span><span class="o">=</span>client_credentials
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>curl<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s1">&#39;http://&lt;HOST&gt;:8080/api/v1/oauth/token&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="nv">client_id</span><span class="o">={</span>oauth_root_client_id<span class="o">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="nv">client_secret</span><span class="o">={</span>oauth_root_client_secret<span class="o">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="nv">grant_type</span><span class="o">=</span>client_credentials
 </code></pre></div></td></tr></table></div>
 <p>Substitute the <code>oauth_root_client_id</code> and <code>oauth_root_client_secret</code> for the values in your <code>fides.toml</code>, or provide their environment variables.</p>
 <p>If the <code>token</code> call is successful, the response will return the root client's access token in the <code>access_token</code> property:</p>
@@ -2121,11 +2121,11 @@ Content-Type: application/json
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>curl <span class="se">\</span>
-  -X POST <span class="s1">&#39;http://&lt;HOST&gt;:8080/api/v1/oauth/client&#39;</span> <span class="se">\</span>
-  -H <span class="s1">&#39;Authorization: Bearer &lt;root_access_token&gt;&#39;</span>
-  -H <span class="s1">&#39;Content-Type: application/json&#39;</span>
-  -d <span class="s1">&#39;{ &quot;scopes&quot;: [&quot;policy:read&quot;, &quot;rule:read&quot;]}&#39;</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>curl<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s1">&#39;http://&lt;HOST&gt;:8080/api/v1/oauth/client&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Authorization: Bearer &lt;root_access_token&gt;&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{ &quot;scopes&quot;: [&quot;policy:read&quot;, &quot;rule:read&quot;]}&#39;</span>
 </code></pre></div></td></tr></table></div>
 <p>The authorization header value is formed as <code>Bearer &lt;token&gt;</code>, and the request's <code>Content-Type</code> is <code>application/json</code>.</p>
 <h3 id="authorize-a-client-with-scopes">Authorize a client with scopes</h3>

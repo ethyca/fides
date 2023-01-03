@@ -2169,12 +2169,12 @@ You're not viewing the latest version.
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">pagination</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">offset</span><span class="w"></span>
-<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">incremental_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page</span><span class="w"></span>
-<span class="w">    </span><span class="nt">increment_by</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="w">    </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">pagination</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">offset</span>
+<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">incremental_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page</span>
+<span class="w">    </span><span class="nt">increment_by</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="link">Link</h3>
 <p>This strategy is used when the link to the next page is provided as part of the API response. The link is read from the headers or the body and used to get the next page of results.</p>
@@ -2194,11 +2194,11 @@ Given this Link header, we can specify a rel of <code>next</code> (case-insensit
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">pagination</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">link</span><span class="w"></span>
-<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">headers</span><span class="w"></span>
-<span class="w">    </span><span class="nt">rel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">next</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">pagination</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">link</span>
+<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">headers</span>
+<span class="w">    </span><span class="nt">rel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">next</span>
 </code></pre></div></td></tr></table></div></p>
 <p>We can also access links returned in the body. If we receive this value in the body:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2207,24 +2207,24 @@ Given this Link header, we can specify a rel of <code>next</code> (case-insensit
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="err">...</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;next_page&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://api.host.com/conversations?page_ref=ad6f38r3&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="err">...</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="err">...</span>
+<span class="w">  </span><span class="nt">&quot;next_page&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://api.host.com/conversations?page_ref=ad6f38r3&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="err">...</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 We can use the path value of <code>next_page.url</code> as the expression to access the url.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">pagination</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">link</span><span class="w"></span>
-<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">body</span><span class="w"></span>
-<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">next_page.url</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">pagination</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">link</span>
+<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">body</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">next_page.url</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="cursor">Cursor</h3>
 <p>This strategy is used when a specific value from a response object is used as a cursor to determine the starting point for the next set of results.</p>
@@ -2241,24 +2241,24 @@ We can use the path value of <code>next_page.url</code> as the expression to acc
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;messages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">      </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;this is&quot;</span><span class="p">},</span><span class="w"></span>
-<span class="w">      </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a&quot;</span><span class="p">}</span><span class="w"></span>
-<span class="w">      </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test&quot;</span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="p">]</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;messages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;this is&quot;</span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a&quot;</span><span class="p">}</span>
+<span class="w">      </span><span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test&quot;</span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 This strategy will take the field <code>id</code> from the last item returned and generate a new request with a query param of <code>after=3</code>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">pagination</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cursor</span><span class="w"></span>
-<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">cursor_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">after</span><span class="w"></span>
-<span class="w">    </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">pagination</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cursor</span>
+<span class="w">  </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cursor_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">after</span>
+<span class="w">    </span><span class="nt">field</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span>
 </code></pre></div></td></tr></table></div></p>
 
               

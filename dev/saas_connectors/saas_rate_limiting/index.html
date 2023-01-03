@@ -2105,13 +2105,13 @@ You're not viewing the latest version.
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_connector</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_connector</span>
 
-<span class="nt">rate_limit_config</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">limits</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
-<span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">second</span><span class="w"></span>
+<span class="nt">rate_limit_config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">second</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="disable-limit-for-specific-endpoint">Disable Limit For Specific Endpoint</h3>
 <p>In this example we limit our connector request rate but disable the limiter for <code>my_non_limited_entity</code> read requests.</p>
@@ -2128,20 +2128,20 @@ You're not viewing the latest version.
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_connector</span><span class="w"></span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_connector</span>
 
-<span class="w">  </span><span class="nt">rate_limit_config</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">limits</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
-<span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">second</span><span class="w"></span>
+<span class="w">  </span><span class="nt">rate_limit_config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">second</span>
 
-<span class="w">  </span><span class="nt">endpoints</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_non_limited_entity</span><span class="w"></span>
-<span class="w">    </span><span class="nt">requests</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">rate_limit_config</span><span class="p">:</span><span class="w"></span>
-<span class="w">          </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"></span>
+<span class="w">  </span><span class="nt">endpoints</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_non_limited_entity</span>
+<span class="w">    </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">read</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">rate_limit_config</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="shared-rate-usage-accross-connectors">Shared Rate Usage Accross Connectors</h3>
 <p>In this example <code>my_connector_1</code> and <code>my_connector_2</code> both contribute requests to the same time window as they share the custom key <code>shared_custom_key</code>.</p>
@@ -2160,22 +2160,22 @@ You're not viewing the latest version.
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
-<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_connector_1</span><span class="w"></span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">saas_config</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_connector_1</span>
 
-<span class="nt">rate_limit_config</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">limits</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
-<span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">second</span><span class="w"></span>
-<span class="w">      </span><span class="nt">custom_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shared_custom_key</span><span class="w"></span>
+<span class="nt">rate_limit_config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">second</span>
+<span class="w">      </span><span class="nt">custom_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shared_custom_key</span>
 
-<span class="w w-Error">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_connector_2</span><span class="w"></span>
+<span class="w w-Error">  </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_connector_2</span>
 
-<span class="nt">rate_limit_config</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">limits</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
-<span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">second</span><span class="w"></span>
-<span class="w">      </span><span class="nt">custom_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shared_custom_key</span><span class="w"></span>
+<span class="nt">rate_limit_config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">second</span>
+<span class="w">      </span><span class="nt">custom_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shared_custom_key</span>
 </code></pre></div></td></tr></table></div>
 
               

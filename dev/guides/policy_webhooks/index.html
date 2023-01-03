@@ -2111,24 +2111,24 @@ You're not viewing the latest version.
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Webhook Connection Configuration&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_webhook_connection_config&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;connection_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;access&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;read&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Webhook Connection Configuration&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_webhook_connection_config&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;connection_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;access&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;read&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="add-your-connection-secrets">Add your Connection secrets</h3>
 <p>The credentials needed to access your API endpoint are defined by making a PUT to the Connection Secrets endpoint. These credentials are encrypted in the Fides <code>app</code> database</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PUT /v1/connection/test_webhook_connection_config</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://www.example.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;authorization&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_authorization&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://www.example.com&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;authorization&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_authorization&quot;</span>
+<span class="w">    </span><span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="define-pre-execution-or-post-execution-webhooks">Define pre-execution or post-execution webhooks</h3>
 <p>After you've defined a new Connection, you can create lists of webhooks to run <em>before</em> (<code>PolicyPreWebhooks</code>)
@@ -2148,20 +2148,20 @@ or <em>after</em> (<code>PolicyPostWebhooks</code>) a privacy request is execute
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;connection_config_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_webhook_connection_config&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;one_way&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wake_up_snowflake_db&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Wake up Snowflake DB Webhook&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">     </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;connection_config_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_webhook_connection_config&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;two_way&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_systems_webhook&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Prep Systems Webhook&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">]</span><span class="w"></span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;connection_config_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_webhook_connection_config&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;one_way&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wake_up_snowflake_db&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Wake up Snowflake DB Webhook&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">     </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;connection_config_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test_webhook_connection_config&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;two_way&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_systems_webhook&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Prep Systems Webhook&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div></td></tr></table></div>
 <p>This creates two webhooks that are run sequentially for the execution policy before a privacy request runs.</p>
 <p>Similarly, to update your list of post-execution webhooks on a policy, use the following endpoint</p>
@@ -2177,10 +2177,10 @@ webhook at position 1 to move to position 0.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PATCH /policy/{policy_key}/webhook/pre-execution/wake_up_snowflake_db</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;two_way&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;two_way&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>Because this PATCH request updated the order of other webhooks, a reordered summary is included under the
 <code>new_order</code> attribute:</p>
@@ -2202,25 +2202,25 @@ webhook at position 1 to move to position 0.</p>
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;two_way&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wake_up_snowflake_db&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Wake up Snowflake DB Webhook&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;connection_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;TRUNCATED&gt;&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<span class="w">    </span><span class="p">},</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;new_order&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_systems_webhook&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
-<span class="w">        </span><span class="p">},</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wake_up_snowflake_db&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">]</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;two_way&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wake_up_snowflake_db&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Wake up Snowflake DB Webhook&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;connection_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;TRUNCATED&gt;&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;new_order&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prep_systems_webhook&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wake_up_snowflake_db&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>Similarly, to update your a post-execution webhook on an execution policy, use the following endpoint:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>PATCH /policy/{policy_key}/webhook/post_execution/{post_execution_key}
@@ -2238,25 +2238,25 @@ with the following request body:</p>
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;privacy_request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pri_029832ba-3b84-40f7-8946-82aec6f95448&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;one_way | two_way&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;callback_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pre | post&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@example.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;555-5555&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;privacy_request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pri_029832ba-3b84-40f7-8946-82aec6f95448&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;direction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;one_way | two_way&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;callback_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pre | post&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@example.com&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;555-5555&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>These attributes were configured at the time of webhook creation. Known identities are also embedded in the request.</p>
 <p>For <code>two-way</code> webhooks, Fides includes specific headers to pause request execution while any additional processing takes place</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;reply-to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/privacy-request/{privacy_request_id}/resume&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;reply-to-token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;jwe_token&gt;&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;reply-to&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/privacy-request/{privacy_request_id}/resume&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;reply-to-token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;jwe_token&gt;&quot;</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>To resume, send a request to the <code>reply-to</code> URL with the <code>reply-to-token</code>.  The <code>reply-to-token</code> will
 expire when your Redis cache expires (represented by <code>default_ttl_seconds</code> in your Fides <a href="../../installation/configuration/">config</a>. When a request expires, it is be given an <code>error</code> status, and requires resubmission.</p>
@@ -2271,13 +2271,13 @@ expire when your Redis cache expires (represented by <code>default_ttl_seconds</
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;derived_identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@gmail.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;555-5555&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">},</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;halt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;true | false&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;derived_identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@gmail.com&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;555-5555&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;halt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;true | false&quot;</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>Derived identity is optional: a returned email or phone number will replace currently known emails or phone numbers.</p>
 <h2 id="resuming-request-execution">Resuming request execution</h2>
@@ -2287,12 +2287,12 @@ expire when your Redis cache expires (represented by <code>default_ttl_seconds</
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;derived_identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@gmail.com&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;555-5555&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;derived_identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;customer-1@gmail.com&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;phone_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;555-5555&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <p>If there are no derived identities, send an empty <code>{}</code> request body.</p>
 <p>The <code>reply-to-token</code> is a JWE containing the current webhook ID, scopes to access the callback endpoint, and the datetime the token is issued.  Fides unpacks this and resumes the privacy request execution after the specified webhook. The <code>reply-to-token</code> expires after a set amount of time, (the <code>privacy_request_delay_timeout</code> in your Fides <a href="../../installation/configuration/">config</a>). Once the Redis cache expires, Fides no longer has the original identity data and the privacy request should be resubmitted</p>

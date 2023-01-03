@@ -2113,14 +2113,14 @@ You're not viewing the latest version.
 <h2 id="running-tests">Running tests</h2>
 <p>Fides uses <code>pytest</code> for unit testing. To run tests, invoke <code>pytest</code> from the <code>/fides/ctl/</code> directory:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">cd</span> ctl
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>ctl
 pytest
 </code></pre></div></td></tr></table></div>
 <h3 id="running-specific-tests">Running specific tests</h3>
 <p>To run a subset of tests, provide a filename or directory; to match a specific test name, use the <code>-k</code> flag:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># run all tests in the tests/integration directory that contain the word &quot;api&quot; in their title</span>
-pytest tests/integration/ -k api
+pytest<span class="w"> </span>tests/integration/<span class="w"> </span>-k<span class="w"> </span>api
 </code></pre></div></td></tr></table></div>
 <p>The <code>--sw</code> flag will exit <code>pytest</code> the first time it encounters an error; subsequent runs with the same flag will skip any tests that succeeded and run the failed test first.</p>
 <p>For more information on available Pytest invocation options, see the documentation <a href="https://docs.pytest.org/en/6.2.x/usage.html#usage-and-invocations">here</a>.</p>
@@ -2128,7 +2128,7 @@ pytest tests/integration/ -k api
 <p>Integration tests also test integration with external services like Snowflake which require internet access and authentication. It is possible to skip these tests by excluding the <code>external</code> mark. </p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># run all tests except external ones</span>
-pytest -m <span class="s2">&quot;not external&quot;</span>
+pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;not external&quot;</span>
 </code></pre></div></td></tr></table></div>
 <h2 id="ci-workflows">CI Workflows</h2>
 <p>CI will run automatically against any PR you open. Please run your tests locally first to avoid "debugging in CI", as this takes up resources that could be used by other contributors and is generally an inefficient usage of your time!</p>

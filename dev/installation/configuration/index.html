@@ -2358,7 +2358,7 @@ You're not viewing the latest version.
 <p>You can view the current configuration of your application via either the CLI or API</p>
 <h3 id="cli">CLI</h3>
 <p>To view your application configuration via the CLI, run:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides view config
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides<span class="w"> </span>view<span class="w"> </span>config
 </code></pre></div></td></tr></table></div>
 <p>The output will look something like this:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2381,33 +2381,33 @@ You're not viewing the latest version.
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span>
-<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code>fides&gt; fides view config 
-Loading config from: .fides/fides.toml
-Directory <span class="s1">&#39;./.fides&#39;</span> already exists.
-Configuration file already exists: ./.fides/fides.toml
-To learn more about configuring fides, see:
-        https://ethyca.github.io/fides/installation/configuration/
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code>fides&gt;<span class="w"> </span>fides<span class="w"> </span>view<span class="w"> </span>config<span class="w"> </span>
+Loading<span class="w"> </span>config<span class="w"> </span>from:<span class="w"> </span>.fides/fides.toml
+Directory<span class="w"> </span><span class="s1">&#39;./.fides&#39;</span><span class="w"> </span>already<span class="w"> </span>exists.
+Configuration<span class="w"> </span>file<span class="w"> </span>already<span class="w"> </span>exists:<span class="w"> </span>./.fides/fides.toml
+To<span class="w"> </span>learn<span class="w"> </span>more<span class="w"> </span>about<span class="w"> </span>configuring<span class="w"> </span>fides,<span class="w"> </span>see:
+<span class="w">        </span>https://ethyca.github.io/fides/installation/configuration/
 ----------
-<span class="nv">test_mode</span> <span class="o">=</span> <span class="nb">false</span>
-<span class="nv">is_test_mode</span> <span class="o">=</span> <span class="nb">false</span>
-<span class="nv">hot_reloading</span> <span class="o">=</span> <span class="nb">false</span>
-<span class="nv">dev_mode</span> <span class="o">=</span> <span class="nb">false</span>
+<span class="nv">test_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span>
+<span class="nv">is_test_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span>
+<span class="nv">hot_reloading</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span>
+<span class="nv">dev_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span>
 
 <span class="o">[</span>admin_ui<span class="o">]</span>
-<span class="nv">enabled</span> <span class="o">=</span> <span class="nb">true</span>
+<span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span>
 
 <span class="o">[</span>cli<span class="o">]</span>
-<span class="nv">local_mode</span> <span class="o">=</span> <span class="nb">false</span>
-<span class="nv">analytics_id</span> <span class="o">=</span> <span class="s2">&quot;internal&quot;</span>
-<span class="nv">server_protocol</span> <span class="o">=</span> <span class="s2">&quot;http&quot;</span>
-<span class="nv">server_host</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
+<span class="nv">local_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span>
+<span class="nv">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;internal&quot;</span>
+<span class="nv">server_protocol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http&quot;</span>
+<span class="nv">server_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;localhost&quot;</span>
 ...
 </code></pre></div></td></tr></table></div>
 <p>The output after the initial separator (<code>----------</code>) is valid TOML, and can be copy/pasted for reuse as a functioning config file.</p>
 <p>For more information, see the <a href="../../cli/">CLI docs</a>.</p>
 <h3 id="api">API</h3>
 <p>To view your application configuration via the CLI, run:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>GET /api/v1/config
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>GET<span class="w"> </span>/api/v1/config
 </code></pre></div></td></tr></table></div>
 <p>Fides will filter out any sensitive configuration variables. The full list of variables deemed safe to return is:</p>
 <h4 id="postgres-database">Postgres database</h4>
@@ -2504,60 +2504,60 @@ To learn more about configuring fides, see:
 <span class="normal">51</span>
 <span class="normal">52</span>
 <span class="normal">53</span>
-<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[database]</span><span class="w"></span>
-<span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides-db&quot;</span><span class="w"></span>
-<span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span><span class="w"></span>
-<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides&quot;</span><span class="w"></span>
-<span class="n">port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;5432&quot;</span><span class="w"></span>
-<span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides&quot;</span><span class="w"></span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[database]</span>
+<span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides-db&quot;</span>
+<span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span>
+<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides&quot;</span>
+<span class="n">port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;5432&quot;</span>
+<span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides&quot;</span>
 
-<span class="k">[logging]</span><span class="w"></span>
-<span class="n">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;INFO&quot;</span><span class="w"></span>
+<span class="k">[logging]</span>
+<span class="n">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;INFO&quot;</span>
 
-<span class="k">[cli]</span><span class="w"></span>
-<span class="n">server_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;localhost&quot;</span><span class="w"></span>
-<span class="n">server_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8080</span><span class="w"></span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"></span>
+<span class="k">[cli]</span>
+<span class="n">server_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;localhost&quot;</span>
+<span class="n">server_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8080</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span>
 
-<span class="k">[user]</span><span class="w"></span>
-<span class="n">analytics_opt_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
+<span class="k">[user]</span>
+<span class="n">analytics_opt_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
 
-<span class="k">[redis]</span><span class="w"></span>
-<span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;redis&quot;</span><span class="w"></span>
-<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;testpassword&quot;</span><span class="w"></span>
-<span class="n">port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6379</span><span class="w"></span>
-<span class="n">charset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;utf8&quot;</span><span class="w"></span>
-<span class="n">default_ttl_seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">604800</span><span class="w"></span>
-<span class="n">db_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
-<span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
-<span class="n">ssl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
-<span class="n">ssl_cert_reqs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;required&quot;</span><span class="w"></span>
+<span class="k">[redis]</span>
+<span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;redis&quot;</span>
+<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;testpassword&quot;</span>
+<span class="n">port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6379</span>
+<span class="n">charset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;utf8&quot;</span>
+<span class="n">default_ttl_seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">604800</span>
+<span class="n">db_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">ssl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<span class="n">ssl_cert_reqs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;required&quot;</span>
 
-<span class="k">[security]</span><span class="w"></span>
-<span class="n">app_encryption_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"></span>
-<span class="n">cors_origins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s">&quot;http://localhost&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8080&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;http://localhost:3000&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;http://localhost:3001&quot;</span><span class="p">,]</span><span class="w"></span>
-<span class="n">encoding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;UTF-8&quot;</span><span class="w"></span>
-<span class="n">oauth_root_client_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;adminid&quot;</span><span class="w"></span>
-<span class="n">oauth_root_client_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;adminsecret&quot;</span><span class="w"></span>
-<span class="n">drp_jwt_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;secret&quot;</span><span class="w"></span>
-<span class="n">root_username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;root_user&quot;</span><span class="w"></span>
-<span class="n">root_password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Testpassword1!&quot;</span><span class="w"></span>
+<span class="k">[security]</span>
+<span class="n">app_encryption_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<span class="n">cors_origins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s">&quot;http://localhost&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8080&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;http://localhost:3000&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;http://localhost:3001&quot;</span><span class="p">,]</span>
+<span class="n">encoding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;UTF-8&quot;</span>
+<span class="n">oauth_root_client_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;adminid&quot;</span>
+<span class="n">oauth_root_client_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;adminsecret&quot;</span>
+<span class="n">drp_jwt_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;secret&quot;</span>
+<span class="n">root_username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;root_user&quot;</span>
+<span class="n">root_password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Testpassword1!&quot;</span>
 
-<span class="k">[execution]</span><span class="w"></span>
-<span class="n">masking_strict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
-<span class="n">require_manual_request_approval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
-<span class="n">task_retry_backoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<span class="n">subject_identity_verification_required</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
-<span class="n">task_retry_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
-<span class="n">task_retry_delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="k">[execution]</span>
+<span class="n">masking_strict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">require_manual_request_approval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<span class="n">task_retry_backoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="n">subject_identity_verification_required</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<span class="n">task_retry_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="n">task_retry_delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
 
-<span class="k">[admin_ui]</span><span class="w"></span>
-<span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
+<span class="k">[admin_ui]</span>
+<span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
 
-<span class="k">[celery]</span><span class="w"></span>
-<span class="n">event_queue_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides_worker&quot;</span><span class="w"></span>
-<span class="n">task_default_queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides&quot;</span><span class="w"></span>
-<span class="n">task_always_eager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
+<span class="k">[celery]</span>
+<span class="n">event_queue_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides_worker&quot;</span>
+<span class="n">task_default_queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides&quot;</span>
+<span class="n">task_always_eager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
 </code></pre></div></td></tr></table></div>
 <h2 id="configuration-variable-reference">Configuration variable reference</h2>
 <p>The <code>fides.toml</code> file should specify the following variables:</p>
@@ -2606,7 +2606,7 @@ To learn more about configuring fides, see:
 <td align="left"><code>test_db</code></td>
 <td align="left">String</td>
 <td align="left"><code>""</code></td>
-<td align="left">Used instead of the <code>db</code> config when the <code>FIDES_TEST_MODE</code> environment variable is set to <code>True</code>, to avoid overwriting production data.</td>
+<td align="left">Used instead of the <code>db</code> config when the <code>FIDES__TEST_MODE</code> environment variable is set to <code>True</code>, to avoid overwriting production data.</td>
 </tr>
 </tbody>
 </table>
@@ -3024,9 +3024,9 @@ To learn more about configuring fides, see:
 <p>For example, to set the <code>server_url</code> on a Linux machine:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDES__CLI__SERVER_HOST</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span>
-<span class="nb">export</span> <span class="nv">FIDES__CLI__SERVER_PORT</span><span class="o">=</span><span class="s2">&quot;8080&quot;</span>
-<span class="nb">export</span> <span class="nv">FIDES__CLI__SERVER_PROTOCOL</span><span class="o">=</span><span class="s2">&quot;http&quot;</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__CLI__SERVER_HOST</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__CLI__SERVER_PORT</span><span class="o">=</span><span class="s2">&quot;8080&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__CLI__SERVER_PROTOCOL</span><span class="o">=</span><span class="s2">&quot;http&quot;</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="additional-environment-variables">Additional environment variables</h3>
 <p>The following environment variables are not included in the default <code>fides.toml</code> configuration, but may be set in your environment:</p>
@@ -3067,9 +3067,9 @@ To learn more about configuring fides, see:
 <p>For a full list of possible variable overrides, see the <a href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#new-lowercase-settings">Celery configuration</a> documentation.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Example <code>celery.toml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nv">default_queue_name</span> <span class="o">=</span> <span class="s2">&quot;fides&quot;</span>
-<span class="nv">broker_url</span> <span class="o">=</span> <span class="s2">&quot;redis://:testpassword@redis:6379/1&quot;</span>
-<span class="nv">result_backend</span> <span class="o">=</span> <span class="s2">&quot;redis://:testpassword@redis:6379/1&quot;</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nv">default_queue_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fides&quot;</span>
+<span class="nv">broker_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;redis://:testpassword@redis:6379/1&quot;</span>
+<span class="nv">result_backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;redis://:testpassword@redis:6379/1&quot;</span>
 </code></pre></div></td></tr></table></div>
 <table>
 <thead>

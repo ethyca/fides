@@ -2470,7 +2470,7 @@ You're not viewing the latest version.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
---connection-string &lt;my_connection_string&gt;
+--connection-string<span class="w"> </span>&lt;my_connection_string&gt;
 ...
 </code></pre></div></td></tr></table></div></p>
 <p>The appropriate <code>connection-string</code> format for your database connector can be found in the <a href="https://docs.sqlalchemy.org/en/14/dialects/">SQLAlchemy Documentation</a>.</p>
@@ -2478,17 +2478,17 @@ You're not viewing the latest version.
 <p>A connection string can also be defined within your Fides <a href="../../installation/configuration/">configuration</a> under the <code>credentials</code> section.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="o">[</span>credentials<span class="o">]</span>
-<span class="nv">my_database_credentials</span> <span class="o">=</span> <span class="o">{</span><span class="nv">connection_string</span><span class="o">=</span><span class="s2">&quot;&lt;my_connection_string&gt;&quot;</span><span class="o">}</span>
+<span class="nv">my_database_credentials</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="nv">connection_string</span><span class="o">=</span><span class="s2">&quot;&lt;my_connection_string&gt;&quot;</span><span class="o">}</span>
 </code></pre></div></td></tr></table></div>
 <p>Your command can then reference the key defined in your config:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
---credentials-id <span class="s2">&quot;my_database_credentials&quot;</span>
+--credentials-id<span class="w"> </span><span class="s2">&quot;my_database_credentials&quot;</span>
 ...
 </code></pre></div></td></tr></table></div></p>
 <p>It is possible to use an environment variable to set credentials config values if persisting your connection string to a file is problematic. To set a connection string you can set the environment variable with a prefix of <code>FIDES__CREDENTIALS__</code> and <code>__</code> as the nested key delimiter:
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDES__CREDENTIALS__MY_DATABASE_CREDENTIALS__CONNECTION_STRING</span><span class="o">=</span><span class="s2">&quot;&lt;my_database_credentials&gt;&quot;</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__CREDENTIALS__MY_DATABASE_CREDENTIALS__CONNECTION_STRING</span><span class="o">=</span><span class="s2">&quot;&lt;my_database_credentials&gt;&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="generating-a-dataset">Generating a Dataset</h3>
 <p>Given a database schema with a single <code>users</code> table as follows:</p>
@@ -2498,18 +2498,18 @@ You're not viewing the latest version.
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nv">flaskr</span><span class="o">=</span><span class="c1"># SELECT * FROM users;</span>
- id <span class="p">|</span>     created_at      <span class="p">|</span>       email       <span class="p">|</span>              password              <span class="p">|</span> first_name <span class="p">|</span> last_name
+<span class="w"> </span>id<span class="w"> </span><span class="p">|</span><span class="w">     </span>created_at<span class="w">      </span><span class="p">|</span><span class="w">       </span>email<span class="w">       </span><span class="p">|</span><span class="w">              </span>password<span class="w">              </span><span class="p">|</span><span class="w"> </span>first_name<span class="w"> </span><span class="p">|</span><span class="w"> </span>last_name
 ----+---------------------+-------------------+------------------------------------+------------+-----------
-  <span class="m">1</span> <span class="p">|</span> <span class="m">2020</span>-01-01 <span class="m">00</span>:00:00 <span class="p">|</span> admin@example.com <span class="p">|</span> pbkdf2:sha256:260000<span class="nv">$O87nanbSkl</span>... <span class="p">|</span> Admin      <span class="p">|</span> User
-  <span class="m">2</span> <span class="p">|</span> <span class="m">2020</span>-01-03 <span class="m">00</span>:00:00 <span class="p">|</span> user@example.com  <span class="p">|</span> pbkdf2:sha256:260000<span class="nv">$PGcBy5NzZe</span>... <span class="p">|</span> Example    <span class="p">|</span> User
-<span class="o">(</span><span class="m">2</span> rows<span class="o">)</span>
+<span class="w">  </span><span class="m">1</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">2020</span>-01-01<span class="w"> </span><span class="m">00</span>:00:00<span class="w"> </span><span class="p">|</span><span class="w"> </span>admin@example.com<span class="w"> </span><span class="p">|</span><span class="w"> </span>pbkdf2:sha256:260000<span class="nv">$O87nanbSkl</span>...<span class="w"> </span><span class="p">|</span><span class="w"> </span>Admin<span class="w">      </span><span class="p">|</span><span class="w"> </span>User
+<span class="w">  </span><span class="m">2</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">2020</span>-01-03<span class="w"> </span><span class="m">00</span>:00:00<span class="w"> </span><span class="p">|</span><span class="w"> </span>user@example.com<span class="w">  </span><span class="p">|</span><span class="w"> </span>pbkdf2:sha256:260000<span class="nv">$PGcBy5NzZe</span>...<span class="w"> </span><span class="p">|</span><span class="w"> </span>Example<span class="w">    </span><span class="p">|</span><span class="w"> </span>User
+<span class="o">(</span><span class="m">2</span><span class="w"> </span>rows<span class="o">)</span>
 </code></pre></div></td></tr></table></div>
 <p>We can invoke the <code>generate</code> command by providing a connection url for this database:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides generate dataset db <span class="se">\</span>
-  fides_resources/flaskr_postgres_dataset.yml <span class="se">\</span>
-  --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides<span class="w"> </span>generate<span class="w"> </span>dataset<span class="w"> </span>db<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>fides_resources/flaskr_postgres_dataset.yml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--connection-string<span class="w"> </span>postgresql://postgres:postgres@localhost:5432/flaskr
 </code></pre></div></td></tr></table></div></p>
 <p>The result is a resource file with a dataset with collections and fields to represent our schema:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2549,44 +2549,44 @@ You're not viewing the latest version.
 <span class="normal">35</span>
 <span class="normal">36</span>
 <span class="normal">37</span>
-<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public</span><span class="w"></span>
-<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public</span><span class="w"></span>
-<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Schema:</span><span class="nv"> </span><span class="s">public&#39;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">meta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w"></span>
-<span class="w">  </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">  </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="w">  </span><span class="nt">collections</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public.users</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Table:</span><span class="nv"> </span><span class="s">public.users&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">    </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="w">    </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created_at</span><span class="w"></span>
-<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">created_at&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span><span class="w"></span>
-<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">email&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">first_name</span><span class="w"></span>
-<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">first_name&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span><span class="w"></span>
-<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">id&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">last_name</span><span class="w"></span>
-<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">last_name&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">password</span><span class="w"></span>
-<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">password&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public</span>
+<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public</span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Schema:</span><span class="nv"> </span><span class="s">public&#39;</span>
+<span class="w">  </span><span class="nt">meta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<span class="w">  </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">  </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="w">  </span><span class="nt">collections</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">public.users</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Table:</span><span class="nv"> </span><span class="s">public.users&#39;</span>
+<span class="w">    </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">    </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="w">    </span><span class="nt">fields</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">created_at</span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">created_at&#39;</span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">email</span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">email&#39;</span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">first_name</span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">first_name&#39;</span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">id&#39;</span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">last_name</span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">last_name&#39;</span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">password</span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">password&#39;</span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
 </code></pre></div></td></tr></table></div>
 The resulting file still requires annotating the dataset with data categories to represent what is stored. </p>
 <div class="admonition tip">
@@ -2598,9 +2598,9 @@ The resulting file still requires annotating the dataset with data categories to
 <p>The <code>scan</code> command can then connect to your database and compare its schema to your defined Datasets.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides scan dataset db <span class="se">\</span>
-  fides_resources/flaskr_postgres_dataset.yml <span class="se">\</span>
-  --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides<span class="w"> </span>scan<span class="w"> </span>dataset<span class="w"> </span>db<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>fides_resources/flaskr_postgres_dataset.yml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--connection-string<span class="w"> </span>postgresql://postgres:postgres@localhost:5432/flaskr
 </code></pre></div></td></tr></table></div></p>
 <p>The command output confirms our database resource is covered fully:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2608,12 +2608,12 @@ The resulting file still requires annotating the dataset with data categories to
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading resource manifests from: dataset.yml
-Taxonomy successfully created.
-Successfully scanned the following datasets:
-    public
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading<span class="w"> </span>resource<span class="w"> </span>manifests<span class="w"> </span>from:<span class="w"> </span>dataset.yml
+Taxonomy<span class="w"> </span>successfully<span class="w"> </span>created.
+Successfully<span class="w"> </span>scanned<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>datasets:
+<span class="w">    </span>public
 
-Annotation coverage: <span class="m">100</span>%
+Annotation<span class="w"> </span>coverage:<span class="w"> </span><span class="m">100</span>%
 </code></pre></div></td></tr></table></div></p>
 <h2 id="working-with-an-aws-account">Working With an AWS Account</h2>
 <p>The <code>generate</code> command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.</p>
@@ -2629,41 +2629,41 @@ Annotation coverage: <span class="m">100</span>%
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>...
---access_key_id <span class="s2">&quot;&lt;my_access_key_id&gt;&quot;</span>
---secret_access_key <span class="s2">&quot;&lt;my_secret_access_key&gt;&quot;</span>
---region <span class="s2">&quot;us-east-1&quot;</span>
+--access_key_id<span class="w"> </span><span class="s2">&quot;&lt;my_access_key_id&gt;&quot;</span>
+--secret_access_key<span class="w"> </span><span class="s2">&quot;&lt;my_secret_access_key&gt;&quot;</span>
+--region<span class="w"> </span><span class="s2">&quot;us-east-1&quot;</span>
 ...
 </code></pre></div></td></tr></table></div></p>
 <h4 id="environment-variables">Environment Variables</h4>
 <p>The simplest way to authenticate through environment variables is to set an <code>SECRET_ACCESS_KEY</code> and <code>ACCESS_KEY_ID</code>, as defined by <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables">boto3</a>:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key_id&gt;&quot;</span>
-<span class="nb">export</span> <span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key&gt;&quot;</span>
-<span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key_id&gt;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_access_key&gt;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <p>It is also possible to reference a profile:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s2">&quot;my_profile_1&quot;</span>
-<span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_PROFILE</span><span class="o">=</span><span class="s2">&quot;my_profile_1&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <h4 id="fides-config_1">Fides Config</h4>
 <p>Credentials can be defined within your <a href="../../installation/configuration/">Fides config</a> under the credentials section.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="o">[</span>credentials<span class="o">]</span>
-<span class="nv">my_aws_credentials</span> <span class="o">=</span> <span class="o">{</span><span class="nv">aws_access_key_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_access_key_id&gt;&quot;</span>, <span class="nv">aws_secret_access_key</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_secret_access_key&gt;&quot;</span>, <span class="nv">region_name</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span><span class="o">}</span>
+<span class="nv">my_aws_credentials</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="nv">aws_access_key_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_access_key_id&gt;&quot;</span>,<span class="w"> </span><span class="nv">aws_secret_access_key</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_secret_access_key&gt;&quot;</span>,<span class="w"> </span><span class="nv">region_name</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span><span class="o">}</span>
 </code></pre></div></td></tr></table></div>
 <p>Your command can then reference the key defined in your config.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
---credentials-id <span class="s2">&quot;my_aws_credentials&quot;</span>
+--credentials-id<span class="w"> </span><span class="s2">&quot;my_aws_credentials&quot;</span>
 ...
 </code></pre></div></td></tr></table></div></p>
 <p>It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of <code>FIDES__CREDENTIALS__</code> and <code>__</code> as the nested key delimiter:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDES__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_access_key_id&gt;&quot;</span>
-<span class="nb">export</span> <span class="nv">FIDES__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_secret_access_key&gt;&quot;</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_access_key_id&gt;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_secret_access_key&gt;&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="required-permissions">Required Permissions</h3>
 <p>The identity which is authenticated must be allowed to invoke the following actions:</p>
@@ -2688,21 +2688,21 @@ Annotation coverage: <span class="m">100</span>%
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
-<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">        </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;Effect&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Allow&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;Action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">                </span><span class="s2">&quot;redshift:DescribeClusters&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="s2">&quot;rds:DescribeDBInstances&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="s2">&quot;rds:DescribeDBClusters&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="s2">&quot;tag:GetResources&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="p">],</span><span class="w"></span>
-<span class="w">            </span><span class="nt">&quot;Resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;*&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">]</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;Effect&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Allow&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;Action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="s2">&quot;redshift:DescribeClusters&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;rds:DescribeDBInstances&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;rds:DescribeDBClusters&quot;</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">&quot;tag:GetResources&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="p">],</span>
+<span class="w">            </span><span class="nt">&quot;Resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;*&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="filtering-aws-resources">Filtering AWS Resources</h3>
 <p>It is possible to filter resources at the organization level by adding a resource filter within <code>fidesctl_meta</code>. The <code>ignore_resource_arn</code> filter can exclude any resources with an exact matching Amazon Resource Name (ARN) and also supports wildcards in individual ARN fields. An empty ARN field in the filter pattern works as a wildcard.</p>
@@ -2713,27 +2713,27 @@ Annotation coverage: <span class="m">100</span>%
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">organization</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
-<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">resource_filters</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ignore_resource_arn</span><span class="w"></span>
-<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:rds:us-east-1:910934740016:db:database-2&#39;</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">organization</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span>
+<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">resource_filters</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ignore_resource_arn</span>
+<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn:aws:rds:us-east-1:910934740016:db:database-2&#39;</span>
 </code></pre></div></td></tr></table></div></p>
 <p>In the above example we explicitly ignore a single rds database but if we wanted to ignore all rds databases we could remove the partition, account id, region and database name ARN fields:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">resource_filters</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ignore_resource_arn</span><span class="w"></span>
-<span class="w">  </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn::rds:::db:&#39;</span><span class="w"></span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">resource_filters</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ignore_resource_arn</span>
+<span class="w">  </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn::rds:::db:&#39;</span>
 </code></pre></div></td></tr></table></div></p>
 <p>Any ARN field can be wildcarded by leaving it empty.</p>
 <h3 id="generating-systems">Generating Systems</h3>
 <p>Once credentials have been configured we can invoke the <code>generate system aws</code> command:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides generate system aws <span class="se">\</span>
-  fides_resources/aws_systems.yml
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides<span class="w"> </span>generate<span class="w"> </span>system<span class="w"> </span>aws<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>fides_resources/aws_systems.yml
 </code></pre></div></td></tr></table></div></p>
 <p>The result is a resource file with a system that represents a redshift cluster defined in our account:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2746,32 +2746,32 @@ Annotation coverage: <span class="m">100</span>%
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span><span class="w"></span>
-<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span><span class="w"></span>
-<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Cluster:</span><span class="nv"> </span><span class="s">my_redshift_cluster&#39;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">endpoint_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster.us-east-1.redshift.amazonaws.com</span><span class="w"></span>
-<span class="w">    </span><span class="nt">endpoint_port</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;5439&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176</span><span class="w"></span>
-<span class="w">  </span><span class="nt">system_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redshift_cluster</span><span class="w"></span>
-<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span>
+<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster</span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Cluster:</span><span class="nv"> </span><span class="s">my_redshift_cluster&#39;</span>
+<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">endpoint_address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_redshift_cluster.us-east-1.redshift.amazonaws.com</span>
+<span class="w">    </span><span class="nt">endpoint_port</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;5439&#39;</span>
+<span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arn:aws:redshift:us-east-1:910934740016:namespace:057d5b0e-7eaa-4012-909c-3957c7149176</span>
+<span class="w">  </span><span class="nt">system_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redshift_cluster</span>
+<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="scanning-the-systems">Scanning the Systems</h3>
 <p>The <code>scan</code> command can then connect to your AWS account and compare its resources to your already defined systems:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides scan system aws <span class="se">\</span>
-  fides_resources/aws_systems.yml
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides<span class="w"> </span>scan<span class="w"> </span>system<span class="w"> </span>aws<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>fides_resources/aws_systems.yml
 </code></pre></div></td></tr></table></div></p>
 <p>The command output confirms our resources are covered fully:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading resource manifests from: manifest.yml
-Taxonomy successfully created.
-Scanned <span class="m">1</span> resource and all were found <span class="k">in</span> taxonomy.
-Resource coverage: <span class="m">100</span>%
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading<span class="w"> </span>resource<span class="w"> </span>manifests<span class="w"> </span>from:<span class="w"> </span>manifest.yml
+Taxonomy<span class="w"> </span>successfully<span class="w"> </span>created.
+Scanned<span class="w"> </span><span class="m">1</span><span class="w"> </span>resource<span class="w"> </span>and<span class="w"> </span>all<span class="w"> </span>were<span class="w"> </span>found<span class="w"> </span><span class="k">in</span><span class="w"> </span>taxonomy.
+Resource<span class="w"> </span>coverage:<span class="w"> </span><span class="m">100</span>%
 </code></pre></div></td></tr></table></div></p>
 <h2 id="working-with-an-okta-account">Working With an Okta Account</h2>
 <p>The <code>generate</code> command can connect to an Okta admin account and automatically generate resource YAML file based on applications your organization integrates with.</p>
@@ -2786,44 +2786,44 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>...
---token <span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span>
---org-url <span class="s2">&quot;&lt;my_okta_org_url&gt;&quot;</span>
+--token<span class="w"> </span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span>
+--org-url<span class="w"> </span><span class="s2">&quot;&lt;my_okta_org_url&gt;&quot;</span>
 ...
 </code></pre></div></td></tr></table></div></p>
 <h4 id="environment-variables_1">Environment Variables</h4>
 <p>The simplest way to authenticate is by using a client token, defined by the <a href="https://github.com/okta/okta-sdk-python#environment-variables">Okta Python SDK</a>:
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">OKTA_CLIENT_TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">OKTA_CLIENT_TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <p>It is also possible to authenticate using OAuth 2.0:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">OKTA_CLIENT_AUTHORIZATIONMODE</span><span class="o">=</span><span class="s2">&quot;PrivateKey&quot;</span>
-<span class="nb">export</span> <span class="nv">OKTA_CLIENT_CLIENTID</span><span class="o">=</span><span class="s2">&quot;&lt;my_client_id&gt;&quot;</span>
-<span class="nb">export</span> <span class="nv">OKTA_CLIENT_SCOPES</span><span class="o">=</span><span class="s2">&quot;&lt;my_scope_1,my_scope_2&gt;&quot;</span>
-<span class="nb">export</span> <span class="nv">OKTA_CLIENT_PRIVATEKEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_private_jwk&gt;&quot;</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">OKTA_CLIENT_AUTHORIZATIONMODE</span><span class="o">=</span><span class="s2">&quot;PrivateKey&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OKTA_CLIENT_CLIENTID</span><span class="o">=</span><span class="s2">&quot;&lt;my_client_id&gt;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OKTA_CLIENT_SCOPES</span><span class="o">=</span><span class="s2">&quot;&lt;my_scope_1,my_scope_2&gt;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OKTA_CLIENT_PRIVATEKEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_private_jwk&gt;&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <h4 id="fides-configuration">Fides Configuration</h4>
 <p>Credentials can be defined within your <a href="../../installation/configuration/">Fides config</a> under the credentials section.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="o">[</span>credentials<span class="o">]</span>
-<span class="nv">my_okta_credentials</span> <span class="o">=</span> <span class="o">{</span><span class="nv">orgUrl</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_org_url&gt;&quot;</span> <span class="nv">token</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span><span class="o">}</span>
+<span class="nv">my_okta_credentials</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="nv">orgUrl</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_org_url&gt;&quot;</span><span class="w"> </span><span class="nv">token</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span><span class="o">}</span>
 </code></pre></div></td></tr></table></div>
 <p>Your command can then reference the key defined in your config.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
---credentials-id <span class="s2">&quot;my_okta_credentials&quot;</span>
+--credentials-id<span class="w"> </span><span class="s2">&quot;my_okta_credentials&quot;</span>
 ...
 </code></pre></div></td></tr></table></div></p>
 <p>It is possible to use an environment variable to set credentials config values if persisting your token to a file is problematic. To set a token, you can set the environment variable with a prefix of <code>FIDES__CREDENTIALS__</code> and <code>__</code> as the nested key delimiter:
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDES__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="generating-systems_1">Generating Systems</h3>
 <p>Once credentials have been configured we can invoke the <code>generate system okta</code> command:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides generate system okta
-  fides_resources/okta_systems.yml
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides<span class="w"> </span>generate<span class="w"> </span>system<span class="w"> </span>okta
+<span class="w">  </span>fides_resources/okta_systems.yml
 </code></pre></div></td></tr></table></div></p>
 <p>The result is a resource file with systems that represent our application integrations:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2840,27 +2840,27 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
-<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jejqcp74R9MpJ5d7</span><span class="w"></span>
-<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce</span><span class="w"></span>
-<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Okta</span><span class="nv"> </span><span class="s">Application:</span><span class="nv"> </span><span class="s">Salesforce.com&#39;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jejqcp74R9MpJ5d7</span><span class="w"></span>
-<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jekd00tpvn5hN5d7</span><span class="w"></span>
-<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">google</span><span class="w"></span>
-<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Okta</span><span class="nv"> </span><span class="s">Application:</span><span class="nv"> </span><span class="s">Google</span><span class="nv"> </span><span class="s">Workspace&#39;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jekd00tpvn5hN5d7</span><span class="w"></span>
-<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">system</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jejqcp74R9MpJ5d7</span>
+<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">salesforce</span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Okta</span><span class="nv"> </span><span class="s">Application:</span><span class="nv"> </span><span class="s">Salesforce.com&#39;</span>
+<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jejqcp74R9MpJ5d7</span>
+<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jekd00tpvn5hN5d7</span>
+<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">google</span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Okta</span><span class="nv"> </span><span class="s">Application:</span><span class="nv"> </span><span class="s">Google</span><span class="nv"> </span><span class="s">Workspace&#39;</span>
+<span class="w">  </span><span class="nt">fidesctl_meta</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">resource_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0oa4jekd00tpvn5hN5d7</span>
+<span class="w">  </span><span class="nt">privacy_declarations</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="scanning-the-systems_1">Scanning the Systems</h3>
 <p>The <code>scan</code> command can then connect to your Okta account and compare its applications to your already defined systems:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides scan system okta <span class="se">\</span>
-  fides_resources/okta_systems.yml
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides<span class="w"> </span>scan<span class="w"> </span>system<span class="w"> </span>okta<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>fides_resources/okta_systems.yml
 </code></pre></div></td></tr></table></div></p>
 <p>The command output confirms our resources are covered fully:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2872,16 +2872,16 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading resource manifests from: manifest.yml
-Taxonomy successfully created.
-Successfully scanned the following systems:
-    saasure<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45lj1tcpqU6W5d7<span class="o">)</span>
-    okta_enduser<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45ln0xLKJnAw5d7<span class="o">)</span>
-    okta_browser_plugin<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45lnodX7MHJB5d7<span class="o">)</span>
-    salesforce<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4jejqcp74R9MpJ5d7<span class="o">)</span>
-    google<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4jekd00tpvn5hN5d7<span class="o">)</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>Loading<span class="w"> </span>resource<span class="w"> </span>manifests<span class="w"> </span>from:<span class="w"> </span>manifest.yml
+Taxonomy<span class="w"> </span>successfully<span class="w"> </span>created.
+Successfully<span class="w"> </span>scanned<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>systems:
+<span class="w">    </span>saasure<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45lj1tcpqU6W5d7<span class="o">)</span>
+<span class="w">    </span>okta_enduser<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45ln0xLKJnAw5d7<span class="o">)</span>
+<span class="w">    </span>okta_browser_plugin<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4h45lnodX7MHJB5d7<span class="o">)</span>
+<span class="w">    </span>salesforce<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4jejqcp74R9MpJ5d7<span class="o">)</span>
+<span class="w">    </span>google<span class="o">(</span><span class="nv">id</span><span class="o">=</span>0oa4jekd00tpvn5hN5d7<span class="o">)</span>
 
-Resource coverage: <span class="m">100</span>%
+Resource<span class="w"> </span>coverage:<span class="w"> </span><span class="m">100</span>%
 </code></pre></div></td></tr></table></div></p>
 <h2 id="working-with-a-gcp-account">Working With a GCP Account</h2>
 <p>The <code>generate</code> command can connect to a GCP account and automatically generate resource YAML files based on tracked resources. Currently, generating datasets from BigQuery is supported.</p>
@@ -2892,7 +2892,7 @@ Resource coverage: <span class="m">100</span>%
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
---keyfile-path <span class="s2">&quot;/path/to/keyfile.json&quot;</span>
+--keyfile-path<span class="w"> </span><span class="s2">&quot;/path/to/keyfile.json&quot;</span>
 ...
 </code></pre></div></td></tr></table></div></p>
 <h4 id="fides-config_2">Fides Config</h4>
@@ -2907,37 +2907,37 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[credentials.bigquery_1]</span><span class="w"></span>
-<span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;service_account&quot;</span><span class="w"></span>
-<span class="n">project_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_project_id&gt;&quot;</span><span class="w"></span>
-<span class="n">private_key_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_private_key_id&gt;&quot;</span><span class="w"></span>
-<span class="n">private_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_private_key&gt;&quot;</span><span class="w"></span>
-<span class="n">client_email</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_client_email&gt;&quot;</span><span class="w"></span>
-<span class="n">client_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_client_id&gt;&quot;</span><span class="w"></span>
-<span class="n">auth_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://accounts.google.com/o/oauth2/auth&quot;</span><span class="w"></span>
-<span class="n">token_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://oauth2.googleapis.com/token&quot;</span><span class="w"></span>
-<span class="n">auth_provider_x509_cert_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://www.googleapis.com/oauth2/v1/certs&quot;</span><span class="w"></span>
-<span class="n">client_x509_cert_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_cert_url&gt;&quot;</span><span class="w"></span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[credentials.bigquery_1]</span>
+<span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;service_account&quot;</span>
+<span class="n">project_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_project_id&gt;&quot;</span>
+<span class="n">private_key_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_private_key_id&gt;&quot;</span>
+<span class="n">private_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_private_key&gt;&quot;</span>
+<span class="n">client_email</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_client_email&gt;&quot;</span>
+<span class="n">client_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_client_id&gt;&quot;</span>
+<span class="n">auth_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://accounts.google.com/o/oauth2/auth&quot;</span>
+<span class="n">token_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://oauth2.googleapis.com/token&quot;</span>
+<span class="n">auth_provider_x509_cert_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://www.googleapis.com/oauth2/v1/certs&quot;</span>
+<span class="n">client_x509_cert_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_cert_url&gt;&quot;</span>
 </code></pre></div></td></tr></table></div>
 <p>Your command can then reference the key defined in your config.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
---credentials-id <span class="s2">&quot;my_gcp_credentials&quot;</span>
+--credentials-id<span class="w"> </span><span class="s2">&quot;my_gcp_credentials&quot;</span>
 ...
 </code></pre></div></td></tr></table></div></p>
 <p>It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of <code>FIDES__CREDENTIALS__</code> and <code>__</code> as the nested key delimiter:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDES__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_private_key&gt;&quot;</span>
-<span class="nb">export</span> <span class="nv">FIDES__CREDENTIALS__BIGQUERY_1__CLIENT_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_client_id&gt;&quot;</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_private_key&gt;&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">FIDES__CREDENTIALS__BIGQUERY_1__CLIENT_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_client_id&gt;&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="generating-a-dataset_1">Generating a Dataset</h3>
 <p>Once credentials have been configured, the <code>generate dataset gcp bigquery</code> command can take both a configuration option and a dataset name to create the resource file.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides generate dataset gcp bigquery <span class="se">\</span>
-  &lt;dataset_name&gt; --keyfile-path <span class="s2">&quot;.fides/creds/bigquery.json&quot;</span> <span class="se">\</span>
-  &lt;output_file_name&gt;
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fides<span class="w"> </span>generate<span class="w"> </span>dataset<span class="w"> </span>gcp<span class="w"> </span>bigquery<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>&lt;dataset_name&gt;<span class="w"> </span>--keyfile-path<span class="w"> </span><span class="s2">&quot;.fides/creds/bigquery.json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>&lt;output_file_name&gt;
 </code></pre></div></td></tr></table></div>
 <p>The result is a resource file with a dataset that represents the bigquery dataset defined in your account.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2958,25 +2958,25 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_bigquery_dataset</span><span class="w"></span>
-<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bigquery dataset</span><span class="w"></span>
-<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Schema:</span><span class="nv"> </span><span class="s">BigQuery&#39;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">  </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="w">  </span><span class="nt">retention</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">No retention or erasure policy</span><span class="w"></span>
-<span class="w">  </span><span class="nt">collections</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">table</span><span class="w"></span>
-<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Table:</span><span class="nv"> </span><span class="s">table&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">    </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="w">    </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">column</span><span class="w"></span>
-<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">column&#39;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
-<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
-<span class="nn">...</span><span class="w"></span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_bigquery_dataset</span>
+<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bigquery dataset</span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Schema:</span><span class="nv"> </span><span class="s">BigQuery&#39;</span>
+<span class="w">  </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">  </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="w">  </span><span class="nt">retention</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">No retention or erasure policy</span>
+<span class="w">  </span><span class="nt">collections</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">table</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Table:</span><span class="nv"> </span><span class="s">table&#39;</span>
+<span class="w">    </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">    </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="w">    </span><span class="nt">fields</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">column</span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">column&#39;</span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span>
+<span class="nn">...</span>
 </code></pre></div></td></tr></table></div>
 
               

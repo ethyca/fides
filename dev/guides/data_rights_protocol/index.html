@@ -2092,13 +2092,13 @@ You're not viewing the latest version.
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p p-Indicator">[</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">{</span><span class="w"></span>
-<span class="w">        </span><span class="s">&quot;name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;User</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Address&quot;</span><span class="p p-Indicator">,</span><span class="w"></span>
-<span class="w">        </span><span class="s">&quot;key&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;user_email_address_policy&quot;</span><span class="p p-Indicator">,</span><span class="w"></span>
-<span class="w">        </span><span class="s">&quot;drp_action&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;access&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">}</span><span class="w"></span>
-<span class="p p-Indicator">]</span><span class="w"></span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p p-Indicator">[</span>
+<span class="w">    </span><span class="p p-Indicator">{</span>
+<span class="w">        </span><span class="s">&quot;name&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;User</span><span class="nv"> </span><span class="s">Email</span><span class="nv"> </span><span class="s">Address&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">&quot;key&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;user_email_address_policy&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">        </span><span class="s">&quot;drp_action&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;access&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">}</span>
+<span class="p p-Indicator">]</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="available-actions">Available actions</h3>
 <p>The following actions may be associated to a policy via the <code>drp_action</code> attribute, which correspond to the DRP's set of <a href="https://github.com/consumer-reports-digital-lab/data-rights-protocol#202-post-exercise-data-rights-exercise-endpoint">supported rights</a>.</p>
@@ -2149,37 +2149,37 @@ You're not viewing the latest version.
 <span class="normal">6</span>
 <span class="normal">7</span>
 <span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.5&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">},</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;exercise&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">    </span><span class="s2">&quot;sale:opt-out&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="p">],</span><span class="w"></span>
-<span class="w">  </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;jwt&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;meta&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.5&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;exercise&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;sale:opt-out&quot;</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;jwt&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Response</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;c789ff35-7644-4ceb-9981-4b35c264aac3&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;received_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;20210902T152725.403-0700&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;expected_by&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;20211015T152725.403-0700&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;open&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;c789ff35-7644-4ceb-9981-4b35c264aac3&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;received_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;20210902T152725.403-0700&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;expected_by&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;20211015T152725.403-0700&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;open&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="status">Status</h3>
 <p>The current status of an existing privacy request may be returned via the <code>/status</code> endpoint, which must be queried using a privacy request ID.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>GET /api/v1/drp/status?request_id={privacy_request_id}</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;c789ff35-7644-4ceb-9981-4b35c264aac3&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;open&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;c789ff35-7644-4ceb-9981-4b35c264aac3&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;open&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="data-rights">Data Rights</h3>
 <p>All data rights associated with existing policies may be returned via the <code>/data-rights</code> endpoint. Note that the <code>v1</code> in the below URL does not correspond to DRP version, but instead corresponds to Fides version.</p>
@@ -2190,24 +2190,24 @@ You're not viewing the latest version.
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.5&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;api_base&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;actions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
-<span class="w">        </span><span class="s2">&quot;access&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p">],</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;user_relationships&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.5&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;api_base&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;actions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">&quot;access&quot;</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;user_relationships&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="revoke">Revoke</h3>
 <p>You can revoke a pending privacy request via the <code>/revoke</code> endpoint.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>GET /api/v1/drp/revoke</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;c789ff35-7644-4ceb-9981-4b35c264aac3&quot;</span><span class="p">,</span><span class="w"> </span>
-<span class="w">    </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Accidentally submitted&quot;</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Accidentally submitted&quot;</span>
+<span class="p">}</span>
 </code></pre></div></td></tr></table></div>
 
               
