@@ -35,7 +35,7 @@ class CreateConnectionConfiguration(BaseModel):
 
 
 class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
-    """Schema for creatnig a connection configuration including secrets."""
+    """Schema for creating a connection configuration including secrets."""
 
     secrets: Optional[connection_secrets_schemas] = None
     saas_connector_type: Optional[str]

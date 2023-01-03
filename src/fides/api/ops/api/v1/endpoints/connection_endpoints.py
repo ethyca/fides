@@ -296,7 +296,7 @@ def patch_connections(
                 config.key,
                 exc,
             )
-            # remove secrets information from the return for secuirty reasons.
+            # remove secrets information from the return for security reasons.
             orig_data.pop("secrets", None)
             orig_data.pop("saas_connector_type", None)
             failed.append(
@@ -309,7 +309,7 @@ def patch_connections(
             logger.warning(
                 "Create/update failed for connection config with key '{}'.", config.key
             )
-            # remove secrets information from the return for secuirty reasons.
+            # remove secrets information from the return for security reasons.
             orig_data.pop("secrets", None)
             orig_data.pop("saas_connector_type", None)
             failed.append(
