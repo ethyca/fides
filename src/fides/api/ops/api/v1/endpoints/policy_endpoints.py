@@ -210,11 +210,11 @@ def get_rule(
     policy_key: FidesOpsKey,
     rule_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
-) -> schemas.Rule:
+) -> Rule:
     """
     Return a single `Rule` with the given key, associated with the given `Policy`
     """
-    return get_rule_or_error(db, policy_key, rule_key)  # type: ignore[return-value]
+    return get_rule_or_error(db, policy_key, rule_key)
 
 
 @router.patch(
@@ -435,11 +435,11 @@ def get_rule_target(
     rule_key: FidesOpsKey,
     rule_target_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
-) -> schemas.RuleTarget:
+) -> RuleTarget:
     """
     Return a single `Rule Target` associated with the given `Rule` and `Policy`
     """
-    return get_rule_target_or_error(db, policy_key, rule_key, rule_target_key)  # type: ignore[return-value]
+    return get_rule_target_or_error(db, policy_key, rule_key, rule_target_key)
 
 
 @router.patch(
