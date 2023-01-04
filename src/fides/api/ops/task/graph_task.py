@@ -817,25 +817,22 @@ async def run_consent_request(  # pylint: disable = too-many-arguments
 ) -> Dict[str, bool]:
     """Run a consent request
 
-    The graph built is more similar to an erasure graph in that there are no dependencies between
-    the nodes.  Additionally, the inputs into each node are just supplied identity data, and the outputs
-    are whether the consent request succeeded.
+    The graph built is very simple: there are no relationships between the nodes, every node has
+    identity data input and every node returns whether the consent request succeeded.
 
+    The DatasetGraph passed in is expected to have one Node per Dataset.
     """
-    traversal: Traversal = Traversal(graph, identity)
+
     with TaskResources(
         privacy_request, policy, connection_configs, session
     ) as resources:
 
-        def collect_tasks_fn(
-            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
-        ) -> None:
-            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
-            if not tn.is_root_node():
-                data[tn.address] = GraphTask(tn, resources)
+        dsk: Dict[CollectionAddress, Any] = {}
 
-        env: Dict[CollectionAddress, Any] = {}
-        traversal.traverse(env, collect_tasks_fn)  # env updated in place
+        for col_address, node in graph.nodes.items():
+            traversal_node = TraversalNode(node)
+            task = GraphTask(traversal_node, resources)
+            dsk[col_address] = (task.consent_request, identity)
 
         def termination_fn(*dependent_values: bool) -> Tuple[bool, ...]:
             """The dependent_values here is an bool output from each task feeding in, where
@@ -845,11 +842,8 @@ async def run_consent_request(  # pylint: disable = too-many-arguments
             The termination function just returns this tuple of booleans."""
             return dependent_values
 
-        dsk: Dict[CollectionAddress, Any] = {
-            k: (t.consent_request, identity) for k, t in env.items()
-        }
         # terminator function waits for all keys
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *graph.nodes.keys())
 
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
@@ -857,7 +851,7 @@ async def run_consent_request(  # pylint: disable = too-many-arguments
         # we combine the output of the termination function with the input keys to provide
         # a map of {collection_name: whether consent request succeeded}:
         consent_update_map: Dict[str, bool] = dict(
-            zip([str(x) for x in env], update_successes)
+            zip(graph.nodes.keys(), update_successes)
         )
 
         return consent_update_map

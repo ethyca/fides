@@ -427,11 +427,16 @@ async def run_privacy_request(
             request_checkpoint=CurrentStep.consent,
             from_checkpoint=resume_step,
         ):
+            dataset_with_mocked_collections = [
+                dataset_config.get_graph_with_stubbed_collection()
+                for dataset_config in datasets
+            ]
+            node_per_dataset_graph = DatasetGraph(*dataset_with_mocked_collections)
 
             await run_consent_request(
                 privacy_request=privacy_request,
                 policy=policy,
-                graph=dataset_graph,
+                graph=node_per_dataset_graph,
                 connection_configs=connection_configs,
                 identity=identity_data,
                 session=session,

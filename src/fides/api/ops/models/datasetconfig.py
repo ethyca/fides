@@ -96,6 +96,29 @@ class DatasetConfig(Base):
                 "Connection config with key {} is not a saas config, skipping merge dataset",
                 self.connection_config.key,
             )
+
+        return dataset_graph
+
+    def get_graph_with_stubbed_collection(self) -> Dataset:
+        """
+        Return a Dataset that only has a single collection with the same
+        name as the Dataset, provided at least one collection exists on that Dataset.
+
+        This is for building graphs of the system where we only want one Node
+        per Dataset, and there are no dependencies between Nodes. Additionally,
+        code executed cannot depend on any information at the Collection level, it is a graph
+        whose nodes represent the dataset.
+        """
+        dataset_graph: Dataset = self.get_graph()
+        collections = dataset_graph.collections
+        if collections:
+            first_collection = collections[0]
+            first_collection.name = dataset_graph.name
+            first_collection.fields = []
+            first_collection.after = []
+            collections = [first_collection]
+        dataset_graph.collections = collections
+
         return dataset_graph
 
 
