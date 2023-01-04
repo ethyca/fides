@@ -185,6 +185,7 @@ const AddSystemForm = () => {
                     dispatch(changeStep(5));
                     dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
                   }}
+                  data-testid="manual-btn"
                 />
               </HStack>
               <Text>Add a system manually</Text>

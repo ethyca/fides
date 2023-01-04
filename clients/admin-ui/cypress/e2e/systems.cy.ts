@@ -1,7 +1,6 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
-// TODO: Update Cypress test to reflect the nav bar 2.0
-describe.skip("System management page", () => {
+describe("System management page", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
@@ -9,7 +8,8 @@ describe.skip("System management page", () => {
     );
   });
 
-  it("Can navigate to the system management page", () => {
+  // TODO: Update Cypress test to reflect the nav bar 2.0
+  it.skip("Can navigate to the system management page", () => {
     cy.visit("/");
     cy.getByTestId("nav-link-Systems").click();
     cy.wait("@getSystems");
@@ -51,78 +51,19 @@ describe.skip("System management page", () => {
     beforeEach(() => {
       stubSystemCrud();
     });
-    describe("Create a system via yaml", () => {
-      it("Can insert yaml and post", () => {
-        cy.visit("/system/new");
-        cy.getByTestId("upload-yaml-btn").click();
-        cy.fixture("system.json").then((system) => {
-          const systemAsString = JSON.stringify(system);
-          // Cypress doesn't have a native "paste" command, so instead do change the value directly
-          // (.type() is too slow, even with 0 delay)
-          cy.getByTestId("input-yaml")
-            .click()
-            .invoke("val", systemAsString)
-            .trigger("change");
-          // type just one space character to make sure the text field triggers Formik's handlers
-          cy.getByTestId("input-yaml").type(" ");
-
-          cy.getByTestId("submit-yaml-btn").click();
-          cy.wait("@postSystem").then((interception) => {
-            const { body } = interception.request;
-            expect(body).to.eql(system);
-          });
-
-          // should navigate to the created system
-          cy.getByTestId("toast-success-msg");
-          cy.url().should("contain", `system`);
-        });
-      });
-
-      it("Can render errors in yaml", () => {
-        cy.intercept("POST", "/api/v1/system", {
-          statusCode: 422,
-          body: {
-            detail: [
-              {
-                loc: ["body", "fides_key"],
-                msg: "field required",
-                type: "value_error.missing",
-              },
-              {
-                loc: ["body", "system_type"],
-                msg: "field required",
-                type: "value_error.missing",
-              },
-            ],
-          },
-        }).as("postSystem");
-        cy.visit("/system/new");
-        cy.getByTestId("upload-yaml-btn").click();
-
-        // invalid system with missing fields
-        cy.getByTestId("input-yaml")
-          .clear()
-          .type("valid yaml that is not a system");
-        cy.getByTestId("submit-yaml-btn").click();
-        cy.getByTestId("error-yaml").should("contain", "field required");
-      });
-    });
 
     describe("Create a system manually", () => {
       beforeEach(() => {
         stubTaxonomyEntities();
         stubSystemCrud();
-        cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-          "getDatasets"
-        );
       });
 
       it("Can step through the flow", () => {
         cy.fixture("system.json").then((system) => {
           // Fill in the describe form based on fixture data
-          cy.visit("/system/new");
-          cy.getByTestId("manually-generate-btn").click();
-          cy.url().should("contain", "/system/new/configure");
+          cy.visit("/add-systems");
+          cy.getByTestId("manual-btn").click();
+          cy.url().should("contain", "/add-systems");
           cy.wait("@getSystems");
           cy.getByTestId("input-name").type(system.name);
           cy.getByTestId("input-fides_key").type(system.fides_key);
@@ -216,9 +157,6 @@ describe.skip("System management page", () => {
           cy.getByTestId("declaration-Data qualifier").contains(
             reviewDeclaration.data_qualifier
           );
-          reviewDeclaration.dataset_references.forEach((dr) => {
-            cy.getByTestId("declaration-Dataset references").contains(dr);
-          });
 
           cy.getByTestId("confirm-btn").click();
 
@@ -230,141 +168,6 @@ describe.skip("System management page", () => {
           cy.getByTestId("finish-btn").click();
           cy.url().should("match", /system$/);
         });
-      });
-
-      it("Can render and post extended form fields", () => {
-        const system = {
-          fides_key: "foo",
-          system_type: "cool system",
-          data_responsibility_title: "Sub-Processor",
-          organization_fides_key: "default_organization",
-          administrating_department: "department",
-          third_country_transfers: ["USA"],
-          joint_controller: {
-            name: "bob",
-            email: "bob@ethyca.com",
-          },
-          data_protection_impact_assessment: {
-            is_required: true,
-            progress: "in progress",
-            link: "http://www.ethyca.com",
-          },
-        };
-        cy.visit("/system/new");
-        cy.getByTestId("manually-generate-btn").click();
-        // input required fields
-        cy.getByTestId("input-fides_key").type(system.fides_key);
-        cy.getByTestId("input-system_type").type(system.system_type);
-
-        // now input extra fields
-        cy.getByTestId("input-data_responsibility_title").click();
-        cy.getByTestId("input-data_responsibility_title").within(() => {
-          cy.contains(system.data_responsibility_title).click();
-        });
-        cy.getByTestId("input-administrating_department").type(
-          system.administrating_department
-        );
-        cy.getByTestId("input-third_country_transfers").type(
-          "United States of America{enter}"
-        );
-        cy.getByTestId("input-joint_controller.name").type(
-          system.joint_controller.name
-        );
-        cy.getByTestId("input-joint_controller.email").type(
-          system.joint_controller.email
-        );
-        cy.getByTestId(
-          "input-data_protection_impact_assessment.is_required"
-        ).within(() => {
-          cy.getByTestId("option-true").click();
-        });
-        cy.getByTestId("input-data_protection_impact_assessment.progress").type(
-          system.data_protection_impact_assessment.progress
-        );
-        cy.getByTestId("input-data_protection_impact_assessment.link").type(
-          system.data_protection_impact_assessment.link
-        );
-
-        cy.getByTestId("confirm-btn").click();
-        cy.wait("@postSystem").then((interception) => {
-          const { body } = interception.request;
-          expect(body).to.eql({
-            name: "",
-            organization_fides_key: system.organization_fides_key,
-            fides_key: system.fides_key,
-            description: "",
-            system_type: system.system_type,
-            tags: [],
-            privacy_declarations: [],
-            third_country_transfers: ["USA"],
-            system_dependencies: [],
-            administrating_department: system.administrating_department,
-            data_responsibility_title: system.data_responsibility_title,
-            joint_controller: {
-              ...system.joint_controller,
-              address: "",
-              phone: "",
-            },
-            data_protection_impact_assessment:
-              system.data_protection_impact_assessment,
-          });
-        });
-
-        // Fill in the privacy declaration form
-        cy.wait("@getDataCategory");
-        cy.wait("@getDataQualifier");
-        cy.wait("@getDataSubject");
-        cy.wait("@getDataUse");
-        cy.wait("@getDatasets");
-        cy.getByTestId("privacy-declaration-form");
-        const declaration = {
-          name: "my declaration",
-          data_categories: ["user.biometric", "user.contact"],
-          data_use: "advertising",
-          data_subjects: ["citizen_voter", "consultant"],
-          dataset_references: ["demo_users_dataset_2"],
-        };
-        cy.getByTestId("input-name").type(declaration.name);
-        declaration.data_categories.forEach((dc) => {
-          cy.getByTestId("input-data_categories").type(`${dc}{enter}`);
-        });
-        cy.getByTestId("input-data_use").type(`${declaration.data_use}{enter}`);
-        declaration.data_subjects.forEach((ds) => {
-          cy.getByTestId("input-data_subjects").type(`${ds}{enter}`);
-        });
-        cy.getByTestId("input-dataset_references").click();
-        cy.getByTestId("input-dataset_references").within(() => {
-          cy.contains("Demo Users Dataset 2").click();
-        });
-        cy.getByTestId("add-btn").click();
-        cy.getByTestId("next-btn").click();
-        cy.wait("@putSystem").then((interception) => {
-          const { body } = interception.request;
-          expect(body.privacy_declarations[0]).to.eql(declaration);
-        });
-
-        // Now at the Review stage
-        cy.getByTestId("review-heading");
-        cy.getByTestId("review-Data responsibility title").contains(
-          "Controller"
-        );
-        cy.getByTestId("review-Administrating department").contains(
-          "Engineering"
-        );
-        cy.getByTestId("review-Geographic location").contains("USA");
-        cy.getByTestId("review-Geographic location").contains("CAN");
-        cy.getByTestId("review-Joint controller").within(() => {
-          cy.getByTestId("review-Name").contains("Sally Controller");
-        });
-        cy.getByTestId("review-Data protection impact assessment").within(
-          () => {
-            cy.getByTestId("review-Is required").contains("Yes");
-            cy.getByTestId("review-Progress").contains("Complete");
-            cy.getByTestId("review-Link").contains(
-              "https://example.org/analytics_system_data_protection_impact_assessment"
-            );
-          }
-        );
       });
     });
   });
@@ -424,7 +227,7 @@ describe.skip("System management page", () => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
-      cy.url().should("contain", "/system/new/configure");
+      cy.url().should("contain", "/system/configure");
 
       // check that the form has the proper values filled in
       cy.getByTestId("input-name").should("have.value", "Fidesctl System");
@@ -478,6 +281,143 @@ describe.skip("System management page", () => {
         expect(body.privacy_declarations.length).to.eql(2);
         expect(body.privacy_declarations[0].name).to.eql(newName);
         expect(body.privacy_declarations[1].name).to.eql(secondName);
+      });
+    });
+
+    it("Can render and edit extended form fields", () => {
+      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
+        "getDatasets"
+      );
+      const system = {
+        fides_key: "fidesctl_system",
+        system_type: "cool system",
+        data_responsibility_title: "Sub-Processor",
+        organization_fides_key: "default_organization",
+        administrating_department: "department",
+        third_country_transfers: ["USA"],
+        joint_controller: {
+          name: "bob",
+          email: "bob@ethyca.com",
+        },
+        data_protection_impact_assessment: {
+          is_required: true,
+          progress: "in progress",
+          link: "http://www.ethyca.com",
+        },
+      };
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("edit-btn").click();
+      });
+
+      // input extra fields
+      cy.getByTestId("input-data_responsibility_title").click();
+      cy.getByTestId("input-data_responsibility_title").within(() => {
+        cy.contains(system.data_responsibility_title).click();
+      });
+      cy.getByTestId("input-administrating_department")
+        .clear()
+        .type(system.administrating_department);
+      cy.getByTestId("input-third_country_transfers").type(
+        "United States of America{enter}"
+      );
+      cy.getByTestId("input-joint_controller.name").type(
+        system.joint_controller.name
+      );
+      cy.getByTestId("input-joint_controller.email").type(
+        system.joint_controller.email
+      );
+      cy.getByTestId(
+        "input-data_protection_impact_assessment.is_required"
+      ).within(() => {
+        cy.getByTestId("option-true").click();
+      });
+      cy.getByTestId("input-data_protection_impact_assessment.progress").type(
+        system.data_protection_impact_assessment.progress
+      );
+      cy.getByTestId("input-data_protection_impact_assessment.link").type(
+        system.data_protection_impact_assessment.link
+      );
+
+      cy.getByTestId("confirm-btn").click();
+      cy.wait("@putSystem").then((interception) => {
+        const { body } = interception.request;
+        const {
+          privacy_declarations: privacyDeclarations,
+          tags,
+          fidesctl_meta: fidesctlMeta,
+          meta,
+          registry_id: registryid,
+          system_dependencies: systemDependencies,
+          ...edited
+        } = body;
+        expect(edited).to.eql({
+          name: "Fidesctl System",
+          organization_fides_key: system.organization_fides_key,
+          fides_key: system.fides_key,
+          description: "Software that functionally applies Fides.",
+          system_type: "Service",
+          egress: [],
+          ingress: [],
+          third_country_transfers: ["USA"],
+          administrating_department: system.administrating_department,
+          data_responsibility_title: system.data_responsibility_title,
+          joint_controller: system.joint_controller,
+          data_protection_impact_assessment:
+            system.data_protection_impact_assessment,
+        });
+      });
+
+      // Add privacy declaration form
+      cy.wait("@getDataCategory");
+      cy.wait("@getDataQualifier");
+      cy.wait("@getDataSubject");
+      cy.wait("@getDataUse");
+      cy.wait("@getDatasets");
+      cy.getByTestId("privacy-declaration-form");
+      const declaration = {
+        name: "my declaration",
+        data_categories: ["user.biometric", "user.contact"],
+        data_use: "advertising",
+        data_subjects: ["citizen_voter", "consultant"],
+        dataset_references: ["demo_users_dataset_2"],
+      };
+      cy.getByTestId("input-name").type(declaration.name);
+      declaration.data_categories.forEach((dc) => {
+        cy.getByTestId("input-data_categories").type(`${dc}{enter}`);
+      });
+      cy.getByTestId("input-data_use").type(`${declaration.data_use}{enter}`);
+      declaration.data_subjects.forEach((ds) => {
+        cy.getByTestId("input-data_subjects").type(`${ds}{enter}`);
+      });
+      cy.getByTestId("input-dataset_references").click();
+      cy.getByTestId("input-dataset_references").within(() => {
+        cy.contains("Demo Users Dataset 2").click();
+      });
+      cy.getByTestId("add-btn").click();
+      cy.getByTestId("next-btn").click();
+      cy.wait("@putSystem").then((interception) => {
+        const { body } = interception.request;
+        expect(body.privacy_declarations[1]).to.eql(declaration);
+      });
+
+      // Now at the Review stage
+      cy.getByTestId("review-heading");
+      cy.getByTestId("review-Data responsibility title").contains("Controller");
+      cy.getByTestId("review-Administrating department").contains(
+        "Engineering"
+      );
+      cy.getByTestId("review-Geographic location").contains("USA");
+      cy.getByTestId("review-Geographic location").contains("CAN");
+      cy.getByTestId("review-Joint controller").within(() => {
+        cy.getByTestId("review-Name").contains("Sally Controller");
+      });
+      cy.getByTestId("review-Data protection impact assessment").within(() => {
+        cy.getByTestId("review-Is required").contains("Yes");
+        cy.getByTestId("review-Progress").contains("Complete");
+        cy.getByTestId("review-Link").contains(
+          "https://example.org/analytics_system_data_protection_impact_assessment"
+        );
       });
     });
   });
