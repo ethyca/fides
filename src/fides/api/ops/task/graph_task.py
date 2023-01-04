@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (
     CollectionDisabled,
+    NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
 )
@@ -98,9 +99,9 @@ def retry(
                         f"{self.traversal_node.address.value}", 0
                     )  # Cache that the erasure was performed in case we need to restart
                     return 0
-                except CollectionDisabled as exc:
+                except (CollectionDisabled, NotSupportedForCollection) as exc:
                     logger.warning(
-                        "Skipping disabled collection {} for privacy_request: {}",
+                        "Skipping collection {} for privacy_request: {}",
                         self.traversal_node.address,
                         self.resources.request.id,
                     )
@@ -553,6 +554,30 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         )  # Cache that the erasure was performed in case we need to restart
         return output
 
+    @retry(action_type=ActionType.consent, default_return=False)
+    def consent_request(self, identity: Dict[str, Any]) -> bool:
+        """Run consent request request"""
+
+        if not self.can_write_data():
+            logger.warning(
+                "No consent on {} as its ConnectionConfig does not have write access.",
+                self.traversal_node.node.address,
+            )
+            self.update_status(
+                f"No values were erased since this connection {self.connector.configuration.key} has not been "
+                f"given write access",
+                None,
+                ActionType.erasure,
+                ExecutionLogStatus.error,
+            )
+            return False
+
+        output: bool = self.connector.run_consent_request(
+            self.traversal_node, self.resources.policy, self.resources.request, identity
+        )
+        self.log_end(ActionType.consent)
+        return output
+
 
 def collect_queries(
     traversal: Traversal, resources: TaskResources
@@ -755,6 +780,62 @@ async def run_erasure(  # pylint: disable = too-many-arguments
         )
 
         return erasure_update_map
+
+
+async def run_consent_request(  # pylint: disable = too-many-arguments
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    session: Session,
+) -> Dict[str, bool]:
+    """Run a consent request
+
+    The graph built is more similar to an erasure graph in that there are no dependencies between
+    the nodes.  Additionally, the inputs into each node are just supplied identity data, and the outputs
+    are whether the consent request succeeded.
+
+    """
+    traversal: Traversal = Traversal(graph, identity)
+    with TaskResources(
+        privacy_request, policy, connection_configs, session
+    ) as resources:
+
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                data[tn.address] = GraphTask(tn, resources)
+
+        env: Dict[CollectionAddress, Any] = {}
+        traversal.traverse(env, collect_tasks_fn)  # env updated in place
+
+        def termination_fn(*dependent_values: bool) -> Tuple[bool, ...]:
+            """The dependent_values here is an bool output from each task feeding in, where
+            each task reports the output of 'task.consent_request(identity_data)', which is whether the
+            consent request succeeded
+
+            The termination function just returns this tuple of booleans."""
+            return dependent_values
+
+        dsk: Dict[CollectionAddress, Any] = {
+            k: (t.consent_request, identity) for k, t in env.items()
+        }
+        # terminator function waits for all keys
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
+
+        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+
+        update_successes: Tuple[bool, ...] = v.compute()
+        # we combine the output of the termination function with the input keys to provide
+        # a map of {collection_name: whether consent request succeeded}:
+        consent_update_map: Dict[str, bool] = dict(
+            zip([str(x) for x in env], update_successes)
+        )
+
+        return consent_update_map
 
 
 def build_affected_field_logs(

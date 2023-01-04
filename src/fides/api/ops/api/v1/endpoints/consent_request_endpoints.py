@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
@@ -14,7 +14,11 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
+from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
+from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
+    create_privacy_request_func,
+)
 from fides.api.ops.api.v1.scope_registry import CONSENT_READ
 from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -34,11 +38,13 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.ops.schemas.privacy_request import BulkPostPrivacyRequests
 from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentRequestResponse,
+    PrivacyRequestCreate,
     VerificationCode,
 )
 from fides.api.ops.schemas.redis_cache import Identity
@@ -122,7 +128,7 @@ def consent_request_verify(
     data: VerificationCode,
 ) -> ConsentPreferences:
     """Verifies the verification code and returns the current consent preferences if successful."""
-    provided_identity = _get_consent_request_and_provided_identity(
+    _, provided_identity = _get_consent_request_and_provided_identity(
         db=db, consent_request_id=consent_request_id, verification_code=data.code
     )
 
@@ -178,7 +184,7 @@ def get_consent_preferences_no_id(
             "turned off.",
         )
 
-    provided_identity = _get_consent_request_and_provided_identity(
+    _, provided_identity = _get_consent_request_and_provided_identity(
         db=db, consent_request_id=consent_request_id, verification_code=None
     )
 
@@ -235,7 +241,7 @@ def set_consent_preferences(
     data: ConsentPreferencesWithVerificationCode,
 ) -> ConsentPreferences:
     """Verifies the verification code and saves the user's consent preferences if successful."""
-    provided_identity = _get_consent_request_and_provided_identity(
+    consent_request, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
         consent_request_id=consent_request_id,
         verification_code=data.code,
@@ -264,15 +270,48 @@ def set_consent_preferences(
                 raise HTTPException(
                     status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc))
                 )
+    identity = Identity()
+    setattr(
+        identity,
+        provided_identity.field_name.value,  # type:ignore[attr-defined]
+        provided_identity.encrypted_value["value"],  # type:ignore[index]
+    )
 
-    return _prepare_consent_preferences(db, provided_identity)
+    consent_preferences: ConsentPreferences = _prepare_consent_preferences(
+        db, provided_identity
+    )
+
+    privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
+        db=db,
+        data=[
+            PrivacyRequestCreate(
+                identity=identity,
+                policy_key=DEFAULT_CONSENT_POLICY,
+                consent_preferences=[
+                    consent.dict() for consent in consent_preferences.consent if consent
+                ],
+            )
+        ],
+        authenticated=True,
+    )
+
+    if privacy_request_results.failed or not privacy_request_results.succeeded:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=privacy_request_results.failed[0].message,
+        )
+
+    consent_request.privacy_request_id = privacy_request_results.succeeded[0].id
+    consent_request.save(db=db)
+
+    return consent_preferences
 
 
 def _get_consent_request_and_provided_identity(
     db: Session,
     consent_request_id: str,
     verification_code: Optional[str],
-) -> ProvidedIdentity:
+) -> Tuple[ConsentRequest, ProvidedIdentity]:
     """Verifies the consent request and verification code, then return the ProvidedIdentity if successful."""
     consent_request = ConsentRequest.get_by_key_or_id(
         db=db, data={"id": consent_request_id}
@@ -306,7 +345,7 @@ def _get_consent_request_and_provided_identity(
             detail="No identity found for consent request id",
         )
 
-    return provided_identity
+    return consent_request, provided_identity
 
 
 def _prepare_consent_preferences(

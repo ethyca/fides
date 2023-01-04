@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import Field, validator
+from pydantic import Field, root_validator, validator
 
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (
@@ -54,6 +54,14 @@ class PrivacyRequestDRPStatusResponse(BaseSchema):
         use_enum_values = True
 
 
+class Consent(BaseSchema):
+    """Schema for consent."""
+
+    data_use: str
+    data_use_description: Optional[str] = None
+    opt_in: bool
+
+
 class PrivacyRequestCreate(BaseSchema):
     """Data required to create a PrivacyRequest"""
 
@@ -64,6 +72,7 @@ class PrivacyRequestCreate(BaseSchema):
     identity: Identity
     policy_key: FidesOpsKey
     encryption_key: Optional[str] = None
+    consent_preferences: Optional[List[Consent]] = None
 
     @validator("encryption_key")
     def validate_encryption_key(
@@ -225,16 +234,8 @@ class BulkReviewResponse(BulkPostPrivacyRequests):
     """Schema with mixed success/failure responses for Bulk Approve/Deny of PrivacyRequest responses."""
 
 
-class Consent(BaseSchema):
-    """Schema for consent."""
-
-    data_use: str
-    data_use_description: Optional[str] = None
-    opt_in: bool
-
-
 class ConsentPreferences(BaseSchema):
-    """Schema for consent prefernces."""
+    """Schema for consent preferences."""
 
     consent: Optional[List[Consent]] = None
 

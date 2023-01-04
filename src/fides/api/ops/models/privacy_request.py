@@ -79,6 +79,7 @@ EXECUTION_CHECKPOINTS = [
     CurrentStep.access,
     CurrentStep.erasure,
     CurrentStep.erasure_email_post_send,
+    CurrentStep.consent,
     CurrentStep.post_webhooks,
 ]
 
@@ -190,6 +191,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
+    consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
@@ -854,6 +856,8 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         ProvidedIdentity,
         back_populates="consent_request",
     )
+
+    privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""

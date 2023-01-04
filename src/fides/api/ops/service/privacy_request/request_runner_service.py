@@ -62,6 +62,7 @@ from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import (
     get_cached_data_for_erasures,
     run_access_request,
+    run_consent_request,
     run_erasure,
 )
 from fides.api.ops.tasks import DatabaseTask, celery_app
@@ -101,7 +102,7 @@ def get_access_manual_webhook_inputs(
     manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
 
     if not policy.get_rules_for_action(action_type=ActionType.access):
-        # Don't fetch manual inputs if this is an erasure-only request
+        # Don't fetch manual inputs unless this policy has an access rule
         return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
 
     try:
@@ -340,7 +341,10 @@ async def run_privacy_request(
             )
             access_result_urls: List[str] = []
 
-            if can_run_checkpoint(
+            if (
+                policy.get_rules_for_action(action_type=ActionType.access)
+                or policy.get_rules_for_action(action_type=ActionType.erasure)
+            ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
                 access_result: Dict[str, List[Row]] = await run_access_request(
@@ -395,7 +399,9 @@ async def run_privacy_request(
             return
 
         # Send erasure requests via email to third parties where applicable
-        if can_run_checkpoint(
+        if policy.get_rules_for_action(
+            action_type=ActionType.erasure
+        ) and can_run_checkpoint(
             request_checkpoint=CurrentStep.erasure_email_post_send,
             from_checkpoint=resume_step,
         ):
@@ -415,6 +421,22 @@ async def run_privacy_request(
                 _log_exception(exc, CONFIG.dev_mode)
                 return
 
+        if policy.get_rules_for_action(
+            action_type=ActionType.consent
+        ) and can_run_checkpoint(
+            request_checkpoint=CurrentStep.consent,
+            from_checkpoint=resume_step,
+        ):
+
+            await run_consent_request(
+                privacy_request=privacy_request,
+                policy=policy,
+                graph=dataset_graph,
+                connection_configs=connection_configs,
+                identity=identity_data,
+                session=session,
+            )
+
         # Run post-execution webhooks
         proceed = run_webhooks_and_report_status(
             db=session,
@@ -423,6 +445,7 @@ async def run_privacy_request(
         )
         if not proceed:
             return
+
         if CONFIG.notifications.send_request_completion_notification:
             try:
                 initiate_privacy_request_completion_email(

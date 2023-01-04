@@ -15,7 +15,14 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_TRANSFER,
 )
-from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.ops.models.policy import (
+    ActionType,
+    DrpAction,
+    Policy,
+    Rule,
+    RuleTarget,
+    RuleUse,
+)
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
@@ -40,6 +47,9 @@ DEFAULT_ACCESS_POLICY_RULE = "default_access_policy_rule"
 DEFAULT_ERASURE_POLICY = "default_erasure_policy"
 DEFAULT_ERASURE_POLICY_RULE = "default_erasure_policy_rule"
 DEFAULT_ERASURE_MASKING_STRATEGY = "hmac"
+
+DEFAULT_CONSENT_POLICY = "default_consent_policy"
+DEFAULT_CONSENT_RULE = "default_consent_rule"
 
 
 def create_or_update_parent_user() -> None:
@@ -278,6 +288,44 @@ async def load_default_dsr_policies() -> None:
             except KeyOrNameAlreadyExists:
                 # This rule target already exists against the Policy
                 pass
+
+        consent_policy = Policy.create_or_update(
+            db=db_session,
+            data={
+                "name": "Default Consent Policy",
+                "key": DEFAULT_CONSENT_POLICY,
+                "execution_timeframe": 45,
+                "client_id": client_id,
+            },
+        )
+
+        consent_rule = Rule.create_or_update(
+            db=db_session,
+            data={
+                "action_type": ActionType.consent.value,
+                "name": "Default Consent Rule",
+                "key": DEFAULT_CONSENT_RULE,
+                "policy_id": consent_policy.id,
+                "client_id": client_id,
+            },
+        )
+
+        log.info("Creating: Data Category Access Rules...")
+        for use in ["advertising", "advertising.first_party", "improve"]:
+            try:
+                RuleUse.create(
+                    db=db_session,
+                    data={
+                        "key": use,
+                        "data_use": use,  # TODO: get rid of data_use, and have this be the key.
+                        "rule_id": consent_rule.id,
+                        "executable": True,
+                    },
+                )
+            except KeyOrNameAlreadyExists:
+                # This rule use already exists against the Policy
+                pass
+
         log.info("All Policies & Rules Seeded.")
 
 

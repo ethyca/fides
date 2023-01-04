@@ -8,8 +8,8 @@ from requests import Response
 from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleUse
+from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.saas_config import ClientConfig, ParamValue, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
@@ -403,6 +403,51 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             rows_updated += 1
         self.unset_connector_state()
         return rows_updated
+
+    def run_consent_request(
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        identity_data: Dict[str, Any],
+    ) -> bool:
+        """Execute a consent request. Return whether the consent request to the third party succeeded.
+
+        Consent preferences can be retrieved from privacy_request.consent_preferences.
+        Whether or not the customer wants the given consent preference to be executable can be retrieved
+        from consent rules attached to the policy.
+
+        Return True if 200 OK
+        """
+        logger.info(
+            "Mocking consent request - actual logic should go here for saas connectors",
+            node.address.value,
+        )
+
+        consent_rule: Optional[Rule] = policy.get_consent_rule()
+        if not consent_rule:
+            raise
+        executable_uses: List[RuleUse] = [
+            use for use in consent_rule.uses if use.executable  # type: ignore[attr-defined]
+        ]
+        consent_preferences: List[Consent] = [
+            Consent(**pref) for pref in privacy_request.consent_preferences or []
+        ]
+
+        for preference in consent_preferences:
+            if preference.data_use not in [use.key for use in executable_uses]:
+                logger.info(
+                    "Skipping updating preference: {} as it is not executable",
+                    preference.data_use,
+                )
+
+            logger.info(
+                "Demo only! Testing available consent params! identity_data: {}, consent_preference: {}, opt_in: {}",
+                identity_data,
+                preference.data_use,
+                preference.opt_in,
+            )
+        return True
 
     def close(self) -> None:
         """Not required for this type"""

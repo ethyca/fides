@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
+from fides.api.ops.common_exceptions import NotSupportedForCollection
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
@@ -86,6 +87,22 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         Some connector types won't have data from the "access" portion, so we pass in the same input_data that
         was passed into "retrieve_data" for use in querying for data.
         """
+
+    def run_consent_request(
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        identity_data: Dict[str, Any],
+    ) -> bool:
+        """
+        Base method for executing a consent request. Override on a given connector if functionality
+        is supported.  Otherwise, this collections with this connector type will be skipped.
+
+        """
+        raise NotSupportedForCollection(
+            f"Consent requests are not supported for connectors of type {self.configuration.connection_type}"
+        )
 
     def dry_run_query(self, node: TraversalNode) -> Optional[str]:
         """Generate a dry-run query to display action that will be taken"""

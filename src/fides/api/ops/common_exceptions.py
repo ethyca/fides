@@ -65,6 +65,10 @@ class RuleTargetValidationError(ValueError):
     """The Rule you are trying to create has invalid data"""
 
 
+class RuleUseValidationError(ValueError):
+    """The Data Use you are trying to create is inalid"""
+
+
 class DataCategoryNotSupported(ValueError):
     """The data category you have supplied is not supported."""
 
@@ -99,6 +103,10 @@ class PostProcessingException(BaseException):
 
 class CollectionDisabled(BaseException):
     """Collection is attached to disabled ConnectionConfig"""
+
+
+class NotSupportedForCollection(BaseException):
+    """The given action is not supported for this type of collection"""
 
 
 class PrivacyRequestPaused(BaseException):

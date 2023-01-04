@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
-from sqlalchemy import Column
+from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.ext.mutable import MutableDict
@@ -32,6 +32,7 @@ class CurrentStep(EnumType):
     pre_webhooks = "pre_webhooks"
     access = "access"
     erasure = "erasure"
+    consent = "consent"
     erasure_email_post_send = "erasure_email_post_send"
     post_webhooks = "post_webhooks"
 
@@ -83,6 +84,7 @@ def _validate_rule(
     """Check that the rule's action_type and storage_destination are valid."""
     if not action_type:
         raise common_exceptions.RuleValidationError("action_type is required.")
+
     if action_type == ActionType.erasure.value:
         if storage_destination_id is not None:
             raise common_exceptions.RuleValidationError(
@@ -97,7 +99,7 @@ def _validate_rule(
             raise common_exceptions.RuleValidationError(
                 "Access Rules must have a storage destination."
             )
-    if action_type in [ActionType.consent.value, ActionType.update.value]:
+    if action_type in [ActionType.update.value]:
         raise common_exceptions.RuleValidationError(
             f"{action_type} Rules are not supported at this time."
         )
@@ -150,6 +152,11 @@ class Policy(Base):
     def get_rules_for_action(self, action_type: ActionType) -> List["Rule"]:
         """Returns all Rules related to this Policy filtered by `action_type`."""
         return [rule for rule in self.rules if rule.action_type == action_type]  # type: ignore[attr-defined]
+
+    def get_consent_rule(self) -> Optional["Rule"]:
+        """Returns a Consent Rule if it exists. There should only be one."""
+        consent_rules = self.get_rules_for_action(ActionType.consent)
+        return consent_rules[0] if consent_rules else None
 
 
 def _get_ref_from_taxonomy(fides_key: FidesOpsKey) -> FideslangDataCategory:
@@ -269,7 +276,18 @@ class Rule(Base):
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
-        """Validate this object's data before deferring to the superclass on update"""
+        """Validate this object's data before deferring to the superclass on create"""
+        policy = Policy.get_by(db=db, field="id", value=data.get("policy_id"))
+        if not policy:
+            raise common_exceptions.RuleValidationError(
+                f"Policy id must be specified on Rule create."
+            )
+        existing_consent_rules = policy.get_rules_for_action(ActionType.consent)
+
+        if existing_consent_rules:
+            raise common_exceptions.RuleValidationError(
+                f"Policies can only have one consent rule attached.  Existing rule {existing_consent_rules[0].key} found."
+            )
         _validate_rule(
             action_type=data.get("action_type"),
             storage_destination_id=data.get("storage_destination_id"),
@@ -467,6 +485,95 @@ class RuleTarget(Base):
         ):
             _validate_data_category(data_category=updated_data_category)
         return super().update(db=db, data=data)
+
+
+class RuleUse(Base):
+    """Which data uses are executable for the given rule"""
+
+    data_use = Column(String, nullable=False)
+    data_use_description = Column(String)
+    key = Column(String, index=True, unique=True, nullable=False)
+    executable = Column(Boolean, nullable=False, default=False)
+    rule_id = Column(
+        String,
+        ForeignKey(Rule.id_field_path),
+        nullable=False,
+    )
+    rule = relationship(
+        Rule,
+        backref="uses",
+    )
+    client_id = Column(
+        String,
+        ForeignKey(ClientDetail.id_field_path),
+        nullable=True,
+    )
+    client = relationship(
+        ClientDetail,
+        backref="rule_uses",
+    )  # Which client created this RuleUse
+
+    __table_args__ = (
+        # NB. __table_args__ requires a Tuple
+        UniqueConstraint("rule_id", "data_use", name="_rule_id_data_use_uc"),
+    )
+
+    @classmethod
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
+        """
+        An override of `FidesBase.create_or_update` that handles the specific edge case where
+        a `RuleTarget` getting updated may be having its `rule_id` changed, potentially causing
+        `RuleTarget`s to unexpectedly bounce between `Rule`s.
+        """
+        db_obj = None
+        if data.get("id") is not None:
+            # If `id` has been included in `data`, preference that
+            db_obj = cls.get(db=db, object_id=data["id"])
+            identifier = data.get("id")
+        elif data.get("key") is not None:
+            # Otherwise, try with `key`
+            db_obj = cls.get_by(db=db, field="key", value=data["key"])
+            identifier = data.get("key")
+
+        if db_obj:
+            if db_obj.rule_id != data["rule_id"]:
+                raise common_exceptions.RuleUseValidationError(
+                    f"RuleUse with identifier {identifier} belongs to another rule."
+                )
+            db_obj.update(db=db, data=data)
+        else:
+            db_obj = cls.create(db=db, data=data)  # type: ignore[assignment]
+
+        return db_obj  # type: ignore[return-value]
+
+    @classmethod
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
+        """Validate data_category on object creation."""
+        data_use = data.get("data_use")
+        if not data_use:
+            raise common_exceptions.RuleUseValidationError(
+                "A data_use must be supplied."
+            )
+        rule_id = data.get("rule_id")
+        if not rule_id:
+            raise common_exceptions.RuleTargetValidationError(
+                "A rule_id must be supplied."
+            )
+
+        # This database query is necessary since we need to access all Rules and their Targets
+        # associated with any given Policy, not just those in the local scope of this object.
+        rule = Rule.get(db=db, object_id=rule_id)
+        if not rule:
+            raise common_exceptions.RuleTargetValidationError(
+                f"Rule with ID {rule_id} does not exist."
+            )
+
+        if rule.action_type.value != ActionType.consent.value:  # type: ignore[attr-defined]
+            raise common_exceptions.RuleUseValidationError(
+                "You can only create Rule Uses for Consent Rules"
+            )
+
+        return super().create(db=db, data=data)
 
 
 class WebhookDirection(EnumType):
