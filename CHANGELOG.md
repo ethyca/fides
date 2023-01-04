@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 
 * Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
+* Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
 
 ### Fixed
 
