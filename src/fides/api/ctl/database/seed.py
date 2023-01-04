@@ -289,6 +289,7 @@ async def load_default_dsr_policies() -> None:
                 # This rule target already exists against the Policy
                 pass
 
+        log.info("Creating: Default Consent Policy")
         consent_policy = Policy.create_or_update(
             db=db_session,
             data={
@@ -299,6 +300,7 @@ async def load_default_dsr_policies() -> None:
             },
         )
 
+        log.info("Creating: Default Consent Rule")
         consent_rule = Rule.create_or_update(
             db=db_session,
             data={
@@ -310,7 +312,7 @@ async def load_default_dsr_policies() -> None:
             },
         )
 
-        log.info("Creating: Data Category Access Rules...")
+        log.info("Creating:Default Consent Rule Uses...")
         for use in ["advertising", "advertising.first_party", "improve"]:
             try:
                 RuleUse.create(
