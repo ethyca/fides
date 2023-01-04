@@ -490,9 +490,9 @@ class RuleTarget(Base):
 class RuleUse(Base):
     """Which data uses are executable for the given rule"""
 
-    data_use = Column(String, nullable=False)
-    data_use_description = Column(String)
-    key = Column(String, index=True, unique=True, nullable=False)
+    key = Column(
+        String, index=True, unique=True, nullable=False
+    )  # This is the data use, for example, "advertising"
     executable = Column(Boolean, nullable=False, default=False)
     rule_id = Column(
         String,
@@ -512,11 +512,6 @@ class RuleUse(Base):
         ClientDetail,
         backref="rule_uses",
     )  # Which client created this RuleUse
-
-    __table_args__ = (
-        # NB. __table_args__ requires a Tuple
-        UniqueConstraint("rule_id", "data_use", name="_rule_id_data_use_uc"),
-    )
 
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
@@ -549,11 +544,6 @@ class RuleUse(Base):
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
         """Validate data_category on object creation."""
-        data_use = data.get("data_use")
-        if not data_use:
-            raise common_exceptions.RuleUseValidationError(
-                "A data_use must be supplied."
-            )
         rule_id = data.get("rule_id")
         if not rule_id:
             raise common_exceptions.RuleTargetValidationError(

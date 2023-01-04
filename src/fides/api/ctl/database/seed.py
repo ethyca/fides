@@ -319,7 +319,6 @@ async def load_default_dsr_policies() -> None:
                     db=db_session,
                     data={
                         "key": use,
-                        "data_use": use,  # TODO: get rid of data_use, and have this be the key.
                         "rule_id": consent_rule.id,
                         "executable": True,
                     },

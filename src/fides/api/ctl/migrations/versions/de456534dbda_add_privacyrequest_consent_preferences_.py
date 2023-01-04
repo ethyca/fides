@@ -32,8 +32,6 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("data_use", sa.String(), nullable=False),
-        sa.Column("data_use_description", sa.String(), nullable=True),
         sa.Column("key", sa.String(), nullable=False),
         sa.Column("executable", sa.Boolean(), nullable=False),
         sa.Column("rule_id", sa.String(), nullable=False),
@@ -47,7 +45,6 @@ def upgrade():
             ["rule.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("rule_id", "data_use", name="_rule_id_data_use_uc"),
     )
     op.create_index(op.f("ix_ruleuse_id"), "ruleuse", ["id"], unique=False)
     op.create_index(op.f("ix_ruleuse_key"), "ruleuse", ["key"], unique=True)
