@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
+* Add link to Classify Systems page in nav side bar [#2128](https://github.com/ethyca/fides/pull/2128)
 
 ### Fixed
 
