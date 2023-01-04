@@ -72,8 +72,7 @@ On success, the response from the above endpoint will include a `storage_key` fo
             "details": {
                 "auth_method": "secret_keys",
                 "bucket": "my-bucket",
-                "naming": "request_id",
-                "object_name": "requests"
+                "naming": "request_id"
             },
             "key": "s3_storage_2"
         }

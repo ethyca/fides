@@ -52,7 +52,6 @@ def test_uploader_s3_success_secrets_auth(
             "bucket": "some-bucket",
             "naming": FileNaming.request_id.value,
             "max_retries": 10,
-            "object_name": "something",
         },
         "secrets": {
             StorageSecrets.AWS_ACCESS_KEY_ID.value: "1345234524",
@@ -101,7 +100,6 @@ def test_uploader_s3_success_automatic_auth(
             "bucket": "some-bucket",
             "naming": FileNaming.request_id.value,
             "max_retries": 10,
-            "object_name": "something",
         },
     }
     storage_config = StorageConfig.create(db, data=mock_config)
@@ -143,7 +141,6 @@ def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -
             "bucket": "some-bucket",
             "naming": "something invalid",
             "max_retries": 10,
-            "object_name": "something",
         },
         "secrets": {
             StorageSecrets.AWS_ACCESS_KEY_ID.value: "1345234524",
