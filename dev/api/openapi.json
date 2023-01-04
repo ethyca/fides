@@ -12359,6 +12359,10 @@
         "title": "ExecutionAndAuditLogResponse",
         "type": "object",
         "properties": {
+          "connection_key": {
+            "title": "Connection Key",
+            "type": "string"
+          },
           "collection_name": {
             "title": "Collection Name",
             "type": "string"
@@ -12433,6 +12437,10 @@
             "title": "Updated At",
             "type": "string",
             "format": "date-time"
+          },
+          "connection_key": {
+            "title": "Connection Key",
+            "type": "string"
           },
           "dataset_name": {
             "title": "Dataset Name",
