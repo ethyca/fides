@@ -117,7 +117,7 @@ class ExecutionAndAuditLogResponse(BaseSchema):
     """Schema for the combined ExecutionLogs and Audit Logs
     associated with a PrivacyRequest"""
 
-    collection_key: Optional[str]
+    connection_key: Optional[str]
     collection_name: Optional[str]
     fields_affected: Optional[List[FieldsAffectedResponse]]
     message: Optional[str]
