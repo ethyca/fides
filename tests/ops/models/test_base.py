@@ -44,7 +44,6 @@ def test_create_key(db: Session):
             "type": StorageType.s3.value,
             "details": {
                 "bucket": "some-bucket",
-                "object_name": "requests",
                 "naming": "some-filename-convention-enum",
                 "max_retries": 10,
             },
