@@ -8,7 +8,7 @@ from requests import Response
 from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleUse
+from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.saas_config import ClientConfig, ParamValue, SaaSRequest
@@ -410,6 +410,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
+        executable_preferences: List[Consent],
     ) -> bool:
         """Execute a consent request. Return whether the consent request to the third party succeeded.
 
@@ -424,29 +425,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             node.address.value,
         )
 
-        consent_rule: Optional[Rule] = policy.get_consent_rule()
-        if not consent_rule:
-            raise
-        executable_uses: List[RuleUse] = [
-            use for use in consent_rule.uses if use.executable  # type: ignore[attr-defined]
-        ]
-        consent_preferences: List[Consent] = [
-            Consent(**pref) for pref in privacy_request.consent_preferences or []
-        ]
-
-        for preference in consent_preferences:
-            if preference.data_use not in [use.key for use in executable_uses]:
-                logger.info(
-                    "Skipping updating preference: {} as it is not executable",
-                    preference.data_use,
-                )
-
-            logger.info(
-                "Demo only! Testing available consent params! identity_data: {}, consent_preference: {}, opt_in: {}",
-                identity_data,
-                preference.data_use,
-                preference.opt_in,
-            )
+        logger.info(
+            "Demo only! Testing available consent params! identity_data: {}, executable_preferences: {}",
+            identity_data,
+            [
+                {"use": preference.data_use, "opt_in": preference.opt_in}
+                for preference in executable_preferences
+            ],
+        )
         return True
 
     def close(self) -> None:

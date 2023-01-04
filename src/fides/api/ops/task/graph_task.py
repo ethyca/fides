@@ -16,6 +16,7 @@ from fides.api.ops.common_exceptions import (
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
+    RuleValidationError,
 )
 from fides.api.ops.graph.analytics_events import (
     fideslog_graph_rerun,
@@ -33,8 +34,12 @@ from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
 from fides.api.ops.graph.graph_differences import format_graph_for_caching
 from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionConfig
-from fides.api.ops.models.policy import ActionType, Policy
-from fides.api.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleUse
+from fides.api.ops.models.privacy_request import (
+    Consent,
+    ExecutionLogStatus,
+    PrivacyRequest,
+)
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.ops.task.filter_element_match import filter_element_match
@@ -572,8 +577,28 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return False
 
+        policy: Policy = self.resources.policy
+        consent_rule: Optional[Rule] = policy.get_consent_rule()
+        if not consent_rule:
+            raise RuleValidationError("Consent rule expected.")
+        executable_uses: List[str] = [
+            use.key for use in consent_rule.uses if use.executable  # type: ignore[attr-defined]
+        ]
+        consent_preferences: List[Consent] = [
+            Consent(**pref) for pref in self.resources.request.consent_preferences or []
+        ]
+        executable_preferences: List[Consent] = [
+            preference
+            for preference in consent_preferences
+            if preference.data_use in executable_uses
+        ]
+
         output: bool = self.connector.run_consent_request(
-            self.traversal_node, self.resources.policy, self.resources.request, identity
+            self.traversal_node,
+            self.resources.policy,
+            self.resources.request,
+            identity,
+            executable_preferences,
         )
         self.log_end(ActionType.consent)
         return output
