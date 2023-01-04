@@ -21,6 +21,10 @@ The types of changes are:
 
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
 
+### Removed
+
+* Removed unused object_name field on s3 storage config [#2133](https://github.com/ethyca/fides/pull/2133)
+
 ### Fixed
 
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
