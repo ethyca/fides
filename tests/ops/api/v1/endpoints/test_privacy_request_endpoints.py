@@ -1131,7 +1131,7 @@ class TestGetPrivacyRequests:
                     "results": {
                         "Request approved": [
                             {
-                                "collection_key": None,
+                                "connection_key": None,
                                 "collection_name": None,
                                 "fields_affected": None,
                                 "message": "",
@@ -1143,7 +1143,7 @@ class TestGetPrivacyRequests:
                         ],
                         "my-mongo-db": [
                             {
-                                "collection_key": None,
+                                "connection_key": None,
                                 "collection_name": "orders",
                                 "fields_affected": [
                                     {
@@ -1163,7 +1163,7 @@ class TestGetPrivacyRequests:
                         ],
                         "my-postgres-db": [
                             {
-                                "collection_key": None,
+                                "connection_key": None,
                                 "collection_name": "user",
                                 "fields_affected": [
                                     {
@@ -1181,7 +1181,7 @@ class TestGetPrivacyRequests:
                                 "user_id": None,
                             },
                             {
-                                "collection_key": None,
+                                "connection_key": None,
                                 "collection_name": "address",
                                 "fields_affected": [
                                     {
