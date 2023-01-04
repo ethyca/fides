@@ -21,6 +21,13 @@ The types of changes are:
 
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
 
+### Changed
+
+* Admin UI Feature Flags - [#2101](https://github.com/ethyca/fides/pull/2101)
+  * Overrides can be saved in the browser.
+  * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
+  * No longer use `react-feature-flags` library.
+
 ### Fixed
 
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
