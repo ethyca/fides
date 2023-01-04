@@ -15725,8 +15725,7 @@
         "title": "StorageDetailsS3",
         "required": [
           "auth_method",
-          "bucket",
-          "object_name"
+          "bucket"
         ],
         "type": "object",
         "properties": {
@@ -15740,10 +15739,6 @@
           },
           "bucket": {
             "title": "Bucket",
-            "type": "string"
-          },
-          "object_name": {
-            "title": "Object Name",
             "type": "string"
           },
           "max_retries": {
