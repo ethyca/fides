@@ -3,7 +3,7 @@ import Link from "next/link";
 import * as React from "react";
 import { useMemo } from "react";
 
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 
 import { MODULE_CARD_ITEMS, ModuleCardKeys } from "./constants";
 

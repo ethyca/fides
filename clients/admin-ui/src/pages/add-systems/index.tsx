@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import { useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import Header from "~/features/common/Header";
 import Layout from "~/features/common/Layout";
 import {
@@ -18,16 +18,16 @@ const ConfigWizard: NextPage = () => {
   const step = useAppSelector(selectStep);
 
   useEffect(() => {
-    if (features.navV2) {
+    if (features.flags.navV2) {
       // Add system form
       dispatch(changeStep(2));
     }
-  }, [dispatch, features.navV2]);
+  }, [dispatch, features.flags.navV2]);
 
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
-      {features.navV2 ? (
+      {features.flags.navV2 ? (
         <Layout title="Config Wizard">
           <ConfigWizardWalkthrough />
         </Layout>
