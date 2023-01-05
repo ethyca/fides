@@ -2,14 +2,13 @@
 
 [![Latest Release Version][release-image]][release-url]
 [![Docker][docker-workflow-image]][docker-actions-url]
-[![Docs][docs-workflow-image]][docs-actions-url]
 [![Package][release-workflow-image]][publish-actions-url]
 [![License][license-image]][license-url]
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
 [![Twitter][twitter-image]][twitter-url]
 
-![Fides banner](docs/fides/docs/img/fides-banner.png "Fides banner")
+![Fides banner](fides-banner.png "Fides banner")
 
 ## :zap: Overview
 
@@ -102,10 +101,8 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 [release-image]: https://img.shields.io/github/release/ethyca/fides.svg
 [release-url]: https://github.com/ethyca/fides/releases
 [docker-workflow-image]: https://github.com/ethyca/fides/workflows/Docker%20Build%20&%20Push/badge.svg
-[docs-workflow-image]: https://github.com/ethyca/fides/workflows/Publish%20Docs/badge.svg
 [release-workflow-image]: https://github.com/ethyca/fides/actions/workflows/publish_package.yaml/badge.svg
 [docker-actions-url]: https://github.com/ethyca/fides/actions/workflows/publish_docker.yaml
-[docs-actions-url]: https://github.com/ethyca/fides/actions/workflows/publish_docs.yaml
 [publish-actions-url]: https://github.com/ethyca/fides/actions/workflows/publish_package.yaml
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg
 [license-url]: https://www.apache.org/licenses/LICENSE-2.0.txt
