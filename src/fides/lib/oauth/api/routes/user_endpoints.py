@@ -19,7 +19,7 @@ from starlette.status import (
 
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import FidesConfig, get_config
-from fides.lib.models.client import ADMIN_UI_ROOT, ClientDetail
+from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api import urn_registry as urls
