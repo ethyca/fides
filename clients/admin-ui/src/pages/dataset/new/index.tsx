@@ -62,9 +62,6 @@ const NewDataset: NextPage = () => {
           >
             Connect a database using a connection URL
           </Button>
-          <Button size="sm" variant="outline" disabled>
-            Manually generate a dataset
-          </Button>
         </Box>
         <Box w={{ base: "100%", lg: "50%" }}>
           {generateMethod === "yaml" ? <DatasetYamlForm /> : null}
