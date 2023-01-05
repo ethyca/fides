@@ -59,7 +59,7 @@ const NewDataset: NextPage = () => {
             isActive={generateMethod === "database"}
             data-testid="connect-db-btn"
           >
-            Connect a database using a connection URL
+            Connect to a database
           </Button>
         </Box>
         <Box w={{ base: "100%", lg: "50%" }}>
