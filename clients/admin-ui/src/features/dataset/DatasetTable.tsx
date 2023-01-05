@@ -1,12 +1,10 @@
 import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
-import {
-  selectDatasetClassifyInstanceMap,
-  useGetAllClassifyInstancesQuery,
-} from "~/features/plus/plus.slice";
+import { selectDatasetClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes } from "~/types/api";
 
 import {
@@ -21,12 +19,10 @@ const DatasetsTable = () => {
 
   const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
-  useGetAllClassifyInstancesQuery(
-    { resource_type: GenerateTypes.DATASETS },
-    {
-      skip: !features.plus,
-    }
-  );
+  usePollForClassifications({
+    resourceType: GenerateTypes.DATASETS,
+    skip: !features.plus,
+  });
   const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
 
   const handleRowClick = (dataset: Dataset) => {
