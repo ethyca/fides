@@ -37,8 +37,7 @@ const NewDataset: NextPage = () => {
       <Stack spacing={8}>
         <Box w={{ base: "100%", lg: "50%" }}>
           <Text>
-            Choose whether to upload a new dataset YAML, connect to a database
-            using a connection URL or manually generate a dataset.
+            Create a dataset using YAML or connect to a database.
           </Text>
         </Box>
         <Box>
