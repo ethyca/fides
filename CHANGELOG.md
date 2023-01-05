@@ -15,24 +15,94 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.2.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.4.0...main)
+
+### Added
+
+* Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
+* Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
+
+### Changed
+
+* Admin UI Feature Flags - [#2101](https://github.com/ethyca/fides/pull/2101)
+  * Overrides can be saved in the browser.
+  * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
+  * No longer use `react-feature-flags` library.
+
+### Removed
+
+* Removed unused object_name field on s3 storage config [#2133](https://github.com/ethyca/fides/pull/2133)
+
+### Fixed
+
+* Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
+
+## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
+
+### Developer Experience
+
+* Include a pre-check workflow that collects the pytest suite [#2098](https://github.com/ethyca/fides/pull/2098)
+* Write to the application db when running the app locally. Write to the test db when running pytest [#1731](https://github.com/ethyca/fides/pull/1731)
+
+### Changed
+
+* Move the `fides.ctl.core.` and `fides.ctl.connectors` modules into `fides.core` and `fides.connectors` respectively [#2097](https://github.com/ethyca/fides/pull/2097)
+* Fides: Skip cypress tests due to nav bar 2.0 [#2102](https://github.com/ethyca/fides/pull/2103)
+
+### Added
+
+* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+* New Fides Home page [#1864](https://github.com/ethyca/fides/pull/2050)
+* Nav 2.0 - Replace form flow side navs with top tabs [#2037](https://github.com/ethyca/fides/pull/2050)
+* Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
+* Added ability to use Mailgun templates when sending emails. [#2039](https://github.com/ethyca/fides/pull/2039)
+* Adds SMS id verification for consent [#2094](https://github.com/ethyca/fides/pull/2094)
+
+### Fixed
+
+* Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
+* Properly set the expire-time for verification codes [#2105](https://github.com/ethyca/fides/pull/2105)
+
+## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
+
+### Fixed
+
+* Resolved an issue where the root_user was not being created [#2082](https://github.com/ethyca/fides/pull/2082)
+
+### Added
+
+* Nav redesign with sidebar groups. Feature flagged to only be visible in dev mode until release. [#2030](https://github.com/ethyca/fides/pull/2047)
+* Improved error handling for incorrect app encryption key [#2089](https://github.com/ethyca/fides/pull/2089)
+* Access and erasure support for Friendbuy API [#2019](https://github.com/ethyca/fides/pull/2019)
+
+## [2.3.0](https://github.com/ethyca/fides/compare/2.2.2...2.3.0)
+
 ### Added
 
 * Common Subscriptions for app-wide data and feature checks. [#2030](https://github.com/ethyca/fides/pull/2030)
-
-### Added
 * Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
 * DSR Notifications (toast) [#1895](https://github.com/ethyca/fides/pull/1895)
 * DSR configure alerts btn [#1895](https://github.com/ethyca/fides/pull/1895)
 * DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
+* Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
+
+### Added
+
+* Adds notifications section to toml files [#2026](https://github.com/ethyca/fides/pull/2060)
 
 ### Changed
 
 * Updated to use `loguru` logging library throughout codebase [#2031](https://github.com/ethyca/fides/pull/2031)
+* Do not always create a `fides.toml` by default [#2023](https://github.com/ethyca/fides/pull/2023)
+* The `fideslib` module has been merged into `fides`, code redundancies have been removed [#1859](https://github.com/ethyca/fides/pull/1859)
+* Replace 'ingress' and 'egress' with 'sources' and 'destinations' across UI [#2044](https://github.com/ethyca/fides/pull/2044)
+* Update the functionality of `fides pull -a <filename>` to include _all_ resource types. [#2083](https://github.com/ethyca/fides/pull/2083)
 
 ### Fixed
 
 * Timing issues with bulk DSR reprocessing, specifically when analytics are enabled [#2015](https://github.com/ethyca/fides/pull/2015)
+* Error caused by running erasure requests with disabled connectors [#2045](https://github.com/ethyca/fides/pull/2045)
+* Changes the SlowAPI ratelimiter's backend to use memory instead of Redis [#2054](https://github.com/ethyca/fides/pull/2058)
 
 ## [2.2.2](https://github.com/ethyca/fides/compare/2.2.1...2.2.2)
 
@@ -55,18 +125,17 @@ The types of changes are:
 ### Added
 
 * Add health check indicator for data flow scanning option [#1973](https://github.com/ethyca/fides/pull/1973)
-* Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
 
 ### Changed
 
 * The `celery.toml` is no longer used, instead it is a subsection of the `fides.toml` file [#1990](https://github.com/ethyca/fides/pull/1990)
-* The `fideslib` module has been merged into `fides`, code redundancies have been removed [#1859](https://github.com/ethyca/fides/pull/1859)
 * Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
 * `get` and `ls` CLI commands now return valid `fides` object YAML [#1991](https://github.com/ethyca/fides/pull/1991)
 
 ### Developer Experience
 
 * Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
+
 
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
@@ -149,6 +218,7 @@ The types of changes are:
 ### Security
 
 * Bumped versions of packages that use OpenSSL [#1683](https://github.com/ethyca/fides/pull/1683)
+
 
 ## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
 

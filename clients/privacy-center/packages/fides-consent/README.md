@@ -2,28 +2,62 @@
 
 This package builds a script that can be used in a page to access the consent choices a user has made using the Privacy Center.
 
-TODO(#1516): Include URL of built & CDN hosted script.
-
 To use the script, include it in your page:
 
 ```html
 <head>
   <!-- Include before any scripts which need consent. -->
-  <script src="fides-consent.js"></script>
+  <script src="example.com/privacy-center/fides-consent.js"></script>
 <head>
 ```
+
+*Note:* Replace `example.com/privacy-center` with the URL where you are hosting the Privacy Center.
 
 Then, in code that need user consent, check the consent map under the `Fides` global variable:
 
 ```js
-if (Fides.consent.data_sharing) {
+if (Fides.consent.data_sales) {
   // User has opted in.
 } else {
   // User has opted out.
 }
 ```
 
-In this example, `data_sharing` is a cookie key that has been [configured in the Privacy Center](/clients/privacy-center/config/config.json).
+In this example, `data_sales` is a cookie key that has been [configured in the Privacy Center](/clients/privacy-center/config/config.json).
+
+## Configuration
+
+The build process for this package pulls in the consent configuration from the Privacy Center's
+`config.json`. This includes the `cookieKeys` for each consent item as the default options for a
+user that has not modified their consent.
+
+
+## Google Tag Manager
+
+Once Fides is loaded in a page, calling `Fides.gtm()` will push the user's consent
+choices into GTM's dataLayer under `Fides.consent`.
+
+```html
+<head>
+  <script src="example.com/privacy-center/fides-consent.js"></script>
+  <script>Fides.gtm()</script>
+
+  <!-- Include Google Tag Manager's script below. -->
+<head>
+```
+
+A tag could then use this information to make consent choices:
+
+```js
+// Google Tag Manager Sandboxed JavaScript
+const copyFromDataLayer = require('copyFromDataLayer');
+
+var Fides = copyFromDataLayer('Fides') || { consent: {} }
+
+if (Fides.consent.data_sales) {
+  // The user has opted in.
+}
+```
 
 ## fides-consent.mjs & fides-consent.d.ts
 

@@ -24,9 +24,31 @@ The sole exception to this is the `pages` directory. Tests for Next.js pages liv
 
 ## Feature flags
 
-During the software development process, one or more features may not be visible at runtime. To toggle a given feature, find the given feature flag `name` key located in the [flags.json](/clients/admin-ui/srcgs.json) file. Update the `isActive` key value to `true/false`. If `true`, feature will be visible at runtime. Otherwise, feature will not be visible at runtime.
+During the software development process, one or more features may not be visible at runtime. Feature flags are defined
+within [flags.json](./src/flags.json).
 
-For techinical reference implementation, please reference [react-feature-flags](https://github.com/romaindso/react-feature-flags).
+You can toggle flags at runtime by opening the features panel, which can be accessed under the user menu in the top-right
+of the page header. These changes will be saved per-browser, per-environment, until you log out or reset them from the menu.
+
+
+### Environments
+
+Feature flags can be configured independently for the development, test, and production environments:
+
+- **development** - Running `npm run dev` uses the development environment. This will include bleeding-edge features.
+- **test** - Cypress runs in the tet environment via `npm run cy:start`. This will usually match production, but
+  new features may be enabled in test to verify them in CI before release.
+- **production** - Only features ready for release will be enabled for production. `npm run build` always produces a
+  build configured for production, which is then bundled into the Fides server.
+
+You can switch between these environments manually by overriding the `NEXT_PUBLIC_APP_ENV` environment variable when
+running the app, for example:
+
+`NEXT_PUBLIC_APP_ENV=production npm run dev`
+
+Or you can configure the environment using `env.local` as described by the [Next.js docs](https://nextjs.org/docs/basic-features/environment-variables#loading-environment-variables).
+
+
 
 ## Preparing for production
 

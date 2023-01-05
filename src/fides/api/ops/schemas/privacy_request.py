@@ -18,7 +18,7 @@ from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.models.audit_log import AuditLogAction
 from fides.lib.oauth.schemas.user import PrivacyRequestReviewer
 
@@ -109,6 +109,7 @@ class ExecutionLogResponse(BaseSchema):
 class ExecutionLogDetailResponse(ExecutionLogResponse):
     """Schema for the detailed ExecutionLogs when accessed directly"""
 
+    connection_key: Optional[str]
     dataset_name: Optional[str]
 
 
@@ -116,6 +117,7 @@ class ExecutionAndAuditLogResponse(BaseSchema):
     """Schema for the combined ExecutionLogs and Audit Logs
     associated with a PrivacyRequest"""
 
+    connection_key: Optional[str]
     collection_name: Optional[str]
     fields_affected: Optional[List[FieldsAffectedResponse]]
     message: Optional[str]

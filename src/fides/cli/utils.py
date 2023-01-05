@@ -28,22 +28,23 @@ from requests import get, put
 
 import fides
 from fides.api.ops.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
-from fides.ctl.connectors.models import (
+from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,
     DatabaseConfig,
     OktaConfig,
 )
-from fides.ctl.core import api as _api
-from fides.ctl.core.config import FidesConfig
-from fides.ctl.core.config.credentials_settings import (
+from fides.core import api as _api
+from fides.core.config import FidesConfig
+from fides.core.config.credentials_settings import (
     get_config_aws_credentials,
     get_config_bigquery_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.ctl.core.config.helpers import get_config_from_file, update_config_file
-from fides.ctl.core.utils import check_response, echo_green, echo_red
+from fides.core.config.helpers import get_config_from_file, update_config_file
+from fides.core.config.utils import get_dev_mode
+from fides.core.utils import check_response, echo_green, echo_red
 
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
@@ -224,7 +225,7 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
     try:
         client = AnalyticsClient(
             client_id=analytics_id or generate_client_id(FIDESCTL_CLI),
-            developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
+            developer_mode=get_dev_mode(),
             os=system(),
             product_name=APP + "-cli",
             production_version=version(PACKAGE),

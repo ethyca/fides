@@ -31,7 +31,7 @@
     "@chakra-ui/utils": "^2.0.9",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
-    "@fidesui/components": "^0.1.0",
+    "@fidesui/components": "^0.2.0",
     "@fidesui/react": "^0.0.19",
     "@fontsource/inter": "^4.5.4",
     "@monaco-editor/react": "^4.4.5",
@@ -52,13 +52,13 @@
     "next-remove-imports": "^1.0.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-feature-flags": "^1.0.0",
     "react-redux": "^7.2.6",
     "redux-persist": "^6.0.0",
     "whatwg-fetch": "^3.6.2",
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@jest/globals": "^29.3.1",
     "@next/bundle-analyzer": "^12.0.10",
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.3",

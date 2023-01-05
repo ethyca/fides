@@ -27,7 +27,6 @@ def create_s3_storage(
                 "details": {
                     "auth_method": "secret_keys",
                     "bucket": bucket,
-                    "object_name": "requests",
                     "naming": "request_id",
                 },
             },

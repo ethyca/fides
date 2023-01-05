@@ -21,7 +21,6 @@ class TestStorageConfigModel:
         return {
             StorageDetails.BUCKET.value: "some bucket",
             StorageDetails.NAMING.value: "some naming",
-            StorageDetails.OBJECT_NAME.value: "some object name",
             StorageDetails.MAX_RETRIES.value: 0,
             StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
         }

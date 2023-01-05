@@ -33,7 +33,7 @@ from fides.api.ops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -149,6 +149,25 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
+        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        response_body = json.loads(response.text)
+        assert HTTP_201_CREATED == response.status_code
+        assert response_body == {"id": user.id}
+        assert user.permissions is not None
+        user.delete(db)
+
+    def test_create_user_as_root(
+        self,
+        db,
+        api_client,
+        root_auth_header,
+        url,
+    ) -> None:
+        auth_header = root_auth_header
         body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
 
         response = api_client.post(url, headers=auth_header, json=body)

@@ -8,7 +8,7 @@ from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
-from fides.ctl.core.config import FidesConfig
+from fides.core.config import FidesConfig
 from fides.lib.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,

@@ -8,21 +8,23 @@ import asyncio
 import json
 import os
 from datetime import datetime
-from typing import Any, AsyncGenerator, Dict, Generator, Union
-from uuid import uuid4
+from typing import Dict, Generator, Union
 
 import pytest
+import requests
 import yaml
 from fideslang import models
-from sqlalchemy.orm import Session
+from pytest import MonkeyPatch
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
 
 from fides.api import main
 from fides.api.ctl.database.session import engine, sync_session
 from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
-from fides.ctl.core import api
-from fides.ctl.core.config import FidesConfig, get_config
+from fides.core import api
+from fides.core.config import FidesConfig, get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -35,6 +37,35 @@ from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
+CONFIG = get_config()
+
+
+orig_requests_get = requests.get
+orig_requests_post = requests.post
+orig_requests_put = requests.put
+orig_requests_patch = requests.patch
+orig_requests_delete = requests.delete
+
+
+@pytest.fixture(scope="session")
+def monkeysession():
+    """monkeypatch fixture at the session level instead of the function level"""
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
+
+
+@pytest.fixture(autouse=True, scope="session")
+def monkeypatch_requests(test_client, monkeysession) -> None:
+    """The requests library makes requests against the running webserver
+    which talks to the application db.  This monkeypatching operation
+    makes `requests` calls from src/fides/core/api.py in a test
+    context talk to the test db instead"""
+    monkeysession.setattr(requests, "get", test_client.get)
+    monkeysession.setattr(requests, "post", test_client.post)
+    monkeysession.setattr(requests, "put", test_client.put)
+    monkeysession.setattr(requests, "patch", test_client.patch)
+    monkeysession.setattr(requests, "delete", test_client.delete)
 
 
 @pytest.fixture(scope="session")
@@ -71,8 +102,12 @@ def test_client() -> Generator:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_db(test_config: FidesConfig) -> Generator:
+def setup_db(test_config: FidesConfig, test_client, monkeypatch_requests) -> Generator:
     "Sets up the database for testing."
+    assert CONFIG.test_mode
+    assert (
+        requests.post == test_client.post
+    )  # Sanity check to make sure monkeypatch_requests fixture has run
     yield api.db_action(test_config.cli.server_url, "reset")
 
 
@@ -288,37 +323,24 @@ def db() -> Generator:
     session.close()
 
 
-@pytest.fixture
-def oauth_client(db: Session) -> Generator:
-    """Return a client for authentication purposes."""
-
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=SCOPES,
-        fides_key="test_client",
+@pytest.fixture(scope="session")
+@pytest.mark.asyncio
+async def async_session(test_client) -> AsyncSession:
+    assert CONFIG.test_mode
+    assert requests.post == test_client.post
+    async_engine = create_async_engine(
+        CONFIG.database.async_database_uri,
+        echo=False,
     )
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    yield client
-    client.delete(db)
 
+    session_maker = sessionmaker(
+        async_engine, class_=AsyncSession, expire_on_commit=False
+    )
 
-@pytest.fixture
-def auth_header(  # type: ignore
-    request: Any, oauth_client: ClientDetail, test_config: FidesConfig
-) -> Dict[str, str]:
-    client_id = oauth_client.id
-
-    payload = {
-        JWE_PAYLOAD_SCOPES: request.param,
-        JWE_PAYLOAD_CLIENT_ID: client_id,
-        JWE_ISSUED_AT: datetime.now().isoformat(),
-    }
-    jwe = generate_jwe(json.dumps(payload), test_config.security.app_encryption_key)
-
-    return {"Authorization": f"Bearer {jwe}"}
+    async with session_maker() as session:
+        yield session
+        session.close()
+        async_engine.dispose()
 
 
 def generate_auth_header_for_user(
@@ -331,74 +353,6 @@ def generate_auth_header_for_user(
     }
     jwe = generate_jwe(json.dumps(payload), test_config.security.app_encryption_key)
     return {"Authorization": "Bearer " + jwe}
-
-
-@pytest.fixture
-def user(db: Session) -> Generator:
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fidesops_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-        },
-    )
-
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=SCOPES,
-        user_id=user.id,
-    )
-
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
-
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    yield user
-    try:
-        user.delete(db)
-        client.delete(db)
-    except ObjectDeletedError:
-        pass
-
-
-@pytest.fixture
-def user_no_client(db: Session) -> Generator:
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fidesops_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-        },
-    )
-
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
-
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
-def application_user(db: Session, oauth_client: ClientDetail) -> FidesUser:
-    unique_username = f"user-{uuid4()}"
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": unique_username,
-            "password": "test_password",
-            "first_name": "Test",
-            "last_name": "User",
-        },
-    )
-    oauth_client.user_id = user.id
-    oauth_client.save(db=db)
-    yield user
-    user.delete(db=db)
 
 
 @pytest.fixture(autouse=True)
@@ -414,13 +368,3 @@ def event_loop() -> Generator:
         loop = asyncio.new_event_loop()
     yield loop
     loop.close()
-
-
-@pytest.fixture(autouse=True)
-async def async_db() -> AsyncGenerator:
-    """
-    Makes sure to clean up the engine event loop to avoid async tests
-    attaching to the wrong event loop
-    """
-    yield
-    await engine.dispose()

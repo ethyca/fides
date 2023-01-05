@@ -25,22 +25,28 @@ const CODEC: Types.CookieCodecConfig<string, string> = {
   encodeValue: encodeURIComponent,
 };
 
-export const getConsentCookie = (): CookieKeyConsent => {
+export const getConsentCookie = (
+  defaults: CookieKeyConsent = {}
+): CookieKeyConsent => {
   if (typeof document === "undefined") {
-    return {};
+    return defaults;
   }
 
   const cookie = getCookie(CONSENT_COOKIE_NAME, CODEC);
   if (!cookie) {
-    return {};
+    return defaults;
   }
 
   try {
-    return JSON.parse(cookie);
+    const parsed: CookieKeyConsent = JSON.parse(cookie);
+    return {
+      ...defaults,
+      ...parsed,
+    };
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("Unable to read consent cookie: invalid JSON.", err);
-    return {};
+    return defaults;
   }
 };
 
@@ -49,12 +55,21 @@ export const setConsentCookie = (cookieKeyConsent: CookieKeyConsent) => {
     return;
   }
 
+  // Calculate the root domain by taking (up to) the last two parts of the domain:
+  //   privacy.example.com -> example.com
+  //   example.com -> example.com
+  //   localhost -> localhost
+  //
+  // TODO: This won't second-level domains like co.uk:
+  //   privacy.example.co.uk -> co.uk # ERROR
+  const rootDomain = window.location.hostname.split(".").slice(-2).join(".")
+
   setCookie(
     CONSENT_COOKIE_NAME,
     JSON.stringify(cookieKeyConsent),
     {
       // An explicit domain allows subdomains to access the cookie.
-      domain: window.location.hostname,
+      domain: rootDomain,
       expires: CONSENT_COOKIE_MAX_AGE_DAYS,
     },
     CODEC

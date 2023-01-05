@@ -1,8 +1,11 @@
 """
 Contains api endpoints for fides web pages
 """
+from fastapi import Depends
 from fastapi.responses import HTMLResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.crud import list_resource  # type: ignore[attr-defined]
 from fides.api.ctl.sql_models import Evaluation  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
@@ -14,7 +17,7 @@ router = APIRouter(
 
 
 @router.get("/evaluations")
-async def evaluation_view() -> HTMLResponse:
+async def evaluation_view(db: AsyncSession = Depends(get_async_db)) -> HTMLResponse:
     "Returns an html document with a list of evaluations"
 
     html = '<html lang="en">'
@@ -24,7 +27,7 @@ async def evaluation_view() -> HTMLResponse:
     html += "<h2>Evaluations</h2>"
     html += '<table class="table table-striped" style="text-align: left;">'
     html += "<tr><th>Id</th><th>Status</th><th>Violations</th><th>Message</th></tr>"
-    for evaluation in await list_resource(Evaluation):
+    for evaluation in await list_resource(Evaluation, db):
         html += "<tr>"
         html += f"<td>{evaluation.fides_key}</td>"
         html += f"<td>{evaluation.status}</td>"

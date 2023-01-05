@@ -43,7 +43,7 @@ from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import NodeInput, Row, append, partition
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 dask.config.set(scheduler="threads")
 
@@ -337,6 +337,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     ) -> None:
         """Update status activities"""
         self.resources.write_execution_log(
+            self.traversal_node.node.dataset.connection_key,
             self.traversal_node.address,
             fields_affected,
             action_type,
@@ -724,13 +725,13 @@ async def run_erasure(  # pylint: disable = too-many-arguments
         dsk: Dict[CollectionAddress, Any] = {
             k: (
                 t.erasure_request,
-                access_request_data[
-                    str(k)
-                ],  # Pass in the results of the access request for this collection
+                access_request_data.get(
+                    str(k), []
+                ),  # Pass in the results of the access request for this collection
                 *[
-                    access_request_data[
-                        str(upstream_key)
-                    ]  # Additionally pass in the original input data we used for the access request. It's helpful in
+                    access_request_data.get(
+                        str(upstream_key), []
+                    )  # Additionally pass in the original input data we used for the access request. It's helpful in
                     # cases like the EmailConnector where the access request doesn't actually retrieve data.
                     for upstream_key in t.input_keys
                 ],
