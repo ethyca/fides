@@ -118,6 +118,9 @@ class MessagingServiceDetails(Enum):
     API_VERSION = "api_version"
     DOMAIN = "domain"
 
+    # Twilio Email
+    TWILIO_EMAIL_FROM = "twilio_email_from"
+
 
 class MessagingServiceDetailsMailgun(BaseModel):
     """The details required to represent a Mailgun email configuration."""
@@ -125,6 +128,17 @@ class MessagingServiceDetailsMailgun(BaseModel):
     is_eu_domain: Optional[bool] = False
     api_version: Optional[str] = "v3"
     domain: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
+
+
+class MessagingServiceDetailsTwilioEmail(BaseModel):
+    """The details required to represent a Twilio email configuration."""
+
+    twilio_email_from: str
 
     class Config:
         """Restrict adding other fields through this schema."""
@@ -205,7 +219,9 @@ class MessagingConfigRequest(BaseModel):
     name: str
     key: Optional[FidesOpsKey]
     service_type: MessagingServiceType
-    details: Optional[MessagingServiceDetailsMailgun]
+    details: Optional[
+        Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
+    ]
 
     class Config:
         use_enum_values = False
