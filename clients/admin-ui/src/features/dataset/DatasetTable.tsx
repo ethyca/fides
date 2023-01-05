@@ -2,7 +2,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { usePollForClassifications } from "~/features/common/classifications";
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import { selectDatasetClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes } from "~/types/api";

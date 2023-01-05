@@ -9,15 +9,18 @@ import {
   MenuList,
   Stack,
   Text,
+  useDisclosure,
 } from "@fidesui/react";
 import NextLink from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { INDEX_ROUTE } from "../../constants";
-import { logout, selectUser, useLogoutMutation } from "../auth";
-import { QuestionIcon, UserIcon } from "./Icon";
-import Image from "./Image";
+import { INDEX_ROUTE } from "~/constants";
+import { logout, selectUser, useLogoutMutation } from "~/features/auth";
+import { useFeatures } from "~/features/common/features";
+import FeaturesPanel from "~/features/common/features/FeaturesPanel";
+import { QuestionIcon, UserIcon } from "~/features/common/Icon";
+import Image from "~/features/common/Image";
 
 const useHeader = () => {
   const { username } = useSelector(selectUser) ?? { username: "" };
@@ -25,9 +28,13 @@ const useHeader = () => {
 };
 
 const Header: React.FC = () => {
+  const features = useFeatures();
+
   const { username } = useHeader();
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useDispatch();
+
+  const featuresPanelDisclosure = useDisclosure();
 
   const handleLogout = async () => {
     logoutMutation({})
@@ -59,20 +66,34 @@ const Header: React.FC = () => {
                 size="sm"
                 variant="ghost"
                 data-testid="header-menu-button"
+                onDoubleClick={() => featuresPanelDisclosure.onOpen()}
               >
                 <UserIcon color="gray.700" />
               </MenuButton>
               <MenuList shadow="xl">
-                <Stack px={3} py={2} spacing={0}>
+                <Stack py={2} spacing={0} px={3}>
                   <Text fontWeight="medium">{username}</Text>
                   {/* This text should only show if actually an admin */}
                   {/* <Text fontSize="sm" color="gray.600">
-              Administrator
-            </Text> */}
+                    Administrator
+                  </Text> */}
                 </Stack>
+
+                <MenuDivider />
+                {features.flags.featuresPanel ? (
+                  <MenuItem
+                    _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                    onClick={() => featuresPanelDisclosure.onOpen()}
+                  >
+                    Features
+                    <Text as="i" ml={2}>
+                      Beta
+                    </Text>{" "}
+                  </MenuItem>
+                ) : null}
+
                 <MenuDivider />
                 <MenuItem
-                  px={3}
                   _focus={{ color: "complimentary.500", bg: "gray.100" }}
                   onClick={handleLogout}
                   data-testid="header-menu-sign-out"
@@ -96,6 +117,7 @@ const Header: React.FC = () => {
           )}
         </Flex>
       </Flex>
+      <FeaturesPanel {...featuresPanelDisclosure} />
     </header>
   );
 };

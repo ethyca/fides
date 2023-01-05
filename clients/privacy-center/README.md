@@ -8,8 +8,19 @@ You may configure the appearance of this web application at build time by modify
 
 - The header of the document
 - The descriptive text of the document
-- Which actions are present
-- The titles and descriptions of, and personally identifying information required by, each action
+- Which actions are present, and each action's:
+  - Personally Identifying Information a user must submit
+  - Title
+  - Description
+  - Icon
+- Whether consent management is enabled
+- Consent management options:
+  - The Fides Data Use that the user may consent to
+  - Descriptive information for the type of consent
+  - The default consent state (opt in/out)
+  - The cookie keys that will be available to
+    [fides-consent.js](./packages/fides-consent/README.md), which can be used to access a user's
+    consent choices on outside of the Privacy Center. 
 
 You can also add any CSS you'd like to the page by adding it to the `config.css` file inside the `config` directory.
 

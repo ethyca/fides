@@ -25,6 +25,13 @@ if (Fides.consent.data_sales) {
 
 In this example, `data_sales` is a cookie key that has been [configured in the Privacy Center](/clients/privacy-center/config/config.json).
 
+## Configuration
+
+The build process for this package pulls in the consent configuration from the Privacy Center's
+`config.json`. This includes the `cookieKeys` for each consent item as the default options for a
+user that has not modified their consent.
+
+
 ## Google Tag Manager
 
 Once Fides is loaded in a page, calling `Fides.gtm()` will push the user's consent
