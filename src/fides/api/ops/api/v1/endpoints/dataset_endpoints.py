@@ -58,6 +58,7 @@ from fides.api.ops.schemas.dataset import (
     DatasetConfigSchema,
     DatasetTraversalDetails,
     ValidateDatasetResponse,
+    get_data_categories_from_db,
     validate_data_categories_against_db,
 )
 from fides.api.ops.util.api_router import APIRouter
@@ -90,7 +91,8 @@ def validate_data_categories(dataset: Dataset, db: Session) -> None:
     database instead of a static list.
     """
     try:
-        validate_data_categories_against_db(dataset, db)
+        defined_data_categories: List[FidesKey] = get_data_categories_from_db(db)
+        validate_data_categories_against_db(dataset, defined_data_categories)
     except PydanticValidationError as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()

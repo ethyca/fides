@@ -9,8 +9,10 @@ from fideslang import DEFAULT_TAXONOMY, model_list, parse
 from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
+from fides.api.ctl.database.crud import get_resource
 from fides.api.ctl.routes import health
 from fides.api.ctl.routes.util import API_PREFIX
+from fides.api.ctl.sql_models import Dataset
 from fides.core import api as _api
 from fides.core.config import FidesConfig
 
@@ -141,6 +143,41 @@ class TestCrud:
             resources=[loads(manifest.json())],
         )
         assert result.status_code == 200
+
+    async def test_upsert_validates_resources_against_pydantic_model(
+        self, test_config: FidesConfig, resources_dict: Dict, async_session
+    ):
+        endpoint = "dataset"
+        manifest: Dataset = resources_dict[endpoint]
+        dict_manifest = manifest.dict()
+        del dict_manifest["organization_fides_key"]
+
+        result = _api.upsert(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            resources=[dict_manifest],
+        )
+        assert result.status_code == 200
+
+        resource = await get_resource(Dataset, manifest.fides_key, async_session)
+        assert resource.organization_fides_key == "default_organization"
+
+    async def test_data_categories_validated_against_db(
+        self, test_config: FidesConfig, resources_dict: Dict, async_session
+    ):
+        endpoint = "dataset"
+        manifest: Dataset = resources_dict[endpoint]
+        dict_manifest = manifest.dict()
+        dict_manifest["collections"][0]["data_categories"] = ["bad_category"]
+
+        result = _api.upsert(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            resources=[dict_manifest],
+        )
+        assert result.status_code == 422
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_delete(

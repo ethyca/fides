@@ -15,7 +15,14 @@ from fides.api.ops.util.data_category import (
 )
 
 
-def validate_data_categories_against_db(dataset: Dataset, db: Session) -> None:
+def get_data_categories_from_db(db: Session) -> List[FidesKey]:
+    """Query for existing data categories in the db using a synchronous session"""
+    return [cat[0] for cat in db.query(DataCategory.fides_key).all()]
+
+
+def validate_data_categories_against_db(
+    dataset: Dataset, defined_data_categories: List[FidesKey]
+) -> None:
     """
     Validate that data_categories defined on the Dataset, Collection, and Field levels exist
     in the database.  Doing this instead of a traditional validator function to have
@@ -23,9 +30,6 @@ def validate_data_categories_against_db(dataset: Dataset, db: Session) -> None:
 
     If no data categories in the database, default to using data categories from the default taxonomy.
     """
-    defined_data_categories: List[FidesKey] = [
-        cat[0] for cat in db.query(DataCategory.fides_key).all()
-    ]
     if not defined_data_categories:
         logger.info(
             "No data categories in the database: reverting to default data categories."
