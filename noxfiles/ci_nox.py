@@ -91,7 +91,7 @@ def xenon(session: nox.Session) -> None:
         "--max-absolute B",
         "--max-modules B",
         "--max-average A",
-        "--ignore 'data, docs'",
+        "--ignore 'data'",
         "--exclude src/fides/_version.py",
     )
     session.run(*command)
