@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
+* Update Privacy Center Icons [#1800](https://github.com/ethyca/fides/pull/2139)
 
 ### Fixed
 
