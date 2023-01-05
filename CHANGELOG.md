@@ -32,6 +32,7 @@ The types of changes are:
 ### Removed
 
 * Removed unused object_name field on s3 storage config [#2133](https://github.com/ethyca/fides/pull/2133)
+* Removed the legacy docs from the repository [#2137](https://github.com/ethyca/fides/pull/2137)
 
 ### Fixed
 
@@ -136,7 +137,6 @@ The types of changes are:
 
 * Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
 
-
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
 ### Added
@@ -218,7 +218,6 @@ The types of changes are:
 ### Security
 
 * Bumped versions of packages that use OpenSSL [#1683](https://github.com/ethyca/fides/pull/1683)
-
 
 ## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
 
