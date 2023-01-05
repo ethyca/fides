@@ -37,6 +37,7 @@ The types of changes are:
 ### Fixed
 
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
+* Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
 
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
