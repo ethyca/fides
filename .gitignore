@@ -22,12 +22,6 @@ tmp/*
 # java specific
 *.class
 
-# docs
-docs/fides/site/
-docs/fides/docs/api/openapi.json
-docs/fidesops/docs/api/openapi.json
-docs/fidesops/site
-
 # python specific
 *.pyc
 
@@ -173,9 +167,6 @@ instance/
 
 # Scrapy stuff:
 .scrapy
-
-# Sphinx documentation
-docs/_build/
 
 # PyBuilder
 target/
