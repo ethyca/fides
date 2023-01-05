@@ -235,7 +235,7 @@ const DatabaseConnectForm = () => {
               <CustomSwitch
                 name="classify"
                 label="Classify dataset"
-                tooltip="In addition to generating the Dataset, Fidescls will scan the database to determine the locations of possible PII and suggest labels based on the contents of your tables."
+                tooltip="Use Fides Classify to suggest labels based on your data."
               />
             ) : null}
 
