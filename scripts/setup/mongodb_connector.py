@@ -1,4 +1,3 @@
-import logging
 from typing import Dict
 
 from . import constants
@@ -7,9 +6,6 @@ from .database_connector import (
     update_database_connector_secrets,
 )
 from .dataset import create_dataset
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def create_mongodb_connector(
