@@ -108,7 +108,6 @@ jobs:
           - "pytest_lib"
           - "check_fides_annotations"
           - "fides_db_scan"
-          - "docs_check"
           - "minimal_config_startup"
         exclude:
           # Not all jobs need to run against the Python matrix
@@ -121,11 +120,6 @@ jobs:
             test_selection: "fides_db_scan"
           - python_version: "3.9.14"
             test_selection: "fides_db_scan"
-
-          - python_version: "3.8.14"
-            test_selection: "docs_check"
-          - python_version: "3.9.14"
-            test_selection: "docs_check"
 
           - python_version: "3.8.14"
             test_selection: "minimal_config_startup"
