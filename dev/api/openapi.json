@@ -4809,7 +4809,7 @@
           "Connections"
         ],
         "summary": "Patch Connections",
-        "description": "Given a list of connection config data elements, create or update corresponding ConnectionConfig objects\nor report failure\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.\n\nNote that ConnectionConfiguration.secrets are not updated through this endpoint.",
+        "description": "Given a list of connection config data elements, optionally containing the secrets,\ncreate or update corresponding ConnectionConfig objects or report failure\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.",
         "operationId": "patch_connections_api_v1_connection_patch",
         "requestBody": {
           "content": {
@@ -4819,7 +4819,7 @@
                 "maxItems": 50,
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/CreateConnectionConfiguration"
+                  "$ref": "#/components/schemas/CreateConnectionConfigurationWithSecrets"
                 }
               }
             }
@@ -11429,8 +11429,8 @@
         },
         "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
       },
-      "CreateConnectionConfiguration": {
-        "title": "CreateConnectionConfiguration",
+      "CreateConnectionConfigurationWithSecrets": {
+        "title": "CreateConnectionConfigurationWithSecrets",
         "required": [
           "name",
           "connection_type",
@@ -11461,10 +11461,58 @@
           "description": {
             "title": "Description",
             "type": "string"
+          },
+          "secrets": {
+            "title": "Secrets",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MongoDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/MySQLDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/RedshiftDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SnowflakeDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/MSSQLDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/MariaDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/BigQueryDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SaaSSchema"
+              },
+              {
+                "$ref": "#/components/schemas/EmailDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+              },
+              {
+                "$ref": "#/components/schemas/TimescaleDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/FidesDocsSchema"
+              }
+            ]
+          },
+          "saas_connector_type": {
+            "title": "Saas Connector Type",
+            "type": "string"
           }
         },
         "additionalProperties": false,
-        "description": "Schema for creating a ConnectionConfiguration\n\nNote that secrets are *NOT* allowed to be supplied here."
+        "description": "Schema for creating a connection configuration including secrets."
       },
       "CurrentStep": {
         "title": "CurrentStep",
