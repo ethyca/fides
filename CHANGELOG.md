@@ -37,6 +37,7 @@ The types of changes are:
 ### Fixed
 
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
+* Admin UI - Added Missing ability to assign `user:delete` in the permissions checkboxes [#2148](https://github.com/ethyca/fides/pull/2148)
 
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
