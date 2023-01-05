@@ -1,4 +1,3 @@
-import logging
 import uuid
 from typing import Dict
 
@@ -7,9 +6,6 @@ import requests
 from fides.api.ops.api.v1 import urn_registry as urls
 
 from . import constants, get_secret
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def create_stripe_connector(

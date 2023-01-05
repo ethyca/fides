@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, Generator
 
 import pytest
@@ -30,8 +29,6 @@ from fides.api.ops.util.data_category import DataCategory
 from fides.api.ops.util.saas_util import load_config
 from fides.lib.models.client import ClientDetail
 from tests.ops.fixtures.application_fixtures import load_dataset
-
-logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="function")
@@ -312,11 +309,7 @@ def oauth2_authorization_code_connection_config(
 
 @pytest.fixture(scope="session")
 def saas_config() -> Dict[str, Any]:
-    saas_config: Dict[str, Any] = {}
-    try:
-        saas_config: Dict[str, Any] = load_toml("saas_config.toml")
-    except FileNotFoundError as e:
-        logger.warning("saas_config.toml could not be loaded: %s", e)
+    saas_config: Dict[str, Any] = load_toml("saas_config.toml")
     return saas_config
 
 

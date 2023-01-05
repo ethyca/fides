@@ -1,4 +1,3 @@
-import logging
 from typing import Dict
 
 from setup.database_connector import (
@@ -8,9 +7,6 @@ from setup.database_connector import (
 from setup.dataset import create_dataset
 
 from . import constants
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def create_postgres_connector(

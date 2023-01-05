@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import logging
 from typing import Any, Callable, Dict, Generator, List
 
 import pytest
@@ -70,19 +69,15 @@ from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 from .fixtures.timescale_fixtures import *
 
-logger = logging.getLogger(__name__)
-
 CONFIG = get_config()
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_db(api_client):
     """Apply migrations at beginning and end of testing session"""
-    logger.debug("Setting up the database...")
     assert CONFIG.test_mode
     assert requests.post != api_client.post
     yield api_client.post(url=f"{CONFIG.cli.server_url}/v1/admin/db/reset")
-    logger.debug("Migrations successfully applied")
 
 
 @pytest.fixture(scope="session")
@@ -104,7 +99,6 @@ def db(api_client) -> Generator:
     # Teardown below...
     the_session.close()
     engine.dispose()
-    logger.debug("Database at: %s successfully dropped", engine.url)
 
 
 @pytest.fixture(autouse=True)

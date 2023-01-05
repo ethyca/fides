@@ -1,4 +1,3 @@
-import logging
 import random
 
 import pytest
@@ -13,7 +12,6 @@ from fides.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration_saas
