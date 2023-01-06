@@ -5,8 +5,8 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
 import sendgrid
-from sendgrid.helpers.mail import Email, To, Content, Mail
 from loguru import logger
+from sendgrid.helpers.mail import Content, Email, Mail, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
