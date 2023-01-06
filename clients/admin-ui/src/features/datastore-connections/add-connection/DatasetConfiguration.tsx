@@ -1,4 +1,13 @@
-import { Box, Center, Spinner, VStack } from "@fidesui/react";
+import {
+  Box,
+  Center,
+  Divider,
+  HStack,
+  Select,
+  Spinner,
+  Text,
+  TextProps,
+} from "@fidesui/react";
 import { useAlert, useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
@@ -12,10 +21,19 @@ import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useUpsertDatasetsMutation } from "~/features/dataset";
+import {
+  useGetAllDatasetsQuery,
+  useUpsertDatasetsMutation,
+} from "~/features/dataset";
 import { Dataset, DatasetConfigCtlDataset } from "~/types/api";
 
 import YamlEditorForm from "./forms/YamlEditorForm";
+
+const Copy = ({ children, ...props }: TextProps) => (
+  <Text color="gray.700" fontSize="14px" {...props}>
+    {children}
+  </Text>
+);
 
 const DatasetConfiguration: React.FC = () => {
   const router = useRouter();
@@ -28,6 +46,8 @@ const DatasetConfiguration: React.FC = () => {
   );
   const [patchDataset] = usePatchDatasetConfigsMutation();
   const [upsertDatasets] = useUpsertDatasetsMutation();
+  const { data: allDatasets, isLoading: isLoadingAllDatasets } =
+    useGetAllDatasetsQuery();
 
   const handleSubmit = async (value: unknown) => {
     try {
@@ -78,25 +98,47 @@ const DatasetConfiguration: React.FC = () => {
     }
   };
 
+  if (isFetching || isLoading || isLoadingAllDatasets) {
+    return (
+      <Center>
+        <Spinner />
+      </Center>
+    );
+  }
+
   return (
-    <VStack align="stretch" flex="1">
-      <Box color="gray.700" fontSize="14px" mb={4}>
-        View your system yaml below! You can also modify the yaml if you need to
-        assign any references between datasets.
-      </Box>
-      {(isFetching || isLoading) && (
-        <Center>
-          <Spinner />
-        </Center>
-      )}
-      {isSuccess && data!?.items ? (
-        <YamlEditorForm
-          data={data.items.map((item) => item.ctl_dataset)}
-          isSubmitting={isSubmitting}
-          onSubmit={handleSubmit}
-        />
+    <HStack spacing={6}>
+      {allDatasets && allDatasets.length ? (
+        <>
+          <Box data-testid="dataset-selector" mb={4} alignSelf="start">
+            <Copy mb={4}>
+              Choose a dataset to associate with this connector.
+            </Copy>
+            <Select size="sm" width="fit-content" placeholder="Select">
+              {allDatasets.map((ds) => (
+                <option key={ds.fides_key} value={ds.fides_key}>
+                  {ds.fides_key}
+                </option>
+              ))}
+            </Select>
+          </Box>
+          <Copy>or</Copy>
+        </>
       ) : null}
-    </VStack>
+      <Box data-testid="yaml-editor">
+        <Copy mb={4}>
+          View your system yaml below! You can also modify the yaml if you need
+          to assign any references between datasets.
+        </Copy>
+        {isSuccess && data!?.items ? (
+          <YamlEditorForm
+            data={data.items.map((item) => item.ctl_dataset)}
+            isSubmitting={isSubmitting}
+            onSubmit={handleSubmit}
+          />
+        ) : null}
+      </Box>
+    </HStack>
   );
 };
 

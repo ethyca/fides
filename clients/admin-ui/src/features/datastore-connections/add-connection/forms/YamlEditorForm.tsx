@@ -36,12 +36,14 @@ type YamlEditorFormProps = {
   data: Dataset[];
   isSubmitting: boolean;
   onSubmit: (value: unknown) => void;
+  disabled?: boolean;
 };
 
 const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   data = [],
   isSubmitting = false,
   onSubmit,
+  disabled,
 }) => {
   const monacoRef = useRef(null);
   const router = useRouter();
@@ -92,7 +94,6 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   return (
     <Flex gap="97px">
       <VStack align="stretch" w="918px">
-        <Divider color="gray.100" />
         <Editor
           defaultLanguage="yaml"
           defaultValue={yamlData}
@@ -105,10 +106,10 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
             minimap: {
               enabled: true,
             },
+            readOnly: disabled,
           }}
           theme="light"
         />
-        <Divider color="gray.100" />
         <ButtonGroup
           mt="24px !important"
           size="sm"
