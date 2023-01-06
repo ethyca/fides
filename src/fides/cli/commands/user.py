@@ -1,6 +1,7 @@
 """Contains the user group of commands for fides."""
 
 import click
+from pathlib import Path
 
 import requests
 import toml
@@ -52,7 +53,8 @@ def login(ctx: click.Context, username: str, password: str) -> None:
 
     # Store the token in a .credentials file
     credentials_data = {"access_token": access_token}
-    credentials_path = ".credentials"
+    credentials_path = f"{str(Path.home())}/.credentials"
+
     print(f"Writing credentials to: '{credentials_path}'...")
     with open(credentials_path, "w", encoding="utf-8") as credentials_file:
         credentials_file.write(toml.dumps(credentials_data))
