@@ -1,12 +1,13 @@
 import {
   Box,
+  Button,
   Center,
-  Divider,
   HStack,
   Select,
   Spinner,
   Text,
   TextProps,
+  VStack,
 } from "@fidesui/react";
 import { useAlert, useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
@@ -16,7 +17,7 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useAppSelector } from "~/app/hooks";
@@ -49,7 +50,11 @@ const DatasetConfiguration: React.FC = () => {
   const { data: allDatasets, isLoading: isLoadingAllDatasets } =
     useGetAllDatasetsQuery();
 
-  const handleSubmit = async (value: unknown) => {
+  const [selectedDatasetKey, setSelectedDatasetKey] = useState<
+    string | undefined
+  >(undefined);
+
+  const handleSubmitYaml = async (value: unknown) => {
     try {
       setIsSubmitting(true);
       // First update the datasets
@@ -98,6 +103,13 @@ const DatasetConfiguration: React.FC = () => {
     }
   };
 
+  const handleSelectDataset = (event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedDatasetKey(event.target.value);
+  };
+
+  const datasetSelected =
+    selectedDatasetKey !== "" && selectedDatasetKey !== undefined;
+
   if (isFetching || isLoading || isLoadingAllDatasets) {
     return (
       <Center>
@@ -107,38 +119,56 @@ const DatasetConfiguration: React.FC = () => {
   }
 
   return (
-    <HStack spacing={6}>
-      {allDatasets && allDatasets.length ? (
-        <>
-          <Box data-testid="dataset-selector" mb={4} alignSelf="start">
-            <Copy mb={4}>
-              Choose a dataset to associate with this connector.
-            </Copy>
-            <Select size="sm" width="fit-content" placeholder="Select">
-              {allDatasets.map((ds) => (
-                <option key={ds.fides_key} value={ds.fides_key}>
-                  {ds.fides_key}
-                </option>
-              ))}
-            </Select>
-          </Box>
-          <Copy>or</Copy>
-        </>
-      ) : null}
-      <Box data-testid="yaml-editor">
-        <Copy mb={4}>
-          View your system yaml below! You can also modify the yaml if you need
-          to assign any references between datasets.
-        </Copy>
-        {isSuccess && data!?.items ? (
-          <YamlEditorForm
-            data={data.items.map((item) => item.ctl_dataset)}
-            isSubmitting={isSubmitting}
-            onSubmit={handleSubmit}
-          />
+    <VStack alignItems="left">
+      <HStack spacing={6}>
+        {allDatasets && allDatasets.length ? (
+          <>
+            <VStack alignSelf="start">
+              <Box data-testid="dataset-selector" mb={4}>
+                <Copy mb={4}>
+                  Choose a dataset to associate with this connector.
+                </Copy>
+                <Select
+                  size="sm"
+                  width="fit-content"
+                  placeholder="Select"
+                  onChange={handleSelectDataset}
+                >
+                  {allDatasets.map((ds) => (
+                    <option key={ds.fides_key} value={ds.fides_key}>
+                      {ds.fides_key}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+              <Button
+                size="sm"
+                colorScheme="primary"
+                alignSelf="start"
+                disabled={!datasetSelected}
+              >
+                Save
+              </Button>
+            </VStack>
+            <Copy>or</Copy>
+          </>
         ) : null}
-      </Box>
-    </HStack>
+        <Box data-testid="yaml-editor">
+          <Copy mb={4}>
+            View your system yaml below! You can also modify the yaml if you
+            need to assign any references between datasets.
+          </Copy>
+          {isSuccess && data!?.items ? (
+            <YamlEditorForm
+              data={data.items.map((item) => item.ctl_dataset)}
+              isSubmitting={isSubmitting}
+              onSubmit={handleSubmitYaml}
+              disabled={datasetSelected}
+            />
+          ) : null}
+        </Box>
+      </HStack>
+    </VStack>
   );
 };
 

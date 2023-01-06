@@ -75,10 +75,6 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
     }
   };
 
-  const handleCancel = () => {
-    router.push(DATASTORE_CONNECTION_ROUTE);
-  };
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleMount = (editor: any, _monaco: any) => {
     monacoRef.current = editor;
@@ -110,33 +106,20 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           }}
           theme="light"
         />
-        <ButtonGroup
+        <Button
           mt="24px !important"
+          colorScheme="primary"
+          isDisabled={disabled || isEmptyState || !!yamlError || isSubmitting}
+          isLoading={isSubmitting}
+          loadingText="Saving Yaml system"
+          onClick={handleSubmit}
           size="sm"
-          spacing="8px"
-          variant="outline"
+          type="submit"
+          data-testid="save-btn"
+          width="fit-content"
         >
-          <Button onClick={handleCancel} variant="outline">
-            Cancel
-          </Button>
-          <Button
-            bg="primary.800"
-            color="white"
-            isDisabled={isEmptyState || !!yamlError || isSubmitting}
-            isLoading={isSubmitting}
-            loadingText="Saving Yaml system"
-            onClick={handleSubmit}
-            size="sm"
-            variant="solid"
-            type="submit"
-            _active={{ bg: "primary.500" }}
-            _disabled={{ opacity: "inherit" }}
-            _hover={{ bg: "primary.400" }}
-            data-testid="save-btn"
-          >
-            Save Yaml system
-          </Button>
-        </ButtonGroup>
+          Save Yaml system
+        </Button>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
         <SlideFade in>
