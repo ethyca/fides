@@ -58,6 +58,16 @@ if (Fides.consent.data_sales) {
   // The user has opted in.
 }
 ```
+## Shopify
+
+```html
+<head>
+  <script src="example.com/privacy-center/fides-consent.js"></script>
+  <script>Fides.shopify({ tracking: Fides.consent.data_sales })</script>
+<head>
+```
+
+https://shopify.dev/api/consent-tracking?shpxid=7e81a186-C696-4E23-F327-E7F38E5FF5EE#consent-collection
 
 ## fides-consent.mjs & fides-consent.d.ts
 
