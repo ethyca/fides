@@ -46,7 +46,6 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   disabled,
 }) => {
   const monacoRef = useRef(null);
-  const router = useRouter();
   const { errorAlert } = useAlert();
   const yamlData = data.length > 0 ? yaml.dump(data) : undefined;
   const [yamlError, setYamlError] = useState(

@@ -17,7 +17,7 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import { useRouter } from "next/router";
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useAppSelector } from "~/app/hooks";
@@ -45,7 +45,7 @@ const DatasetConfiguration: React.FC = () => {
   const { data, isFetching, isLoading, isSuccess } = useGetDatasetConfigsQuery(
     connection!.key
   );
-  const [patchDataset] = usePatchDatasetConfigsMutation();
+  const [patchDatasetConfig] = usePatchDatasetConfigsMutation();
   const [upsertDatasets] = useUpsertDatasetsMutation();
   const { data: allDatasets, isLoading: isLoadingAllDatasets } =
     useGetAllDatasetsQuery();
@@ -53,6 +53,45 @@ const DatasetConfiguration: React.FC = () => {
   const [selectedDatasetKey, setSelectedDatasetKey] = useState<
     string | undefined
   >(undefined);
+
+  useEffect(() => {
+    if (data) {
+      setSelectedDatasetKey(data.items[0].ctl_dataset.fides_key);
+    }
+  }, [data]);
+
+  const handlePatchDatasetConfig = async (
+    datasetPairs: DatasetConfigCtlDataset[]
+  ) => {
+    const params: PatchDatasetsConfigRequest = {
+      connection_key: connection?.key as string,
+      dataset_pairs: datasetPairs,
+    };
+    const payload = await patchDatasetConfig(params).unwrap();
+    if (payload.failed?.length > 0) {
+      errorAlert(payload.failed[0].message);
+    } else {
+      successAlert("Dataset successfully updated!");
+    }
+    router.push(DATASTORE_CONNECTION_ROUTE);
+  };
+
+  const handleLinkDataset = async () => {
+    if (selectedDatasetKey) {
+      try {
+        let fidesKey = selectedDatasetKey;
+        if (data && data.items.length) {
+          fidesKey = data.items[0].fides_key;
+        }
+        const datasetPairs: DatasetConfigCtlDataset[] = [
+          { fides_key: fidesKey, ctl_dataset_fides_key: selectedDatasetKey },
+        ];
+        handlePatchDatasetConfig(datasetPairs);
+      } catch (error) {
+        handleError(error);
+      }
+    }
+  };
 
   const handleSubmitYaml = async (value: unknown) => {
     try {
@@ -85,17 +124,7 @@ const DatasetConfiguration: React.FC = () => {
         }));
       }
 
-      const params: PatchDatasetsConfigRequest = {
-        connection_key: connection?.key as string,
-        dataset_pairs: pairs,
-      };
-      const payload = await patchDataset(params).unwrap();
-      if (payload.failed?.length > 0) {
-        errorAlert(payload.failed[0].message);
-      } else {
-        successAlert("Dataset successfully updated!");
-      }
-      router.push(DATASTORE_CONNECTION_ROUTE);
+      handlePatchDatasetConfig(pairs);
     } catch (error) {
       handleError(error);
     } finally {
@@ -133,6 +162,7 @@ const DatasetConfiguration: React.FC = () => {
                   width="fit-content"
                   placeholder="Select"
                   onChange={handleSelectDataset}
+                  value={selectedDatasetKey}
                 >
                   {allDatasets.map((ds) => (
                     <option key={ds.fides_key} value={ds.fides_key}>
@@ -146,6 +176,7 @@ const DatasetConfiguration: React.FC = () => {
                 colorScheme="primary"
                 alignSelf="start"
                 disabled={!datasetSelected}
+                onClick={handleLinkDataset}
               >
                 Save
               </Button>
