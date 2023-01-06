@@ -11,11 +11,11 @@ import {
   useBulkRetryMutation,
   useRetryMutation,
 } from "../privacy-requests.slice";
-import { PrivacyRequest } from "../types";
+import { PrivacyRequestEntity } from "../types";
 
 type ReprocessButtonProps = {
   buttonProps?: ButtonProps;
-  subjectRequest?: PrivacyRequest;
+  subjectRequest?: PrivacyRequestEntity;
 };
 
 const ReprocessButton = forwardRef(
