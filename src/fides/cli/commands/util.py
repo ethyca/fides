@@ -54,8 +54,6 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
     send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
     echo_green("fides initialization complete.")
-    
-# Add a login command
 
 
 @click.command()
