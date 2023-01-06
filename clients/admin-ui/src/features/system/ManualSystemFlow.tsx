@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
 import { System } from "~/types/api";
 
-import { useFeatures } from "../common/features.slice";
+import { useFeatures } from "../common/features";
 import DescribeSystemStep from "./DescribeSystemStep";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import ReviewSystemStep from "./ReviewSystemStep";
@@ -49,7 +49,9 @@ const ManualSystemFlow = () => {
   const dispatch = useAppDispatch();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const activeSystem = useAppSelector(selectActiveSystem);
-  const { navV2 } = useFeatures();
+  const {
+    flags: { navV2 },
+  } = useFeatures();
 
   const goBack = useCallback(() => {
     router.back();

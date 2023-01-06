@@ -15,7 +15,7 @@ import {
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ConnectedCircle from "~/features/common/ConnectedCircle";
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import {
   AWSLogoIcon,
   DataFlowScannerLogo,

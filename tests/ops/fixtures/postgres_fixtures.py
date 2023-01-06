@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, Generator, List
 from uuid import uuid4
 
@@ -25,7 +24,6 @@ from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 from .application_fixtures import integration_secrets
 
-logger = logging.getLogger(__name__)
 CONFIG = get_config()
 
 

@@ -14,9 +14,10 @@ import { useRouter } from "next/router";
 import { useGetAllPrivacyRequestsQuery } from "privacy-requests/index";
 import SubjectRequest from "subject-request/SubjectRequest";
 
+import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 
-import { INDEX_ROUTE } from "../../constants";
+import { INDEX_ROUTE, PRIVACY_REQUESTS_ROUTE } from "../../constants";
 
 const useSubjectRequestDetails = () => {
   const router = useRouter();
@@ -35,6 +36,9 @@ const useSubjectRequestDetails = () => {
 };
 
 const SubjectRequestDetails: NextPage = () => {
+  const {
+    flags: { navV2 },
+  } = useFeatures();
   const { data, isLoading, isUninitialized } = useSubjectRequestDetails();
   let body =
     !data || data?.items.length === 0 ? (
@@ -58,7 +62,10 @@ const SubjectRequestDetails: NextPage = () => {
         <Box mt={2} mb={9}>
           <Breadcrumb fontWeight="medium" fontSize="sm">
             <BreadcrumbItem>
-              <BreadcrumbLink as={NextLink} href={INDEX_ROUTE}>
+              <BreadcrumbLink
+                as={NextLink}
+                href={navV2 ? PRIVACY_REQUESTS_ROUTE : INDEX_ROUTE}
+              >
                 Privacy Requests
               </BreadcrumbLink>
             </BreadcrumbItem>

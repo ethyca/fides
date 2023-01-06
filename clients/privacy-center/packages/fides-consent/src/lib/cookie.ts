@@ -25,22 +25,28 @@ const CODEC: Types.CookieCodecConfig<string, string> = {
   encodeValue: encodeURIComponent,
 };
 
-export const getConsentCookie = (): CookieKeyConsent => {
+export const getConsentCookie = (
+  defaults: CookieKeyConsent = {}
+): CookieKeyConsent => {
   if (typeof document === "undefined") {
-    return {};
+    return defaults;
   }
 
   const cookie = getCookie(CONSENT_COOKIE_NAME, CODEC);
   if (!cookie) {
-    return {};
+    return defaults;
   }
 
   try {
-    return JSON.parse(cookie);
+    const parsed: CookieKeyConsent = JSON.parse(cookie);
+    return {
+      ...defaults,
+      ...parsed,
+    };
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("Unable to read consent cookie: invalid JSON.", err);
-    return {};
+    return defaults;
   }
 };
 

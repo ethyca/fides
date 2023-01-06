@@ -1,9 +1,5 @@
-import logging
-
 import pytest
 from sqlalchemy import func, select, table
-
-logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration_postgres

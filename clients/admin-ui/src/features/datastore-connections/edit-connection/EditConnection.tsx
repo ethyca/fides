@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import {
   reset,
   selectConnectionTypeState,
@@ -32,7 +32,9 @@ const EditConnection: React.FC = () => {
     undefined as unknown as ConnectorParameterOption
   );
   const [selectedItem, setSelectedItem] = useState("");
-  const { navV2 } = useFeatures();
+  const {
+    flags: { navV2 },
+  } = useFeatures();
 
   const getTabs = useMemo(
     () => () => {

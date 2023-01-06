@@ -1,14 +1,11 @@
-import logging
 from datetime import datetime
 
 import requests
+from loguru import logger
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
 from . import constants
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def create_privacy_request(
