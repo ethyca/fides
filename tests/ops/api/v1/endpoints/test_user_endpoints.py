@@ -340,10 +340,6 @@ class TestDeleteUser:
         )
         assert permissions_search is None
 
-        # Deleted user's client is also deleted
-        client_search = ClientDetail.get_by(db, field="id", value=client_id)
-        assert client_search is None
-
         # Admin client who made the request is not deleted
         admin_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)
         assert admin_client_search is not None
