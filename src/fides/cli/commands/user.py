@@ -4,6 +4,7 @@ import click
 from typing import Dict, List
 
 from fides.core.user import (
+    create_user,
     get_access_token,
     write_credentials_file,
     CREDENTIALS_PATH,
@@ -20,6 +21,37 @@ def user(ctx: click.Context) -> None:
     """
     Click command group for interacting with user-related functionality.
     """
+
+
+@user.command()
+@click.pass_context
+@click.argument("username", type=str)
+@click.argument("password", type=str)
+@click.option(
+    "-f",
+    "--first-name",
+    default="",
+    help="First name of the user.",
+)
+@click.option(
+    "-l",
+    "--last-name",
+    default="",
+    help="Last name of the user.",
+)
+def create(
+    ctx: click.Context, username: str, password: str, first_name: str, last_name: str
+) -> None:
+    """Use credentials to get a user access token and write a credentials file."""
+
+    # If no username/password was provided, attempt to use the root
+    config = ctx.obj["CONFIG"]
+    client_id = config.security.oauth_root_client_id
+    client_secret = config.security.oauth_root_client_secret
+    access_token = get_access_token(client_id, client_secret)
+    auth_header = create_auth_header(access_token)
+
+    create_user(username, password, first_name, last_name, auth_header)
 
 
 @user.command()
@@ -50,17 +82,14 @@ def login(ctx: click.Context, username: str, password: str) -> None:
 
 
 @user.command()
-@click.pass_context
 @click.option(
     "-u",
     "--username",
     default="",
     help="Username to authenticate with.",
 )
-def scopes(ctx: click.Context, username: str) -> None:
+def scopes(username: str) -> None:
     """List the scopes avaible to the current user."""
-
-    config = ctx.obj["CONFIG"]
 
     credentials: Dict[str, str] = read_credentials_file()
     username = credentials["username"]
@@ -68,4 +97,5 @@ def scopes(ctx: click.Context, username: str) -> None:
 
     auth_header = create_auth_header(access_token)
     scopes: List[str] = get_user_scopes(username, auth_header)
-    print(scopes)
+    for scope in scopes:
+        print(scope)
