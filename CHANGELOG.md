@@ -21,6 +21,7 @@ The types of changes are:
 
 * Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
+* Add link to Classify Systems page in nav side bar [#2128](https://github.com/ethyca/fides/pull/2128)
 * Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
 
 ### Changed
