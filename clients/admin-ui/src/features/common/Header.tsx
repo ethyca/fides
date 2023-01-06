@@ -79,17 +79,20 @@ const Header: React.FC = () => {
                   </Text> */}
                 </Stack>
 
-                <MenuDivider />
                 {features.flags.featuresPanel ? (
-                  <MenuItem
-                    _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                    onClick={() => featuresPanelDisclosure.onOpen()}
-                  >
-                    Features
-                    <Text as="i" ml={2}>
-                      Beta
-                    </Text>{" "}
-                  </MenuItem>
+                  <>
+                    <MenuDivider />
+
+                    <MenuItem
+                      _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                      onClick={() => featuresPanelDisclosure.onOpen()}
+                    >
+                      Features
+                      <Text as="i" ml={2}>
+                        Beta
+                      </Text>{" "}
+                    </MenuItem>
+                  </>
                 ) : null}
 
                 <MenuDivider />
