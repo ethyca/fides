@@ -4068,21 +4068,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Health Health Get",
-                  "type": "object",
-                  "additionalProperties": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      }
-                    ]
-                  }
+                  "$ref": "#/components/schemas/CoreHealthCheck"
                 },
                 "example": {
                   "webserver": "healthy",
@@ -11428,6 +11414,58 @@
           }
         },
         "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
+      },
+      "CoreHealthCheck": {
+        "title": "CoreHealthCheck",
+        "required": [
+          "webserver",
+          "version",
+          "database",
+          "cache",
+          "workers_enabled",
+          "workers"
+        ],
+        "type": "object",
+        "properties": {
+          "webserver": {
+            "title": "Webserver",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          },
+          "database": {
+            "title": "Database",
+            "enum": [
+              "healthy",
+              "unhealthy",
+              "needs migration"
+            ],
+            "type": "string"
+          },
+          "cache": {
+            "title": "Cache",
+            "enum": [
+              "healthy",
+              "unhealthy",
+              "no cache configured"
+            ],
+            "type": "string"
+          },
+          "workers_enabled": {
+            "title": "Workers Enabled",
+            "type": "boolean"
+          },
+          "workers": {
+            "title": "Workers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Healthcheck schema"
       },
       "CreateConnectionConfigurationWithSecrets": {
         "title": "CreateConnectionConfigurationWithSecrets",
