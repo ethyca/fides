@@ -108,7 +108,7 @@ def delete_user(
             status_code=HTTP_404_NOT_FOUND, detail=f"No user found with id {user_id}."
         )
 
-    logger.info("Deleting user with id: '{}'.", user_id)
+    logger.info("User with id {} deleted by user with id {}", user_id, client.user_id)
 
     user.delete(db)
 
