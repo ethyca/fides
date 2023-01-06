@@ -11,14 +11,14 @@ import {
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useGetAllPrivacyRequestsQuery } from "privacy-requests/index";
+import { ReactNode } from "react";
 
+import { PRIVACY_REQUESTS_ROUTE } from "~/constants";
 import Layout from "~/features/common/Layout";
+import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import PrivacyRequest from "~/features/privacy-requests/PrivacyRequest";
 
-import { INDEX_ROUTE } from "../../constants";
-
-const useSubjectRequestDetails = () => {
+const PrivacyRequests: NextPage = () => {
   const router = useRouter();
   const { id = "" } = router.query;
   const { data, isLoading, isUninitialized } = useGetAllPrivacyRequestsQuery(
@@ -31,37 +31,30 @@ const useSubjectRequestDetails = () => {
     }
   );
 
-  return { data, isLoading, isUninitialized };
-};
-
-/**
- * TODO: Delete this file when the navV2 feature flag is permanently removed.
- */
-const SubjectRequestDetails: NextPage = () => {
-  const { data, isLoading, isUninitialized } = useSubjectRequestDetails();
-  let body =
-    !data || data?.items.length === 0 ? (
-      <Text>404 no privacy request found</Text>
-    ) : (
-      <PrivacyRequest data={data?.items[0]!} />
-    );
-
-  if (isLoading || isUninitialized) {
-    body = (
+  let content: ReactNode;
+  if (isUninitialized || isLoading) {
+    content = (
       <Center>
         <Spinner />
       </Center>
     );
+  } else {
+    content =
+      !data || data?.items.length === 0 ? (
+        <Text>404 no privacy request found</Text>
+      ) : (
+        <PrivacyRequest data={data?.items[0]!} />
+      );
   }
 
   return (
-    <Layout title="Privacy Request">
+    <Layout title={`Privacy Requests - ${id}`}>
       <Heading fontSize="2xl" fontWeight="semibold">
         Privacy Request
         <Box mt={2} mb={9}>
           <Breadcrumb fontWeight="medium" fontSize="sm">
             <BreadcrumbItem>
-              <BreadcrumbLink as={NextLink} href={INDEX_ROUTE}>
+              <BreadcrumbLink as={NextLink} href={PRIVACY_REQUESTS_ROUTE}>
                 Privacy Requests
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -77,9 +70,8 @@ const SubjectRequestDetails: NextPage = () => {
           </Breadcrumb>
         </Box>
       </Heading>
-      {body}
+      {content}
     </Layout>
   );
 };
-
-export default SubjectRequestDetails;
+export default PrivacyRequests;

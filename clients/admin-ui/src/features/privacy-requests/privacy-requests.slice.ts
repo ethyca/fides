@@ -14,7 +14,7 @@ import {
   DenyPrivacyRequest,
   GetUpdloadedManualWebhookDataRequest,
   PatchUploadManualWebhookDataRequest,
-  PrivacyRequest,
+  PrivacyRequestEntity,
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
@@ -255,8 +255,8 @@ export const privacyRequestApi = createApi({
   tagTypes: ["Request", "Notification"],
   endpoints: (build) => ({
     approveRequest: build.mutation<
-      PrivacyRequest,
-      Partial<PrivacyRequest> & Pick<PrivacyRequest, "id">
+      PrivacyRequestEntity,
+      Partial<PrivacyRequestEntity> & Pick<PrivacyRequestEntity, "id">
     >({
       query: ({ id }) => ({
         url: "privacy-request/administrate/approve",
@@ -275,7 +275,7 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
-    denyRequest: build.mutation<PrivacyRequest, DenyPrivacyRequest>({
+    denyRequest: build.mutation<PrivacyRequestEntity, DenyPrivacyRequest>({
       query: ({ id, reason }) => ({
         url: "privacy-request/administrate/deny",
         method: "PATCH",
@@ -335,7 +335,10 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
-    retry: build.mutation<PrivacyRequest, Pick<PrivacyRequest, "id">>({
+    retry: build.mutation<
+      PrivacyRequestEntity,
+      Pick<PrivacyRequestEntity, "id">
+    >({
       query: ({ id }) => ({
         url: `privacy-request/${id}/retry`,
         method: "POST",

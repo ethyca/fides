@@ -1,12 +1,12 @@
 import { Divider, Flex, Heading } from "@fidesui/react";
-import { PrivacyRequest } from "privacy-requests/types";
+import { PrivacyRequestEntity } from "privacy-requests/types";
 import React, { useState } from "react";
 
 import ActivityTimeline from "./ActivityTimeline";
 import EventDetails, { EventData } from "./EventDetails";
 
 type EventsAndLogsProps = {
-  subjectRequest: PrivacyRequest;
+  subjectRequest: PrivacyRequestEntity;
 };
 
 const EventsAndLogs = ({ subjectRequest }: EventsAndLogsProps) => {
