@@ -29,6 +29,7 @@ The types of changes are:
   * Overrides can be saved in the browser.
   * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
   * No longer use `react-feature-flags` library.
+* Allow any user with `user:delete` scope to delete other users [#2148](https://github.com/ethyca/fides/pull/2148)
 
 ### Removed
 
@@ -37,7 +38,6 @@ The types of changes are:
 ### Fixed
 
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
-
 * Admin UI - Added Missing ability to assign `user:delete` in the permissions checkboxes [#2148](https://github.com/ethyca/fides/pull/2148)
 * Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
 
