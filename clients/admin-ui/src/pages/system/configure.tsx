@@ -16,9 +16,6 @@ const ConfigureSystem: NextPage = () => (
           <NextLink href="/system">System Connections</NextLink>
         </BreadcrumbItem>
         <BreadcrumbItem>
-          <NextLink href="/system/new">Create a new system</NextLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem>
           <NextLink href="#">Configure your connection</NextLink>
         </BreadcrumbItem>
       </Breadcrumb>
