@@ -261,7 +261,7 @@ class TestDeleteUser:
             scopes=[USER_DELETE],
             user_id=user.id,
         )
-        
+
         other_user_client, _ = ClientDetail.create_client_and_secret(
             db,
             CONFIG.security.oauth_client_id_length_bytes,
