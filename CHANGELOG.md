@@ -39,6 +39,10 @@ The types of changes are:
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
 * Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
 
+### Removed
+
+* Remove "Create New System" button when viewing systems. All systems can now be created via the "Add systems" button on the home page. [#2132](https://github.com/ethyca/fides/pull/2132)
+
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
 ### Developer Experience
