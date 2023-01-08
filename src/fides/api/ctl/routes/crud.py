@@ -48,7 +48,9 @@ async def get_data_categories_from_db(async_session: AsyncSession) -> List[Fides
     return data_categories
 
 
-async def validate_data_categories(resource: FidesModel, async_session: AsyncSession):
+async def validate_data_categories(
+    resource: FidesModel, async_session: AsyncSession
+) -> None:
     """Validate data categories defined on Datasets against data categories in the db"""
     if not isinstance(resource, Dataset):
         return

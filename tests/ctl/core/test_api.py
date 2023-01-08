@@ -71,6 +71,25 @@ class TestCrud:
         print(result.text)
         assert result.status_code == 201
 
+    async def test_create_dataset_data_categories_validated(
+        self, test_config: FidesConfig, resources_dict: Dict
+    ):
+        endpoint = "dataset"
+        manifest: Dataset = resources_dict[endpoint]
+        manifest.collections[0].data_categories = ["bad_category"]
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            json_resource=manifest.json(exclude_none=True),
+            resource_type=endpoint,
+        )
+        assert result.status_code == 422
+        assert (
+            result.json()["detail"][0]["msg"]
+            == "The data category bad_category is not supported."
+        )
+
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_ls(self, test_config: FidesConfig, endpoint: str) -> None:
         result = _api.ls(
@@ -131,6 +150,25 @@ class TestCrud:
         print(result.text)
         assert result.status_code == 200
 
+    async def test_update_dataset_data_categories_validated(
+        self, test_config: FidesConfig, resources_dict: Dict
+    ):
+        endpoint = "dataset"
+        manifest: Dataset = resources_dict[endpoint]
+        manifest.collections[0].data_categories = ["bad_category"]
+
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            json_resource=manifest.json(exclude_none=True),
+        )
+        assert result.status_code == 422
+        assert (
+            result.json()["detail"][0]["msg"]
+            == "The data category bad_category is not supported."
+        )
+
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_upsert(
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
@@ -163,8 +201,8 @@ class TestCrud:
         resource = await get_resource(Dataset, manifest.fides_key, async_session)
         assert resource.organization_fides_key == "default_organization"
 
-    async def test_data_categories_validated_against_db(
-        self, test_config: FidesConfig, resources_dict: Dict, async_session
+    async def test_upsert_dataset_data_categories_validated(
+        self, test_config: FidesConfig, resources_dict: Dict
     ):
         endpoint = "dataset"
         manifest: Dataset = resources_dict[endpoint]
@@ -178,6 +216,10 @@ class TestCrud:
             resources=[dict_manifest],
         )
         assert result.status_code == 422
+        assert (
+            result.json()["detail"][0]["msg"]
+            == "The data category bad_category is not supported."
+        )
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_delete(
