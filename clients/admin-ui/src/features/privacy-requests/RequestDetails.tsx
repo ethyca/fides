@@ -1,14 +1,14 @@
 import { Divider, Flex, Heading, HStack, Text } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
-import { PrivacyRequest } from "privacy-requests/types";
+import { PrivacyRequestEntity } from "privacy-requests/types";
 
 import ClipboardButton from "../common/ClipboardButton";
 import RequestStatusBadge from "../common/RequestStatusBadge";
 import RequestType from "../common/RequestType";
-import ReprocessButton from "../privacy-requests/buttons/ReprocessButton";
+import ReprocessButton from "./buttons/ReprocessButton";
 
 type RequestDetailsProps = {
-  subjectRequest: PrivacyRequest;
+  subjectRequest: PrivacyRequestEntity;
 };
 
 const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {

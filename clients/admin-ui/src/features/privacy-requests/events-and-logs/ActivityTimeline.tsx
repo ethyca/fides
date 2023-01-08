@@ -1,12 +1,12 @@
 import { Box, Flex, Text } from "@fidesui/react";
 import { GreenCheckCircleIcon } from "common/Icon";
-import { PrivacyRequest } from "privacy-requests/types";
+import { PrivacyRequestEntity } from "privacy-requests/types";
 import React from "react";
 
 import { EventData } from "./EventDetails";
 
 type ActivityTimelineProps = {
-  subjectRequest: PrivacyRequest;
+  subjectRequest: PrivacyRequestEntity;
   setEventDetails: (d: EventData) => void;
 };
 
