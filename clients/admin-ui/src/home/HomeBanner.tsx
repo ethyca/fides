@@ -1,7 +1,7 @@
 import { Box, Flex, Image, Spacer, Text } from "@fidesui/react";
 import * as React from "react";
 
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 
 const HomeBanner: React.FC = () => {
   const { systemsCount } = useFeatures();

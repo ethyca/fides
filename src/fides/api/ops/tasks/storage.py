@@ -95,18 +95,18 @@ def write_to_in_memory_buffer(
 
 
 def create_presigned_url_for_s3(
-    s3_client: Session, bucket_name: str, object_name: str
+    s3_client: Session, bucket_name: str, file_key: str
 ) -> str:
     """ "Generate a presigned URL to share an S3 object
 
     :param s3_client: s3 base client
     :param bucket_name: string
-    :param object_name: string
+    :param file_key: string
     :return: Presigned URL as string.
     """
     response = s3_client.generate_presigned_url(
         "get_object",
-        Params={"Bucket": bucket_name, "Key": object_name},
+        Params={"Bucket": bucket_name, "Key": file_key},
         ExpiresIn=CONFIG.security.subject_request_download_link_ttl_seconds,
     )
 

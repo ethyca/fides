@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 
 import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
 
