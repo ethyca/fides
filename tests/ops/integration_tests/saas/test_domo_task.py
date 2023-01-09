@@ -14,14 +14,12 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 CONFIG = get_config()
 
 
-@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 def test_domo_connection_test(domo_connection_config) -> None:
     get_connector(domo_connection_config).test_connection()
 
 
-@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 @pytest.mark.asyncio
@@ -74,7 +72,6 @@ async def test_domo_access_request_task(
     assert v[f"{dataset_name}:user"][0]["email"] == domo_identity_email
 
 
-@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 @pytest.mark.asyncio
