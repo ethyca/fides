@@ -843,3 +843,47 @@ class TestGenerate:
         )
         print(result.output)
         assert result.exit_code == 0
+
+
+class TestUser:
+    """
+    Test the "user" command group.
+
+    Most tests rely on previous tests.
+    """
+
+    @pytest.mark.unit
+    def test_user_login_provide_credentials(
+        self, test_config_path: str, test_cli_runner: CliRunner
+    ) -> None:
+        """Test logging in as a user with a provided username and password."""
+        result = test_cli_runner.invoke(cli, ["user", "login", "-u", "root_user", "-p", "Testpassword1!"])
+        print(result.output)
+        assert result.exit_code == 0
+
+    @pytest.mark.unit
+    def test_user_login_credentials_file(
+        self, test_config_path: str, test_cli_runner: CliRunner
+    ) -> None:
+        """Test user login with an existing credentials file."""
+        result = test_cli_runner.invoke(cli, ["user", "login"])
+        print(result.output)
+        assert result.exit_code == 0
+
+    @pytest.mark.unit
+    def test_user_create(
+        self, test_config_path: str, test_cli_runner: CliRunner
+    ) -> None:
+        """Test creating a user with the current credentials."""
+        result = test_cli_runner.invoke(cli, ["user", "create"])
+        print(result.output)
+        assert result.exit_code == 0
+
+    @pytest.mark.unit
+    def test_user_permissions(
+        self, test_config_path: str, test_cli_runner: CliRunner
+    ) -> None:
+        """Test getting user permissions for the current user."""
+        result = test_cli_runner.invoke(cli, ["user", "permissions"])
+        print(result.output)
+        assert result.exit_code == 0
