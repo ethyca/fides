@@ -1,6 +1,7 @@
 """Module for interaction with User endpoints/commands."""
 from pathlib import Path
 from typing import Dict, List
+from pydantic import BaseModel
 
 import requests
 import toml
@@ -10,6 +11,16 @@ from fides.core.utils import echo_red
 OAUTH_TOKEN_URL = "http://localhost:8080/api/v1/oauth/token"
 CLIENT_SCOPES_URL = "http://localhost:8080/api/v1/oauth/client/{}/scope"
 CREDENTIALS_PATH = f"{str(Path.home())}/.fides_credentials"
+
+
+class Credentials(BaseModel):
+    """
+    User credentials for the CLI.
+    """
+
+    username: str
+    password: str
+    access_token: str
 
 
 def get_access_token(username: str, password: str) -> str:
@@ -32,13 +43,17 @@ def get_access_token(username: str, password: str) -> str:
     return access_token
 
 
-def write_credentials_file(username: str, access_token: str) -> str:
+def write_credentials_file(username: str, password: str, access_token: str) -> str:
     """
     Write the user credentials file.
     """
-    credentials_data = {"username": username, "access_token": access_token}
+    credentials = Credentials(
+        username=username,
+        password=password,
+        access_token=access_token,
+    )
     with open(CREDENTIALS_PATH, "w", encoding="utf-8") as credentials_file:
-        credentials_file.write(toml.dumps(credentials_data))
+        credentials_file.write(toml.dumps(credentials.dict()))
     return CREDENTIALS_PATH
 
 

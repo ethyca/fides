@@ -12,7 +12,7 @@ from fides.core.user import (
     create_auth_header,
     read_credentials_file,
 )
-from fides.core.utils import echo_green
+from fides.core.utils import echo_green, echo_red
 
 
 @click.group(name="user")
@@ -42,9 +42,10 @@ def user(ctx: click.Context) -> None:
 def create(
     ctx: click.Context, username: str, password: str, first_name: str, last_name: str
 ) -> None:
-    """Use credentials to get a user access token and write a credentials file."""
+    """
+    Use credentials from the credentials file to create a new user.
+    """
 
-    # If no username/password was provided, attempt to use the root
     config = ctx.obj["CONFIG"]
     client_id = config.security.oauth_root_client_id
     client_secret = config.security.oauth_root_client_secret
@@ -55,7 +56,6 @@ def create(
 
 
 @user.command()
-@click.pass_context
 @click.option(
     "-u",
     "--username",
@@ -68,16 +68,25 @@ def create(
     default="",
     help="Password to authenticate with.",
 )
-def login(ctx: click.Context, username: str, password: str) -> None:
-    """Use credentials to get a user access token and write a credentials file."""
+def login(username: str, password: str) -> None:
+    """
+    Use credentials to get a user access token and write a credentials file.
 
-    # If no username/password was provided, attempt to use the root
-    config = ctx.obj["CONFIG"]
-    username = username or config.security.oauth_root_client_id
-    password = password or config.security.oauth_root_client_secret
+    If no username/password is provided, attempt to load an existing credentials file
+    and use that username/password.
+    """
+
+    if not (username and password):
+        try:
+            credentials: Dict[str, str] = read_credentials_file()
+        except FileNotFoundError:
+            echo_red("No username/password provided and no credentials file found.")
+            raise SystemExit(1)
+        username = credentials["username"]
+        password = credentials["password"]
 
     access_token = get_access_token(username, password)
-    write_credentials_file(username, access_token)
+    write_credentials_file(username, password, access_token)
     echo_green(f"Credentials file written to: {CREDENTIALS_PATH}")
 
 
@@ -86,7 +95,7 @@ def login(ctx: click.Context, username: str, password: str) -> None:
     "-u",
     "--username",
     default="",
-    help="Username to authenticate with.",
+    help="Username to get scopes for.",
 )
 def scopes(username: str) -> None:
     """List the scopes avaible to the current user."""
