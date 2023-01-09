@@ -25,9 +25,9 @@ from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.config import CollectionAddress, Dataset
 from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import (
@@ -427,16 +427,18 @@ async def run_privacy_request(
             request_checkpoint=CurrentStep.consent,
             from_checkpoint=resume_step,
         ):
-            dataset_with_mocked_collections = [
-                dataset_config.get_graph_with_stubbed_collection()
+            dataset_with_mocked_collections: List[Dataset] = [
+                dataset_config.get_dataset_with_stubbed_collection()
                 for dataset_config in datasets
+                if dataset_config.connection_config.connection_type
+                == ConnectionType.saas
             ]
-            node_per_dataset_graph = DatasetGraph(*dataset_with_mocked_collections)
+            one_node_per_dataset_graph = DatasetGraph(*dataset_with_mocked_collections)
 
             await run_consent_request(
                 privacy_request=privacy_request,
                 policy=policy,
-                graph=node_per_dataset_graph,
+                graph=one_node_per_dataset_graph,
                 connection_configs=connection_configs,
                 identity=identity_data,
                 session=session,

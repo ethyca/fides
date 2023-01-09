@@ -414,9 +414,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     ) -> bool:
         """Execute a consent request. Return whether the consent request to the third party succeeded.
 
-        Consent preferences can be retrieved from privacy_request.consent_preferences.
-        Whether or not the customer wants the given consent preference to be executable can be retrieved
-        from consent rules attached to the policy.
+        Executable_preferences have already been filtered to just consent preferences the customer has deemed executable.
 
         Return True if 200 OK
         """

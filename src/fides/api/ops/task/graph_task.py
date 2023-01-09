@@ -807,9 +807,10 @@ async def run_consent_request(  # pylint: disable = too-many-arguments
     """Run a consent request
 
     The graph built is very simple: there are no relationships between the nodes, every node has
-    identity data input and every node returns whether the consent request succeeded.
+    identity data input and every node outputs whether the consent request succeeded.
 
-    The DatasetGraph passed in is expected to have one Node per Dataset.
+    The DatasetGraph passed in is expected to have one Node per Dataset.  That Node is expected to carry out requests
+    for the Dataset as a whole.
     """
 
     with TaskResources(

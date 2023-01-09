@@ -99,26 +99,21 @@ class DatasetConfig(Base):
 
         return dataset_graph
 
-    def get_graph_with_stubbed_collection(self) -> Dataset:
+    def get_dataset_with_stubbed_collection(self) -> Dataset:
         """
-        Return a Dataset that only has a single collection with the same
-        name as the Dataset, provided at least one collection exists on that Dataset.
+        Return a Dataset with a single mock Collection for use in building a graph
+        where we only want one node per dataset, instead of one node per collection.  Note that
+        the expectation is that there would be no dependencies between nodes on the eventual graph, and the graph
+        doesn't require information stored at the collection-level.
 
-        This is for building graphs of the system where we only want one Node
-        per Dataset, and there are no dependencies between Nodes. Additionally,
-        code executed cannot depend on any information at the Collection level, it is a graph
-        whose nodes represent the dataset.
+        The single Collection will be the resource that gets practically added to the graph, but the intent
+        is that this single node represents the overall Dataset, and will execute Dataset-level requests,
+        not Collection-level requests.
         """
         dataset_graph: Dataset = self.get_graph()
-        collections = dataset_graph.collections
-        if collections:
-            first_collection = collections[0]
-            first_collection.name = dataset_graph.name
-            first_collection.fields = []
-            first_collection.after = set()
-            collections = [first_collection]
-        dataset_graph.collections = collections
+        stubbed_collection = Collection(name=dataset_graph.name, fields=[], after=set())
 
+        dataset_graph.collections = [stubbed_collection]
         return dataset_graph
 
 

@@ -65,10 +65,6 @@ class RuleTargetValidationError(ValueError):
     """The Rule you are trying to create has invalid data"""
 
 
-class RuleUseValidationError(ValueError):
-    """The Data Use you are trying to create is inalid"""
-
-
 class DataCategoryNotSupported(ValueError):
     """The data category you have supplied is not supported."""
 
