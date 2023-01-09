@@ -46,12 +46,14 @@ def create(
     Use credentials from the credentials file to create a new user.
     """
 
-    config = ctx.obj["CONFIG"]
-    client_id = config.security.oauth_root_client_id
-    client_secret = config.security.oauth_root_client_secret
-    access_token = get_access_token(client_id, client_secret)
-    auth_header = create_auth_header(access_token)
+    try:
+        credentials = read_credentials_file()
+    except FileNotFoundError:
+        echo_red("No credentials file found.")
+        raise SystemExit(1)
 
+    access_token = credentials.access_token
+    auth_header = create_auth_header(access_token)
     create_user(username, password, first_name, last_name, auth_header)
 
 

@@ -57,16 +57,18 @@ def write_credentials_file(username: str, password: str, access_token: str) -> s
     return CREDENTIALS_PATH
 
 
-def read_credentials_file() -> Dict[str, str]:
+def read_credentials_file() -> Credentials:
     """Read and return the credentials file."""
     with open(CREDENTIALS_PATH, "r", encoding="utf-8") as credentials_file:
-        credentials_data = toml.load(credentials_file)
-    return credentials_data
+        credentials = Credentials.parse_obj(toml.load(credentials_file))
+    return credentials
 
 
 def create_auth_header(access_token: str) -> Dict[str, str]:
     """Given an access token, create an auth header."""
-    auth_header = {"Authorization": f"Bearer {access_token}"}
+    auth_header = {
+        "Authorization": f"Bearer {access_token}",
+    }
     return auth_header
 
 
@@ -101,8 +103,7 @@ def create_user(
         "first_name": first_name,
         "last_name": last_name,
     }
-    print(user_data)
     response = requests.post(
-        "http://localhost:8080/api/v1/user", headers=auth_header, data=user_data
+        "http://localhost:8080/api/v1/user", headers=auth_header, json=user_data
     )
     print(response.text)
