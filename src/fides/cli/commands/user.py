@@ -97,20 +97,15 @@ def login(username: str, password: str) -> None:
 
 
 @user.command()
-@click.option(
-    "-u",
-    "--username",
-    default="",
-    help="Username to get scopes for.",
-)
-def permissions(username: str) -> None:
+def permissions() -> None:
     """List the scopes avaible to the current user."""
 
     credentials = read_credentials_file()
-    username = credentials.username
+    user_id = credentials.user_id
     access_token = credentials.access_token
 
     auth_header = create_auth_header(access_token)
-    scopes: List[str] = get_user_permissions(username, auth_header)
+    scopes: List[str] = get_user_permissions(user_id, auth_header)
+    print("Scopes:")
     for scope in scopes:
         print(scope)

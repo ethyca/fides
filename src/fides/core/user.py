@@ -98,18 +98,18 @@ def create_user(
     return response
 
 
-def get_user_permissions(username: str, auth_header: Dict[str, str]) -> List[str]:
+def get_user_permissions(user_id: str, auth_header: Dict[str, str]) -> List[str]:
     """
     List all of the user permissions for the provided user.
     """
-    scopes_url = USER_PERMISSIONS_URL.format(username)
+    scopes_url = USER_PERMISSIONS_URL.format(user_id)
     response = requests.get(
         scopes_url,
         headers=auth_header,
     )
 
     handle_cli_response(response, verbose=False)
-    return response.json()
+    return response.json()["scopes"]
 
 
 def update_user_permissions(
