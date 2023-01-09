@@ -265,7 +265,7 @@ def get_data_type(value: Any) -> Tuple[Optional[str], bool]:
     return data_type, is_array
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     v = DataType.no_op.value
     for x in v.__dict__:
         print(x)
