@@ -3,7 +3,7 @@ import os
 import os.path
 
 # path to the current directory
-directory = os.path.join(os.path.dirname(__file__))
+directory = os.path.dirname(__file__)
 
 # loop through the files in the override_implementations directory
 for filename in os.listdir(directory):
