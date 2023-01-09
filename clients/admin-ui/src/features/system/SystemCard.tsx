@@ -38,7 +38,7 @@ const SystemCard = ({ system }: SystemCardProps) => {
 
   const handleEdit = () => {
     dispatch(setActiveSystem(system));
-    router.push("/system/new/configure");
+    router.push("/system/configure");
   };
 
   const handleDelete = async () => {

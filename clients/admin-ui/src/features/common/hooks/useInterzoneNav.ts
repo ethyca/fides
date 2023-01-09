@@ -1,4 +1,4 @@
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import { resolveLink } from "~/features/common/nav/zone-config";
 
 export const useInterzoneNav = () => {

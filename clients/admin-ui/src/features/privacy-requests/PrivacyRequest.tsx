@@ -1,16 +1,18 @@
 import { Box, VStack } from "@fidesui/react";
 
-import { PrivacyRequest } from "../privacy-requests/types";
 import EventsAndLogs from "./events-and-logs/EventsAndLogs";
 import ManualProcessingList from "./manual-processing/ManualProcessingList";
 import RequestDetails from "./RequestDetails";
 import SubjectIdentities from "./SubjectIdentities";
+import { PrivacyRequestEntity } from "./types";
 
-type SubjectRequestProps = {
-  subjectRequest: PrivacyRequest;
+type PrivacyRequestProps = {
+  data: PrivacyRequestEntity;
 };
 
-const SubjectRequest: React.FC<SubjectRequestProps> = ({ subjectRequest }) => (
+const PrivacyRequest: React.FC<PrivacyRequestProps> = ({
+  data: subjectRequest,
+}) => (
   <VStack align="stretch" display="flex-start" spacing={6}>
     <Box>
       <RequestDetails subjectRequest={subjectRequest} />
@@ -29,4 +31,4 @@ const SubjectRequest: React.FC<SubjectRequestProps> = ({ subjectRequest }) => (
   </VStack>
 );
 
-export default SubjectRequest;
+export default PrivacyRequest;

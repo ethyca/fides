@@ -1,14 +1,11 @@
-import logging
 from typing import Dict
 
 import requests
+from loguru import logger
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
 from . import constants, get_secret
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def create_s3_storage(
@@ -30,7 +27,6 @@ def create_s3_storage(
                 "details": {
                     "auth_method": "secret_keys",
                     "bucket": bucket,
-                    "object_name": "requests",
                     "naming": "request_id",
                 },
             },

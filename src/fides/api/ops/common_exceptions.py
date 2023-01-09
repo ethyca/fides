@@ -187,3 +187,7 @@ class NoSuchSaaSRequestOverrideException(ValueError):
 
 class IdentityVerificationException(FidesopsException):
     """Custom exceptions for when we cannot verify the identity of a subjct"""
+
+
+class NoSuchConnectionTypeSecretSchemaError(Exception):
+    """Exception for when a connection type secret schema is not found."""

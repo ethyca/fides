@@ -27,6 +27,7 @@ export { ClusterHealth } from "./models/ClusterHealth";
 export type { ConnectionSystemTypeMap } from "./models/ConnectionSystemTypeMap";
 export { ConnectionType } from "./models/ConnectionType";
 export type { ContactDetails } from "./models/ContactDetails";
+export { CoreHealthCheck } from "./models/CoreHealthCheck";
 export type { CurrentStep } from "./models/CurrentStep";
 export type { DatabaseConfig } from "./models/DatabaseConfig";
 export type { DataCategory } from "./models/DataCategory";

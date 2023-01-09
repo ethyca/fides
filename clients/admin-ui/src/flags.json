@@ -1,10 +1,17 @@
-[
-  {
-    "name": "configWizardStepper",
-    "isActive": false
+{
+  "navV2": {
+    "development": true,
+    "test": true,
+    "production": true
   },
-  {
-    "name": "navV2",
-    "isActive": true
+  "featuresPanel": {
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "configWizardStepper": {
+    "development": true,
+    "test": false,
+    "production": false
   }
-]
+}

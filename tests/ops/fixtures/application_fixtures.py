@@ -68,7 +68,6 @@ faker = Faker()
 integration_config = load_toml("tests/ops/integration_test_config.toml")
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 # Unified list of connections to integration dbs specified from fides.api-integration.toml
