@@ -9,8 +9,10 @@ import toml
 
 from fides.cli.utils import handle_cli_response
 
-OAUTH_TOKEN_URL = "http://localhost:8080/api/v1/oauth/token"
 CLIENT_SCOPES_URL = "http://localhost:8080/api/v1/oauth/client/{}/scope"
+LOGIN_URL = "http://localhost:8080/api/v1/login"
+USER_PERMISSION_URL = "http://localhost:8080/api/v1/user/{}/permission"
+
 CREDENTIALS_PATH = f"{str(Path.home())}/.fides_credentials"
 
 
@@ -29,14 +31,13 @@ def get_access_token(username: str, password: str) -> str:
     Get a user access token from the webserver.
     """
     payload = {
-        "client_id": username,
-        "client_secret": password,
-        "grant_type": "client_credentials",
+        "username": username,
+        "password": password,
     }
 
-    response = requests.post(OAUTH_TOKEN_URL, data=payload)
-    handle_cli_response(response)
-    access_token = response.json()["access_token"]
+    response = requests.post(LOGIN_URL, json=payload)
+    handle_cli_response(response, verbose=False)
+    access_token = response.json()["token_data"]["access_token"]
     return access_token
 
 
@@ -65,8 +66,6 @@ def create_auth_header(access_token: str) -> Dict[str, str]:
     """Given an access token, create an auth header."""
     auth_header = {
         "Authorization": f"Bearer {access_token}",
-        "accept": "application/json",
-        "Content-Type": "application/json",
     }
     return auth_header
 
@@ -81,7 +80,7 @@ def get_user_scopes(username: str, auth_header: Dict[str, str]) -> List[str]:
         headers=auth_header,
     )
 
-    handle_cli_response(response)
+    handle_cli_response(response, verbose=False)
     return response.json()
 
 
@@ -104,7 +103,7 @@ def create_user(
         headers=auth_header,
         data=json.dumps(request_data),
     )
-    handle_cli_response(response)
+    handle_cli_response(response, verbose=False)
     return response
 
 
@@ -116,9 +115,9 @@ def update_user_permissions(
     """
     request_data = {"scopes": scopes, "id": user_id}
     response = requests.put(
-        f"http://localhost:8080/api/v1/user/{user_id}/permission",
+        USER_PERMISSION_URL.format(user_id),
         headers=auth_header,
         json=request_data,
     )
-    handle_cli_response(response)
+    handle_cli_response(response, verbose=False)
     return response
