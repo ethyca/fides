@@ -127,7 +127,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           data-testid="save-btn"
           width="fit-content"
         >
-          Save Yaml system
+          Save
         </Button>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (

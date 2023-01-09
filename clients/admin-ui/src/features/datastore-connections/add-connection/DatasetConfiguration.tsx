@@ -60,6 +60,10 @@ const DatasetConfiguration: React.FC = () => {
     }
   }, [data]);
 
+  const handleCancel = () => {
+    router.push(DATASTORE_CONNECTION_ROUTE);
+  };
+
   const handlePatchDatasetConfig = async (
     datasetPairs: DatasetConfigCtlDataset[]
   ) => {
@@ -149,7 +153,7 @@ const DatasetConfiguration: React.FC = () => {
 
   return (
     <VStack alignItems="left">
-      <HStack spacing={8}>
+      <HStack spacing={8} mb={4}>
         {allDatasets && allDatasets.length ? (
           <>
             <VStack alignSelf="start" mr={4}>
@@ -199,6 +203,14 @@ const DatasetConfiguration: React.FC = () => {
           ) : null}
         </Box>
       </HStack>
+      <Button
+        width="fit-content"
+        size="sm"
+        variant="outline"
+        onClick={handleCancel}
+      >
+        Cancel
+      </Button>
     </VStack>
   );
 };
