@@ -115,7 +115,13 @@ const CheckboxItem = ({
           <IconButton
             data-testid={`expand-${label}`}
             aria-label={isExpanded ? "collapse" : "expand"}
-            icon={isExpanded ? <ArrowUpLineIcon /> : <ArrowDownLineIcon />}
+            icon={
+              isExpanded ? (
+                <ArrowUpLineIcon boxSize={5} />
+              ) : (
+                <ArrowDownLineIcon boxSize={5} />
+              )
+            }
             variant="ghost"
             onClick={() => onExpanded(node)}
             size="sm"
