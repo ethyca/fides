@@ -124,7 +124,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           onClick={handleConfirmation}
           size="sm"
           type="submit"
-          data-testid="save-btn"
+          data-testid="save-yaml-btn"
           width="fit-content"
         >
           Save

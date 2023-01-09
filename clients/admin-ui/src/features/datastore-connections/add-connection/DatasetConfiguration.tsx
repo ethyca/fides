@@ -157,7 +157,7 @@ const DatasetConfiguration: React.FC = () => {
         {allDatasets && allDatasets.length ? (
           <>
             <VStack alignSelf="start" mr={4}>
-              <Box data-testid="dataset-selector" mb={4}>
+              <Box data-testid="dataset-selector-section" mb={4}>
                 <Copy mb={4}>
                   Choose a dataset to associate with this connector.
                 </Copy>
@@ -167,6 +167,7 @@ const DatasetConfiguration: React.FC = () => {
                   placeholder="Select"
                   onChange={handleSelectDataset}
                   value={selectedDatasetKey}
+                  data-testid="dataset-selector"
                 >
                   {allDatasets.map((ds) => (
                     <option key={ds.fides_key} value={ds.fides_key}>
@@ -181,6 +182,7 @@ const DatasetConfiguration: React.FC = () => {
                 alignSelf="start"
                 disabled={!datasetSelected}
                 onClick={handleLinkDataset}
+                data-testid="save-dataset-link-btn"
               >
                 Save
               </Button>
@@ -188,7 +190,7 @@ const DatasetConfiguration: React.FC = () => {
             <Copy>or</Copy>
           </>
         ) : null}
-        <Box data-testid="yaml-editor">
+        <Box data-testid="yaml-editor-section">
           <Copy mb={4}>
             View your system yaml below! You can also modify the yaml if you
             need to assign any references between datasets.
