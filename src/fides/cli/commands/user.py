@@ -11,8 +11,10 @@ from fides.core.user import (
     get_user_scopes,
     create_auth_header,
     read_credentials_file,
+    update_user_permissions,
 )
 from fides.core.utils import echo_green, echo_red
+from fides.lib.oauth.scopes import SCOPES
 
 
 @click.group(name="user")
@@ -24,7 +26,6 @@ def user(ctx: click.Context) -> None:
 
 
 @user.command()
-@click.pass_context
 @click.argument("username", type=str)
 @click.argument("password", type=str)
 @click.option(
@@ -39,11 +40,11 @@ def user(ctx: click.Context) -> None:
     default="",
     help="Last name of the user.",
 )
-def create(
-    ctx: click.Context, username: str, password: str, first_name: str, last_name: str
-) -> None:
+def create(username: str, password: str, first_name: str, last_name: str) -> None:
     """
     Use credentials from the credentials file to create a new user.
+
+    Gives all scopes as permissions.
     """
 
     try:
@@ -54,7 +55,9 @@ def create(
 
     access_token = credentials.access_token
     auth_header = create_auth_header(access_token)
-    create_user(username, password, first_name, last_name, auth_header)
+    user_response = create_user(username, password, first_name, last_name, auth_header)
+    user_id = user_response.json()["id"]
+    update_user_permissions(user_id=user_id, scopes=SCOPES, auth_header=auth_header)
 
 
 @user.command()
@@ -80,12 +83,12 @@ def login(username: str, password: str) -> None:
 
     if not (username and password):
         try:
-            credentials: Dict[str, str] = read_credentials_file()
+            credentials = read_credentials_file()
         except FileNotFoundError:
             echo_red("No username/password provided and no credentials file found.")
             raise SystemExit(1)
-        username = credentials["username"]
-        password = credentials["password"]
+        username = credentials.username
+        password = credentials.password
 
     access_token = get_access_token(username, password)
     write_credentials_file(username, password, access_token)
@@ -102,9 +105,9 @@ def login(username: str, password: str) -> None:
 def scopes(username: str) -> None:
     """List the scopes avaible to the current user."""
 
-    credentials: Dict[str, str] = read_credentials_file()
-    username = credentials["username"]
-    access_token = credentials["access_token"]
+    credentials = read_credentials_file()
+    username = credentials.username
+    access_token = credentials.access_token
 
     auth_header = create_auth_header(access_token)
     scopes: List[str] = get_user_scopes(username, auth_header)

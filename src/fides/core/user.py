@@ -2,11 +2,12 @@
 from pathlib import Path
 from typing import Dict, List
 from pydantic import BaseModel
+import json
 
 import requests
 import toml
 
-from fides.core.utils import echo_red
+from fides.cli.utils import handle_cli_response
 
 OAUTH_TOKEN_URL = "http://localhost:8080/api/v1/oauth/token"
 CLIENT_SCOPES_URL = "http://localhost:8080/api/v1/oauth/client/{}/scope"
@@ -34,11 +35,7 @@ def get_access_token(username: str, password: str) -> str:
     }
 
     response = requests.post(OAUTH_TOKEN_URL, data=payload)
-    if response.status_code == 401:
-        echo_red(
-            "Authentication failed! Please check your username/password and try again."
-        )
-        raise SystemExit(1)
+    handle_cli_response(response)
     access_token = response.json()["access_token"]
     return access_token
 
@@ -68,6 +65,8 @@ def create_auth_header(access_token: str) -> Dict[str, str]:
     """Given an access token, create an auth header."""
     auth_header = {
         "Authorization": f"Bearer {access_token}",
+        "accept": "application/json",
+        "Content-Type": "application/json",
     }
     return auth_header
 
@@ -82,10 +81,7 @@ def get_user_scopes(username: str, auth_header: Dict[str, str]) -> List[str]:
         headers=auth_header,
     )
 
-    if response.status_code != 200:
-        echo_red("Request failed! Please check your username/password and try again.")
-        raise SystemExit(1)
-
+    handle_cli_response(response)
     return response.json()
 
 
@@ -95,15 +91,34 @@ def create_user(
     first_name: str,
     last_name: str,
     auth_header: Dict[str, str],
-) -> None:
+) -> requests.Response:
     """Create a user."""
-    user_data = {
+    request_data = {
         "username": username,
         "password": password,
         "first_name": first_name,
         "last_name": last_name,
     }
     response = requests.post(
-        "http://localhost:8080/api/v1/user", headers=auth_header, json=user_data
+        "http://localhost:8080/api/v1/user",
+        headers=auth_header,
+        data=json.dumps(request_data),
     )
-    print(response.text)
+    handle_cli_response(response)
+    return response
+
+
+def update_user_permissions(
+    user_id: str, scopes: List[str], auth_header: Dict[str, str]
+) -> requests.Response:
+    """
+    Update user permissions for a given user.
+    """
+    request_data = {"scopes": scopes, "id": user_id}
+    response = requests.put(
+        f"http://localhost:8080/api/v1/user/{user_id}/permission",
+        headers=auth_header,
+        json=request_data,
+    )
+    handle_cli_response(response)
+    return response
