@@ -5,35 +5,18 @@ import {
   Button,
   Heading,
   Spinner,
-  useToast,
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
-import { useRouter } from "next/router";
-import { useSelector } from "react-redux";
 
 import Layout from "~/features/common/Layout";
-import { successToastParams } from "~/features/common/toast";
 import {
-  selectActiveDatasetFidesKey,
   useGetAllDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
 import DatasetsTable from "~/features/dataset/DatasetTable";
 
 const DataSets: NextPage = () => {
   const { isLoading } = useGetAllDatasetsQuery();
-  const activeDatasetFidesKey = useSelector(selectActiveDatasetFidesKey);
-  const router = useRouter();
-  const toast = useToast();
-
-  const handleLoadDataset = () => {
-    router.push(`/dataset/${activeDatasetFidesKey}`);
-    toast(successToastParams("Successfully loaded dataset"));
-  };
-
-  if (activeDatasetFidesKey) {
-    handleLoadDataset();
-  }
 
   return (
     <Layout title="Datasets">

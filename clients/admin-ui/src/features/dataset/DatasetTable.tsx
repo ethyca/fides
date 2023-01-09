@@ -1,8 +1,10 @@
-import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import { Table, Tbody, Td, Th, Thead, Tr, useToast } from "@fidesui/react";
+import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 
 import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
+import { successToastParams } from "~/features/common/toast";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import { selectDatasetClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes } from "~/types/api";
@@ -16,7 +18,8 @@ import {
 const DatasetsTable = () => {
   const dispatch = useDispatch();
   const activeDatasetFidesKey = useSelector(selectActiveDatasetFidesKey);
-
+  const router = useRouter();
+  const toast = useToast();
   const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
   usePollForClassifications({
@@ -31,6 +34,8 @@ const DatasetsTable = () => {
       dispatch(setActiveDatasetFidesKey(undefined));
     } else {
       dispatch(setActiveDatasetFidesKey(dataset.fides_key));
+      router.push(`/dataset/${dataset.fides_key}`);
+      toast(successToastParams("Successfully loaded dataset"));
     }
   };
 
