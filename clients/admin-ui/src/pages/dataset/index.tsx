@@ -27,11 +27,13 @@ const DataSets: NextPage = () => {
   const toast = useToast();
 
   const handleLoadDataset = () => {
-    if (activeDatasetFidesKey) {
-      router.push(`/dataset/${activeDatasetFidesKey}`);
-      toast(successToastParams("Successfully loaded dataset"));
-    }
+    router.push(`/dataset/${activeDatasetFidesKey}`);
+    toast(successToastParams("Successfully loaded dataset"));
   };
+
+  if (activeDatasetFidesKey) {
+    handleLoadDataset();
+  }
 
   return (
     <Layout title="Datasets">
@@ -57,15 +59,6 @@ const DataSets: NextPage = () => {
           data-testid="create-dataset-btn"
         >
           <NextLink href="/dataset/new">Create new dataset</NextLink>
-        </Button>
-        <Button
-          size="sm"
-          colorScheme="primary"
-          disabled={!activeDatasetFidesKey}
-          onClick={handleLoadDataset}
-          data-testid="load-dataset-btn"
-        >
-          Load dataset
         </Button>
       </Box>
     </Layout>
