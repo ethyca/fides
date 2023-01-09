@@ -281,7 +281,7 @@ def set_consent_preferences(
                 identity=identity,
                 policy_key=DEFAULT_CONSENT_POLICY,
                 consent_preferences=[
-                    consent.dict() for consent in consent_preferences.consent if consent
+                    consent.dict() for consent in consent_preferences.consent or []
                 ],
             )
         ],

@@ -34,7 +34,7 @@ from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
 from fides.api.ops.graph.graph_differences import format_graph_for_caching
 from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionConfig
-from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleUse
+from fides.api.ops.models.policy import ActionType, Policy, Rule
 from fides.api.ops.models.privacy_request import (
     Consent,
     ExecutionLogStatus,
@@ -827,7 +827,7 @@ async def run_consent_request(  # pylint: disable = too-many-arguments
     with TaskResources(
         privacy_request, policy, connection_configs, session
     ) as resources:
-
+        graph_keys: List[CollectionAddress] = list(graph.nodes.keys())
         dsk: Dict[CollectionAddress, Any] = {}
 
         for col_address, node in graph.nodes.items():
@@ -844,7 +844,7 @@ async def run_consent_request(  # pylint: disable = too-many-arguments
             return dependent_values
 
         # terminator function waits for all keys
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *graph.nodes.keys())
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *graph_keys)
 
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
@@ -852,7 +852,7 @@ async def run_consent_request(  # pylint: disable = too-many-arguments
         # we combine the output of the termination function with the input keys to provide
         # a map of {collection_name: whether consent request succeeded}:
         consent_update_map: Dict[str, bool] = dict(
-            zip(graph.nodes.keys(), update_successes)
+            zip([coll.value for coll in graph_keys], update_successes)
         )
 
         return consent_update_map

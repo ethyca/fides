@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import Field, root_validator, validator
+from pydantic import Field, validator
 
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (

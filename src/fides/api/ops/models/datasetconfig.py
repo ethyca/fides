@@ -115,7 +115,7 @@ class DatasetConfig(Base):
             first_collection = collections[0]
             first_collection.name = dataset_graph.name
             first_collection.fields = []
-            first_collection.after = []
+            first_collection.after = set()
             collections = [first_collection]
         dataset_graph.collections = collections
 

@@ -277,10 +277,17 @@ class Rule(Base):
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
         """Validate this object's data before deferring to the superclass on create"""
-        policy = Policy.get_by(db=db, field="id", value=data.get("policy_id"))
+        policy_id: Optional[str] = data.get("policy_id")
+
+        if not policy_id:
+            raise common_exceptions.RuleValidationError(
+                "Policy id must be specified on Rule create."
+            )
+
+        policy = Policy.get_by(db=db, field="id", value=policy_id)
         if not policy:
             raise common_exceptions.RuleValidationError(
-                f"Policy id must be specified on Rule create."
+                "Policy id must be specified on Rule create."
             )
         existing_consent_rules = policy.get_rules_for_action(ActionType.consent)
 

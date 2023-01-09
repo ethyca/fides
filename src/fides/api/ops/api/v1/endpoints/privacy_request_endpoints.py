@@ -90,7 +90,6 @@ from fides.api.ops.models.policy import (
 )
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
-    ConsentRequest,
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestNotifications,
