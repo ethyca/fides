@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
@@ -35,7 +35,6 @@ from fides.api.ops.common_exceptions import (
     MessageDispatchException,
 )
 from fides.api.ops.models.messaging import get_messaging_method
-from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -53,6 +52,7 @@ from fides.api.ops.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
@@ -251,13 +251,14 @@ def load_executable_consent_options() -> List[str]:
 def queue_privacy_request_to_propagate_consent(
     db: Session,
     provided_identity: ProvidedIdentity,
-    policy: Policy,
+    policy: Union[FidesOpsKey, str],
     consent_preferences: ConsentPreferences,
-):
+) -> Optional[BulkPostPrivacyRequests]:
     """
     Queue a privacy request to carry out propagating consent preferences server-side to third-party systems.
 
-    Only propagate consent preferences which are considered "executable" by the current system.
+    Only propagate consent preferences which are considered "executable" by the current system. If none of the
+    consent preferences are executable, no Privacy Request is queued.
     """
     identity = Identity()
     setattr(
@@ -267,17 +268,27 @@ def queue_privacy_request_to_propagate_consent(
     )  # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
 
     executable_consent_options: List[str] = load_executable_consent_options()
+    executable_consent_preferences: List[Dict] = [
+        pref.dict()
+        for pref in consent_preferences.consent or []
+        if pref.data_use in executable_consent_options
+    ]
+
+    if not executable_consent_preferences:
+        logger.info(
+            "Skipping propagating consent preferences to third-party services as "
+            "specified consent preferences: {} are not executable.",
+            [pref.data_use for pref in consent_preferences.consent or []],
+        )
+        return None
+
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
         db=db,
         data=[
             PrivacyRequestCreate(
                 identity=identity,
                 policy_key=policy,
-                executable_consent_preferences=[
-                    consent.dict()
-                    for consent in consent_preferences.consent or []
-                    if consent.data_use in executable_consent_options
-                ],
+                executable_consent_preferences=executable_consent_preferences,
             )
         ],
         authenticated=True,
@@ -339,16 +350,20 @@ def set_consent_preferences(
     )
 
     # Note: This just queues the PrivacyRequest for processing
-    privacy_request_creation_results: BulkPostPrivacyRequests = (
-        queue_privacy_request_to_propagate_consent(
-            db,
-            provided_identity,
-            data.policy_key or DEFAULT_CONSENT_POLICY,
-            consent_preferences,
-        )
+    privacy_request_creation_results: Optional[
+        BulkPostPrivacyRequests
+    ] = queue_privacy_request_to_propagate_consent(
+        db,
+        provided_identity,
+        data.policy_key or DEFAULT_CONSENT_POLICY,
+        consent_preferences,
     )
-    consent_request.privacy_request_id = privacy_request_creation_results.succeeded[0].id
-    consent_request.save(db=db)
+
+    if privacy_request_creation_results:
+        consent_request.privacy_request_id = privacy_request_creation_results.succeeded[
+            0
+        ].id
+        consent_request.save(db=db)
 
     return consent_preferences
 

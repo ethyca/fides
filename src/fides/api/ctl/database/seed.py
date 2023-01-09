@@ -41,7 +41,7 @@ DEFAULT_ERASURE_POLICY = "default_erasure_policy"
 DEFAULT_ERASURE_POLICY_RULE = "default_erasure_policy_rule"
 DEFAULT_ERASURE_MASKING_STRATEGY = "hmac"
 
-DEFAULT_CONSENT_POLICY = "default_consent_policy"
+DEFAULT_CONSENT_POLICY: str = "default_consent_policy"
 DEFAULT_CONSENT_RULE = "default_consent_rule"
 
 
