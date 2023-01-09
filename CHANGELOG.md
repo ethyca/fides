@@ -24,6 +24,7 @@ The types of changes are:
 * Added Fides version number to account dropdown in the UI [#2140](https://github.com/ethyca/fides/pull/2140)
 * Add link to Classify Systems page in nav side bar [#2128](https://github.com/ethyca/fides/pull/2128)
 * Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
+* Update Privacy Center Icons [#1800](https://github.com/ethyca/fides/pull/2139)
 
 ### Changed
 
