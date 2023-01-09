@@ -1616,9 +1616,10 @@ def create_privacy_request_func(
         )
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)
-            if field == "consent_preferences":
-                attr = [consent.dict() for consent in attr]
             if attr is not None:
+                if field == "consent_preferences":
+                    attr = [consent.dict() for consent in attr]
+
                 kwargs[field] = attr
 
         try:

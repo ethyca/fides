@@ -150,24 +150,6 @@ def test_create_access_rule_with_no_storage_destination_is_invalid(
     assert exc.value.args[0] == "Access Rules must have a storage destination."
 
 
-def test_consent_action_is_unsupported(
-    db: Session,
-    policy: Policy,
-) -> None:
-    with pytest.raises(RuleValidationError) as exc:
-        Rule.create(
-            db=db,
-            data={
-                "action_type": ActionType.consent.value,
-                "client_id": policy.client_id,
-                "name": "Invalid Rule",
-                "policy_id": policy.id,
-                "storage_destination_id": policy.rules[0].storage_destination.id,
-            },
-        )
-    assert exc.value.args[0] == "consent Rules are not supported at this time."
-
-
 def test_update_action_is_unsupported(
     db: Session,
     policy: Policy,
