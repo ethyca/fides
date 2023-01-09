@@ -149,10 +149,10 @@ const DatasetConfiguration: React.FC = () => {
 
   return (
     <VStack alignItems="left">
-      <HStack spacing={6}>
+      <HStack spacing={8}>
         {allDatasets && allDatasets.length ? (
           <>
-            <VStack alignSelf="start">
+            <VStack alignSelf="start" mr={4}>
               <Box data-testid="dataset-selector" mb={4}>
                 <Copy mb={4}>
                   Choose a dataset to associate with this connector.

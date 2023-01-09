@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  ButtonGroup,
   Divider,
   Flex,
   Heading,
@@ -16,9 +15,7 @@ import { ErrorWarningIcon } from "common/Icon";
 import yaml, { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
-import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useFeatures } from "~/features/common/features.slice";
 import { Dataset } from "~/types/api";
@@ -88,7 +85,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
 
   return (
     <Flex gap="97px">
-      <VStack align="stretch" w="918px">
+      <VStack align="stretch" w="800px">
         <Editor
           defaultLanguage="yaml"
           defaultValue={yamlData}
