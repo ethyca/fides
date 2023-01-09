@@ -42,6 +42,7 @@ The types of changes are:
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
 * Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
 * Side nav disappears when viewing request details [#2129](https://github.com/ethyca/fides/pull/2155)
+* Improve readability for exceptions raised from custom request overrides [#2157](https://github.com/ethyca/fides/pull/2157)
 
 ### Removed
 
