@@ -32,6 +32,7 @@ The types of changes are:
   * Overrides can be saved in the browser.
   * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
   * No longer use `react-feature-flags` library.
+* Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
 
 ### Removed
 
