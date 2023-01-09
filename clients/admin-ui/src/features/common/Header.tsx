@@ -7,9 +7,11 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  QuestionIcon,
   Stack,
   Text,
   useDisclosure,
+  UserIcon,
 } from "@fidesui/react";
 import NextLink from "next/link";
 import React from "react";
@@ -19,10 +21,8 @@ import { INDEX_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import FeaturesPanel from "~/features/common/features/FeaturesPanel";
-import { QuestionIcon, UserIcon } from "~/features/common/Icon";
+import { useGetHealthQuery } from "~/features/common/health.slice";
 import Image from "~/features/common/Image";
-
-import { useGetHealthQuery } from "./health.slice";
 
 const useHeader = () => {
   const { username } = useSelector(selectUser) ?? { username: "" };
