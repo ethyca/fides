@@ -35,6 +35,7 @@ from fides.api.ops.common_exceptions import (
     MessageDispatchException,
 )
 from fides.api.ops.models.messaging import get_messaging_method
+from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -247,6 +248,50 @@ def load_executable_consent_options() -> List[str]:
         return executable_consent_options
 
 
+def queue_privacy_request_to_propagate_consent(
+    db: Session,
+    provided_identity: ProvidedIdentity,
+    policy: Policy,
+    consent_preferences: ConsentPreferences,
+):
+    """
+    Queue a privacy request to carry out propagating consent preferences server-side to third-party systems.
+
+    Only propagate consent preferences which are considered "executable" by the current system.
+    """
+    identity = Identity()
+    setattr(
+        identity,
+        provided_identity.field_name.value,  # type:ignore[attr-defined]
+        provided_identity.encrypted_value["value"],  # type:ignore[index]
+    )  # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
+
+    executable_consent_options: List[str] = load_executable_consent_options()
+    privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
+        db=db,
+        data=[
+            PrivacyRequestCreate(
+                identity=identity,
+                policy_key=policy,
+                executable_consent_preferences=[
+                    consent.dict()
+                    for consent in consent_preferences.consent or []
+                    if consent.data_use in executable_consent_options
+                ],
+            )
+        ],
+        authenticated=True,
+    )
+
+    if privacy_request_results.failed or not privacy_request_results.succeeded:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=privacy_request_results.failed[0].message,
+        )
+
+    return privacy_request_results
+
+
 @router.patch(
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
@@ -288,41 +333,21 @@ def set_consent_preferences(
                 raise HTTPException(
                     status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc))
                 )
-    identity = Identity()
-    setattr(
-        identity,
-        provided_identity.field_name.value,  # type:ignore[attr-defined]
-        provided_identity.encrypted_value["value"],  # type:ignore[index]
-    )
 
     consent_preferences: ConsentPreferences = _prepare_consent_preferences(
         db, provided_identity
     )
 
-    executable_consent_options: List[str] = load_executable_consent_options()
-    privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
-        db=db,
-        data=[
-            PrivacyRequestCreate(
-                identity=identity,
-                policy_key=data.policy_key or DEFAULT_CONSENT_POLICY,
-                executable_consent_preferences=[
-                    consent.dict()
-                    for consent in consent_preferences.consent or []
-                    if consent.data_use in executable_consent_options
-                ],
-            )
-        ],
-        authenticated=True,
-    )
-
-    if privacy_request_results.failed or not privacy_request_results.succeeded:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=privacy_request_results.failed[0].message,
+    # Note: This just queues the PrivacyRequest for processing
+    privacy_request_creation_results: BulkPostPrivacyRequests = (
+        queue_privacy_request_to_propagate_consent(
+            db,
+            provided_identity,
+            data.policy_key or DEFAULT_CONSENT_POLICY,
+            consent_preferences,
         )
-
-    consent_request.privacy_request_id = privacy_request_results.succeeded[0].id
+    )
+    consent_request.privacy_request_id = privacy_request_creation_results.succeeded[0].id
     consent_request.save(db=db)
 
     return consent_preferences
