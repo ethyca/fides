@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple
+import json
+from typing import Dict, List, Optional, Tuple
 
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
@@ -60,6 +61,7 @@ from fides.core.config import get_config
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
 CONFIG = get_config()
+CONFIG_JSON_PATH = "clients/privacy-center/config/config.json"
 
 
 @router.post(
@@ -222,6 +224,29 @@ def get_consent_preferences(
     return _prepare_consent_preferences(db, identity)
 
 
+def load_executable_consent_options() -> List[str]:
+    """Load customer's consentOptions from the config.json file and filter to return only a list
+    of executable consent options"""
+    with open(CONFIG_JSON_PATH, encoding="utf-8") as privacy_center_config_file:
+        privacy_center_config: Dict = json.load(privacy_center_config_file)
+        consent_options: List = privacy_center_config.get("consent", {}).get(
+            "consentOptions", []
+        )
+
+        executable_consent_options: List[str] = []
+        for consent in consent_options:
+            data_use: str = consent.get("fidesDataUseKey")
+            if not data_use:
+                continue
+
+            if consent.get("executable"):
+                executable_consent_options.append(data_use)
+            else:
+                logger.info("Consent option: '{}' is not executable.", data_use)
+
+        return executable_consent_options
+
+
 @router.patch(
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
@@ -274,14 +299,17 @@ def set_consent_preferences(
         db, provided_identity
     )
 
+    executable_consent_options: List[str] = load_executable_consent_options()
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
         db=db,
         data=[
             PrivacyRequestCreate(
                 identity=identity,
-                policy_key=DEFAULT_CONSENT_POLICY,
-                consent_preferences=[
-                    consent.dict() for consent in consent_preferences.consent or []
+                policy_key=data.policy_key or DEFAULT_CONSENT_POLICY,
+                executable_consent_preferences=[
+                    consent.dict()
+                    for consent in consent_preferences.consent or []
+                    if consent.data_use in executable_consent_options
                 ],
             )
         ],

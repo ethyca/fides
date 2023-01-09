@@ -15,14 +15,7 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_TRANSFER,
 )
-from fides.api.ops.models.policy import (
-    ActionType,
-    DrpAction,
-    Policy,
-    Rule,
-    RuleTarget,
-    RuleUse,
-)
+from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
@@ -301,7 +294,7 @@ async def load_default_dsr_policies() -> None:
         )
 
         log.info("Creating: Default Consent Rule")
-        consent_rule = Rule.create_or_update(
+        Rule.create_or_update(
             db=db_session,
             data={
                 "action_type": ActionType.consent.value,
@@ -311,21 +304,6 @@ async def load_default_dsr_policies() -> None:
                 "client_id": client_id,
             },
         )
-
-        log.info("Creating:Default Consent Rule Uses...")
-        for use in ["advertising", "advertising.first_party", "improve"]:
-            try:
-                RuleUse.create(
-                    db=db_session,
-                    data={
-                        "key": use,
-                        "rule_id": consent_rule.id,
-                        "executable": True,
-                    },
-                )
-            except KeyOrNameAlreadyExists:
-                # This rule use already exists against the Policy
-                pass
 
         log.info("All Policies & Rules Seeded.")
 

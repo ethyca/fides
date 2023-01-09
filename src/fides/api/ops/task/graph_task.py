@@ -16,7 +16,6 @@ from fides.api.ops.common_exceptions import (
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
-    RuleValidationError,
 )
 from fides.api.ops.graph.analytics_events import (
     fideslog_graph_rerun,
@@ -578,20 +577,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return False
 
-        policy: Policy = self.resources.policy
-        consent_rule: Optional[Rule] = policy.get_consent_rule()
-        if not consent_rule:
-            raise RuleValidationError("Consent rule expected.")
-        executable_uses: List[str] = [
-            use.key for use in consent_rule.uses if use.executable  # type: ignore[attr-defined]
-        ]
-        consent_preferences: List[Consent] = [
-            Consent(**pref) for pref in self.resources.request.consent_preferences or []
-        ]
-        executable_preferences: List[Consent] = [
-            preference
-            for preference in consent_preferences
-            if preference.data_use in executable_uses
+        executable_consent_preferences: List[Consent] = [
+            Consent(**pref)
+            for pref in self.resources.request.executable_consent_preferences or []
         ]
 
         output: bool = self.connector.run_consent_request(
@@ -599,7 +587,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.resources.policy,
             self.resources.request,
             identity,
-            executable_preferences,
+            executable_consent_preferences,
         )
         self.log_end(ActionType.consent)
         return output

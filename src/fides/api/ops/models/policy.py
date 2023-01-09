@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
-from sqlalchemy import Boolean, Column
+from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.ext.mutable import MutableDict
@@ -492,85 +492,6 @@ class RuleTarget(Base):
         ):
             _validate_data_category(data_category=updated_data_category)
         return super().update(db=db, data=data)
-
-
-class RuleUse(Base):
-    """Which data uses are executable for the given rule"""
-
-    key = Column(
-        String, index=True, unique=True, nullable=False
-    )  # This is the data use, for example, "advertising"
-    executable = Column(Boolean, nullable=False, default=False)
-    rule_id = Column(
-        String,
-        ForeignKey(Rule.id_field_path),
-        nullable=False,
-    )
-    rule = relationship(
-        Rule,
-        backref="uses",
-    )
-    client_id = Column(
-        String,
-        ForeignKey(ClientDetail.id_field_path),
-        nullable=True,
-    )
-    client = relationship(
-        ClientDetail,
-        backref="rule_uses",
-    )  # Which client created this RuleUse
-
-    @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
-        """
-        An override of `FidesBase.create_or_update` that handles the specific edge case where
-        a `RuleTarget` getting updated may be having its `rule_id` changed, potentially causing
-        `RuleTarget`s to unexpectedly bounce between `Rule`s.
-        """
-        db_obj = None
-        if data.get("id") is not None:
-            # If `id` has been included in `data`, preference that
-            db_obj = cls.get(db=db, object_id=data["id"])
-            identifier = data.get("id")
-        elif data.get("key") is not None:
-            # Otherwise, try with `key`
-            db_obj = cls.get_by(db=db, field="key", value=data["key"])
-            identifier = data.get("key")
-
-        if db_obj:
-            if db_obj.rule_id != data["rule_id"]:
-                raise common_exceptions.RuleUseValidationError(
-                    f"RuleUse with identifier {identifier} belongs to another rule."
-                )
-            db_obj.update(db=db, data=data)
-        else:
-            db_obj = cls.create(db=db, data=data)  # type: ignore[assignment]
-
-        return db_obj  # type: ignore[return-value]
-
-    @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
-        """Validate data_category on object creation."""
-        rule_id = data.get("rule_id")
-        if not rule_id:
-            raise common_exceptions.RuleTargetValidationError(
-                "A rule_id must be supplied."
-            )
-
-        # This database query is necessary since we need to access all Rules and their Targets
-        # associated with any given Policy, not just those in the local scope of this object.
-        rule = Rule.get(db=db, object_id=rule_id)
-        if not rule:
-            raise common_exceptions.RuleTargetValidationError(
-                f"Rule with ID {rule_id} does not exist."
-            )
-
-        if rule.action_type.value != ActionType.consent.value:  # type: ignore[attr-defined]
-            raise common_exceptions.RuleUseValidationError(
-                "You can only create Rule Uses for Consent Rules"
-            )
-
-        return super().create(db=db, data=data)
 
 
 class WebhookDirection(EnumType):
