@@ -1,14 +1,14 @@
 """Contains the user group of commands for fides."""
 
 import click
-from typing import Dict, List
+from typing import List
 
 from fides.core.user import (
     create_user,
     get_access_token,
     write_credentials_file,
     CREDENTIALS_PATH,
-    get_user_scopes,
+    get_user_permissions,
     create_auth_header,
     read_credentials_file,
     update_user_permissions,
@@ -44,7 +44,7 @@ def create(username: str, password: str, first_name: str, last_name: str) -> Non
     """
     Use credentials from the credentials file to create a new user.
 
-    Gives all scopes as permissions.
+    Gives full permissions.
     """
 
     try:
@@ -58,6 +58,7 @@ def create(username: str, password: str, first_name: str, last_name: str) -> Non
     user_response = create_user(username, password, first_name, last_name, auth_header)
     user_id = user_response.json()["id"]
     update_user_permissions(user_id=user_id, scopes=SCOPES, auth_header=auth_header)
+    echo_green(f"User: '{username}' created and assigned permissions.")
 
 
 @user.command()
@@ -90,8 +91,8 @@ def login(username: str, password: str) -> None:
         username = credentials.username
         password = credentials.password
 
-    access_token = get_access_token(username, password)
-    write_credentials_file(username, password, access_token)
+    user_id, access_token = get_access_token(username, password)
+    write_credentials_file(username, password, user_id, access_token)
     echo_green(f"Credentials file written to: {CREDENTIALS_PATH}")
 
 
@@ -102,7 +103,7 @@ def login(username: str, password: str) -> None:
     default="",
     help="Username to get scopes for.",
 )
-def scopes(username: str) -> None:
+def permissions(username: str) -> None:
     """List the scopes avaible to the current user."""
 
     credentials = read_credentials_file()
@@ -110,6 +111,6 @@ def scopes(username: str) -> None:
     access_token = credentials.access_token
 
     auth_header = create_auth_header(access_token)
-    scopes: List[str] = get_user_scopes(username, auth_header)
+    scopes: List[str] = get_user_permissions(username, auth_header)
     for scope in scopes:
         print(scope)

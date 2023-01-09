@@ -1,6 +1,6 @@
 """Module for interaction with User endpoints/commands."""
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from pydantic import BaseModel
 import json
 
@@ -9,9 +9,9 @@ import toml
 
 from fides.cli.utils import handle_cli_response
 
-CLIENT_SCOPES_URL = "http://localhost:8080/api/v1/oauth/client/{}/scope"
+CREATE_USER_URL = "http://localhost:8080/api/v1/user"
 LOGIN_URL = "http://localhost:8080/api/v1/login"
-USER_PERMISSION_URL = "http://localhost:8080/api/v1/user/{}/permission"
+USER_PERMISSIONS_URL = "http://localhost:8080/api/v1/user/{}/permission"
 
 CREDENTIALS_PATH = f"{str(Path.home())}/.fides_credentials"
 
@@ -23,10 +23,11 @@ class Credentials(BaseModel):
 
     username: str
     password: str
+    user_id: str
     access_token: str
 
 
-def get_access_token(username: str, password: str) -> str:
+def get_access_token(username: str, password: str) -> Tuple[str, str]:
     """
     Get a user access token from the webserver.
     """
@@ -37,17 +38,21 @@ def get_access_token(username: str, password: str) -> str:
 
     response = requests.post(LOGIN_URL, json=payload)
     handle_cli_response(response, verbose=False)
-    access_token = response.json()["token_data"]["access_token"]
-    return access_token
+    user_id: str = response.json()["user_data"]["id"]
+    access_token: str = response.json()["token_data"]["access_token"]
+    return (user_id, access_token)
 
 
-def write_credentials_file(username: str, password: str, access_token: str) -> str:
+def write_credentials_file(
+    username: str, password: str, user_id: str, access_token: str
+) -> str:
     """
     Write the user credentials file.
     """
     credentials = Credentials(
         username=username,
         password=password,
+        user_id=user_id,
         access_token=access_token,
     )
     with open(CREDENTIALS_PATH, "w", encoding="utf-8") as credentials_file:
@@ -70,20 +75,6 @@ def create_auth_header(access_token: str) -> Dict[str, str]:
     return auth_header
 
 
-def get_user_scopes(username: str, auth_header: Dict[str, str]) -> List[str]:
-    """
-    Get a user access token from the webserver.
-    """
-    scopes_url = CLIENT_SCOPES_URL.format(username)
-    response = requests.get(
-        scopes_url,
-        headers=auth_header,
-    )
-
-    handle_cli_response(response, verbose=False)
-    return response.json()
-
-
 def create_user(
     username: str,
     password: str,
@@ -99,12 +90,26 @@ def create_user(
         "last_name": last_name,
     }
     response = requests.post(
-        "http://localhost:8080/api/v1/user",
+        CREATE_USER_URL,
         headers=auth_header,
         data=json.dumps(request_data),
     )
     handle_cli_response(response, verbose=False)
     return response
+
+
+def get_user_permissions(username: str, auth_header: Dict[str, str]) -> List[str]:
+    """
+    List all of the user permissions for the provided user.
+    """
+    scopes_url = USER_PERMISSIONS_URL.format(username)
+    response = requests.get(
+        scopes_url,
+        headers=auth_header,
+    )
+
+    handle_cli_response(response, verbose=False)
+    return response.json()
 
 
 def update_user_permissions(
@@ -115,7 +120,7 @@ def update_user_permissions(
     """
     request_data = {"scopes": scopes, "id": user_id}
     response = requests.put(
-        USER_PERMISSION_URL.format(user_id),
+        USER_PERMISSIONS_URL.format(user_id),
         headers=auth_header,
         json=request_data,
     )
