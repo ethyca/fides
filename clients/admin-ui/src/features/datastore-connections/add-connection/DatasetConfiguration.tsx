@@ -55,7 +55,7 @@ const DatasetConfiguration: React.FC = () => {
   >(undefined);
 
   useEffect(() => {
-    if (data) {
+    if (data && data.items.length) {
       setSelectedDatasetKey(data.items[0].ctl_dataset.fides_key);
     }
   }, [data]);

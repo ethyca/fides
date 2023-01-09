@@ -1,3 +1,4 @@
+import { ConfirmationModal } from "@fidesui/components";
 import {
   Box,
   Button,
@@ -8,6 +9,7 @@ import {
   SlideFade,
   Tag,
   Text,
+  useDisclosure,
   VStack,
 } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
@@ -51,6 +53,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
   const { navV2 } = useFeatures();
+  const warningDisclosure = useDisclosure();
 
   const validate = (value: string) => {
     yaml.load(value, { json: true });
@@ -83,6 +86,16 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
     onSubmit(yamlDoc);
   };
 
+  const handleConfirmation = () => {
+    // Only need the confirmation if we are overwriting, which only happens when
+    // there is already data
+    if (data.length) {
+      warningDisclosure.onOpen();
+    } else {
+      handleSubmit();
+    }
+  };
+
   return (
     <Flex gap="97px">
       <VStack align="stretch" w="800px">
@@ -108,7 +121,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           isDisabled={disabled || isEmptyState || !!yamlError || isSubmitting}
           isLoading={isSubmitting}
           loadingText="Saving Yaml system"
-          onClick={handleSubmit}
+          onClick={handleConfirmation}
           size="sm"
           type="submit"
           data-testid="save-btn"
@@ -185,6 +198,31 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           </Box>
         </SlideFade>
       )}
+      <ConfirmationModal
+        isOpen={warningDisclosure.isOpen}
+        onClose={warningDisclosure.onClose}
+        onConfirm={handleSubmit}
+        title="Overwrite dataset"
+        message={
+          <>
+            <Text>
+              You are about to overwrite the dataset{data.length > 1 ? "s" : ""}{" "}
+              {data.map((d, i) => {
+                const isLast = i === data.length - 1;
+                return (
+                  <>
+                    <Text color="complimentary.500" as="span" fontWeight="bold">
+                      {d.fides_key}
+                    </Text>
+                    {isLast ? "." : ", "}
+                  </>
+                );
+              })}
+            </Text>
+            <Text>Are you sure you would like to continue?</Text>
+          </>
+        }
+      />
     </Flex>
   );
 };
