@@ -120,7 +120,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           colorScheme="primary"
           isDisabled={disabled || isEmptyState || !!yamlError || isSubmitting}
           isLoading={isSubmitting}
-          loadingText="Saving Yaml system"
+          loadingText="Saving"
           onClick={handleConfirmation}
           size="sm"
           type="submit"
@@ -166,7 +166,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
                       Error message:
                     </Heading>
                     <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      Yaml system is required
+                      YAML dataset is required
                     </Text>
                   </Box>
                 )}

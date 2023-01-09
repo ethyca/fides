@@ -192,7 +192,7 @@ const DatasetConfiguration: React.FC = () => {
         ) : null}
         <Box data-testid="yaml-editor-section">
           <Copy mb={4}>
-            View your system yaml below! You can also modify the yaml if you
+            View your dataset YAML below! You can also modify the YAML if you
             need to assign any references between datasets.
           </Copy>
           {isSuccess && data!?.items ? (
