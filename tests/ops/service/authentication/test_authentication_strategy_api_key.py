@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from requests import PreparedRequest, Request
 
@@ -83,6 +85,25 @@ def test_api_key_auth_query_param():
     )
 
 
+def test_api_key_auth_body():
+    req: PreparedRequest = Request(
+        method="POST", url="https://localhost.com", json={"opt_out": True}
+    ).prepare()
+
+    api_key = "imakeyblademaster"
+    secrets = {"api_key": api_key}
+
+    authenticated_request = AuthenticationStrategy.get_strategy(
+        "api_key", {"body": '{\n  "key": "<api_key>"\n}\n'}
+    ).add_authentication(req, ConnectionConfig(secrets=secrets))
+    assert authenticated_request.url == f"https://localhost.com/"
+
+    assert json.loads(authenticated_request.body) == {
+        "opt_out": True,
+        "key": "imakeyblademaster",
+    }
+
+
 def test_api_key_auth_header_and_query_param():
     req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
@@ -130,7 +151,7 @@ def test_api_key_auth_bad_config():
             req, ConnectionConfig(secrets={})
         )
     assert (
-        "At least one 'header' or 'query_param' object must be defined in an 'api_key' auth configuration"
+        "At least one 'header', 'query_param', or 'body' object must be defined in an 'api_key' auth configuration"
         in str(exc.value)
     )
 
@@ -139,7 +160,7 @@ def test_api_key_auth_bad_config():
             "api_key", {"headers": []}
         ).add_authentication(req, ConnectionConfig(secrets={}))
     assert (
-        "At least one 'header' or 'query_param' object must be defined in an 'api_key' auth configuration"
+        "At least one 'header', 'query_param', or 'body' object must be defined in an 'api_key' auth configuration"
         in str(exc.value)
     )
 
