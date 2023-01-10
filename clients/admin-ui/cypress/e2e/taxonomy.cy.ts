@@ -1,5 +1,4 @@
-// TODO: Update Cypress test to reflect the nav bar 2.0
-describe.skip("Taxonomy management page", () => {
+describe("Taxonomy management page", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/data_category", {
@@ -16,7 +15,8 @@ describe.skip("Taxonomy management page", () => {
     }).as("getDataQualifiers");
   });
 
-  it("Can navigate to the taxonomy page", () => {
+  // TODO: Update Cypress test to reflect the nav bar 2.0
+  it.skip("Can navigate to the taxonomy page", () => {
     cy.visit("/");
     cy.getByTestId("nav-link-Taxonomy").click();
     cy.getByTestId("taxonomy-tabs");
