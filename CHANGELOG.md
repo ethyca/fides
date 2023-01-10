@@ -25,6 +25,9 @@ The types of changes are:
 * Add link to Classify Systems page in nav side bar [#2128](https://github.com/ethyca/fides/pull/2128)
 * Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
 * Update Privacy Center Icons [#1800](https://github.com/ethyca/fides/pull/2139)
+* Privacy Center `fides-consent.js`:
+  * `Fides.shopify` integration function. [#2152](https://github.com/ethyca/fides/pull/2152)
+  * Dedicated folder for integrations.
 
 ### Changed
 
