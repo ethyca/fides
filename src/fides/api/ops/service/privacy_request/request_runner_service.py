@@ -383,6 +383,21 @@ async def run_privacy_request(
                     session=session,
                 )
 
+            if policy.get_rules_for_action(
+                action_type=ActionType.consent
+            ) and can_run_checkpoint(
+                request_checkpoint=CurrentStep.consent,
+                from_checkpoint=resume_step,
+            ):
+                await run_consent_request(
+                    privacy_request=privacy_request,
+                    policy=policy,
+                    graph=build_consent_dataset_graph(datasets),
+                    connection_configs=connection_configs,
+                    identity=identity_data,
+                    session=session,
+                )
+
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
             _log_warning(exc, CONFIG.dev_mode)
@@ -420,22 +435,6 @@ async def run_privacy_request(
                 # If dev mode, log traceback
                 _log_exception(exc, CONFIG.dev_mode)
                 return
-
-        if policy.get_rules_for_action(
-            action_type=ActionType.consent
-        ) and can_run_checkpoint(
-            request_checkpoint=CurrentStep.consent,
-            from_checkpoint=resume_step,
-        ):
-
-            await run_consent_request(
-                privacy_request=privacy_request,
-                policy=policy,
-                graph=build_consent_dataset_graph(datasets),
-                connection_configs=connection_configs,
-                identity=identity_data,
-                session=session,
-            )
 
         # Run post-execution webhooks
         proceed = run_webhooks_and_report_status(
