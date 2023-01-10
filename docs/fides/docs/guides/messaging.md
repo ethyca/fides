@@ -43,7 +43,7 @@ FIDES__NOTIFICATIONS__SEND_REQUEST_REVIEW_NOTIFICATION=true
 For the `FIDES__NOTIFICATIONS__NOTIFICATION_SERVICE_TYPE` variable, we currently support the following service types:
 
 - `mailgun`
-- `twilio_sms`
+- `twilio_text`
 - `twilio_email`
 
 These service types must correspond to the `service_type` in one of your messaging configs in the database.
@@ -78,7 +78,7 @@ These service types must correspond to the `service_type` in one of your messagi
 |----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `key`          | *Optional.* A unique key used to manage your messaging config. This is auto-generated from `name` if left blank. Accepted values are alphanumeric, `_`, and `.`. |
 | `name`         | A unique user-friendly name for your messaging config.                                                                                                           |
-| `service_type` | The email service to configure. Currently, Fides supports `mailgun`, `twilio_email`, and `twilio_sms`.                                                           |
+| `service_type` | The email service to configure. Currently, Fides supports `mailgun`, `twilio_email`, and `twilio_text`.                                                           |
 | `details`      | A dict of key/val config vars specific to the messaging service.                                                                                                 |
 | `domain`       | Your unique Mailgun domain.                                                                                                                                      |
 | `is_eu_domain` | *Optional.* A boolean that denotes whether your Mailgun domain was created in the EU region. Defaults to `False`.                                                |
