@@ -448,10 +448,12 @@ def _twilio_email_dispatcher(
         response = sg.client.mail.send.post(request_body=mail.get())
         if response.status_code >= 400:
             logger.error(
-                "Email failed to send with status code: %s", response.status_code
+                "Email failed to send: %s: %s",
+                response.status_code,
+                Pii(str(response.body)),
             )
             raise MessageDispatchException(
-                f"Email failed to send with status code {response.status_code}"
+                f"Email failed to send: {response.status_code}, {Pii(str(response.body))}"
             )
     except Exception as e:
         logger.error("Email failed to send: {}", Pii(str(e)))

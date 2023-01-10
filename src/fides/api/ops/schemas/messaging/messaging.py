@@ -1,6 +1,6 @@
 from enum import Enum
 from re import compile as regex
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Type
 
 from pydantic import BaseModel, Extra, root_validator
 
@@ -235,9 +235,26 @@ class MessagingConfigRequest(BaseModel):
             values["service_type"] = service_type_pre.upper()
             service_type: MessagingServiceType = values["service_type"]
             if service_type == MessagingServiceType.MAILGUN.value:
-                if not values.get("details"):
-                    raise ValueError("Mailgun messaging config must include details")
+                cls._validate_details_schema(
+                    values=values, schema=MessagingServiceDetailsMailgun
+                )
+            if service_type == MessagingServiceType.TWILIO_EMAIL.value:
+                cls._validate_details_schema(
+                    values=values, schema=MessagingServiceDetailsTwilioEmail
+                )
         return values
+
+    @staticmethod
+    def _validate_details_schema(
+        values: Dict[str, Any],
+        schema: Union[
+            Type[MessagingServiceDetailsMailgun],
+            Type[MessagingServiceDetailsTwilioEmail],
+        ],
+    ) -> None:
+        if not values.get("details"):
+            raise ValueError("Messaging config must include details")
+        schema.validate(values.get("details"))
 
 
 class MessagingConfigResponse(BaseModel):
