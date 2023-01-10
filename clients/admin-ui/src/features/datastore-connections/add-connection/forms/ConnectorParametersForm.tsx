@@ -368,7 +368,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               getFormField(key, item)
             )}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
-              <Button
+              {/* Temporarily hiding this button */}
+              {/* <Button
                 colorScheme="gray.700"
                 isDisabled={!connection?.key}
                 isLoading={result.isLoading || result.isFetching}
@@ -377,7 +378,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 variant="outline"
               >
                 Test connection
-              </Button>
+              </Button> */}
               <Button
                 bg="primary.800"
                 color="white"
