@@ -32,4 +32,5 @@ export type ConfigConsentOption = {
   highlight?: boolean;
   name: string;
   url: string;
+  executable?: boolean;
 };
