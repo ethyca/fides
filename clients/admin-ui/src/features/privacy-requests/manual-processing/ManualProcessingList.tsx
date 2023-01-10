@@ -26,7 +26,7 @@ import {
 } from "privacy-requests/privacy-requests.slice";
 import {
   PatchUploadManualWebhookDataRequest,
-  PrivacyRequest,
+  PrivacyRequestEntity,
 } from "privacy-requests/types";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -36,7 +36,7 @@ import ManualProcessingDetail from "./ManualProcessingDetail";
 import { ManualInputData } from "./types";
 
 type ManualProcessingListProps = {
-  subjectRequest: PrivacyRequest;
+  subjectRequest: PrivacyRequestEntity;
 };
 
 const ManualProcessingList: React.FC<ManualProcessingListProps> = ({

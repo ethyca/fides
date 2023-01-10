@@ -13,7 +13,7 @@ import {
 } from "./privacy-requests.slice";
 import RequestRow from "./RequestRow";
 import SortRequestButton from "./SortRequestButton";
-import { PrivacyRequest } from "./types";
+import { PrivacyRequestEntity } from "./types";
 
 const RequestTable: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -98,7 +98,7 @@ const RequestTable: React.FC = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {requests.map((request: PrivacyRequest) => (
+          {requests.map((request: PrivacyRequestEntity) => (
             <RequestRow
               key={request.id}
               isChecked={errorRequests.includes(request.id)}

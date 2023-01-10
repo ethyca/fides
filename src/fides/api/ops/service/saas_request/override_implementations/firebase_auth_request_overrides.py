@@ -7,6 +7,9 @@ from firebase_admin.auth import UserRecord
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+)
 from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
@@ -16,6 +19,7 @@ from fides.api.ops.util.collection_util import Row
 
 @register("firebase_auth_user_access", [SaaSRequestType.READ])
 def firebase_auth_user_access(  # pylint: disable=R0914
+    client: AuthenticatedClient,
     node: TraversalNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
@@ -65,6 +69,7 @@ def firebase_auth_user_access(  # pylint: disable=R0914
 
 @register("firebase_auth_user_update", [SaaSRequestType.UPDATE])
 def firebase_auth_user_update(
+    client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
@@ -102,6 +107,7 @@ def firebase_auth_user_update(
 
 @register("firebase_auth_user_delete", [SaaSRequestType.DELETE])
 def firebase_auth_user_delete(
+    client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,

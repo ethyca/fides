@@ -85,6 +85,7 @@ describe("configureNavGroups", () => {
         { title: "View systems", path: "/system" },
         { title: "Add systems", path: "/add-systems" },
         { title: "Manage datasets", path: "/dataset" },
+        { title: "Classify systems", path: "/classify-systems" },
       ],
     });
   });

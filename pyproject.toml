@@ -204,3 +204,6 @@ markers = [
     "unit_saas"
 ]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+omit = ["src/fides/api/ctl/migrations/*"]
