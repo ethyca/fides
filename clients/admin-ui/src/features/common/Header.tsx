@@ -10,7 +10,6 @@ import {
   QuestionIcon,
   Stack,
   Text,
-  useDisclosure,
   UserIcon,
 } from "@fidesui/react";
 import NextLink from "next/link";
@@ -19,8 +18,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { INDEX_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
-import { useFeatures } from "~/features/common/features";
-import FeaturesPanel from "~/features/common/features/FeaturesPanel";
 import { useGetHealthQuery } from "~/features/common/health.slice";
 import Image from "~/features/common/Image";
 
@@ -31,13 +28,9 @@ const useHeader = () => {
 };
 
 const Header: React.FC = () => {
-  const features = useFeatures();
-
   const { username, versionNumber } = useHeader();
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useDispatch();
-
-  const featuresPanelDisclosure = useDisclosure();
 
   const handleLogout = async () => {
     logoutMutation({})
@@ -69,7 +62,6 @@ const Header: React.FC = () => {
                 size="sm"
                 variant="ghost"
                 data-testid="header-menu-button"
-                onDoubleClick={() => featuresPanelDisclosure.onOpen()}
               >
                 <UserIcon color="gray.700" />
               </MenuButton>
@@ -86,22 +78,6 @@ const Header: React.FC = () => {
                     </Text>
                   ) : null}
                 </Stack>
-
-                {features.flags.featuresPanel ? (
-                  <>
-                    <MenuDivider />
-
-                    <MenuItem
-                      _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                      onClick={() => featuresPanelDisclosure.onOpen()}
-                    >
-                      Features
-                      <Text as="i" ml={2}>
-                        Beta
-                      </Text>{" "}
-                    </MenuItem>
-                  </>
-                ) : null}
 
                 <MenuDivider />
                 <MenuItem
@@ -128,7 +104,6 @@ const Header: React.FC = () => {
           )}
         </Flex>
       </Flex>
-      <FeaturesPanel {...featuresPanelDisclosure} />
     </header>
   );
 };
