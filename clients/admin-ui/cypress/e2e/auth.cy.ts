@@ -1,7 +1,6 @@
 import { USER_PRIVILEGES } from "~/constants";
 
-// TODO: Update Cypress test to reflect the nav bar 2.0
-describe.skip("User Authentication", () => {
+describe("User Authentication", () => {
   describe("when the user not logged in", () => {
     it("redirects them to the login page", () => {
       cy.visit("/");
@@ -35,7 +34,7 @@ describe.skip("User Authentication", () => {
       cy.get("#email").type("cypress-user@ethyca.com");
       cy.get("#password").type("FakePassword123!{Enter}");
 
-      cy.getByTestId("nav-bar");
+      cy.getByTestId("Home");
     });
   });
 
@@ -46,7 +45,7 @@ describe.skip("User Authentication", () => {
 
     it("lets them navigate to protected routes", () => {
       cy.visit("/");
-      cy.getByTestId("Privacy Requests");
+      cy.getByTestId("Home");
 
       cy.visit("/user-management");
       cy.getByTestId("User Management");
@@ -70,13 +69,15 @@ describe.skip("User Authentication", () => {
       cy.getByTestId("Login");
     });
 
-    it("/login redirects to the onboarding flow if the user has no systems", () => {
+    // TODO: Update Cypress test to reflect the nav bar 2.0
+    it.skip("/login redirects to the onboarding flow if the user has no systems", () => {
       cy.intercept("GET", "/api/v1/system", { body: [] });
       cy.visit("/login");
       cy.getByTestId("setup");
     });
 
-    it("/login redirects to the systems page if the user has systems", () => {
+    // TODO: Update Cypress test to reflect the nav bar 2.0
+    it.skip("/login redirects to the systems page if the user has systems", () => {
       cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
         "getSystems"
       );

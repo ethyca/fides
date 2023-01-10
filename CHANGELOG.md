@@ -25,6 +25,9 @@ The types of changes are:
 * Add link to Classify Systems page in nav side bar [#2128](https://github.com/ethyca/fides/pull/2128)
 * Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
 * Update Privacy Center Icons [#1800](https://github.com/ethyca/fides/pull/2139)
+* Privacy Center `fides-consent.js`:
+  * `Fides.shopify` integration function. [#2152](https://github.com/ethyca/fides/pull/2152)
+  * Dedicated folder for integrations.
 
 ### Changed
 
@@ -33,6 +36,7 @@ The types of changes are:
   * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
   * No longer use `react-feature-flags` library.
 * Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
+* Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
 
 ### Removed
 
@@ -45,6 +49,8 @@ The types of changes are:
 * Side nav disappears when viewing request details [#2129](https://github.com/ethyca/fides/pull/2155)
 * Remove usage of load dataset button and other dataset UI modifications [#2149](https://github.com/ethyca/fides/pull/2149)
 * Improve readability for exceptions raised from custom request overrides [#2157](https://github.com/ethyca/fides/pull/2157)
+* Importing custom request overrides on server startup [#2186](https://github.com/ethyca/fides/pull/2186)
+* Remove warning when env vars default to blank strings in docker-compose [#2188](https://github.com/ethyca/fides/pull/2188)
 
 ### Removed
 
