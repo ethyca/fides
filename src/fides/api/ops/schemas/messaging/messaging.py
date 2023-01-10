@@ -1,6 +1,6 @@
 from enum import Enum
 from re import compile as regex
-from typing import Any, Dict, List, Optional, Tuple, Union, Type
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel, Extra, root_validator
 
