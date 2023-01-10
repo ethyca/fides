@@ -2,13 +2,13 @@
 import json
 from pathlib import Path
 from typing import Dict, List, Tuple
-from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 
 import requests
 import toml
 from pydantic import BaseModel
 
 from fides.cli.utils import handle_cli_response
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 
 CREATE_USER_URL = "http://localhost:8080/api/v1/user"
 LOGIN_URL = "http://localhost:8080/api/v1/login"

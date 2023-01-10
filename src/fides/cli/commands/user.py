@@ -93,6 +93,7 @@ def login(username: str, password: str) -> None:
         password = credentials.password
 
     user_id, access_token = get_access_token(username, password)
+    echo_green(f"Logged in as user: {username}")
     write_credentials_file(username, password, user_id, access_token)
     echo_green(f"Credentials file written to: {CREDENTIALS_PATH}")
 
