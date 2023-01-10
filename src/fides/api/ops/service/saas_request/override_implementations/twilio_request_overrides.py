@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List
 
 from fides.api.ops.models.policy import Policy
@@ -42,7 +43,7 @@ def twilio_user_update(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
                 path=f"/v1/Users/{user_id}",
-                body=update_body,
+                body=json.dumps(update_body),
             )
         )
 
@@ -80,7 +81,7 @@ def twilio_conversation_message_update(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
                 path=f"/v1/Conversations/{conversation_id}/Messages/{message_id}",
-                body=update_body,
+                body=json.dumps(update_body),
             )
         )
 
