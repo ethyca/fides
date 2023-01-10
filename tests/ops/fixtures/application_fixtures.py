@@ -40,6 +40,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.storage.storage import (
+    DEFAULT_STORAGE_KEY,
     FileNaming,
     S3AuthMethod,
     StorageDetails,
@@ -172,6 +173,29 @@ def storage_config_local(db: Session) -> Generator:
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
             },
             "key": "my_test_config_local",
+            "format": ResponseFormat.json,
+        },
+    )
+    yield storage_config
+    storage_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def storage_config_default(db: Session) -> Generator:
+    """
+    Create and yield a default storage config, as defined by its
+    storage key and the `is_default` flag being set to `True`
+    """
+    storage_config = StorageConfig.create(
+        db=db,
+        data={
+            "name": "default storage config",
+            "key": DEFAULT_STORAGE_KEY,
+            "type": StorageType.local,
+            "is_default": True,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+            },
             "format": ResponseFormat.json,
         },
     )

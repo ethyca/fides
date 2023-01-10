@@ -23,7 +23,7 @@ from fides.api.ops.common_exceptions import (
     RuleValidationError,
 )
 from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.models.storage import StorageConfig, default_storage_config
 from fides.api.ops.schemas import policy as schemas
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.util.api_router import APIRouter
@@ -251,25 +251,26 @@ def create_or_update_rules(
         if schema.action_type == ActionType.access:
             # Only validate the associated StorageConfig on access rules
             storage_destination_key = schema.storage_destination_key
-            associated_storage_config: StorageConfig = StorageConfig.get_by(
-                db=db,
-                field="key",
-                value=storage_destination_key,
-            )
-            if not associated_storage_config:
-                logger.warning(
-                    "No storage config found with key {}", storage_destination_key
+            # storage key doesn't need to be specified, as there is a default to fallback to
+            if storage_destination_key:
+                associated_storage_config: StorageConfig = StorageConfig.get_by(
+                    db=db,
+                    field="key",
+                    value=storage_destination_key,
                 )
-                failure = {
-                    "message": f"A StorageConfig with key {storage_destination_key} does not exist",
-                    "data": dict(
-                        schema
-                    ),  # Be sure to pass the schema out the same way it came in
-                }
-                failed.append(BulkUpdateFailed(**failure))
-                continue
-
-            associated_storage_config_id = associated_storage_config.id
+                if not associated_storage_config:
+                    logger.warning(
+                        "No storage config found with key {}", storage_destination_key
+                    )
+                    failure = {
+                        "message": f"A StorageConfig with key {storage_destination_key} does not exist",
+                        "data": dict(
+                            schema
+                        ),  # Be sure to pass the schema out the same way it came in
+                    }
+                    failed.append(BulkUpdateFailed(**failure))
+                    continue
+                associated_storage_config_id = associated_storage_config.id
 
         masking_strategy_data = None
         if schema.masking_strategy:

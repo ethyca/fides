@@ -7,6 +7,8 @@ from pydantic.main import BaseModel
 
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 
+DEFAULT_STORAGE_KEY = "default_storage"
+
 
 class ResponseFormat(Enum):
     """Response formats"""
@@ -117,6 +119,7 @@ class StorageDestination(BaseModel):
     ]
     key: Optional[FidesKey]
     format: Optional[ResponseFormat] = ResponseFormat.json.value  # type: ignore
+    is_default: Optional[bool] = False
 
     class Config:
         use_enum_values = True
@@ -175,6 +178,26 @@ class StorageDestination(BaseModel):
 
         return values
 
+    @root_validator
+    @classmethod
+    def is_default_validator(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Custom validation to ensure that `is_default` field is only true when
+        editing the default storage configuration
+        """
+        key = values.get("key")
+        is_default = values.get("is_default")
+        if key == DEFAULT_STORAGE_KEY and not is_default:
+            raise ValueError(
+                "`is_default` must be set to true if updating the default storage policy"
+            )
+        if key != DEFAULT_STORAGE_KEY and is_default:
+            raise ValueError(
+                "`is_default` can only be set to true on the default storage policy"
+            )
+
+        return values
+
 
 class StorageDestinationResponse(BaseModel):
     """Storage Destination Response Schema"""
@@ -182,6 +205,7 @@ class StorageDestinationResponse(BaseModel):
     name: str
     type: StorageType
     details: Dict[StorageDetails, Any]
+    is_default: bool
     key: FidesKey
     format: ResponseFormat
 

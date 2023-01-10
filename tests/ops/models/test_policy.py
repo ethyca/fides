@@ -5,6 +5,7 @@ from fides.api.ops.common_exceptions import (
     DataCategoryNotSupported,
     PolicyValidationError,
     RuleValidationError,
+    StorageConfigNotFoundException,
 )
 from fides.api.ops.models.policy import (
     ActionType,
@@ -13,6 +14,7 @@ from fides.api.ops.models.policy import (
     RuleTarget,
     _is_ancestor_of_contained_categories,
 )
+from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
@@ -133,23 +135,6 @@ def test_create_rule_no_action_is_invalid(
     assert exc.value.args[0] == "action_type is required."
 
 
-def test_create_access_rule_with_no_storage_destination_is_invalid(
-    db: Session,
-    policy: Policy,
-) -> None:
-    with pytest.raises(RuleValidationError) as exc:
-        Rule.create(
-            db=db,
-            data={
-                "action_type": ActionType.access.value,
-                "client_id": policy.client_id,
-                "name": "Invalid Rule",
-                "policy_id": policy.id,
-            },
-        )
-    assert exc.value.args[0] == "Access Rules must have a storage destination."
-
-
 def test_consent_action_is_unsupported(
     db: Session,
     policy: Policy,
@@ -260,6 +245,24 @@ def test_create_rule_target_valid_data_category(
     target.delete(db=db)
 
 
+def test_create_access_rule_with_no_storage_destination_is_valid(
+    db: Session,
+    policy: Policy,
+    storage_config_default: StorageConfig,
+) -> None:
+    rule: Rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.access.value,
+            "client_id": policy.client_id,
+            "name": "Invalid Rule",
+            "policy_id": policy.id,
+        },
+    )
+    rule_storage_config = rule.get_storage_destination(db)
+    assert rule_storage_config == storage_config_default
+
+
 def test_ancestor_detection():
     is_ancestor, _ = _is_ancestor_of_contained_categories(
         fides_key="user.contact.email",
@@ -353,3 +356,31 @@ def test_validate_policy(
         )
 
     erasure_policy.delete(db=db)  # This will tear down everything created here
+
+
+def test_rule_get_storage_destination(
+    db: Session,
+    policy: Policy,
+    storage_config: StorageConfig,
+    storage_config_default: StorageConfig,
+) -> None:
+    """
+    Test that the rule's method to retrieve a proper storage destination
+    works as expected in different scenarios
+    """
+    rule: Rule = policy.rules[0]
+    rule_storage_config = rule.get_storage_destination(db)
+    assert rule_storage_config == storage_config
+
+    rule.storage_destination = None
+    rule_storage_config = rule.get_storage_destination(db)
+    assert rule_storage_config == storage_config_default
+
+    rule.storage_destination = storage_config
+    storage_config_default.delete(db)
+    rule_storage_config = rule.get_storage_destination(db)
+    assert rule_storage_config == storage_config
+
+    rule.storage_destination = None
+    with pytest.raises(StorageConfigNotFoundException):
+        rule_storage_config = rule.get_storage_destination(db)

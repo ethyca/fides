@@ -44,6 +44,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fides.api.ops.models.storage import default_storage_config
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
@@ -196,10 +197,8 @@ def upload_access_results(  # pylint: disable=R0912
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
     ):
-        if not rule.storage_destination:
-            raise common_exceptions.RuleValidationError(
-                f"No storage destination configured on rule {rule.key}"
-            )
+        storage_destination = rule.get_storage_destination(session)
+
         target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
         filtered_results: Dict[
             str, List[Dict[str, Optional[Any]]]
@@ -225,7 +224,7 @@ def upload_access_results(  # pylint: disable=R0912
                 db=session,
                 request_id=privacy_request.id,
                 data=filtered_results,
-                storage_key=rule.storage_destination.key,  # type: ignore
+                storage_key=storage_destination.key,  # type: ignore
             )
             if download_url:
                 download_urls.append(download_url)
