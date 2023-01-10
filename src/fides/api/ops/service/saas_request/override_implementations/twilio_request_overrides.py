@@ -1,5 +1,6 @@
-import json
 from typing import Any, Dict, List
+
+from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -43,7 +44,8 @@ def twilio_user_update(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
                 path=f"/v1/Users/{user_id}",
-                body=json.dumps(update_body),
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                body=multidimensional_urlencode(update_body),
             )
         )
 
@@ -81,7 +83,8 @@ def twilio_conversation_message_update(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
                 path=f"/v1/Conversations/{conversation_id}/Messages/{message_id}",
-                body=json.dumps(update_body),
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                body=multidimensional_urlencode(update_body),
             )
         )
 
