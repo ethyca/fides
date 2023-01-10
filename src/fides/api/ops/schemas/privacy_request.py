@@ -60,6 +60,7 @@ class Consent(BaseSchema):
     data_use: str
     data_use_description: Optional[str] = None
     opt_in: bool
+    executable: Optional[bool] = None
 
 
 class PrivacyRequestCreate(BaseSchema):
