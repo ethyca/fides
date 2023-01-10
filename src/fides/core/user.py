@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 from typing import Dict, List, Tuple
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 
 import requests
 import toml
@@ -33,7 +34,7 @@ def get_access_token(username: str, password: str) -> Tuple[str, str]:
     """
     payload = {
         "username": username,
-        "password": password,
+        "password": str_to_b64_str(password),
     }
 
     response = requests.post(LOGIN_URL, json=payload)
@@ -85,7 +86,7 @@ def create_user(
     """Create a user."""
     request_data = {
         "username": username,
-        "password": password,
+        "password": str_to_b64_str(password),
         "first_name": first_name,
         "last_name": last_name,
     }
