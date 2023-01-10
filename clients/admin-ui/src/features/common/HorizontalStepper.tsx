@@ -1,5 +1,4 @@
-import { Stack, Text } from "@fidesui/react";
-import { HorizontalLineIcon } from "common/Icon";
+import { HorizontalLineIcon, Stack, Text } from "@fidesui/react";
 import React from "react";
 
 interface Props {

@@ -3,9 +3,8 @@ import {
   InputGroup,
   InputLeftElement,
   InputProps,
+  SearchLineIcon,
 } from "@fidesui/react";
-
-import { SearchLineIcon } from "~/features/common/Icon";
 
 interface Props extends Omit<InputProps, "onChange"> {
   search?: string;

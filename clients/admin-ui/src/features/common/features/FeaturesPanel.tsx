@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CloseSolidIcon,
   Divider,
   Drawer,
   DrawerBody,
@@ -15,8 +16,6 @@ import {
   Text,
   UseDisclosureReturn,
 } from "@fidesui/react";
-
-import { CloseSolidIcon } from "~/features/common/Icon";
 
 import { FLAG_NAMES, useFlags } from "./features.slice";
 import { FlagValue } from "./types";

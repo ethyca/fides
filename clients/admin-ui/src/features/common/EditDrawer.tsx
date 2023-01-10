@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CloseSolidIcon,
   Drawer,
   DrawerBody,
   DrawerContent,
@@ -9,10 +10,9 @@ import {
   DrawerOverlay,
   IconButton,
   Text,
+  TrashCanSolidIcon,
 } from "@fidesui/react";
 import { ReactNode } from "react";
-
-import { CloseSolidIcon, TrashCanSolidIcon } from "~/features/common/Icon";
 
 interface Props {
   header?: ReactNode;
@@ -90,7 +90,7 @@ const EditDrawer = ({
           onClick={onClose}
           data-testid="close-drawer-btn"
         >
-          <CloseSolidIcon />
+          <CloseSolidIcon width="17px" />
         </Button>
       </Box>
       {header}

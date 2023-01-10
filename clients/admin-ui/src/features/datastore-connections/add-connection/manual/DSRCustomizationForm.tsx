@@ -1,6 +1,5 @@
-import { Box, HStack, Text, VStack } from "@fidesui/react";
+import { Box, HStack, Text, TrashCanSolidIcon, VStack } from "@fidesui/react";
 import { useAlert } from "common/hooks";
-import { TrashCanSolidIcon } from "common/Icon";
 import { FieldArray, Form, Formik, FormikProps } from "formik";
 import { useRouter } from "next/router";
 import React from "react";
