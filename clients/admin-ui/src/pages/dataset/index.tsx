@@ -10,9 +10,7 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
-import {
-  useGetAllDatasetsQuery,
-} from "~/features/dataset/dataset.slice";
+import { useGetAllDatasetsQuery } from "~/features/dataset/dataset.slice";
 import DatasetsTable from "~/features/dataset/DatasetTable";
 
 const DataSets: NextPage = () => {
