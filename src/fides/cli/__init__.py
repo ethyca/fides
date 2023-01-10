@@ -17,9 +17,9 @@ from .commands.db import database
 from .commands.export import export
 from .commands.generate import generate
 from .commands.scan import scan
+from .commands.user import user
 from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
-from .commands.user import user
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]

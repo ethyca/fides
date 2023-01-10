@@ -1,11 +1,11 @@
 """Module for interaction with User endpoints/commands."""
+import json
 from pathlib import Path
 from typing import Dict, List, Tuple
-from pydantic import BaseModel
-import json
 
 import requests
 import toml
+from pydantic import BaseModel
 
 from fides.cli.utils import handle_cli_response
 

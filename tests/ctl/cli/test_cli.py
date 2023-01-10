@@ -857,7 +857,9 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
         """Test logging in as a user with a provided username and password."""
-        result = test_cli_runner.invoke(cli, ["user", "login", "-u", "root_user", "-p", "Testpassword1!"])
+        result = test_cli_runner.invoke(
+            cli, ["user", "login", "-u", "root_user", "-p", "Testpassword1!"]
+        )
         print(result.output)
         assert result.exit_code == 0
 

@@ -1,17 +1,18 @@
 """Contains the user group of commands for fides."""
 
-import click
 from typing import List
 
+import click
+
 from fides.core.user import (
+    CREDENTIALS_PATH,
+    create_auth_header,
     create_user,
     get_access_token,
-    write_credentials_file,
-    CREDENTIALS_PATH,
     get_user_permissions,
-    create_auth_header,
     read_credentials_file,
     update_user_permissions,
+    write_credentials_file,
 )
 from fides.core.utils import echo_green, echo_red
 from fides.lib.oauth.scopes import SCOPES
