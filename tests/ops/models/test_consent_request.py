@@ -8,8 +8,6 @@ import pytest
 
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
-    CONFIG_JSON_PATH,
-    load_executable_consent_options,
     queue_privacy_request_to_propagate_consent,
 )
 from fides.api.ops.graph.config import CollectionAddress
@@ -89,28 +87,6 @@ def test_consent_request(db):
 
     assert Consent.get(db, object_id=consent_1.id) is None
     assert Consent.get(db, object_id=consent_2.id) is None
-
-
-class TestLoadExecutableConsentOptionsHelper:
-    def test_load_executable_consent_options(self):
-        options: List[str] = load_executable_consent_options(CONFIG_JSON_PATH)
-        assert options == ["advertising", "advertising.first_party", "improve"]
-
-    def test_load_options_some_not_executable(self):
-        other_options: List[str] = load_executable_consent_options(
-            "tests/ops/fixtures/privacy_center_config/test_config.json"
-        )
-        assert other_options == ["advertising.first_party"]
-
-    def test_load_invalid_config_json(self):
-        other_options: List[str] = load_executable_consent_options(
-            "tests/ops/fixtures/privacy_center_config/bad_test_config.json"
-        )
-        assert other_options == []
-
-    def test_config_json_not_found(self):
-        with pytest.raises(FileNotFoundError):
-            load_executable_consent_options("bad_path.json")
 
 
 class TestQueuePrivacyRequestToPropagateConsentHelper:

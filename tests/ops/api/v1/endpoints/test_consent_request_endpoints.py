@@ -330,16 +330,19 @@ class TestConsentVerify:
                 "data_use": "email",
                 "data_use_description": None,
                 "opt_in": True,
+                "executable": None,
             },
             {
                 "data_use": "location",
                 "data_use_description": "Location data",
                 "opt_in": False,
+                "executable": None,
             },
         ]
 
         for data in deepcopy(consent_data):
             data["provided_identity_id"] = provided_identity.id
+            data.pop("executable")
             Consent.create(db, data=data)
 
         response = api_client.post(
@@ -431,16 +434,19 @@ class TestGetConsentUnverified:
                 "data_use": "email",
                 "data_use_description": None,
                 "opt_in": True,
+                "executable": None,
             },
             {
                 "data_use": "location",
                 "data_use_description": "Location data",
                 "opt_in": False,
+                "executable": None,
             },
         ]
 
         for data in deepcopy(consent_data):
             data["provided_identity_id"] = provided_identity.id
+            data.pop("executable")
             Consent.create(db, data=data)
 
         response = api_client.get(
@@ -692,11 +698,13 @@ class TestSaveConsent:
                 "data_use": "advertising",  # Must match consentOptions in config.json
                 "data_use_description": None,
                 "opt_in": True,
+                "executable": True,
             },
             {
                 "data_use": "improve",
                 "data_use_description": None,
                 "opt_in": True,
+                "executable": None,
             },
         ]
 
@@ -707,10 +715,12 @@ class TestSaveConsent:
         consent_data[1]["opt_in"] = False
 
         data = {
+            "fidesDataUseKey": "advertising",
             "code": verification_code,
             "identity": {"email": "test@email.com"},
             "consent": consent_data,
             "policy_key": consent_policy.key,  # Optional policy_key supplied
+            "executable": True,
         }
         response = api_client.patch(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
@@ -754,11 +764,13 @@ class TestSaveConsent:
                 "data_use": "email",
                 "data_use_description": None,
                 "opt_in": True,
+                "executable": None,
             },
             {
                 "data_use": "location",
                 "data_use_description": "Location data",
                 "opt_in": False,
+                "executable": None,
             },
         ]
 
@@ -834,11 +846,13 @@ class TestGetConsentPreferences:
                 "data_use": "email",
                 "data_use_description": None,
                 "opt_in": True,
+                "executable": None,
             },
             {
                 "data_use": "location",
                 "data_use_description": "Location data",
                 "opt_in": False,
+                "executable": None,
             },
         ]
 
