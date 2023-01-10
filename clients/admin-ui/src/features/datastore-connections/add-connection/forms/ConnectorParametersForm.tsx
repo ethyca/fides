@@ -17,7 +17,7 @@ import {
   Tooltip,
   VStack,
 } from "@fidesui/react";
-import { useAPIHelper } from "common/hooks";
+// import { useAPIHelper } from "common/hooks";
 import { CircleHelpIcon } from "common/Icon";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
@@ -62,13 +62,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onTestConnectionClick,
 }) => {
   const mounted = useRef(false);
-  const { handleError } = useAPIHelper();
+  // const { handleError } = useAPIHelper();
 
   const { connection, connectionOption } = useAppSelector(
     selectConnectionTypeState
   );
 
-  const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
+  const [, result] = useLazyGetDatastoreConnectionStatusQuery();
 
   const validateConnectionIdentifier = (value: string) => {
     let error;
@@ -233,13 +233,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     onSaveClick(updatedValues, actions);
   };
 
-  const handleTestConnectionClick = async () => {
-    try {
-      await trigger(connection!.key).unwrap();
-    } catch (error) {
-      handleError(error);
-    }
-  };
+  // const handleTestConnectionClick = async () => {
+  //   try {
+  //     await trigger(connection!.key).unwrap();
+  //   } catch (error) {
+  //     handleError(error);
+  //   }
+  // };
 
   useEffect(() => {
     mounted.current = true;
