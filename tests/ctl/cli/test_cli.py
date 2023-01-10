@@ -877,7 +877,9 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
         """Test creating a user with the current credentials."""
-        result = test_cli_runner.invoke(cli, ["user", "create"])
+        result = test_cli_runner.invoke(
+            cli, ["user", "create", "newuser", "Newpassword1!"]
+        )
         print(result.output)
         assert result.exit_code == 0
 

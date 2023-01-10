@@ -5,7 +5,6 @@ from typing import List
 import click
 
 from fides.core.user import (
-    CREDENTIALS_PATH,
     create_auth_header,
     create_user,
     get_access_token,
@@ -27,6 +26,7 @@ def user(ctx: click.Context) -> None:
 
 
 @user.command()
+@click.pass_context
 @click.argument("username", type=str)
 @click.argument("password", type=str)
 @click.option(
@@ -41,12 +41,16 @@ def user(ctx: click.Context) -> None:
     default="",
     help="Last name of the user.",
 )
-def create(username: str, password: str, first_name: str, last_name: str) -> None:
+def create(
+    ctx: click.Context, username: str, password: str, first_name: str, last_name: str
+) -> None:
     """
     Use credentials from the credentials file to create a new user.
 
     Gives full permissions.
     """
+    config = ctx.obj["CONFIG"]
+    server_url = config.cli.server_url
 
     try:
         credentials = read_credentials_file()
@@ -56,13 +60,23 @@ def create(username: str, password: str, first_name: str, last_name: str) -> Non
 
     access_token = credentials.access_token
     auth_header = create_auth_header(access_token)
-    user_response = create_user(username, password, first_name, last_name, auth_header)
+    user_response = create_user(
+        username=username,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+        auth_header=auth_header,
+        server_url=server_url,
+    )
     user_id = user_response.json()["id"]
-    update_user_permissions(user_id=user_id, scopes=SCOPES, auth_header=auth_header)
+    update_user_permissions(
+        user_id=user_id, scopes=SCOPES, auth_header=auth_header, server_url=server_url
+    )
     echo_green(f"User: '{username}' created and assigned permissions.")
 
 
 @user.command()
+@click.pass_context
 @click.option(
     "-u",
     "--username",
@@ -75,13 +89,15 @@ def create(username: str, password: str, first_name: str, last_name: str) -> Non
     default="",
     help="Password to authenticate with.",
 )
-def login(username: str, password: str) -> None:
+def login(ctx: click.Context, username: str, password: str) -> None:
     """
     Use credentials to get a user access token and write a credentials file.
 
     If no username/password is provided, attempt to load an existing credentials file
     and use that username/password.
     """
+    config = ctx.obj["CONFIG"]
+    server_url = config.cli.server_url
 
     if not (username and password):
         try:
@@ -92,22 +108,27 @@ def login(username: str, password: str) -> None:
         username = credentials.username
         password = credentials.password
 
-    user_id, access_token = get_access_token(username, password)
+    user_id, access_token = get_access_token(
+        username=username, password=password, server_url=server_url
+    )
     echo_green(f"Logged in as user: {username}")
-    write_credentials_file(username, password, user_id, access_token)
-    echo_green(f"Credentials file written to: {CREDENTIALS_PATH}")
+    credentials_path = write_credentials_file(username, password, user_id, access_token)
+    echo_green(f"Credentials file written to: {credentials_path}")
 
 
 @user.command()
-def permissions() -> None:
+@click.pass_context
+def permissions(ctx: click.Context) -> None:
     """List the scopes avaible to the current user."""
+    config = ctx.obj["CONFIG"]
+    server_url = config.cli.server_url
 
     credentials = read_credentials_file()
     user_id = credentials.user_id
     access_token = credentials.access_token
 
     auth_header = create_auth_header(access_token)
-    scopes: List[str] = get_user_permissions(user_id, auth_header)
-    print("Scopes:")
-    for scope in scopes:
-        print(scope)
+    permissions: List[str] = get_user_permissions(user_id, auth_header, server_url)
+    print("Permissions:")
+    for permission in permissions:
+        print(f"\t{permission}")

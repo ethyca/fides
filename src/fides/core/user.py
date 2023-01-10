@@ -9,12 +9,14 @@ from pydantic import BaseModel
 
 from fides.cli.utils import handle_cli_response
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
+from fides.core.config import get_config
 
-CREATE_USER_URL = "http://localhost:8080/api/v1/user"
-LOGIN_URL = "http://localhost:8080/api/v1/login"
-USER_PERMISSIONS_URL = "http://localhost:8080/api/v1/user/{}/permission"
+config = get_config()
+CREATE_USER_PATH = "/api/v1/user"
+LOGIN_PATH = "/api/v1/login"
+USER_PERMISSIONS_PATH = "/api/v1/user/{}/permission"
 
-CREDENTIALS_PATH = f"{str(Path.home())}/.fides_credentials"
+CREDENTIALS_FILE_PATH = f"{str(Path.home())}/.fides_credentials"
 
 
 class Credentials(BaseModel):
@@ -28,7 +30,7 @@ class Credentials(BaseModel):
     access_token: str
 
 
-def get_access_token(username: str, password: str) -> Tuple[str, str]:
+def get_access_token(username: str, password: str, server_url: str) -> Tuple[str, str]:
     """
     Get a user access token from the webserver.
     """
@@ -37,7 +39,7 @@ def get_access_token(username: str, password: str) -> Tuple[str, str]:
         "password": str_to_b64_str(password),
     }
 
-    response = requests.post(LOGIN_URL, json=payload)
+    response = requests.post(server_url + LOGIN_PATH, json=payload)
     handle_cli_response(response, verbose=False)
     user_id: str = response.json()["user_data"]["id"]
     access_token: str = response.json()["token_data"]["access_token"]
@@ -56,14 +58,14 @@ def write_credentials_file(
         user_id=user_id,
         access_token=access_token,
     )
-    with open(CREDENTIALS_PATH, "w", encoding="utf-8") as credentials_file:
+    with open(CREDENTIALS_FILE_PATH, "w", encoding="utf-8") as credentials_file:
         credentials_file.write(toml.dumps(credentials.dict()))
-    return CREDENTIALS_PATH
+    return CREDENTIALS_FILE_PATH
 
 
 def read_credentials_file() -> Credentials:
     """Read and return the credentials file."""
-    with open(CREDENTIALS_PATH, "r", encoding="utf-8") as credentials_file:
+    with open(CREDENTIALS_FILE_PATH, "r", encoding="utf-8") as credentials_file:
         credentials = Credentials.parse_obj(toml.load(credentials_file))
     return credentials
 
@@ -82,6 +84,7 @@ def create_user(
     first_name: str,
     last_name: str,
     auth_header: Dict[str, str],
+    server_url: str,
 ) -> requests.Response:
     """Create a user."""
     request_data = {
@@ -91,7 +94,7 @@ def create_user(
         "last_name": last_name,
     }
     response = requests.post(
-        CREATE_USER_URL,
+        server_url + CREATE_USER_PATH,
         headers=auth_header,
         data=json.dumps(request_data),
     )
@@ -99,13 +102,15 @@ def create_user(
     return response
 
 
-def get_user_permissions(user_id: str, auth_header: Dict[str, str]) -> List[str]:
+def get_user_permissions(
+    user_id: str, auth_header: Dict[str, str], server_url: str
+) -> List[str]:
     """
     List all of the user permissions for the provided user.
     """
-    scopes_url = USER_PERMISSIONS_URL.format(user_id)
+    get_permissions_path = USER_PERMISSIONS_PATH.format(user_id)
     response = requests.get(
-        scopes_url,
+        server_url + get_permissions_path,
         headers=auth_header,
     )
 
@@ -114,14 +119,15 @@ def get_user_permissions(user_id: str, auth_header: Dict[str, str]) -> List[str]
 
 
 def update_user_permissions(
-    user_id: str, scopes: List[str], auth_header: Dict[str, str]
+    user_id: str, scopes: List[str], auth_header: Dict[str, str], server_url: str
 ) -> requests.Response:
     """
     Update user permissions for a given user.
     """
     request_data = {"scopes": scopes, "id": user_id}
+    set_permissions_path = USER_PERMISSIONS_PATH.format(user_id)
     response = requests.put(
-        USER_PERMISSIONS_URL.format(user_id),
+        server_url + set_permissions_path,
         headers=auth_header,
         json=request_data,
     )
