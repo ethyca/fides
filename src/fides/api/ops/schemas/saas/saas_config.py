@@ -104,6 +104,7 @@ class SaaSRequest(BaseModel):
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[bool] = False
     rate_limit_config: Optional[RateLimitConfig]
+    data_uses: Optional[List[str]] = []
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -209,6 +210,13 @@ class SaaSRequestMap(BaseModel):
     read: Union[SaaSRequest, List[SaaSRequest]] = []
     update: Optional[SaaSRequest]
     delete: Optional[SaaSRequest]
+
+
+class ConsentRequestMap(BaseModel):
+    """A map of actions to SaaS requests"""
+
+    opt_in: List[SaaSRequest] = []
+    opt_out: List[SaaSRequest] = []
 
 
 class Endpoint(BaseModel):
@@ -337,6 +345,7 @@ class SaaSConfig(SaaSConfigBase):
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
     rate_limit_config: Optional[RateLimitConfig]
+    consent_requests: Optional[ConsentRequestMap]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:

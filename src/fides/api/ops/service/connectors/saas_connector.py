@@ -5,13 +5,22 @@ import pydash
 from loguru import logger
 from requests import Response
 
-from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
+from fides.api.ops.common_exceptions import (
+    FidesopsException,
+    NotSupportedForCollection,
+    PostProcessingException,
+)
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
-from fides.api.ops.schemas.saas.saas_config import ClientConfig, ParamValue, SaaSRequest
+from fides.api.ops.schemas.saas.saas_config import (
+    ClientConfig,
+    ParamValue,
+    SaaSRequest,
+    ConsentRequestMap,
+)
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.saas.authenticated_client import (
@@ -418,20 +427,64 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         Return True if 200 OK
         """
-        logger.info(
-            "Mocking consent request - actual logic should go here for saas connectors",
-            node.address.value,
-        )
+        if self.saas_config.type == "mandrill":
 
-        logger.info(
-            "Demo only! Testing available consent params! identity_data: {}, executable_preferences: {}",
-            identity_data,
-            [
-                {"use": preference.data_use, "opt_in": preference.opt_in}
-                for preference in executable_preferences
-            ],
+            if not identity_data.get("email"):
+                raise Exception("Email identity required for mandrill consent request.")
+
+            logger.info(
+                "Starting consent request for node '{}' of type '{}'",
+                node.address.dataset,
+                self.saas_config.type,
+            )
+
+            consent_requests: Optional[
+                ConsentRequestMap
+            ] = self.saas_config.consent_requests
+
+            def get_consent_requests_by_preference(opt_in: bool) -> List[SaaSRequest]:
+                if not consent_requests:
+                    return []
+                return consent_requests.opt_in if opt_in else consent_requests.opt_out
+
+            for pref in executable_preferences:
+                request_action: str = "opt_in" if pref.opt_in else "opt_out"
+                req: Optional[SaaSRequest] = next(
+                    (
+                        saas_request
+                        for saas_request in get_consent_requests_by_preference(
+                            pref.opt_in
+                        )
+                        if pref.data_use in saas_request.data_uses or []
+                    ),
+                    None,
+                )
+                if not req:
+                    logger.info(
+                        "Skipping: No '{}' Mandrill request defined for data-use '{}'",
+                        request_action,
+                        pref.data_use,
+                    )
+                    continue
+
+                self.set_saas_request_state(req)
+
+                param_values: Dict[str, Any] = self.secrets
+                param_values["email"] = identity_data["email"]
+                prepared_request: SaaSRequestParams = map_param_values(
+                    request_action,
+                    f"{self.configuration.name}",
+                    req,
+                    self.secrets,
+                )
+                logger.info(prepared_request.dict())
+                client: AuthenticatedClient = self.create_client()
+                client.send(prepared_request)
+                self.unset_connector_state()
+            return True
+        raise NotSupportedForCollection(
+            f"Consent requests are not supported for saas connectors of type {self.saas_config.type}"
         )
-        return True
 
     def close(self) -> None:
         """Not required for this type"""

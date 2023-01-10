@@ -52,6 +52,12 @@ dataset = "data/saas/dataset/mailchimp_dataset.yml"
 icon = "data/saas/icon/mailchimp.svg"
 human_readable = "Mailchimp"
 
+[mandrill]
+config = "data/saas/config/mandrill_config.yml"
+dataset = "data/saas/dataset/mandrill_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Mandrill"
+
 [outreach]
 config = "data/saas/config/outreach_config.yml"
 dataset = "data/saas/dataset/outreach_dataset.yml"

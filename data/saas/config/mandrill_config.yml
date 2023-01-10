@@ -1,0 +1,44 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Mandril SaaS Config
+  type: mandrill
+  description: A sample schema representing the Mandril connector for Fided
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+
+  consent_requests:
+    opt_in:
+      - method: POST
+        path: /allowlists/add
+        body: |
+          {
+            "key": "<api_key>",
+            "email": "<email>"
+          }
+        data_uses: [advertising.first_party]
+    opt_out:
+      - method: POST
+        path: /allowlists/delete
+        body: |
+          {
+            "key": "<api_key>",
+            "email": "<email>"
+          }
+        data_uses: [ advertising.first_party]
+
+  test_request:
+    method: GET
+    path: /users/ping
+    body: |
+      {
+        "key": "<api_key>",
+      }
+
+  endpoints: []
