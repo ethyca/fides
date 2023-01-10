@@ -1539,7 +1539,7 @@ def base_saas_connection_config(db):
             "saas_config": SaaSConfig(
                 fides_key="my_base_saas_config",
                 name="test",
-                type="mandril",
+                type="mandrill",
                 description="Test saas config",
                 version="1.0",
                 connector_params=[],
@@ -1565,10 +1565,10 @@ def base_saas_dataset_config(
             "connection_config_id": base_saas_connection_config.id,
             "fides_key": "base_test_saas",
             "dataset": {
-                "fides_key": "mandril_test",
+                "fides_key": "mandrill_test",
                 "name": "Saas Dataset",
                 "description": "Example test dataset config",
-                "dataset_type": "mandril",
+                "dataset_type": "mandrill",
                 "collections": [],
             },
         },

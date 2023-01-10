@@ -38,26 +38,26 @@ async def test_consent_request_task(
     )
 
     assert v == {
-        "mandril_test:mandril_test": True
+        "mandrill_test:mandrill_test": True
     }, "graph has one node, and mocked request completed successfully"
 
     execution_logs = db.query(ExecutionLog).filter_by(
         privacy_request_id=privacy_request.id
     )
 
-    mandril_logs = execution_logs.filter_by(collection_name="mandril_test").order_by(
+    mandrill_logs = execution_logs.filter_by(collection_name="mandrill_test").order_by(
         "created_at"
     )
-    assert mandril_logs.count() == 2
+    assert mandrill_logs.count() == 2
 
-    assert [log.status for log in mandril_logs] == [
+    assert [log.status for log in mandrill_logs] == [
         ExecutionLogStatus.in_processing,
         ExecutionLogStatus.complete,
     ]
 
-    for log in mandril_logs:
-        assert log.dataset_name == "mandril_test"
+    for log in mandrill_logs:
+        assert log.dataset_name == "mandrill_test"
         assert (
-            log.collection_name == "mandril_test"
+            log.collection_name == "mandrill_test"
         ), "Node-level is given the same name as the dataset name"
         assert log.action_type == ActionType.consent

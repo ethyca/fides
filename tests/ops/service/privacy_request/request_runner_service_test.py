@@ -2231,5 +2231,5 @@ def test_build_consent_dataset_graph(
     )
     assert len(dataset_graph.nodes.keys()) == 1
     assert [col_addr.value for col_addr in dataset_graph.nodes.keys()] == [
-        "mandril_test:mandril_test"
+        "mandrill_test:mandrill_test"
     ]
