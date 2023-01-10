@@ -2222,7 +2222,7 @@ def test_build_consent_dataset_graph(
     base_saas_dataset_config,
     postgres_example_test_dataset_config_read_access,
     mysql_example_test_dataset_config,
-    mailchimp_dataset_config
+    mailchimp_dataset_config,
 ):
     """Currently returns a DatasetGraph made up of resources that have consent requests defined
     in the saas config"""
@@ -2231,7 +2231,7 @@ def test_build_consent_dataset_graph(
             base_saas_dataset_config,
             postgres_example_test_dataset_config_read_access,
             mysql_example_test_dataset_config,
-            mailchimp_dataset_config
+            mailchimp_dataset_config,
         ]
     )
     assert len(dataset_graph.nodes.keys()) == 1

@@ -9,6 +9,10 @@ saas_config:
     - name: domain
     - name: username
     - name: api_key
+    - name: transactional_domain
+      default_value: mandrillapp.com/api/1.0
+    - name: transactional_api_key
+      default_value:
 
   client_config:
     protocol: https
@@ -92,3 +96,41 @@ saas_config:
             {
               <masked_object_fields>
             }
+
+
+  consent_requests:
+    opt_in:
+      - method: POST
+        path: /allowlists/add
+        body: |
+          {
+            "email": "<email>"
+          }
+        client_config:
+          protocol: https
+          host: <transactional_domain>
+          authentication:
+            strategy: api_key
+            configuration:
+              body: |
+                {
+                  "key": "<transactional_api_key>"
+                }
+    opt_out:
+      - method: POST
+        path: /allowlists/delete
+        body: |
+          {
+            "email": "<email>"
+          }
+        client_config:
+          protocol: https
+          host: <transactional_domain>
+          authentication:
+            strategy: api_key
+            configuration:
+              body: |
+                {
+                  "key": "<transactional_api_key>"
+                }
+
