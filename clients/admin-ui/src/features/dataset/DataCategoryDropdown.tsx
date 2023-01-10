@@ -1,4 +1,5 @@
 import {
+  ArrowDownLineIcon,
   Box,
   Button,
   ButtonProps,
@@ -14,7 +15,6 @@ import {
 import { useMemo } from "react";
 
 import CheckboxTree from "~/features/common/CheckboxTree";
-import { ArrowDownLineIcon } from "~/features/common/Icon";
 import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
 import { DataCategory } from "~/types/api";
 

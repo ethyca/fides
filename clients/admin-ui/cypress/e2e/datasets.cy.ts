@@ -4,8 +4,7 @@ import {
   stubPlus,
 } from "cypress/support/stubs";
 
-// TODO: Update Cypress test to reflect the nav bar 2.0
-describe.skip("Dataset", () => {
+describe("Dataset", () => {
   beforeEach(() => {
     cy.login();
     stubDatasetCrud();
@@ -14,7 +13,8 @@ describe.skip("Dataset", () => {
   });
 
   describe("List of datasets view", () => {
-    it("Can navigate to the datasets list view", () => {
+    // TODO: Update Cypress test to reflect the nav bar 2.0
+    it.skip("Can navigate to the datasets list view", () => {
       cy.visit("/");
       cy.getByTestId("nav-link-Datasets").click();
       cy.wait("@getDatasets");

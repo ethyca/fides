@@ -7,9 +7,11 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  QuestionIcon,
   Stack,
   Text,
   useDisclosure,
+  UserIcon,
 } from "@fidesui/react";
 import NextLink from "next/link";
 import React from "react";
@@ -19,18 +21,19 @@ import { INDEX_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import FeaturesPanel from "~/features/common/features/FeaturesPanel";
-import { QuestionIcon, UserIcon } from "~/features/common/Icon";
+import { useGetHealthQuery } from "~/features/common/health.slice";
 import Image from "~/features/common/Image";
 
 const useHeader = () => {
   const { username } = useSelector(selectUser) ?? { username: "" };
-  return { username };
+  const { data } = useGetHealthQuery();
+  return { username, versionNumber: data ? data.version : undefined };
 };
 
 const Header: React.FC = () => {
   const features = useFeatures();
 
-  const { username } = useHeader();
+  const { username, versionNumber } = useHeader();
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useDispatch();
 
@@ -71,25 +74,33 @@ const Header: React.FC = () => {
                 <UserIcon color="gray.700" />
               </MenuButton>
               <MenuList shadow="xl">
-                <Stack py={2} spacing={0} px={3}>
+                <Stack px={3} py={2} spacing={1}>
                   <Text fontWeight="medium">{username}</Text>
                   {/* This text should only show if actually an admin */}
                   {/* <Text fontSize="sm" color="gray.600">
-                    Administrator
-                  </Text> */}
+              Administrator
+            </Text> */}
+                  {versionNumber ? (
+                    <Text fontWeight="light" color="gray.600">
+                      Fides {versionNumber}
+                    </Text>
+                  ) : null}
                 </Stack>
 
-                <MenuDivider />
                 {features.flags.featuresPanel ? (
-                  <MenuItem
-                    _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                    onClick={() => featuresPanelDisclosure.onOpen()}
-                  >
-                    Features
-                    <Text as="i" ml={2}>
-                      Beta
-                    </Text>{" "}
-                  </MenuItem>
+                  <>
+                    <MenuDivider />
+
+                    <MenuItem
+                      _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                      onClick={() => featuresPanelDisclosure.onOpen()}
+                    >
+                      Features
+                      <Text as="i" ml={2}>
+                        Beta
+                      </Text>{" "}
+                    </MenuItem>
+                  </>
                 ) : null}
 
                 <MenuDivider />

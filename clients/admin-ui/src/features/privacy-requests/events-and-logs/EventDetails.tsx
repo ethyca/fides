@@ -2,6 +2,7 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 import { useDisclosure } from "@chakra-ui/react";
 import {
   Box,
+  CloseSolidIcon,
   Divider,
   Drawer,
   DrawerBody,
@@ -12,7 +13,6 @@ import {
   IconButton,
   Text,
 } from "@fidesui/react";
-import { CloseSolidIcon } from "common/Icon";
 import { ExecutionLog } from "privacy-requests/types";
 import React, { useState } from "react";
 
@@ -130,7 +130,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
 
               <Flex alignItems="flex-start" height="100%">
                 <IconButton
-                  icon={<CloseSolidIcon />}
+                  icon={<CloseSolidIcon width="17px" />}
                   aria-label="Stop viewing error message"
                   variant="unstyled"
                   size="sm"

@@ -30,7 +30,7 @@ describe("Consent settings", () => {
       cy.getByTestId("card").contains("Manage your consent").click();
 
       cy.getByTestId("consent-request-form").within(() => {
-        cy.get("input").type("test@example.com");
+        cy.get("input#email").type("test@example.com");
         cy.get("button").contains("Continue").click();
       });
       cy.wait("@postConsentRequest");

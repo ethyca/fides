@@ -21,7 +21,13 @@ The types of changes are:
 
 * Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
+* Added Fides version number to account dropdown in the UI [#2140](https://github.com/ethyca/fides/pull/2140)
+* Add link to Classify Systems page in nav side bar [#2128](https://github.com/ethyca/fides/pull/2128)
 * Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
+* Update Privacy Center Icons [#1800](https://github.com/ethyca/fides/pull/2139)
+* Privacy Center `fides-consent.js`:
+  * `Fides.shopify` integration function. [#2152](https://github.com/ethyca/fides/pull/2152)
+  * Dedicated folder for integrations.
 
 ### Changed
 
@@ -30,6 +36,8 @@ The types of changes are:
   * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
   * No longer use `react-feature-flags` library.
 * Allow any user with `user:delete` scope to delete other users [#2148](https://github.com/ethyca/fides/pull/2148)
+* Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
+* Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
 
 ### Removed
 
@@ -40,6 +48,14 @@ The types of changes are:
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
 * Admin UI - Added Missing ability to assign `user:delete` in the permissions checkboxes [#2148](https://github.com/ethyca/fides/pull/2148)
 * Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
+* Side nav disappears when viewing request details [#2129](https://github.com/ethyca/fides/pull/2155)
+* Improve readability for exceptions raised from custom request overrides [#2157](https://github.com/ethyca/fides/pull/2157)
+* Importing custom request overrides on server startup [#2186](https://github.com/ethyca/fides/pull/2186)
+* Remove warning when env vars default to blank strings in docker-compose [#2188](https://github.com/ethyca/fides/pull/2188)
+
+### Removed
+
+* Remove "Create New System" button when viewing systems. All systems can now be created via the "Add systems" button on the home page. [#2132](https://github.com/ethyca/fides/pull/2132)
 
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 

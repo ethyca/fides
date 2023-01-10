@@ -5,6 +5,8 @@ import {
   chakra,
   Heading,
   Stack,
+  StepperCircleCheckmarkIcon,
+  StepperCircleIcon,
   Table,
   TableContainer,
   Tbody,
@@ -18,10 +20,6 @@ import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
 import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
-import {
-  StepperCircleCheckmarkIcon,
-  StepperCircleIcon,
-} from "~/features/common/Icon";
 import { System } from "~/types/api";
 
 import { setActiveSystem } from "../system";
