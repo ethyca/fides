@@ -44,6 +44,7 @@ class TestPostMessagingConfig:
         return {
             "name": "twilio_email",
             "service_type": MessagingServiceType.TWILIO_EMAIL.value,
+            "details": {MessagingServiceDetails.TWILIO_EMAIL_FROM: "test@email.com"}
         }
 
     @pytest.fixture(scope="function")
@@ -237,7 +238,7 @@ class TestPostMessagingConfig:
             "key": "my_twilio_email_config",
             "name": "twilio_email",
             "service_type": MessagingServiceType.TWILIO_EMAIL.value,
-            "details": None,
+            "details": {MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "test@email.com"},
         }
         assert expected_response == response_body
         email_config.delete(db)
