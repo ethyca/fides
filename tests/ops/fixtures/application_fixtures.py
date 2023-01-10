@@ -37,6 +37,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     S3AuthMethod,
@@ -663,6 +664,43 @@ def policy(
         pass
     try:
         access_request_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def consent_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    """Consent policies only need a ConsentRule attached - no RuleTargets necessary"""
+    consent_request_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example consent request policy",
+            "key": "example_consent_request_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    consent_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.consent.value,
+            "client_id": oauth_client.id,
+            "name": "Consent Request Rule",
+            "policy_id": consent_request_policy.id,
+        },
+    )
+
+    yield consent_request_policy
+    try:
+        consent_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        consent_request_policy.delete(db)
     except ObjectDeletedError:
         pass
 
@@ -1481,3 +1519,59 @@ def authenticated_fides_client(
 ) -> FidesClient:
     test_fides_client.login()
     return test_fides_client
+
+
+@pytest.fixture(scope="function")
+def base_saas_connection_config(db):
+    """Non-specific saas connection config for illustrating making consent requests
+
+    This is not capable of making requests
+    """
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_base_saas_config",
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "disabled": False,
+            "description": "Test saas connection",
+            "saas_config": SaaSConfig(
+                fides_key="my_base_saas_config",
+                name="test",
+                type="mandril",
+                description="Test saas config",
+                version="1.0",
+                connector_params=[],
+                client_config=ClientConfig(protocol="test", host="example.com"),
+                endpoints=[],
+                test_request=SaaSRequest(path="example.com", method="POST"),
+            ).dict(),
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def base_saas_dataset_config(
+    base_saas_connection_config: ConnectionConfig,
+    db: Session,
+) -> Generator:
+    """Non-specific saas DatasetConfig"""
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": base_saas_connection_config.id,
+            "fides_key": "base_test_saas",
+            "dataset": {
+                "fides_key": "mandril_test",
+                "name": "Saas Dataset",
+                "description": "Example test dataset config",
+                "dataset_type": "mandril",
+                "collections": [],
+            },
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db)

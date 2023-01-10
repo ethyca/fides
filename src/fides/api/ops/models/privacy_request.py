@@ -860,6 +860,7 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     )
 
     privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
+    privacy_request = relationship(PrivacyRequest)
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""

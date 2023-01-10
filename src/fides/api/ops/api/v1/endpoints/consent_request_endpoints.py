@@ -225,10 +225,10 @@ def get_consent_preferences(
     return _prepare_consent_preferences(db, identity)
 
 
-def load_executable_consent_options() -> List[str]:
+def load_executable_consent_options(file_path: str) -> List[str]:
     """Load customer's consentOptions from the config.json file and filter to return only a list
     of executable consent options"""
-    with open(CONFIG_JSON_PATH, encoding="utf-8") as privacy_center_config_file:
+    with open(file_path, encoding="utf-8") as privacy_center_config_file:
         privacy_center_config: Dict = json.load(privacy_center_config_file)
         consent_options: List = privacy_center_config.get("consent", {}).get(
             "consentOptions", []
@@ -267,7 +267,9 @@ def queue_privacy_request_to_propagate_consent(
         provided_identity.encrypted_value["value"],  # type:ignore[index]
     )  # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
 
-    executable_consent_options: List[str] = load_executable_consent_options()
+    executable_consent_options: List[str] = load_executable_consent_options(
+        CONFIG_JSON_PATH
+    )
     executable_consent_preferences: List[Dict] = [
         pref.dict()
         for pref in consent_preferences.consent or []

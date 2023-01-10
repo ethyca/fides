@@ -427,18 +427,11 @@ async def run_privacy_request(
             request_checkpoint=CurrentStep.consent,
             from_checkpoint=resume_step,
         ):
-            dataset_with_mocked_collections: List[Dataset] = [
-                dataset_config.get_dataset_with_stubbed_collection()
-                for dataset_config in datasets
-                if dataset_config.connection_config.connection_type
-                == ConnectionType.saas
-            ]
-            one_node_per_dataset_graph = DatasetGraph(*dataset_with_mocked_collections)
 
             await run_consent_request(
                 privacy_request=privacy_request,
                 policy=policy,
-                graph=one_node_per_dataset_graph,
+                graph=build_consent_dataset_graph(datasets),
                 connection_configs=connection_configs,
                 identity=identity_data,
                 session=session,
@@ -479,6 +472,22 @@ async def run_privacy_request(
         privacy_request.status = PrivacyRequestStatus.complete
         logger.info("Privacy request {} run completed.", privacy_request.id)
         privacy_request.save(db=session)
+
+
+def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
+    """
+    Build the starting DatasetGraph for consent requests.
+
+    Returns a DatasetGraph built from Datasets that have a single mocked collection, for when we want one node
+    per dataset, with no nodes per dependencies. For now, the resource must be a "saas" type but this
+    is subject to change.
+    """
+    datasets_with_representative_collections: List[Dataset] = [
+        dataset_config.get_dataset_with_stubbed_collection()
+        for dataset_config in datasets
+        if dataset_config.connection_config.connection_type == ConnectionType.saas
+    ]
+    return DatasetGraph(*datasets_with_representative_collections)
 
 
 def initiate_privacy_request_completion_email(
