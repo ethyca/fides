@@ -291,7 +291,10 @@ class Rule(Base):
             )
         existing_consent_rules = policy.get_rules_for_action(ActionType.consent)
 
-        if existing_consent_rules:
+        if (
+            existing_consent_rules
+            and data.get("action_type") == ActionType.consent.value
+        ):
             raise common_exceptions.RuleValidationError(
                 f"Policies can only have one consent rule attached.  Existing rule {existing_consent_rules[0].key} found."
             )

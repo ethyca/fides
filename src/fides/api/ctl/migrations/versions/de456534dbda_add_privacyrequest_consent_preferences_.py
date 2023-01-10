@@ -20,7 +20,7 @@ def upgrade():
     op.add_column(
         "privacyrequest",
         sa.Column(
-            "executable_consent_preferences",
+            "consent_preferences",
             postgresql.JSONB(astext_type=sa.Text()),
             nullable=True,
         ),
@@ -35,7 +35,7 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_column("privacyrequest", "executable_consent_preferences")
+    op.drop_column("privacyrequest", "consent_preferences")
 
     op.drop_constraint(
         "consentrequest_privacy_request_id_fkey", "consentrequest", type_="foreignkey"

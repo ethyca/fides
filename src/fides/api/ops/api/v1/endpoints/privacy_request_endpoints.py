@@ -1578,7 +1578,7 @@ def create_privacy_request_func(
         "external_id",
         "started_processing_at",
         "finished_processing_at",
-        "executable_consent_preferences",
+        "consent_preferences",
     ]
     for privacy_request_data in data:
         if not any(privacy_request_data.identity.dict().values()):
@@ -1617,7 +1617,7 @@ def create_privacy_request_func(
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)
             if attr is not None:
-                if field == "executable_consent_preferences":
+                if field == "consent_preferences":
                     attr = [consent.dict() for consent in attr]
 
                 kwargs[field] = attr

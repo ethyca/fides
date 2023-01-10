@@ -191,9 +191,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
-    executable_consent_preferences = Column(
-        MutableList.as_mutable(JSONB), nullable=True
-    )
+    consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.

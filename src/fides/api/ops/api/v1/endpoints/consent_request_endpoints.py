@@ -290,7 +290,7 @@ def queue_privacy_request_to_propagate_consent(
             PrivacyRequestCreate(
                 identity=identity,
                 policy_key=policy,
-                executable_consent_preferences=executable_consent_preferences,
+                consent_preferences=executable_consent_preferences,
             )
         ],
         authenticated=True,

@@ -1283,7 +1283,7 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: executable_consent_preferences
+    - name: consent_preferences
       data_categories: [ system.operations ]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: privacyrequesterror

@@ -577,9 +577,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return False
 
-        executable_consent_preferences: List[Consent] = [
-            Consent(**pref)
-            for pref in self.resources.request.executable_consent_preferences or []
+        consent_preferences: List[Consent] = [
+            Consent(**pref) for pref in self.resources.request.consent_preferences or []
         ]
 
         output: bool = self.connector.run_consent_request(
@@ -587,7 +586,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.resources.policy,
             self.resources.request,
             identity,
-            executable_consent_preferences,
+            consent_preferences,
         )
         self.log_end(ActionType.consent)
         return output

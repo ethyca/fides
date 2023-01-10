@@ -552,7 +552,6 @@ class TestSaveConsent:
             },
         )
         assert response.status_code == 200
-        # Assert n consent preferences have successfully beenassert consent_request.privacy_request.executable_consent_preferences set
         assert response.json()["consent"][0]["data_use"] == "email"
         assert response.json()["consent"][0]["opt_in"] is True
         assert not run_privacy_request_mock.called, "date_use: email is not executable"
@@ -733,7 +732,7 @@ class TestSaveConsent:
             "create a Privacy Request provided identity "
         )
         assert identity.phone_number is None
-        assert consent_request.privacy_request.executable_consent_preferences == [
+        assert consent_request.privacy_request.consent_preferences == [
             {"opt_in": True, "data_use": "advertising", "data_use_description": None},
             {"opt_in": False, "data_use": "improve", "data_use_description": None},
         ], "Only executable consent preferences stored"

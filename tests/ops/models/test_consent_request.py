@@ -152,12 +152,9 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         call_kwargs = mock_create_privacy_request.call_args[1]
         assert call_kwargs["db"] == db
         assert call_kwargs["data"][0].identity.email == "test@email.com"
-        assert len(call_kwargs["data"][0].executable_consent_preferences) == 1
-        assert (
-            call_kwargs["data"][0].executable_consent_preferences[0].data_use
-            == "advertising"
-        )
-        assert call_kwargs["data"][0].executable_consent_preferences[0].opt_in is False
+        assert len(call_kwargs["data"][0].consent_preferences) == 1
+        assert call_kwargs["data"][0].consent_preferences[0].data_use == "advertising"
+        assert call_kwargs["data"][0].consent_preferences[0].opt_in is False
         assert (
             call_kwargs["authenticated"] is True
         ), "We already validated identity with a verification code earlier in the request"

@@ -25,7 +25,7 @@ async def test_consent_request_task(
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()),
-        executable_consent_preferences=[{"data_use": "advertising", "opt_in": False}],
+        consent_preferences=[{"data_use": "advertising", "opt_in": False}],
     )
 
     v = await graph_task.run_consent_request(
