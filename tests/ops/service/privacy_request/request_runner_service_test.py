@@ -14,6 +14,7 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
+from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import AccessLevel
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
@@ -51,6 +52,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
+    build_consent_dataset_graph,
     run_webhooks_and_report_status,
     upload_access_results,
 )
@@ -2212,3 +2214,22 @@ class TestPrivacyRequestsManualWebhooks:
         assert mock_upload.call_args.kwargs["data"] == {
             "manual_webhook_example": [{"email": None, "last_name": None}]
         }
+
+
+def test_build_consent_dataset_graph(
+    base_saas_dataset_config,
+    postgres_example_test_dataset_config_read_access,
+    mysql_example_test_dataset_config,
+):
+    """Subject to change: currently returns a DatasetGraph made up from resources of saas-type"""
+    dataset_graph: DatasetGraph = build_consent_dataset_graph(
+        [
+            base_saas_dataset_config,
+            postgres_example_test_dataset_config_read_access,
+            mysql_example_test_dataset_config,
+        ]
+    )
+    assert len(dataset_graph.nodes.keys()) == 1
+    assert [col_addr.value for col_addr in dataset_graph.nodes.keys()] == [
+        "mandrill_test:mandrill_test"
+    ]

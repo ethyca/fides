@@ -9,7 +9,7 @@ from fides.api.ops.common_exceptions import FidesopsException, PostProcessingExc
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.saas_config import ClientConfig, ParamValue, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
@@ -403,6 +403,35 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             rows_updated += 1
         self.unset_connector_state()
         return rows_updated
+
+    def run_consent_request(
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        identity_data: Dict[str, Any],
+        executable_preferences: List[Consent],
+    ) -> bool:
+        """Execute a consent request. Return whether the consent request to the third party succeeded.
+
+        Executable_preferences have already been filtered to just consent preferences the customer has deemed executable.
+
+        Return True if 200 OK
+        """
+        logger.info(
+            "Mocking consent request - actual logic should go here for saas connectors",
+            node.address.value,
+        )
+
+        logger.info(
+            "Demo only! Testing available consent params! identity_data: {}, executable_preferences: {}",
+            identity_data,
+            [
+                {"use": preference.data_use, "opt_in": preference.opt_in}
+                for preference in executable_preferences
+            ],
+        )
+        return True
 
     def close(self) -> None:
         """Not required for this type"""

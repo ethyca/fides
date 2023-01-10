@@ -101,6 +101,10 @@ class CollectionDisabled(BaseException):
     """Collection is attached to disabled ConnectionConfig"""
 
 
+class NotSupportedForCollection(BaseException):
+    """The given action is not supported for this type of collection"""
+
+
 class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
