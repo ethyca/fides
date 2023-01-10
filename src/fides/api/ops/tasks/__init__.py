@@ -89,5 +89,5 @@ def start_worker() -> None:
     )
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     start_worker()

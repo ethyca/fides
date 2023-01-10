@@ -467,15 +467,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 input_data,
                 secrets,
             )  # type: ignore
-        except Exception:
+        except Exception as exc:
             logger.error(
                 "Encountered error executing override access function '{}'",
                 override_function_name,
                 exc_info=True,
             )
-            raise FidesopsException(
-                f"Error executing override access function '{override_function_name}'"
-            )
+            raise FidesopsException(str(exc))
 
     @staticmethod
     def _invoke_masking_request_override(

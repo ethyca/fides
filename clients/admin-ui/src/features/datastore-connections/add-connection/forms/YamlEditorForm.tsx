@@ -3,6 +3,7 @@ import {
   Button,
   ButtonGroup,
   Divider,
+  ErrorWarningIcon,
   Flex,
   Heading,
   HStack,
@@ -12,7 +13,6 @@ import {
   VStack,
 } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
-import { ErrorWarningIcon } from "common/Icon";
 import { Dataset } from "datastore-connections/types";
 import yaml, { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
