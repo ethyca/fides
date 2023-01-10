@@ -477,16 +477,25 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
     """
     Build the starting DatasetGraph for consent requests.
 
-    Returns a DatasetGraph built from Datasets that have a single mocked collection, for when we want one node
-    per dataset, with no nodes per dependencies. For now, the resource must be a "saas" type but this
-    is subject to change.
+    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
     """
-    datasets_with_representative_collections: List[Dataset] = [
-        dataset_config.get_dataset_with_stubbed_collection()
-        for dataset_config in datasets
-        if dataset_config.connection_config.connection_type == ConnectionType.saas
-    ]
-    return DatasetGraph(*datasets_with_representative_collections)
+    consent_datasets: List[Dataset] = []
+
+    for dataset_config in datasets:
+        connection_type: ConnectionType = (
+            dataset_config.connection_config.connection_type  # type: ignore
+        )
+        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
+        if (
+            connection_type == ConnectionType.saas
+            and saas_config
+            and saas_config.get("consent_requests")
+        ):
+            consent_datasets.append(
+                dataset_config.get_dataset_with_stubbed_collection()
+            )
+
+    return DatasetGraph(*consent_datasets)
 
 
 def initiate_privacy_request_completion_email(
