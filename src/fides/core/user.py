@@ -8,8 +8,8 @@ import toml
 from pydantic import BaseModel
 
 from fides.cli.utils import handle_cli_response
-from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.core.config import get_config
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 
 config = get_config()
 CREATE_USER_PATH = "/api/v1/user"

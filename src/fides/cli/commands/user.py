@@ -116,9 +116,9 @@ def login(ctx: click.Context, username: str, password: str) -> None:
     echo_green(f"Credentials file written to: {credentials_path}")
 
 
-@user.command()
+@user.command(name="permissions")
 @click.pass_context
-def permissions(ctx: click.Context) -> None:
+def get_permissions(ctx: click.Context) -> None:
     """List the scopes avaible to the current user."""
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
@@ -129,6 +129,7 @@ def permissions(ctx: click.Context) -> None:
 
     auth_header = create_auth_header(access_token)
     permissions: List[str] = get_user_permissions(user_id, auth_header, server_url)
+
     print("Permissions:")
     for permission in permissions:
         print(f"\t{permission}")
