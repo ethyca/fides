@@ -18,17 +18,15 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { INDEX_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
-import { useGetHealthQuery } from "~/features/common/health.slice";
 import Image from "~/features/common/Image";
 
 const useHeader = () => {
   const { username } = useSelector(selectUser) ?? { username: "" };
-  const { data } = useGetHealthQuery();
-  return { username, versionNumber: data ? data.version : undefined };
+  return { username };
 };
 
 const Header: React.FC = () => {
-  const { username, versionNumber } = useHeader();
+  const { username } = useHeader();
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useDispatch();
 
@@ -68,15 +66,6 @@ const Header: React.FC = () => {
               <MenuList shadow="xl">
                 <Stack px={3} py={2} spacing={1}>
                   <Text fontWeight="medium">{username}</Text>
-                  {/* This text should only show if actually an admin */}
-                  {/* <Text fontSize="sm" color="gray.600">
-              Administrator
-            </Text> */}
-                  {versionNumber ? (
-                    <Text fontWeight="light" color="gray.600">
-                      Fides {versionNumber}
-                    </Text>
-                  ) : null}
                 </Stack>
 
                 <MenuDivider />
