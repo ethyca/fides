@@ -15,6 +15,7 @@ from fides.core.user import (
 )
 from fides.core.utils import echo_green, echo_red
 from fides.lib.oauth.scopes import SCOPES
+from fides.cli.options import username, password, first_name, last_name
 
 
 @click.group(name="user")
@@ -25,44 +26,12 @@ def user(ctx: click.Context) -> None:
     """
 
 
-def prompt_username(ctx: click.Context, param: str, value: str) -> str:
-    if not value:
-        value = click.prompt(text="Username")
-    return value
-
-
-def prompt_password(ctx: click.Context, param: str, value: str) -> str:
-    if not value:
-        value = click.prompt(text="Password", hide_input=True)
-    return value
-
-
 @user.command()
 @click.pass_context
-@click.option(
-    "-u",
-    "--username",
-    default="",
-    callback=prompt_username,
-)
-@click.option(
-    "-p",
-    "--password",
-    default="",
-    callback=prompt_password,
-)
-@click.option(
-    "-f",
-    "--first-name",
-    default="",
-    help="First name of the new user.",
-)
-@click.option(
-    "-l",
-    "--last-name",
-    default="",
-    help="Last name of the new user.",
-)
+@username
+@password
+@first_name
+@last_name
 def create(
     ctx: click.Context, username: str, password: str, first_name: str, last_name: str
 ) -> None:
@@ -99,18 +68,8 @@ def create(
 
 @user.command()
 @click.pass_context
-@click.option(
-    "-u",
-    "--username",
-    default="",
-    callback=prompt_username,
-)
-@click.option(
-    "-p",
-    "--password",
-    default="",
-    callback=prompt_password,
-)
+@username
+@password
 def login(ctx: click.Context, username: str, password: str) -> None:
     """
     Use credentials to get a user access token and write it to a credentials file.
