@@ -433,7 +433,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             return consent_requests.opt_in if opt_in else consent_requests.opt_out
 
         logger.info(
-            "Starting consent request for node '{}'",
+            "Starting consent request for node: '{}'",
             node.address.value,
         )
 
@@ -459,7 +459,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             self.set_saas_request_state(req)
 
             param_values: Dict[str, Any] = self.secrets
-            param_values["email"] = identity_data["email"]
+            param_values.update(identity_data)
 
             prepared_request: SaaSRequestParams = map_param_values(
                 request_action,
@@ -467,7 +467,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 req,
                 self.secrets,
             )
-            logger.info(prepared_request.dict())
             client: AuthenticatedClient = self.create_client()
             client.send(prepared_request)
             self.unset_connector_state()

@@ -52,6 +52,12 @@ dataset = "data/saas/dataset/mailchimp_dataset.yml"
 icon = "data/saas/icon/mailchimp.svg"
 human_readable = "Mailchimp"
 
+[mailchimp_transactional]
+config = "data/saas/config/mailchimp_transactional_config.yml"
+dataset = "data/saas/dataset/mailchimp_transactional_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Mailchimp Transactional"
+
 [outreach]
 config = "data/saas/config/outreach_config.yml"
 dataset = "data/saas/dataset/outreach_dataset.yml"
