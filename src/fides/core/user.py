@@ -1,8 +1,8 @@
 """Module for interaction with User endpoints/commands."""
 import json
+from os import getenv
 from pathlib import Path
 from typing import Dict, List, Tuple
-from os import getenv
 
 import requests
 import toml
@@ -10,8 +10,8 @@ from pydantic import BaseModel
 
 from fides.cli.utils import handle_cli_response
 from fides.core.config import get_config
-from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.core.utils import echo_green, echo_red
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.oauth.scopes import SCOPES
 
 config = get_config()

@@ -199,7 +199,7 @@ def prompt_password(ctx: click.Context, param: str, value: str) -> str:
     return value
 
 
-def username(command: Callable) -> Callable:
+def username_option(command: Callable) -> Callable:
     command = click.option(
         "-u",
         "--username",
@@ -209,7 +209,7 @@ def username(command: Callable) -> Callable:
     return command
 
 
-def password(command: Callable) -> Callable:
+def password_option(command: Callable) -> Callable:
     command = click.option(
         "-p",
         "--password",
@@ -219,7 +219,7 @@ def password(command: Callable) -> Callable:
     return command
 
 
-def first_name(command: Callable) -> Callable:
+def first_name_option(command: Callable) -> Callable:
     command = click.option(
         "-f",
         "--first-name",
@@ -228,7 +228,7 @@ def first_name(command: Callable) -> Callable:
     return command
 
 
-def last_name(command: Callable) -> Callable:
+def last_name_option(command: Callable) -> Callable:
     command = click.option(
         "-l",
         "--last-name",

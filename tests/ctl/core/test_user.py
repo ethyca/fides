@@ -1,5 +1,6 @@
-import pytest
 from os import environ
+
+import pytest
 
 from fides.core.user import Credentials, get_credentials_path
 

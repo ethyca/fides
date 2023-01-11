@@ -2,8 +2,8 @@
 import os
 from base64 import b64decode
 from json import dump, loads
-from typing import Generator
 from pathlib import Path
+from typing import Generator
 
 import pytest
 from click.testing import CliRunner

@@ -1,15 +1,13 @@
 """Contains the user group of commands for fides."""
-
-from typing import List
-
 import click
 
-from fides.core.user import (
-    create_command,
-    login_command,
-    get_permissions_command,
+from fides.cli.options import (
+    first_name_option,
+    last_name_option,
+    password_option,
+    username_option,
 )
-from fides.cli.options import username, password, first_name, last_name
+from fides.core.user import create_command, get_permissions_command, login_command
 
 
 @click.group(name="user")
@@ -22,10 +20,10 @@ def user(ctx: click.Context) -> None:
 
 @user.command()
 @click.pass_context
-@username
-@password
-@first_name
-@last_name
+@username_option
+@password_option
+@first_name_option
+@last_name_option
 def create(
     ctx: click.Context, username: str, password: str, first_name: str, last_name: str
 ) -> None:
@@ -47,8 +45,8 @@ def create(
 
 @user.command()
 @click.pass_context
-@username
-@password
+@username_option
+@password_option
 def login(ctx: click.Context, username: str, password: str) -> None:
     """
     Use credentials to get a user access token and write it to a credentials file.
