@@ -35,7 +35,7 @@ const DatasetFieldCell = ({
     const assignedCategories = field.data_categories ?? [];
     // Only show the classified categories if none have been directly assigned to the dataset.
     const categories =
-      assignedCategories.length > 0 ? assignedCategories : classifiedCategories;
+      assignedCategories.length > 0 ? assignedCategories : [classifiedCategories[0]];
 
     return (
       <Tooltip
