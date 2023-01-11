@@ -110,9 +110,12 @@ describe("Consent settings", () => {
     });
 
     it("reflects their choices using fides-consent.js", () => {
-      // Opt-out of a an item defaults to opt-in.
+      // Opt-out of items default to opt-in.
       cy.visit("/consent");
       cy.getByTestId(`consent-item-card-advertising`).within(() => {
+        cy.getRadio("false").check({ force: true });
+      });
+      cy.getByTestId(`consent-item-card-improve`).within(() => {
         cy.getRadio("false").check({ force: true });
       });
       cy.getByTestId("save-btn").click();
@@ -123,7 +126,30 @@ describe("Consent settings", () => {
         // Now all of the cookie keys should be populated.
         expect(win).to.have.nested.property("Fides.consent").that.eql({
           data_sales: false,
+          tracking: false,
         });
+
+        // GTM configuration
+        expect(win)
+          .to.have.nested.property("dataLayer")
+          .that.eql([
+            {
+              Fides: {
+                consent: {
+                  data_sales: false,
+                  tracking: false,
+                },
+              },
+            },
+          ]);
+
+        // Meta Pixel configuration
+        expect(win)
+          .to.have.nested.property("fbq.queue")
+          .that.eql([
+            ["consent", "revoke"],
+            ["dataProcessingOptions", ["LDU"], 1, 1000],
+          ]);
       });
     });
   });
@@ -136,7 +162,30 @@ describe("Consent settings", () => {
         // Before visiting the privacy center the consent object only has the default choices.
         expect(win).to.have.nested.property("Fides.consent").that.eql({
           data_sales: true,
+          tracking: true,
         });
+
+        // GTM configuration
+        expect(win)
+          .to.have.nested.property("dataLayer")
+          .that.eql([
+            {
+              Fides: {
+                consent: {
+                  data_sales: true,
+                  tracking: true,
+                },
+              },
+            },
+          ]);
+
+        // Meta Pixel configuration
+        expect(win)
+          .to.have.nested.property("fbq.queue")
+          .that.eql([
+            ["consent", "grant"],
+            ["dataProcessingOptions", []],
+          ]);
       });
     });
   });
