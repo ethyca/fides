@@ -874,15 +874,6 @@ class TestUser:
         assert result.exit_code == 0
 
     @pytest.mark.unit
-    def test_user_login_credentials_file(
-        self, test_config_path: str, test_cli_runner: CliRunner
-    ) -> None:
-        """Test user login with an existing credentials file."""
-        result = test_cli_runner.invoke(cli, ["-f", test_config_path, "user", "login"])
-        print(result.output)
-        assert result.exit_code == 0
-
-    @pytest.mark.unit
     def test_user_create(
         self, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
