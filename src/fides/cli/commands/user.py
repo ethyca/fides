@@ -1,4 +1,4 @@
-"""Contains the user group of commands for fides."""
+"""Contains the user command group for the fides CLI."""
 import click
 
 from fides.cli.options import (
