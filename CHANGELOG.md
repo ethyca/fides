@@ -51,6 +51,7 @@ The types of changes are:
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
 * Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
 * Side nav disappears when viewing request details [#2129](https://github.com/ethyca/fides/pull/2155)
+* Remove usage of load dataset button and other dataset UI modifications [#2149](https://github.com/ethyca/fides/pull/2149)
 * Improve readability for exceptions raised from custom request overrides [#2157](https://github.com/ethyca/fides/pull/2157)
 * Importing custom request overrides on server startup [#2186](https://github.com/ethyca/fides/pull/2186)
 * Remove warning when env vars default to blank strings in docker-compose [#2188](https://github.com/ethyca/fides/pull/2188)
