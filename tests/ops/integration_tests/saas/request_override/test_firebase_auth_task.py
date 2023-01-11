@@ -210,7 +210,9 @@ async def test_firebase_auth_delete_request(
     assert user_record.uid == firebase_auth_user.uid
 
     # run the delete function
-    firebase_auth_user_delete(param_values_per_row, None, None, firebase_auth_secrets)
+    firebase_auth_user_delete(
+        None, param_values_per_row, None, None, firebase_auth_secrets
+    )
 
     # confirm the user no longer exists
     with pytest.raises(UserNotFoundError):

@@ -190,6 +190,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             if read_request.request_override:
                 return self._invoke_read_request_override(
                     read_request.request_override,
+                    self.create_client(),
                     policy,
                     privacy_request,
                     node,
@@ -370,6 +371,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         if masking_request.request_override:
             return self._invoke_masking_request_override(
                 masking_request.request_override,
+                self.create_client(),
                 policy,
                 privacy_request,
                 rows,
@@ -443,6 +445,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     @staticmethod
     def _invoke_read_request_override(
         override_function_name: str,
+        client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
         node: TraversalNode,
@@ -461,6 +464,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
         try:
             return override_function(
+                client,
                 node,
                 policy,
                 privacy_request,
@@ -478,6 +482,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     @staticmethod
     def _invoke_masking_request_override(
         override_function_name: str,
+        client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
@@ -508,6 +513,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 for row in rows
             ]
             return override_function(
+                client,
                 update_param_values,
                 policy,
                 privacy_request,
