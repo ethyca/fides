@@ -201,6 +201,7 @@ The `fides.toml` file should specify the following variables:
 | `destination` | String | `""` | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to `stdout` and log files are not produced. |
 | `level` | Enum (String) | `INFO` | The minimum log entry level to produce. Also accepts `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
 | `serialization` | Enum (String) | `""` | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts `"JSON"` (case insensitive). |
+| `log_pii` | Boolean | `False` | If `True`, PII values will display unmasked in log output. This variable should always be set to "False" in production systems. |
 
 #### CLI
 
@@ -303,7 +304,6 @@ The following environment variables are not included in the default `fides.toml`
 
  ENV Variable | Default | Description |
 |---|---|---|
-| `FIDES__LOG_PII` | `False` | If `True`, PII values will display unmasked in log output. This variable should always be set to "False" in production systems.
 | `FIDES__HOT_RELOAD` | `False` | If `True`, the Fides server will reload code changes without needing to restart the server. This variable should always be set to `False` in production systems.|
 | `FIDES__DEV_MODE` | `False` | If `True`, the Fides server will log error tracebacks, and log details of third party requests. This variable should always be set to `False` in production systems.|
 | `FIDES_CONFIG_PATH` | None | If this is set to a path, that path will be used to load `.toml` files first. Any .toml files on this path will override any installed .toml files. |
