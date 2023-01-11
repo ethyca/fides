@@ -1,6 +1,7 @@
 import pytest
+from os import environ
 
-from fides.core.user import Credentials
+from fides.core.user import Credentials, get_credentials_path
 
 
 @pytest.mark.unit
@@ -20,3 +21,11 @@ class TestCredentials:
         assert credentials.password == "password"
         assert credentials.user_id == "some_id"
         assert credentials.access_token == "some_token"
+
+
+def test_get_credentials_path() -> None:
+    """Test that a custom path for the credentials file works as expected."""
+    expected_path = "test_credentials"
+    environ["FIDES_CREDENTIALS_PATH"] = "test_credentials"
+    actual_path = get_credentials_path()
+    assert expected_path == actual_path

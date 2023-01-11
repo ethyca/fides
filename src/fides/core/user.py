@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 from typing import Dict, List, Tuple
+from os import getenv
 
 import requests
 import toml
@@ -16,8 +17,6 @@ CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"
 USER_PERMISSIONS_PATH = "/api/v1/user/{}/permission"
 
-CREDENTIALS_FILE_PATH = f"{str(Path.home())}/.fides_credentials"
-
 
 class Credentials(BaseModel):
     """
@@ -28,6 +27,13 @@ class Credentials(BaseModel):
     password: str
     user_id: str
     access_token: str
+
+
+def get_credentials_path() -> str:
+    """Returns the default credentials path or the path set as an environment variable."""
+    default_credentials_file_path = f"{str(Path.home())}/.fides_credentials"
+    credentials_path = getenv("FIDES_CREDENTIALS_PATH", default_credentials_file_path)
+    return credentials_path
 
 
 def get_access_token(username: str, password: str, server_url: str) -> Tuple[str, str]:
@@ -46,18 +52,22 @@ def get_access_token(username: str, password: str, server_url: str) -> Tuple[str
     return (user_id, access_token)
 
 
-def write_credentials_file(credentials: Credentials) -> str:
+def write_credentials_file(
+    credentials: Credentials, credentials_path: str = get_credentials_path()
+) -> str:
     """
     Write the user credentials file.
     """
-    with open(CREDENTIALS_FILE_PATH, "w", encoding="utf-8") as credentials_file:
+    with open(credentials_path, "w", encoding="utf-8") as credentials_file:
         credentials_file.write(toml.dumps(credentials.dict()))
-    return CREDENTIALS_FILE_PATH
+    return credentials_path
 
 
-def read_credentials_file() -> Credentials:
+def read_credentials_file(
+    credentials_path: str = get_credentials_path(),
+) -> Credentials:
     """Read and return the credentials file."""
-    with open(CREDENTIALS_FILE_PATH, "r", encoding="utf-8") as credentials_file:
+    with open(credentials_path, "r", encoding="utf-8") as credentials_file:
         credentials = Credentials.parse_obj(toml.load(credentials_file))
     return credentials
 
