@@ -1,25 +1,21 @@
-import { Table, Tbody, Td, Th, Thead, Tr, useToast } from "@fidesui/react";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 
 import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
-import { successToastParams } from "~/features/common/toast";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import { selectDatasetClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes } from "~/types/api";
 
 import {
-  selectActiveDatasetFidesKey,
   setActiveDatasetFidesKey,
   useGetAllDatasetsQuery,
 } from "./dataset.slice";
 
 const DatasetsTable = () => {
   const dispatch = useDispatch();
-  const activeDatasetFidesKey = useSelector(selectActiveDatasetFidesKey);
   const router = useRouter();
-  const toast = useToast();
   const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
   usePollForClassifications({
@@ -29,14 +25,8 @@ const DatasetsTable = () => {
   const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
 
   const handleRowClick = (dataset: Dataset) => {
-    // toggle the active dataset
-    if (dataset.fides_key === activeDatasetFidesKey) {
-      dispatch(setActiveDatasetFidesKey(undefined));
-    } else {
-      dispatch(setActiveDatasetFidesKey(dataset.fides_key));
-      router.push(`/dataset/${dataset.fides_key}`);
-      toast(successToastParams("Successfully loaded dataset"));
-    }
+    dispatch(setActiveDatasetFidesKey(dataset.fides_key));
+    router.push(`/dataset/${dataset.fides_key}`);
   };
 
   if (!datasets) {
@@ -59,17 +49,12 @@ const DatasetsTable = () => {
       </Thead>
       <Tbody>
         {datasets.map((dataset) => {
-          const isActive =
-            activeDatasetFidesKey &&
-            activeDatasetFidesKey === dataset.fides_key;
-
           const classifyDataset = classifyInstanceMap.get(dataset.fides_key);
 
           return (
             <Tr
               key={dataset.fides_key}
-              _hover={{ bg: isActive ? undefined : "gray.50" }}
-              backgroundColor={isActive ? "complimentary.50" : undefined}
+              _hover={{ bg: "gray.50" }}
               tabIndex={0}
               onClick={() => handleRowClick(dataset)}
               onKeyPress={(e) => {
