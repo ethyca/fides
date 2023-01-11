@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 
+* Added the `user` command group to the CLI. [#2153](https://github.com/ethyca/fides/pull/2153)
 * Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
 * Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
@@ -138,7 +139,6 @@ The types of changes are:
 
 * Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
 
-
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
 ### Added
@@ -220,7 +220,6 @@ The types of changes are:
 ### Security
 
 * Bumped versions of packages that use OpenSSL [#1683](https://github.com/ethyca/fides/pull/1683)
-
 
 ## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
 
