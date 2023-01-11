@@ -30,6 +30,7 @@ The types of changes are:
 * Unified Fides Resources: New datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
 * Unified Fides Resources: Remove DatasetConfig.dataset field [#2096](https://github.com/ethyca/fides/pull/2096)
 * Unified Fides Resources: Update UI dataset config routes to use new unified routes [#2113](https://github.com/ethyca/fides/pull/2113)
+* Unified Fides Resources: Validate request body on crud endpoints on upsert. Validate dataset data categories before save. [#2134](https://github.com/ethyca/fides/pull/2134/)
 
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
