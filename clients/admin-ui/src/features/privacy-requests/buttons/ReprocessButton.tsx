@@ -16,7 +16,7 @@ import { PrivacyRequestEntity } from "../types";
 type ReprocessButtonProps = {
   buttonProps?: ButtonProps;
   handleBlur?: (ref: ForwardedRef<any>) => void;
-  subjectRequest?: PrivacyRequest;
+  subjectRequest?: PrivacyRequestEntity;
 };
 
 const ReprocessButton = forwardRef(
