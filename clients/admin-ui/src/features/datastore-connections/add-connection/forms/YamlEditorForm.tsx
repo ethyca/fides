@@ -210,7 +210,10 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
       <ConfirmationModal
         isOpen={warningDisclosure.isOpen}
         onClose={warningDisclosure.onClose}
-        onConfirm={handleSubmit}
+        onConfirm={() => {
+          handleSubmit();
+          warningDisclosure.onClose();
+        }}
         title="Overwrite dataset"
         message={
           <>
