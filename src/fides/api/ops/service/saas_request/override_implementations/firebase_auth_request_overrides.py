@@ -156,7 +156,7 @@ def _retrieve_user_record(
     privacy_request: PrivacyRequest, row_param_values: Dict[str, Any], app: App
 ) -> UserRecord:
     """
-    Utility that erasure functions can use to retrieve a Firebase `UserRecord
+    Utility that erasure functions can use to retrieve a Firebase `UserRecord`
     """
     identity = get_identity(privacy_request)
     if identity == "email":
