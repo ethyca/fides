@@ -96,7 +96,7 @@ const ApproveClassification = () => {
         isDisabled={isLoading}
         data-testid="approve-classification-btn"
       >
-        Approve dataset classification
+        Approve classifications
       </Button>
     </>
   );
