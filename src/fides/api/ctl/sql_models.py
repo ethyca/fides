@@ -333,6 +333,23 @@ class ResourceTypes(str, EnumType):
     data_subject = "data subject"
 
 
+class CustomFieldValueList(Base):
+    """Allow-list definitions for custom metadata values"""
+
+    __tablename__ = "plus_custom_field_value_list"
+
+    fides_key = Column(String, index=True, unique=True)
+    name = Column(String, nullable=False)
+    description = Column(String)
+    allowed_values = Column(ARRAY(String))
+    custom_field_definition = relationship(
+        "CustomFieldDefinition",
+        back_populates="allow_list",
+    )
+
+    UniqueConstraint("name")
+
+
 class CustomFieldDefinition(Base):
     """Defines custom metadata for resources."""
 
@@ -345,16 +362,19 @@ class CustomFieldDefinition(Base):
         EnumColumn(AllowedTypes),
         nullable=False,
     )
-    allow_list = Column(
-        ARRAY(String)
-    )  # Ulitmately this will come the the CustomList table
+    allow_list_id = Column(String, ForeignKey(CustomFieldValueList.id), nullable=True)
     resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
     field_definition = Column(String, index=True)
     custom_field = relationship(
         "CustomField",
-        back_populates="plus_custom_field_definition",
+        back_populates="custom_field_definition",
         cascade="delete, delete-orphan",
     )
+    allow_list = relationship(
+        "CustomFieldValueList",
+        back_populates="custom_field_definition",
+    )
+
     UniqueConstraint("name", "resource_type")
 
 
@@ -373,7 +393,7 @@ class CustomField(Base):
 
     custom_field_definition = relationship(
         "CustomFieldDefinition",
-        back_populates="plus_custom_field",
+        back_populates="custom_field",
     )
 
     UniqueConstraint("resource_type", "resource_id" "custom_field_definition_id")
