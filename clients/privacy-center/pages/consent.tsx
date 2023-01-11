@@ -136,6 +136,9 @@ const Consent: NextPage = () => {
         data_use: d.fidesDataUseKey,
         data_use_description: d.description,
         opt_in: d.consentValue,
+      })),
+      executable_options: consentItems.map((d) => ({
+        data_use: d.fidesDataUseKey,
         executable: d.executable ?? false,
       })),
     };
