@@ -369,6 +369,7 @@ class CustomField(Base):
     custom_field_definition_id = Column(
         String, ForeignKey(CustomFieldDefinition.id), nullable=False
     )
+    value = Column(String)
 
     custom_field_definition = relationship(
         "CustomFieldDefinition",
