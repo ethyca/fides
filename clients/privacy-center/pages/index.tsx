@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { Flex, Heading, Text, Stack, Image, useToast } from "@fidesui/react";
-import { ConfigErrorToastOptions } from "~/common/toast-options";
+import {
+  ConfigErrorToastOptions,
+  ErrorToastOptions,
+} from "~/common/toast-options";
 
 import {
   usePrivactRequestModal,
@@ -13,6 +16,7 @@ import {
   ConsentRequestModal,
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
 import { hostUrl, config } from "~/constants";
+import { configIsValid } from "~/common/config";
 import PrivacyCard from "../components/PrivacyCard";
 import ConsentCard from "../components/ConsentCard";
 
@@ -94,6 +98,16 @@ const Home: NextPage = () => {
       />
     );
   }
+
+  useEffect(() => {
+    const { isValid, message } = configIsValid();
+    if (!isValid) {
+      toast({
+        title: `Invalid config.json: ${message}`,
+        ...ErrorToastOptions,
+      });
+    }
+  }, [toast]);
 
   return (
     <div>
