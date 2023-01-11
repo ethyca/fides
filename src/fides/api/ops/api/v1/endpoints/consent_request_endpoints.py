@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from typing import Dict, List, Optional, Tuple, Union
 
 from fastapi import Depends, HTTPException, Security
@@ -298,7 +297,6 @@ def set_consent_preferences(
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
-    logger.info(data)
 
     if not provided_identity.hashed_value:
         raise HTTPException(
@@ -497,5 +495,5 @@ def _prepare_consent_preferences(
                 opt_in=x.opt_in,
             )
             for x in consent
-        ]
+        ],
     )
