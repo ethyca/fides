@@ -1,3 +1,4 @@
+from random import randint
 from typing import Any, Dict, Generator
 
 import pydash
@@ -76,7 +77,7 @@ def firebase_auth_secrets(saas_config):
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def firebase_auth_user(firebase_auth_secrets) -> Generator:
     app = initialize_firebase(firebase_auth_secrets)
 
@@ -114,6 +115,7 @@ def firebase_auth_user(firebase_auth_secrets) -> Generator:
         email_verified=False,
         display_name="John Doe",
         photo_url="http://www.example.com/12345678/photo.png",
+        phone_number="+1" + str(randint(1000000000, 9999999999)),
         disabled=False,
         provider_data=[up1, up2],
     )
