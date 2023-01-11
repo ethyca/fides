@@ -13476,7 +13476,15 @@
             "$ref": "#/components/schemas/MessagingServiceType"
           },
           "details": {
-            "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+            "title": "Details",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              }
+            ]
           }
         },
         "description": "Messaging Config Request Schema"
@@ -13600,6 +13608,21 @@
         },
         "additionalProperties": false,
         "description": "The details required to represent a Mailgun email configuration."
+      },
+      "MessagingServiceDetailsTwilioEmail": {
+        "title": "MessagingServiceDetailsTwilioEmail",
+        "required": [
+          "twilio_email_from"
+        ],
+        "type": "object",
+        "properties": {
+          "twilio_email_from": {
+            "title": "Twilio Email From",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The details required to represent a Twilio email configuration."
       },
       "MessagingServiceType": {
         "title": "MessagingServiceType",
