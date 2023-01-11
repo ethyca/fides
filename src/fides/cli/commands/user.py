@@ -25,21 +25,43 @@ def user(ctx: click.Context) -> None:
     """
 
 
+def prompt_username(ctx: click.Context, param: str, value: str) -> str:
+    if not value:
+        value = click.prompt(text="Username")
+    return value
+
+
+def prompt_password(ctx: click.Context, param: str, value: str) -> str:
+    if not value:
+        value = click.prompt(text="Password", hide_input=True)
+    return value
+
+
 @user.command()
 @click.pass_context
-@click.argument("username", type=str)
-@click.argument("password", type=str)
+@click.option(
+    "-u",
+    "--username",
+    default="",
+    callback=prompt_username,
+)
+@click.option(
+    "-p",
+    "--password",
+    default="",
+    callback=prompt_password,
+)
 @click.option(
     "-f",
     "--first-name",
     default="",
-    help="First name of the user.",
+    help="First name of the new user.",
 )
 @click.option(
     "-l",
     "--last-name",
     default="",
-    help="Last name of the user.",
+    help="Last name of the new user.",
 )
 def create(
     ctx: click.Context, username: str, password: str, first_name: str, last_name: str
@@ -81,32 +103,20 @@ def create(
     "-u",
     "--username",
     default="",
-    help="Username to authenticate with.",
+    callback=prompt_username,
 )
 @click.option(
     "-p",
     "--password",
     default="",
-    help="Password to authenticate with.",
+    callback=prompt_password,
 )
 def login(ctx: click.Context, username: str, password: str) -> None:
     """
-    Use credentials to get a user access token and write a credentials file.
-
-    If no username/password is provided, attempt to load an existing credentials file
-    and use that username/password.
+    Use credentials to get a user access token and write it to a credentials file.
     """
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
-
-    if not (username and password):
-        try:
-            credentials = read_credentials_file()
-        except FileNotFoundError:
-            echo_red("No username/password provided and no credentials file found.")
-            raise SystemExit(1)
-        username = credentials.username
-        password = credentials.password
 
     user_id, access_token = get_access_token(
         username=username, password=password, server_url=server_url
