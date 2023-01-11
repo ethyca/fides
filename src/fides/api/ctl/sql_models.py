@@ -4,12 +4,21 @@
 Contains all of the SqlAlchemy models for the Fides resources.
 """
 
-from enum import EnumType
+from enum import Enum as EnumType
 from typing import Dict
 
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Integer, String, Text, TypeDecorator, cast, type_coerce
+from sqlalchemy import (
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    TypeDecorator,
+    UniqueConstraint,
+    cast,
+    type_coerce,
+)
 from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -324,27 +333,13 @@ class ResourceTypes(str, EnumType):
     data_subject = "data subject"
 
 
-class CustomField(Base):
-    """Custom metadata for resources."""
-
-    __tablename__ = "plus_custome_field"
-
-    fides_key = Column(String, index=True, unique=True)
-
-    consent = relationship(
-        "CustomFieldDefinition",
-        back_populates="provided_identity",
-        cascade="delete, delete-orphan",
-    )
-
-
 class CustomFieldDefinition(Base):
     """Defines custom metadata for resources."""
 
     __tablename__ = "plus_custom_field_definition"
 
     fides_key = Column(String, index=True, unique=True)
-    name = Column(String, unique=True)
+    name = Column(String, index=True, nullable=False)
     description = Column(String)
     field_type = Column(
         EnumColumn(AllowedTypes),
@@ -355,6 +350,29 @@ class CustomFieldDefinition(Base):
     )  # Ulitmately this will come the the CustomList table
     resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
     field_definition = Column(String, index=True)
-    custom_field_definition = relationship(
-        "CustomFieldDefinition", backref="datasets", cascade="delete, delete-orphan"
+    custom_field = relationship(
+        "CustomField",
+        back_populates="plus_custom_field_definition",
+        cascade="delete, delete-orphan",
     )
+    UniqueConstraint("name", "resource_type")
+
+
+class CustomField(Base):
+    """Custom metadata for resources."""
+
+    __tablename__ = "plus_custom_field"
+
+    fides_key = Column(String, index=True, unique=True)
+    resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
+    resource_id = Column(String, index=True, nullable=False)
+    custom_field_definition_id = Column(
+        String, ForeignKey(CustomFieldDefinition.id), nullable=False
+    )
+
+    custom_field_definition = relationship(
+        "CustomFieldDefinition",
+        back_populates="plus_custom_field",
+    )
+
+    UniqueConstraint("resource_type", "resource_id" "custom_field_definition_id")
