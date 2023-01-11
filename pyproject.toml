@@ -52,6 +52,7 @@ module = [
   "plotly.*",
   "pydash.*",
   "pymongo.*",
+  "sendgrid.*",
   "snowflake.*",
   "sqlalchemy.ext.*",
   "sqlalchemy.future.*",
