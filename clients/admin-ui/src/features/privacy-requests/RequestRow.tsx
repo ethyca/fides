@@ -232,6 +232,7 @@ const RequestRow: React.FC<{
           {request.status === "error" && (
             <ReprocessButton
               buttonProps={{ mr: "-px", size: "xs" }}
+              handleBlur={handleBlur}
               subjectRequest={request}
             />
           )}
