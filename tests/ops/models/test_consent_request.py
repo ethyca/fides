@@ -21,6 +21,7 @@ from fides.api.ops.schemas.policy import PolicyResponse
 from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     ConsentPreferences,
+    ExecutableConsent,
     PrivacyRequestResponse,
 )
 from fides.core.config import get_config
@@ -116,12 +117,16 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         consent_preferences = ConsentPreferences(
             consent=[{"data_use": "advertising", "opt_in": False}]
         )
+        executable_consents = [
+            ExecutableConsent(data_use="advertising", executable=True)
+        ]
 
         queue_privacy_request_to_propagate_consent(
             db=db,
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
+            executable_consents=executable_consents,
         )
 
         assert mock_create_privacy_request.called
@@ -160,11 +165,16 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         }
         provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
 
+        consent_preferences = ConsentPreferences(
+            consent=[{"data_use": "advertising", "opt_in": False}]
+        )
+
         queue_privacy_request_to_propagate_consent(
             db=db,
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
-            consent_preferences=ConsentPreferences(consent=[]),
+            consent_preferences=consent_preferences,
+            executable_consents=[],
         )
 
         assert not mock_create_privacy_request.called
