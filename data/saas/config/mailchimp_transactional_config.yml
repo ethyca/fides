@@ -28,19 +28,19 @@ saas_config:
 
   consent_requests:
     opt_in:
-      - method: POST
-        path: /allowlists/add
-        body: |
-          {
-            "email": "<email>"
-          }
+      method: POST
+      path: /allowlists/add
+      body: |
+        {
+          "email": "<email>"
+        }
 
     opt_out:
-      - method: POST
-        path: /allowlists/delete
-        body: |
-          {
-            "email": "<email>"
-          }
+      method: POST
+      path: /allowlists/delete
+      body: |
+        {
+          "email": "<email>"
+        }
 
   endpoints: []

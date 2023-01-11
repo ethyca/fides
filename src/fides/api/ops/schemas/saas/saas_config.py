@@ -212,10 +212,10 @@ class SaaSRequestMap(BaseModel):
 
 
 class ConsentRequestMap(BaseModel):
-    """A map of actions to SaaS requests"""
+    """A map of actions to Consent requests"""
 
-    opt_in: List[SaaSRequest] = []
-    opt_out: List[SaaSRequest] = []
+    opt_in: Optional[SaaSRequest] = None
+    opt_out: Optional[SaaSRequest] = None
 
 
 class Endpoint(BaseModel):
