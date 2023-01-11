@@ -6,6 +6,7 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  MoreIcon,
   Text,
   useDisclosure,
   useToast,
@@ -14,7 +15,6 @@ import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
-import { MoreIcon } from "~/features/common/Icon";
 import { System } from "~/types/api";
 
 import { getErrorMessage, isErrorResult } from "../common/helpers";
@@ -38,7 +38,7 @@ const SystemCard = ({ system }: SystemCardProps) => {
 
   const handleEdit = () => {
     dispatch(setActiveSystem(system));
-    router.push("/system/new/configure");
+    router.push("/system/configure");
   };
 
   const handleDelete = async () => {

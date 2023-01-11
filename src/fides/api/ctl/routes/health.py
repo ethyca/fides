@@ -1,12 +1,13 @@
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Literal, Optional
 
 from fastapi import Depends, HTTPException, status
 from loguru import logger
+from pydantic import BaseModel
 from redis.exceptions import ResponseError
 from sqlalchemy.orm import Session
 
 import fides
-from fides.api.ctl.database.database import get_db_health
+from fides.api.ctl.database.database import DatabaseHealth, get_db_health
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.deps import get_db
 from fides.api.ops.common_exceptions import RedisConnectionError
@@ -14,6 +15,20 @@ from fides.api.ops.tasks import celery_app, get_worker_ids
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii
 from fides.core.config import FidesConfig, get_config
+
+CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
+
+
+class CoreHealthCheck(BaseModel):
+    """Healthcheck schema"""
+
+    webserver: str
+    version: str
+    database: DatabaseHealth
+    cache: CacheHealth
+    workers_enabled: bool
+    workers: List[Optional[str]]
+
 
 CONFIG: FidesConfig = get_config()
 
@@ -35,7 +50,7 @@ def get_cache_health() -> str:
 
 @router.get(
     "/health",
-    response_model=Dict[str, Union[str, List[str]]],
+    response_model=CoreHealthCheck,
     responses={
         status.HTTP_200_OK: {
             "content": {
@@ -75,14 +90,14 @@ async def health(
     """Confirm that the API is running and healthy."""
     database_health = get_db_health(CONFIG.database.sync_database_uri, db=db)
     cache_health = get_cache_health()
-    response: Dict[str, Any] = {
-        "webserver": "healthy",
-        "version": str(fides.__version__),
-        "database": database_health,
-        "cache": cache_health,
-        "workers_enabled": False,
-        "workers": [],
-    }
+    response = CoreHealthCheck(
+        webserver="healthy",
+        version=str(fides.__version__),
+        database=database_health,
+        cache=cache_health,
+        workers_enabled=False,
+        workers=[],
+    ).dict()
     fides_is_using_workers = not celery_app.conf["task_always_eager"]
     if fides_is_using_workers:
         response["workers_enabled"] = True

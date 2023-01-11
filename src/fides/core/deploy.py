@@ -239,7 +239,7 @@ def print_deploy_success() -> None:
     echo_green("    (user=mongo_test, password=mongo_pass, db=mongo_test)")
 
     # Documentation
-    echo_green("\n- Visit ethyca.github.io/fides for documentation.")
+    echo_green("\n- Visit docs.ethyca.com for documentation.")
     echo_green("\nRun `fides deploy down` to stop the application.")
 
     # Open the landing page and DSR directory

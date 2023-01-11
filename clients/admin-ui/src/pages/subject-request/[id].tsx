@@ -12,12 +12,11 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useGetAllPrivacyRequestsQuery } from "privacy-requests/index";
-import SubjectRequest from "subject-request/SubjectRequest";
 
-import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
+import PrivacyRequest from "~/features/privacy-requests/PrivacyRequest";
 
-import { INDEX_ROUTE, PRIVACY_REQUESTS_ROUTE } from "../../constants";
+import { INDEX_ROUTE } from "../../constants";
 
 const useSubjectRequestDetails = () => {
   const router = useRouter();
@@ -35,16 +34,16 @@ const useSubjectRequestDetails = () => {
   return { data, isLoading, isUninitialized };
 };
 
+/**
+ * TODO: Delete this file when the navV2 feature flag is permanently removed.
+ */
 const SubjectRequestDetails: NextPage = () => {
-  const {
-    flags: { navV2 },
-  } = useFeatures();
   const { data, isLoading, isUninitialized } = useSubjectRequestDetails();
   let body =
     !data || data?.items.length === 0 ? (
       <Text>404 no privacy request found</Text>
     ) : (
-      <SubjectRequest subjectRequest={data?.items[0]!} />
+      <PrivacyRequest data={data?.items[0]!} />
     );
 
   if (isLoading || isUninitialized) {
@@ -62,10 +61,7 @@ const SubjectRequestDetails: NextPage = () => {
         <Box mt={2} mb={9}>
           <Breadcrumb fontWeight="medium" fontSize="sm">
             <BreadcrumbItem>
-              <BreadcrumbLink
-                as={NextLink}
-                href={navV2 ? PRIVACY_REQUESTS_ROUTE : INDEX_ROUTE}
-              >
+              <BreadcrumbLink as={NextLink} href={INDEX_ROUTE}>
                 Privacy Requests
               </BreadcrumbLink>
             </BreadcrumbItem>

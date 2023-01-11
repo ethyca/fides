@@ -8,6 +8,7 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  MoreIcon,
   Portal,
   Tag,
   Td,
@@ -21,7 +22,8 @@ import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 
-import { MoreIcon } from "../common/Icon";
+import { useFeatures } from "~/features/common/features";
+
 import PII from "../common/PII";
 import RequestStatusBadge from "../common/RequestStatusBadge";
 import ReprocessButton from "./buttons/ReprocessButton";
@@ -30,9 +32,12 @@ import {
   useApproveRequestMutation,
   useDenyRequestMutation,
 } from "./privacy-requests.slice";
-import { PrivacyRequest } from "./types";
+import { PrivacyRequestEntity } from "./types";
 
-const useRequestRow = (request: PrivacyRequest) => {
+const useRequestRow = (request: PrivacyRequestEntity) => {
+  const {
+    flags: { navV2 },
+  } = useFeatures();
   const toast = useToast();
   const hoverButtonRef = useRef<HTMLButtonElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -87,7 +92,10 @@ const useRequestRow = (request: PrivacyRequest) => {
 
   const router = useRouter();
   const handleViewDetails = () => {
-    router.push(`/subject-request/${request.id}`);
+    const url = `/${navV2 ? "privacy-requests" : "subject-request"}/${
+      request.id
+    }`;
+    router.push(url);
   };
   return {
     approveRequestResult,
@@ -118,7 +126,7 @@ const useRequestRow = (request: PrivacyRequest) => {
 const RequestRow: React.FC<{
   isChecked: boolean;
   onCheckChange: (id: string, checked: boolean) => void;
-  request: PrivacyRequest;
+  request: PrivacyRequestEntity;
 }> = ({ isChecked, onCheckChange, request }) => {
   const {
     hovered,
