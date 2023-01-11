@@ -4,21 +4,14 @@
 Contains all of the SqlAlchemy models for the Fides resources.
 """
 
+from enum import EnumType
 from typing import Dict
 
-from sqlalchemy import (
-    ARRAY,
-    BOOLEAN,
-    JSON,
-    Column,
-    Integer,
-    String,
-    Text,
-    TypeDecorator,
-    cast,
-    type_coerce,
-)
+from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
+from sqlalchemy import Enum as EnumColumn
+from sqlalchemy import Integer, String, Text, TypeDecorator, cast, type_coerce
 from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
@@ -313,3 +306,55 @@ models_with_default_field = [
     for _, sql_model in sql_model_map.items()
     if hasattr(sql_model, "is_default")
 ]
+
+
+class AllowedTypes(str, EnumType):
+    """Allowed types for custom field."""
+
+    string = "string"
+    string_list = "string[]"
+
+
+class ResourceTypes(str, EnumType):
+    """Resource types that can use custom fields."""
+
+    system = "system"
+    data_use = "data use"
+    data_category = "data category"
+    data_subject = "data subject"
+
+
+class CustomField(Base):
+    """Custom metadata for resources."""
+
+    __tablename__ = "plus_custome_field"
+
+    fides_key = Column(String, index=True, unique=True)
+
+    consent = relationship(
+        "CustomFieldDefinition",
+        back_populates="provided_identity",
+        cascade="delete, delete-orphan",
+    )
+
+
+class CustomFieldDefinition(Base):
+    """Defines custom metadata for resources."""
+
+    __tablename__ = "plus_custom_field_definition"
+
+    fides_key = Column(String, index=True, unique=True)
+    name = Column(String, unique=True)
+    description = Column(String)
+    field_type = Column(
+        EnumColumn(AllowedTypes),
+        nullable=False,
+    )
+    allow_list = Column(
+        ARRAY(String)
+    )  # Ulitmately this will come the the CustomList table
+    resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
+    field_definition = Column(String, index=True)
+    custom_field_definition = relationship(
+        "CustomFieldDefinition", backref="datasets", cascade="delete, delete-orphan"
+    )
