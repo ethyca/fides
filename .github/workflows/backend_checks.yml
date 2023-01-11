@@ -12,6 +12,7 @@ env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.7"
 
+# Send coverage reports to code climate
 jobs:
   ###############
   ## Prechecks ##
