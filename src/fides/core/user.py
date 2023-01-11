@@ -143,7 +143,8 @@ def create_command(
     username: str, password: str, first_name: str, last_name: str, server_url: str
 ) -> None:
     """
-    Logic for creating a user from the CLI.
+    Given new user information, create a new user via the API using
+    the local credentials file.
     """
 
     try:
@@ -171,7 +172,8 @@ def create_command(
 
 def login_command(username: str, password: str, server_url: str) -> None:
     """
-    Logic for logging in from the CLI.
+    Given a username and password, request an access_token from the API and
+    store all user information in a local credentials file.
     """
     user_id, access_token = get_access_token(
         username=username, password=password, server_url=server_url
@@ -186,7 +188,7 @@ def login_command(username: str, password: str, server_url: str) -> None:
 
 def get_permissions_command(server_url: str) -> None:
     """
-    Logic for getting user permissions from the CLI.
+    Get user permissions from the API.
     """
     credentials = read_credentials_file()
     user_id = credentials.user_id
