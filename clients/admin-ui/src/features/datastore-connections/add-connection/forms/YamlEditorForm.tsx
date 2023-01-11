@@ -93,7 +93,12 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
     // Only need the confirmation if we are overwriting, which only happens when
     // there is already data
     if (data.length) {
-      warningDisclosure.onOpen();
+      const value: string = (monacoRef.current as any).getValue();
+      // Check if the fides key that is in the editor is the same as the one that already exists
+      // If so, then it is an overwrite and we should open the confirmation modal
+      if (data.some((d) => value.includes(`fides_key: ${d.fides_key}\n`))) {
+        warningDisclosure.onOpen();
+      }
     } else {
       handleSubmit();
     }

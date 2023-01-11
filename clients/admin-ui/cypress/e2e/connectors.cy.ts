@@ -85,13 +85,13 @@ describe("Connectors", () => {
       // Unset the linked dataset, which should switch the save button enable-ness
       cy.getByTestId("dataset-selector").select("Select");
       cy.getByTestId("save-dataset-link-btn").should("be.disabled");
+      // The monaco yaml editor takes a bit to load
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(1000);
       cy.getByTestId("save-yaml-btn").click();
 
       // Click past the confirmation modal
       cy.getByTestId("confirmation-modal");
-      // The monaco yaml editor takes a bit to load
-      // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(500);
       cy.getByTestId("continue-btn").click();
 
       cy.wait("@upsertDataset").then((interception) => {
