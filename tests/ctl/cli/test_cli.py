@@ -3,6 +3,7 @@ import os
 from base64 import b64decode
 from json import dump, loads
 from typing import Generator
+from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
@@ -845,6 +846,13 @@ class TestGenerate:
         assert result.exit_code == 0
 
 
+@pytest.fixture(scope="class")
+def credentials_path(tmp_path_factory) -> str:
+    credentials_dir = tmp_path_factory.mktemp("credentials")
+    credentials_path = credentials_dir / ".fides_credentials"
+    return str(credentials_path)
+
+
 class TestUser:
     """
     Test the "user" command group.
@@ -854,7 +862,7 @@ class TestUser:
 
     @pytest.mark.unit
     def test_user_login_provide_credentials(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test logging in as a user with a provided username and password."""
         result = test_cli_runner.invoke(
@@ -869,28 +877,42 @@ class TestUser:
                 "-p",
                 "Testpassword1!",
             ],
+            env={"FIDES_CREDENTIALS_PATH": credentials_path},
         )
         print(result.output)
         assert result.exit_code == 0
 
     @pytest.mark.unit
     def test_user_create(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test creating a user with the current credentials."""
         result = test_cli_runner.invoke(
-            cli, ["-f", test_config_path, "user", "create", "newuser", "Newpassword1!"]
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "user",
+                "create",
+                "-u",
+                "newuser",
+                "-p",
+                "Newpassword1!",
+            ],
+            env={"FIDES_CREDENTIALS_PATH": credentials_path},
         )
         print(result.output)
         assert result.exit_code == 0
 
     @pytest.mark.unit
     def test_user_permissions(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test getting user permissions for the current user."""
         result = test_cli_runner.invoke(
-            cli, ["-f", test_config_path, "user", "permissions"]
+            cli,
+            ["-f", test_config_path, "user", "permissions"],
+            env={"FIDES_CREDENTIALS_PATH": credentials_path},
         )
         print(result.output)
         assert result.exit_code == 0
