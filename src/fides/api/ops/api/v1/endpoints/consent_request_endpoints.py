@@ -48,6 +48,7 @@ from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentRequestResponse,
+    ExecutableConsent,
     PrivacyRequestCreate,
     VerificationCode,
 )
@@ -230,12 +231,10 @@ def queue_privacy_request_to_propagate_consent(
     provided_identity: ProvidedIdentity,
     policy: Union[FidesOpsKey, str],
     consent_preferences: ConsentPreferences,
+    executable_consents: Optional[List[ExecutableConsent]],
 ) -> Optional[BulkPostPrivacyRequests]:
     """
     Queue a privacy request to carry out propagating consent preferences server-side to third-party systems.
-
-    Only propagate consent preferences which are considered "executable" by the current system. If none of the
-    consent preferences are executable, no Privacy Request is queued.
     """
     identity = Identity()
     setattr(
@@ -244,13 +243,15 @@ def queue_privacy_request_to_propagate_consent(
         provided_identity.encrypted_value["value"],  # type:ignore[index]
     )  # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
 
+    executable_data_uses = [ec.data_use for ec in executable_consents or []]
     executable_consent_preferences: List[Dict] = [
-        pref.dict() for pref in consent_preferences.consent or []
+        pref.dict()
+        for pref in consent_preferences.consent or []
+        if pref.data_use in executable_data_uses
     ]
 
     logger.info(executable_consent_preferences)
 
-    # TODO: remove this bit, since we aren't filtering anymore?
     if not executable_consent_preferences:
         logger.info(
             "Skipping propagating consent preferences to third-party services as "
@@ -316,7 +317,6 @@ def set_consent_preferences(
         else:
             preference_dict = dict(preference)
             preference_dict["provided_identity_id"] = provided_identity.id
-            preference_dict.pop("executable")
             try:
                 Consent.create(db, data=preference_dict)
             except IntegrityError as exc:
@@ -325,7 +325,7 @@ def set_consent_preferences(
                 )
 
     consent_preferences: ConsentPreferences = _prepare_consent_preferences(
-        db, provided_identity, data.consent
+        db, provided_identity
     )
 
     # Note: This just queues the PrivacyRequest for processing
@@ -336,6 +336,7 @@ def set_consent_preferences(
         provided_identity,
         data.policy_key or DEFAULT_CONSENT_POLICY,
         consent_preferences,
+        data.executable_options,
     )
 
     if privacy_request_creation_results:
@@ -479,37 +480,22 @@ def _get_consent_request_and_provided_identity(
 
 
 def _prepare_consent_preferences(
-    db: Session,
-    provided_identity: ProvidedIdentity,
-    consents: Optional[List[ConsentSchema]] = None,
+    db: Session, provided_identity: ProvidedIdentity
 ) -> ConsentPreferences:
-    """
-    Find all of the consents an identity has.
-
-    If a list of `consents` is passed in, will also match and return which Consents are `executable`.
-    Otherwise, `executable` will be set to None.
-    """
-    consents_matching_identity: List[Consent] = Consent.filter(
+    consent: List[Consent] = Consent.filter(
         db=db, conditions=Consent.provided_identity_id == provided_identity.id
     ).all()
 
-    if not consents_matching_identity:
+    if not consent:
         return ConsentPreferences(consent=None)
 
-    consent_list = []
-    for consent in consents_matching_identity:
-        if not consents:
-            executable = None
-        else:
-            matching_payload = [d for d in consents if d.data_use == consent.data_use]
-            executable = matching_payload[0].executable if matching_payload else False
-        consent_list.append(
+    return ConsentPreferences(
+        consent=[
             ConsentSchema(
-                data_use=consent.data_use,
-                data_use_description=consent.data_use_description,
-                opt_in=consent.opt_in,
-                executable=executable,
+                data_use=x.data_use,
+                data_use_description=x.data_use_description,
+                opt_in=x.opt_in,
             )
-        )
-
-    return ConsentPreferences(consent=consent_list)
+            for x in consent
+        ]
+    )

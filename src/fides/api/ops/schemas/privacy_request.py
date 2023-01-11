@@ -60,7 +60,6 @@ class Consent(BaseSchema):
     data_use: str
     data_use_description: Optional[str] = None
     opt_in: bool
-    executable: Optional[bool] = None
 
 
 class PrivacyRequestCreate(BaseSchema):
@@ -243,12 +242,20 @@ class ConsentPreferences(BaseSchema):
     consent: Optional[List[Consent]] = None
 
 
+class ExecutableConsent(BaseSchema):
+    """Schema for executable consents"""
+
+    data_use: str
+    executable: bool
+
+
 class ConsentPreferencesWithVerificationCode(BaseSchema):
     """Schema for consent preferences including the verification code."""
 
     code: Optional[str]
     consent: List[Consent]
     policy_key: Optional[FidesOpsKey] = None
+    executable_options: Optional[List[ExecutableConsent]]
 
 
 class ConsentRequestResponse(BaseSchema):
