@@ -11,6 +11,8 @@ from pydantic import BaseModel
 from fides.cli.utils import handle_cli_response
 from fides.core.config import get_config
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
+from fides.core.utils import echo_green, echo_red
+from fides.lib.oauth.scopes import SCOPES
 
 config = get_config()
 CREATE_USER_PATH = "/api/v1/user"
@@ -135,3 +137,64 @@ def update_user_permissions(
     )
     handle_cli_response(response, verbose=False)
     return response
+
+
+def create_command(
+    username: str, password: str, first_name: str, last_name: str, server_url: str
+) -> None:
+    """
+    Logic for creating a user from the CLI.
+    """
+
+    try:
+        credentials = read_credentials_file()
+    except FileNotFoundError:
+        echo_red("No credentials file found.")
+        raise SystemExit(1)
+
+    access_token = credentials.access_token
+    auth_header = create_auth_header(access_token)
+    user_response = create_user(
+        username=username,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+        auth_header=auth_header,
+        server_url=server_url,
+    )
+    user_id = user_response.json()["id"]
+    update_user_permissions(
+        user_id=user_id, scopes=SCOPES, auth_header=auth_header, server_url=server_url
+    )
+    echo_green(f"User: '{username}' created and assigned permissions.")
+
+
+def login_command(username: str, password: str, server_url: str) -> None:
+    """
+    Logic for logging in from the CLI.
+    """
+    user_id, access_token = get_access_token(
+        username=username, password=password, server_url=server_url
+    )
+    echo_green(f"Logged in as user: {username}")
+    credentials = Credentials(
+        username=username, password=password, user_id=user_id, access_token=access_token
+    )
+    credentials_path = write_credentials_file(credentials)
+    echo_green(f"Credentials file written to: {credentials_path}")
+
+
+def get_permissions_command(server_url: str) -> None:
+    """
+    Logic for getting user permissions from the CLI.
+    """
+    credentials = read_credentials_file()
+    user_id = credentials.user_id
+    access_token = credentials.access_token
+
+    auth_header = create_auth_header(access_token)
+    permissions: List[str] = get_user_permissions(user_id, auth_header, server_url)
+
+    print("Permissions:")
+    for permission in permissions:
+        print(f"\t{permission}")

@@ -5,17 +5,10 @@ from typing import List
 import click
 
 from fides.core.user import (
-    create_auth_header,
-    create_user,
-    get_access_token,
-    get_user_permissions,
-    read_credentials_file,
-    update_user_permissions,
-    write_credentials_file,
-    Credentials,
+    create_command,
+    login_command,
+    get_permissions_command,
 )
-from fides.core.utils import echo_green, echo_red
-from fides.lib.oauth.scopes import SCOPES
 from fides.cli.options import username, password, first_name, last_name
 
 
@@ -43,28 +36,13 @@ def create(
     """
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
-
-    try:
-        credentials = read_credentials_file()
-    except FileNotFoundError:
-        echo_red("No credentials file found.")
-        raise SystemExit(1)
-
-    access_token = credentials.access_token
-    auth_header = create_auth_header(access_token)
-    user_response = create_user(
+    create_command(
         username=username,
         password=password,
         first_name=first_name,
         last_name=last_name,
-        auth_header=auth_header,
         server_url=server_url,
     )
-    user_id = user_response.json()["id"]
-    update_user_permissions(
-        user_id=user_id, scopes=SCOPES, auth_header=auth_header, server_url=server_url
-    )
-    echo_green(f"User: '{username}' created and assigned permissions.")
 
 
 @user.command()
@@ -77,16 +55,7 @@ def login(ctx: click.Context, username: str, password: str) -> None:
     """
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
-
-    user_id, access_token = get_access_token(
-        username=username, password=password, server_url=server_url
-    )
-    echo_green(f"Logged in as user: {username}")
-    credentials = Credentials(
-        username=username, password=password, user_id=user_id, access_token=access_token
-    )
-    credentials_path = write_credentials_file(credentials)
-    echo_green(f"Credentials file written to: {credentials_path}")
+    login_command(username=username, password=password, server_url=server_url)
 
 
 @user.command(name="permissions")
@@ -95,14 +64,4 @@ def get_permissions(ctx: click.Context) -> None:
     """List the scopes avaible to the current user."""
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
-
-    credentials = read_credentials_file()
-    user_id = credentials.user_id
-    access_token = credentials.access_token
-
-    auth_header = create_auth_header(access_token)
-    permissions: List[str] = get_user_permissions(user_id, auth_header, server_url)
-
-    print("Permissions:")
-    for permission in permissions:
-        print(f"\t{permission}")
+    get_permissions_command(server_url=server_url)
