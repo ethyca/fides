@@ -46,18 +46,10 @@ def get_access_token(username: str, password: str, server_url: str) -> Tuple[str
     return (user_id, access_token)
 
 
-def write_credentials_file(
-    username: str, password: str, user_id: str, access_token: str
-) -> str:
+def write_credentials_file(credentials: Credentials) -> str:
     """
     Write the user credentials file.
     """
-    credentials = Credentials(
-        username=username,
-        password=password,
-        user_id=user_id,
-        access_token=access_token,
-    )
     with open(CREDENTIALS_FILE_PATH, "w", encoding="utf-8") as credentials_file:
         credentials_file.write(toml.dumps(credentials.dict()))
     return CREDENTIALS_FILE_PATH

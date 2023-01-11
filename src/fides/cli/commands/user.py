@@ -12,6 +12,7 @@ from fides.core.user import (
     read_credentials_file,
     update_user_permissions,
     write_credentials_file,
+    Credentials,
 )
 from fides.core.utils import echo_green, echo_red
 from fides.lib.oauth.scopes import SCOPES
@@ -38,7 +39,7 @@ def create(
     """
     Use credentials from the credentials file to create a new user.
 
-    Gives full permissions.
+    Gives full permissions to the new user.
     """
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
@@ -81,7 +82,10 @@ def login(ctx: click.Context, username: str, password: str) -> None:
         username=username, password=password, server_url=server_url
     )
     echo_green(f"Logged in as user: {username}")
-    credentials_path = write_credentials_file(username, password, user_id, access_token)
+    credentials = Credentials(
+        username=username, password=password, user_id=user_id, access_token=access_token
+    )
+    credentials_path = write_credentials_file(credentials)
     echo_green(f"Credentials file written to: {credentials_path}")
 
 
