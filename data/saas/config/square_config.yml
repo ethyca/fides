@@ -75,6 +75,7 @@ saas_config:
         read:
           method: GET
           path: /v2/locations
+          grouped_inputs: [email, phone_number]
           param_values:
             - name: email
               identity: email
