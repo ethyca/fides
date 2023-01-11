@@ -18,14 +18,9 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.storage.storage import (
-    DEFAULT_STORAGE_KEY,
-    FileNaming,
-    ResponseFormat,
-    StorageDetails,
-    StorageType,
-)
+from fides.api.ops.schemas.storage.storage import DEFAULT_STORAGE_KEY
 from fides.core.config import get_config
+from fides.core.config.storage_settings import StorageSettings
 from fides.lib.db.base_class import FidesBase
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 from fides.lib.models.client import ClientDetail
@@ -181,20 +176,18 @@ def load_default_access_policy(
     )
     if not local_storage_config:
         log.info(f"Creating: {DEFAULT_STORAGE_KEY}...")
-        # TODO: look for configuration values for default storage
-        local_storage_config = StorageConfig.create(
-            db=db_session,
-            data={
-                "name": "Default Local Storage Config",
-                "key": DEFAULT_STORAGE_KEY,
-                "type": StorageType.local,
-                "is_default": True,
-                "details": {
-                    StorageDetails.NAMING.value: FileNaming.request_id.value,
-                },
-                "format": ResponseFormat.json,
-            },
+        default_storage_config: StorageConfig = StorageConfig.create(
+            db=db_session, data=StorageSettings.default_storage_destination.dict()
         )
+        if (
+            hasattr(StorageSettings, "default_storage_secrets")
+            and StorageSettings.default_storage_secrets
+        ):
+            default_storage_config.set_secrets(
+                db=db_session,
+                storage_secrets=StorageSettings.default_storage_secrets.dict(),
+            )
+
     else:
         log.info(
             f"Skipping {DEFAULT_STORAGE_KEY} creation as it already exists in the database"

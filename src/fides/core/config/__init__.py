@@ -12,6 +12,7 @@ from loguru import logger as log
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
+from fides.core.config.storage_settings import StorageSettings
 from fides.core.utils import echo_red
 
 from .admin_ui_settings import AdminUISettings
@@ -59,6 +60,7 @@ class FidesConfig(FidesSettings):
     notifications: NotificationSettings
     redis: RedisSettings
     security: SecuritySettings
+    storage: StorageSettings
     user: UserSettings
 
     class Config:  # pylint: disable=C0115
@@ -131,6 +133,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
         "notifications": NotificationSettings,
         "redis": RedisSettings,
         "security": SecuritySettings,
+        "storage": StorageSettings,
         "user": UserSettings,
     }
 

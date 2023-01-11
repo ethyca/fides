@@ -26,37 +26,12 @@ from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
 from fides.api.ops.util.logger import Pii
+from fides.api.ops.util.storage_util import get_schema_for_secrets
 from fides.core.config import get_config
 from fides.lib.db.base import Base
 from fides.lib.db.base_class import FidesBase  # type: ignore[attr-defined]
 
 CONFIG = get_config()
-
-
-def get_schema_for_secrets(
-    storage_type: StorageType,
-    secrets: possible_storage_secrets,
-) -> SUPPORTED_STORAGE_SECRETS:
-    """
-    Returns the secrets that pertain to `storage_type` represented as a Pydantic schema
-    for validation purposes.
-    """
-    try:
-        schema = {
-            StorageType.s3: StorageSecretsS3,
-        }[storage_type]
-    except KeyError:
-        raise ValueError(
-            f"`storage_type` {storage_type} has no supported `secrets` validation."
-        )
-
-    try:
-        return schema.parse_obj(secrets)  # type: ignore
-    except ValidationError as exc:
-        # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
-        # so this exception is cast into a `ValueError`.
-        errors = [f"{err['msg']} {str(err['loc'])}" for err in exc.errors()]
-        raise ValueError(errors)
 
 
 class StorageConfig(Base):
@@ -117,12 +92,12 @@ class StorageConfig(Base):
         """Validate this object's data before deferring to the superclass on create"""
         if not "is_default" in data.keys():
             data["is_default"] = False
-        _validate_storage_config(data["key"], data["is_default"])
+        _validate_default_storage_config(data["key"], data["is_default"])
         return super().create(db=db, data=data)
 
     def save(self, db: Session) -> StorageConfig:
         """Validate this object's data before deferring to the superclass on save"""
-        _validate_storage_config(self.key, self.is_default)
+        _validate_default_storage_config(self.key, self.is_default)
         return super().save(db=db)
 
 
@@ -133,9 +108,9 @@ def default_storage_config(db: Session) -> StorageConfig:
     return default_storage
 
 
-def _validate_storage_config(key: str, is_default: bool) -> None:
+def _validate_default_storage_config(key: str, is_default: bool) -> None:
     """
-    Validate to ensure `is_default` is only set to `True` on the default storage config
+    Validate to ensure `is_default` is only set to `True` if and only if it's the default storage config
     """
     if key == DEFAULT_STORAGE_KEY and not is_default:
         raise StorageConfigValidationError(
