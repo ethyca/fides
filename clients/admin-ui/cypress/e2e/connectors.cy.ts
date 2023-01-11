@@ -109,5 +109,23 @@ describe("Connectors", () => {
         ]);
       });
     });
+
+    it("Should not show the dataset selector if no datasets exist", () => {
+      cy.intercept("GET", "/api/v1/dataset", { body: [] }).as("getDatasets");
+      cy.intercept(
+        "GET",
+        "/api/v1/connection/postgres_connector/datasetconfig",
+        {
+          body: {
+            items: [],
+          },
+        }
+      ).as("getEmptyPostgresConnectorDatasetconfig");
+
+      cy.visit("/datastore-connection/postgres_connector");
+      cy.getByTestId("tab-Dataset configuration").click();
+      cy.wait("@getEmptyPostgresConnectorDatasetconfig");
+      cy.getByTestId("dataset-selector-section").should("not.exist");
+    });
   });
 });

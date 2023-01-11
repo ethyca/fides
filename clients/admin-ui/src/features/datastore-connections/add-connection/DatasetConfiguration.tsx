@@ -151,10 +151,12 @@ const DatasetConfiguration: React.FC = () => {
     );
   }
 
+  const datasetsExist = allDatasets && allDatasets.length;
+
   return (
     <VStack alignItems="left">
       <HStack spacing={8} mb={4}>
-        {allDatasets && allDatasets.length ? (
+        {datasetsExist ? (
           <>
             <VStack alignSelf="start" mr={4}>
               <Box data-testid="dataset-selector-section" mb={4}>
@@ -201,18 +203,22 @@ const DatasetConfiguration: React.FC = () => {
               isSubmitting={isSubmitting}
               onSubmit={handleSubmitYaml}
               disabled={datasetSelected}
+              // Only render the cancel button if the dataset dropdown view is unavailable
+              onCancel={!datasetsExist ? handleCancel : undefined}
             />
           ) : null}
         </Box>
       </HStack>
-      <Button
-        width="fit-content"
-        size="sm"
-        variant="outline"
-        onClick={handleCancel}
-      >
-        Cancel
-      </Button>
+      {datasetsExist ? (
+        <Button
+          width="fit-content"
+          size="sm"
+          variant="outline"
+          onClick={handleCancel}
+        >
+          Cancel
+        </Button>
+      ) : null}
     </VStack>
   );
 };

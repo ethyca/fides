@@ -2,6 +2,7 @@ import { ConfirmationModal } from "@fidesui/components";
 import {
   Box,
   Button,
+  ButtonGroup,
   Divider,
   Flex,
   Heading,
@@ -35,6 +36,7 @@ type YamlEditorFormProps = {
   data: Dataset[];
   isSubmitting: boolean;
   onSubmit: (value: unknown) => void;
+  onCancel?: () => void;
   disabled?: boolean;
 };
 
@@ -42,6 +44,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   data = [],
   isSubmitting = false,
   onSubmit,
+  onCancel,
   disabled,
 }) => {
   const monacoRef = useRef(null);
@@ -115,20 +118,21 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           }}
           theme="light"
         />
-        <Button
-          mt="24px !important"
-          colorScheme="primary"
-          isDisabled={disabled || isEmptyState || !!yamlError || isSubmitting}
-          isLoading={isSubmitting}
-          loadingText="Saving"
-          onClick={handleConfirmation}
-          size="sm"
-          type="submit"
-          data-testid="save-yaml-btn"
-          width="fit-content"
-        >
-          Save
-        </Button>
+        <ButtonGroup size="sm">
+          {onCancel ? <Button onClick={onCancel}>Cancel</Button> : null}
+          <Button
+            colorScheme="primary"
+            isDisabled={disabled || isEmptyState || !!yamlError || isSubmitting}
+            isLoading={isSubmitting}
+            loadingText="Saving"
+            onClick={handleConfirmation}
+            type="submit"
+            data-testid="save-yaml-btn"
+            width="fit-content"
+          >
+            Save
+          </Button>
+        </ButtonGroup>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
         <SlideFade in>
