@@ -8,8 +8,8 @@
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
 [![Twitter][twitter-image]][twitter-url]
-[![Maintainability][maintainability-image]][maintainability-url]
-[![Test Coverage][test-coverage-image]][test-coverage-url]
+[![Maintainability](https://api.codeclimate.com/v1/badges/7a4ea6e95621617f7f9e/maintainability)](https://codeclimate.com/github/ethyca/fides/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/7a4ea6e95621617f7f9e/test_coverage)](https://codeclimate.com/github/ethyca/fides/test_coverage)
 
 ![Fides banner](docs/fides/docs/img/fides-banner.png "Fides banner")
 
@@ -117,7 +117,3 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 [mypy-url]: http://mypy-lang.org/
 [twitter-image]: https://img.shields.io/twitter/follow/ethyca?style=social
 [twitter-url]: https://twitter.com/ethyca
-[maintainability-image]: <https://codeclimate.com/github/ethyca/fides/maintainability>
-[maintainability-url]: <https://api.codeclimate.com/v1/badges/7a4ea6e95621617f7f9e/maintainability>
-[test-coverage-image]: https://codeclimate.com/github/ethyca/fides/test_coverage
-[test-coverage-url]: https://api.codeclimate.com/v1/badges/7a4ea6e95621617f7f9e/test_coverage
