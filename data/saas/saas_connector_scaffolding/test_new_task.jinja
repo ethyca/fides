@@ -24,7 +24,10 @@ class Test{{ connector_name }}Connector:
         {{ connector_id }}_erasure_identity_email: str,
         {{ connector_id }}_erasure_data,
     ):
-        erasure_results = await {{ connector_id }}_runner.strict_erasure_request(
+        (
+            access_results,
+            erasure_results,
+        ) = await {{ connector_id }}_runner.strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": {{ connector_id }}_erasure_identity_email},
@@ -38,7 +41,10 @@ class Test{{ connector_name }}Connector:
         {{ connector_id }}_erasure_identity_email: str,
         {{ connector_id }}_erasure_data,
     ):
-        erasure_results = await {{ connector_id }}_runner.non_strict_erasure_request(
+        (
+            access_results,
+            erasure_results,
+        ) = await {{ connector_id }}_runner.non_strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": {{ connector_id }}_erasure_identity_email},

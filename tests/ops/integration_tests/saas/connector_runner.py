@@ -1,5 +1,5 @@
 import random
-from typing import Any, Dict, List
+from typing import Any, AsyncGenerator, Dict, Generator, List, Tuple
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -77,7 +77,7 @@ class ConnectorRunner:
         access_policy: Policy,
         erasure_policy: Policy,
         identities: Dict[str, Any],
-    ) -> Dict[str, int]:
+    ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to true,
         meaning we will only update data, not delete it
@@ -97,7 +97,7 @@ class ConnectorRunner:
         merged_graph = self.dataset_config.get_graph()
         graph = DatasetGraph(merged_graph)
 
-        await graph_task.run_access_request(
+        access_results = await graph_task.run_access_request(
             privacy_request,
             access_policy,
             graph,
@@ -118,14 +118,14 @@ class ConnectorRunner:
 
         # reset masking_strict value
         CONFIG.execution.masking_strict = masking_strict
-        return erasure_results
+        return access_results, erasure_results
 
     async def non_strict_erasure_request(
         self,
         access_policy: Policy,
         erasure_policy: Policy,
         identities: Dict[str, Any],
-    ) -> Dict[str, int]:
+    ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to false,
         meaning we will use deletes to mask data if an update
@@ -146,7 +146,7 @@ class ConnectorRunner:
         merged_graph = self.dataset_config.get_graph()
         graph = DatasetGraph(merged_graph)
 
-        await graph_task.run_access_request(
+        access_results = await graph_task.run_access_request(
             privacy_request,
             access_policy,
             graph,
@@ -167,7 +167,7 @@ class ConnectorRunner:
 
         # reset masking_strict value
         CONFIG.execution.masking_strict = masking_strict
-        return erasure_results
+        return access_results, erasure_results
 
 
 def _config(connector_type: str) -> Dict[str, Any]:
