@@ -11,7 +11,7 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
@@ -26,7 +26,7 @@ def test_stripe_connection_test(stripe_connection_config) -> None:
 @pytest.mark.integration_saas
 @pytest.mark.integration_stripe
 @pytest.mark.asyncio
-async def test_stripe_access_request_task(
+async def test_stripe_access_request_task_with_email(
     db,
     policy,
     stripe_connection_config,
@@ -640,6 +640,72 @@ async def test_stripe_access_request_task(
         "country",
         "verification",
     }
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_stripe
+@pytest.mark.asyncio
+async def test_stripe_access_request_task_with_phone_number(
+    db,
+    policy,
+    stripe_connection_config,
+    stripe_dataset_config,
+    stripe_identity_email,
+    stripe_identity_phone_number,
+) -> None:
+    """Full access request based on the Stripe SaaS config"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"phone_number": stripe_identity_phone_number})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = stripe_connection_config.get_saas_config().fides_key
+    merged_graph = stripe_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [stripe_connection_config],
+        {"phone_number": stripe_identity_phone_number},
+        db,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:customer"],
+        min_size=1,
+        keys=[
+            "address",
+            "balance",
+            "created",
+            "currency",
+            "default_source",
+            "delinquent",
+            "description",
+            "discount",
+            "email",
+            "id",
+            "invoice_prefix",
+            "invoice_settings",
+            "livemode",
+            "name",
+            "next_invoice_sequence",
+            "object",
+            "phone",
+            "preferred_locales",
+            "shipping",
+            "tax_exempt",
+            "test_clock",
+        ],
+    )
+
+    # verify we only returned data for our identity phone number and that
+    # it is the same customer that we retrieved using the identity email
+    assert v[f"{dataset_name}:customer"][0]["phone"] == stripe_identity_phone_number
+    assert v[f"{dataset_name}:customer"][0]["email"] == stripe_identity_email
 
 
 @pytest.mark.integration_saas

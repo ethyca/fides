@@ -44,6 +44,8 @@ client_x509_cert_url = "redacted_url_override_in_tests"
 
 [security]
 app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+root_username = "root_user"
+root_password = "Testpassword1!"
 oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 drp_jwt_secret = "secret"

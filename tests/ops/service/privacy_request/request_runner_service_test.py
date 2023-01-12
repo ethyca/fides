@@ -6,7 +6,6 @@ from uuid import uuid4
 
 import pydash
 import pytest
-from fideslib.models.audit_log import AuditLog, AuditLogAction
 from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
@@ -36,7 +35,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     EmailForActionType,
     MessagingActionType,
-    MessagingMethod,
+    MessagingServiceType,
 )
 from fides.api.ops.schemas.policy import Rule
 from fides.api.ops.schemas.redis_cache import Identity
@@ -53,9 +52,11 @@ from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
+    upload_access_results,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 CONFIG = get_config()
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
@@ -1973,7 +1974,7 @@ class TestPrivacyRequestsEmailNotifications:
                     db=ANY,
                     action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
                     to_identity=identity,
-                    messaging_method=MessagingMethod.EMAIL,
+                    service_type=MessagingServiceType.MAILGUN.value,
                     message_body_params=AccessRequestCompleteBodyParams(
                         download_links=[upload_mock.return_value]
                     ),
@@ -1982,7 +1983,7 @@ class TestPrivacyRequestsEmailNotifications:
                     db=ANY,
                     action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
                     to_identity=identity,
-                    messaging_method=MessagingMethod.EMAIL,
+                    service_type=MessagingServiceType.MAILGUN.value,
                     message_body_params=None,
                 ),
             ],
@@ -2053,7 +2054,7 @@ class TestPrivacyRequestsEmailNotifications:
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
-            "identity": {"phone": "1231231233"},
+            "identity": {"phone_number": "1231231233"},
         }
 
         pr = get_privacy_request_results(

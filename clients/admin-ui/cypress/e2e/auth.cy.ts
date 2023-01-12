@@ -1,5 +1,3 @@
-import { stubHomePage } from "cypress/support/stubs";
-
 import { USER_PRIVILEGES } from "~/constants";
 
 describe("User Authentication", () => {
@@ -21,7 +19,7 @@ describe("User Authentication", () => {
       cy.visit("/login");
       cy.getByTestId("Login");
 
-      stubHomePage();
+      cy.intercept("GET", "/api/v1/system", { body: [] });
       cy.fixture("login.json").then((body) => {
         cy.intercept("POST", "/api/v1/login", body).as("postLogin");
         cy.intercept("/api/v1/user/*/permission", {
@@ -36,19 +34,18 @@ describe("User Authentication", () => {
       cy.get("#email").type("cypress-user@ethyca.com");
       cy.get("#password").type("FakePassword123!{Enter}");
 
-      cy.getByTestId("Privacy Requests");
+      cy.getByTestId("Home");
     });
   });
 
   describe("when the user is logged in", () => {
     beforeEach(() => {
       cy.login();
-      stubHomePage();
     });
 
     it("lets them navigate to protected routes", () => {
       cy.visit("/");
-      cy.getByTestId("Privacy Requests");
+      cy.getByTestId("Home");
 
       cy.visit("/user-management");
       cy.getByTestId("User Management");
@@ -61,11 +58,32 @@ describe("User Authentication", () => {
       cy.visit("/system");
       cy.getByTestId("Systems");
 
+      cy.intercept("POST", "/api/v1/logout", {
+        statusCode: 204,
+      });
+
       cy.getByTestId("header-menu-button").click();
       cy.getByTestId("header-menu-sign-out").click();
 
       cy.location("pathname").should("eq", "/login");
       cy.getByTestId("Login");
+    });
+
+    // TODO: Update Cypress test to reflect the nav bar 2.0
+    it.skip("/login redirects to the onboarding flow if the user has no systems", () => {
+      cy.intercept("GET", "/api/v1/system", { body: [] });
+      cy.visit("/login");
+      cy.getByTestId("setup");
+    });
+
+    // TODO: Update Cypress test to reflect the nav bar 2.0
+    it.skip("/login redirects to the systems page if the user has systems", () => {
+      cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
+        "getSystems"
+      );
+      cy.visit("/login");
+      cy.wait("@getSystems");
+      cy.getByTestId("system-management");
     });
   });
 });

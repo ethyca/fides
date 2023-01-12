@@ -1,14 +1,12 @@
-import logging
 from typing import Callable, Dict, Type, Union, ValuesView
 
+from loguru import logger
 from pydantic import ValidationError
 
 from fides.api.ops.common_exceptions import NoSuchStrategyException
 from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.ops.schemas.masking.masking_configuration import FormatPreservationConfig
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-
-logger = logging.getLogger(__name__)
 
 
 class MaskingStrategyFactory:
@@ -21,14 +19,14 @@ class MaskingStrategyFactory:
     ) -> Callable[[Type[MaskingStrategy]], Type[MaskingStrategy]]:
         def wrapper(strategy_class: Type[MaskingStrategy]) -> Type[MaskingStrategy]:
             logger.debug(
-                "Registering new masking strategy '%s' under name '%s'",
+                "Registering new masking strategy '{}' under name '{}'",
                 strategy_class,
                 name,
             )
 
             if name in cls.registry:
                 logger.warning(
-                    "Masking strategy with name '%s' already exists. It previously referred to class '%s', but will now refer to '%s'",
+                    "Masking strategy with name '{}' already exists. It previously referred to class '{}', but will now refer to '{}'",
                     name,
                     cls.registry[name],
                     strategy_class,

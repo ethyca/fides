@@ -1,5 +1,5 @@
+import { Flex, Image, Text } from "@fidesui/react";
 import React from "react";
-import { Heading, Text, Stack, Box, Image, HStack } from "@fidesui/react";
 
 type CardProps = {
   title: string;
@@ -14,54 +14,59 @@ const Card: React.FC<CardProps> = ({
   description,
   onClick,
 }) => (
-  <Box
+  <Flex
     as="button"
-    key={title}
     bg="white"
-    py={8}
-    px={6}
-    border="1px solid"
-    borderColor="gray.200"
-    borderRadius={4}
+    borderRadius={12}
     boxShadow="base"
-    maxWidth={["100%", "100%", "100%", 304]}
-    transition="box-shadow 50ms"
     cursor="pointer"
-    userSelect="none"
+    data-testid="card"
+    flexDirection="column"
+    gap="12px"
+    h="176px"
+    key={title}
     m={2}
-    _hover={{
-      boxShadow:
-        "0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04)",
-    }}
-    _focus={{
-      outline: "none",
-      boxShadow:
-        "0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04)",
-    }}
     onClick={() => {
       onClick();
     }}
+    padding="24px"
+    textAlign="left"
+    transition="box-shadow 50ms"
+    userSelect="none"
+    w="304px"
+    _hover={{
+      border: "1px solid",
+      borderColor: "complimentary.500",
+      boxShadow:
+        "0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    }}
+    _focus={{
+      border: "1px solid",
+      borderColor: "complimentary.500",
+      boxShadow:
+        "0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)",
+      outline: "none",
+    }}
   >
-    <Stack spacing={7}>
-      <HStack justifyContent="center">
-        <Image src={iconPath} alt={description} width="54px" height="54px" />
-      </HStack>
-
-      <Stack spacing={1} textAlign="center">
-        <Heading
-          fontSize="large"
-          fontWeight="semibold"
-          lineHeight="28px"
-          color="gray.600"
-        >
-          {title}
-        </Heading>
-        <Text fontSize="xs" color="gray.600">
-          {description}
-        </Text>
-      </Stack>
-    </Stack>
-  </Box>
+    <Image alt={description} boxSize="32px" src={iconPath} />
+    <Text
+      color="gray.600"
+      fontSize="md"
+      fontWeight="semibold"
+      lineHeight="24px"
+    >
+      {title}
+    </Text>
+    <Text
+      color="gray.600"
+      fontSize="xs"
+      fontWeight="normal"
+      lineHeight="16px"
+      noOfLines={3}
+    >
+      {description}
+    </Text>
+  </Flex>
 );
 
 export default Card;

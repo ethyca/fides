@@ -1,7 +1,6 @@
 from typing import Dict
 
 import pytest
-from fideslib.db.base_class import KeyOrNameAlreadyExists
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.storage import StorageConfig
@@ -13,6 +12,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
+from fides.lib.db.base_class import KeyOrNameAlreadyExists
 
 
 class TestStorageConfigModel:
@@ -21,7 +21,6 @@ class TestStorageConfigModel:
         return {
             StorageDetails.BUCKET.value: "some bucket",
             StorageDetails.NAMING.value: "some naming",
-            StorageDetails.OBJECT_NAME.value: "some object name",
             StorageDetails.MAX_RETRIES.value: 0,
             StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
         }

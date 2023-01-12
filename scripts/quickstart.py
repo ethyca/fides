@@ -2,7 +2,6 @@
 A five-step fidesops quickstart
 """
 import json
-import logging
 import os
 import time
 from datetime import datetime
@@ -12,14 +11,12 @@ from typing import Optional
 
 import requests
 import yaml
+from loguru import logger
 
 from fides.api.ops.api.v1 import urn_registry as ops_urls
 from fides.api.ops.models.connectionconfig import ConnectionType
 from fides.api.ops.models.policy import ActionType
-from fides.ctl.core.config import get_config
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+from fides.core.config import get_config
 
 CONFIG = get_config()
 
@@ -491,8 +488,8 @@ if __name__ == "__main__":
     print(
         """
     ┌┬┐┬ ┬┌─┐  ┌─┐┬┌┬┐┌─┐┌─┐┌─┐┌─┐┌─┐  ┌─┐ ┬ ┬┬┌─┐┬┌─┌─┐┌┬┐┌─┐┬─┐┌┬┐
-     │ ├─┤├┤   ├┤ │ ││├┤ └─┐│ │├─┘└─┐  │─┼┐│ │││  ├┴┐└─┐ │ ├─┤├┬┘ │ 
-     ┴ ┴ ┴└─┘  └  ┴ ┴┘└─┘└─┘└─┘┴  └─┘  └─┘└└─┘┴└─┘┴ ┴└─┘ ┴ ┴ ┴┴└─ ┴ 
+     │ ├─┤├┤   ├┤ │ ││├┤ └─┐│ │├─┘└─┐  │─┼┐│ │││  ├┴┐└─┐ │ ├─┤├┬┘ │
+     ┴ ┴ ┴└─┘  └  ┴ ┴┘└─┘└─┘└─┘┴  └─┘  └─┘└└─┘┴└─┘┴ ┴└─┘ ┴ ┴ ┴┴└─ ┴
     """
     )
 
@@ -541,7 +538,7 @@ if __name__ == "__main__":
         """
     ┌─┐┌┬┐┌─┐┌─┐  ┌─┐┌┐┌┌─┐
     └─┐ │ ├┤ ├─┘  │ ││││├┤     ...  Set up basic configuration
-    └─┘ ┴ └─┘┴    └─┘┘└┘└─┘  
+    └─┘ ┴ └─┘┴    └─┘┘└┘└─┘
     """
     )
     print(
@@ -726,7 +723,7 @@ if __name__ == "__main__":
         """
     ┌─┐┌┬┐┌─┐┌─┐  ┌─┐┌─┐┬ ┬┬─┐
     └─┐ │ ├┤ ├─┘  ├┤ │ ││ │├┬┘   ...  Create an erasure policy rule
-    └─┘ ┴ └─┘┴    └  └─┘└─┘┴└─    
+    └─┘ ┴ └─┘┴    └  └─┘└─┘┴└─
     """
     )
     print(
@@ -765,7 +762,7 @@ if __name__ == "__main__":
         """
     ┌─┐┌┬┐┌─┐┌─┐  ┌─┐┬┬  ┬┌─┐
     └─┐ │ ├┤ ├─┘  ├┤ │└┐┌┘├┤     ...  Issue an erasure privacy request and verify
-    └─┘ ┴ └─┘┴    └  ┴ └┘ └─┘   
+    └─┘ ┴ └─┘┴    └  ┴ └┘ └─┘
     """
     )
     print(

@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Callable
 from unittest import mock
+from uuid import uuid4
 
 import jwt
 import pytest
@@ -20,13 +22,18 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.ops.models.policy import DrpAction
-from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.models.privacy_request import (
+    PrivacyRequest,
+    PrivacyRequestError,
+    PrivacyRequestNotifications,
+    PrivacyRequestStatus,
+)
 from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fides.api.ops.util.cache import (
     get_drp_request_body_cache_key,
     get_identity_cache_key,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 
@@ -49,7 +56,7 @@ class TestCreateDrpPrivacyRequest:
         cache,
     ):
         TEST_EMAIL = "test@example.com"
-        TEST_PHONE_NUMBER = "+1 234 567 8910"
+        TEST_PHONE_NUMBER = "+12345678910"
         identity = {
             "email": TEST_EMAIL,
             "phone_number": TEST_PHONE_NUMBER,
@@ -253,6 +260,110 @@ class TestCreateDrpPrivacyRequest:
         }
         resp = api_client.post(url, json=data)
         assert resp.status_code == 404
+
+    @pytest.mark.usefixtures("messaging_config", "policy_drp_action")
+    @mock.patch(
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_create_drp_privacy_request_error_notification(
+        self,
+        mailgun_dispatcher_mock,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        cache,
+        policy,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE_NUMBER = "+12345678910"
+        identity = {
+            "email": TEST_EMAIL,
+            "phone_number": TEST_PHONE_NUMBER,
+        }
+        encoded_identity: str = jwt.encode(
+            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
+        )
+        data = {
+            "meta": {"version": "0.5"},
+            "regime": "ccpa",
+            "exercise": [DrpAction.access.value],
+            "identity": encoded_identity,
+        }
+
+        PrivacyRequestNotifications.create(
+            db=db,
+            data={
+                "email": "some@email.com, another@email.com",
+                "notify_after_failures": 1,
+            },
+        )
+
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid4())}",
+                "started_processing_at": datetime(2021, 1, 1),
+                "finished_processing_at": datetime(2021, 1, 1),
+                "requested_at": datetime(2021, 1, 1),
+                "status": PrivacyRequestStatus.error,
+                "origin": "https://example.com/",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        privacy_request.error_processing(db)
+
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()
+        assert response_data["status"] == "open"
+        assert response_data["received_at"]
+        assert response_data["request_id"]
+        pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
+
+        # test appropriate data is cached
+        meta_key = get_drp_request_body_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="meta",
+        )
+        assert cache.get(meta_key) == "DrpMeta(version='0.5')"
+        regime_key = get_drp_request_body_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="regime",
+        )
+        assert cache.get(regime_key) == "ccpa"
+        exercise_key = get_drp_request_body_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="exercise",
+        )
+        assert cache.get(exercise_key) == "['access']"
+        identity_key = get_drp_request_body_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="identity",
+        )
+        assert cache.get(identity_key) == encoded_identity
+        fidesops_identity_key = get_identity_cache_key(
+            privacy_request_id=pr.id,
+            identity_attribute="email",
+        )
+        assert cache.get(fidesops_identity_key) == identity["email"]
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        assert persisted_identity.phone_number == TEST_PHONE_NUMBER
+
+        sent_errors = PrivacyRequestError.filter(
+            db=db, conditions=(PrivacyRequestError.message_sent.is_(True))
+        ).all()
+
+        assert len(sent_errors) == 1
+
+        assert run_access_request_mock.called
+        assert mailgun_dispatcher_mock.called
 
 
 class TestGetPrivacyRequestDRP:

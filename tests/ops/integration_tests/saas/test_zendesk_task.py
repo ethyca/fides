@@ -10,7 +10,7 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
@@ -114,7 +114,7 @@ async def test_zendesk_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:tickets"],
-        min_size=2,
+        min_size=1,
         keys=[
             "url",
             "id",

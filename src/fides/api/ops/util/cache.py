@@ -1,16 +1,15 @@
 import base64
-import logging
 import pickle
 from typing import Any, Dict, List, Optional, Union
 
+from loguru import logger
 from redis import Redis
 from redis.client import Script  # type: ignore
+from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
-from fides.ctl.core.config import get_config
-
-logger = logging.getLogger(__name__)
+from fides.core.config import get_config
 
 CONFIG = get_config()
 
@@ -28,10 +27,15 @@ class FidesopsRedis(Redis):
     """
 
     def set_with_autoexpire(
-        self, key: str, value: RedisValue, expire_time: int = None
+        self,
+        key: str,
+        value: RedisValue,
+        expire_time: int = CONFIG.redis.default_ttl_seconds,
     ) -> Optional[bool]:
         """Call the connection class' default set method with ex= our default TTL"""
         if not expire_time:
+            # We have to check this condition for the edge case where `None` is explicitly
+            # passed to this method.
             expire_time = CONFIG.redis.default_ttl_seconds
         return self.set(key, value, ex=expire_time)
 
@@ -99,6 +103,7 @@ def get_cache() -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
     global _connection  # pylint: disable=W0603
     if _connection is None:
+        logger.debug("Creating new Redis connection...")
         _connection = FidesopsRedis(  # type: ignore[call-overload]
             charset=CONFIG.redis.charset,
             decode_responses=CONFIG.redis.decode_responses,
@@ -109,9 +114,18 @@ def get_cache() -> FidesopsRedis:
             ssl=CONFIG.redis.ssl,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
         )
+        logger.debug("New Redis connection created.")
 
-    connected = _connection.ping()
+    logger.debug("Testing Redis connection...")
+    try:
+        connected = _connection.ping()
+    except ConnectionErrorFromRedis:
+        connected = False
+    else:
+        logger.debug("Redis connection succeeded.")
+
     if not connected:
+        logger.debug("Redis connection failed.")
         raise common_exceptions.RedisConnectionError(
             "Unable to establish Redis connection. Fidesops is unable to accept PrivacyRequsts."
         )

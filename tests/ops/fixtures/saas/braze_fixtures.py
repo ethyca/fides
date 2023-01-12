@@ -5,8 +5,6 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.cryptography import cryptographic_util
-from fideslib.db import session
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (
@@ -19,6 +17,8 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from fides.lib.cryptography import cryptographic_util
+from fides.lib.db import session
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -36,6 +36,14 @@ def braze_secrets(saas_config):
 @pytest.fixture(scope="session")
 def braze_identity_email(saas_config):
     return pydash.get(saas_config, "braze.identity_email") or secrets["identity_email"]
+
+
+@pytest.fixture(scope="session")
+def braze_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "braze.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
 
 
 @pytest.fixture(scope="session")
@@ -115,7 +123,6 @@ def braze_erasure_data(
                 "first_name": "Walter",
                 "last_name": "White",
                 "email": braze_erasure_identity_email,
-                "phone": "+16175551212",
                 "country": "US",
                 "date_of_first_session": "2022-09-14T16:14:56+00:00",
                 "dob": "1980-12-21",

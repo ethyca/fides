@@ -1,6 +1,6 @@
 services:
   timescale_example:
-    image: timescale/timescaledb:latest-pg12
+    image: timescale/timescaledb:2.8.1-pg12
     restart: always
     environment:
       - POSTGRES_USER=postgres

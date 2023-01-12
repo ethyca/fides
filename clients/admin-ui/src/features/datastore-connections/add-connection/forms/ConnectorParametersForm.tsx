@@ -3,6 +3,8 @@ import { isNumeric } from "@chakra-ui/utils";
 import {
   Button,
   ButtonGroup,
+  CircleHelpIcon,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -17,14 +19,13 @@ import {
   VStack,
 } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
-import { CircleHelpIcon } from "common/Icon";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaReponse,
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
-import { Field, Form, Formik, FormikProps } from "formik";
+import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -104,7 +105,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       fontSize="14px"
       fontWeight="semibold"
       htmlFor={id}
-      minWidth="141px"
+      minWidth="150px"
     >
       {value}
     </FormLabel>
@@ -114,7 +115,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     if (item.allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
       return "Enter dataset.collection.field";
     }
-    return null;
+    return undefined;
   };
 
   const getFormField = (
@@ -132,7 +133,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           : false
       }
     >
-      {({ field, form }: { field: any; form: any }) => (
+      {({ field, form }: { field: FieldInputProps<string>; form: any }) => (
         <FormControl
           display="flex"
           isRequired={data.required?.includes(key)}
@@ -173,11 +174,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             placement="right-start"
             openDelay={500}
           >
-            <CircleHelpIcon
-              marginLeft="8px"
-              _hover={{ cursor: "pointer" }}
+            <Flex
+              alignItems="center"
+              h="32px"
               visibility={item.description ? "visible" : "hidden"}
-            />
+            >
+              <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
+            </Flex>
           </Tooltip>
         </FormControl>
       )}
@@ -259,14 +262,14 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {/* @ts-ignore */}
       {(props: FormikProps<Values>) => (
         <Form noValidate>
-          <VStack align="stretch" gap="24px">
+          <VStack align="stretch" gap="16px">
             {/* Name */}
             <Field
               id="name"
               name="name"
               validate={(value: string) => validateField("Name", value)}
             >
-              {({ field }: { field: any }) => (
+              {({ field }: { field: FieldInputProps<string> }) => (
                 <FormControl
                   display="flex"
                   isRequired
@@ -286,13 +289,15 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     />
                     <FormErrorMessage>{props.errors.name}</FormErrorMessage>
                   </VStack>
-                  <CircleHelpIcon marginLeft="8px" visibility="hidden" />
+                  <Flex alignItems="center" h="32px" visibility="hidden">
+                    <CircleHelpIcon marginLeft="8px" />
+                  </Flex>
                 </FormControl>
               )}
             </Field>
             {/* Description */}
             <Field id="description" name="description">
-              {({ field }: { field: any }) => (
+              {({ field }: { field: FieldInputProps<string> }) => (
                 <FormControl display="flex">
                   {getFormLabel("description", "Description")}
                   <Textarea
@@ -303,8 +308,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     } connection`}
                     resize="none"
                     size="sm"
+                    value={field.value || ""}
                   />
-                  <CircleHelpIcon marginLeft="8px" visibility="hidden" />
+                  <Flex alignItems="center" h="32px" visibility="hidden">
+                    <CircleHelpIcon marginLeft="8px" />
+                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -314,7 +322,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               name="instance_key"
               validate={validateConnectionIdentifier}
             >
-              {({ field }: { field: any }) => (
+              {({ field }: { field: FieldInputProps<string> }) => (
                 <FormControl
                   display="flex"
                   isRequired
@@ -328,7 +336,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       {...field}
                       autoComplete="off"
                       color="gray.700"
-                      isDisabled={connection?.key}
+                      isDisabled={!!connection?.key}
                       placeholder={`A unique identifier for your new ${
                         connectionOption!.human_readable
                       } connection`}
@@ -345,10 +353,12 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     placement="right-start"
                     openDelay={500}
                   >
-                    <CircleHelpIcon
-                      marginLeft="8px"
-                      _hover={{ cursor: "pointer" }}
-                    />
+                    <Flex alignItems="center" h="32px">
+                      <CircleHelpIcon
+                        marginLeft="8px"
+                        _hover={{ cursor: "pointer" }}
+                      />
+                    </Flex>
                   </Tooltip>
                 </FormControl>
               )}

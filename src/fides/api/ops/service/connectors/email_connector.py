@@ -1,7 +1,6 @@
-import logging
 from typing import Any, Dict, List, Optional
 
-from fideslib.models.audit_log import AuditLog, AuditLogAction
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (
@@ -16,6 +15,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep, Policy, Rule
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -25,15 +25,14 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.connection_configuration import EmailSchema
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
-    MessagingMethod,
+    MessagingServiceType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.query_config import ManualQueryConfig
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.ops.util.collection_util import Row, append
-
-logger = logging.getLogger(__name__)
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 
 class EmailConnector(BaseConnector[None]):
@@ -54,9 +53,11 @@ class EmailConnector(BaseConnector[None]):
         Sends an email to the "test_email" configured, just to establish that the email workflow is working.
         """
         config = EmailSchema(**self.configuration.secrets or {})
-        logger.info("Starting test connection to %s", self.configuration.key)
+        logger.info("Starting test connection to {}", self.configuration.key)
 
         db = Session.object_session(self.configuration)
+
+        email_service: Optional[str] = _get_email_messaging_config_service_type(db=db)
 
         try:
             # synchronous for now since failure to send is considered a connection test failure
@@ -64,7 +65,7 @@ class EmailConnector(BaseConnector[None]):
                 db=db,
                 action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
                 to_identity=Identity(email=config.test_email),
-                messaging_method=MessagingMethod.EMAIL,
+                service_type=email_service,
                 message_body_params=[
                     CheckpointActionRequired(
                         step=CurrentStep.erasure,
@@ -82,7 +83,7 @@ class EmailConnector(BaseConnector[None]):
                 ],
             )
         except MessageDispatchException as exc:
-            logger.info("Email connector test failed with exception %s", exc)
+            logger.info("Email connector test failed with exception {}", exc)
             return ConnectionTestStatus.failed
         return ConnectionTestStatus.succeeded
 
@@ -95,7 +96,7 @@ class EmailConnector(BaseConnector[None]):
     ) -> Optional[List[Row]]:
         """Access requests are not supported at this time."""
         logger.info(
-            "Access requests not supported for email connector '%s' at this time.",
+            "Access requests not supported for email connector '{}' at this time.",
             node.address.value,
         )
         return []
@@ -116,7 +117,7 @@ class EmailConnector(BaseConnector[None]):
             node, policy, input_data
         )
 
-        logger.info("Caching action needed for collection: '%s", node.address.value)
+        logger.info("Caching action needed for collection: '{}", node.address.value)
         privacy_request.cache_email_connector_template_contents(
             step=CurrentStep.erasure,
             collection=node.address,
@@ -181,7 +182,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
 
         if not template_values:
             logger.info(
-                "No email sent: no template values saved for '%s'",
+                "No email sent: no template values saved for '{}'",
                 ds.dataset.get("fides_key"),
             )
             return
@@ -195,20 +196,22 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
             )
         ):
             logger.info(
-                "No email sent: no masking needed on '%s'", ds.dataset.get("fides_key")
+                "No email sent: no masking needed on '{}'", ds.dataset.get("fides_key")
             )
             return
+
+        email_service: Optional[str] = _get_email_messaging_config_service_type(db=db)
 
         dispatch_message(
             db,
             action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
             to_identity=Identity(email=cc.secrets.get("to_email")),
-            messaging_method=MessagingMethod.EMAIL,
+            service_type=email_service,
             message_body_params=template_values,
         )
 
         logger.info(
-            "Email send succeeded for request '%s' for dataset: '%s'",
+            "Email send succeeded for request '{}' for dataset: '{}'",
             privacy_request.id,
             ds.dataset.get("fides_key"),
         )
@@ -221,3 +224,38 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
                 "message": f"Erasure email instructions dispatched for '{ds.dataset.get('fides_key')}'",
             },
         )
+
+
+def _get_email_messaging_config_service_type(db: Session) -> Optional[str]:
+    """
+    Email connectors require that an email messaging service has been configured.
+    Prefers Twilio if both Twilio email AND Mailgun has been configured.
+    """
+    messaging_configs: Optional[List[MessagingConfig]] = MessagingConfig.query(
+        db=db
+    ).all()
+    if not messaging_configs:
+        # let messaging dispatch service handle non-existent service
+        return None
+    twilio_email_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.TWILIO_EMAIL
+        ),
+        None,
+    )
+    mailgun_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.MAILGUN
+        ),
+        None,
+    )
+    if twilio_email_config:
+        # we prefer twilio over mailgun
+        return MessagingServiceType.TWILIO_EMAIL.value
+    if mailgun_config:
+        return MessagingServiceType.MAILGUN.value
+    return None

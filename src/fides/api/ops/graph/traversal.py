@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import logging
 from typing import Any, Callable, Dict, List, Set, Tuple, cast
 
 import pydash.collections
+from loguru import logger
 
 from fides.api.ops.common_exceptions import TraversalError
 from fides.api.ops.graph.config import (
@@ -19,10 +19,6 @@ from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
 from fides.api.ops.util.collection_util import Row, append
 from fides.api.ops.util.matching_queue import MatchingQueue
 
-logger = logging.getLogger(__name__)
-
-
-"""A type expressing a single row of data from (any) collection"""
 Datastore = Dict[CollectionAddress, List[Row]]
 """A type expressing retrieved rows of data from a specified collection"""
 
@@ -220,7 +216,7 @@ class Traversal:
         and raises an error on any traversal failure conditions."""
         self.traverse(
             {self.root_node.address: [self.seed_data]},
-            lambda n, m: logger.info("Traverse %s", n.address),
+            lambda n, m: logger.info("Traverse {}", n.address),
         )
 
     def traversal_map(
@@ -342,7 +338,7 @@ class Traversal:
             else:
                 # traversal traversal_node dict diff finished nodes
                 logger.error(
-                    "Node could not be reached given specified ordering [%s]",
+                    "Node could not be reached given specified ordering [{}]",
                     ",".join([str(tn.address) for tn in running_node_queue.data]),
                 )
                 raise TraversalError(
@@ -353,7 +349,7 @@ class Traversal:
         # error if there are nodes that have not been visited
         if remaining_node_keys:
             logger.error(
-                "Some nodes were not reachable: %s",
+                "Some nodes were not reachable: {}",
                 ",".join([str(x) for x in remaining_node_keys]),
             )
             raise TraversalError(
@@ -362,7 +358,7 @@ class Traversal:
         # error if there are edges that have not been visited
         if remaining_edges:
             logger.error(
-                "Some edges were not reachable: %s",
+                "Some edges were not reachable: {}",
                 ",".join([str(x) for x in remaining_edges]),
             )
             raise TraversalError(
@@ -373,5 +369,5 @@ class Traversal:
             tn.address for tn in finished_nodes.values() if tn.is_terminal_node
         ]
         if environment:
-            logger.debug("Found %s end nodes: %s", len(end_nodes), end_nodes)
+            logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
         return end_nodes

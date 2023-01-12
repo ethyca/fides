@@ -1,5 +1,5 @@
 from fides.api.ops.tasks import _create_celery
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 
@@ -25,6 +25,10 @@ def test_celery_default_config() -> None:
 
 
 def test_celery_config_override() -> None:
-    celery_app = _create_celery(config_path="data/config/celery.override.toml")
+    config = get_config()
+    config.celery["event_queue_prefix"] = "overridden_fides_worker"
+    config.celery["task_default_queue"] = "overridden_fides"
+
+    celery_app = _create_celery(config=config)
     assert celery_app.conf["event_queue_prefix"] == "overridden_fides_worker"
     assert celery_app.conf["task_default_queue"] == "overridden_fides"

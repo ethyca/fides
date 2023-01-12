@@ -1,12 +1,11 @@
-import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, Generic, Optional, Set, Tuple, TypeVar
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
+from loguru import logger
 
-logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
@@ -30,7 +29,7 @@ class DataTypeConverter(ABC, Generic[T]):
     def truncate(self, length: int, val: T) -> T:
         """Truncates value to given length"""
         logger.warning(
-            "%s does not support length truncation. Using original masked value instead for update query.",
+            "{} does not support length truncation. Using original masked value instead for update query.",
             self.name,
         )
         return val
@@ -266,7 +265,7 @@ def get_data_type(value: Any) -> Tuple[Optional[str], bool]:
     return data_type, is_array
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     v = DataType.no_op.value
     for x in v.__dict__:
         print(x)

@@ -6,8 +6,8 @@ from typing import Generator
 import pytest
 from fideslang.models import DatasetCollection, DatasetField
 
-from fides.ctl.core import utils
-from fides.ctl.core.config import get_config
+from fides.core import utils
+from fides.core.config import get_config
 
 
 @pytest.fixture()
@@ -113,3 +113,12 @@ class TestGitIsDirty:
             file.write("test file")
         assert utils.git_is_dirty()
         os.remove(test_file)
+
+
+@pytest.mark.unit
+def test_repeatable_unique_key() -> None:
+    expected_unique_fides_key = "test_dataset_87ccd73621"
+    unique_fides_key = utils.generate_unique_fides_key(
+        "test_dataset", "test_host", "test_name"
+    )
+    assert unique_fides_key == expected_unique_fides_key

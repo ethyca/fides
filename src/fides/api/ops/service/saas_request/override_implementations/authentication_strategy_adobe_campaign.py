@@ -1,10 +1,10 @@
-import logging
 import math
 import time
 from datetime import datetime, timedelta
 from typing import Dict, Optional, cast
 
 from jwt import encode
+from loguru import logger
 from requests import PreparedRequest, post
 from sqlalchemy.orm import Session
 
@@ -15,8 +15,6 @@ from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 from fides.api.ops.util.saas_util import assign_placeholders
-
-logger = logging.getLogger(__name__)
 
 
 class AdobeCampaignAuthenticationConfiguration(StrategyConfiguration):
@@ -84,6 +82,7 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
             if response.ok:
                 json_response = response.json()
                 access_token = json_response.get("access_token")
+                # note: `expires_in` is expressed in ms
                 expires_in = json_response.get("expires_in")
 
                 # merge the new values into the existing connection_config secrets
@@ -92,12 +91,14 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
                     **secrets,
                     **{
                         "access_token": access_token,
-                        "expires_at": int(datetime.utcnow().timestamp()) + expires_in,
+                        "expires_at": (
+                            datetime.utcnow() + timedelta(milliseconds=expires_in)
+                        ).timestamp(),
                     },
                 }
                 connection_config.update(db, data={"secrets": updated_secrets})
                 logger.info(
-                    "Successfully updated the access token for %s",
+                    "Successfully updated the access token for {}",
                     connection_config.key,
                 )
             else:
@@ -114,7 +115,7 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
 
         if expires_at is None:
             logger.info(
-                "The expires_at value is not defined for %s, skipping token refresh",
+                "The expires_at value is not defined for {}, skipping token refresh",
                 connection_config.key,
             )
             return False

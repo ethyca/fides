@@ -4,6 +4,7 @@
 
 import {
   Box,
+  EyeIcon,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -23,7 +24,6 @@ import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 import { useState } from "react";
 
-import { EyeIcon } from "~/features/common/Icon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 interface InputProps {
@@ -154,6 +154,8 @@ export const CustomSelect = ({
             onChange={(newValue) => {
               if (newValue) {
                 field.onChange(props.name)(newValue.value);
+              } else if (isClearable) {
+                field.onChange(props.name)("");
               }
             }}
             name={props.name}

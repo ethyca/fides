@@ -2,6 +2,8 @@ import { Box, Button, Flex, Spacer, Text } from "@fidesui/react";
 import { formatDate } from "common/utils";
 import React from "react";
 
+import ConnectedCircle from "~/features/common/ConnectedCircle";
+
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";
@@ -9,16 +11,11 @@ import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection
 import { DatastoreConnection } from "./types";
 
 type TestDataProps = {
-  succeeded: boolean | null;
+  succeeded?: boolean;
   timestamp: string;
 };
 
 const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
-  let testCircleColor = succeeded ? "green.500" : "red.500";
-  if (succeeded === null) {
-    testCircleColor = "gray.300";
-  }
-
   const date = formatDate(timestamp);
   const testText = timestamp
     ? `Last tested on ${date}`
@@ -26,12 +23,7 @@ const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
 
   return (
     <>
-      <Box
-        width="12px"
-        height="12px"
-        borderRadius="6px"
-        backgroundColor={testCircleColor}
-      />
+      <ConnectedCircle connected={succeeded} />
       <Text
         color="gray.500"
         fontSize="xs"

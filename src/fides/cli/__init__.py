@@ -6,20 +6,18 @@ import click
 from fideslog.sdk.python.client import AnalyticsClient
 
 import fides
-from fides.cli.utils import (
-    check_and_update_analytics_config,
-    check_server,
-    create_config_file,
-)
-from fides.ctl.core.config import get_config
+from fides.cli.utils import check_and_update_analytics_config, check_server
+from fides.core.config import get_config
+from fides.core.config.helpers import create_config_file
 
 from .commands.annotate import annotate
 from .commands.core import evaluate, parse, pull, push
-from .commands.crud import delete, get, ls
+from .commands.crud import delete, get_resource, list_resources
 from .commands.db import database
 from .commands.export import export
 from .commands.generate import generate
 from .commands.scan import scan
+from .commands.user import user
 from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
 
@@ -33,12 +31,13 @@ API_COMMANDS = [
     database,
     delete,
     export,
-    get,
-    ls,
+    get_resource,
+    list_resources,
     status,
     pull,
     push,
     worker,
+    user,
 ]
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
@@ -94,22 +93,19 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if ctx.invoked_subcommand in SERVER_CHECK_COMMAND_NAMES:
         check_server(VERSION, str(config.cli.server_url), quiet=True)
 
+    # Analytics requires explicit opt-in
+    no_analytics = config.user.analytics_opt_out
+    if not no_analytics:
+        ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
+            client_id=config.cli.analytics_id,
+            developer_mode=config.test_mode,
+            os=system(),
+            product_name=APP + "-cli",
+            production_version=version(PACKAGE),
+        )
+
+    # Setting the config context after all mutations
     ctx.obj["CONFIG"] = config
-    create_config_file(ctx)
-
-    # init also handles this workflow
-    if ctx.invoked_subcommand not in ["init", "deploy"]:
-        check_and_update_analytics_config(ctx, config_path)
-
-        # Analytics requires explicit opt-in
-        if config.user.analytics_opt_out is False:
-            ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
-                client_id=config.cli.analytics_id,
-                developer_mode=config.test_mode,
-                os=system(),
-                product_name=APP + "-cli",
-                production_version=version(PACKAGE),
-            )
 
 
 # Add all commands here before dynamically checking them in the CLI

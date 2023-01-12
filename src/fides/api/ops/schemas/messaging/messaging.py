@@ -1,6 +1,6 @@
 from enum import Enum
 from re import compile as regex
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel, Extra, root_validator
 
@@ -17,19 +17,19 @@ class MessagingMethod(Enum):
 
 
 class MessagingServiceType(Enum):
-    """Enum for messaging service type"""
+    """Enum for messaging service type. Upper-cased in the database"""
 
-    MAILGUN = "mailgun"
+    MAILGUN = "MAILGUN"
 
-    TWILIO_TEXT = "twilio_text"
-    TWILIO_EMAIL = "twilio_email"
+    TWILIO_TEXT = "TWILIO_TEXT"
+    TWILIO_EMAIL = "TWILIO_EMAIL"
 
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
     MessagingServiceType.MAILGUN.value,
     MessagingServiceType.TWILIO_EMAIL.value,
 )
-SMS_MESSAGING_SERVICES: Tuple[str, ...] = tuple(MessagingServiceType.TWILIO_TEXT.value)
+SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.TWILIO_TEXT.value,)
 
 
 class MessagingActionType(str, Enum):
@@ -39,11 +39,18 @@ class MessagingActionType(str, Enum):
     CONSENT_REQUEST = "consent_request"
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
     MESSAGE_ERASURE_REQUEST_FULFILLMENT = "message_erasure_fulfillment"
+    PRIVACY_REQUEST_ERROR_NOTIFICATION = "privacy_request_error_notification"
     PRIVACY_REQUEST_RECEIPT = "privacy_request_receipt"
     PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
     PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
+
+
+class ErrorNotificaitonBodyParams(BaseModel):
+    """Body params required for privacy request error notifications."""
+
+    unsent_errors: int
 
 
 class SubjectIdentityVerificationBodyParams(BaseModel):
@@ -111,6 +118,9 @@ class MessagingServiceDetails(Enum):
     API_VERSION = "api_version"
     DOMAIN = "domain"
 
+    # Twilio Email
+    TWILIO_EMAIL_FROM = "twilio_email_from"
+
 
 class MessagingServiceDetailsMailgun(BaseModel):
     """The details required to represent a Mailgun email configuration."""
@@ -118,6 +128,17 @@ class MessagingServiceDetailsMailgun(BaseModel):
     is_eu_domain: Optional[bool] = False
     api_version: Optional[str] = "v3"
     domain: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
+
+
+class MessagingServiceDetailsTwilioEmail(BaseModel):
+    """The details required to represent a Twilio email configuration."""
+
+    twilio_email_from: str
 
     class Config:
         """Restrict adding other fields through this schema."""
@@ -170,7 +191,7 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
         sender_phone = values.get("twilio_sender_phone_number")
         if not values.get("twilio_messaging_service_sid") and not sender_phone:
             raise ValueError(
-                "Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied."
+                "Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied."
             )
         if sender_phone:
             pattern = regex(r"^\+\d+$")
@@ -198,19 +219,42 @@ class MessagingConfigRequest(BaseModel):
     name: str
     key: Optional[FidesOpsKey]
     service_type: MessagingServiceType
-    details: Optional[MessagingServiceDetailsMailgun]
+    details: Optional[
+        Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
+    ]
 
     class Config:
         use_enum_values = False
         orm_mode = True
 
-    @root_validator
+    @root_validator(pre=True)
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        service_type: MessagingServiceType = values.get("service_type")  # type: ignore
-        if service_type == MessagingServiceType.MAILGUN:
-            if not values.get("details"):
-                raise ValueError("Mailgun messaging config must include details")
+        service_type_pre = values.get("service_type")
+        if service_type_pre:
+            # uppercase to match enums in database
+            values["service_type"] = service_type_pre.upper()
+            service_type: MessagingServiceType = values["service_type"]
+            if service_type == MessagingServiceType.MAILGUN.value:
+                cls._validate_details_schema(
+                    values=values, schema=MessagingServiceDetailsMailgun
+                )
+            if service_type == MessagingServiceType.TWILIO_EMAIL.value:
+                cls._validate_details_schema(
+                    values=values, schema=MessagingServiceDetailsTwilioEmail
+                )
         return values
+
+    @staticmethod
+    def _validate_details_schema(
+        values: Dict[str, Any],
+        schema: Union[
+            Type[MessagingServiceDetailsMailgun],
+            Type[MessagingServiceDetailsTwilioEmail],
+        ],
+    ) -> None:
+        if not values.get("details"):
+            raise ValueError("Messaging config must include details")
+        schema.validate(values.get("details"))
 
 
 class MessagingConfigResponse(BaseModel):

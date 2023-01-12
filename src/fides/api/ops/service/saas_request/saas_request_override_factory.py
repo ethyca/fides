@@ -1,7 +1,8 @@
-import logging
 from enum import Enum
 from inspect import Signature, signature
 from typing import Callable, Dict, List, Union
+
+from loguru import logger
 
 from fides.api.ops.common_exceptions import (
     InvalidSaaSRequestOverrideException,
@@ -9,7 +10,6 @@ from fides.api.ops.common_exceptions import (
 )
 from fides.api.ops.util.collection_util import Row
 
-logger = logging.getLogger(__name__)
 
 # at some point this should likely be formalized more centrally...
 class SaaSRequestType(Enum):
@@ -62,7 +62,7 @@ class SaaSRequestOverrideFactory:
         ) -> Callable[..., Union[List[Row], int]]:
             for request_type in request_types:
                 logger.debug(
-                    "Registering new SaaS request override function '%s' under name '%s' for SaaSRequestType %s",
+                    "Registering new SaaS request override function '{}' under name '{}' for SaaSRequestType {}",
                     override_function.__name__,
                     name,
                     request_type,
@@ -84,7 +84,7 @@ class SaaSRequestOverrideFactory:
 
                 if name in cls.registry[request_type]:
                     logger.warning(
-                        "SaaS request override function with name '%s' already exists for SaaSRequestType %s. It previously referred to function '%s', but will now refer to '%s'",
+                        "SaaS request override function with name '{}' already exists for SaaSRequestType {}. It previously referred to function '{}', but will now refer to '{}'",
                         name,
                         request_type,
                         cls.registry[request_type][name],
@@ -137,9 +137,9 @@ def validate_read_override_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must return a List[Row]"
         )
-    if len(sig.parameters) < 5:
+    if len(sig.parameters) < 6:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS request override function must declare at least 5 parameters"
+            "Provided SaaS request override function must declare at least 6 parameters"
         )
 
 
@@ -160,9 +160,9 @@ def validate_update_override_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must return an int"
         )
-    if len(sig.parameters) < 4:
+    if len(sig.parameters) < 5:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS request override function must declare at least 4 parameters"
+            "Provided SaaS request override function must declare at least 5 parameters"
         )
 
 

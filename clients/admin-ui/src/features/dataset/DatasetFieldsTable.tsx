@@ -2,7 +2,7 @@ import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ColumnMetadata } from "~/features/common/ColumnDropdown";
-import { selectClassifyInstanceFieldMap } from "~/features/common/plus.slice";
+import { selectClassifyInstanceFieldMap } from "~/features/plus/plus.slice";
 import { DatasetField } from "~/types/api";
 
 import {

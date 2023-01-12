@@ -14,7 +14,17 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import "./commands";
+
+import { stubHomePage, stubPlus, stubSystemCrud } from "./stubs";
+
+// Stub global subscriptions because they are required for every page. These just default
+// responses -- interceptions defined later will override them.
+beforeEach(() => {
+  stubHomePage();
+  stubSystemCrud();
+  stubPlus(false);
+});
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')

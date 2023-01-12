@@ -5,19 +5,13 @@ import { useDispatch } from "react-redux";
 import * as Yup from "yup";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useCreateClassifyInstanceMutation } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
-import {
-  ClassifyInstanceResponseValues,
-  Dataset,
-  GenerateTypes,
-  System,
-  ValidTargets,
-} from "~/types/api";
+import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";
+import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
 
 import {
   setActiveDatasetFidesKey,
@@ -139,7 +133,7 @@ const DatabaseConnectForm = () => {
         error: string;
       }
     | {
-        classifyInstances: ClassifyInstanceResponseValues[];
+        classifyInstances: Record<string, string>[];
       }
   > => {
     const result = await classifyMutation({
@@ -229,8 +223,8 @@ const DatabaseConnectForm = () => {
         <Form>
           <VStack spacing={8} align="left">
             <Text size="sm" color="gray.700">
-              Connect to one of your databases using a connection URL. You may
-              have received this URL from a colleague or your Ethyca developer
+              Connect to a database using the connection URL. You may have
+              received this URL from a colleague or your Ethyca developer
               support engineer.
             </Text>
             <Box>
@@ -241,7 +235,7 @@ const DatabaseConnectForm = () => {
               <CustomSwitch
                 name="classify"
                 label="Classify dataset"
-                tooltip="In addition to generating the Dataset, Fidescls will scan the database to determine the locations of possible PII and suggest labels based on the contents of your tables."
+                tooltip="Use Fides Classify to suggest labels based on your data."
               />
             ) : null}
 

@@ -20,17 +20,16 @@ services:
       - .env
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
-      FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID:-}
+      FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID-}
       FIDES__CLI__SERVER_HOST: "fides"
       FIDES__CLI__SERVER_PORT: "8080"
       FIDES__DATABASE__SERVER: "fides-db"
       FIDES__DEV_MODE: "True"
       FIDES__REDIS__ENABLED: "True"
-      FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
-      VAULT_ADDR: ${VAULT_ADDR:-}
-      VAULT_NAMESPACE: ${VAULT_NAMESPACE:-}
-      VAULT_TOKEN: ${VAULT_TOKEN:-}
+      VAULT_ADDR: ${VAULT_ADDR-}
+      VAULT_NAMESPACE: ${VAULT_NAMESPACE-}
+      VAULT_TOKEN: ${VAULT_TOKEN-}
     volumes:
       - type: bind
         source: .
@@ -100,8 +99,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - FIDES__DEV_MODE=True
-      - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID:-}
+      FIDES__DEV_MODE: True
+      FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID-}
+
+      # Required security env vars
+      FIDES__SECURITY__APP_ENCRYPTION_KEY: OLMkv91j8DHiDAULnK5Lxx3kSCov30b3
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: fidesadmin
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: fidesadminsecret
+      FIDES__SECURITY__DRP_JWT_SECRET: secret
 
   worker:
     image: ethyca/fides:local
@@ -112,7 +117,6 @@ services:
     restart: always
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
-      FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind

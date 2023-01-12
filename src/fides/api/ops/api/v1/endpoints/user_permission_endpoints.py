@@ -1,9 +1,8 @@
-import logging
+from typing import Optional
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from fideslib.models.fides_user import FidesUser
-from fideslib.models.fides_user_permissions import FidesUserPermissions
+from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
@@ -27,10 +26,11 @@ from fides.api.ops.util.oauth_util import (
     oauth2_scheme,
     verify_oauth_client,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
 
@@ -57,7 +57,7 @@ def create_user_permissions(
     permissions: UserPermissionsCreate,
 ) -> FidesUserPermissions:
     user = validate_user_id(db, user_id)
-    if user.permissions is not None:
+    if user.permissions is not None:  # type: ignore[attr-defined]
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="This user already has permissions set.",
@@ -83,9 +83,9 @@ def update_user_permissions(
     logger.info("Updated FidesUserPermission record")
     if user.client:
         user.client.update(db=db, data={"scopes": permissions.scopes})
-    return user.permissions.update(
+    return user.permissions.update(  # type: ignore[attr-defined]
         db=db,
-        data={"id": user.permissions.id, "user_id": user_id, **permissions.dict()},
+        data={"id": user.permissions.id, "user_id": user_id, **permissions.dict()},  # type: ignore[attr-defined]
     )
 
 
@@ -99,7 +99,7 @@ async def get_user_permissions(
     authorization: str = Security(oauth2_scheme),
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
-) -> FidesUserPermissions:
+) -> Optional[FidesUserPermissions]:
     # A user is able to retrieve their own permissions.
     if current_user.id == user_id:
         # The root user is a special case because they aren't persisted in the database.

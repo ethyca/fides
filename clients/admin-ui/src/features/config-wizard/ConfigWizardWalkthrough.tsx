@@ -1,14 +1,13 @@
-import { Box, Button, Divider, Stack } from "@fidesui/react";
+import { Box, Button, CloseSolidIcon, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
-import React, { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { CloseSolidIcon } from "~/features/common/Icon";
+import { useFeatures } from "~/features/common/features";
 import DescribeSystemStep from "~/features/system/DescribeSystemStep";
 import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
 import ReviewSystemStep from "~/features/system/ReviewSystemStep";
-import { System, ValidTargets } from "~/types/api";
+import { System } from "~/types/api";
 
 import AddSystemForm from "./AddSystemForm";
 import AuthenticateScanner from "./AuthenticateScanner";
@@ -25,20 +24,16 @@ import {
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
-import ScanResultsForm from "./ScanResultsForm";
+import ScanResults from "./ScanResults";
 import SuccessPage from "./SuccessPage";
-import { AddSystemMethods } from "./types";
 
 const ConfigWizardWalkthrough = () => {
+  const dispatch = useAppDispatch();
   const step = useAppSelector(selectStep);
   const reviewStep = useAppSelector(selectReviewStep);
-  const dispatch = useAppDispatch();
   const system = useAppSelector(selectSystemInReview);
   const systemsForReview = useAppSelector(selectSystemsForReview);
-
-  const [addSystemMethod, setAddSystemMethod] = useState<AddSystemMethods>(
-    ValidTargets.AWS
-  );
+  const features = useFeatures();
 
   const handleCancelSetup = () => {
     dispatch(reset());
@@ -51,21 +46,33 @@ const ConfigWizardWalkthrough = () => {
 
   return (
     <>
-      <Box bg="white">
-        <Button
-          bg="transparent"
-          fontWeight="500"
-          m={2}
-          ml={6}
-          onClick={handleCancelSetup}
-        >
-          <CloseSolidIcon /> Cancel setup
-        </Button>
-      </Box>
-      <Divider orientation="horizontal" />
+      {!features.flags.navV2 && (
+        <>
+          <Box bg="white">
+            <Button
+              bg="transparent"
+              fontWeight="500"
+              m={2}
+              ml={6}
+              onClick={handleCancelSetup}
+            >
+              <CloseSolidIcon width="17px" /> Cancel setup
+            </Button>
+          </Box>
+          <Divider orientation="horizontal" />
+        </>
+      )}
       <Stack direction={["column", "row"]}>
-        <Stack bg="white" height="100vh">
-          <Stack mt={10} mb={10} direction="row" spacing="24px">
+        <Stack bg="white" height="100vh" width="100%">
+          <Stack
+            mt={10}
+            mb={10}
+            direction="row"
+            spacing="24px"
+            justifyContent={
+              features.flags.configWizardStepper ? undefined : "center"
+            }
+          >
             <Box flexShrink={0}>
               <Stepper
                 activeStep={step}
@@ -75,15 +82,11 @@ const ConfigWizardWalkthrough = () => {
             </Box>
             <Box w={step === 4 ? "100%" : "40%"}>
               {step === 1 ? <OrganizationInfoForm /> : null}
-              {step === 2 ? (
-                <AddSystemForm onSelectMethod={setAddSystemMethod} />
-              ) : null}
-              {step === 3 ? (
-                <AuthenticateScanner infrastructure={addSystemMethod} />
-              ) : null}
+              {step === 2 ? <AddSystemForm /> : null}
+              {step === 3 ? <AuthenticateScanner /> : null}
               {step === 4 ? (
                 <Box pr={10}>
-                  <ScanResultsForm />
+                  <ScanResults />
                 </Box>
               ) : null}
               {/* These steps should only apply if you're creating systems manually */}

@@ -7,10 +7,11 @@ db = "fides"
 test_db = "fides_test"
 
 [credentials]
-app_postgres = {connection_string="postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test"}
+app_postgres = {connection_string="postgresql+psycopg2://postgres:fides@fides-db:5432/fides"}
 
 [logging]
 level = "INFO"
+log_pii = true
 
 [cli]
 server_host = "localhost"
@@ -30,14 +31,14 @@ ssl = false
 ssl_cert_reqs = "required"
 
 [security]
-app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 cors_origins = [ "http://localhost", "http://localhost:8080", "http://localhost:3000", "http://localhost:3001",]
 encoding = "UTF-8"
+root_username = "root_user"
+root_password = "Testpassword1!"
+app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 drp_jwt_secret = "secret"
-root_username = "root_user"
-root_password = "Testpassword1!"
 
 [execution]
 masking_strict = true
@@ -49,3 +50,11 @@ task_retry_delay = 1
 
 [admin_ui]
 enabled = true
+
+[celery]
+event_queue_prefix = "fides_worker"
+task_default_queue = "fides"
+task_always_eager = true
+
+[notifications]
+notification_service_type = "mailgun"

@@ -8,7 +8,8 @@ from constants_nox import (
     RUN,
     RUN_NO_DEPS,
     START_APP,
-    START_APP_EXTERNAL,
+    START_APP_REMOTE_DEBUG,
+    START_TEST_ENV,
 )
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
@@ -29,6 +30,17 @@ def dev(session: Session) -> None:
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
     ] or None
 
+    if "child" in session.posargs:
+        session.run(
+            "docker",
+            "compose",
+            "-f",
+            "docker-compose.child-env.yml",
+            "up",
+            "-d",
+            external=True,
+        )
+
     if "ui" in session.posargs:
         build(session, "admin_ui")
         session.run("docker", "compose", "up", "-d", "fides-ui", external=True)
@@ -38,16 +50,25 @@ def dev(session: Session) -> None:
         session.run("docker", "compose", "up", "-d", "fides-pc", external=True)
 
     open_shell = "shell" in session.posargs
+    remote_debug = "remote_debug" in session.posargs
     if not datastores:
         if open_shell:
             session.run(*START_APP, external=True)
             session.run(*RUN, "/bin/bash", external=True)
         else:
-            session.run("docker", "compose", "up", COMPOSE_SERVICE_NAME, external=True)
+            if remote_debug:
+                session.run(*START_APP_REMOTE_DEBUG, external=True)
+            else:
+                session.run(
+                    "docker", "compose", "up", COMPOSE_SERVICE_NAME, external=True
+                )
     else:
         # Run the webserver with additional datastores
         run_infrastructure(
-            open_shell=open_shell, run_application=True, datastores=datastores
+            open_shell=open_shell,
+            run_application=True,
+            datastores=datastores,
+            remote_debug=remote_debug,
         )
 
 
@@ -87,7 +108,7 @@ def test_env(session: Session) -> None:
         "Starting the application with example databases defined in docker-compose.integration-tests.yml..."
     )
     session.run(
-        *START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True, env=test_env_vars
+        *START_TEST_ENV, "fides-ui", "fides-pc", external=True, env=test_env_vars
     )
 
     session.log(
@@ -144,5 +165,7 @@ def test_env(session: Session) -> None:
 def quickstart(session: Session) -> None:
     """Run the quickstart tutorial."""
     build(session, "dev")
+    build(session, "privacy_center")
+    build(session, "admin_ui")
     session.notify("teardown")
     run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)

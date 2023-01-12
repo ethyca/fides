@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from fideslang import FidesModelType
-from fideslib.db.base import Base
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database.crud import get_resource, list_resource
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
@@ -9,6 +9,7 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
 )
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 API_PREFIX = "/api/v1"
 
@@ -26,30 +27,35 @@ def get_resource_type(router: APIRouter) -> str:
 
 
 async def forbid_if_editing_is_default(
-    sql_model: Base, fides_key: str, payload: FidesModelType
+    sql_model: Base,
+    fides_key: str,
+    payload: FidesModelType,
+    async_session: AsyncSession,
 ) -> None:
     """
     Raise a forbidden error if the user is trying modify the `is_default` field
     """
     if sql_model in models_with_default_field:
-        resource = await get_resource(sql_model, fides_key)
+        resource = await get_resource(sql_model, fides_key, async_session)
         if resource.is_default != payload.is_default:
             raise errors.ForbiddenError(sql_model.__name__, fides_key)
 
 
-async def forbid_if_default(sql_model: Base, fides_key: str) -> None:
+async def forbid_if_default(
+    sql_model: Base, fides_key: str, async_session: AsyncSession
+) -> None:
     """
     Raise a forbidden error if the user is trying to operate on a resource
     with `is_default=True`
     """
     if sql_model in models_with_default_field:
-        resource = await get_resource(sql_model, fides_key)
+        resource = await get_resource(sql_model, fides_key, async_session)
         if resource.is_default:
             raise errors.ForbiddenError(sql_model.__name__, fides_key)
 
 
 async def forbid_if_editing_any_is_default(
-    sql_model: Base, resources: List[Dict]
+    sql_model: Base, resources: List[Dict], async_session: AsyncSession
 ) -> None:
     """
     Raise a forbidden error if any of the existing resources' `is_default`
@@ -59,7 +65,7 @@ async def forbid_if_editing_any_is_default(
         fides_keys = [resource["fides_key"] for resource in resources]
         existing_resources = {
             r.fides_key: r
-            for r in await list_resource(sql_model)
+            for r in await list_resource(sql_model, async_session)
             if r.fides_key in fides_keys
         }
         for resource in resources:

@@ -2,8 +2,8 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Square SaaS Config
   type: square
-  description: A sample schema representing the Square connector for Fidesops
-  version: 0.0.1
+  description: A sample schema representing the Square connector for Fides
+  version: 0.0.2
 
   connector_params:
     - name: domain
@@ -25,22 +25,38 @@ saas_config:
     - name: customer
       requests:
         read:
-          method: POST
-          path: /v2/customers/search
-          param_values:
-            - name: email
-              identity: email
-          body: |
-            {
-              "query": {
-                "filter": {
-                  "email_address": {
-                    "exact": "<email>"
+          - method: POST
+            path: /v2/customers/search
+            param_values:
+              - name: email
+                identity: email
+            body: |
+              {
+                "query": {
+                  "filter": {
+                    "email_address": {
+                      "exact": "<email>"
+                    }
                   }
                 }
               }
-            }
-          data_path: customers
+            data_path: customers
+          - method: POST
+            path: /v2/customers/search
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            body: |
+              {
+                "query": {
+                  "filter": {
+                    "phone_number": {
+                      "exact": "<phone_number>"
+                    }
+                  }
+                }
+              }
+            data_path: customers
         update:
           method: PUT
           path: /v2/customers/<customer_id>
@@ -59,12 +75,11 @@ saas_config:
         read:
           method: GET
           path: /v2/locations
-          query_params:
-            - name: email
-              value: <email>
           param_values:
             - name: email
               identity: email
+            - name: phone_number
+              identity: phone_number
           data_path: locations
     - name: orders
       requests:

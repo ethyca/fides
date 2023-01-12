@@ -5,6 +5,7 @@ import {
   chakra,
   Heading,
   Stack,
+  StepperCircleCheckmarkIcon,
   Table,
   TableContainer,
   Tbody,
@@ -16,11 +17,10 @@ import {
 } from "@fidesui/react";
 import { useRouter } from "next/router";
 
-import { useAppDispatch } from "~/app/hooks";
-import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
+  selectAllSystems,
   setActiveSystem,
-  useGetAllSystemsQuery,
 } from "~/features/system/system.slice";
 import { System } from "~/types/api";
 
@@ -29,7 +29,7 @@ interface Props {
   onAddNextSystem: () => void;
 }
 const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
-  const { data: allRegisteredSystems } = useGetAllSystemsQuery();
+  const allRegisteredSystems = useAppSelector(selectAllSystems);
   const dispatch = useAppDispatch();
   const router = useRouter();
   const otherSystems = allRegisteredSystems

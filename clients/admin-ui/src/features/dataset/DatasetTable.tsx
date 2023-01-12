@@ -1,52 +1,38 @@
-import {
-  Badge,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tooltip,
-  Tr,
-} from "@fidesui/react";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 
-import { useFeatures } from "~/features/common/features.slice";
-import {
-  selectClassifyInstanceMap,
-  useGetAllClassifyInstancesQuery,
-} from "~/features/common/plus.slice";
-import { Dataset } from "~/types/api";
+import { usePollForClassifications } from "~/features/common/classifications";
+import { useFeatures } from "~/features/common/features";
+import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
+import { selectDatasetClassifyInstanceMap } from "~/features/plus/plus.slice";
+import { Dataset, GenerateTypes } from "~/types/api";
 
-import { STATUS_DISPLAY } from "./constants";
 import {
-  selectActiveDatasetFidesKey,
   setActiveDatasetFidesKey,
   useGetAllDatasetsQuery,
 } from "./dataset.slice";
 
 const DatasetsTable = () => {
   const dispatch = useDispatch();
-  const activeDatasetFidesKey = useSelector(selectActiveDatasetFidesKey);
-
+  const router = useRouter();
   const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
-  useGetAllClassifyInstancesQuery(undefined, {
+  usePollForClassifications({
+    resourceType: GenerateTypes.DATASETS,
     skip: !features.plus,
   });
-  const classifyInstanceMap = useSelector(selectClassifyInstanceMap);
+  const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
 
   const handleRowClick = (dataset: Dataset) => {
-    // toggle the active dataset
-    if (dataset.fides_key === activeDatasetFidesKey) {
-      dispatch(setActiveDatasetFidesKey(undefined));
-    } else {
-      dispatch(setActiveDatasetFidesKey(dataset.fides_key));
-    }
+    dispatch(setActiveDatasetFidesKey(dataset.fides_key));
+    router.push(`/dataset/${dataset.fides_key}`);
   };
 
   if (!datasets) {
     return <div>Empty state</div>;
   }
+
   return (
     <Table size="sm" data-testid="dataset-table">
       <Thead>
@@ -54,24 +40,21 @@ const DatasetsTable = () => {
           <Th pl={1}>Name</Th>
           <Th pl={1}>Fides Key</Th>
           <Th pl={1}>Description</Th>
-          <Th pl={1}>Status</Th>
+          {features.plus ? (
+            <Th data-testid="dataset-table__status-table-header" pl={1}>
+              Status
+            </Th>
+          ) : null}
         </Tr>
       </Thead>
       <Tbody>
         {datasets.map((dataset) => {
-          const isActive =
-            activeDatasetFidesKey &&
-            activeDatasetFidesKey === dataset.fides_key;
-
           const classifyDataset = classifyInstanceMap.get(dataset.fides_key);
-          const statusDisplay =
-            STATUS_DISPLAY[classifyDataset?.status ?? "unknown"];
 
           return (
             <Tr
               key={dataset.fides_key}
-              _hover={{ bg: isActive ? undefined : "gray.50" }}
-              backgroundColor={isActive ? "complimentary.50" : undefined}
+              _hover={{ bg: "gray.50" }}
               tabIndex={0}
               onClick={() => handleRowClick(dataset)}
               onKeyPress={(e) => {
@@ -85,17 +68,14 @@ const DatasetsTable = () => {
               <Td pl={1}>{dataset.name}</Td>
               <Td pl={1}>{dataset.fides_key}</Td>
               <Td pl={1}>{dataset.description}</Td>
-              <Td pl={1}>
-                <Tooltip label={statusDisplay.tooltip}>
-                  <Badge
-                    variant="solid"
-                    colorScheme={statusDisplay.color}
-                    data-testid={`dataset-status-${dataset.fides_key}`}
-                  >
-                    {statusDisplay.title}
-                  </Badge>
-                </Tooltip>
-              </Td>
+              {features.plus ? (
+                <Td pl={1} data-testid={`dataset-status-${dataset.fides_key}`}>
+                  <ClassificationStatusBadge
+                    resource={GenerateTypes.DATASETS}
+                    status={classifyDataset?.status}
+                  />
+                </Td>
+              ) : null}
             </Tr>
           );
         })}

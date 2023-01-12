@@ -7,8 +7,6 @@ import pydash
 import pytest
 import requests
 from faker import Faker
-from fideslib.cryptography import cryptographic_util
-from fideslib.db import session
 from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
@@ -23,6 +21,8 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from fides.lib.cryptography import cryptographic_util
+from fides.lib.db import session
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -42,6 +42,14 @@ def square_secrets(saas_config):
 @pytest.fixture(scope="session")
 def square_identity_email(saas_config):
     return pydash.get(saas_config, "square.identity_email") or secrets["identity_email"]
+
+
+@pytest.fixture(scope="session")
+def square_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "square.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
 
 
 @pytest.fixture(scope="function")
@@ -149,7 +157,6 @@ class SquareTestClient:
             "birthday": str(faker.date_of_birth()),
             "family_name": faker.first_name(),
             "given_name": faker.last_name(),
-            "phone_number": faker.phone_number(),
         }
         customer_response: Response = requests.post(
             url=f"{self.base_url}/customers", json=body, headers=self.headers

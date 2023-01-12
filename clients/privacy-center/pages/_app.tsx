@@ -1,5 +1,4 @@
 import type { AppProps } from "next/app";
-import { SessionProvider } from "next-auth/react";
 /*
  * This import needed to be updated to '@chakra-ui/react' from "@fidesui/react".
  * Under the hood fidesui is importing from "@chakra-ui/provider" instead "chakra-ui/react".
@@ -18,11 +17,9 @@ import "../config/config.css";
 import theme from "../theme";
 
 const MyApp = ({ Component, pageProps }: AppProps) => (
-  <SessionProvider>
-    <ChakraProvider theme={theme}>
-      <Component {...pageProps} />
-    </ChakraProvider>
-  </SessionProvider>
+  <ChakraProvider theme={theme}>
+    <Component {...pageProps} />
+  </ChakraProvider>
 );
 
 export default MyApp;

@@ -3,8 +3,6 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.cryptography import cryptographic_util
-from fideslib.db import session
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from sqlalchemy.orm import Session
 
@@ -18,6 +16,8 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from fides.lib.cryptography import cryptographic_util
+from fides.lib.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("stripe")
@@ -30,14 +30,20 @@ def stripe_secrets(saas_config):
         "api_key": pydash.get(saas_config, "stripe.api_key") or secrets["api_key"],
         "payment_types": pydash.get(saas_config, "stripe.payment_types")
         or secrets["payment_types"],
-        "page_size": pydash.get(saas_config, "stripe.page_size")
-        or secrets["page_size"],
     }
 
 
 @pytest.fixture(scope="session")
 def stripe_identity_email(saas_config):
     return pydash.get(saas_config, "stripe.identity_email") or secrets["identity_email"]
+
+
+@pytest.fixture(scope="session")
+def stripe_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "stripe.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
 
 
 @pytest.fixture(scope="session")

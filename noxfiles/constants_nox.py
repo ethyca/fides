@@ -4,6 +4,8 @@ from os import getenv
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
+TEST_ENV_COMPOSE_FILE = "docker-compose.test-env.yml"
+REMOTE_DEBUG_COMPOSE_FILE = "docker-compose.remote-debug.yml"
 WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 
 # Image Names & Tags
@@ -77,6 +79,27 @@ START_APP_EXTERNAL = (
     INTEGRATION_COMPOSE_FILE,
     "up",
     "--wait",
+    COMPOSE_SERVICE_NAME,
+)
+START_TEST_ENV = (
+    "docker",
+    "compose",
+    "-f",
+    COMPOSE_FILE,
+    "-f",
+    TEST_ENV_COMPOSE_FILE,
+    "up",
+    "--wait",
+    COMPOSE_SERVICE_NAME,
+)
+START_APP_REMOTE_DEBUG = (
+    "docker",
+    "compose",
+    "-f",
+    COMPOSE_FILE,
+    "-f",
+    REMOTE_DEBUG_COMPOSE_FILE,
+    "up",
     COMPOSE_SERVICE_NAME,
 )
 START_APP_WITH_EXTERNAL_POSTGRES = (

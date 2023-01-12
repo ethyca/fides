@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException
@@ -8,7 +7,7 @@ from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslib.exceptions import KeyOrNameAlreadyExists
+from loguru import logger
 from pydantic import ValidationError, conlist
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -16,6 +15,7 @@ from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
@@ -30,6 +30,7 @@ from fides.api.ops.api.v1.urn_registry import (
     CONNECTION_BY_KEY,
     CONNECTION_SECRETS,
     CONNECTION_TEST,
+    CONNECTION_TYPES,
     CONNECTIONS,
     SAAS_CONFIG,
     V1_URL_PREFIX,
@@ -54,7 +55,8 @@ from fides.api.ops.schemas.connection_configuration import (
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
-    CreateConnectionConfiguration,
+    CreateConnectionConfigurationWithSecrets,
+    SaasConnectionTemplateValues,
     SystemType,
     TestStatus,
 )
@@ -67,16 +69,20 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_saas impo
 )
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.connectors import get_connector
+from fides.api.ops.service.connectors.saas.connector_registry_service import (
+    create_connection_config_from_template_no_save,
+    load_registry,
+    registry_file,
+)
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
-
-logger = logging.getLogger(__name__)
 
 
 def get_connection_config_or_error(
@@ -84,7 +90,7 @@ def get_connection_config_or_error(
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info("Finding connection configuration with key '%s'", connection_key)
+    logger.info("Finding connection configuration with key '{}'", connection_key)
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -119,7 +125,7 @@ def get_connections(
     SaaS connector types.
     """
     logger.info(
-        "Finding connection configurations with pagination params %s and search query: '%s'.",
+        "Finding connection configurations with pagination params {} and search query: '{}'.",
         params,
         search if search else "",
     )
@@ -204,34 +210,95 @@ def get_connection_detail(
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: conlist(CreateConnectionConfiguration, max_items=50),  # type: ignore
+    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
 ) -> BulkPutConnectionConfiguration:
     """
-    Given a list of connection config data elements, create or update corresponding ConnectionConfig objects
-    or report failure
+    Given a list of connection config data elements, optionally containing the secrets,
+    create or update corresponding ConnectionConfig objects or report failure
 
     If the key in the payload exists, it will be used to update an existing ConnectionConfiguration.
     Otherwise, a new ConnectionConfiguration will be created for you.
-
-    Note that ConnectionConfiguration.secrets are not updated through this endpoint.
     """
-    created_or_updated: List[ConnectionConfig] = []
+    created_or_updated: List[ConnectionConfigurationResponse] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for %s connection configuration(s)", len(configs))
+    logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
 
     for config in configs:
+        if config.connection_type == "saas":
+            if config.secrets:
+                connection_config_check = ConnectionConfig.get_by(
+                    db, field="key", value=config.key
+                )
+
+                # This is here rather than with the get_connection_config_or_error because
+                # it will also throw an HTTPException if validation fails and we don't want
+                # to catch it in this case.
+                if connection_config_check:
+                    config.secrets = validate_secrets(
+                        db, config.secrets, connection_config_check
+                    )
+                else:
+                    if not config.saas_connector_type:
+                        raise HTTPException(
+                            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="saas_connector_type is missing",
+                        )
+
+                    registry = load_registry(registry_file)
+                    connector_template = registry.get_connector_template(
+                        config.saas_connector_type
+                    )
+                    if not connector_template:
+                        raise HTTPException(
+                            status_code=HTTP_404_NOT_FOUND,
+                            detail=f"SaaS connector type '{config.saas_connector_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+                        )
+                    try:
+                        template_values = SaasConnectionTemplateValues(
+                            name=config.name,
+                            key=config.key,
+                            description=config.description,
+                            secrets=config.secrets,
+                            instance_key=config.key,
+                        )
+                        connection_config = (
+                            create_connection_config_from_template_no_save(
+                                db, connector_template, template_values
+                            )
+                        )
+                    except KeyOrNameAlreadyExists as exc:
+                        raise HTTPException(
+                            status_code=HTTP_400_BAD_REQUEST,
+                            detail=exc.args[0],
+                        )
+
+                    connection_config.secrets = validate_secrets(
+                        db, template_values.secrets, connection_config
+                    ).dict()
+                    connection_config.save(db=db)
+                    created_or_updated.append(
+                        ConnectionConfigurationResponse(**connection_config.__dict__)
+                    )
+                    continue
+
         orig_data = config.dict().copy()
+        config_dict = config.dict()
+        config_dict.pop("saas_connector_type", None)
+
         try:
-            connection_config = ConnectionConfig.create_or_update(
-                db, data=config.dict()
+            connection_config = ConnectionConfig.create_or_update(db, data=config_dict)
+            created_or_updated.append(
+                ConnectionConfigurationResponse(**connection_config.__dict__)
             )
-            created_or_updated.append(connection_config)
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                "Create/update failed for connection config with key '%s': %s",
+                "Create/update failed for connection config with key '{}': {}",
                 config.key,
                 exc,
             )
+            # remove secrets information from the return for security reasons.
+            orig_data.pop("secrets", None)
+            orig_data.pop("saas_connector_type", None)
             failed.append(
                 BulkUpdateFailed(
                     message=exc.args[0],
@@ -240,8 +307,11 @@ def patch_connections(
             )
         except Exception:
             logger.warning(
-                "Create/update failed for connection config with key '%s'.", config.key
+                "Create/update failed for connection config with key '{}'.", config.key
             )
+            # remove secrets information from the return for security reasons.
+            orig_data.pop("secrets", None)
+            orig_data.pop("saas_connector_type", None)
             failed.append(
                 BulkUpdateFailed(
                     message="This connection configuration could not be added.",
@@ -269,7 +339,7 @@ def delete_connection(
     """Removes the connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
     connection_type = connection_config.connection_type
-    logger.info("Deleting connection config with key '%s'.", connection_key)
+    logger.info("Deleting connection config with key '{}'.", connection_key)
     connection_config.delete(db)
 
     # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,
@@ -290,14 +360,13 @@ def validate_secrets(
     if connection_type == ConnectionType.saas and saas_config is None:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="A SaaS config to validate the secrets is unavailable for this "
-            f"connection config, please add one via {SAAS_CONFIG}",
+            detail=_validate_secrets_error_message(),
         )
 
     try:
         schema = get_connection_secrets_schema(connection_type.value, saas_config)  # type: ignore
         logger.info(
-            "Validating secrets on connection config with key '%s'",
+            "Validating secrets on connection config with key '{}'",
             connection_config.key,
         )
         connection_secrets = schema.parse_obj(request_body)
@@ -318,6 +387,10 @@ def validate_secrets(
     return connection_secrets
 
 
+def _validate_secrets_error_message() -> str:
+    return f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
+
+
 def connection_status(
     connection_config: ConnectionConfig, msg: str, db: Session = Depends(deps.get_db)
 ) -> TestStatusMessage:
@@ -329,7 +402,7 @@ def connection_status(
 
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
-            "Connection test failed on %s: %s",
+            "Connection test failed on {}: {}",
             connection_config.key,
             Pii(str(exc)),
         )
@@ -342,7 +415,7 @@ def connection_status(
             failure_reason=str(exc),
         )
 
-    logger.info("Connection test %s on %s", status.value, connection_config.key)  # type: ignore
+    logger.info("Connection test {} on {}", status.value, connection_config.key)  # type: ignore
     connection_config.update_test_status(test_status=status, db=db)  # type: ignore
 
     return TestStatusMessage(
@@ -357,7 +430,7 @@ def connection_status(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     response_model=TestStatusMessage,
 )
-async def put_connection_config_secrets(
+def put_connection_config_secrets(
     connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
@@ -376,7 +449,7 @@ async def put_connection_config_secrets(
         db, unvalidated_secrets, connection_config
     ).dict()
     # Save validated secrets, regardless of whether they've been verified.
-    logger.info("Updating connection config secrets for '%s'", connection_key)
+    logger.info("Updating connection config secrets for '{}'", connection_key)
     connection_config.save(db=db)
 
     msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."
@@ -392,7 +465,7 @@ async def put_connection_config_secrets(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
     response_model=TestStatusMessage,
 )
-async def test_connection_config_secrets(
+def test_connection_config_secrets(
     connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
@@ -419,7 +492,7 @@ def requeue_requires_input_requests(db: Session) -> None:
             conditions=(PrivacyRequest.status == PrivacyRequestStatus.requires_input),
         ):
             logger.info(
-                "Queuing privacy request '%s with '%s' status now that manual inputs are no longer required.",
+                "Queuing privacy request '{} with '{}' status now that manual inputs are no longer required.",
                 pr.id,
                 pr.status.value,
             )

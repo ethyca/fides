@@ -1,8 +1,8 @@
-import logging
 from typing import Any, Dict, List, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, Security
+from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -32,6 +32,9 @@ from fides.api.ops.schemas.drp_privacy_request import (
 from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
+from fides.api.ops.service.messaging.message_dispatch_service import (
+    check_and_dispatch_error_notifications,
+)
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
@@ -43,11 +46,11 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
-logger = logging.getLogger(__name__)
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 CONFIG = get_config()
+
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
@@ -67,18 +70,18 @@ async def create_drp_privacy_request(
     a corresponding Fidesops PrivacyRequest
     """
 
-    jwt_key: str = CONFIG.security.drp_jwt_secret
+    jwt_key = CONFIG.security.drp_jwt_secret
     if jwt_key is None:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail="JWT key must be provided",
         )
 
-    logger.info("Finding policy with drp action '%s'", data.exercise[0])
+    logger.info("Finding policy with drp action '{}'", data.exercise[0])
     policy: Optional[Policy] = Policy.get_by(
         db=db,
         field="drp_action",
-        value=data.exercise[0],
+        value=data.exercise[0],  # type: ignore[arg-type]
     )
 
     if not policy:
@@ -109,8 +112,10 @@ async def create_drp_privacy_request(
             identity=mapped_identity,
         )
 
+        check_and_dispatch_error_notifications(db=db)
+
         logger.info(
-            "Decrypting identity for DRP privacy request %s", privacy_request.id
+            "Decrypting identity for DRP privacy request {}", privacy_request.id
         )
 
         cache_data(privacy_request, policy, mapped_identity, None, data)
@@ -124,14 +129,14 @@ async def create_drp_privacy_request(
         )
 
     except common_exceptions.RedisConnectionError as exc:
-        logger.error("RedisConnectionError: %s", Pii(str(exc)))
+        logger.error("RedisConnectionError: {}", Pii(str(exc)))
         # Thrown when cache.ping() fails on cache connection retrieval
         raise HTTPException(
             status_code=HTTP_424_FAILED_DEPENDENCY,
             detail=exc.args[0],
         )
     except Exception as exc:
-        logger.error("Exception: %s", Pii(str(exc)))
+        logger.error("Exception: {}", Pii(str(exc)))
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="DRP privacy request could not be exercised",
@@ -151,7 +156,7 @@ def get_request_status_drp(
     a policy that implements a Data Rights Protocol action.
     """
 
-    logger.info("Finding request for DRP with ID: %s", request_id)
+    logger.info("Finding request for DRP with ID: {}", request_id)
     request = PrivacyRequest.get(
         db=db,
         object_id=request_id,
@@ -164,7 +169,7 @@ def get_request_status_drp(
             detail=f"Privacy request with ID {request_id} does not exist, or is not associated with a data rights protocol action.",
         )
 
-    logger.info("Privacy request with ID: %s found for DRP status.", request_id)
+    logger.info("Privacy request with ID: {} found for DRP status.", request_id)
     return PrivacyRequestDRPStatusResponse(
         request_id=request.id,
         received_at=request.requested_at,
@@ -214,7 +219,7 @@ def revoke_request(
             detail=f"Invalid revoke request. Can only revoke `pending` requests. Privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",  # type: ignore
         )
 
-    logger.info("Canceling privacy request '%s'", privacy_request.id)
+    logger.info("Canceling privacy request '{}'", privacy_request.id)
     privacy_request.cancel_processing(db, cancel_reason=data.reason)
 
     return PrivacyRequestDRPStatusResponse(

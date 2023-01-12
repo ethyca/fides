@@ -1,7 +1,6 @@
 from unittest import mock
 
 import pytest as pytest
-from fideslib.models.audit_log import AuditLog, AuditLogAction
 
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
@@ -16,13 +15,14 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
-    MessagingMethod,
+    MessagingServiceType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
 from fides.api.ops.task import graph_task
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 
 @pytest.mark.integration_postgres
@@ -187,7 +187,7 @@ async def test_email_connector_cache_and_delayed_send(
         == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
     assert call_args["to_identity"] == Identity(email="test@example.com")
-    assert call_args["messaging_method"] == MessagingMethod.EMAIL
+    assert call_args["service_type"] == MessagingServiceType.MAILGUN.value
     assert call_args["message_body_params"] == raw_email_template_values
 
     created_email_audit_log = (

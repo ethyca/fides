@@ -5,6 +5,8 @@ import {
   chakra,
   Heading,
   Stack,
+  StepperCircleCheckmarkIcon,
+  StepperCircleIcon,
   Table,
   TableContainer,
   Tbody,
@@ -17,12 +19,7 @@ import {
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features.slice";
-import {
-  StepperCircleCheckmarkIcon,
-  StepperCircleIcon,
-} from "~/features/common/Icon";
-import { resolveLink } from "~/features/common/nav/zone-config";
+import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
 import { System } from "~/types/api";
 
 import { setActiveSystem } from "../system";
@@ -39,8 +36,8 @@ const SuccessPage = ({
 }: Props) => {
   const systemName = systemInReview.name ?? systemInReview.fides_key;
   const dispatch = useAppDispatch();
-  const features = useFeatures();
   const router = useRouter();
+  const { systemOrDatamapRoute } = useInterzoneNav();
 
   // Systems are reviewed in order, so a lower index means that system has been reviewed
   // and a higher index means they'll reviewed after hitting "next".
@@ -50,15 +47,7 @@ const SuccessPage = ({
 
   const onFinish = () => {
     dispatch(setActiveSystem(undefined));
-
-    const datamapRoute = resolveLink({
-      href: "/datamap",
-      basePath: "/",
-    });
-
-    return features.plus
-      ? router.push(datamapRoute.href)
-      : router.push("/system");
+    router.push(systemOrDatamapRoute);
   };
 
   return (

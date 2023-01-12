@@ -1,0 +1,24 @@
+[
+  {
+    "status": "Complete",
+    "organization_key": "default_organization",
+    "dataset_key": "fidesctl_system",
+    "dataset_name": "fidesctl_system",
+    "target": "aws",
+    "type": "systems",
+    "id": "d7316228-4e2d-4424-be3b-9d03c44301a4",
+    "created_at": "2022-11-10T16:25:27.480242+00:00",
+    "updated_at": "2022-11-10T16:29:21.581443+00:00"
+  },
+  {
+    "status": "Complete",
+    "organization_key": "default_organization",
+    "dataset_key": "demo_analytics_system",
+    "dataset_name": "demo_analytics_system",
+    "target": "aws",
+    "type": "systems",
+    "id": "b4148f8f-d097-4990-b775-0dd94e82cb9c",
+    "created_at": "2022-11-10T16:25:27.480242+00:00",
+    "updated_at": "2022-11-10T16:29:21.581443+00:00"
+  }
+]

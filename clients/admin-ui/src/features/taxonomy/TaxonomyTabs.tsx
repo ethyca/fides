@@ -39,7 +39,7 @@ const TaxonomyTabs = () => {
 
   return (
     <Box data-testid="taxonomy-tabs" display="flex">
-      <DataTabs isLazy data={TABS} flexGrow={1} />
+      <DataTabs border="full-width" data={TABS} flexGrow={1} isLazy />
       <Box
         borderBottom="2px solid"
         borderColor="gray.200"

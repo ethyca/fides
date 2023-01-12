@@ -1,28 +1,22 @@
-import logging
 from json import dumps
 from typing import Any, Dict, List
 
-from requests import put
-
-from fides.api.ops.common_exceptions import (
-    ClientUnsuccessfulException,
-    ConnectionException,
-)
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+)
 from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
 from fides.api.ops.util.saas_util import PRIVACY_REQUEST_ID
-from fides.ctl.core.config import get_config
-
-CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @register("domo_user_update", [SaaSRequestType.UPDATE])
 def domo_user_update(
+    client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
@@ -45,29 +39,10 @@ def domo_user_update(
             all_object_fields["alternateEmail"] = f"{privacy_request_id}@company.com"
 
         update_body = dumps(all_object_fields)
-
-        try:
-            response = put(
-                url=f'https://{secrets["domain"]}/v1/users/{user_id}',
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {secrets['access_token']}",
-                },
-                data=update_body,
+        client.send(
+            SaaSRequestParams(
+                method=HTTPMethod.PUT, path=f"/v1/users/{user_id}", body=update_body
             )
-
-        # here we mimic the sort of error handling done in the core framework
-        # by the AuthenticatedClient. Extenders can chose to handle errors within
-        # their implementation as they wish.
-        except Exception as e:
-            if CONFIG.dev_mode:  # pylint: disable=R1720
-                raise ConnectionException(
-                    f"Operational Error connecting to Domo API with error: {e}"
-                )
-            else:
-                raise ConnectionException("Operational Error connecting to Domo API.")
-        if not response.ok:
-            raise ClientUnsuccessfulException(status_code=response.status_code)
-
+        )
         rows_updated += 1
     return rows_updated

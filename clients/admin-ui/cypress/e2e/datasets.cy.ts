@@ -1,7 +1,6 @@
 import {
   CONNECTION_STRING,
   stubDatasetCrud,
-  stubHomePage,
   stubPlus,
 } from "cypress/support/stubs";
 
@@ -14,8 +13,8 @@ describe("Dataset", () => {
   });
 
   describe("List of datasets view", () => {
-    it("Can navigate to the datasets list view", () => {
-      stubHomePage();
+    // TODO: Update Cypress test to reflect the nav bar 2.0
+    it.skip("Can navigate to the datasets list view", () => {
       cy.visit("/");
       cy.getByTestId("nav-link-Datasets").click();
       cy.wait("@getDatasets");
@@ -25,6 +24,9 @@ describe("Dataset", () => {
 
       // The classifier toggle should not be available.
       cy.get("input-classify").should("not.exist");
+
+      cy.getByTestId("dataset-table__status-table-header").should("not.exist");
+      cy.getByTestId("classification-status-badge").should("not.exist");
     });
 
     it("Can navigate to the datasets view via URL", () => {
@@ -35,10 +37,7 @@ describe("Dataset", () => {
     it("Can load an individual dataset", () => {
       cy.visit("/dataset");
       cy.wait("@getDatasets");
-      cy.getByTestId("load-dataset-btn").should("be.disabled");
       cy.getByTestId("dataset-row-demo_users_dataset").click();
-      cy.getByTestId("load-dataset-btn").should("not.be.disabled");
-      cy.getByTestId("load-dataset-btn").click();
       // for some reason this is slow in CI, so add a timeout :(
       cy.url({ timeout: 10000 }).should(
         "contain",

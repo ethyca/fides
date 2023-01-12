@@ -1,8 +1,8 @@
-import logging
 from json import JSONDecodeError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
+from loguru import logger
 from requests import Response
 
 from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
@@ -28,8 +28,6 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
-
-logger = logging.getLogger(__name__)
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):
@@ -135,7 +133,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         client_config = self.get_client_config()
         rate_limit_config = self.get_rate_limit_config()
 
-        logger.info("Creating client to %s", uri)
+        logger.info("Creating client to {}", uri)
         return AuthenticatedClient(
             uri, self.configuration, client_config, rate_limit_config
         )
@@ -148,21 +146,28 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
-        # generate initial set of requests if read request is defined, otherwise raise an exception
         self.set_privacy_request_state(privacy_request, node)
-
         query_config: SaaSQueryConfig = self.query_config(node)
-        read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
-        delete_request: Optional[SaaSRequest] = query_config.get_request_by_action(
-            "delete"
-        )
 
-        if not read_request:
+        # generate initial set of requests if read request is defined, otherwise raise an exception
+
+        # An endpoint can be defined with multiple 'read' requests if the data for a single
+        # collection can be accessed in multiple ways for example:
+        #
+        # 1) If a collection can be retrieved by using different identities such as email or phone number
+        # 2) The complete set of results for a collection is made up of subsets. For example, to retrieve all tickets
+        #    we must change a 'status' query param from 'active' to 'pending' and finally 'closed'
+        read_requests: List[SaaSRequest] = query_config.get_read_requests_by_identity()
+        delete_request: Optional[
+            SaaSRequest
+        ] = query_config.get_erasure_request_by_action("delete")
+
+        if not read_requests:
             # if a delete request is specified for this endpoint without a read request
             # then we return a single empty row to still trigger the mask_data method
             if delete_request:
                 logger.info(
-                    "Skipping read for the '%s' collection, it is delete-only",
+                    "Skipping read for the '{}' collection, it is delete-only",
                     self.current_collection_name,
                 )
                 return [{}]
@@ -171,41 +176,43 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"The 'read' action is not defined for the '{self.current_collection_name}' "
                 f"endpoint in {self.saas_config.fides_key}"
             )
-        self.set_saas_request_state(read_request)
 
-        # check all the values specified by param_values are provided in input_data
-        if self._missing_dataset_reference_values(
-            input_data, read_request.param_values
-        ):
-            return []
+        rows: List[Row] = []
+        for read_request in read_requests:
+            self.set_saas_request_state(read_request)
+            # check all the values specified by param_values are provided in input_data
+            if self._missing_dataset_reference_values(
+                input_data, read_request.param_values
+            ):
+                return []
 
-        # hook for user-provided request override functions
-        if read_request.request_override:
-            return self._invoke_read_request_override(
-                read_request.request_override,
-                policy,
-                privacy_request,
-                node,
-                input_data,
-                self.secrets,
+            # hook for user-provided request override functions
+            if read_request.request_override:
+                return self._invoke_read_request_override(
+                    read_request.request_override,
+                    self.create_client(),
+                    policy,
+                    privacy_request,
+                    node,
+                    input_data,
+                    self.secrets,
+                )
+
+            prepared_requests: List[SaaSRequestParams] = query_config.generate_requests(
+                input_data, policy, read_request
             )
 
-        prepared_requests: List[SaaSRequestParams] = query_config.generate_requests(
-            input_data, policy
-        )
-
-        # Iterates through initial list of prepared requests and through subsequent
-        # requests generated by pagination. The results are added to the output
-        # list of rows after each request.
-        rows: List[Row] = []
-        for next_request in prepared_requests:
-            while next_request:
-                processed_rows, next_request = self.execute_prepared_request(  # type: ignore
-                    next_request,
-                    privacy_request.get_cached_identity_data(),
-                    read_request,
-                )
-                rows.extend(processed_rows)
+            # Iterates through initial list of prepared requests and through subsequent
+            # requests generated by pagination. The results are added to the output
+            # list of rows after each request.
+            for next_request in prepared_requests:
+                while next_request:
+                    processed_rows, next_request = self.execute_prepared_request(  # type: ignore
+                        next_request,
+                        privacy_request.get_cached_identity_data(),
+                        read_request,
+                    )
+                    rows.extend(processed_rows)
         self.unset_connector_state()
         return rows
 
@@ -235,7 +242,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if missing_dataset_reference_values:
             logger.info(
-                "The '%s' request of %s is missing the following dataset reference values [%s], skipping traversal",
+                "The '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
                 self.current_collection_name,
                 self.saas_config.fides_key,  # type: ignore
                 ", ".join(missing_dataset_reference_values),
@@ -266,7 +273,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
 
         logger.info(
-            "%s row(s) returned after postprocessing '%s' collection.",
+            "{} row(s) returned after postprocessing '{}' collection.",
             len(rows),
             self.current_collection_name,
         )
@@ -284,7 +291,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if next_request:
             logger.info(
-                "Using '%s' pagination strategy to get next page for '%s'.",
+                "Using '{}' pagination strategy to get next page for '{}'.",
                 saas_request.pagination.strategy,  # type: ignore
                 self.current_collection_name,
             )
@@ -311,7 +318,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 postprocessor.strategy, postprocessor.configuration  # type: ignore
             )
             logger.info(
-                "Starting postprocessing of '%s' collection with '%s' strategy.",
+                "Starting postprocessing of '{}' collection with '{}' strategy.",
                 self.current_collection_name,
                 postprocessor.strategy,  # type: ignore
             )
@@ -364,6 +371,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         if masking_request.request_override:
             return self._invoke_masking_request_override(
                 masking_request.request_override,
+                self.create_client(),
                 policy,
                 privacy_request,
                 rows,
@@ -411,7 +419,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         if saas_request.ignore_errors and not response.ok:
             logger.info(
-                "Ignoring and clearing errored response with status code %s.",
+                "Ignoring and clearing errored response with status code {}.",
                 response.status_code,
             )
             response = Response()
@@ -437,6 +445,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     @staticmethod
     def _invoke_read_request_override(
         override_function_name: str,
+        client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
         node: TraversalNode,
@@ -455,25 +464,25 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
         try:
             return override_function(
+                client,
                 node,
                 policy,
                 privacy_request,
                 input_data,
                 secrets,
             )  # type: ignore
-        except Exception:
+        except Exception as exc:
             logger.error(
-                "Encountered error executing override access function '%s'",
+                "Encountered error executing override access function '{}'",
                 override_function_name,
                 exc_info=True,
             )
-            raise FidesopsException(
-                f"Error executing override access function '{override_function_name}'"
-            )
+            raise FidesopsException(str(exc))
 
     @staticmethod
     def _invoke_masking_request_override(
         override_function_name: str,
+        client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
@@ -504,6 +513,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 for row in rows
             ]
             return override_function(
+                client,
                 update_param_values,
                 policy,
                 privacy_request,
@@ -511,7 +521,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )  # type: ignore
         except Exception:
             logger.error(
-                "Encountered error executing override mask function '%s",
+                "Encountered error executing override mask function '{}",
                 override_function_name,
                 exc_info=True,
             )

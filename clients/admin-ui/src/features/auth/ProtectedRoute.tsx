@@ -1,4 +1,5 @@
 import { useRouter } from "next/router";
+import { ReactNode } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { LOGIN_ROUTE, VERIFY_AUTH_INTERVAL } from "~/constants";
@@ -29,23 +30,19 @@ const useProtectedRoute = (redirectUrl: string) => {
 };
 
 interface ProtectedRouteProps {
-  redirectUrl: string;
-  authenticatedBlock: JSX.Element;
-  children: JSX.Element;
+  children: ReactNode;
+  redirectUrl?: string;
 }
 
 const ProtectedRoute = ({
   children,
-  redirectUrl,
-  authenticatedBlock,
+  redirectUrl = LOGIN_ROUTE,
 }: ProtectedRouteProps) => {
   const authenticated = useProtectedRoute(redirectUrl);
-  return authenticated ? children : authenticatedBlock;
-};
 
-ProtectedRoute.defaultProps = {
-  authenticatedBlock: null,
-  redirectUrl: LOGIN_ROUTE,
+  // Silly type error: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/18051
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  return authenticated ? <>{children}</> : null;
 };
 
 export default ProtectedRoute;

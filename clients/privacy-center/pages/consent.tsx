@@ -22,14 +22,13 @@ import {
   makeConsentItems,
   makeCookieKeyConsent,
 } from "~/features/consent/helpers";
-import { setConsentCookie } from "~/features/consent/cookie";
+import { setConsentCookie } from "fides-consent";
 import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
 
-import { hostUrl } from "~/constants";
+import { hostUrl, config } from "~/constants";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { VerificationType } from "~/components/modals/types";
 import { useLocalStorage } from "~/common/hooks";
-import consentConfig from "../config/config.json";
 import ConsentItemCard from "../components/ConsentItemCard";
 
 const Consent: NextPage = () => {
@@ -44,6 +43,7 @@ const Consent: NextPage = () => {
     const getUserConsents = async () => {
       if (!consentRequestId) {
         router.push("/");
+        return;
       }
 
       const headers: Headers = new Headers();
@@ -66,7 +66,9 @@ const Consent: NextPage = () => {
         !verificationCode
       ) {
         router.push("/");
+        return;
       }
+
       const verifyUrl = privacyCenterConfig.identity_verification_required
         ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
         : `${VerificationType.ConsentRequest}/${consentRequestId}/preferences`;
@@ -89,12 +91,14 @@ const Consent: NextPage = () => {
           description: (data as any).detail,
           ...ErrorToastOptions,
         });
+
         router.push("/");
+        return;
       }
 
       const updatedConsentItems = makeConsentItems(
         data,
-        consentConfig.consent.consentOptions
+        config.consent?.consentOptions ?? []
       );
       setConsentItems(updatedConsentItems);
       setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
@@ -155,7 +159,7 @@ const Consent: NextPage = () => {
     }
     const updatedConsentItems = makeConsentItems(
       data,
-      consentConfig.consent.consentOptions
+      config.consent?.consentOptions ?? []
     );
     setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
     toast({
@@ -186,7 +190,7 @@ const Consent: NextPage = () => {
           alignItems="center"
         >
           <Image
-            src={consentConfig.logo_path}
+            src={config.logo_path}
             height="56px"
             width="304px"
             alt="Logo"
@@ -194,7 +198,7 @@ const Consent: NextPage = () => {
         </Flex>
       </header>
 
-      <main>
+      <main data-testid="consent">
         <Stack align="center" py={["6", "16"]} px={5} spacing={8}>
           <Stack align="center" spacing={3}>
             <Heading
@@ -239,6 +243,7 @@ const Consent: NextPage = () => {
               onClick={() => {
                 saveUserConsentOptions();
               }}
+              data-testid="save-btn"
             >
               Save
             </Button>

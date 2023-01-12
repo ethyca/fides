@@ -32,8 +32,8 @@ def static_checks(session: nox.Session) -> None:
 @nox.parametrize(
     "mode",
     [
-        nox.param("fix", id="fix"),
         nox.param("check", id="check"),
+        nox.param("fix", id="fix"),
     ],
 )
 def black(session: nox.Session, mode: str) -> None:
@@ -49,8 +49,8 @@ def black(session: nox.Session, mode: str) -> None:
 @nox.parametrize(
     "mode",
     [
-        nox.param("fix", id="fix"),
         nox.param("check", id="check"),
+        nox.param("fix", id="fix"),
     ],
 )
 def isort(session: nox.Session, mode: str) -> None:
@@ -103,23 +103,30 @@ def check_install(session: nox.Session) -> None:
     """Check that fides installs works correctly."""
     session.install(".")
 
+    REQUIRED_ENV_VARS = {
+        "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID": "fidesadmin",
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET": "fidesadminsecret",
+        "FIDES__SECURITY__DRP_JWT_SECRET": "secret",
+    }
+
     run_command = ("fides", "--version")
-    session.run(*run_command)
+    session.run(*run_command, env=REQUIRED_ENV_VARS)
 
     run_command = ("python", "-c", "from fides.api.main import start_webserver")
-    session.run(*run_command)
+    session.run(*run_command, env=REQUIRED_ENV_VARS)
 
 
 @nox.session()
 def check_fides_annotations(session: nox.Session) -> None:
-    """Run a fidesctl evaluation."""
+    """Run a fides evaluation."""
     run_command = (*RUN_NO_DEPS, "fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
     session.run(*run_command, external=True)
 
 
 @nox.session()
 def fides_db_scan(session: nox.Session) -> None:
-    """Scan the fidesctl application database to check for dataset discrepancies."""
+    """Scan the fides application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
@@ -134,7 +141,50 @@ def fides_db_scan(session: nox.Session) -> None:
     session.run(*run_command, external=True)
 
 
+@nox.session()
+def minimal_config_startup(session: nox.Session) -> None:
+    """
+    Check that the server can start successfully with a minimal
+    configuration set through environment vairables.
+    """
+    session.notify("teardown")
+    compose_file = "docker/docker-compose.minimal-config.yml"
+    start_command = (
+        "docker",
+        "compose",
+        "-f",
+        compose_file,
+        "up",
+        "--wait",
+        "-d",
+        IMAGE_NAME,
+    )
+    session.run(*start_command, external=True)
+
+
 # Pytest
+@nox.session()
+def collect_tests(session: nox.Session) -> None:
+    """Run the 'pylint' code linter."""
+    session.install(".")
+    install_requirements(session)
+    command = ("pytest", "tests/", "--collect-only")
+    session.run(*command)
+
+
+@nox.session()
+def pytest_lib(session: nox.Session) -> None:
+    """Runs ctl tests."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *RUN_NO_DEPS,
+        "pytest",
+        "tests/lib/",
+    )
+    session.run(*run_command, external=True)
+
+
 @nox.session()
 @nox.parametrize(
     "mark",
@@ -146,7 +196,7 @@ def fides_db_scan(session: nox.Session) -> None:
     ],
 )
 def pytest_ctl(session: nox.Session, mark: str) -> None:
-    """Runs fidesctl tests."""
+    """Runs ctl tests."""
     session.notify("teardown")
     if mark == "external":
         start_command = (
