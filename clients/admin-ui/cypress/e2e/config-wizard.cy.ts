@@ -1,7 +1,6 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
-// TODO: Update Cypress test to reflect the nav bar 2.0
-describe.skip("Config Wizard", () => {
+describe("Config Wizard", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
@@ -9,7 +8,8 @@ describe.skip("Config Wizard", () => {
     }).as("getOrganization");
   });
 
-  describe("Organization setup", () => {
+  // TODO: Update Cypress test to reflect the nav bar 2.0
+  describe.skip("Organization setup", () => {
     beforeEach(() => {
       cy.intercept("PUT", "/api/v1/organization**", {
         fixture: "organization.json",
@@ -53,10 +53,7 @@ describe.skip("Config Wizard", () => {
       stubSystemCrud();
       stubTaxonomyEntities();
 
-      // Move past organization step.
       cy.visit("/add-systems");
-      cy.getByTestId("guided-setup-btn").click();
-      cy.wait("@getOrganization");
       // Select AWS to move to form step.
       cy.getByTestId("add-system-form");
       cy.getByTestId("aws-btn").click();
@@ -148,10 +145,7 @@ describe.skip("Config Wizard", () => {
       stubSystemCrud();
       stubTaxonomyEntities();
 
-      // Move past organization step.
       cy.visit("/add-systems");
-      cy.getByTestId("guided-setup-btn").click();
-      cy.wait("@getOrganization");
       // Select Okta to move to form step.
       cy.getByTestId("add-system-form");
       cy.getByTestId("okta-btn").click();

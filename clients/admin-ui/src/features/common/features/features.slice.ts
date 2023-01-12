@@ -3,8 +3,9 @@ import { useCallback, useMemo } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { type RootState } from "~/app/store";
+import { selectHealth } from "~/features/common/health.slice";
 import { selectInitialConnections } from "~/features/datastore-connections";
-import { selectHealth } from "~/features/plus/plus.slice";
+import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
 import { selectAllSystems } from "~/features/system";
 import flagDefaults from "~/flags.json";
 
@@ -105,6 +106,7 @@ export const useFlags = () => {
 };
 
 export type Features = {
+  version: string | undefined;
   plus: boolean;
   systemsCount: number;
   connectionsCount: number;
@@ -115,11 +117,16 @@ export type Features = {
 
 export const useFeatures = (): Features => {
   const health = useAppSelector(selectHealth);
+  const plusHealth = useAppSelector(selectPlusHealth);
   const allSystems = useAppSelector(selectAllSystems);
   const initialConnections = useAppSelector(selectInitialConnections);
 
-  const plus = health !== undefined;
-  const dataFlowScanning = health ? !!health.system_scanner.enabled : false;
+  const version = health?.version;
+
+  const plus = plusHealth !== undefined;
+  const dataFlowScanning = plusHealth
+    ? !!plusHealth.system_scanner.enabled
+    : false;
 
   const systemsCount = allSystems?.length ?? 0;
 
@@ -128,6 +135,7 @@ export const useFeatures = (): Features => {
   const { flags } = useFlags();
 
   return {
+    version,
     plus,
     systemsCount,
     connectionsCount,

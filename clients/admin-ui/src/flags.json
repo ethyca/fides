@@ -4,11 +4,6 @@
     "test": true,
     "production": true
   },
-  "featuresPanel": {
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "configWizardStepper": {
     "development": true,
     "test": false,

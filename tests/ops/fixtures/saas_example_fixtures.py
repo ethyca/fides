@@ -406,8 +406,8 @@ def erasure_policy_complete_mask(
             "name": "user_contact_address_country Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": NullMaskingStrategy,
-                "configuration": {},
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "Masked"},
             },
         },
     )
