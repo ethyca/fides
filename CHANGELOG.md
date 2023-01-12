@@ -58,6 +58,7 @@ The types of changes are:
 * Privacy Center `fides-consent.js`:
   * `Fides.shopify` integration function. [#2152](https://github.com/ethyca/fides/pull/2152)
   * Dedicated folder for integrations.
+  * `Fides.meta` integration function (fbq). [#2217](https://github.com/ethyca/fides/pull/2217)
 * Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
 * Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
 * Access and erasure support for Friendbuy Nextgen [#2085](https://github.com/ethyca/fides/pull/2085)
