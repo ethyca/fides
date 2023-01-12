@@ -3,6 +3,7 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
+from requests import post
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (
@@ -27,11 +28,9 @@ def friendbuy_nextgen_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "friendbuy_nextgen.domain")
         or secrets["domain"],
-        "client_id": pydash.get(saas_config, "friendbuy_nextgen.client_id")
-        or secrets["client_id"],
-        "client_secret": pydash.get(saas_config, "friendbuy_nextgen.client_secret")
-        or secrets["client_secret"],
-        "token": pydash.get(saas_config, "friendbuy_nextgen.token") or secrets["token"],
+        "key": pydash.get(saas_config, "friendbuy_nextgen.key") or secrets["key"],
+        "secret": pydash.get(saas_config, "friendbuy_nextgen.secret")
+        or secrets["secret"],
     }
 
 
@@ -114,10 +113,24 @@ def friendbuy_nextgen_dataset_config(
 
 
 @pytest.fixture(scope="function")
+def friendbuy_nextgen_token(friendbuy_nextgen_secrets) -> Generator:
+    secrets = friendbuy_nextgen_secrets
+    response = post(
+        url=f"https://{secrets['domain']}/v1/authorization",
+        json={
+            "key": secrets["key"],
+            "secret": secrets["secret"],
+        },
+    )
+    yield response.json()["token"]
+
+
+@pytest.fixture(scope="function")
 def friendbuy_nextgen_erasure_data(
     friendbuy_nextgen_secrets,
     friendbuy_nextgen_erasure_identity_email,
     friendbuy_nextgen_erasure_identity_id,
+    friendbuy_nextgen_token,
 ) -> Generator:
     """
     Creates a dynamic test data record for erasure tests.
@@ -125,7 +138,7 @@ def friendbuy_nextgen_erasure_data(
     """
 
     base_url = f"https://{friendbuy_nextgen_secrets['domain']}"
-    header = {"Authorization": "Bearer " + friendbuy_nextgen_secrets["token"]}
+    header = {"Authorization": "Bearer " + friendbuy_nextgen_token}
     # Create user
     user_body = {
         "email": friendbuy_nextgen_erasure_identity_email,

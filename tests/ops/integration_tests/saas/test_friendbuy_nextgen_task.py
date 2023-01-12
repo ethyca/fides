@@ -10,7 +10,7 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
@@ -107,7 +107,7 @@ async def test_friendbuy_nextgen_erasure_request_task(
     merged_graph = friendbuy_nextgen_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    # Adding 30 seconds sleep beause sometimes Friendbuy Nextgen system takes around 30 seconds for user to be available
+    # Adding 30 seconds sleep because sometimes Friendbuy Nextgen system takes around 30 seconds for user to be available
 
     sleep(30)
     v = await graph_task.run_access_request(

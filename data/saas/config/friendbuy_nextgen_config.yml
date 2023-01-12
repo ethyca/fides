@@ -7,17 +7,17 @@ saas_config:
 
   connector_params:
     - name: domain
-    - name: client_id
-    - name: client_secret
-    - name: token
+    - name: key
+    - name: secret
 
   client_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: bearer
+      strategy: friendbuy_nextgen
       configuration:
-        token: <token>
+        key: <key>
+        secret: <secret>
 
   test_request:
     method: GET
