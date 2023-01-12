@@ -47,8 +47,11 @@ const DatasetConfiguration: React.FC = () => {
   );
   const [patchDatasetConfig] = usePatchDatasetConfigsMutation();
   const [upsertDatasets] = useUpsertDatasetsMutation();
-  const { data: allDatasets, isLoading: isLoadingAllDatasets } =
-    useGetAllDatasetsQuery();
+  const {
+    data: allDatasets,
+    isLoading: isLoadingAllDatasets,
+    error: loadAllDatasetsError,
+  } = useGetAllDatasetsQuery();
 
   const [selectedDatasetKey, setSelectedDatasetKey] = useState<
     string | undefined
@@ -143,7 +146,11 @@ const DatasetConfiguration: React.FC = () => {
   const datasetSelected =
     selectedDatasetKey !== "" && selectedDatasetKey !== undefined;
 
-  if (isFetching || isLoading || isLoadingAllDatasets) {
+  if (
+    isFetching ||
+    isLoading ||
+    (isLoadingAllDatasets && !loadAllDatasetsError)
+  ) {
     return (
       <Center>
         <Spinner />
@@ -155,6 +162,11 @@ const DatasetConfiguration: React.FC = () => {
 
   return (
     <VStack alignItems="left">
+      {loadAllDatasetsError ? (
+        <Copy mb={4}>
+          There was a problem loading existing datasets, please try again.
+        </Copy>
+      ) : null}
       <HStack spacing={8} mb={4}>
         {datasetsExist ? (
           <>
