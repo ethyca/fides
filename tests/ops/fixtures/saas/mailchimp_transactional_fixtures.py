@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, Generator
 
 import pydash
@@ -10,6 +11,9 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.saas.saas_config import SaaSRequest
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.service.connectors import SaaSConnector
 from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
@@ -93,3 +97,26 @@ def mailchimp_transactional_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def reset_mailchimp_transactional_data(
+    mailchimp_transactional_connection_config, mailchimp_transactional_identity_email
+) -> Generator:
+    """
+    Adds user to the Mailchimp Transactional Allowlist
+    """
+    connector = SaaSConnector(mailchimp_transactional_connection_config)
+    connector.set_saas_request_state(
+        SaaSRequest(path="test_path", method=HTTPMethod.GET)
+    )  # dummy request as connector requires it
+    request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/allowlists/add",
+        body=json.dumps({"email": mailchimp_transactional_identity_email}),
+    )
+    response = connector.create_client().send(request)
+    body = response.json()
+    assert (
+        body["email"] == mailchimp_transactional_identity_email
+    ), "Identity has been added to allowlist"

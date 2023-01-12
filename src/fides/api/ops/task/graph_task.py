@@ -33,7 +33,7 @@ from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
 from fides.api.ops.graph.graph_differences import format_graph_for_caching
 from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionConfig
-from fides.api.ops.models.policy import ActionType, Policy, Rule
+from fides.api.ops.models.policy import ActionType, Policy
 from fides.api.ops.models.privacy_request import (
     Consent,
     ExecutionLogStatus,
