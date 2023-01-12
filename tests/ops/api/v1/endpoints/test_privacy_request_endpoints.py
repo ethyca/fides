@@ -1125,6 +1125,7 @@ class TestGetPrivacyRequests:
                     "results": {
                         "Request approved": [
                             {
+                                "connection_key": None,
                                 "collection_name": None,
                                 "fields_affected": None,
                                 "message": "",
@@ -1136,6 +1137,7 @@ class TestGetPrivacyRequests:
                         ],
                         "my-mongo-db": [
                             {
+                                "connection_key": None,
                                 "collection_name": "orders",
                                 "fields_affected": [
                                     {
@@ -1155,6 +1157,7 @@ class TestGetPrivacyRequests:
                         ],
                         "my-postgres-db": [
                             {
+                                "connection_key": None,
                                 "collection_name": "user",
                                 "fields_affected": [
                                     {
@@ -1172,6 +1175,7 @@ class TestGetPrivacyRequests:
                                 "user_id": None,
                             },
                             {
+                                "connection_key": None,
                                 "collection_name": "address",
                                 "fields_affected": [
                                     {
@@ -1219,6 +1223,7 @@ class TestGetPrivacyRequests:
             ExecutionLog.create(
                 db=db,
                 data={
+                    "connection_key": "my-postgres-db-key",
                     "dataset_name": "my-postgres-db",
                     "collection_name": f"test_collection_{i}",
                     "fields_affected": [],
@@ -1603,6 +1608,7 @@ class TestGetExecutionLogs:
                     "action_type": "access",
                     "status": "pending",
                     "updated_at": stringify_date(postgres_execution_log.updated_at),
+                    "connection_key": None,
                     "dataset_name": "my-postgres-db",
                 },
                 {
@@ -1618,6 +1624,7 @@ class TestGetExecutionLogs:
                     "action_type": "access",
                     "status": "in_processing",
                     "updated_at": stringify_date(mongo_execution_log.updated_at),
+                    "connection_key": None,
                     "dataset_name": "my-mongo-db",
                 },
                 {
@@ -1640,6 +1647,7 @@ class TestGetExecutionLogs:
                     "updated_at": stringify_date(
                         second_postgres_execution_log.updated_at
                     ),
+                    "connection_key": None,
                     "dataset_name": "my-postgres-db",
                 },
             ],

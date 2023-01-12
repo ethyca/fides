@@ -34,6 +34,17 @@ class CreateConnectionConfiguration(BaseModel):
         extra = Extra.forbid
 
 
+class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
+    """Schema for creating a connection configuration including secrets."""
+
+    secrets: Optional[connection_secrets_schemas] = None
+    saas_connector_type: Optional[str]
+
+    class Config:
+        orm_mode = True
+        extra = Extra.forbid
+
+
 class TestStatus(Enum):
     passed = "passed"
     failed = "failed"
@@ -99,6 +110,13 @@ class ConnectionConfigurationResponse(BaseModel):
 
 class BulkPutConnectionConfiguration(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of ConnectionConfiguration responses."""
+
+    succeeded: List[ConnectionConfigurationResponse]
+    failed: List[BulkUpdateFailed]
+
+
+class BulkPatchConnectionConfigurationWithSecrets(BulkResponse):
+    """Schema with mixed success/failure responses for Bulk Create/Update of ConnectionConfigurationWithSecrets responses."""
 
     succeeded: List[ConnectionConfigurationResponse]
     failed: List[BulkUpdateFailed]

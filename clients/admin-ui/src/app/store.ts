@@ -32,6 +32,8 @@ import {
 
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
+import { reducer as featuresReducer } from "~/features/common/features";
+import { healthApi } from "~/features/common/health.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
@@ -86,6 +88,7 @@ const reducer = {
   [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
   [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
   [dataUseApi.reducerPath]: dataUseApi.reducer,
+  [healthApi.reducerPath]: healthApi.reducer,
   [organizationApi.reducerPath]: organizationApi.reducer,
   [plusApi.reducerPath]: plusApi.reducer,
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
@@ -101,6 +104,7 @@ const reducer = {
   dataUse: dataUseReducer,
   dataset: datasetReducer,
   datastoreConnections: datastoreConnectionReducer,
+  features: featuresReducer,
   organization: organizationReducer,
   subjectRequests: privacyRequestsReducer,
   system: systemReducer,
@@ -137,6 +141,7 @@ const persistConfig = {
     dataQualifierApi.reducerPath,
     dataSubjectsApi.reducerPath,
     dataUseApi.reducerPath,
+    healthApi.reducerPath,
     organizationApi.reducerPath,
     plusApi.reducerPath,
     privacyRequestApi.reducerPath,
@@ -164,6 +169,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         dataQualifierApi.middleware,
         dataSubjectsApi.middleware,
         dataUseApi.middleware,
+        healthApi.middleware,
         organizationApi.middleware,
         plusApi.middleware,
         privacyRequestApi.middleware,

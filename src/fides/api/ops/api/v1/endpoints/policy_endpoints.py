@@ -148,6 +148,73 @@ def create_or_update_policies(
     )
 
 
+def get_rule_or_error(db: Session, policy_key: FidesKey, rule_key: FidesKey) -> Rule:
+    """
+    Helper method to load Rule or throw a 404 if it can't be found.
+    Also throws a 404 if a `Policy` with the given key can't be found.
+    """
+    policy = get_policy_or_error(db, policy_key)
+    logger.info("Finding rule with key '{}'", rule_key)
+    rule = Rule.filter(
+        db=db,
+        conditions=((Rule.policy_id == policy.id) & (Rule.key == rule_key)),
+    ).first()
+    if not rule:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No Rule found for key {rule_key} attached to policy {policy_key}",
+        )
+
+    return rule
+
+
+@router.get(
+    urls.RULE_LIST,
+    status_code=HTTP_200_OK,
+    response_model=Page[schemas.RuleResponseWithTargets],
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_READ])],
+)
+def get_rule_list(
+    *,
+    db: Session = Depends(deps.get_db),
+    policy_key: FidesKey,
+    params: Params = Depends(),
+) -> AbstractPage[Rule]:
+    """
+    Return a paginated list of all `Rule` records associated with the given `Policy`.
+    Throws a 404 if the given `Policy` can't be found.
+    """
+    policy = get_policy_or_error(db, policy_key)
+    logger.info(
+        "Finding all rules for policy {} with pagination params '{}'",
+        policy_key,
+        params,
+    )
+    rules = Rule.filter(
+        db=db,
+        conditions=(Rule.policy_id == policy.id),
+    ).order_by(Rule.created_at.desc())
+    return paginate(rules, params=params)
+
+
+@router.get(
+    urls.RULE_DETAIL,
+    status_code=HTTP_200_OK,
+    response_model=schemas.RuleResponseWithTargets,
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_READ])],
+)
+def get_rule(
+    *,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
+    db: Session = Depends(deps.get_db),
+) -> Rule:
+    """
+    Return a single `Rule` with the given key, associated with the given `Policy`
+    """
+    return get_rule_or_error(db, policy_key, rule_key)
+
+
 @router.patch(
     urls.RULE_LIST,
     status_code=HTTP_200_OK,
@@ -295,6 +362,82 @@ def delete_rule(
 
     logger.info("Deleting rule with key '{}'", rule_key)
     rule.delete(db=db)
+
+
+def get_rule_target_or_error(
+    db: Session,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
+    rule_target_key: FidesKey,
+) -> RuleTarget:
+    """
+    Helper method to load Rule Target or throw a 404.
+    Also throws a 404 if a `Policy` or `Rule` with the given keys can't be found.
+    """
+    logger.info("Finding rule target with key '{}'", rule_target_key)
+    rule: Rule = get_rule_or_error(db, policy_key, rule_key)
+    rule_target = RuleTarget.filter(
+        db=db,
+        conditions=(
+            (RuleTarget.rule_id == rule.id) & (RuleTarget.key == rule_target_key)
+        ),
+    ).first()
+    if not rule_target:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No Rule Target found for key {rule_target_key} attached to rule {rule_key}.",
+        )
+
+    return rule_target
+
+
+@router.get(
+    urls.RULE_TARGET_LIST,
+    status_code=HTTP_200_OK,
+    response_model=Page[schemas.RuleTarget],
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_READ])],
+)
+def get_rule_target_list(
+    *,
+    db: Session = Depends(deps.get_db),
+    policy_key: FidesKey,
+    rule_key: FidesKey,
+    params: Params = Depends(),
+) -> AbstractPage[RuleTarget]:
+    """
+    Return a paginated list of all `Rule Target` records associated with the given `Rule`
+    Throws a 404 if the given `Rule` or `Policy` can't be found.
+    """
+    rule = get_rule_or_error(db, policy_key, rule_key)
+    logger.info(
+        "Finding all rule targets for rule {} with pagination params '{}'",
+        rule_key,
+        params,
+    )
+    rule_targets = RuleTarget.filter(
+        db=db,
+        conditions=(RuleTarget.rule_id == rule.id),
+    ).order_by(RuleTarget.created_at.desc())
+    return paginate(rule_targets, params=params)
+
+
+@router.get(
+    urls.RULE_TARGET_DETAIL,
+    status_code=HTTP_200_OK,
+    response_model=schemas.RuleTarget,
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.RULE_READ])],
+)
+def get_rule_target(
+    *,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
+    rule_target_key: FidesKey,
+    db: Session = Depends(deps.get_db),
+) -> RuleTarget:
+    """
+    Return a single `Rule Target` associated with the given `Rule` and `Policy`
+    """
+    return get_rule_target_or_error(db, policy_key, rule_key, rule_target_key)
 
 
 @router.patch(

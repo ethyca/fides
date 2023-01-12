@@ -3,6 +3,7 @@ import { isNumeric } from "@chakra-ui/utils";
 import {
   Button,
   ButtonGroup,
+  CircleHelpIcon,
   Flex,
   FormControl,
   FormErrorMessage,
@@ -18,7 +19,6 @@ import {
   VStack,
 } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
-import { CircleHelpIcon } from "common/Icon";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
   ConnectionTypeSecretSchemaProperty,

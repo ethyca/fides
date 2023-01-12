@@ -39,6 +39,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       { title: "View systems", path: "/system" },
       { title: "Add systems", path: "/add-systems" },
       { title: "Manage datasets", path: "/dataset" },
+      {
+        title: "Classify systems",
+        path: "/classify-systems",
+        requiresPlus: true,
+      },
     ],
   },
   {
@@ -46,6 +51,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     routes: [
       { title: "Taxonomy", path: "/taxonomy" },
       { title: "Users", path: "/user-management" },
+      { title: "About Fides", path: "/management/about" },
     ],
   },
 ];

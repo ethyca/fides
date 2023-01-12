@@ -4,6 +4,7 @@ import {
   Button,
   ButtonGroup,
   Divider,
+  ErrorWarningIcon,
   Flex,
   Heading,
   HStack,
@@ -14,13 +15,12 @@ import {
   VStack,
 } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
-import { ErrorWarningIcon } from "common/Icon";
 import yaml, { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
 import dynamic from "next/dynamic";
 import React, { useRef, useState } from "react";
 
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import { useGetAllDatasetsQuery } from "~/features/dataset";
 import { Dataset } from "~/types/api";
 
@@ -56,7 +56,9 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   );
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
-  const { navV2 } = useFeatures();
+  const {
+    flags: { navV2 },
+  } = useFeatures();
   const warningDisclosure = useDisclosure();
   const { data: allDatasets } = useGetAllDatasetsQuery();
   const [overWrittenKeys, setOverWrittenKeys] = useState<string[]>([]);

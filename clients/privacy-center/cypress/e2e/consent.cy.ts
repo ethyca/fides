@@ -30,7 +30,7 @@ describe("Consent settings", () => {
       cy.getByTestId("card").contains("Manage your consent").click();
 
       cy.getByTestId("consent-request-form").within(() => {
-        cy.get("input").type("test@example.com");
+        cy.get("input#email").type("test@example.com");
         cy.get("button").contains("Continue").click();
       });
       cy.wait("@postConsentRequest");
@@ -110,17 +110,10 @@ describe("Consent settings", () => {
     });
 
     it("reflects their choices using fides-consent.js", () => {
-      cy.visit("/fides-consent-demo.html");
-      cy.get("#consent-json");
-      cy.window().then((win) => {
-        // Before visiting the privacy center the consent object exists, but it has no keys.
-        expect(win).to.have.nested.property("Fides.consent").that.eql({});
-      });
-
-      // Consent to an item that was opted-out.
+      // Opt-out of a an item defaults to opt-in.
       cy.visit("/consent");
       cy.getByTestId(`consent-item-card-advertising`).within(() => {
-        cy.getRadio().check({ force: true });
+        cy.getRadio("false").check({ force: true });
       });
       cy.getByTestId("save-btn").click();
 
@@ -128,6 +121,19 @@ describe("Consent settings", () => {
       cy.get("#consent-json");
       cy.window().then((win) => {
         // Now all of the cookie keys should be populated.
+        expect(win).to.have.nested.property("Fides.consent").that.eql({
+          data_sales: false,
+        });
+      });
+    });
+  });
+
+  describe("when the user hasn't modified their consent", () => {
+    it("reflects the defaults from config.json", () => {
+      cy.visit("/fides-consent-demo.html");
+      cy.get("#consent-json");
+      cy.window().then((win) => {
+        // Before visiting the privacy center the consent object only has the default choices.
         expect(win).to.have.nested.property("Fides.consent").that.eql({
           data_sales: true,
         });

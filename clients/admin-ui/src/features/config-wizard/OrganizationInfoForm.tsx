@@ -5,6 +5,7 @@ import {
   FormLabel,
   Heading,
   Input,
+  QuestionIcon,
   Stack,
   Tooltip,
   useToast,
@@ -14,7 +15,6 @@ import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { QuestionIcon } from "~/features/common/Icon";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
   useCreateOrganizationMutation,

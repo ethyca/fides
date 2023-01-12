@@ -44,6 +44,11 @@ const nextConfig = {
                 source: `/api/v1/:first/:second*`,
                 destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/api/v1/:first/:second*`,
             },
+            // The /health path does not live under /api/v1
+            {
+                source: `/health`,
+                destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/health`
+            }
         ]
     },
     images: {

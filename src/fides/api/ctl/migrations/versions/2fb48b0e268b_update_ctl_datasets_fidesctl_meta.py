@@ -1,7 +1,7 @@
 """update ctl_datasets fidesctl_meta
 
 Revision ID: 2fb48b0e268b
-Revises: b72541d79f10
+Revises: 3caf11127442
 Create Date: 2022-12-08 17:49:14.317905
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "2fb48b0e268b"
-down_revision = "1f61c765cd1c"
+down_revision = "3caf11127442"
 branch_labels = None
 depends_on = None
 

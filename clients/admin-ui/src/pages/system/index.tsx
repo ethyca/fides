@@ -1,6 +1,5 @@
-import { Box, Button, Heading, Spinner } from "@fidesui/react";
+import { Box, Heading, Spinner } from "@fidesui/react";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import React from "react";
 
 import Layout from "~/features/common/Layout";
@@ -25,14 +24,6 @@ const Systems: NextPage = () => {
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
           System Management
         </Heading>
-        <Button
-          size="sm"
-          colorScheme="primary"
-          mr={2}
-          data-testid="create-system-btn"
-        >
-          <NextLink href="/system/new">Create New System</NextLink>
-        </Button>
       </Box>
       {isLoading ? <Spinner /> : <SystemsManagement systems={systems} />}
     </Layout>

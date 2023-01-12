@@ -32,6 +32,7 @@ export type { ConnectionConfigurationResponse } from "./models/ConnectionConfigu
 export { ConnectionTestStatus } from "./models/ConnectionTestStatus";
 export { ConnectionType } from "./models/ConnectionType";
 export type { ContactDetails } from "./models/ContactDetails";
+export { CoreHealthCheck } from "./models/CoreHealthCheck";
 export type { CurrentStep } from "./models/CurrentStep";
 export type { DatabaseConfig } from "./models/DatabaseConfig";
 export type { DataCategory } from "./models/DataCategory";

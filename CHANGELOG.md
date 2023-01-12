@@ -1,4 +1,3 @@
-# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -17,20 +16,60 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.4.0...main)
 
+### Docs
+
+* Update the docs landing page and remove redundant docs [#2184](https://github.com/ethyca/fides/pull/2184)
+
 ### Added
 
+* Added the `user` command group to the CLI. [#2153](https://github.com/ethyca/fides/pull/2153)
+* Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
+* Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
+* Added Fides version number to account dropdown in the UI [#2140](https://github.com/ethyca/fides/pull/2140)
+* Add link to Classify Systems page in nav side bar [#2128](https://github.com/ethyca/fides/pull/2128)
+* Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
+* Update Privacy Center Icons [#1800](https://github.com/ethyca/fides/pull/2139)
+* Privacy Center `fides-consent.js`:
+  * `Fides.shopify` integration function. [#2152](https://github.com/ethyca/fides/pull/2152)
+  * Dedicated folder for integrations.
+* Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
+* Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
+* Access and erasure support for Friendbuy Nextgen [#2085](https://github.com/ethyca/fides/pull/2085)
 * Unified Fides Resources: Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
 
-### Fixed
-
-* Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
-
 ### Changed
+
+* Admin UI Feature Flags - [#2101](https://github.com/ethyca/fides/pull/2101)
+  * Overrides can be saved in the browser.
+  * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
+  * No longer use `react-feature-flags` library.
+* Made privacy declarations optional when adding systems manually - [#2173](https://github.com/ethyca/fides/pull/2173)
+* Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
+* Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
 * Unified Fides Resources: Remove several fidesops schemas for DSR's in favor of updated Fideslang schemas [#2009](https://github.com/ethyca/fides/pull/2009)
 * Unified Fides Resources: New datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
 * Unified Fides Resources: Remove DatasetConfig.dataset field [#2096](https://github.com/ethyca/fides/pull/2096)
 * Unified Fides Resources: Update UI dataset config routes to use new unified routes [#2113](https://github.com/ethyca/fides/pull/2113)
 * Unified Fides Resources: Validate request body on crud endpoints on upsert. Validate dataset data categories before save. [#2134](https://github.com/ethyca/fides/pull/2134/)
+
+### Removed
+
+* Removed unused object_name field on s3 storage config [#2133](https://github.com/ethyca/fides/pull/2133)
+
+### Fixed
+
+* Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
+* Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
+* Side nav disappears when viewing request details [#2129](https://github.com/ethyca/fides/pull/2155)
+* Remove usage of load dataset button and other dataset UI modifications [#2149](https://github.com/ethyca/fides/pull/2149)
+* Improve readability for exceptions raised from custom request overrides [#2157](https://github.com/ethyca/fides/pull/2157)
+* Importing custom request overrides on server startup [#2186](https://github.com/ethyca/fides/pull/2186)
+* Remove warning when env vars default to blank strings in docker-compose [#2188](https://github.com/ethyca/fides/pull/2188)
+
+### Removed
+
+* Remove "Create New System" button when viewing systems. All systems can now be created via the "Add systems" button on the home page. [#2132](https://github.com/ethyca/fides/pull/2132)
+
 
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
@@ -51,6 +90,7 @@ The types of changes are:
 * Nav 2.0 - Replace form flow side navs with top tabs [#2037](https://github.com/ethyca/fides/pull/2050)
 * Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 * Added ability to use Mailgun templates when sending emails. [#2039](https://github.com/ethyca/fides/pull/2039)
+* Adds SMS id verification for consent [#2094](https://github.com/ethyca/fides/pull/2094)
 
 ### Fixed
 
@@ -129,7 +169,6 @@ The types of changes are:
 ### Developer Experience
 
 * Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
-
 
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
@@ -212,7 +251,6 @@ The types of changes are:
 ### Security
 
 * Bumped versions of packages that use OpenSSL [#1683](https://github.com/ethyca/fides/pull/1683)
-
 
 ## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
 

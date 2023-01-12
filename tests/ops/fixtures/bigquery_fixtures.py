@@ -1,5 +1,4 @@
 import ast
-import logging
 import os
 from typing import Dict, Generator, List
 from uuid import uuid4
@@ -18,8 +17,6 @@ from fides.api.ops.schemas.connection_configuration import BigQuerySchema
 from fides.api.ops.service.connectors import BigQueryConnector, get_connector
 
 from .application_fixtures import integration_config
-
-logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="function")
@@ -176,7 +173,6 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
     This helper function has already been run once, and data has been populated in the test BigQuery dataset.
     We may need this later for integration erasure tests, or in case tables are accidentally removed.
     """
-    logger.info("Seeding bigquery db")
     statements = [
         """
         DROP TABLE IF EXISTS fidesopstest.report;
@@ -378,5 +374,4 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
     ]
     with bigquery_integration_engine.connect() as connection:
         [connection.execute(stmt) for stmt in statements]
-    logger.info("Finished seeding bigquery db")
     return

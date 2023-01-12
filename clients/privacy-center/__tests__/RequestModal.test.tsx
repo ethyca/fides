@@ -66,7 +66,7 @@ describe("RequestModal", () => {
     expect(
       screen.getByPlaceholderText("test-email@example.com")
     ).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("+1 000 000 0000")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("000 000 0000")).toBeInTheDocument();
 
     unmount();
 
@@ -81,7 +81,7 @@ describe("RequestModal", () => {
     expect(
       screen.getByPlaceholderText("test-email@example.com")
     ).toBeInTheDocument();
-    expect(screen.queryByPlaceholderText("+1 000 000 0000")).toBeNull();
+    expect(screen.queryByPlaceholderText("000 000 0000")).toBeNull();
 
     unmount();
 
@@ -94,7 +94,7 @@ describe("RequestModal", () => {
 
     expect(screen.queryByPlaceholderText("Michael Brown")).toBeNull();
     expect(screen.queryByPlaceholderText("test-email@example.com")).toBeNull();
-    expect(screen.getByPlaceholderText("+1 000 000 0000")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("000 000 0000")).toBeInTheDocument();
 
     unmount();
   });
@@ -116,7 +116,7 @@ describe("RequestModal", () => {
         target: { value: "testing@ethyca.com" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("+1 000 000 0000"), {
+      fireEvent.change(screen.getByPlaceholderText("000 000 0000"), {
         target: { value: "0000000000" },
       });
     });
@@ -151,7 +151,7 @@ describe("RequestModal", () => {
         target: { value: "testing@ethyca.com" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("+1 000 000 0000"), {
+      fireEvent.change(screen.getByPlaceholderText("000 000 0000"), {
         target: { value: "0000000000" },
       });
     });
@@ -189,7 +189,7 @@ describe("RequestModal", () => {
         target: { value: "testing@ethyca.com" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("+1 000 000 0000"), {
+      fireEvent.change(screen.getByPlaceholderText("000 000 0000"), {
         target: { value: "0000000000" },
       });
     });

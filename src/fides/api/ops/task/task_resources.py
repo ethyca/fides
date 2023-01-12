@@ -160,6 +160,7 @@ class TaskResources:
 
     def write_execution_log(  # pylint: disable=too-many-arguments
         self,
+        connection_key: str,
         collection_address: CollectionAddress,
         fields_affected: Any,
         action_type: ActionType,
@@ -172,6 +173,7 @@ class TaskResources:
         ExecutionLog.create(
             db=db,
             data={
+                "connection_key": connection_key,
                 "dataset_name": collection_address.dataset,
                 "collection_name": collection_address.collection,
                 "fields_affected": fields_affected,

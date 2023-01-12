@@ -26,7 +26,6 @@ class StorageDetails(Enum):
 
     # s3-specific
     BUCKET = "bucket"
-    OBJECT_NAME = "object_name"
     NAMING = "naming"
     MAX_RETRIES = "max_retries"
     AUTH_METHOD = "auth_method"
@@ -58,7 +57,6 @@ class StorageDetailsS3(FileBasedStorageDetails):
 
     auth_method: S3AuthMethod
     bucket: str
-    object_name: str
     max_retries: Optional[int] = 0
 
     class Config:

@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import Generator
 
@@ -16,8 +15,6 @@ from fides.api.ops.service.connectors import (
     SnowflakeConnector,
     get_connector,
 )
-
-logger = logging.getLogger(__name__)
 
 integration_config = load_toml("tests/ops/integration_test_config.toml")
 

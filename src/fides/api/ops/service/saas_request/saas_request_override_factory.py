@@ -137,9 +137,9 @@ def validate_read_override_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must return a List[Row]"
         )
-    if len(sig.parameters) < 5:
+    if len(sig.parameters) < 6:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS request override function must declare at least 5 parameters"
+            "Provided SaaS request override function must declare at least 6 parameters"
         )
 
 
@@ -160,9 +160,9 @@ def validate_update_override_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must return an int"
         )
-    if len(sig.parameters) < 4:
+    if len(sig.parameters) < 5:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS request override function must declare at least 4 parameters"
+            "Provided SaaS request override function must declare at least 5 parameters"
         )
 
 

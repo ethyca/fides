@@ -112,7 +112,6 @@ class TestPatchStorageConfig:
                 "details": {
                     "auth_method": S3AuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
-                    "object_name": "requests",
                     "naming": "some-filename-convention-enum",
                     "max_retries": 10,
                 },
@@ -202,7 +201,6 @@ class TestPatchStorageConfig:
                         "bucket": "some-bucket",
                         "naming": "some-filename-convention-enum",
                         "max_retries": 10,
-                        "object_name": "requests",
                     },
                     "key": "my_s3_bucket",
                     "format": "csv",
@@ -252,7 +250,6 @@ class TestPatchStorageConfig:
                 "details": {
                     "auth_method": S3AuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
-                    "object_name": "requests",
                     "naming": "some-filename-convention-enum",
                     "max_retries": 10,
                 },
@@ -298,7 +295,6 @@ class TestPatchStorageConfig:
                     "details": {
                         # "bucket": "removed-from-payload",
                         "auth_method": S3AuthMethod.SECRET_KEYS.value,
-                        "object_name": "some-object",
                         "naming": "request_id",
                         "max_retries": 10,
                     },
