@@ -689,7 +689,7 @@ class TestSaveConsent:
 
         consent_data: list[dict[str, Any]] = [
             {
-                "data_use": "advertising",  # Must match consentOptions in config.json
+                "data_use": "advertising",
                 "data_use_description": None,
                 "opt_in": True,
             },
@@ -710,7 +710,11 @@ class TestSaveConsent:
             "code": verification_code,
             "identity": {"email": "test@email.com"},
             "consent": consent_data,
-            "policy_key": consent_policy.key,  # Optional policy_key supplied
+            "policy_key": consent_policy.key,  # Optional policy_key supplied,
+            "executable_options": [
+                {"data_use": "advertising", "executable": True},
+                {"data_use": "improve", "executable": False},
+            ],
         }
         response = api_client.patch(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
@@ -734,7 +738,6 @@ class TestSaveConsent:
         assert identity.phone_number is None
         assert consent_request.privacy_request.consent_preferences == [
             {"opt_in": True, "data_use": "advertising", "data_use_description": None},
-            {"opt_in": False, "data_use": "improve", "data_use_description": None},
         ], "Only executable consent preferences stored"
 
         assert mock_run_privacy_request.called
