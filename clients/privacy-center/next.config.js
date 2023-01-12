@@ -43,8 +43,11 @@ const nextConfig = {
     const { isValid, message } = configIsValid();
     if (!isValid) {
       // Throw a red warning
-      console.error("\x1b[31m%s", "Error with privacy center configuration:");
-      throw message;
+      console.error(
+        "\x1b[31m%s",
+        `Error with privacy center configuration: ${message}`
+      );
+      throw "Privacy center config invalid. Please fix, then rerun the application.";
     }
     return config;
   },
