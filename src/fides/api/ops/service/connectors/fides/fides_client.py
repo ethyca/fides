@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 import requests
+from httpx import AsyncClient
 from loguru import logger
 from requests import PreparedRequest, Request, RequestException, Session
 
@@ -19,7 +20,7 @@ from fides.api.ops.service.privacy_request.request_service import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.wrappers import sync
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.oauth.schemas.user import UserLogin
 
 CONFIG = get_config()
@@ -106,7 +107,7 @@ class FidesClient:
     ) -> str:
         """
         Create privacy request on remote fides by hitting privacy request endpoint
-        Retruns the created privacy request ID
+        Returns the created privacy request ID
         """
         pr: PrivacyRequestCreate = PrivacyRequestCreate(
             external_id=external_id,
@@ -145,7 +146,11 @@ class FidesClient:
 
     @sync
     async def poll_for_request_completion(
-        self, privacy_request_id: str, timeout: int, interval: int
+        self,
+        privacy_request_id: str,
+        timeout: int,
+        interval: int,
+        async_client: AsyncClient | None = None,
     ) -> PrivacyRequestResponse:
         """
         Poll remote fides for status of privacy request with the given ID until it is complete.
@@ -171,6 +176,7 @@ class FidesClient:
             token=self.token,
             poll_interval_seconds=interval,
             timeout_seconds=timeout,
+            client=async_client,
         )
         if status.status == PrivacyRequestStatus.error:
             raise FidesError(

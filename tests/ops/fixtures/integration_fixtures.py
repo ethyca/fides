@@ -1,4 +1,3 @@
-import logging
 import random
 from datetime import datetime
 from typing import Any, Dict, List
@@ -17,8 +16,6 @@ from fides.api.ops.models.connectionconfig import (
 from fides.api.ops.service.connectors import MongoDBConnector
 
 from .application_fixtures import faker, integration_secrets
-
-logger = logging.getLogger(__name__)
 
 
 def generate_integration_records():

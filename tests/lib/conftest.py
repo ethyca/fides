@@ -1,7 +1,6 @@
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
 import json
-import logging
 import os
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +11,7 @@ from fastapi import FastAPI
 from sqlalchemy_utils.functions import create_database, database_exists
 from starlette.testclient import TestClient
 
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -26,8 +25,6 @@ from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api.routes.user_endpoints import router
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
-
-logger = logging.getLogger(__name__)
 
 ROOT_PATH = Path().absolute()
 
@@ -55,7 +52,6 @@ def db(config):
     )
 
     if not database_exists(engine.url):
-        logger.debug("Creating database at: %s", engine.url)
         create_database(engine.url)
 
     # Create the database tables
@@ -66,7 +62,6 @@ def db(config):
     yield session
 
     session.close()
-    Base.metadata.drop_all(bind=engine)
 
     engine.dispose()
 
@@ -143,6 +138,7 @@ def user(db):
     db.commit()
     db.refresh(client)
     yield user
+    user.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -160,3 +156,4 @@ def application_user(db, oauth_client):
     oauth_client.user_id = user.id
     oauth_client.save(db=db)
     yield user
+    user.delete(db)

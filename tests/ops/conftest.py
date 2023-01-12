@@ -2,10 +2,10 @@
 
 import asyncio
 import json
-import logging
 from typing import Any, Callable, Dict, Generator, List
 
 import pytest
+import requests
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from sqlalchemy.exc import IntegrityError
@@ -17,8 +17,8 @@ from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.ctl.core.api import db_action
-from fides.ctl.core.config import get_config
+from fides.core.api import db_action
+from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -41,54 +41,28 @@ from .fixtures.mssql_fixtures import *
 from .fixtures.mysql_fixtures import *
 from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
-from .fixtures.saas.adobe_campaign_fixtures import *
-from .fixtures.saas.auth0_fixtures import *
-from .fixtures.saas.braze_fixtures import *
-from .fixtures.saas.connection_template_fixtures import *
-from .fixtures.saas.datadog_fixtures import *
-from .fixtures.saas.domo_fixtures import *
-from .fixtures.saas.doordash_fixtures import *
-from .fixtures.saas.fullstory_fixtures import *
-from .fixtures.saas.hubspot_fixtures import *
-from .fixtures.saas.mailchimp_fixtures import *
-from .fixtures.saas.outreach_fixtures import *
-from .fixtures.saas.recharge_fixtures import *
-from .fixtures.saas.request_override.firebase_auth_fixtures import *
-from .fixtures.saas.request_override.mailchimp_override_fixtures import *
-from .fixtures.saas.rollbar_fixtures import *
-from .fixtures.saas.salesforce_fixtures import *
-from .fixtures.saas.segment_fixtures import *
-from .fixtures.saas.sendgrid_fixtures import *
-from .fixtures.saas.sentry_fixtures import *
-from .fixtures.saas.shopify_fixtures import *
-from .fixtures.saas.slack_enterprise_fixtures import *
-from .fixtures.saas.square_fixtures import *
-from .fixtures.saas.stripe_fixtures import *
-from .fixtures.saas.twilio_conversations_fixtures import *
-from .fixtures.saas.zendesk_fixtures import *
+from .fixtures.saas import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 from .fixtures.timescale_fixtures import *
-
-logger = logging.getLogger(__name__)
 
 CONFIG = get_config()
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_db():
+def setup_db(api_client):
     """Apply migrations at beginning and end of testing session"""
-    logger.debug("Setting up the database...")
     assert CONFIG.test_mode
-    yield db_action(CONFIG.cli.server_url, "reset")
-    logger.debug("Migrations successfully applied")
+    assert requests.post != api_client.post
+    yield api_client.post(url=f"{CONFIG.cli.server_url}/v1/admin/db/reset")
 
 
 @pytest.fixture(scope="session")
-def db() -> Generator:
+def db(api_client) -> Generator:
     """Return a connection to the test DB"""
     # Create the test DB engine
     assert CONFIG.test_mode
+    assert requests.post != api_client.post
     engine = get_db_engine(
         database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )
@@ -102,7 +76,6 @@ def db() -> Generator:
     # Teardown below...
     the_session.close()
     engine.dispose()
-    logger.debug("Database at: %s successfully dropped", engine.url)
 
 
 @pytest.fixture(autouse=True)
@@ -138,7 +111,7 @@ def cache() -> Generator:
     yield get_cache()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def api_client() -> Generator:
     """Return a client used to make API requests"""
     with TestClient(app) as c:

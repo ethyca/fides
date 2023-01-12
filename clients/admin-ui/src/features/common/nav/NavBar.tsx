@@ -7,7 +7,7 @@ import {
   INDEX_ROUTE,
   USER_MANAGEMENT_ROUTE,
 } from "~/constants";
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 
 // Cross-zone navigation requires building URLs from the current `window.location`
 // which is not available in Server-Side-Rendered components.

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
+import sendgrid
 from loguru import logger
+from sendgrid.helpers.mail import Content, Email, Mail, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
@@ -37,7 +40,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 CONFIG = get_config()
 
@@ -199,9 +202,9 @@ def _build_sms(  # pylint: disable=too-many-return-statements
         )
     if action_type == MessagingActionType.CONSENT_REQUEST:
         return (
-            "Your consent request verification code is {{code}}. "
+            f"Your consent request verification code is {body_params.verification_code}. "
             "Please return to the consent request page and enter the code to continue. "
-            "This code will expire in {{minutes}} minutes"
+            f"This code will expire in {body_params.get_verification_code_ttl_minutes()} minutes"
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         if len(body_params.request_types) > 1:
@@ -322,6 +325,8 @@ def _get_dispatcher_from_config_type(
         return _mailgun_dispatcher
     if message_service_type == MessagingServiceType.TWILIO_TEXT:
         return _twilio_sms_dispatcher
+    if message_service_type == MessagingServiceType.TWILIO_EMAIL:
+        return _twilio_email_dispatcher
     return None
 
 
@@ -344,28 +349,111 @@ def _mailgun_dispatcher(
         if messaging_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value] is False
         else "https://api.eu.mailgun.net"
     )
+
     domain = messaging_config.details[MessagingServiceDetails.DOMAIN.value]
-    data = {
-        "from": f"<mailgun@{domain}>",
-        "to": [to.strip()],
-        "subject": message.subject,
-        "html": message.body,
-    }
+
     try:
-        response: requests.Response = requests.post(
-            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
+        # Check if a fides template exists
+        template_test = requests.get(
+            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/templates/fides",
             auth=(
                 "api",
                 messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],
             ),
-            data=data,
         )
-        if not response.ok:
+
+        data = {
+            "from": f"<mailgun@{domain}>",
+            "to": [to.strip()],
+            "subject": message.subject,
+        }
+
+        if template_test.status_code == 200:
+            data["template"] = "fides"
+            data["h:X-Mailgun-Variables"] = json.dumps(
+                {"fides_email_body": message.body}
+            )
+            response = requests.post(
+                f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
+                auth=(
+                    "api",
+                    messaging_config.secrets[
+                        MessagingServiceSecrets.MAILGUN_API_KEY.value
+                    ],
+                ),
+                data=data,
+            )
+
+            if not response.ok:
+                logger.error(
+                    "Email failed to send with status code: %s", response.status_code
+                )
+                raise MessageDispatchException(
+                    f"Email failed to send with status code {response.status_code}"
+                )
+        else:
+            data["html"] = message.body
+            response = requests.post(
+                f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
+                auth=(
+                    "api",
+                    messaging_config.secrets[
+                        MessagingServiceSecrets.MAILGUN_API_KEY.value
+                    ],
+                ),
+                data=data,
+            )
+            if not response.ok:
+                logger.error(
+                    "Email failed to send with status code: %s", response.status_code
+                )
+                raise MessageDispatchException(
+                    f"Email failed to send with status code {response.status_code}"
+                )
+    except Exception as e:
+        logger.error("Email failed to send: {}", Pii(str(e)))
+        raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
+
+
+def _twilio_email_dispatcher(
+    messaging_config: MessagingConfig,
+    message: EmailForActionType,
+    to: Optional[str],
+) -> None:
+    """Dispatches email using twilio sendgrid"""
+    if not to:
+        logger.error("Message failed to send. No email identity supplied.")
+        raise MessageDispatchException("No email identity supplied.")
+    if not messaging_config.details or not messaging_config.secrets:
+        logger.error(
+            "Message failed to send. No twilio email config details or secrets supplied."
+        )
+        raise MessageDispatchException(
+            "No twilio email config details or secrets supplied."
+        )
+
+    try:
+        sg = sendgrid.SendGridAPIClient(
+            api_key=messaging_config.secrets[
+                MessagingServiceSecrets.TWILIO_API_KEY.value
+            ]
+        )
+        from_email = Email(
+            messaging_config.details[MessagingServiceDetails.TWILIO_EMAIL_FROM.value]
+        )
+        to_email = To(to.strip())
+        subject = message.subject
+        content = Content("text/html", message.body)
+        mail = Mail(from_email, to_email, subject, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        if response.status_code >= 400:
             logger.error(
-                "Email failed to send with status code: {}", response.status_code
+                "Email failed to send: %s: %s",
+                response.status_code,
+                Pii(str(response.body)),
             )
             raise MessageDispatchException(
-                f"Email failed to send with status code {response.status_code}"
+                f"Email failed to send: {response.status_code}, {Pii(str(response.body))}"
             )
     except Exception as e:
         logger.error("Email failed to send: {}", Pii(str(e)))

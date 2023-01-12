@@ -4,9 +4,9 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  MoreIcon,
   Portal,
 } from "@fidesui/react";
-import { MoreIcon } from "common/Icon";
 import NextLink from "next/link";
 import React from "react";
 

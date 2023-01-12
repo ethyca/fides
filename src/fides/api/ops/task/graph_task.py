@@ -43,7 +43,7 @@ from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import NodeInput, Row, append, partition
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 dask.config.set(scheduler="threads")
 
@@ -337,6 +337,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     ) -> None:
         """Update status activities"""
         self.resources.write_execution_log(
+            self.traversal_node.node.dataset.connection_key,
             self.traversal_node.address,
             fields_affected,
             action_type,

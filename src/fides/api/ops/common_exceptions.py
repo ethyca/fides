@@ -105,6 +105,10 @@ class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
 
+class PrivacyRequestNotFound(BaseException):
+    """Privacy Request Not Found"""
+
+
 class NoCachedManualWebhookEntry(BaseException):
     """No manual data exists for this webhook on the given privacy request."""
 
@@ -183,3 +187,7 @@ class NoSuchSaaSRequestOverrideException(ValueError):
 
 class IdentityVerificationException(FidesopsException):
     """Custom exceptions for when we cannot verify the identity of a subjct"""
+
+
+class NoSuchConnectionTypeSecretSchemaError(Exception):
+    """Exception for when a connection type secret schema is not found."""

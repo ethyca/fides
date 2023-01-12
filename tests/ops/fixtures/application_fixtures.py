@@ -44,6 +44,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
+from fides.api.ops.service.connectors.fides.fides_client import FidesClient
 from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
@@ -54,8 +55,8 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
     StringRewriteMaskingStrategy,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.ctl.core.config import get_config
-from fides.ctl.core.config.helpers import load_file
+from fides.core.config import get_config
+from fides.core.config.helpers import load_file
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
@@ -67,7 +68,6 @@ faker = Faker()
 integration_config = load_toml("tests/ops/integration_test_config.toml")
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 # Unified list of connections to integration dbs specified from fides.api-integration.toml
@@ -1462,3 +1462,22 @@ def create_user_registration(db: Session, opt_in: bool = False) -> UserRegistrat
             "opt_in": opt_in,
         },
     )
+
+
+@pytest.fixture(scope="function")
+def test_fides_client(
+    fides_connector_example_secrets: Dict[str, str], api_client
+) -> FidesClient:
+    return FidesClient(
+        fides_connector_example_secrets["uri"],
+        fides_connector_example_secrets["username"],
+        fides_connector_example_secrets["password"],
+    )
+
+
+@pytest.fixture(scope="function")
+def authenticated_fides_client(
+    test_fides_client: FidesClient,
+) -> FidesClient:
+    test_fides_client.login()
+    return test_fides_client

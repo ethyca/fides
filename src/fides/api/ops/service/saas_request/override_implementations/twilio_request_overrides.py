@@ -1,25 +1,23 @@
 from typing import Any, Dict, List
 
-import requests
+from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
-from fides.api.ops.common_exceptions import (
-    ClientUnsuccessfulException,
-    ConnectionException,
-)
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+)
 from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
 from fides.api.ops.util.saas_util import to_pascal_case
-from fides.ctl.core.config import get_config
-
-CONFIG = get_config()
 
 
 @register("twilio_user_update", [SaaSRequestType.UPDATE])
 def twilio_user_update(
+    client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
@@ -42,29 +40,14 @@ def twilio_user_update(
 
         update_body = masked_object_fields
 
-        auth = secrets["account_id"], secrets["password"]
-
-        try:
-            response = requests.post(
-                url=f'https://{secrets["domain"]}/v1/Users/{user_id}',
-                auth=auth,
-                data=update_body,
+        client.send(
+            SaaSRequestParams(
+                method=HTTPMethod.POST,
+                path=f"/v1/Users/{user_id}",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                body=multidimensional_urlencode(update_body),
             )
-
-        # here we mimic the sort of error handling done in the core framework
-        # by the AuthenticatedClient. Extenders can chose to handle errors within
-        # their implementation as they wish.
-        except Exception as e:
-            if CONFIG.dev_mode:  # pylint: disable=R1720
-                raise ConnectionException(
-                    f"Operational Error connecting to Twilio Conversations API with error: {e}"
-                )
-            else:
-                raise ConnectionException(
-                    "Operational Error connecting to Twilio Conversations API."
-                )
-        if not response.ok:
-            raise ClientUnsuccessfulException(status_code=response.status_code)
+        )
 
         rows_updated += 1
     return rows_updated
@@ -72,6 +55,7 @@ def twilio_user_update(
 
 @register("twilio_conversation_message_update", [SaaSRequestType.UPDATE])
 def twilio_conversation_message_update(
+    client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
@@ -95,28 +79,14 @@ def twilio_conversation_message_update(
 
         update_body = masked_object_fields
 
-        auth = secrets["account_id"], secrets["password"]
-        try:
-            response = requests.post(
-                url=f'https://{secrets["domain"]}/v1/Conversations/{conversation_id}/Messages/{message_id}',
-                auth=auth,
-                data=update_body,
+        client.send(
+            SaaSRequestParams(
+                method=HTTPMethod.POST,
+                path=f"/v1/Conversations/{conversation_id}/Messages/{message_id}",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                body=multidimensional_urlencode(update_body),
             )
-
-        # here we mimic the sort of error handling done in the core framework
-        # by the AuthenticatedClient. Extenders can chose to handle errors within
-        # their implementation as they wish.
-        except Exception as e:
-            if CONFIG.dev_mode:  # pylint: disable=R1720
-                raise ConnectionException(
-                    f"Operational Error connecting to Twilio Conversations API with error: {e}"
-                )
-            else:
-                raise ConnectionException(
-                    "Operational Error connecting to Twilio Conversations API."
-                )
-        if not response.ok:
-            raise ClientUnsuccessfulException(status_code=response.status_code)
+        )
 
         rows_updated += 1
     return rows_updated

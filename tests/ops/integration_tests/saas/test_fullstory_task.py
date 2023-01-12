@@ -1,4 +1,3 @@
-import logging
 import random
 
 import pytest
@@ -9,13 +8,12 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from tests.ops.fixtures.saas.fullstory_fixtures import FullstoryTestClient, user_updated
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @pytest.mark.skip("API keys are temporary for free accounts")

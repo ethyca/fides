@@ -60,6 +60,8 @@ export const STEPS: AddConnectionStep[] = [
   {
     stepId: 1,
     label: "Choose your connection",
+    description:
+      "Fides connections represent integrations to third party applications, databases, or physical storage locations. Select and configure a connection to include the system when Fides processes privacy requests.",
     href: `${DATASTORE_CONNECTION_ROUTE}/new?step=1`,
     parentStepId: 0,
   },
