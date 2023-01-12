@@ -4,26 +4,18 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from sqlalchemy.orm import Session
 
-from fides.api.ops.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
+from tests.ops.integration_tests.saas.connector_runner import (
+    ConnectorRunner,
+    generate_random_email,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.util.saas_util import (
-    load_config_with_replacement,
-    load_dataset_with_replacement,
-)
-from fides.lib.cryptography import cryptographic_util
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("zendesk")
 
 
 @pytest.fixture(scope="session")
-def zendesk_secrets(saas_config):
+def zendesk_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "zendesk.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "zendesk.username") or secrets["username"],
@@ -34,87 +26,26 @@ def zendesk_secrets(saas_config):
 
 
 @pytest.fixture(scope="session")
-def zendesk_identity_email(saas_config):
+def zendesk_identity_email(saas_config) -> str:
     return (
         pydash.get(saas_config, "zendesk.identity_email") or secrets["identity_email"]
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def zendesk_erasure_identity_email() -> str:
-    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+    return generate_random_email()
 
 
 @pytest.fixture
-def zendesk_config() -> Dict[str, Any]:
-    return load_config_with_replacement(
-        "data/saas/config/zendesk_config.yml",
-        "<instance_fides_key>",
-        "zendesk_instance",
-    )
-
-
-@pytest.fixture
-def zendesk_dataset() -> Dict[str, Any]:
-    return load_dataset_with_replacement(
-        "data/saas/dataset/zendesk_dataset.yml",
-        "<instance_fides_key>",
-        "zendesk_instance",
-    )[0]
-
-
-@pytest.fixture(scope="function")
-def zendesk_connection_config(
-    db: Session, zendesk_config, zendesk_secrets
+def zendesk_erasure_data(
+    zendesk_erasure_identity_email: str,
 ) -> Generator:
-    fides_key = zendesk_config["fides_key"]
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "key": fides_key,
-            "name": fides_key,
-            "connection_type": ConnectionType.saas,
-            "access": AccessLevel.write,
-            "secrets": zendesk_secrets,
-            "saas_config": zendesk_config,
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture
-def zendesk_dataset_config(
-    db: Session,
-    zendesk_connection_config: ConnectionConfig,
-    zendesk_dataset: Dict[str, Any],
-) -> Generator:
-    fides_key = zendesk_dataset["fides_key"]
-    zendesk_connection_config.name = fides_key
-    zendesk_connection_config.key = fides_key
-    zendesk_connection_config.save(db=db)
-    dataset = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": zendesk_connection_config.id,
-            "fides_key": fides_key,
-            "dataset": zendesk_dataset,
-        },
-    )
-    yield dataset
-    dataset.delete(db=db)
-
-
-@pytest.fixture(scope="function")
-def zendesk_create_erasure_data(
-    zendesk_connection_config: ConnectionConfig, zendesk_erasure_identity_email: str
-) -> None:
 
     sleep(60)
 
-    zendesk_secrets = zendesk_connection_config.secrets
-    auth = zendesk_secrets["username"], zendesk_secrets["api_key"]
-    base_url = f"https://{zendesk_secrets['domain']}"
+    auth = secrets["username"], secrets["api_key"]
+    base_url = f"https://{secrets['domain']}"
 
     # user
     body = {
@@ -144,5 +75,12 @@ def zendesk_create_erasure_data(
         url=f"{base_url}/api/v2/tickets", auth=auth, json=ticket_data
     )
     ticket = response.json()["ticket"]
-    ticket_id = ticket["id"]
     yield ticket, user
+
+
+@pytest.fixture
+def zendesk_runner(
+    db,
+    zendesk_secrets,
+) -> ConnectorRunner:
+    return ConnectorRunner(db, zendesk_secrets, "zendesk")

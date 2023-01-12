@@ -1,8 +1,7 @@
-import logging
 import random
 from typing import Any, Dict, List
 
-from fideslib.cryptography import cryptographic_util
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.graph.graph import DatasetGraph
@@ -23,10 +22,10 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
+from fides.lib.cryptography import cryptographic_util
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 class ConnectorRunner:
