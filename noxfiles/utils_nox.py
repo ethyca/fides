@@ -1,6 +1,5 @@
 """Contains various utility-related nox sessions."""
 import nox
-from jinja2 import Environment, FileSystemLoader
 
 from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, TEST_ENV_COMPOSE_FILE
 from run_infrastructure import run_infrastructure
@@ -74,6 +73,8 @@ def init_saas_connector(session: nox.Session) -> None:
     open(f"data/saas/dataset/{variable_map['connector_id']}_dataset.yml", "w")
 
     # location of Jinja templates
+    from jinja2 import Environment, FileSystemLoader
+
     environment = Environment(
         loader=FileSystemLoader("data/saas/saas_connector_scaffolding/")
     )
