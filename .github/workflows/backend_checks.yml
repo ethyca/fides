@@ -103,10 +103,10 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
         test_selection:
-          - "pytest_ctl(not-external)"
-          - "pytest_ops(unit)"
-          - "pytest_ops(integration)"
-          - "pytest_lib"
+          - "pytest(ctl-not-external)"
+          - "pytest(ops-unit)"
+          - "pytest(ops-integration)"
+          - "pytest(lib)"
           - "check_fides_annotations"
           - "fides_db_scan"
           - "docs_check"
@@ -194,7 +194,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run external test suite
-        run: nox -s "pytest_ctl(external)"
+        run: nox -s "pytest(ctl-external)"
         env:
           SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
           REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}
@@ -238,7 +238,7 @@ jobs:
           BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
           BIGQUERY_DATASET: fidesopstest
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
-        run: nox -s "pytest_ops(external-datastores)"
+        run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
     needs: Build
@@ -283,4 +283,4 @@ jobs:
         env:
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
-        run: nox -s "pytest_ops(saas)"
+        run: nox -s "pytest(ops-saas)"
