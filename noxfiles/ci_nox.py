@@ -169,14 +169,14 @@ def collect_tests(session: nox.Session) -> None:
     "mark",
     [
         nox.param("ctl-unit", id="ctl-unit"),
-        nox.param("ctl-integration", id="ctl-integration"),
         nox.param("ctl-not-external", id="ctl-not-external"),
+        nox.param("ctl-integration", id="ctl-integration"),
         nox.param("ctl-external", id="ctl-external"),
-        nox.param("lib", id="lib"),
         nox.param("ops-unit", id="ops-unit"),
         nox.param("ops-integration", id="ops-integration"),
         nox.param("ops-external-datastores", id="ops-external-datastores"),
         nox.param("ops-saas", id="ops-saas"),
+        nox.param("lib", id="lib"),
     ],
 )
 def pytest(session: nox.Session, mark: str) -> None:
@@ -190,15 +190,14 @@ def pytest(session: nox.Session, mark: str) -> None:
 
     test_matrix: Dict[str, Callable] = {
         "ctl-unit": partial(pytest_ctl, mark="unit"),
-        "ctl-integration": partial(pytest_ctl, mark="integration"),
         "ctl-not-external": partial(pytest_ctl, mark="not external"),
+        "ctl-integration": partial(pytest_ctl, mark="integration"),
         "ctl-external": partial(pytest_ctl, mark="external"),
-        "lib": pytest_lib,
-        "ops-unit": partial(pytest_ctl, mark=mark),
+        "ops-unit": partial(pytest_ops, mark="unit"),
         "ops-integration": partial(pytest_ops, mark="integration"),
         "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
-        "ops-unit": partial(pytest_ops, mark="unit"),
         "ops-saas": partial(pytest_ops, mark="saas"),
+        "lib": pytest_lib,
     }
     test_matrix[mark](session=session)
 
