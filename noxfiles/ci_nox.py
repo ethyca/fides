@@ -188,8 +188,7 @@ def pytest(session: nox.Session, test_group: str) -> None:
     """
     session.notify("teardown")
 
-    # coverage_arg = f"--cov-report=lcov:coverage/{test_group}.lcov"
-    coverage_arg = f"--cov-report=xml:coverage/{test_group}.xml"
+    coverage_arg = f"--cov-report=lcov:coverage/{test_group}.lcov"
     test_matrix: Dict[str, Callable] = {
         "ctl-unit": partial(pytest_ctl, mark="unit"),
         "ctl-not-external": partial(pytest_ctl, mark="not external"),
