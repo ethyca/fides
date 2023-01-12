@@ -1,11 +1,10 @@
 from typing import Any, Dict, Generator
 
-from requests.auth import HTTPBasicAuth
-
 import pydash
 import pytest
 import requests
 from faker import Faker
+from requests.auth import HTTPBasicAuth
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 

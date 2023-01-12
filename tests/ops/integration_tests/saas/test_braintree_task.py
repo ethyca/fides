@@ -15,6 +15,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
+
 @pytest.mark.integration_saas
 @pytest.mark.integration_braintree
 def test_braintree_connection_test(

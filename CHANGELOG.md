@@ -16,6 +16,7 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.4.0...main)
 
+* Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
 ### Docs
 
 * Update the docs landing page and remove redundant docs [#2184](https://github.com/ethyca/fides/pull/2184)
