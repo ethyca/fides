@@ -95,43 +95,17 @@ jobs:
         run: nox -s ${{ matrix.session_name }}
 
   #################
-  ## Safe Checks ##
+  ## Misc Checks ##
   #################
-  Safe-Tests:
+  Misc-Tests:
     needs: Build
     strategy:
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
         test_selection:
-          - "pytest(ctl-not-external)"
-          - "pytest(ops-unit)"
-          - "pytest(ops-integration)"
-          - "pytest(lib)"
           - "check_fides_annotations"
           - "fides_db_scan"
           - "docs_check"
           - "minimal_config_startup"
-        exclude:
-          # Not all jobs need to run against the Python matrix
-          - python_version: "3.8.14"
-            test_selection: "check_fides_annotations"
-          - python_version: "3.9.14"
-            test_selection: "check_fides_annotations"
-
-          - python_version: "3.8.14"
-            test_selection: "fides_db_scan"
-          - python_version: "3.9.14"
-            test_selection: "fides_db_scan"
-
-          - python_version: "3.8.14"
-            test_selection: "docs_check"
-          - python_version: "3.9.14"
-            test_selection: "docs_check"
-
-          - python_version: "3.8.14"
-            test_selection: "minimal_config_startup"
-          - python_version: "3.9.14"
-            test_selection: "minimal_config_startup"
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -160,6 +134,54 @@ jobs:
 
       - name: Run test suite
         run: nox -s "${{ matrix.test_selection }}"
+
+  ################
+  ## Safe Tests ##
+  ################
+  Safe-Tests:
+    needs: Build
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        test_selection:
+          - "ctl-not-external"
+          - "ops-unit"
+          - "ops-integration"
+          - "lib"
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run test suite
+        run: nox -s "pytest(${{ matrix.test_selection }})"
+
+      - name: Upload Coverage Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.test_selection }}
+          path: coverage/${{ matrix.test_selection }}/
 
   ##################
   ## Unsafe Tests ##
@@ -204,6 +226,12 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
+      - name: Upload Coverage Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ctl-external
+          path: coverage/ctl-external/
+
   External-Datastores:
     needs: Build
     strategy:
@@ -239,6 +267,12 @@ jobs:
           BIGQUERY_DATASET: fidesopstest
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
         run: nox -s "pytest(ops-external-datastores)"
+
+      - name: Upload Coverage Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ops-external-datastores
+          path: coverage/ops-external-datastores/
 
   External-SaaS-Connectors:
     needs: Build
@@ -284,3 +318,9 @@ jobs:
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
         run: nox -s "pytest(ops-saas)"
+
+      - name: Upload Coverage Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ops-saas
+          path: coverage/ops-saas/
