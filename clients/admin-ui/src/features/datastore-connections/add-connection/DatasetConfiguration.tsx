@@ -163,7 +163,7 @@ const DatasetConfiguration: React.FC = () => {
   return (
     <VStack alignItems="left">
       {loadAllDatasetsError ? (
-        <Copy mb={4}>
+        <Copy mb={4} color="red">
           There was a problem loading existing datasets, please try again.
         </Copy>
       ) : null}
