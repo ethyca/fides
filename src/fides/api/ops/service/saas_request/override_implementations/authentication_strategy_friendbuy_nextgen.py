@@ -40,7 +40,7 @@ class FriendbuyNextgenAuthenticationStrategy(AuthenticationStrategy):
         self, request: PreparedRequest, connection_config: ConnectionConfig
     ) -> PreparedRequest:
         """
-        Generate an Adobe JWT and add it as bearer auth
+        Retrieves a token using the provided key and secret
         """
 
         secrets = cast(Dict, connection_config.secrets)
