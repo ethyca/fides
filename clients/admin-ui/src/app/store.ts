@@ -9,10 +9,7 @@ import {
   connectionTypeApi,
   reducer as connectionTypeReducer,
 } from "connection-type/index";
-import {
-  datastoreConnectionApi,
-  reducer as datastoreConnectionReducer,
-} from "datastore-connections/index";
+import { reducer as datastoreConnectionReducer } from "datastore-connections/index";
 import {
   privacyRequestApi,
   reducer as privacyRequestsReducer,
@@ -34,6 +31,7 @@ import {
 } from "user-management/index";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
+import { baseApi } from "~/features/common/api.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
@@ -48,7 +46,7 @@ import {
   dataUseApi,
   reducer as dataUseReducer,
 } from "~/features/data-use/data-use.slice";
-import { datasetApi, reducer as datasetReducer } from "~/features/dataset";
+import { reducer as datasetReducer } from "~/features/dataset";
 import {
   organizationApi,
   reducer as organizationReducer,
@@ -83,12 +81,11 @@ const storage =
 
 const reducer = {
   [authApi.reducerPath]: authApi.reducer,
+  [baseApi.reducerPath]: baseApi.reducer,
   [connectionTypeApi.reducerPath]: connectionTypeApi.reducer,
   [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
   [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
   [dataUseApi.reducerPath]: dataUseApi.reducer,
-  [datasetApi.reducerPath]: datasetApi.reducer,
-  [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
   [organizationApi.reducerPath]: organizationApi.reducer,
   [plusApi.reducerPath]: plusApi.reducer,
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
@@ -135,12 +132,11 @@ const persistConfig = {
   */
   blacklist: [
     authApi.reducerPath,
+    baseApi.reducerPath,
     connectionTypeApi.reducerPath,
     dataQualifierApi.reducerPath,
     dataSubjectsApi.reducerPath,
     dataUseApi.reducerPath,
-    datasetApi.reducerPath,
-    datastoreConnectionApi.reducerPath,
     organizationApi.reducerPath,
     plusApi.reducerPath,
     privacyRequestApi.reducerPath,
@@ -163,12 +159,11 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         },
       }).concat(
         authApi.middleware,
+        baseApi.middleware,
         connectionTypeApi.middleware,
         dataQualifierApi.middleware,
         dataSubjectsApi.middleware,
         dataUseApi.middleware,
-        datasetApi.middleware,
-        datastoreConnectionApi.middleware,
         organizationApi.middleware,
         plusApi.middleware,
         privacyRequestApi.middleware,

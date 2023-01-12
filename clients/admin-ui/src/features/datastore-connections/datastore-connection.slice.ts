@@ -1,7 +1,6 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { addCommonHeaders } from "common/CommonHeaders";
 
+import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutDataset,
   Page_DatasetConfigSchema_,
@@ -9,8 +8,7 @@ import {
 } from "~/types/api";
 
 import type { RootState } from "../../app/store";
-import { BASE_URL, CONNECTION_ROUTE } from "../../constants";
-import { selectToken } from "../auth";
+import { CONNECTION_ROUTE } from "../../constants";
 import { DisabledStatus, TestingStatus } from "./constants";
 import {
   CreateAccessManualWebhookRequest,
@@ -152,17 +150,7 @@ export const selectDatastoreConnectionFilters = (
 
 export const { reducer } = datastoreConnectionSlice;
 
-export const datastoreConnectionApi = createApi({
-  reducerPath: "datastoreConnectionApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["DatastoreConnection"],
+export const datastoreConnectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createAccessManualWebhook: build.mutation<
       CreateAccessManualWebhookResponse,
@@ -184,7 +172,8 @@ export const datastoreConnectionApi = createApi({
         method: "POST",
         body: { ...params },
       }),
-      invalidatesTags: ["DatastoreConnection"],
+      // Creating a connection config also creates a dataset behind the scenes
+      invalidatesTags: ["DatastoreConnection", "Datasets"],
     }),
     deleteDatastoreConnection: build.mutation({
       query: (id) => ({
