@@ -396,4 +396,4 @@ class CustomField(Base):
         back_populates="custom_field",
     )
 
-    UniqueConstraint("resource_type", "resource_id" "custom_field_definition_id")
+    UniqueConstraint("resource_type", "resource_id", "custom_field_definition_id")
