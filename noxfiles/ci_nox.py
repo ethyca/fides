@@ -166,7 +166,7 @@ def collect_tests(session: nox.Session) -> None:
 
 @nox.session()
 @nox.parametrize(
-    "mark",
+    "test_group",
     [
         nox.param("ctl-unit", id="ctl-unit"),
         nox.param("ctl-not-external", id="ctl-not-external"),
@@ -179,7 +179,7 @@ def collect_tests(session: nox.Session) -> None:
         nox.param("lib", id="lib"),
     ],
 )
-def pytest(session: nox.Session, mark: str) -> None:
+def pytest(session: nox.Session, test_group: str) -> None:
     """
     Runs Pytests.
 
@@ -188,6 +188,7 @@ def pytest(session: nox.Session, mark: str) -> None:
     """
     session.notify("teardown")
 
+    coverage_arg = f"--cov-report=html:coverage/{test_group}"
     test_matrix: Dict[str, Callable] = {
         "ctl-unit": partial(pytest_ctl, mark="unit"),
         "ctl-not-external": partial(pytest_ctl, mark="not external"),
@@ -199,7 +200,7 @@ def pytest(session: nox.Session, mark: str) -> None:
         "ops-saas": partial(pytest_ops, mark="saas"),
         "lib": pytest_lib,
     }
-    test_matrix[mark](session=session)
+    test_matrix[test_group](session=session, coverage_arg=coverage_arg)
 
 
 @nox.session()

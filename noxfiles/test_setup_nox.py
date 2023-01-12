@@ -13,19 +13,20 @@ from constants_nox import (
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
 
 
-def pytest_lib(session: Session) -> None:
+def pytest_lib(session: Session, coverage_arg: str) -> None:
     """Runs lib tests."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
         *RUN_NO_DEPS,
         "pytest",
+        coverage_arg,
         "tests/lib/",
     )
     session.run(*run_command, external=True)
 
 
-def pytest_ctl(session: Session, mark: str) -> None:
+def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
     """Runs ctl tests."""
     session.notify("teardown")
     if mark == "external":
@@ -63,6 +64,7 @@ def pytest_ctl(session: Session, mark: str) -> None:
             CI_ARGS,
             IMAGE_NAME,
             "pytest",
+            coverage_arg,
             "-m",
             "external",
             "tests/ctl",
@@ -73,6 +75,7 @@ def pytest_ctl(session: Session, mark: str) -> None:
         run_command = (
             *RUN_NO_DEPS,
             "pytest",
+            coverage_arg,
             "tests/ctl/",
             "-m",
             mark,
@@ -80,7 +83,7 @@ def pytest_ctl(session: Session, mark: str) -> None:
         session.run(*run_command, external=True)
 
 
-def pytest_ops(session: Session, mark: str) -> None:
+def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
     """Runs fidesops tests."""
     session.notify("teardown")
     if mark == "unit":
@@ -88,12 +91,14 @@ def pytest_ops(session: Session, mark: str) -> None:
         run_command = (
             *RUN_NO_DEPS,
             "pytest",
+            coverage_arg,
             OPS_TEST_DIR,
             "-m",
             "not integration and not integration_external and not integration_saas",
         )
         session.run(*run_command, external=True)
     elif mark == "integration":
+        # The coverage_arg is hardcoded in 'run_infrastructure.py'
         run_infrastructure(
             run_tests=True,
             analytics_opt_out=True,
@@ -122,6 +127,7 @@ def pytest_ops(session: Session, mark: str) -> None:
             CI_ARGS,
             COMPOSE_SERVICE_NAME,
             "pytest",
+            coverage_arg,
             OPS_TEST_DIR,
             "-m",
             "integration_external",
@@ -153,6 +159,7 @@ def pytest_ops(session: Session, mark: str) -> None:
             CI_ARGS,
             COMPOSE_SERVICE_NAME,
             "pytest",
+            coverage_arg,
             OPS_TEST_DIR,
             "-m",
             "integration_saas",

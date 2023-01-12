@@ -160,7 +160,6 @@ addopts = ["--cov=fides",
             "--cov-branch",
             "-ra",
             "-vv",
-            "--no-cov-on-fail",
             "--disable-pytest-warnings"]
 markers = [
     "unit: only runs tests that don't require non-python dependencies (i.e. a database)",

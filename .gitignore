@@ -2,6 +2,7 @@
 
 # frontend
 ui-build/
+coverage/
 
 ## generic files to ignore
 *~
