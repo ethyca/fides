@@ -33,6 +33,7 @@ The types of changes are:
   * `Fides.shopify` integration function. [#2152](https://github.com/ethyca/fides/pull/2152)
   * Dedicated folder for integrations.
 * Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
+* Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
 
 ### Changed
 
