@@ -18,7 +18,7 @@ import {
   Tooltip,
   VStack,
 } from "@fidesui/react";
-// import { useAPIHelper } from "common/hooks";
+import { useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
   ConnectionTypeSecretSchemaProperty,
@@ -62,13 +62,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   onTestConnectionClick,
 }) => {
   const mounted = useRef(false);
-  // const { handleError } = useAPIHelper();
+  const { handleError } = useAPIHelper();
 
   const { connection, connectionOption } = useAppSelector(
     selectConnectionTypeState
   );
 
-  const [, result] = useLazyGetDatastoreConnectionStatusQuery();
+  const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 
   const validateConnectionIdentifier = (value: string) => {
     let error;
@@ -233,13 +233,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     onSaveClick(updatedValues, actions);
   };
 
-  // const handleTestConnectionClick = async () => {
-  //   try {
-  //     await trigger(connection!.key).unwrap();
-  //   } catch (error) {
-  //     handleError(error);
-  //   }
-  // };
+  const handleTestConnectionClick = async () => {
+    try {
+      await trigger(connection!.key).unwrap();
+    } catch (error) {
+      handleError(error);
+    }
+  };
 
   useEffect(() => {
     mounted.current = true;
@@ -368,8 +368,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               getFormField(key, item)
             )}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
-              {/* Temporarily hiding this button */}
-              {/* <Button
+              {/* Disable if connector not created yet !connection?.key */}
+              {console.log(connection?.key)}
+              <Button
                 colorScheme="gray.700"
                 isDisabled={!connection?.key}
                 isLoading={result.isLoading || result.isFetching}
@@ -378,7 +379,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 variant="outline"
               >
                 Test connection
-              </Button> */}
+              </Button>
               <Button
                 bg="primary.800"
                 color="white"
