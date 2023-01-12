@@ -135,3 +135,9 @@ config = "data/saas/config/slack_enterprise_config.yml"
 dataset = "data/saas/dataset/slack_enterprise_dataset.yml"
 icon = "data/saas/icon/slack.svg"
 human_readable = "Slack Enterprise"
+
+[recharge]
+config = "data/saas/config/recharge_config.yml"
+dataset = "data/saas/dataset/recharge_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Recharge"
