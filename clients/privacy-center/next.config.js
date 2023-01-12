@@ -27,6 +27,17 @@ const configIsValid = () => {
   return { isValid: true };
 };
 
+// Check that our config.json is valid
+const { isValid, message } = configIsValid();
+if (!isValid) {
+  // Throw a red warning
+  console.error(
+    "\x1b[31m%s",
+    `Error with privacy center configuration: ${message}`
+  );
+  throw "Privacy center config invalid. Please fix, then rerun the application.";
+}
+
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -40,15 +51,6 @@ const nextConfig = {
         "@emotion/react"
       ),
     });
-    const { isValid, message } = configIsValid();
-    if (!isValid) {
-      // Throw a red warning
-      console.error(
-        "\x1b[31m%s",
-        `Error with privacy center configuration: ${message}`
-      );
-      throw "Privacy center config invalid. Please fix, then rerun the application.";
-    }
     return config;
   },
 };
