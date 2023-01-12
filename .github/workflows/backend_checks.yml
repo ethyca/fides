@@ -114,7 +114,7 @@ jobs:
       - name: Download container
         uses: actions/download-artifact@v3
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
@@ -181,7 +181,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.test_selection }}
-          path: coverage/${{ matrix.test_selection }}/
+          path: coverage/
 
   ##################
   ## Unsafe Tests ##
@@ -230,7 +230,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ctl-external
-          path: coverage/ctl-external/
+          path: coverage/
 
   External-Datastores:
     needs: Build
@@ -272,7 +272,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ops-external-datastores
-          path: coverage/ops-external-datastores/
+          path: coverage/
 
   External-SaaS-Connectors:
     needs: Build
@@ -323,7 +323,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ops-saas
-          path: coverage/ops-saas/
+          path: coverage/
 
   Coverage-Upload:
     needs: Safe-Tests
@@ -335,9 +335,11 @@ jobs:
 
       - name: Download Coverage Artifacts
         uses: actions/download-artifact@v3
+        with:
+          path: /coverage/
 
       - name: Display Downloaded Artifacts
-        run: ls -R
+        run: ls -R /coverage/
 
       - name: Upload Coverage to Code Climate
         uses: paambaati/codeclimate-action@v3.2.0
@@ -345,4 +347,4 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE_TEST_REPORTER_ID }}
         with:
           coverageLocations: |
-            ${{ github.workspace }}/*.html:coverage.py
+            ${{ github.workspace }}/coverage/**:lcov
