@@ -25,6 +25,7 @@ The types of changes are:
 
 ### Added
 
+* Added the `user` command group to the CLI. [#2153](https://github.com/ethyca/fides/pull/2153)
 * Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
 * Added Fides version number to account dropdown in the UI [#2140](https://github.com/ethyca/fides/pull/2140)
@@ -35,6 +36,7 @@ The types of changes are:
   * `Fides.shopify` integration function. [#2152](https://github.com/ethyca/fides/pull/2152)
   * Dedicated folder for integrations.
 * Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
+* Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
 
 ### Changed
 
