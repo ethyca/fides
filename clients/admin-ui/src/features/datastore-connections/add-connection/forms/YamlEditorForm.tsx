@@ -21,6 +21,7 @@ import dynamic from "next/dynamic";
 import React, { useRef, useState } from "react";
 
 import { useFeatures } from "~/features/common/features.slice";
+import { useGetAllDatasetsQuery } from "~/features/dataset";
 import { Dataset } from "~/types/api";
 
 const Editor = dynamic(
@@ -57,6 +58,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
   const { navV2 } = useFeatures();
   const warningDisclosure = useDisclosure();
+  const { data: allDatasets } = useGetAllDatasetsQuery();
 
   const validate = (value: string) => {
     yaml.load(value, { json: true });
@@ -91,17 +93,19 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
 
   const handleConfirmation = () => {
     // Only need the confirmation if we are overwriting, which only happens when
-    // there is already data
-    if (data.length) {
+    // there are already datasets
+    if (allDatasets && allDatasets.length) {
       const value: string = (monacoRef.current as any).getValue();
-      // Check if the fides key that is in the editor is the same as the one that already exists
+      // Check if the fides key that is in the editor is the same as one that already exists
       // If so, then it is an overwrite and we should open the confirmation modal
-      if (data.some((d) => value.includes(`fides_key: ${d.fides_key}\n`))) {
+      if (
+        allDatasets.some((d) => value.includes(`fides_key: ${d.fides_key}\n`))
+      ) {
         warningDisclosure.onOpen();
+        return;
       }
-    } else {
-      handleSubmit();
     }
+    handleSubmit();
   };
 
   return (
