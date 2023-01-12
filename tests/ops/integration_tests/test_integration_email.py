@@ -1,7 +1,6 @@
 from unittest import mock
 
 import pytest as pytest
-from fideslib.models.audit_log import AuditLog, AuditLogAction
 
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
@@ -23,6 +22,7 @@ from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
 from fides.api.ops.task import graph_task
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 
 @pytest.mark.integration_postgres

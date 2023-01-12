@@ -1,6 +1,7 @@
-import logging
 import secrets
 from typing import Dict, List, Optional, TypeVar
+
+from loguru import logger
 
 from fides.api.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
@@ -10,7 +11,6 @@ from fides.api.ops.schemas.masking.masking_secrets import (
 from fides.api.ops.util.cache import get_cache, get_masking_secret_cache_key
 
 T = TypeVar("T")
-logger = logging.getLogger(__name__)
 
 
 class SecretsUtil:
@@ -26,7 +26,7 @@ class SecretsUtil:
             )
             if not secret:
                 logger.warning(
-                    "Secret type %s expected from cache but was not present for masking strategy %s",
+                    "Secret type {} expected from cache but was not present for masking strategy {}",
                     secret_type,
                     masking_secret_meta.masking_strategy,
                 )

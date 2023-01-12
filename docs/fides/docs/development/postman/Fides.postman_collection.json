@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "1329eef2-2d7e-462d-b8f0-f185557f144c",
+		"_postman_id": "09d75fa5-5a52-4d25-8e6b-7c36a22d6175",
 		"name": "Fidesops",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "13396647"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -73,7 +72,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"consent:read\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"messaging:create_or_update\",\n    \"messaging:read\",\n    \"messaging:delete\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"consent:read\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"messaging:create_or_update\",\n    \"messaging:read\",\n    \"messaging:delete\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"privacy-request-notifications:create_or_update\",\n    \"privacy-request-notifications:read\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -946,6 +945,68 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Privacy Request Notification Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/notification/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"notification",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Insert/Update Privacy Request Notification Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email_addresses\": [\"test@email.com\", \"another@email.com\"],\n    \"notify_after_failures\": 5\n}"
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/notification/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"notification",
+								""
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1333,7 +1394,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n  {\n    \"name\": \"My Access Request Upload Bucket\",\n    \"key\": \"{{S3_BUCKET_KEY}}\",\n    \"type\": \"s3\",\n    \"format\": \"csv\",\n    \"details\": {\n      \"bucket\": \"test_bucket\",\n      \"object_name\": \"test_name\"\n    }\n  }\n]",
+							"raw": "[\n  {\n    \"name\": \"My Access Request Upload Bucket\",\n    \"key\": \"{{S3_BUCKET_KEY}}\",\n    \"type\": \"s3\",\n    \"format\": \"csv\",\n    \"details\": {\n      \"bucket\": \"test_bucket\"\n    }\n  }\n]",
 							"options": {
 								"raw": {
 									"language": "json"

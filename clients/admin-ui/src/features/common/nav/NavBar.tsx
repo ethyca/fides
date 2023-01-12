@@ -1,16 +1,13 @@
 import { Flex } from "@fidesui/react";
 import dynamic from "next/dynamic";
 import React from "react";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { Flags } from "react-feature-flags";
 
 import {
   DATASTORE_CONNECTION_ROUTE,
   INDEX_ROUTE,
   USER_MANAGEMENT_ROUTE,
 } from "~/constants";
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 
 // Cross-zone navigation requires building URLs from the current `window.location`
 // which is not available in Server-Side-Rendered components.
@@ -27,7 +24,7 @@ const NavBar = () => {
       py={1}
       borderColor="gray.100"
     >
-      <nav>
+      <nav data-testid="nav-bar">
         <NavLink title="Privacy Requests" href={INDEX_ROUTE} exact />
         <NavLink title="Connections" href={DATASTORE_CONNECTION_ROUTE} />
         <NavLink title="User Management" href={USER_MANAGEMENT_ROUTE} />
@@ -38,13 +35,7 @@ const NavBar = () => {
         {features.plus ? <NavLink title="Data Map" href="/datamap" /> : null}
 
         <NavLink title="Taxonomy" href="/taxonomy" />
-        {/* This is a temporary link to the config wizard while it's still in progress */}
-        <Flags
-          authorizedFlags={["configWizardFlag"]}
-          renderOn={() => (
-            <NavLink title="Config Wizard" href="/config-wizard" />
-          )}
-        />
+        <NavLink title="Add Systems" href="/add-systems" />
       </nav>
     </Flex>
   );

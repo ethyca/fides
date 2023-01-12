@@ -4,14 +4,17 @@ Provides functions that seed the application with data.
 from typing import List
 
 from fideslang import DEFAULT_TAXONOMY
-from fideslib.exceptions import KeyOrNameAlreadyExists
-from fideslib.models.client import ClientDetail
-from fideslib.utils.text import to_snake_case
 from loguru import logger as log
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
+from fides.api.ops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_CREATE,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_TRANSFER,
+)
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import (
@@ -20,7 +23,12 @@ from fides.api.ops.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
+from fides.lib.exceptions import KeyOrNameAlreadyExists
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.utils.text import to_snake_case
 
 from .crud import create_resource, list_resource
 
@@ -32,6 +40,68 @@ DEFAULT_ACCESS_POLICY_RULE = "default_access_policy_rule"
 DEFAULT_ERASURE_POLICY = "default_erasure_policy"
 DEFAULT_ERASURE_POLICY_RULE = "default_erasure_policy_rule"
 DEFAULT_ERASURE_MASKING_STRATEGY = "hmac"
+
+
+def create_or_update_parent_user() -> None:
+    with sync_session() as db_session:
+        if (
+            not CONFIG.security.parent_server_username
+            and not CONFIG.security.parent_server_password
+        ):
+            return
+
+        if (
+            CONFIG.security.parent_server_username
+            and not CONFIG.security.parent_server_password
+            or CONFIG.security.parent_server_password
+            and not CONFIG.security.parent_server_username
+        ):
+            # Both log and raise are here because the raise message is not showing.
+            # It could potentially be related to https://github.com/ethyca/fides/issues/1228
+            log.error(
+                "Both a parent_server_user and parent_server_password must be set to create a parent server user"
+            )
+            raise ValueError(
+                "Both a parent_server_user and parent_server_password must be set to create a parent server user"
+            )
+
+        user = (
+            FidesUser.get_by(
+                db_session,
+                field="username",
+                value=CONFIG.security.parent_server_username,
+            )
+            if CONFIG.security.parent_server_username
+            else None
+        )
+
+        if user and CONFIG.security.parent_server_password:
+            if not user.credentials_valid(CONFIG.security.parent_server_password):
+                log.info("Updating parent user")
+                user.update_password(db_session, CONFIG.security.parent_server_password)
+                return
+            # clean exit if parent user already exists and credentials match
+            return
+
+        log.info("Creating parent user")
+        user = FidesUser.create(
+            db=db_session,
+            data={
+                "username": CONFIG.security.parent_server_username,
+                "password": CONFIG.security.parent_server_password,
+            },
+        )
+        FidesUserPermissions.create(
+            db=db_session,
+            data={
+                "user_id": user.id,
+                "scopes": [
+                    PRIVACY_REQUEST_CREATE,
+                    PRIVACY_REQUEST_READ,
+                    PRIVACY_REQUEST_TRANSFER,
+                ],
+            },
+        )
 
 
 def filter_data_categories(
@@ -69,7 +139,7 @@ async def load_default_dsr_policies() -> None:
     Checks whether DSR execution policies exist in the database, and
     inserts them to target a default set of data categories if not.
     """
-    with sync_session() as db_session:
+    with sync_session() as db_session:  # type: ignore[attr-defined]
 
         client = ClientDetail.get_by(
             db=db_session,
@@ -211,7 +281,7 @@ async def load_default_dsr_policies() -> None:
         log.info("All Policies & Rules Seeded.")
 
 
-async def load_default_organization() -> None:
+async def load_default_organization(async_session: AsyncSession) -> None:
     """
     Seed the database with a default organization unless
     one with a matching name already exists.
@@ -223,7 +293,7 @@ async def load_default_organization() -> None:
     inserted = 0
     for org in organizations:
         try:
-            await create_resource(sql_model_map["organization"], org)
+            await create_resource(sql_model_map["organization"], org, async_session)
             inserted += 1
         except AlreadyExistsError:
             pass
@@ -232,7 +302,7 @@ async def load_default_organization() -> None:
     log.info(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
 
 
-async def load_default_taxonomy() -> None:
+async def load_default_taxonomy(async_session: AsyncSession) -> None:
     """Seed the database with the default taxonomy resources."""
 
     upsert_resource_types = list(DEFAULT_TAXONOMY.__fields_set__)
@@ -242,7 +312,9 @@ async def load_default_taxonomy() -> None:
     for resource_type in upsert_resource_types:
         log.info(f"Processing {resource_type} resources...")
         default_resources = DEFAULT_TAXONOMY.dict()[resource_type]
-        existing_resources = await list_resource(sql_model_map[resource_type])
+        existing_resources = await list_resource(
+            sql_model_map[resource_type], async_session
+        )
         existing_keys = [item.fides_key for item in existing_resources]
         resources = [
             resource
@@ -256,19 +328,20 @@ async def load_default_taxonomy() -> None:
 
         try:
             for resource in resources:
-                await create_resource(sql_model_map[resource_type], resource)
+                await create_resource(
+                    sql_model_map[resource_type], resource, async_session
+                )
         except QueryError:
             pass  # The create_resource function will log the error
         else:
             log.info(f"INSERTED {len(resources)} {resource_type} resource(s)")
 
 
-async def load_default_resources() -> None:
+async def load_default_resources(async_session: AsyncSession) -> None:
     """
     Seed the database with default resources that the application
     expects to be available.
     """
-
-    await load_default_organization()
-    await load_default_taxonomy()
+    await load_default_organization(async_session)
+    await load_default_taxonomy(async_session)
     await load_default_dsr_policies()

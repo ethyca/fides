@@ -4,12 +4,12 @@ from typing import Any
 
 import pytest
 from fideslang.validation import FidesValidationError
-from fideslib.db.base_class import get_key_from_data
-from fideslib.exceptions import KeyValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import StorageType
+from fides.lib.db.base_class import get_key_from_data
+from fides.lib.exceptions import KeyValidationError
 
 
 def test_get_key_from_data_method_invalid_key() -> None:
@@ -44,7 +44,6 @@ def test_create_key(db: Session):
             "type": StorageType.s3.value,
             "details": {
                 "bucket": "some-bucket",
-                "object_name": "requests",
                 "naming": "some-filename-convention-enum",
                 "max_retries": 10,
             },

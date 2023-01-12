@@ -3,6 +3,7 @@ import {
   Button,
   ButtonGroup,
   Divider,
+  ErrorWarningIcon,
   Flex,
   Heading,
   HStack,
@@ -12,7 +13,6 @@ import {
   VStack,
 } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
-import { ErrorWarningIcon } from "common/Icon";
 import { Dataset } from "datastore-connections/types";
 import yaml, { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
@@ -20,6 +20,8 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
+
+import { useFeatures } from "~/features/common/features";
 
 const Editor = dynamic(
   // @ts-ignore
@@ -50,6 +52,9 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   );
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
+  const {
+    flags: { navV2 },
+  } = useFeatures();
 
   const validate = (value: string) => {
     yaml.load(value, { json: true });
@@ -93,7 +98,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
         <Editor
           defaultLanguage="yaml"
           defaultValue={yamlData}
-          height="calc(100vh - 394px)"
+          height={navV2 ? "calc(100vh - 526px" : "calc(100vh - 394px)"}
           onChange={handleChange}
           onMount={handleMount}
           options={{

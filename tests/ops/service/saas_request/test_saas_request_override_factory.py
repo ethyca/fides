@@ -10,6 +10,9 @@ from fides.api.ops.common_exceptions import (
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+)
 from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
@@ -23,6 +26,7 @@ def uuid():
 
 
 def valid_read_override(
+    client: AuthenticatedClient,
     node: TraversalNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
@@ -36,6 +40,7 @@ def valid_read_override(
 
 
 def valid_read_override_copy(
+    client: AuthenticatedClient,
     node: TraversalNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
@@ -49,6 +54,7 @@ def valid_read_override_copy(
 
 
 def valid_update_override(
+    client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
@@ -236,7 +242,7 @@ class TestSaasRequestOverrideFactory:
 
         for override_function in params_functions:
             assert_validation_error(
-                override_function, "must declare at least 5 parameters"
+                override_function, "must declare at least 6 parameters"
             )
 
     def test_register_invalid_update(self):
@@ -300,7 +306,7 @@ class TestSaasRequestOverrideFactory:
 
         for override_function in params_functions:
             assert_validation_error(
-                override_function, "must declare at least 4 parameters"
+                override_function, "must declare at least 5 parameters"
             )
 
     def test_register_invalid_request_type(self):

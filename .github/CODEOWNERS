@@ -1,5 +1,2 @@
-# Set the product/tech writing team as owners for the docs
-/docs/ @ethyca/docs-authors
-
 # Set the security team as owners of the security policy.
 /SECURITY.md @ethyca/fides-security-team

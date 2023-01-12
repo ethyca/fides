@@ -1,10 +1,9 @@
-import logging
 import os
 from typing import Generator
 
 import pytest
-from fideslib.core.config import load_toml
 from sqlalchemy import inspect
+from toml import load as load_toml
 
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.schemas.connection_configuration import (
@@ -17,9 +16,7 @@ from fides.api.ops.service.connectors import (
     get_connector,
 )
 
-logger = logging.getLogger(__name__)
-
-integration_config = load_toml(["tests/ops/integration_test_config.toml"])
+integration_config = load_toml("tests/ops/integration_test_config.toml")
 
 
 @pytest.fixture(scope="session")

@@ -12,7 +12,7 @@ def test_health(api_client: TestClient) -> None:
         "webserver": "healthy",
         "database": "healthy",
         "version": str(fides.__version__),
-        "workers_enabled": "False",
+        "workers_enabled": False,
         "workers": [],
     }
     assert json == expected_response

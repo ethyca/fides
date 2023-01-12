@@ -3,7 +3,6 @@ from unittest import mock
 from unittest.mock import Mock
 
 import yaml
-from fideslib.core.config import load_file
 
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
@@ -13,6 +12,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     update_saas_configs,
 )
 from fides.api.ops.util.saas_util import load_config, load_dataset, load_yaml_as_string
+from fides.core.config.helpers import load_file
 
 NEW_CONFIG_DESCRIPTION = "new test config description"
 NEW_DATASET_DESCRIPTION = "new test dataset description"

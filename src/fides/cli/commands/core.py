@@ -10,12 +10,12 @@ from fides.cli.options import (
     verbose_flag,
 )
 from fides.cli.utils import pretty_echo, print_divider, with_analytics
-from fides.ctl.core import audit as _audit
-from fides.ctl.core import evaluate as _evaluate
-from fides.ctl.core import parse as _parse
-from fides.ctl.core import pull as _pull
-from fides.ctl.core import push as _push
-from fides.ctl.core.utils import echo_red, git_is_dirty
+from fides.core import audit as _audit
+from fides.core import evaluate as _evaluate
+from fides.core import parse as _parse
+from fides.core import pull as _pull
+from fides.core import push as _push
+from fides.core.utils import echo_red, git_is_dirty
 
 
 @click.command()
@@ -157,6 +157,7 @@ def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -
     The pull is aborted if there are unstaged or untracked files in the manifests dir.
     """
 
+    # Make the resources that are pulled configurable
     config = ctx.obj["CONFIG"]
     # Do this to validate the manifests since they won't get parsed during the pull process
     _parse.parse(manifests_dir)
@@ -169,5 +170,5 @@ def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -
         url=config.cli.server_url,
         manifests_dir=manifests_dir,
         headers=config.user.request_headers,
-        all_resources=all_resources,
+        all_resources_file=all_resources,
     )

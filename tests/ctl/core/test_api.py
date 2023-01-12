@@ -11,8 +11,8 @@ from starlette.testclient import TestClient
 
 from fides.api.ctl.routes import health
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.ctl.core import api as _api
-from fides.ctl.core.config import FidesConfig
+from fides.core import api as _api
+from fides.core.config import FidesConfig
 
 TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
 

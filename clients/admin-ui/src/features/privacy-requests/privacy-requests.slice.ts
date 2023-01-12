@@ -2,7 +2,10 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 
-import { BulkPostPrivacyRequests } from "~/types/api";
+import {
+  BulkPostPrivacyRequests,
+  PrivacyRequestNotificationInfo,
+} from "~/types/api";
 
 import type { RootState } from "../../app/store";
 import { BASE_URL } from "../../constants";
@@ -11,7 +14,7 @@ import {
   DenyPrivacyRequest,
   GetUpdloadedManualWebhookDataRequest,
   PatchUploadManualWebhookDataRequest,
-  PrivacyRequest,
+  PrivacyRequestEntity,
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
@@ -249,11 +252,11 @@ export const privacyRequestApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Request"],
+  tagTypes: ["Request", "Notification"],
   endpoints: (build) => ({
     approveRequest: build.mutation<
-      PrivacyRequest,
-      Partial<PrivacyRequest> & Pick<PrivacyRequest, "id">
+      PrivacyRequestEntity,
+      Partial<PrivacyRequestEntity> & Pick<PrivacyRequestEntity, "id">
     >({
       query: ({ id }) => ({
         url: "privacy-request/administrate/approve",
@@ -272,7 +275,7 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
-    denyRequest: build.mutation<PrivacyRequest, DenyPrivacyRequest>({
+    denyRequest: build.mutation<PrivacyRequestEntity, DenyPrivacyRequest>({
       query: ({ id, reason }) => ({
         url: "privacy-request/administrate/deny",
         method: "PATCH",
@@ -302,6 +305,21 @@ export const privacyRequestApi = createApi({
         });
       },
     }),
+    getNotification: build.query<PrivacyRequestNotificationInfo, void>({
+      query: () => ({
+        url: `privacy-request/notification`,
+      }),
+      providesTags: ["Notification"],
+      transformResponse: (response: PrivacyRequestNotificationInfo) => {
+        const cloneResponse = { ...response };
+        if (cloneResponse.email_addresses?.length > 0) {
+          cloneResponse.email_addresses = cloneResponse.email_addresses.filter(
+            (item) => item !== ""
+          );
+        }
+        return cloneResponse;
+      },
+    }),
     getUploadedManualWebhookData: build.query<
       any,
       GetUpdloadedManualWebhookDataRequest
@@ -317,12 +335,23 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
-    retry: build.mutation<PrivacyRequest, Pick<PrivacyRequest, "id">>({
+    retry: build.mutation<
+      PrivacyRequestEntity,
+      Pick<PrivacyRequestEntity, "id">
+    >({
       query: ({ id }) => ({
         url: `privacy-request/${id}/retry`,
         method: "POST",
       }),
       invalidatesTags: ["Request"],
+    }),
+    saveNotification: build.mutation<any, PrivacyRequestNotificationInfo>({
+      query: (params) => ({
+        url: `privacy-request/notification`,
+        method: "PUT",
+        body: params,
+      }),
+      invalidatesTags: ["Notification"],
     }),
     uploadManualWebhookData: build.mutation<
       any,
@@ -342,8 +371,10 @@ export const {
   useBulkRetryMutation,
   useDenyRequestMutation,
   useGetAllPrivacyRequestsQuery,
+  useGetNotificationQuery,
   useGetUploadedManualWebhookDataQuery,
   useResumePrivacyRequestFromRequiresInputMutation,
   useRetryMutation,
+  useSaveNotificationMutation,
   useUploadManualWebhookDataMutation,
 } = privacyRequestApi;

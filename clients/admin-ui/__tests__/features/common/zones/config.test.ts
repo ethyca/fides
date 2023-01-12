@@ -1,10 +1,12 @@
+import { describe, expect, it } from "@jest/globals";
+
 import { configureZones, resolveZone } from "~/features/common/zones";
 
 describe("resolveZone", () => {
   // Allow mocking and resetting the node env in this test suite.
-  const env = process.env as { NODE_ENV: string };
+  const { env } = process;
   afterEach(() => {
-    env.NODE_ENV = "test";
+    env.NEXT_PUBLIC_APP_ENV = "test";
   });
 
   const config = configureZones({
@@ -29,7 +31,7 @@ describe("resolveZone", () => {
     const basePath = "/";
 
     it("Does not modify a link within the root zone", () => {
-      env.NODE_ENV = "development";
+      env.NEXT_PUBLIC_APP_ENV = "development";
 
       const link = resolveZone({ config, basePath, href: "/root/route" });
       expect(link).toMatchObject({
@@ -39,7 +41,7 @@ describe("resolveZone", () => {
     });
 
     it("Links to the dev host of another zone", () => {
-      env.NODE_ENV = "development";
+      env.NEXT_PUBLIC_APP_ENV = "development";
 
       const link = resolveZone({ config, basePath, href: "/datamap" });
       expect(link).toMatchObject({
@@ -49,7 +51,7 @@ describe("resolveZone", () => {
     });
 
     it("Does not link to the dev host in production", () => {
-      env.NODE_ENV = "production";
+      env.NEXT_PUBLIC_APP_ENV = "production";
 
       const link = resolveZone({ config, basePath, href: "/datamap" });
       expect(link).toMatchObject({
@@ -59,7 +61,7 @@ describe("resolveZone", () => {
     });
 
     it("Does not link to the dev host if none is configured", () => {
-      env.NODE_ENV = "development";
+      env.NEXT_PUBLIC_APP_ENV = "development";
 
       const link = resolveZone({ config, basePath, href: "/no/dev" });
       expect(link).toMatchObject({
@@ -81,7 +83,7 @@ describe("resolveZone", () => {
     });
 
     it("Links to the dev host of the root zone", () => {
-      env.NODE_ENV = "development";
+      env.NEXT_PUBLIC_APP_ENV = "development";
 
       const link = resolveZone({ config, basePath, href: "/root/route" });
       expect(link).toMatchObject({
@@ -91,7 +93,7 @@ describe("resolveZone", () => {
     });
 
     it("Does not link to the dev host in production", () => {
-      env.NODE_ENV = "production";
+      env.NEXT_PUBLIC_APP_ENV = "production";
 
       const link = resolveZone({ config, basePath, href: "/root/route" });
       expect(link).toMatchObject({

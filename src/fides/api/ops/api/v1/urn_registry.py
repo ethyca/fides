@@ -49,6 +49,7 @@ POLICY_DETAIL = "/dsr/policy/{policy_key}"
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
+PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
@@ -56,6 +57,7 @@ PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_input"
 PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
+PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
 PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT = (
@@ -63,6 +65,9 @@ PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT = (
 )
 PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT = (
     "/privacy-request/{privacy_request_id}/resume_from_requires_input"
+)
+PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
+    "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
 )
 
 

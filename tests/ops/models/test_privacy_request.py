@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from time import sleep
 from typing import List
 from uuid import uuid4
 
@@ -20,6 +21,8 @@ from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequest,
+    PrivacyRequestError,
+    PrivacyRequestNotifications,
     PrivacyRequestStatus,
     ProvidedIdentity,
     can_run_checkpoint,
@@ -28,8 +31,11 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.manual_connector import ManualAction
 from fides.api.ops.util.cache import FidesopsRedis, get_identity_cache_key
 from fides.api.ops.util.constants import API_DATE_FORMAT
+from fides.core.config import get_config
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
+
+CONFIG = get_config()
 
 
 def test_privacy_request(
@@ -524,12 +530,33 @@ class TestPrivacyRequestCacheFailedStep:
 
 
 class TestCacheIdentityVerificationCode:
+    @pytest.fixture(scope="function")
+    def set_verification_code_ttl_to_1(self):
+        """sets the `redis.identity_verification_code_ttl_seconds` property to `1`"""
+        original_value = CONFIG.redis.identity_verification_code_ttl_seconds
+        CONFIG.redis.identity_verification_code_ttl_seconds = 1
+        yield
+        CONFIG.redis.identity_verification_code_ttl_seconds = original_value
+
     def test_cache_code(self, privacy_request):
         assert not privacy_request.get_cached_verification_code()
 
         privacy_request.cache_identity_verification_code("123456")
 
         assert privacy_request.get_cached_verification_code() == "123456"
+
+    @pytest.mark.usefixtures(
+        "set_verification_code_ttl_to_1",
+    )
+    def test_verification_code_expires(self, privacy_request):
+        """
+        Ensure the verification code expires correctly based on appropriate app config
+        """
+
+        privacy_request.cache_identity_verification_code("123456")
+        assert privacy_request.get_cached_verification_code() == "123456"
+        sleep(1.1)  # sleep a bit more than 1 just to give some breathing room
+        assert privacy_request.get_cached_verification_code() is None
 
 
 class TestCacheEmailConnectorTemplateContents:
@@ -800,3 +827,35 @@ def test_consent_request(db):
 
     assert Consent.get(db, object_id=consent_1.id) is None
     assert Consent.get(db, object_id=consent_2.id) is None
+
+
+def test_privacy_request_error_notification(db, policy):
+    PrivacyRequestNotifications.create(
+        db=db,
+        data={
+            "email": "some@email.com, another@email.com",
+            "notify_after_failures": 2,
+        },
+    )
+
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 1, 1),
+            "finished_processing_at": datetime(2021, 1, 1),
+            "requested_at": datetime(2021, 1, 1),
+            "status": PrivacyRequestStatus.error,
+            "origin": "https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+
+    privacy_request.error_processing(db)
+
+    unsent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
+    ).all()
+
+    assert len(unsent_errors) == 1

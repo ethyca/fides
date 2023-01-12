@@ -1,4 +1,5 @@
 import {
+  ArrowDownLineIcon,
   Box,
   Button,
   Flex,
@@ -11,7 +12,6 @@ import {
 } from "@fidesui/react";
 import { useState } from "react";
 
-import { ArrowDownLineIcon } from "../Icon";
 import { ItemOption } from "./types";
 
 type SelectDropdownProps = {

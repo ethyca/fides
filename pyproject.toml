@@ -41,7 +41,6 @@ module = [
   "dask.*",
   "deepdiff.*",
   "fideslang.*",
-  "fideslib.*",
   "fideslog.*",
   "firebase_admin.*",
   "google.api_core.*",
@@ -53,6 +52,7 @@ module = [
   "plotly.*",
   "pydash.*",
   "pymongo.*",
+  "sendgrid.*",
   "snowflake.*",
   "sqlalchemy.ext.*",
   "sqlalchemy.future.*",
@@ -150,16 +150,14 @@ extension-pkg-whitelist = ["pydantic", "zlib"]
 ############
 [tool.pytest.ini_options]
 env = [
-  "TESTING=True"
+  "FIDES__TEST_MODE=true"
 ]
 log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
 log_level = "INFO"
-addopts = ["--cov=fides.ctl.core",
-            "--cov=fides.cli",
-            "--cov=fides.api",
-            "--cov-report=term-missing",
+addopts = ["--cov=fides",
+            "-ra",
             "-vv",
             "--no-cov-on-fail",
             "--disable-pytest-warnings"]
@@ -190,12 +188,15 @@ markers = [
     "integration_datadog",
     "integration_domo",
     "integration_doordash",
+    "integration_fullstory",
     "integration_segment",
     "integration_sendgrid",
+    "integration_friendbuy",
     "integration_auth0",
     "integration_shopify",
     "integration_square",
     "integration_outreach",
+    "integration_recharge",
     "integration_salesforce",
     "integration_twilio_conversations",
     "integration_adobe_campaign",
@@ -203,3 +204,6 @@ markers = [
     "unit_saas"
 ]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+omit = ["src/fides/api/ctl/migrations/*"]

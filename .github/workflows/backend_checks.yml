@@ -13,7 +13,29 @@ env:
   DEFAULT_PYTHON_VERSION: "3.10.7"
 
 jobs:
+  ###############
+  ## Prechecks ##
+  ###############
+  Collect-Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run Static Check
+        run: nox -s collect_tests
+
   Build:
+    needs: Collect-Tests
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
@@ -76,7 +98,6 @@ jobs:
   #################
   Safe-Tests:
     needs: Build
-
     strategy:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
@@ -84,6 +105,7 @@ jobs:
           - "pytest_ctl(not-external)"
           - "pytest_ops(unit)"
           - "pytest_ops(integration)"
+          - "pytest_lib"
           - "check_fides_annotations"
           - "fides_db_scan"
           - "docs_check"

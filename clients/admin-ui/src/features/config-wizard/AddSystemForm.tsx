@@ -8,45 +8,104 @@ import {
   Heading,
   HStack,
   IconButton,
+  QuestionIcon,
   Stack,
   Text,
   Tooltip,
 } from "@fidesui/react";
 
-import { useAppDispatch } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features.slice";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import ConnectedCircle from "~/features/common/ConnectedCircle";
+import { useFeatures } from "~/features/common/features";
 import {
   AWSLogoIcon,
+  DataFlowScannerLogo,
   ManualSetupIcon,
   OktaLogoIcon,
-  QuestionIcon,
-  RuntimeScannerLogo,
 } from "~/features/common/Icon";
-import { ValidTargets } from "~/types/api";
+import { selectDataFlowScannerStatus } from "~/features/plus/plus.slice";
+import { ADD_SYSTEM_DESCRIPTION } from "~/features/system/constants";
+import { ClusterHealth, ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
 import { iconButtonSize } from "./constants";
 import { SystemMethods } from "./types";
 
+const DataFlowScannerOption = ({ onClick }: { onClick: () => void }) => {
+  const { plus, dataFlowScanning } = useFeatures();
+  const scannerStatus = useAppSelector(selectDataFlowScannerStatus);
+
+  const clusterHealth = scannerStatus?.cluster_health ?? "unknown";
+  const isClusterHealthy = clusterHealth === ClusterHealth.HEALTHY;
+
+  // If Plus is not enabled, do not show this feature at all
+  if (!plus) {
+    return null;
+  }
+
+  let tooltip =
+    "The scanner will connect to your infrastructure to automatically scan and create a list of all systems available.";
+  if (!dataFlowScanning) {
+    tooltip =
+      "The data flow scanner is not enabled, please check your configuration.";
+  } else if (!isClusterHealthy) {
+    tooltip = `Your cluster appears not to be healthy. Its status is ${clusterHealth}.`;
+  }
+
+  const disabled = !dataFlowScanning || !isClusterHealthy;
+
+  return (
+    <Stack direction="row" display="flex" alignItems="center">
+      <HStack position="relative">
+        <IconButton
+          aria-label="Data flow scan"
+          boxSize={iconButtonSize}
+          minW={iconButtonSize}
+          boxShadow="base"
+          variant="ghost"
+          icon={<DataFlowScannerLogo boxSize="10" />}
+          onClick={onClick}
+          data-testid="data-flow-scan-btn"
+          disabled={disabled}
+        />
+        {dataFlowScanning ? (
+          <ConnectedCircle
+            connected={isClusterHealthy}
+            title={
+              isClusterHealthy
+                ? "Cluster is connected and healthy"
+                : `Cluster is ${clusterHealth}`
+            }
+            position="absolute"
+            left={iconButtonSize - 12}
+            top={-1}
+            data-testid="cluster-health-indicator"
+          />
+        ) : null}
+      </HStack>
+      <Text>Data Flow Scan</Text>
+      <Tooltip fontSize="md" label={tooltip} placement="right">
+        <QuestionIcon boxSize={5} color="gray.400" />
+      </Tooltip>
+    </Stack>
+  );
+};
+
 const AddSystemForm = () => {
   const dispatch = useAppDispatch();
-  const { plus } = useFeatures();
 
   return (
     <chakra.form w="100%" data-testid="add-system-form">
       <Stack spacing={10}>
         <Heading as="h3" size="lg">
-          Scan for Systems
+          Add Systems
         </Heading>
         <Accordion allowToggle border="transparent">
           <AccordionItem>
             {({ isExpanded }) => (
               <>
                 <h2>
-                  The building blocks of your data map are the list of systems
-                  that exist in your organization. Think of systems as anything
-                  that might store or process data in your organization, from a
-                  web application, to a database or data warehouse.
+                  {ADD_SYSTEM_DESCRIPTION}
                   <AccordionButton
                     display="inline"
                     padding="0px"
@@ -107,33 +166,12 @@ const AddSystemForm = () => {
               />
               <Text>System Scan (Okta)</Text>
             </Stack>
-            {plus ? (
-              <Stack direction="row" display="flex" alignItems="center">
-                <HStack>
-                  <IconButton
-                    aria-label="Data flow scan"
-                    boxSize={iconButtonSize}
-                    minW={iconButtonSize}
-                    boxShadow="base"
-                    variant="ghost"
-                    icon={<RuntimeScannerLogo boxSize="10" />}
-                    onClick={() => {
-                      dispatch(changeStep());
-                      dispatch(setAddSystemsMethod(SystemMethods.RUNTIME));
-                    }}
-                    data-testid="runtime-scan-btn"
-                  />
-                </HStack>
-                <Text>Data Flow Scan</Text>
-                <Tooltip
-                  fontSize="md"
-                  label="The scanner will connect to your infrastructure to automatically scan and create a list of all systems available."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
-              </Stack>
-            ) : null}
+            <DataFlowScannerOption
+              onClick={() => {
+                dispatch(changeStep());
+                dispatch(setAddSystemsMethod(SystemMethods.DATA_FLOW));
+              }}
+            />
             <Stack direction="row" display="flex" alignItems="center">
               <HStack>
                 <IconButton
@@ -147,6 +185,7 @@ const AddSystemForm = () => {
                     dispatch(changeStep(5));
                     dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
                   }}
+                  data-testid="manual-btn"
                 />
               </HStack>
               <Text>Add a system manually</Text>

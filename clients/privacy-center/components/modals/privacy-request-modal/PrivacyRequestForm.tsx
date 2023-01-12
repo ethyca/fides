@@ -3,6 +3,7 @@ import {
   chakra,
   FormControl,
   FormErrorMessage,
+  FormLabel,
   Input,
   ModalBody,
   ModalFooter,
@@ -20,14 +21,16 @@ import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
 
-import config from "~/config/config.json";
-import { hostUrl } from "~/constants";
+import { PrivacyRequestOption } from "~/types/config";
+import { hostUrl, config } from "~/constants";
 
 import dynamic from "next/dynamic";
 import * as Yup from "yup";
 import { ModalViews } from "../types";
 
-const PhoneInput = dynamic(() => import("react-phone-number-input/input"), {
+import "react-phone-number-input/style.css";
+
+const PhoneInput = dynamic(() => import("react-phone-number-input"), {
   ssr: false,
 });
 
@@ -39,7 +42,7 @@ const usePrivacyRequestForm = ({
   isVerificationRequired,
 }: {
   onClose: () => void;
-  action: typeof config.actions[0] | null;
+  action: PrivacyRequestOption | null;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -139,14 +142,14 @@ const usePrivacyRequestForm = ({
     validationSchema: Yup.object().shape({
       name: (() => {
         let validation = Yup.string();
-        if (action?.identity_inputs.name === "required") {
+        if (action?.identity_inputs?.name === "required") {
           validation = validation.required("Name is required");
         }
         return validation;
       })(),
       email: (() => {
         let validation = Yup.string();
-        if (action?.identity_inputs.email === "required") {
+        if (action?.identity_inputs?.email === "required") {
           validation = validation
             .email("Email is invalid")
             .required("Email is required");
@@ -155,7 +158,7 @@ const usePrivacyRequestForm = ({
       })(),
       phone: (() => {
         let validation = Yup.string();
-        if (action?.identity_inputs.phone === "required") {
+        if (action?.identity_inputs?.phone === "required") {
           validation = validation
             .required("Phone is required")
             // E.164 international standard format
@@ -220,7 +223,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
       <ModalHeader pt={6} pb={0}>
         {action.title}
       </ModalHeader>
-      <chakra.form onSubmit={handleSubmit}>
+      <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={4}>
             {action.description}
@@ -231,15 +234,16 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 id="name"
                 isInvalid={touched.name && Boolean(errors.name)}
               >
+                <FormLabel>
+                  {action.identity_inputs.name === "required"
+                    ? "Name*"
+                    : "Name"}
+                </FormLabel>
                 <Input
                   id="name"
                   name="name"
                   focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.name === "required"
-                      ? "Name*"
-                      : "Name"
-                  }
+                  placeholder="Michael Brown"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.name}
@@ -252,16 +256,17 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
               >
+                <FormLabel>
+                  {action.identity_inputs.email === "required"
+                    ? "Email*"
+                    : "Email"}
+                </FormLabel>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.email === "required"
-                      ? "Email*"
-                      : "Email"
-                  }
+                  placeholder="test-email@example.com"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.email}
@@ -274,17 +279,19 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
               >
+                <FormLabel>
+                  {action.identity_inputs.phone === "required"
+                    ? "Phone*"
+                    : "Phone"}
+                </FormLabel>
                 <Input
                   as={PhoneInput}
                   id="phone"
                   name="phone"
                   type="tel"
                   focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.phone === "required"
-                      ? "Phone*"
-                      : "Phone"
-                  }
+                  placeholder="000 000 0000"
+                  defaultCountry="US"
                   onChange={(value) => {
                     setFieldValue("phone", value, true);
                   }}

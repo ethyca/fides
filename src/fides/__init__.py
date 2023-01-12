@@ -1,6 +1,5 @@
-"""Fides CLI"""
-
-from fides.ctl.core.config import get_config
+"""The root module for the Fides package."""
+from fides.core.config import get_config
 
 from ._version import get_versions
 

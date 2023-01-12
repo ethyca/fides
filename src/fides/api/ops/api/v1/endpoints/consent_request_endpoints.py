@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import logging
 from typing import Optional
 
 from fastapi import Depends, HTTPException, Security
+from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -11,6 +11,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
@@ -28,12 +29,14 @@ from fides.api.ops.common_exceptions import (
     IdentityVerificationException,
     MessageDispatchException,
 )
+from fides.api.ops.models.messaging import get_messaging_method
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.ops.schemas.messaging.messaging import MessagingMethod
 from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
@@ -46,12 +49,11 @@ from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -70,26 +72,16 @@ def create_consent_request(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if not data.email:
-        raise HTTPException(HTTP_400_BAD_REQUEST, detail="An email address is required")
+    if not data.email and not data.phone_number:
+        raise HTTPException(
+            HTTP_400_BAD_REQUEST,
+            detail="An email address or phone number identity is required",
+        )
 
-    identity = ProvidedIdentity.filter(
+    identity = _get_or_create_provided_identity(
         db=db,
-        conditions=(
-            (ProvidedIdentity.field_name == ProvidedIdentityType.email)
-            & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(data.email))
-            & (ProvidedIdentity.privacy_request_id.is_(None))
-        ),
-    ).first()
-
-    if not identity:
-        provided_identity_data = {
-            "privacy_request_id": None,
-            "field_name": "email",
-            "hashed_value": ProvidedIdentity.hash_value(data.email),
-            "encrypted_value": {"value": data.email},
-        }
-        identity = ProvidedIdentity.create(db, data=provided_identity_data)
+        identity_data=data,
+    )
 
     consent_request_data = {
         "provided_identity_id": identity.id,
@@ -100,7 +92,7 @@ def create_consent_request(
         try:
             send_verification_code_to_user(db, consent_request, data)
         except MessageDispatchException as exc:
-            logger.error("Error sending the verification code message: %s", str(exc))
+            logger.error("Error sending the verification code message: {}", str(exc))
             raise HTTPException(
                 status_code=HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error sending the verification code message: {str(exc)}",
@@ -129,7 +121,7 @@ def consent_request_verify(
 
     if not provided_identity.hashed_value:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
     return _prepare_consent_preferences(db, provided_identity)
@@ -185,7 +177,7 @@ def get_consent_preferences_no_id(
 
     if not provided_identity.hashed_value:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
     return _prepare_consent_preferences(db, provided_identity)
@@ -244,7 +236,7 @@ def set_consent_preferences(
 
     if not provided_identity.hashed_value:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
     for preference in data.consent:
@@ -269,6 +261,96 @@ def set_consent_preferences(
     return _prepare_consent_preferences(db, provided_identity)
 
 
+def _get_or_create_provided_identity(
+    db: Session,
+    identity_data: Identity,
+) -> ProvidedIdentity:
+    """Based on target identity type, retrieves or creates associated ProvidedIdentity"""
+    target_identity_type: str = infer_target_identity_type(identity_data)
+
+    if target_identity_type == ProvidedIdentityType.email.value and identity_data.email:
+        identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                (ProvidedIdentity.field_name == ProvidedIdentityType.email)
+                & (
+                    ProvidedIdentity.hashed_value
+                    == ProvidedIdentity.hash_value(identity_data.email)
+                )
+                & (ProvidedIdentity.privacy_request_id.is_(None))
+            ),
+        ).first()
+        if not identity:
+            identity = ProvidedIdentity.create(
+                db,
+                data={
+                    "privacy_request_id": None,
+                    "field_name": ProvidedIdentityType.email.value,
+                    "hashed_value": ProvidedIdentity.hash_value(identity_data.email),
+                    "encrypted_value": {"value": identity_data.email},
+                },
+            )
+    elif (
+        target_identity_type == ProvidedIdentityType.phone_number.value
+        and identity_data.phone_number
+    ):
+        identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number)
+                & (
+                    ProvidedIdentity.hashed_value
+                    == ProvidedIdentity.hash_value(identity_data.phone_number)
+                )
+                & (ProvidedIdentity.privacy_request_id.is_(None))
+            ),
+        ).first()
+        if not identity:
+            identity = ProvidedIdentity.create(
+                db,
+                data={
+                    "privacy_request_id": None,
+                    "field_name": ProvidedIdentityType.phone_number.value,
+                    "hashed_value": ProvidedIdentity.hash_value(
+                        identity_data.phone_number
+                    ),
+                    "encrypted_value": {"value": identity_data.phone_number},
+                },
+            )
+    else:
+        raise HTTPException(
+            HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Identity type not found in identity data",
+        )
+    return identity
+
+
+def infer_target_identity_type(
+    identity_data: Identity,
+) -> str:
+    """
+    Consent requests, unlike privacy requests, only accept 1 identity type- email or phone.
+    These identity types are configurable as optional/required within the privacy center config.json.
+    If both identity types are provided, we'll use identity type if defined in
+    CONFIG.notifications.notification_service_type, else default to email.
+    """
+    if identity_data.email and identity_data.phone_number:
+        messaging_method = get_messaging_method(
+            CONFIG.notifications.notification_service_type
+        )
+        if messaging_method == MessagingMethod.EMAIL:
+            target_identity_type = ProvidedIdentityType.email.value
+        elif messaging_method == MessagingMethod.SMS:
+            target_identity_type = ProvidedIdentityType.phone_number.value
+        else:
+            target_identity_type = ProvidedIdentityType.email.value
+    elif identity_data.email:
+        target_identity_type = ProvidedIdentityType.email.value
+    elif identity_data.phone_number:
+        target_identity_type = ProvidedIdentityType.phone_number.value
+    return target_identity_type
+
+
 def _get_consent_request_and_provided_identity(
     db: Session,
     consent_request_id: str,
@@ -291,7 +373,7 @@ def _get_consent_request_and_provided_identity(
             raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
         except PermissionError as exc:
             logger.info(
-                "Invalid verification code provided for %s.", consent_request.id
+                "Invalid verification code provided for {}.", consent_request.id
             )
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 

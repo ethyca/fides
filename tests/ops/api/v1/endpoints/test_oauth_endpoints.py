@@ -4,14 +4,6 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
-from fideslib.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fideslib.models.client import ClientDetail
-from fideslib.oauth.jwt import generate_jwe
-from fideslib.oauth.oauth_util import extract_payload
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
@@ -34,8 +26,16 @@ from fides.api.ops.api.v1.urn_registry import (
 )
 from fides.api.ops.common_exceptions import OAuth2TokenException
 from fides.api.ops.models.authentication_request import AuthenticationRequest
-from fides.ctl.core.api import get
-from fides.ctl.core.config import get_config
+from fides.core.api import get
+from fides.core.config import get_config
+from fides.lib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.oauth_util import extract_payload
 
 CONFIG = get_config()
 

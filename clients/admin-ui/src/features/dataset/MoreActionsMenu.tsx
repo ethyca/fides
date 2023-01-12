@@ -6,11 +6,10 @@ import {
   MenuGroup,
   MenuItem,
   MenuList,
+  MoreIcon,
 } from "@fidesui/react";
 import NextLink from "next/link";
 import { ReactNode } from "react";
-
-import More from "~/features/common/Icon/More";
 
 const ActionItem = ({
   children,
@@ -40,7 +39,7 @@ interface Props {
 const MoreActionsMenu = ({ onModifyCollection, onModifyDataset }: Props) => (
   <Menu size="sm">
     <MenuButton as={Button} variant="outline" data-testid="more-actions-btn">
-      <More />
+      <MoreIcon />
     </MenuButton>
     <MenuList>
       <MenuGroup

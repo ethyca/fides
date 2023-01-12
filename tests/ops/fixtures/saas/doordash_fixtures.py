@@ -2,8 +2,6 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-from fideslib.cryptography import cryptographic_util
-from fideslib.db import session
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import drop_database
 
@@ -17,6 +15,8 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from fides.lib.cryptography import cryptographic_util
+from fides.lib.db import session
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 from tests.ops.test_helpers.vault_client import get_secrets
 

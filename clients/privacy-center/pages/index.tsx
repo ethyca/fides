@@ -12,11 +12,9 @@ import {
   useConsentRequestModal,
   ConsentRequestModal,
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
-import { hostUrl } from "~/constants";
+import { hostUrl, config } from "~/constants";
 import PrivacyCard from "../components/PrivacyCard";
 import ConsentCard from "../components/ConsentCard";
-
-import config from "../config/config.json";
 
 const Home: NextPage = () => {
   const [isVerificationRequired, setIsVerificationRequired] =
@@ -119,7 +117,7 @@ const Home: NextPage = () => {
       </header>
 
       <main data-testid="home">
-        <Stack align="center" py={["6", "16"]} px={5} spacing={8}>
+        <Stack align="center" py={["6", "16"]} px={5} spacing={14}>
           <Stack align="center" spacing={3}>
             <Heading
               fontSize={["3xl", "4xl"]}

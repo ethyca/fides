@@ -1,7 +1,6 @@
 """Contains reusable utils for the CLI commands."""
 
 import json
-import os
 import pprint
 import sys
 from datetime import datetime, timezone
@@ -13,7 +12,6 @@ from typing import Any, Callable, Dict, Optional, Union
 
 import click
 import requests
-import toml
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
@@ -28,25 +26,28 @@ from fideslog.sdk.python.utils import (
 )
 from requests import get, put
 
-from fides import __name__ as app_name
+import fides
 from fides.api.ops.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
-from fides.ctl.connectors.models import (
+from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,
     DatabaseConfig,
     OktaConfig,
 )
-from fides.ctl.core import api as _api
-from fides.ctl.core.config import FidesConfig
-from fides.ctl.core.config.credentials_settings import (
+from fides.core import api as _api
+from fides.core.config import FidesConfig
+from fides.core.config.credentials_settings import (
     get_config_aws_credentials,
     get_config_bigquery_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.ctl.core.config.utils import get_config_from_file, update_config_file
-from fides.ctl.core.utils import check_response, echo_green, echo_red
+from fides.core.config.helpers import get_config_from_file, update_config_file
+from fides.core.config.utils import get_dev_mode
+from fides.core.utils import check_response, echo_green, echo_red
 
+APP = fides.__name__
+PACKAGE = "ethyca-fides"
 FIDES_ASCII_ART = """
 ███████╗██╗██████╗ ███████╗███████╗
 ██╔════╝██║██╔══██╗██╔════╝██╔════╝
@@ -57,16 +58,17 @@ FIDES_ASCII_ART = """
 """
 
 
-def check_server_health(server_url: str) -> requests.Response:
+def check_server_health(server_url: str, verbose: bool = True) -> requests.Response:
     """Hit the '/health' endpoint and verify the server is available."""
 
     healthcheck_url = server_url + "/health"
     try:
         health_response = check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:
-        echo_red(
-            f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
-        )
+        if verbose:
+            echo_red(
+                f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
+            )
         raise SystemExit(1)
     return health_response
 
@@ -74,7 +76,7 @@ def check_server_health(server_url: str) -> requests.Response:
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""
 
-    health_response = check_server_health(server_url)
+    health_response = check_server_health(str(server_url) or "")
     if health_response.status_code == 429:
         # The server is ratelimiting us
         echo_red("Server ratelimit reached. Please wait one minute and try again.")
@@ -117,76 +119,24 @@ def handle_cli_response(
     return response
 
 
-def create_config_file(ctx: click.Context, fides_directory_location: str = ".") -> str:
-    """
-    Creates the .fides/fides.toml file and initializes it, if it doesn't exist.
-
-    Returns the config_path if successful
-    """
-    # TODO: These important constants should live elsewhere
-    fides_dir_name = ".fides"
-    fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
-    config_file_name = "fides.toml"
-    config_path = f"{fides_dir_path}/{config_file_name}"
-
-    config = ctx.obj["CONFIG"]
-
-    included_values = {
-        "database": {
-            "server",
-            "user",
-            "password",
-            "port",
-            "db",
-        },
-        "logging": {
-            "level",
-            "destination",
-            "serialization",
-        },
-        "cli": {"server_protocol", "server_host", "server_port"},
-    }
-
-    # create the .fides dir if it doesn't exist
-    if not os.path.exists(fides_dir_path):
-        os.mkdir(fides_dir_path)
-        click.echo(f"Created a '{fides_dir_path}' directory.")
-    else:
-        click.echo(f"Directory '{fides_dir_path}' already exists.")
-
-    # create a fides.toml config file if it doesn't exist
-    if not os.path.isfile(config_path):
-        with open(config_path, "w", encoding="utf-8") as config_file:
-            config_dict = config.dict(include=included_values)
-            toml.dump(config_dict, config_file)
-        click.echo(f"Created a fides config file: {config_path}")
-    else:
-        click.echo(f"Configuration file already exists: {config_path}")
-
-    click.echo("To learn more about configuring fides, see:")
-    click.echo("\thttps://ethyca.github.io/fides/installation/configuration/")
-
-    return config_path
-
-
-def is_user_registered(ctx: click.Context) -> bool:
+def is_user_registered(config: FidesConfig) -> bool:
     """
     Send a request to the API server, and determine if a registration is already present.
     """
 
-    response = get(f"{ctx.obj['CONFIG'].cli.server_url}{V1_URL_PREFIX}{REGISTRATION}")
+    response = get(f"{config.cli.server_url}{V1_URL_PREFIX}{REGISTRATION}")
     return response.json()["opt_in"]
 
 
-def register_user(ctx: click.Context, email: str, organization: str) -> None:
+def register_user(config: FidesConfig, email: str, organization: str) -> None:
     """
     Create a new registration record in the database.
     """
 
     put(
-        f"{ctx.obj['CONFIG'].cli.server_url}{V1_URL_PREFIX}{REGISTRATION}",
+        f"{config.cli.server_url}{V1_URL_PREFIX}{REGISTRATION}",
         json={
-            "analytics_id": ctx.obj["CONFIG"].cli.analytics_id,
+            "analytics_id": config.cli.analytics_id,
             "opt_in": True,
             "user_email": email,
             "user_organization": organization,
@@ -194,38 +144,38 @@ def register_user(ctx: click.Context, email: str, organization: str) -> None:
     )
 
 
-def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> None:
+def check_and_update_analytics_config(
+    config: FidesConfig, config_path: str
+) -> FidesConfig:
     """
-    Ensure the analytics-related config is present. If not,
-    prompt the user to opt-in to analytics and/or update the
-    config file with their preferences.
+    Verify that the analytics opt-out value is populated. If not,
+    prompt the user to opt-in to analytics and update the config
+    file with their preferences if needed.
+
+    NOTE: This doesn't handle the case where we've collected consent for this
+    CLI instance, but are connected to a server for the first time that is
+    unregistered. This *should* be something we can detect and then
+    "re-prompt" the user for their email/org information, but right
+    now a lot of our test automation runs headless and this kind of
+    prompt can't be skipped otherwise.
     """
 
-    # Prompt for user prompt if we've not collected explicit opt-out or opt-in
-    #
-    # NOTE: this doesn't handle the case where we've collected consent for this CLI,
-    # but are connected to a server for the first time that is unregistered.
-    # This *should* be something we can detect and then "re-prompt" the user for
-    # their email/org information, but right now a lot of our test automation
-    # runs headless and this kind of prompt can't be skipped otherwsie
     config_updates: Dict[str, Dict] = {}
-    if ctx.obj["CONFIG"].user.analytics_opt_out is None:
+    if config.user.analytics_opt_out is None:
         click.echo(OPT_OUT_COPY)
-        ctx.obj["CONFIG"].user.analytics_opt_out = bool(
+        config.user.analytics_opt_out = bool(
             input(OPT_OUT_PROMPT + "\n").lower() == "n"
         )
 
-        config_updates.update(
-            user={"analytics_opt_out": ctx.obj["CONFIG"].user.analytics_opt_out}
-        )
+        config_updates.update(user={"analytics_opt_out": config.user.analytics_opt_out})
 
         # If we've not opted out, attempt to register the user if they are
         # currently connected to a Fides server
-        if ctx.obj["CONFIG"].user.analytics_opt_out is False:
-            server_url = ctx.obj["CONFIG"].cli.server_url
+        if config.user.analytics_opt_out is False:
+            server_url = str(config.cli.server_url) or ""
             try:
-                check_server_health(server_url)
-                should_attempt_registration = not is_user_registered(ctx)
+                check_server_health(server_url, verbose=False)
+                should_attempt_registration = not is_user_registered(config)
             except SystemExit:
                 should_attempt_registration = False
 
@@ -233,7 +183,7 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
                 email = input(EMAIL_PROMPT)
                 organization = input(ORGANIZATION_PROMPT)
                 if email and organization:
-                    register_user(ctx, email, organization)
+                    register_user(config, email, organization)
 
             # Either way, thank the user for their opt-in for analytics!
             click.echo(CONFIRMATION_COPY)
@@ -246,11 +196,11 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
     ) in ("", None)
     is_analytics_id_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
     if (
-        not ctx.obj["CONFIG"].user.analytics_opt_out
+        not config.user.analytics_opt_out
         and is_analytics_id_config_empty
         and not is_analytics_id_env_var_set
     ):
-        config_updates.update(cli={"analytics_id": ctx.obj["CONFIG"].cli.analytics_id})
+        config_updates.update(cli={"analytics_id": config.cli.analytics_id})
 
     if len(config_updates) > 0:
         try:
@@ -258,6 +208,7 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
         except FileNotFoundError as err:
             echo_red(f"Failed to update config file ({config_path}): {err.strerror}")
             click.echo("Run 'fides init' to create a configuration file.")
+    return config
 
 
 def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) -> None:
@@ -274,10 +225,10 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
     try:
         client = AnalyticsClient(
             client_id=analytics_id or generate_client_id(FIDESCTL_CLI),
-            developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
+            developer_mode=get_dev_mode(),
             os=system(),
-            product_name=app_name + "-cli",
-            production_version=version(app_name),
+            product_name=APP + "-cli",
+            production_version=version(PACKAGE),
         )
 
         event = AnalyticsEvent(

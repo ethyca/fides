@@ -4,17 +4,6 @@ from typing import List
 
 import pytest
 from fastapi_pagination import Params
-from fideslib.cryptography.cryptographic_util import str_to_b64_str
-from fideslib.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.models.fides_user_permissions import FidesUserPermissions
-from fideslib.oauth.jwt import generate_jwe
-from fideslib.oauth.oauth_util import extract_payload
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -44,7 +33,18 @@ from fides.api.ops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
+from fides.lib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fides.lib.models.client import ADMIN_UI_ROOT, ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.oauth_util import extract_payload
 from tests.ops.conftest import generate_auth_header_for_user
 
 CONFIG = get_config()
@@ -149,6 +149,25 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
+        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        response_body = json.loads(response.text)
+        assert HTTP_201_CREATED == response.status_code
+        assert response_body == {"id": user.id}
+        assert user.permissions is not None
+        user.delete(db)
+
+    def test_create_user_as_root(
+        self,
+        db,
+        api_client,
+        root_auth_header,
+        url,
+    ) -> None:
+        auth_header = root_auth_header
         body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
 
         response = api_client.post(url, headers=auth_header, json=body)

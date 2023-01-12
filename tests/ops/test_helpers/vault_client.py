@@ -1,13 +1,11 @@
-import logging
 import os
 from functools import cache
 from typing import Any, Dict, Optional
 
 from hvac import Client
+from loguru import logger
 
 from fides.api.ops.common_exceptions import FidesopsException
-
-logger = logging.getLogger(__name__)
 
 params = {
     "VAULT_ADDR": os.environ.get("VAULT_ADDR"),

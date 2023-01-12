@@ -1,14 +1,11 @@
-import logging
 from typing import Dict
 
 import requests
+from loguru import logger
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
 from . import constants
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def create_database_connector(
@@ -33,7 +30,7 @@ def create_database_connector(
 
     if not response.ok:
         raise RuntimeError(
-            f"fides connection creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides connection creation failed! response.status_code={response.status_code}, response.text={response.text}"
         )
 
     logger.info(f"Configured fides database connector for {key}")
@@ -56,12 +53,12 @@ def update_database_connector_secrets(
 
     if not response.ok:
         raise RuntimeError(
-            f"fides connection configuration failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides connection configuration failed! response.status_code={response.status_code}, response.text={response.text}"
         )
 
     if (response.json())["test_status"] == "failed":
         raise RuntimeError(
-            f"fides connection test failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides connection test failed! response.status_code={response.status_code}, response.text={response.text}"
         )
 
     logger.info(f"Configured fides connection secrets via {url}")
