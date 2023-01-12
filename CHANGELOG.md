@@ -21,8 +21,6 @@ The types of changes are:
 
 * Update the docs landing page and remove redundant docs [#2184](https://github.com/ethyca/fides/pull/2184)
 
-* Access and Erasure support for Friendbuy Nextgen API [#2085](https://github.com/ethyca/fides/pull/2085)
-
 ### Added
 
 * Added the `user` command group to the CLI. [#2153](https://github.com/ethyca/fides/pull/2153)
@@ -37,6 +35,7 @@ The types of changes are:
   * Dedicated folder for integrations.
 * Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
 * Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
+* Access and erasure support for Friendbuy Nextgen [#2085](https://github.com/ethyca/fides/pull/2085)
 
 ### Changed
 
