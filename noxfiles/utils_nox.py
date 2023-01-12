@@ -65,8 +65,9 @@ def install_requirements(session: nox.Session) -> None:
 
 @nox.session()
 def init_saas_connector(session: nox.Session) -> None:
-    connector_id = session.posargs[0]
-    variable_map = {"connector_id": connector_id}
+    connector_name = session.posargs[0].replace(" ", "")
+    connector_id = "_".join(session.posargs[0].lower().split(" "))
+    variable_map = {"connector_name": connector_name, "connector_id": connector_id}
 
     # create empty config and dataset files
     open(f"data/saas/config/{variable_map['connector_id']}_config.yml", "w")
@@ -87,7 +88,9 @@ def init_saas_connector(session: nox.Session) -> None:
 
     # render tests file
     test_template = environment.get_template("test_new_task.jinja")
-    filename = f"tests/ops/integration_tests/saas/test_{variable_map['connector_id']}_task.py"
+    filename = (
+        f"tests/ops/integration_tests/saas/test_{variable_map['connector_id']}_task.py"
+    )
     contents = test_template.render(variable_map)
     with open(filename, mode="w", encoding="utf-8") as tests:
         tests.write(contents)
