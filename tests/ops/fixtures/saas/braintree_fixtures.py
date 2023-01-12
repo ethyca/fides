@@ -19,7 +19,6 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from fides.lib.cryptography import cryptographic_util
 from fides.lib.db import session
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 from tests.ops.test_helpers.vault_client import get_secrets
@@ -32,8 +31,10 @@ faker = Faker()
 def braintree_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "braintree.domain") or secrets["domain"],
-        "username": pydash.get(saas_config, "braintree.username") or secrets["username"],
-        "password": pydash.get(saas_config, "braintree.password") or secrets["password"],
+        "username": pydash.get(saas_config, "braintree.username")
+        or secrets["username"],
+        "password": pydash.get(saas_config, "braintree.password")
+        or secrets["password"],
         "braintree_customer_id": {
             "dataset": "braintree_postgres",
             "field": "braintree_customers.braintree_customer_id",
@@ -52,8 +53,10 @@ def braintree_identity_email(saas_config):
 @pytest.fixture(scope="function")
 def braintree_erasure_identity_id(saas_config):
     return (
-        pydash.get(saas_config, "braintree.erasure_customer_id") or secrets["erasure_customer_id"]
+        pydash.get(saas_config, "braintree.erasure_customer_id")
+        or secrets["erasure_customer_id"]
     )
+
 
 @pytest.fixture(scope="function")
 def braintree_erasure_identity_email(saas_config):
@@ -218,12 +221,7 @@ def braintree_erasure_data(
 
     # Get customer
     base_url = f"https://{braintree_secrets['domain']}"
-    headers = {
-            "Content-Type" : "application/json",
-            "Braintree-Version": "2019-01-01"
-        }
-
-
+    headers = {"Content-Type": "application/json", "Braintree-Version": "2019-01-01"}
 
     query = """
         query Search($criteria: CustomerSearchInput!) {
@@ -315,28 +313,22 @@ def braintree_erasure_data(
         }
     """
 
-    variables = {
-        "criteria": {
-            "id": {
-                "in": [f"{braintree_erasure_identity_id}"]
-            }
-        }
-    }
+    variables = {"criteria": {"id": {"in": [f"{braintree_erasure_identity_id}"]}}}
 
-    body={
-        "query": query,
-        "variables": variables
-    }
+    body = {"query": query, "variables": variables}
     customers_response = requests.post(
         url=f"{base_url}/graphql",
         json=body,
         headers=headers,
-        auth = HTTPBasicAuth(f"{braintree_secrets['username']}", f"{braintree_secrets['password']}"),
+        auth=HTTPBasicAuth(
+            f"{braintree_secrets['username']}", f"{braintree_secrets['password']}"
+        ),
     )
     assert customers_response.ok
 
-    customer = customers_response.json()["data"]["search"]["customers"]["edges"][0]['node']
-
+    customer = customers_response.json()["data"]["search"]["customers"]["edges"][0][
+        "node"
+    ]
 
     yield customer
     # Restoring original values
@@ -359,24 +351,23 @@ def braintree_erasure_data(
     """
     update_customer_variables = {
         "input": {
-            "customerId" :"Y3VzdG9tZXJfNTEzOTc3OTIw", 
+            "customerId": "Y3VzdG9tZXJfNTEzOTc3OTIw",
             "customer": {
-                "firstName": customer['firstName'],
-                "lastName": customer['firstName'],
-                "company": customer['company']
-            }
+                "firstName": customer["firstName"],
+                "lastName": customer["firstName"],
+                "company": customer["company"],
+            },
         }
     }
-    
-    body={
-        "query": update_customer_query,
-        "variables": update_customer_variables
-    }
+
+    body = {"query": update_customer_query, "variables": update_customer_variables}
     customers_update_response = requests.post(
         url=f"{base_url}/graphql",
         json=body,
         headers=headers,
-        auth = HTTPBasicAuth(f"{braintree_secrets['username']}", f"{braintree_secrets['password']}"),
+        auth=HTTPBasicAuth(
+            f"{braintree_secrets['username']}", f"{braintree_secrets['password']}"
+        ),
     )
 
     assert customers_update_response.ok

@@ -1,9 +1,7 @@
 import logging
 import random
-from time import sleep
 
 import pytest
-import requests
 
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -16,7 +14,6 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
 logger = logging.getLogger(__name__)
-from tests.ops.test_helpers.dataset_utils import update_dataset
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_braintree
@@ -66,16 +63,9 @@ async def test_braintree_access_request_task(
         assert_rows_match(
             [node["node"]],
             min_size=1,
-            keys=[
-                "id",
-                "legacyId",
-                "firstName",
-                "lastName",
-                "company",
-                "createdAt"
-            ]
+            keys=["id", "legacyId", "firstName", "lastName", "company", "createdAt"],
         )
-    
+
     for node in v[f"{dataset_name}:transactions"]:
         assert_rows_match(
             [node["node"]],
@@ -88,9 +78,10 @@ async def test_braintree_access_request_task(
                 "orderId",
                 "status",
                 "source",
-                "createdAt"
-            ]
+                "createdAt",
+            ],
         )
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_braintree
@@ -135,14 +126,7 @@ async def test_braintree_erasure_request_task(
         assert_rows_match(
             [node["node"]],
             min_size=1,
-            keys=[
-                "id",
-                "legacyId",
-                "firstName",
-                "lastName",
-                "company",
-                "createdAt"
-            ]
+            keys=["id", "legacyId", "firstName", "lastName", "company", "createdAt"],
         )
 
     temp_masking = CONFIG.execution.masking_strict
