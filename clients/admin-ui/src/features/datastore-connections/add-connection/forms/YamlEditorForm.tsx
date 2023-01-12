@@ -59,6 +59,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   const { navV2 } = useFeatures();
   const warningDisclosure = useDisclosure();
   const { data: allDatasets } = useGetAllDatasetsQuery();
+  const [overWrittenKeys, setOverWrittenKeys] = useState<string[]>([]);
 
   const validate = (value: string) => {
     yaml.load(value, { json: true });
@@ -89,6 +90,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
     const value = (monacoRef.current as any).getValue();
     const yamlDoc = yaml.load(value, { json: true });
     onSubmit(yamlDoc);
+    setOverWrittenKeys([]);
   };
 
   const handleConfirmation = () => {
@@ -98,9 +100,11 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
       const value: string = (monacoRef.current as any).getValue();
       // Check if the fides key that is in the editor is the same as one that already exists
       // If so, then it is an overwrite and we should open the confirmation modal
-      if (
-        allDatasets.some((d) => value.includes(`fides_key: ${d.fides_key}\n`))
-      ) {
+      const overlappingKeys = allDatasets
+        .filter((d) => value.includes(`fides_key: ${d.fides_key}\n`))
+        .map((d) => d.fides_key);
+      setOverWrittenKeys(overlappingKeys);
+      if (overlappingKeys.length) {
         warningDisclosure.onOpen();
         return;
       }
@@ -222,13 +226,14 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
         message={
           <>
             <Text>
-              You are about to overwrite the dataset{data.length > 1 ? "s" : ""}{" "}
-              {data.map((d, i) => {
-                const isLast = i === data.length - 1;
+              You are about to overwrite the dataset
+              {overWrittenKeys.length > 1 ? "s" : ""}{" "}
+              {overWrittenKeys.map((key, i) => {
+                const isLast = i === overWrittenKeys.length - 1;
                 return (
                   <>
                     <Text color="complimentary.500" as="span" fontWeight="bold">
-                      {d.fides_key}
+                      {key}
                     </Text>
                     {isLast ? "." : ", "}
                   </>
