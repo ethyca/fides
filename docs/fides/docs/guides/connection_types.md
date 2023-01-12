@@ -62,6 +62,11 @@ which fidesops can communicate.
             "human_readable": "Auth0"
         },
         {
+            "identifier": "braintree",
+            "type": "saas",
+            "human_readable": "Braintree"
+        },
+        {
             "identifier": "datadog",
             "type": "saas",
             "human_readable": "Datadog"
