@@ -368,8 +368,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               getFormField(key, item)
             )}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
-              {/* Disable if connector not created yet !connection?.key */}
-              {console.log(connection?.key)}
               <Button
                 colorScheme="gray.700"
                 isDisabled={!connection?.key}
