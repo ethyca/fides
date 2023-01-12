@@ -5,9 +5,9 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  SearchLineIcon,
   Spinner,
 } from "@fidesui/react";
-import { SearchLineIcon } from "common/Icon";
 import { debounce } from "common/utils";
 import {
   selectConnectionTypeFilters,
@@ -68,17 +68,17 @@ const ChooseConnection: React.FC = () => {
     <>
       <Breadcrumb steps={[STEPS[0], STEPS[1]]} />
       <Flex minWidth="fit-content">
-        <Box color="gray.700" fontSize="14px" maxHeight="80px" maxWidth="474px">
+        <Box
+          color="gray.700"
+          fontSize="14px"
+          maxHeight="80px"
+          maxWidth="474px"
+          mb="24px"
+        >
           {step.description}
         </Box>
       </Flex>
-      <Flex
-        alignItems="center"
-        gap="4"
-        mb="24px"
-        mt="24px"
-        minWidth="fit-content"
-      >
+      <Flex alignItems="center" gap="4" mb="24px" minWidth="fit-content">
         <ConnectionTypeFilter />
         <InputGroup size="sm">
           <InputLeftElement pointerEvents="none">

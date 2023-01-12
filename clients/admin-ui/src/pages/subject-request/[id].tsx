@@ -12,9 +12,9 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useGetAllPrivacyRequestsQuery } from "privacy-requests/index";
-import SubjectRequest from "subject-request/SubjectRequest";
 
 import Layout from "~/features/common/Layout";
+import PrivacyRequest from "~/features/privacy-requests/PrivacyRequest";
 
 import { INDEX_ROUTE } from "../../constants";
 
@@ -34,13 +34,16 @@ const useSubjectRequestDetails = () => {
   return { data, isLoading, isUninitialized };
 };
 
+/**
+ * TODO: Delete this file when the navV2 feature flag is permanently removed.
+ */
 const SubjectRequestDetails: NextPage = () => {
   const { data, isLoading, isUninitialized } = useSubjectRequestDetails();
   let body =
     !data || data?.items.length === 0 ? (
       <Text>404 no privacy request found</Text>
     ) : (
-      <SubjectRequest subjectRequest={data?.items[0]!} />
+      <PrivacyRequest data={data?.items[0]!} />
     );
 
   if (isLoading || isUninitialized) {

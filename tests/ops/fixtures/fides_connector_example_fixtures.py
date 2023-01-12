@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, Generator, List, Tuple
 from uuid import uuid4
 
@@ -54,7 +53,7 @@ def test_fides_connector(
 
 
 @pytest.fixture(scope="function")
-def test_fides_connector_overriden_polling(
+def test_fides_connector_overridden_polling(
     fides_connector_connection_config: Dict[str, str],
     fides_connector_polling_overrides: Tuple[int, int],
 ) -> FidesConnector:

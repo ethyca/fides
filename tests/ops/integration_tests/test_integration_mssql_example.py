@@ -1,9 +1,5 @@
-import logging
-
 import pytest
 from sqlalchemy import func, select, table
-
-logger = logging.getLogger(__name__)
 
 MSSQL_URL_TEMPLATE = "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/{}?driver=ODBC+Driver+17+for+SQL+Server"
 MSSQL_URL = MSSQL_URL_TEMPLATE.format("mssql_example")

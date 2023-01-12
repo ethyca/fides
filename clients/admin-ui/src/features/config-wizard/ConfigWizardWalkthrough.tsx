@@ -1,13 +1,12 @@
-import { Box, Button, Divider, Stack } from "@fidesui/react";
+import { Box, Button, CloseSolidIcon, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { CloseSolidIcon } from "~/features/common/Icon";
+import { useFeatures } from "~/features/common/features";
 import DescribeSystemStep from "~/features/system/DescribeSystemStep";
 import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
 import ReviewSystemStep from "~/features/system/ReviewSystemStep";
-import FlagValues from "~/flags.json";
 import { System } from "~/types/api";
 
 import AddSystemForm from "./AddSystemForm";
@@ -28,16 +27,13 @@ import OrganizationInfoForm from "./OrganizationInfoForm";
 import ScanResults from "./ScanResults";
 import SuccessPage from "./SuccessPage";
 
-const isStepperActive = FlagValues.some(
-  (flag) => flag.name === "configWizardStepper" && flag.isActive
-);
-
 const ConfigWizardWalkthrough = () => {
+  const dispatch = useAppDispatch();
   const step = useAppSelector(selectStep);
   const reviewStep = useAppSelector(selectReviewStep);
-  const dispatch = useAppDispatch();
   const system = useAppSelector(selectSystemInReview);
   const systemsForReview = useAppSelector(selectSystemsForReview);
+  const features = useFeatures();
 
   const handleCancelSetup = () => {
     dispatch(reset());
@@ -50,18 +46,22 @@ const ConfigWizardWalkthrough = () => {
 
   return (
     <>
-      <Box bg="white">
-        <Button
-          bg="transparent"
-          fontWeight="500"
-          m={2}
-          ml={6}
-          onClick={handleCancelSetup}
-        >
-          <CloseSolidIcon /> Cancel setup
-        </Button>
-      </Box>
-      <Divider orientation="horizontal" />
+      {!features.flags.navV2 && (
+        <>
+          <Box bg="white">
+            <Button
+              bg="transparent"
+              fontWeight="500"
+              m={2}
+              ml={6}
+              onClick={handleCancelSetup}
+            >
+              <CloseSolidIcon width="17px" /> Cancel setup
+            </Button>
+          </Box>
+          <Divider orientation="horizontal" />
+        </>
+      )}
       <Stack direction={["column", "row"]}>
         <Stack bg="white" height="100vh" width="100%">
           <Stack
@@ -69,7 +69,9 @@ const ConfigWizardWalkthrough = () => {
             mb={10}
             direction="row"
             spacing="24px"
-            justifyContent={isStepperActive ? undefined : "center"}
+            justifyContent={
+              features.flags.configWizardStepper ? undefined : "center"
+            }
           >
             <Box flexShrink={0}>
               <Stepper

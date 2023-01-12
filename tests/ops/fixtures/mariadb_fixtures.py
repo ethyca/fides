@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, Generator, List
 from uuid import uuid4
 
@@ -13,12 +12,11 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.service.connectors import MariaDBConnector
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.db.session import get_db_engine, get_db_session
 
 from .application_fixtures import integration_secrets
 
-logger = logging.getLogger(__name__)
 CONFIG = get_config()
 
 
@@ -45,7 +43,6 @@ def mariadb_example_db() -> Generator:
         "mariadb+pymysql://mariadb_user:mariadb_pw@mariadb_example/mariadb_example"
     )
     engine = get_db_engine(database_uri=example_mariadb_uri)
-    logger.debug(f"Connecting to MariaDB example database at: {engine.url}")
     SessionLocal = get_db_session(
         config=CONFIG,
         engine=engine,

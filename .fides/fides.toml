@@ -7,7 +7,7 @@ db = "fides"
 test_db = "fides_test"
 
 [credentials]
-app_postgres = {connection_string="postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test"}
+app_postgres = {connection_string="postgresql+psycopg2://postgres:fides@fides-db:5432/fides"}
 
 [logging]
 level = "INFO"
@@ -55,3 +55,6 @@ enabled = true
 event_queue_prefix = "fides_worker"
 task_default_queue = "fides"
 task_always_eager = true
+
+[notifications]
+notification_service_type = "mailgun"

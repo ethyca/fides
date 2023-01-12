@@ -20,8 +20,8 @@ from fides.cli.utils import (
     handle_okta_credentials_options,
     with_analytics,
 )
-from fides.ctl.core import dataset as _dataset
-from fides.ctl.core import system as _system
+from fides.core import dataset as _dataset
+from fides.core import system as _system
 
 
 @click.group(name="scan")

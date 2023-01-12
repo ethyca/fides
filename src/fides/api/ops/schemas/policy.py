@@ -71,6 +71,18 @@ class RuleResponse(RuleBase):
     masking_strategy: Optional[PolicyMaskingSpecResponse]
 
 
+class RuleResponseWithTargets(RuleBase):
+    """
+    The schema to use when returning a Rule via the API and when including the Rule's targets
+    is desired. This schema uses a censored version of the `PolicyMaskingSpec` that omits the
+    configuration to avoid exposing secrets.
+    """
+
+    targets: Optional[List[RuleTarget]]
+    storage_destination: Optional[StorageDestinationResponse]
+    masking_strategy: Optional[PolicyMaskingSpecResponse]
+
+
 class Rule(RuleBase):
     """A representation of a Rule that features all storage destination data."""
 

@@ -1,4 +1,3 @@
-import logging
 import random
 
 import pytest
@@ -9,8 +8,6 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
-
-logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration_saas

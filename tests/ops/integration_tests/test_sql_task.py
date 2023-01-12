@@ -1,5 +1,4 @@
 import copy
-import logging
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
@@ -27,7 +26,7 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 from ..graph.graph_test_util import (
     assert_rows_match,
@@ -43,7 +42,6 @@ from ..task.traversal_data import (
 
 CONFIG = get_config()
 
-logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
     "user.unique_id",

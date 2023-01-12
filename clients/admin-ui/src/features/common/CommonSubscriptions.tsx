@@ -1,12 +1,14 @@
+import { useGetHealthQuery } from "~/features/common/health.slice";
 import {
   INITIAL_CONNECTIONS_FILTERS,
   useGetAllDatastoreConnectionsQuery,
 } from "~/features/datastore-connections/datastore-connection.slice";
-import { useGetHealthQuery } from "~/features/plus/plus.slice";
+import { useGetHealthQuery as useGetPlusHealthQuery } from "~/features/plus/plus.slice";
 import { useGetAllSystemsQuery } from "~/features/system/system.slice";
 
 const useCommonSubscriptions = () => {
   useGetHealthQuery();
+  useGetPlusHealthQuery();
   useGetAllSystemsQuery();
   useGetAllDatastoreConnectionsQuery(INITIAL_CONNECTIONS_FILTERS);
 };

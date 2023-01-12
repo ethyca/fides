@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, Generator, List
 from uuid import uuid4
 
@@ -12,12 +11,11 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.service.connectors import MicrosoftSQLServerConnector
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.db.session import get_db_engine, get_db_session
 
 from .application_fixtures import integration_secrets
 
-logger = logging.getLogger(__name__)
 CONFIG = get_config()
 
 

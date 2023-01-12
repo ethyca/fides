@@ -8,18 +8,20 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
 
 
+@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 def test_domo_connection_test(domo_connection_config) -> None:
     get_connector(domo_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 @pytest.mark.asyncio
@@ -72,6 +74,7 @@ async def test_domo_access_request_task(
     assert v[f"{dataset_name}:user"][0]["email"] == domo_identity_email
 
 
+@pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 @pytest.mark.asyncio

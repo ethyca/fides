@@ -8,6 +8,7 @@ import {
   Heading,
   HStack,
   IconButton,
+  QuestionIcon,
   Stack,
   Text,
   Tooltip,
@@ -15,13 +16,12 @@ import {
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ConnectedCircle from "~/features/common/ConnectedCircle";
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import {
   AWSLogoIcon,
   DataFlowScannerLogo,
   ManualSetupIcon,
   OktaLogoIcon,
-  QuestionIcon,
 } from "~/features/common/Icon";
 import { selectDataFlowScannerStatus } from "~/features/plus/plus.slice";
 import { ADD_SYSTEM_DESCRIPTION } from "~/features/system/constants";
@@ -185,6 +185,7 @@ const AddSystemForm = () => {
                     dispatch(changeStep(5));
                     dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
                   }}
+                  data-testid="manual-btn"
                 />
               </HStack>
               <Text>Add a system manually</Text>

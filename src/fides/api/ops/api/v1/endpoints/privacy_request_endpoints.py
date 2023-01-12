@@ -146,7 +146,7 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 
@@ -327,6 +327,7 @@ def execution_and_audit_logs_by_dataset_name(
         ExecutionLog.privacy_request_id,
         ExecutionLog.dataset_name,
         ExecutionLog.collection_name,
+        ExecutionLog.connection_key,
         ExecutionLog.fields_affected,
         ExecutionLog.action_type,
         null().label("user_id"),
@@ -341,6 +342,7 @@ def execution_and_audit_logs_by_dataset_name(
         AuditLog.privacy_request_id,
         null().label("dataset_name"),
         null().label("collection_name"),
+        null().label("connection_key"),
         null().label("fields_affected"),
         null().label("action_type"),
         AuditLog.user_id,

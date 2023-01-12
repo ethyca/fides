@@ -1,13 +1,14 @@
 import {
   Box,
   Divider,
+  ErrorWarningIcon,
+  GreenCheckCircleIcon,
   Heading,
   HStack,
   Tag,
   Text,
   VStack,
 } from "@fidesui/react";
-import { ErrorWarningIcon, GreenCheckCircleIcon } from "common/Icon";
 import { formatDate } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import React from "react";

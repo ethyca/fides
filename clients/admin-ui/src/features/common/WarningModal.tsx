@@ -6,10 +6,9 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   Button,
+  WarningIcon,
 } from "@fidesui/react";
 import { ReactNode, useRef } from "react";
-
-import { WarningIcon } from "./Icon";
 
 interface Props {
   isOpen: boolean;
