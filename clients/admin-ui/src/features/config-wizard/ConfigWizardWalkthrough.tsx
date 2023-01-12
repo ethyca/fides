@@ -1,15 +1,14 @@
-import { Box, Button, Divider, Stack } from "@fidesui/react";
+import { Box, Button, CloseSolidIcon, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { CloseSolidIcon } from "~/features/common/Icon";
+import { useFeatures } from "~/features/common/features";
 import DescribeSystemStep from "~/features/system/DescribeSystemStep";
 import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
 import ReviewSystemStep from "~/features/system/ReviewSystemStep";
 import { System } from "~/types/api";
 
-import { useFeatures } from "../common/features.slice";
 import AddSystemForm from "./AddSystemForm";
 import AuthenticateScanner from "./AuthenticateScanner";
 import {
@@ -29,9 +28,9 @@ import ScanResults from "./ScanResults";
 import SuccessPage from "./SuccessPage";
 
 const ConfigWizardWalkthrough = () => {
+  const dispatch = useAppDispatch();
   const step = useAppSelector(selectStep);
   const reviewStep = useAppSelector(selectReviewStep);
-  const dispatch = useAppDispatch();
   const system = useAppSelector(selectSystemInReview);
   const systemsForReview = useAppSelector(selectSystemsForReview);
   const features = useFeatures();
@@ -47,7 +46,7 @@ const ConfigWizardWalkthrough = () => {
 
   return (
     <>
-      {!features.navV2 && (
+      {!features.flags.navV2 && (
         <>
           <Box bg="white">
             <Button
@@ -57,7 +56,7 @@ const ConfigWizardWalkthrough = () => {
               ml={6}
               onClick={handleCancelSetup}
             >
-              <CloseSolidIcon /> Cancel setup
+              <CloseSolidIcon width="17px" /> Cancel setup
             </Button>
           </Box>
           <Divider orientation="horizontal" />
@@ -65,7 +64,15 @@ const ConfigWizardWalkthrough = () => {
       )}
       <Stack direction={["column", "row"]}>
         <Stack bg="white" height="100vh" width="100%">
-          <Stack mt={10} mb={10} direction="row" spacing="24px">
+          <Stack
+            mt={10}
+            mb={10}
+            direction="row"
+            spacing="24px"
+            justifyContent={
+              features.flags.configWizardStepper ? undefined : "center"
+            }
+          >
             <Box flexShrink={0}>
               <Stepper
                 activeStep={step}

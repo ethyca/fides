@@ -3,9 +3,9 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  SearchLineIcon,
   Stack,
 } from "@fidesui/react";
-import { SearchLineIcon } from "common/Icon";
 import NextLink from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";

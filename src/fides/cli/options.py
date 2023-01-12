@@ -185,3 +185,53 @@ def aws_region_option(command: Callable) -> Callable:
         help="Use region option to connect to aws. Requires options --access_key_id, --secret_access_key and --region",
     )(command)
     return command
+
+
+def prompt_username(ctx: click.Context, param: str, value: str) -> str:
+    if not value:
+        value = click.prompt(text="Username")
+    return value
+
+
+def prompt_password(ctx: click.Context, param: str, value: str) -> str:
+    if not value:
+        value = click.prompt(text="Password", hide_input=True)
+    return value
+
+
+def username_option(command: Callable) -> Callable:
+    command = click.option(
+        "-u",
+        "--username",
+        default="",
+        callback=prompt_username,
+    )(command)
+    return command
+
+
+def password_option(command: Callable) -> Callable:
+    command = click.option(
+        "-p",
+        "--password",
+        default="",
+        callback=prompt_password,
+    )(command)
+    return command
+
+
+def first_name_option(command: Callable) -> Callable:
+    command = click.option(
+        "-f",
+        "--first-name",
+        default="",
+    )(command)
+    return command
+
+
+def last_name_option(command: Callable) -> Callable:
+    command = click.option(
+        "-l",
+        "--last-name",
+        default="",
+    )(command)
+    return command

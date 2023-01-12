@@ -64,7 +64,7 @@ export type PatchUploadManualWebhookDataRequest = {
 
 export type PrivacyRequestResults = Record<string, ExecutionLog[]>;
 
-export interface PrivacyRequest {
+export interface PrivacyRequestEntity {
   status: PrivacyRequestStatus;
   results?: PrivacyRequestResults;
   identity: {
@@ -87,7 +87,7 @@ export interface PrivacyRequest {
 }
 
 export interface PrivacyRequestResponse {
-  items: PrivacyRequest[];
+  items: PrivacyRequestEntity[];
   total: number;
 }
 

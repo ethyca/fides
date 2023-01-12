@@ -9,6 +9,11 @@ def get_test_mode() -> bool:
     return test_mode
 
 
+def get_dev_mode() -> bool:
+    dev_mode = getenv("FIDES__DEV_MODE", "").lower() == "true"
+    return dev_mode
+
+
 CONFIG_KEY_ALLOWLIST = {
     "cli": ["server_host", "server_port"],
     "user": ["analytics_opt_out"],

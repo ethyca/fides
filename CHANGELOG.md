@@ -1,4 +1,3 @@
-# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -15,11 +14,61 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.3.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.4.0...main)
+
+### Docs
+
+* Update the docs landing page and remove redundant docs [#2184](https://github.com/ethyca/fides/pull/2184)
+
+### Added
+
+* Added the `user` command group to the CLI. [#2153](https://github.com/ethyca/fides/pull/2153)
+* Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
+* Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
+* Added Fides version number to account dropdown in the UI [#2140](https://github.com/ethyca/fides/pull/2140)
+* Add link to Classify Systems page in nav side bar [#2128](https://github.com/ethyca/fides/pull/2128)
+* Dataset classification UI now polls for results [#2123](https://github.com/ethyca/fides/pull/2123)
+* Update Privacy Center Icons [#1800](https://github.com/ethyca/fides/pull/2139)
+* Privacy Center `fides-consent.js`:
+  * `Fides.shopify` integration function. [#2152](https://github.com/ethyca/fides/pull/2152)
+  * Dedicated folder for integrations.
+* Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
+* Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
+
+### Changed
+
+* Admin UI Feature Flags - [#2101](https://github.com/ethyca/fides/pull/2101)
+  * Overrides can be saved in the browser.
+  * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
+  * No longer use `react-feature-flags` library.
+* Made privacy declarations optional when adding systems manually - [#2173](https://github.com/ethyca/fides/pull/2173)
+* Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
+* Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
+
+### Removed
+
+* Removed unused object_name field on s3 storage config [#2133](https://github.com/ethyca/fides/pull/2133)
+
+### Fixed
+
+* Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
+* Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
+* Side nav disappears when viewing request details [#2129](https://github.com/ethyca/fides/pull/2155)
+* Remove usage of load dataset button and other dataset UI modifications [#2149](https://github.com/ethyca/fides/pull/2149)
+* Improve readability for exceptions raised from custom request overrides [#2157](https://github.com/ethyca/fides/pull/2157)
+* Importing custom request overrides on server startup [#2186](https://github.com/ethyca/fides/pull/2186)
+* Remove warning when env vars default to blank strings in docker-compose [#2188](https://github.com/ethyca/fides/pull/2188)
+
+### Removed
+
+* Remove "Create New System" button when viewing systems. All systems can now be created via the "Add systems" button on the home page. [#2132](https://github.com/ethyca/fides/pull/2132)
+
+## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
 ### Developer Experience
 
 * Include a pre-check workflow that collects the pytest suite [#2098](https://github.com/ethyca/fides/pull/2098)
+* Write to the application db when running the app locally. Write to the test db when running pytest [#1731](https://github.com/ethyca/fides/pull/1731)
 
 ### Changed
 
@@ -27,15 +76,18 @@ The types of changes are:
 * Fides: Skip cypress tests due to nav bar 2.0 [#2102](https://github.com/ethyca/fides/pull/2103)
 
 ### Added
+
 * Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 * New Fides Home page [#1864](https://github.com/ethyca/fides/pull/2050)
 * Nav 2.0 - Replace form flow side navs with top tabs [#2037](https://github.com/ethyca/fides/pull/2050)
 * Adds new erasure policy for complete user data masking [#1839](https://github.com/ethyca/fides/pull/1839)
 * Added ability to use Mailgun templates when sending emails. [#2039](https://github.com/ethyca/fides/pull/2039)
+* Adds SMS id verification for consent [#2094](https://github.com/ethyca/fides/pull/2094)
 
 ### Fixed
 
 * Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
+* Properly set the expire-time for verification codes [#2105](https://github.com/ethyca/fides/pull/2105)
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 

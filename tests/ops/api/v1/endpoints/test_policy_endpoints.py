@@ -1,4 +1,5 @@
 import json
+from typing import List
 from uuid import uuid4
 
 import pytest
@@ -214,6 +215,325 @@ class TestGetPolicyDetail:
         assert rule["key"] == "access_request_rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
+
+
+class TestGetRules:
+    @pytest.fixture(scope="function")
+    def url(self, policy: Policy) -> str:
+        return V1_URL_PREFIX + RULE_CREATE_URI.format(policy_key=policy.key)
+
+    def test_get_rules_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_rules_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    @pytest.mark.usefixtures("policy_drp_action")
+    def test_get_rules(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        policy: Policy,
+        url,
+    ):
+        # since we have more than one policy fixture, we expect to have
+        # more than one policy, and therefore more than one rule, in the db
+        all_policies = Policy.query(db=db).all()
+        assert len(all_policies) > 1
+        all_rules = Rule.query(db=db).all()
+        assert len(all_rules) > 1
+
+        auth_header = generate_auth_header(scopes=[scopes.RULE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert "items" in data
+        # but because our GET request specifies only a single policy,
+        # we expect to only get back its one rule in our response
+        assert data["total"] == 1
+
+        access_rule: Rule = policy.get_rules_for_action(ActionType.access.value)[0]
+
+        rule_data = data["items"][0]
+        assert rule_data["name"] == access_rule.name
+        assert rule_data["key"] == "access_request_rule"
+        assert rule_data["action_type"] == access_rule.action_type
+        assert rule_data["storage_destination"]["type"] == "s3"
+
+        assert "targets" in rule_data
+        assert len(rule_data["targets"]) == 1
+
+        rule_target_data = rule_data["targets"][0]
+        rule_target_data["data_category"] = access_rule.get_target_data_categories()
+
+    def test_pagination_ordering_rules(
+        self,
+        db,
+        oauth_client,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        policy,
+        storage_config,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.RULE_READ])
+        rules = []
+        RULE_COUNT = 50
+        for _ in range(RULE_COUNT):
+            key = str(uuid4()).replace("-", "")
+            rules.append(
+                Rule.create(
+                    db=db,
+                    data={
+                        "name": key,
+                        "key": key,
+                        "action_type": ActionType.access.value,
+                        "storage_destination_id": storage_config.id,
+                        "policy_id": policy.id,
+                    },
+                )
+            )
+
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert "items" in data
+
+        # 1 additional rule was added to the db as part of the `policy` fixture
+        assert data["total"] == RULE_COUNT + 1
+
+        for rule in data["items"]:
+            # The most recent rule will be that which was last added to `rules`
+            most_recent = rules.pop()
+            assert rule["key"] == most_recent.key
+            # Once we're finished we need to delete the rules, since `oauth_client` will be
+            # subsequently deleted and will cause validation errors
+            most_recent.delete(db=db)
+
+
+class TestGetRuleDetail:
+    @pytest.fixture(scope="function")
+    def rule(self, policy: Policy) -> Rule:
+        return policy.get_rules_for_action(ActionType.access.value)[0]
+
+    @pytest.fixture(scope="function")
+    def url(self, policy: Policy, rule: Rule) -> str:
+        return V1_URL_PREFIX + RULE_DETAIL_URI.format(
+            policy_key=policy.key,
+            rule_key=rule.key,
+        )
+
+    def test_get_rule_detail_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_rule_detail_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_get_invalid_rule(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.RULE_READ])
+        url = V1_URL_PREFIX + RULE_DETAIL_URI.format(
+            policy_key=policy.key, rule_key="bad"
+        )
+
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 404
+
+    def test_get_rule_returns_rule_target(
+        self, api_client: TestClient, generate_auth_header, policy, rule: Rule, url
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.RULE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["key"] == rule.key
+        assert "targets" in data
+        assert len(data["targets"]) == 1
+
+        rule_target_data = data["targets"][0]
+        rule_target_data["data_category"] = rule.get_target_data_categories()
+
+
+class TestGetRuleTargets:
+    @pytest.fixture(scope="function")
+    def rule(self, policy: Policy) -> Rule:
+        return policy.get_rules_for_action(ActionType.access.value)[0]
+
+    @pytest.fixture(scope="function")
+    def rule_target(self, db, policy: Policy, rule: Rule) -> RuleTarget:
+        rule_targets: List[RuleTarget] = RuleTarget.filter(
+            db=db, conditions=(RuleTarget.rule_id == rule.id)
+        ).all()
+        assert len(rule_targets) == 1
+        return rule_targets[0]
+
+    @pytest.fixture(scope="function")
+    def url(self, policy: Policy, rule: Rule) -> str:
+        return V1_URL_PREFIX + RULE_TARGET_LIST.format(
+            policy_key=policy.key, rule_key=rule.key
+        )
+
+    def test_get_rule_targets_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_rule_targets_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    @pytest.mark.usefixtures("policy_drp_action")
+    def test_get_rule_targets(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        rule_target: RuleTarget,
+        url,
+    ):
+        # since we have more than one policy fixture, we expect to have
+        # more than one policy, and therefore more than one rule target, in the db
+        all_policies = Policy.query(db=db).all()
+        assert len(all_policies) > 1
+        all_rules = Rule.query(db=db).all()
+        assert len(all_rules) > 1
+        all_rule_targets = RuleTarget.query(db=db).all()
+        assert len(all_rule_targets) > 1
+
+        auth_header = generate_auth_header(scopes=[scopes.RULE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert "items" in data
+        # but because our GET request specifies only a single policy + rule,
+        # we expect to only get back its one rule target in our response
+        assert data["total"] == 1
+
+        rule_target_data = data["items"][0]
+        assert rule_target_data["name"] == rule_target.name
+        assert rule_target_data["key"] == rule_target.key
+        assert rule_target_data["data_category"] == rule_target.data_category
+
+
+class TestGetRuleTargetDetail:
+    @pytest.fixture(scope="function")
+    def rule(self, policy: Policy) -> Rule:
+        return policy.get_rules_for_action(ActionType.access.value)[0]
+
+    @pytest.fixture(scope="function")
+    def rule_target(self, db, policy: Policy, rule: Rule) -> RuleTarget:
+        rule_targets: List[RuleTarget] = RuleTarget.filter(
+            db=db, conditions=(RuleTarget.rule_id == rule.id)
+        ).all()
+        assert len(rule_targets) == 1
+        return rule_targets[0]
+
+    @pytest.fixture(scope="function")
+    def url(self, policy: Policy, rule: Rule, rule_target: RuleTarget) -> str:
+        return V1_URL_PREFIX + RULE_TARGET_DETAIL.format(
+            policy_key=policy.key,
+            rule_key=rule.key,
+            rule_target_key=rule_target.key,
+        )
+
+    def test_get_rule_target_detail_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_rule_target_detail_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_get_invalid_rule_target(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+        rule,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.RULE_READ])
+        url = V1_URL_PREFIX + RULE_TARGET_DETAIL.format(
+            policy_key=policy.key, rule_key=rule.key, rule_target_key="bad"
+        )
+
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 404
+
+    def test_get_rule_target(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+        rule: Rule,
+        rule_target: RuleTarget,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.RULE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["key"] == rule_target.key
+        assert data["name"] == rule_target.name
+        assert "data_category" in data
+        assert data["data_category"] == rule_target.data_category
 
 
 class TestCreatePolicies:

@@ -34,10 +34,12 @@ class IdentityVerificationMixin:
         cache.set_with_autoexpire(
             key=self._get_identity_verification_cache_key(),
             value=value,
+            expire_time=CONFIG.redis.identity_verification_code_ttl_seconds,
         )
         cache.set_with_autoexpire(
             key=self._get_identity_verification_attempt_count_cache_key(),
             value=0,
+            expire_time=CONFIG.redis.identity_verification_code_ttl_seconds,
         )
 
     def _increment_verification_code_attempt_count(self) -> None:
@@ -47,6 +49,7 @@ class IdentityVerificationMixin:
         cache.set_with_autoexpire(
             key=self._get_identity_verification_attempt_count_cache_key(),
             value=attempt_count + 1,
+            expire_time=CONFIG.redis.identity_verification_code_ttl_seconds,
         )
 
     def get_cached_verification_code(self) -> Optional[str]:

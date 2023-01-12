@@ -3,6 +3,7 @@ import {
   Button,
   ButtonGroup,
   Divider,
+  ErrorWarningIcon,
   Flex,
   Heading,
   HStack,
@@ -12,7 +13,6 @@ import {
   VStack,
 } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
-import { ErrorWarningIcon } from "common/Icon";
 import { Dataset } from "datastore-connections/types";
 import yaml, { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 
 const Editor = dynamic(
   // @ts-ignore
@@ -52,7 +52,9 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   );
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
-  const { navV2 } = useFeatures();
+  const {
+    flags: { navV2 },
+  } = useFeatures();
 
   const validate = (value: string) => {
     yaml.load(value, { json: true });

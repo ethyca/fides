@@ -1,4 +1,5 @@
 import {
+  ArrowDownLineIcon,
   Box,
   Button,
   Checkbox,
@@ -9,8 +10,6 @@ import {
   Stack,
 } from "@fidesui/react";
 import React, { useMemo } from "react";
-
-import { ArrowDownLineIcon } from "~/features/common/Icon";
 
 export interface ColumnMetadata<T = Record<string, unknown>> {
   name: string;

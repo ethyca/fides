@@ -18,6 +18,7 @@ describe("configureNavGroups", () => {
       children: [
         { title: "Taxonomy", path: "/taxonomy" },
         { title: "Users", path: "/user-management" },
+        { title: "About Fides", path: "/management/about" },
       ],
     });
   });
@@ -85,6 +86,7 @@ describe("configureNavGroups", () => {
         { title: "View systems", path: "/system" },
         { title: "Add systems", path: "/add-systems" },
         { title: "Manage datasets", path: "/dataset" },
+        { title: "Classify systems", path: "/classify-systems" },
       ],
     });
   });

@@ -2,6 +2,7 @@
 Contains all of the logic related to the database including connections, setup, teardown, etc.
 """
 from os import path
+from typing import Literal
 
 from alembic import command, script
 from alembic.config import Config
@@ -17,6 +18,9 @@ from fides.core.utils import get_db_engine
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 from .seed import load_default_resources
+from .session import async_session
+
+DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
 
 CONFIG = get_config()
 
@@ -47,7 +51,9 @@ async def init_db(database_url: str) -> None:
     log.info("Initializing database")
     alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
-    await load_default_resources()
+
+    async with async_session() as session:
+        await load_default_resources(session)
 
 
 def create_db_if_not_exists(database_url: str) -> None:
@@ -76,7 +82,7 @@ def reset_db(database_url: str) -> None:
     log.info("Reset complete.")
 
 
-def get_db_health(database_url: str, db: Session) -> str:
+def get_db_health(database_url: str, db: Session) -> DatabaseHealth:
     """Checks if the db is reachable and up to date in alembic migrations"""
     try:
         alembic_config = get_alembic_config(database_url)

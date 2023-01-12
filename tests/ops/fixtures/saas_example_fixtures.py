@@ -1,7 +1,7 @@
-import logging
 from typing import Any, Dict, Generator
 
 import pytest
+from loguru import logger
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
@@ -30,8 +30,6 @@ from fides.api.ops.util.data_category import DataCategory
 from fides.api.ops.util.saas_util import load_config
 from fides.lib.models.client import ClientDetail
 from tests.ops.fixtures.application_fixtures import load_dataset
-
-logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="function")
@@ -312,11 +310,13 @@ def oauth2_authorization_code_connection_config(
 
 @pytest.fixture(scope="session")
 def saas_config() -> Dict[str, Any]:
-    saas_config: Dict[str, Any] = {}
+    saas_config = {}
     try:
-        saas_config: Dict[str, Any] = load_toml("saas_config.toml")
-    except FileNotFoundError as e:
-        logger.warning("saas_config.toml could not be loaded: %s", e)
+        saas_config = load_toml("saas_config.toml")
+    except Exception:
+        logger.info(
+            "Unable to load saas_config.toml file, skipping loading of local secrets"
+        )
     return saas_config
 
 
@@ -406,8 +406,8 @@ def erasure_policy_complete_mask(
             "name": "user_contact_address_country Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": NullMaskingStrategy,
-                "configuration": {},
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "Masked"},
             },
         },
     )

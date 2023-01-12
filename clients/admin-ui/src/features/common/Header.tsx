@@ -7,17 +7,18 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  QuestionIcon,
   Stack,
   Text,
+  UserIcon,
 } from "@fidesui/react";
 import NextLink from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { INDEX_ROUTE } from "../../constants";
-import { logout, selectUser, useLogoutMutation } from "../auth";
-import { QuestionIcon, UserIcon } from "./Icon";
-import Image from "./Image";
+import { INDEX_ROUTE } from "~/constants";
+import { logout, selectUser, useLogoutMutation } from "~/features/auth";
+import Image from "~/features/common/Image";
 
 const useHeader = () => {
   const { username } = useSelector(selectUser) ?? { username: "" };
@@ -63,16 +64,12 @@ const Header: React.FC = () => {
                 <UserIcon color="gray.700" />
               </MenuButton>
               <MenuList shadow="xl">
-                <Stack px={3} py={2} spacing={0}>
+                <Stack px={3} py={2} spacing={1}>
                   <Text fontWeight="medium">{username}</Text>
-                  {/* This text should only show if actually an admin */}
-                  {/* <Text fontSize="sm" color="gray.600">
-              Administrator
-            </Text> */}
                 </Stack>
+
                 <MenuDivider />
                 <MenuItem
-                  px={3}
                   _focus={{ color: "complimentary.500", bg: "gray.100" }}
                   onClick={handleLogout}
                   data-testid="header-menu-sign-out"

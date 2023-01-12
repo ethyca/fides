@@ -10,6 +10,7 @@
   "scripts": {
     "watch": "rollup -c -w",
     "build": "NODE_ENV=production rollup -c",
+    "build:dev": "NODE_ENV=development rollup -c",
     "check": "tsc --noEmit"
   },
   "repository": {
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@fidesui/config": "^0.0.3",
+    "@rollup/plugin-json": "^5.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "rollup": "^2.67.0",
     "rollup-plugin-copy": "^3.4.0",

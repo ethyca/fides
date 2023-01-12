@@ -3,6 +3,7 @@
 
 import {
   Box,
+  EyeIcon,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -11,7 +12,6 @@ import {
   InputGroup,
   InputRightElement,
 } from "@fidesui/react";
-import { EyeIcon } from "common/Icon";
 import { FieldHookConfig, useField } from "formik";
 import { useState } from "react";
 

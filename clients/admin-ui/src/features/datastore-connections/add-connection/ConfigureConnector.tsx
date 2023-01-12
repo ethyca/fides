@@ -15,7 +15,7 @@ import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
-import { useFeatures } from "~/features/common/features.slice";
+import { useFeatures } from "~/features/common/features";
 import { SystemType } from "~/types/api";
 
 import Breadcrumb from "./Breadcrumb";
@@ -41,7 +41,9 @@ const ConfigureConnector: React.FC = () => {
     (o) => o.type === connectionOption?.type
   );
   const [selectedItem, setSelectedItem] = useState(connector?.options[0]);
-  const { navV2 } = useFeatures();
+  const {
+    flags: { navV2 },
+  } = useFeatures();
 
   const handleConnectionCreated = () => {
     setCanRedirect(true);

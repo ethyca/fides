@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, Stack } from "@fidesui/react";
+import { AddIcon, Box, Button, ButtonGroup, Stack } from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 
@@ -8,7 +8,6 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
-import { AddIcon } from "~/features/common/Icon";
 import {
   selectDataQualifiers,
   useGetAllDataQualifiersQuery,
