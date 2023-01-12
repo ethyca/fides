@@ -738,7 +738,6 @@ class TestSaveConsent:
         assert identity.phone_number is None
         assert consent_request.privacy_request.consent_preferences == [
             {"opt_in": True, "data_use": "advertising", "data_use_description": None},
-            {"opt_in": False, "data_use": "improve", "data_use_description": None},
         ], "Only executable consent preferences stored"
 
         assert mock_run_privacy_request.called

@@ -47,7 +47,7 @@ from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentRequestResponse,
-    ExecutableConsent,
+    ConsentWithExecutableStatus,
     PrivacyRequestCreate,
     VerificationCode,
 )
@@ -230,10 +230,13 @@ def queue_privacy_request_to_propagate_consent(
     provided_identity: ProvidedIdentity,
     policy: Union[FidesOpsKey, str],
     consent_preferences: ConsentPreferences,
-    executable_consents: Optional[List[ExecutableConsent]],
+    executable_consents: Optional[List[ConsentWithExecutableStatus]],
 ) -> Optional[BulkPostPrivacyRequests]:
     """
     Queue a privacy request to carry out propagating consent preferences server-side to third-party systems.
+
+    Only propagate consent preferences which are considered "executable" by the current system. If none of the
+    consent preferences are executable, no Privacy Request is queued.
     """
     identity = Identity()
     setattr(
@@ -242,14 +245,14 @@ def queue_privacy_request_to_propagate_consent(
         provided_identity.encrypted_value["value"],  # type:ignore[index]
     )  # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
 
-    executable_data_uses = [ec.data_use for ec in executable_consents or []]
+    executable_data_uses = [
+        ec.data_use for ec in executable_consents or [] if ec.executable
+    ]
     executable_consent_preferences: List[Dict] = [
         pref.dict()
         for pref in consent_preferences.consent or []
         if pref.data_use in executable_data_uses
     ]
-
-    logger.info(executable_consent_preferences)
 
     if not executable_consent_preferences:
         logger.info(

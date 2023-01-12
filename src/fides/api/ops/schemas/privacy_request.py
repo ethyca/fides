@@ -242,7 +242,7 @@ class ConsentPreferences(BaseSchema):
     consent: Optional[List[Consent]] = None
 
 
-class ExecutableConsent(BaseSchema):
+class ConsentWithExecutableStatus(BaseSchema):
     """Schema for executable consents"""
 
     data_use: str
@@ -255,7 +255,7 @@ class ConsentPreferencesWithVerificationCode(BaseSchema):
     code: Optional[str]
     consent: List[Consent]
     policy_key: Optional[FidesOpsKey] = None
-    executable_options: Optional[List[ExecutableConsent]]
+    executable_options: Optional[List[ConsentWithExecutableStatus]]
 
 
 class ConsentRequestResponse(BaseSchema):
