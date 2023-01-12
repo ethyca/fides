@@ -1,7 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
+import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutDataset,
   Dataset,
@@ -27,12 +27,7 @@ interface DatasetDeleteResponse {
   resource: Dataset;
 }
 
-export const datasetApi = createApi({
-  reducerPath: "datasetApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
-  }),
-  tagTypes: ["Dataset", "Datasets"],
+const datasetApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllDatasets: build.query<Dataset[], void>({
       query: () => ({ url: `dataset/` }),
