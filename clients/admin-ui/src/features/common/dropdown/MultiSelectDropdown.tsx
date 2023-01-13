@@ -1,5 +1,6 @@
 import { PlacementWithLogical } from "@chakra-ui/react";
 import {
+  ArrowDownLineIcon,
   Box,
   Button,
   HStack,
@@ -10,7 +11,6 @@ import {
 } from "@fidesui/react";
 import React, { useState } from "react";
 
-import { ArrowDownLineIcon } from "../Icon";
 import MultiSelectDropdownList from "./MultiSelectDropdownList";
 
 type MultiSelectDropdwonProps = {

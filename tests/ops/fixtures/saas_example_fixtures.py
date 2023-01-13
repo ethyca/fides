@@ -1,6 +1,7 @@
 from typing import Any, Dict, Generator
 
 import pytest
+from loguru import logger
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
@@ -309,7 +310,13 @@ def oauth2_authorization_code_connection_config(
 
 @pytest.fixture(scope="session")
 def saas_config() -> Dict[str, Any]:
-    saas_config: Dict[str, Any] = load_toml("saas_config.toml")
+    saas_config = {}
+    try:
+        saas_config = load_toml("saas_config.toml")
+    except Exception:
+        logger.info(
+            "Unable to load saas_config.toml file, skipping loading of local secrets"
+        )
     return saas_config
 
 
@@ -399,8 +406,8 @@ def erasure_policy_complete_mask(
             "name": "user_contact_address_country Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": NullMaskingStrategy,
-                "configuration": {},
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "Masked"},
             },
         },
     )

@@ -1,4 +1,5 @@
 import {
+  ArrowDownLineIcon,
   Box,
   Button,
   Menu,
@@ -6,8 +7,6 @@ import {
   MenuList,
   MenuProps,
 } from "@fidesui/react";
-
-import { ArrowDownLineIcon } from "~/features/common/Icon";
 
 import ConfigureAlerts from "../drawers/ConfigureAlerts";
 

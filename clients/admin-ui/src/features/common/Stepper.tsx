@@ -1,9 +1,11 @@
-import { Box, Stack, Text } from "@fidesui/react";
 import {
+  Box,
+  Stack,
   StepperCircleCheckmarkIcon,
   StepperCircleIcon,
+  Text,
   VerticalLineIcon,
-} from "common/Icon";
+} from "@fidesui/react";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features";
