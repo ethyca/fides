@@ -1,4 +1,5 @@
 """Contains the nox sessions used during CI checks."""
+from os import environ
 from functools import partial
 from typing import Callable, Dict
 
@@ -218,5 +219,29 @@ def python_build(session: nox.Session, dist: str) -> None:
         "python",
         "setup.py",
         dist,
+        external=True,
+    )
+
+
+@nox.session()
+def format_coverage(session: nox.Session) -> None:
+    """
+    Format, combine and upload the test coverage files.
+    """
+    cc_reported_key = environ["CC_REPORTER_ID"]
+
+    download_cc_reporter = "curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && "
+    set_permissions = "chmod +x ./cc-test-reporter && "
+    format_test_coverage = "./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.json coverage/*.lcov &&"
+    upload_test_coverage = f"./cc-test-reporter upload-coverage -r {cc_reported_key};"
+
+    session.run(
+        *RUN_NO_DEPS,
+        "bash",
+        "-c",
+        download_cc_reporter
+        + set_permissions
+        + format_test_coverage
+        + upload_test_coverage,
         external=True,
     )
