@@ -355,7 +355,7 @@ async def test_load_default_dsr_policies(
     db,
 ):
     # seed the default dsr policies and its artifacts
-    await seed.load_default_dsr_policies()
+    seed.load_default_dsr_policies()
 
     # run some basic checks on its artifacts to make sure they're populated as we expect
     access_policy: Policy = Policy.get_by(
@@ -449,7 +449,7 @@ async def test_load_default_dsr_policies(
     # now test that re-running `load_default_dsr_policies()` does not
     # overwrite any of the manual changed that have been made to the artifacts
 
-    await seed.load_default_dsr_policies()
+    seed.load_default_dsr_policies()
 
     access_policy: Policy = Policy.get_by(
         db, field="key", value=seed.DEFAULT_ACCESS_POLICY

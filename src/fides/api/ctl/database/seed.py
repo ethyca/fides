@@ -302,7 +302,7 @@ def load_default_erasure_policy(
         )
 
 
-async def load_default_dsr_policies() -> None:
+def load_default_dsr_policies() -> None:
     """
     Checks whether DSR execution policies exist in the database, and
     inserts them to target a default set of data categories if not.
@@ -402,4 +402,4 @@ async def load_default_resources(async_session: AsyncSession) -> None:
     """
     await load_default_organization(async_session)
     await load_default_taxonomy(async_session)
-    await load_default_dsr_policies()
+    load_default_dsr_policies()
