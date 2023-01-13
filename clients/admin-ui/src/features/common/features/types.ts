@@ -12,6 +12,7 @@ export type FlagEnvs<Value> = {
   development: Value;
   test: Value;
   production: Value;
+  description?: string;
 };
 
 /**
@@ -25,6 +26,7 @@ export type FlagEnvs<Value> = {
  *     development: true,
  *     test: true,
  *     production: false,
+ *     description: "Flag changes per environment."
  *   }
  * }
  */
@@ -46,6 +48,7 @@ export type FlagConfigDefaults<Flags> = {
  *     development: true,
  *     test: true,
  *     production: false,
+ *     description: "Flag changes per environment."
  *   }
  * }
  */
