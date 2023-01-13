@@ -333,9 +333,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Package
-        run: pip install .
-
       - name: Download Coverage Artifacts
         uses: actions/download-artifact@v3
         with:
@@ -349,6 +346,7 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE_TEST_REPORTER_ID }}
         with:
+          coverageCommand: pip install .
           coverageLocations: |
             ${{ github.workspace }}/coverage/**/*.lcov:lcov
           debug: true
