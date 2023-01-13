@@ -1,5 +1,4 @@
 import importlib
-import os
 import os.path
 
 # path to the current directory

@@ -70,6 +70,12 @@ dataset = "data/saas/dataset/outreach_dataset.yml"
 icon = "data/saas/icon/outreach.svg"
 human_readable = "Outreach"
 
+[sailthru]
+config = "data/saas/config/sailthru_config.yml"
+dataset = "data/saas/dataset/sailthru_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Sailthru"
+
 [salesforce]
 config = "data/saas/config/salesforce_config.yml"
 dataset = "data/saas/dataset/salesforce_dataset.yml"

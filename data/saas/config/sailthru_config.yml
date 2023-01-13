@@ -1,0 +1,63 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Sailthru Transactional SaaS Config
+  type: sailthru
+  description: A sample schema representing the Sailthru connector for Fides
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+      default_value: api.sailthru.com
+    - name: api_key
+    - name: secret
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: sailthru
+      configuration:
+        api_key: <api_key>
+        secret: <secret>
+
+  test_request:
+    method: GET
+    path: /
+
+
+  consent_requests:
+    opt_in:
+      method: POST
+      headers:
+        - name: Content-Type
+          value: application/x-www-form-urlencoded
+      path: /user
+      body: |
+       {
+          "id": "<email>",
+          "optout_email": "none",
+          "sms_marketing_status": "opt-in"
+       }
+      param_values:
+        - name: id
+          identity: email
+
+    opt_out:
+      method: POST
+      headers:
+        - name: Content-Type
+          value: application/x-www-form-urlencoded
+      path: /user
+      body: |
+        {
+          "id": "<email>",
+          "optout_email": "basic",
+          "sms_marketing_status": "opt-out"
+        }
+      param_values:
+        - name: id
+          identity: email
+
+
+
+  endpoints: []

@@ -62,11 +62,14 @@ class ApiKeyAuthenticationStrategy(AuthenticationStrategy):
                     param_val,
                 )
         if self.body:
+            # Note, this only works if original content type is application/json
+            # For future expansion to handle application/x-www-form-urlencoded format,
+            # see Sailthru authentication for inspiration.
+
             body_with_api_key: Optional[str] = assign_placeholders(
                 self.body, secrets or {}
             )
             api_key_request_body: Dict = json.loads(body_with_api_key or "{}")
-
             original_request_body: Dict = json.loads(request.body or "{}")
             original_request_body.update(api_key_request_body)
 
