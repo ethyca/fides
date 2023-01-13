@@ -52,18 +52,18 @@ const ApproveClassification = () => {
         toast(errorToastParams(getErrorMessage(updateResult.error)));
         return;
       }
-      var uncategorized_count = 0;
+      let uncategorizedCount = 0;
       updatedDataset.collections.forEach((updatedCollection) => {
         updatedCollection.fields.forEach((updatedField) => {
           if (
             !updatedField.data_categories ||
-            updatedField.data_categories.length == 0
+            updatedField.data_categories.length === 0
           ) {
-            uncategorized_count += 1;
+            uncategorizedCount += 1;
           }
         });
       });
-      if (uncategorized_count === 0) {
+      if (uncategorizedCount === 0) {
         const statusResult = await updateClassifyInstance({
           dataset_fides_key: dataset.fides_key,
           status: ClassificationStatus.REVIEWED,
