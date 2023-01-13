@@ -161,6 +161,7 @@ const RequestRow = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       height="36px"
+      data-testid={`request-row-${request.status}`}
     >
       <Td px={0}>
         <Checkbox
