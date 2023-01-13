@@ -1,13 +1,12 @@
-describe("Access request flow", () => {
+import { API_URL } from "../support/constants";
+
+describe("Smoke test", () => {
   it("can submit an access request from the privacy center", () => {
     // Watch these routes without changing or stubbing its response
-    cy.intercept(
-      "PATCH",
-      "http://0.0.0.0:8080/api/v1/privacy-request/administrate/approve"
-    ).as("patchRequest");
-    cy.intercept("GET", "http://0.0.0.0:8080/api/v1/privacy-request*").as(
-      "getRequests"
+    cy.intercept("PATCH", `${API_URL}/privacy-request/administrate/approve`).as(
+      "patchRequest"
     );
+    cy.intercept("GET", `${API_URL}/privacy-request*`).as("getRequests");
 
     // Submit the access request from the privacy center
     cy.visit("localhost:3001");
@@ -23,6 +22,9 @@ describe("Access request flow", () => {
     // Approve the request in the admin UI
     cy.visit("localhost:3000");
     cy.origin("http://localhost:3000", () => {
+      // Makes custom commands available to all subsequent cy.origin() commands
+      // https://docs.cypress.io/api/commands/origin#Custom-commands
+      require("../support/commands");
       cy.login();
       cy.get("div").contains("Review privacy requests").click();
       let numCompletedRequests = 0;
@@ -48,5 +50,22 @@ describe("Access request flow", () => {
         expect(rows.length).to.eql(numCompletedRequests + 1);
       });
     });
+  });
+
+  it("can access mongo and postgres connectors", () => {
+    cy.intercept(`${API_URL}/connection_type`).as("getConnectionType");
+    cy.intercept(`${API_URL}/connection*`).as("getConnections");
+
+    cy.visit("localhost:3000");
+    cy.login();
+    cy.get("div").contains("Configure privacy requests").click();
+    cy.get("a").contains("Connection manager").click();
+    cy.wait("@getConnectionType");
+    cy.wait("@getConnections");
+    cy.getByTestId("connection-grid-item-mongodb_connector").within(() => {
+      // TODO: UI does not appear to indicate when test fails
+      cy.get("button").contains("Test").click();
+    });
+    cy.getByTestId("connection-grid-item-postgres_connector");
   });
 });
