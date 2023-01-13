@@ -228,12 +228,17 @@ def format_coverage(session: nox.Session) -> None:
     """
     Format, combine and upload the test coverage files.
     """
-    cc_reported_key = environ["CC_REPORTER_ID"]
+    try:
+        cc_reported_key = environ["CC_TEST_REPORTER_ID"]
+    except KeyError:
+        session.error("The CC_TEST_REPORTER_ID env var is required for this session")
 
     download_cc_reporter = "curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && "
     set_permissions = "chmod +x ./cc-test-reporter && "
-    format_test_coverage = "./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.json coverage/*.lcov &&"
-    upload_test_coverage = f"./cc-test-reporter upload-coverage -r {cc_reported_key};"
+    format_test_coverage = "./cc-test-reporter -d format-coverage -t lcov -o coverage/codeclimate.json coverage/*.lcov &&"
+    upload_test_coverage = (
+        f"./cc-test-reporter -d upload-coverage -r {cc_reported_key};"
+    )
 
     session.run(
         *RUN_NO_DEPS,
