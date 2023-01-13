@@ -52,6 +52,7 @@ const ApproveClassification = () => {
         toast(errorToastParams(getErrorMessage(updateResult.error)));
         return;
       }
+      toast(successToastParams("Collection classified and approved"));
       let uncategorizedCount = 0;
       updatedDataset.collections.forEach((updatedCollection) => {
         updatedCollection.fields.forEach((updatedField) => {
