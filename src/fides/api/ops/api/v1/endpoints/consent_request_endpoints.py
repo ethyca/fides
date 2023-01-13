@@ -230,7 +230,7 @@ def queue_privacy_request_to_propagate_consent(
     provided_identity: ProvidedIdentity,
     policy: Union[FidesOpsKey, str],
     consent_preferences: ConsentPreferences,
-    executable_consents: Optional[List[ConsentWithExecutableStatus]],
+    executable_consents: Optional[List[ConsentWithExecutableStatus]] = [],
 ) -> Optional[BulkPostPrivacyRequests]:
     """
     Queue a privacy request to carry out propagating consent preferences server-side to third-party systems.
@@ -262,6 +262,7 @@ def queue_privacy_request_to_propagate_consent(
         )
         return None
 
+    logger.info("Executable consent options: {}", executable_data_uses)
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
         db=db,
         data=[
