@@ -5,12 +5,12 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  MoreIcon,
   Portal,
   Td,
   Text,
   Tr,
 } from "@fidesui/react";
-import { MoreIcon } from "common/Icon";
 import { useRouter } from "next/router";
 import React from "react";
 

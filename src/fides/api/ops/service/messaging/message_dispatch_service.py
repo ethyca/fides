@@ -4,7 +4,9 @@ import json
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
+import sendgrid
 from loguru import logger
+from sendgrid.helpers.mail import Content, Email, Mail, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
@@ -323,6 +325,8 @@ def _get_dispatcher_from_config_type(
         return _mailgun_dispatcher
     if message_service_type == MessagingServiceType.TWILIO_TEXT:
         return _twilio_sms_dispatcher
+    if message_service_type == MessagingServiceType.TWILIO_EMAIL:
+        return _twilio_email_dispatcher
     return None
 
 
@@ -406,6 +410,51 @@ def _mailgun_dispatcher(
                 raise MessageDispatchException(
                     f"Email failed to send with status code {response.status_code}"
                 )
+    except Exception as e:
+        logger.error("Email failed to send: {}", Pii(str(e)))
+        raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
+
+
+def _twilio_email_dispatcher(
+    messaging_config: MessagingConfig,
+    message: EmailForActionType,
+    to: Optional[str],
+) -> None:
+    """Dispatches email using twilio sendgrid"""
+    if not to:
+        logger.error("Message failed to send. No email identity supplied.")
+        raise MessageDispatchException("No email identity supplied.")
+    if not messaging_config.details or not messaging_config.secrets:
+        logger.error(
+            "Message failed to send. No twilio email config details or secrets supplied."
+        )
+        raise MessageDispatchException(
+            "No twilio email config details or secrets supplied."
+        )
+
+    try:
+        sg = sendgrid.SendGridAPIClient(
+            api_key=messaging_config.secrets[
+                MessagingServiceSecrets.TWILIO_API_KEY.value
+            ]
+        )
+        from_email = Email(
+            messaging_config.details[MessagingServiceDetails.TWILIO_EMAIL_FROM.value]
+        )
+        to_email = To(to.strip())
+        subject = message.subject
+        content = Content("text/html", message.body)
+        mail = Mail(from_email, to_email, subject, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        if response.status_code >= 400:
+            logger.error(
+                "Email failed to send: %s: %s",
+                response.status_code,
+                Pii(str(response.body)),
+            )
+            raise MessageDispatchException(
+                f"Email failed to send: {response.status_code}, {Pii(str(response.body))}"
+            )
     except Exception as e:
         logger.error("Email failed to send: {}", Pii(str(e)))
         raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")

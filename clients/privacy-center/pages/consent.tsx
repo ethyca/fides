@@ -29,7 +29,7 @@ import { hostUrl, config } from "~/constants";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { VerificationType } from "~/components/modals/types";
 import { useLocalStorage } from "~/common/hooks";
-import ConsentItemCard from "../components/ConsentItemCard";
+import ConsentItemCard from "~/components/ConsentItemCard";
 
 const Consent: NextPage = () => {
   const content: any = [];
@@ -131,10 +131,15 @@ const Consent: NextPage = () => {
 
     const body = {
       code: verificationCode,
+      policy_key: config.consent?.policy_key,
       consent: consentItems.map((d) => ({
         data_use: d.fidesDataUseKey,
         data_use_description: d.description,
         opt_in: d.consentValue,
+      })),
+      executable_options: consentItems.map((d) => ({
+        data_use: d.fidesDataUseKey,
+        executable: d.executable ?? false,
       })),
     };
 

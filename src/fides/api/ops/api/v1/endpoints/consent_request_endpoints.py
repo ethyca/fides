@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from typing import Dict, List, Optional, Tuple, Union
 
 from fastapi import Depends, HTTPException, Security
@@ -48,6 +47,7 @@ from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentRequestResponse,
+    ConsentWithExecutableStatus,
     PrivacyRequestCreate,
     VerificationCode,
 )
@@ -225,34 +225,12 @@ def get_consent_preferences(
     return _prepare_consent_preferences(db, identity)
 
 
-def load_executable_consent_options(file_path: str) -> List[str]:
-    """Load customer's consentOptions from the config.json file and filter to return only a list
-    of executable consent options"""
-    with open(file_path, encoding="utf-8") as privacy_center_config_file:
-        privacy_center_config: Dict = json.load(privacy_center_config_file)
-        consent_options: List = privacy_center_config.get("consent", {}).get(
-            "consentOptions", []
-        )
-
-        executable_consent_options: List[str] = []
-        for consent in consent_options:
-            data_use: str = consent.get("fidesDataUseKey")
-            if not data_use:
-                continue
-
-            if consent.get("executable"):
-                executable_consent_options.append(data_use)
-            else:
-                logger.info("Consent option: '{}' is not executable.", data_use)
-
-        return executable_consent_options
-
-
 def queue_privacy_request_to_propagate_consent(
     db: Session,
     provided_identity: ProvidedIdentity,
     policy: Union[FidesOpsKey, str],
     consent_preferences: ConsentPreferences,
+    executable_consents: Optional[List[ConsentWithExecutableStatus]],
 ) -> Optional[BulkPostPrivacyRequests]:
     """
     Queue a privacy request to carry out propagating consent preferences server-side to third-party systems.
@@ -267,13 +245,13 @@ def queue_privacy_request_to_propagate_consent(
         provided_identity.encrypted_value["value"],  # type:ignore[index]
     )  # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
 
-    executable_consent_options: List[str] = load_executable_consent_options(
-        CONFIG_JSON_PATH
-    )
+    executable_data_uses = [
+        ec.data_use for ec in executable_consents or [] if ec.executable
+    ]
     executable_consent_preferences: List[Dict] = [
         pref.dict()
         for pref in consent_preferences.consent or []
-        if pref.data_use in executable_consent_options
+        if pref.data_use in executable_data_uses
     ]
 
     if not executable_consent_preferences:
@@ -359,6 +337,7 @@ def set_consent_preferences(
         provided_identity,
         data.policy_key or DEFAULT_CONSENT_POLICY,
         consent_preferences,
+        data.executable_options,
     )
 
     if privacy_request_creation_results:
@@ -504,7 +483,7 @@ def _get_consent_request_and_provided_identity(
 def _prepare_consent_preferences(
     db: Session, provided_identity: ProvidedIdentity
 ) -> ConsentPreferences:
-    consent = Consent.filter(
+    consent: List[Consent] = Consent.filter(
         db=db, conditions=Consent.provided_identity_id == provided_identity.id
     ).all()
 

@@ -8,6 +8,7 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  MoreIcon,
   Portal,
   Tag,
   Td,
@@ -23,7 +24,6 @@ import React, { useRef, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 
-import { MoreIcon } from "../common/Icon";
 import PII from "../common/PII";
 import RequestStatusBadge from "../common/RequestStatusBadge";
 import ReprocessButton from "./buttons/ReprocessButton";
@@ -240,6 +240,7 @@ const RequestRow: React.FC<{
           {request.status === "error" && (
             <ReprocessButton
               buttonProps={{ mr: "-px", size: "xs" }}
+              handleBlur={handleBlur}
               subjectRequest={request}
             />
           )}
@@ -249,7 +250,10 @@ const RequestRow: React.FC<{
                 size="xs"
                 mr="-px"
                 bg="white"
-                onClick={handleApproveRequest}
+                onClick={() => {
+                  handleApproveRequest();
+                  handleBlur();
+                }}
                 isLoading={approveRequestResult.isLoading}
                 _loading={{
                   opacity: 1,

@@ -47,7 +47,7 @@
         "default": true,
         "highlight": false,
         "cookieKeys": ["data_sales"],
-        "executable": true
+        "executable": false
       },
       {
         "fidesDataUseKey": "advertising.first_party",
@@ -57,7 +57,7 @@
         "default": true,
         "highlight": false,
         "cookieKeys": [],
-        "executable": true
+        "executable": false
       },
       {
         "fidesDataUseKey": "improve",
@@ -67,7 +67,7 @@
         "default": true,
         "highlight": false,
         "cookieKeys": [],
-        "executable": true
+        "executable": false
       }
     ]
   }

@@ -223,8 +223,8 @@ const DatabaseConnectForm = () => {
         <Form>
           <VStack spacing={8} align="left">
             <Text size="sm" color="gray.700">
-              Connect to one of your databases using a connection URL. You may
-              have received this URL from a colleague or your Ethyca developer
+              Connect to a database using the connection URL. You may have
+              received this URL from a colleague or your Ethyca developer
               support engineer.
             </Text>
             <Box>
@@ -235,7 +235,7 @@ const DatabaseConnectForm = () => {
               <CustomSwitch
                 name="classify"
                 label="Classify dataset"
-                tooltip="In addition to generating the Dataset, Fidescls will scan the database to determine the locations of possible PII and suggest labels based on the contents of your tables."
+                tooltip="Use Fides Classify to suggest labels based on your data."
               />
             ) : null}
 

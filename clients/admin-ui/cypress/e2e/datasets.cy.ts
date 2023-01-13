@@ -4,8 +4,7 @@ import {
   stubPlus,
 } from "cypress/support/stubs";
 
-// TODO: Update Cypress test to reflect the nav bar 2.0
-describe.skip("Dataset", () => {
+describe("Dataset", () => {
   beforeEach(() => {
     cy.login();
     stubDatasetCrud();
@@ -14,7 +13,8 @@ describe.skip("Dataset", () => {
   });
 
   describe("List of datasets view", () => {
-    it("Can navigate to the datasets list view", () => {
+    // TODO: Update Cypress test to reflect the nav bar 2.0
+    it.skip("Can navigate to the datasets list view", () => {
       cy.visit("/");
       cy.getByTestId("nav-link-Datasets").click();
       cy.wait("@getDatasets");
@@ -37,10 +37,7 @@ describe.skip("Dataset", () => {
     it("Can load an individual dataset", () => {
       cy.visit("/dataset");
       cy.wait("@getDatasets");
-      cy.getByTestId("load-dataset-btn").should("be.disabled");
       cy.getByTestId("dataset-row-demo_users_dataset").click();
-      cy.getByTestId("load-dataset-btn").should("not.be.disabled");
-      cy.getByTestId("load-dataset-btn").click();
       // for some reason this is slow in CI, so add a timeout :(
       cy.url({ timeout: 10000 }).should(
         "contain",

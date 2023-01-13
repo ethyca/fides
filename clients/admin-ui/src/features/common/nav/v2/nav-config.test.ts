@@ -18,6 +18,7 @@ describe("configureNavGroups", () => {
       children: [
         { title: "Taxonomy", path: "/taxonomy" },
         { title: "Users", path: "/user-management" },
+        { title: "About Fides", path: "/management/about" },
       ],
     });
   });

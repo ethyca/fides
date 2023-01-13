@@ -5,9 +5,9 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  SearchLineIcon,
   Spinner,
 } from "@fidesui/react";
-import { SearchLineIcon } from "common/Icon";
 import { debounce } from "common/utils";
 import {
   selectConnectionTypeFilters,
