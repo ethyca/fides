@@ -341,6 +341,9 @@ jobs:
       - name: Display Downloaded Artifacts
         run: ls -R coverage/
 
+      - name: Install Nox
+        run: pip install nox>=2022
+
       - name: Upload Coverage to Code Climate
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE_TEST_REPORTER_ID }}
