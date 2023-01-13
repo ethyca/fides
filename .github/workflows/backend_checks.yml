@@ -333,12 +333,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
-
       - name: Install Package
         run: pip install .
 
