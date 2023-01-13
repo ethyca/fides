@@ -94,7 +94,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
-        executable_preferences: List[Consent],
+        consent_preferences: List[Consent],
     ) -> bool:
         """
         Base method for executing a consent request. Override on a given connector if functionality

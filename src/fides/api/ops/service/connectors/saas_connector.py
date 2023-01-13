@@ -11,7 +11,12 @@ from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTe
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
-from fides.api.ops.schemas.saas.saas_config import ClientConfig, ParamValue, SaaSRequest
+from fides.api.ops.schemas.saas.saas_config import (
+    ClientConfig,
+    ConsentRequestMap,
+    ParamValue,
+    SaaSRequest,
+)
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.saas.authenticated_client import (
@@ -412,27 +417,44 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
-        executable_preferences: List[Consent],
+        consent_preferences: List[Consent],
     ) -> bool:
         """Execute a consent request. Return whether the consent request to the third party succeeded.
-
-        Executable_preferences have already been filtered to just consent preferences the customer has deemed executable.
-
         Return True if 200 OK
         """
         logger.info(
-            "Mocking consent request - actual logic should go here for saas connectors",
+            "Starting consent request for node: '{}'",
             node.address.value,
         )
 
-        logger.info(
-            "Demo only! Testing available consent params! identity_data: {}, executable_preferences: {}",
-            identity_data,
-            [
-                {"use": preference.data_use, "opt_in": preference.opt_in}
-                for preference in executable_preferences
-            ],
-        )
+        for consent in consent_preferences:
+            request_action: str = "opt_in" if consent.opt_in else "opt_out"
+            consent_request: Optional[
+                SaaSRequest
+            ] = self._get_consent_requests_by_preference(consent.opt_in)
+
+            if not consent_request:
+                logger.info(
+                    "Skipping consent requests on node {}: No '{}' request defined",
+                    node.address.value,
+                    request_action,
+                )
+                continue
+
+            self.set_saas_request_state(consent_request)
+
+            param_values: Dict[str, Any] = self.secrets
+            param_values.update(identity_data)
+
+            prepared_request: SaaSRequestParams = map_param_values(
+                request_action,
+                f"{self.configuration.name}",
+                consent_request,
+                self.secrets,
+            )
+            client: AuthenticatedClient = self.create_client()
+            client.send(prepared_request)
+            self.unset_connector_state()
         return True
 
     def close(self) -> None:
@@ -557,3 +579,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             raise FidesopsException(
                 f"Error executing override mask function '{override_function_name}'"
             )
+
+    def _get_consent_requests_by_preference(
+        self, opt_in: bool
+    ) -> Optional[SaaSRequest]:
+        """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
+        consent_requests: Optional[
+            ConsentRequestMap
+        ] = self.saas_config.consent_requests
+
+        if not consent_requests:
+            return None
+
+        return consent_requests.opt_in if opt_in else consent_requests.opt_out

@@ -35,7 +35,9 @@ The types of changes are:
 * Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
 * Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
 * Access and erasure support for Friendbuy Nextgen [#2085](https://github.com/ethyca/fides/pull/2085)
+* Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
 * Privacy Center consent options can now be marked as `executable` in order to propagate consent requests [#2193](https://github.com/ethyca/fides/pull/2193)
+* Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
 
 ### Changed
 

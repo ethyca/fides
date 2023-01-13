@@ -326,3 +326,25 @@ class TestSaaSConnectorMethods:
         client = connector.create_client()
         assert client.rate_limit_config.enabled is False
         assert connector.get_rate_limit_config().enabled is False
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_mailchimp_transactional
+class TestConsentRequests:
+    def test_get_consent_requests_by_preference(
+        self, mailchimp_transactional_connection_config
+    ):
+        connector: SaaSConnector = get_connector(
+            mailchimp_transactional_connection_config
+        )
+
+        opt_in_request: SaaSRequest = connector._get_consent_requests_by_preference(
+            opt_in=True
+        )
+        assert opt_in_request.path == "/allowlists/add"
+
+        opt_out_request: SaaSRequest = connector._get_consent_requests_by_preference(
+            opt_in=False
+        )
+
+        assert opt_out_request.path == "/allowlists/delete"

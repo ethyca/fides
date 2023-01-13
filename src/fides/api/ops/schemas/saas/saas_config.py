@@ -211,6 +211,13 @@ class SaaSRequestMap(BaseModel):
     delete: Optional[SaaSRequest]
 
 
+class ConsentRequestMap(BaseModel):
+    """A map of actions to Consent requests"""
+
+    opt_in: Optional[SaaSRequest] = None
+    opt_out: Optional[SaaSRequest] = None
+
+
 class Endpoint(BaseModel):
     """A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
 
@@ -337,6 +344,7 @@ class SaaSConfig(SaaSConfigBase):
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
     rate_limit_config: Optional[RateLimitConfig]
+    consent_requests: Optional[ConsentRequestMap]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
