@@ -339,14 +339,9 @@ jobs:
           path: ${{ github.workspace }}/coverage/
 
       - name: Display Downloaded Artifacts
-        run: ls -R
+        run: ls -R coverage/
 
       - name: Upload Coverage to Code Climate
-        uses: paambaati/codeclimate-action@v3.2.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE_TEST_REPORTER_ID }}
-        with:
-          coverageCommand: pip install .
-          coverageLocations: |
-            ${{ github.workspace }}/coverage/**/*.lcov:lcov
-          debug: true
+        run: nox -s upload_coverage

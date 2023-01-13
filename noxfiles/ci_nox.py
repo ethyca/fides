@@ -224,7 +224,7 @@ def python_build(session: nox.Session, dist: str) -> None:
 
 
 @nox.session()
-def format_coverage(session: nox.Session) -> None:
+def upload_coverage(session: nox.Session) -> None:
     """
     Format, combine and upload the test coverage files.
     """
