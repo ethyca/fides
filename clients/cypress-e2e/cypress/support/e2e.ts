@@ -18,13 +18,3 @@ import "./commands";
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
-
-/**
- * Makes custom commands available to all subsequent cy.origin() commands
- * https://docs.cypress.io/api/commands/origin#Custom-commands
- */
-before(() => {
-  cy.origin("http://localhost:3000", () => {
-    require("./commands");
-  });
-});
