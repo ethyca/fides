@@ -71,7 +71,8 @@ export const getUpdatedDatasetFromField = (
  */
 export const getUpdatedDatasetFromClassifyDataset = (
   dataset: Dataset,
-  classifyDataset: ClassifyDataset
+  classifyDataset: ClassifyDataset,
+  activeCollection: string | undefined
 ): Dataset =>
   produce(dataset, (draftDataset) => {
     const classifyCollectionMap = new Map(
@@ -82,6 +83,11 @@ export const getUpdatedDatasetFromClassifyDataset = (
       const classifyCollection = classifyCollectionMap.get(
         draftCollection.name
       );
+
+      if (classifyCollection?.name != activeCollection) {
+        return;
+      }
+
       const classifyFieldMap = new Map(
         classifyCollection?.fields?.map((f) => [f.name, f])
       );

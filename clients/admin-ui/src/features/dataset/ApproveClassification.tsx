@@ -43,7 +43,8 @@ const ApproveClassification = () => {
 
     const updatedDataset = getUpdatedDatasetFromClassifyDataset(
       dataset,
-      classifyDataset
+      classifyDataset,
+      classifyCollection?.name
     );
     try {
       const updateResult = await updateDataset(updatedDataset);
@@ -51,17 +52,30 @@ const ApproveClassification = () => {
         toast(errorToastParams(getErrorMessage(updateResult.error)));
         return;
       }
-
-      const statusResult = await updateClassifyInstance({
-        dataset_fides_key: dataset.fides_key,
-        status: ClassificationStatus.REVIEWED,
+      var uncategorized_count = 0;
+      updatedDataset.collections.forEach((updatedCollection) => {
+        updatedCollection.fields.forEach((updatedField) => {
+          if (
+            !updatedField.data_categories ||
+            updatedField.data_categories.length == 0
+          ) {
+            uncategorized_count += 1;
+          }
+        });
       });
-      if (isErrorResult(statusResult)) {
-        toast(errorToastParams(getErrorMessage(statusResult.error)));
-        return;
-      }
+      if (uncategorized_count === 0) {
+        const statusResult = await updateClassifyInstance({
+          dataset_fides_key: dataset.fides_key,
+          status: ClassificationStatus.REVIEWED,
+        });
 
-      toast(successToastParams("Dataset classified and approved"));
+        if (isErrorResult(statusResult)) {
+          toast(errorToastParams(getErrorMessage(statusResult.error)));
+          return;
+        }
+
+        toast(successToastParams("Dataset classified and approved"));
+      }
     } catch (error) {
       toast(errorToastParams(`${error}`));
     }
