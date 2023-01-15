@@ -41,7 +41,7 @@ saas_config:
               identity: email
         delete:
           method: DELETE
-          path: '/v1/people/email:<email>'
+          path: /v1/people/email:<email>
           param_values:
             - name: email
               identity: email

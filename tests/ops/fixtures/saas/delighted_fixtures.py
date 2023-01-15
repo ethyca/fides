@@ -101,3 +101,34 @@ def delighted_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+@pytest.fixture(scope="function")
+def delighted_create_erasure_data(
+    delighted_connection_config: ConnectionConfig, delighted_erasure_identity_email: str
+) -> None:
+
+    delighted_secrets = delighted_connection_config.secrets
+    auth = delighted_secrets["username"], delighted_secrets["api_key"]
+    base_url = f"https://{delighted_secrets['domain']}"
+
+    # people
+    body = {
+        "name": "ethyca test erasure",
+        "email": delighted_erasure_identity_email,
+        "send": "false"
+    }
+
+    peoples_response = requests.post(url=f"{base_url}/v1/people", auth=auth, json=body)
+    people = peoples_response.json()
+    people_id = people["id"]
+
+    # survey_response
+    survey_response_data = {
+        "person": people_id,
+        "score": "3"
+    }
+    response = requests.post(
+        url=f"{base_url}/v1/survey_responses.json", auth=auth, json=survey_response_data
+    )
+    survey_response = response.json()
+    yield survey_response, peoples_response
