@@ -260,6 +260,9 @@ def upload_sum_coverage(session: nox.Session) -> None:
     Format, combine and upload the test coverage files.
 
     This should only be used in CI to keep coverage statistics consistent.
+
+    The 'sum-coverage' command expects to find 4 different coverage files to sum
+    and will throw an error otherwise.
     """
     try:
         cc_reported_key = environ["CC_TEST_REPORTER_ID"]
@@ -268,7 +271,7 @@ def upload_sum_coverage(session: nox.Session) -> None:
 
     download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
     sum_test_coverage = (
-        f"./cc-test-reporter -d sum-coverage coverage/**/codeclimate.json && "
+        f"./cc-test-reporter sum-coverage -p 4 coverage/**/codeclimate.json && "
     )
     upload_test_coverage = (
         f"./cc-test-reporter -d upload-coverage -r {cc_reported_key} ;"

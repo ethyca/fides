@@ -336,6 +336,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
       - name: Download Coverage Artifacts
         uses: actions/download-artifact@v3
         with:
@@ -350,4 +359,4 @@ jobs:
       - name: Upload Coverage to Code Climate
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE_TEST_REPORTER_ID }}
-        run: nox -s upload_coverage
+        run: nox -s upload_sum_coverage
