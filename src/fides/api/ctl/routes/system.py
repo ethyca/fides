@@ -15,7 +15,7 @@ from starlette.status import (
 )
 
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.sql_models import System
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1.endpoints.connection_endpoints import (
