@@ -9,8 +9,9 @@ from constants_nox import IMAGE_NAME, RUN, RUN_NO_DEPS, START_APP, WITH_TEST_CON
 from test_setup_nox import pytest_ctl, pytest_lib, pytest_ops
 from utils_nox import install_requirements
 
-
-# Static Checks
+###################
+## Static Checks ##
+###################
 @nox.session()
 def static_checks(session: nox.Session) -> None:
     """Run the static checks only."""
@@ -90,7 +91,9 @@ def xenon(session: nox.Session) -> None:
     session.run(*command)
 
 
-# Fides Checks
+##################
+## Fides Checks ##
+##################
 @nox.session()
 def check_install(session: nox.Session) -> None:
     """Check that fides installs works correctly."""
@@ -155,10 +158,52 @@ def minimal_config_startup(session: nox.Session) -> None:
     session.run(*start_command, external=True)
 
 
-# Pytest
+############
+## Pytest ##
+############
+
+TEST_GROUPS = [
+    nox.param("ctl-unit", id="ctl-unit"),
+    nox.param("ctl-not-external", id="ctl-not-external"),
+    nox.param("ctl-integration", id="ctl-integration"),
+    nox.param("ctl-external", id="ctl-external"),
+    nox.param("ops-unit", id="ops-unit"),
+    nox.param("ops-integration", id="ops-integration"),
+    nox.param("ops-external-datastores", id="ops-external-datastores"),
+    nox.param("ops-saas", id="ops-saas"),
+    nox.param("lib", id="lib"),
+]
+
+TEST_MATRIX: Dict[str, Callable] = {
+    "ctl-unit": partial(pytest_ctl, mark="unit"),
+    "ctl-not-external": partial(pytest_ctl, mark="not external"),
+    "ctl-integration": partial(pytest_ctl, mark="integration"),
+    "ctl-external": partial(pytest_ctl, mark="external"),
+    "ops-unit": partial(pytest_ops, mark="unit"),
+    "ops-integration": partial(pytest_ops, mark="integration"),
+    "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
+    "ops-saas": partial(pytest_ops, mark="saas"),
+    "lib": pytest_lib,
+}
+
+
+def validate_test_matrix(session: nox.Session) -> None:
+    """
+    Validates that all test groups are represented in the test matrix.
+    """
+    test_group_ids = [param.id for param in TEST_GROUPS]
+    test_matrix_keys = TEST_MATRIX.keys()
+
+    for param_id in test_group_ids:
+        if param_id not in test_matrix_keys:
+            session.error(f"Test Matrix missing key: {param_id}")
+
+
 @nox.session()
 def collect_tests(session: nox.Session) -> None:
-    """Run the 'pylint' code linter."""
+    """
+    Collect all pytests as a validity check.
+    """
     session.install(".")
     install_requirements(session)
     command = ("pytest", "tests/", "--collect-only")
@@ -168,17 +213,7 @@ def collect_tests(session: nox.Session) -> None:
 @nox.session()
 @nox.parametrize(
     "test_group",
-    [
-        nox.param("ctl-unit", id="ctl-unit"),
-        nox.param("ctl-not-external", id="ctl-not-external"),
-        nox.param("ctl-integration", id="ctl-integration"),
-        nox.param("ctl-external", id="ctl-external"),
-        nox.param("ops-unit", id="ops-unit"),
-        nox.param("ops-integration", id="ops-integration"),
-        nox.param("ops-external-datastores", id="ops-external-datastores"),
-        nox.param("ops-saas", id="ops-saas"),
-        nox.param("lib", id="lib"),
-    ],
+    TEST_GROUPS,
 )
 def pytest(session: nox.Session, test_group: str) -> None:
     """
@@ -189,19 +224,9 @@ def pytest(session: nox.Session, test_group: str) -> None:
     """
     session.notify("teardown")
 
+    validate_test_matrix(session)
     coverage_arg = f"--cov-report=lcov:coverage/{test_group}.lcov"
-    test_matrix: Dict[str, Callable] = {
-        "ctl-unit": partial(pytest_ctl, mark="unit"),
-        "ctl-not-external": partial(pytest_ctl, mark="not external"),
-        "ctl-integration": partial(pytest_ctl, mark="integration"),
-        "ctl-external": partial(pytest_ctl, mark="external"),
-        "ops-unit": partial(pytest_ops, mark="unit"),
-        "ops-integration": partial(pytest_ops, mark="integration"),
-        "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
-        "ops-saas": partial(pytest_ops, mark="saas"),
-        "lib": pytest_lib,
-    }
-    test_matrix[test_group](session=session, coverage_arg=coverage_arg)
+    TEST_MATRIX[test_group](session=session, coverage_arg=coverage_arg)
 
 
 @nox.session()
@@ -224,7 +249,24 @@ def python_build(session: nox.Session, dist: str) -> None:
 
 
 @nox.session()
-def upload_coverage(session: nox.Session) -> None:
+def format_coverage(session: nox.Session, test_group: str) -> None:
+    """Format the coverage output file from the test run."""
+
+    download_cc_reporter = "curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && "
+    set_permissions = "chmod +x ./cc-test-reporter && "
+    format_test_coverage = "./cc-test-reporter -d format-coverage -t lcov -o coverage/{test_group}/codeclimate.json coverage/{test_group}.lcov ;"
+
+    session.run(
+        *RUN_NO_DEPS,
+        "bash",
+        "-c",
+        download_cc_reporter + set_permissions + format_test_coverage,
+        external=True,
+    )
+
+
+@nox.session()
+def upload_sum_coverage(session: nox.Session) -> None:
     """
     Format, combine and upload the test coverage files.
     """
@@ -235,18 +277,14 @@ def upload_coverage(session: nox.Session) -> None:
 
     download_cc_reporter = "curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && "
     set_permissions = "chmod +x ./cc-test-reporter && "
-    format_test_coverage = "./cc-test-reporter -d format-coverage -t lcov -o coverage/codeclimate.json coverage/*.lcov &&"
     upload_test_coverage = (
-        f"./cc-test-reporter -d upload-coverage -r {cc_reported_key};"
+        f"./cc-test-reporter -d upload-coverage -r {cc_reported_key} ;"
     )
 
     session.run(
         *RUN_NO_DEPS,
         "bash",
         "-c",
-        download_cc_reporter
-        + set_permissions
-        + format_test_coverage
-        + upload_test_coverage,
+        download_cc_reporter + set_permissions + upload_test_coverage,
         external=True,
     )
