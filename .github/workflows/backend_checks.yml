@@ -11,8 +11,8 @@ on:
 env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.7"
-  GIT_COMMIT_SHA: ${{ vars.GITHUB_SHA }}
-  GIT_BRANCH: ${{ vars.GITHUB_REF_NAME }}
+  GIT_COMMIT_SHA: ${GITHUB_SHA}
+  GIT_BRANCH: ${GITHUB_REF_NAME}
 
 # Send coverage reports to code climate
 jobs:
