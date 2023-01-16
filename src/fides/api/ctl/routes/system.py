@@ -1,6 +1,9 @@
 from typing import List
 
 from fastapi import Depends, HTTPException, Security
+from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic.types import conlist
 from sqlalchemy.orm import Session
@@ -11,8 +14,9 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ctl.routes.crud import routers as crud_routers
+from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import System
+from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1.endpoints.connection_endpoints import (
     requeue_requires_input_requests,
@@ -36,16 +40,32 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 
-system_router = next(
-    (router for router in crud_routers if router.prefix == "/api/v1/system"), None
+router = APIRouter(tags=["System"], prefix=f"{API_PREFIX}/system")
+
+
+@router.get(
+    "/{fides_key}/connection",
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
+    status_code=HTTP_200_OK,
+    response_model=Page[ConnectionConfigurationResponse],
 )
+def get_system_connections(
+    fides_key: str, params: Params = Depends(), db: Session = Depends(deps.get_db)
+) -> AbstractPage[ConnectionConfigurationResponse]:
 
-if system_router is None:
-    logger.error("Unable to find the system router")
-    raise Exception("Unable to find the system router")
+    system = System.get_by(db, field="fides_key", value=fides_key)
+    if system is None:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="A valid system must be provided to create or update connections",
+        )
+    query = ConnectionConfig.query(db)
+    query = query.filter(ConnectionConfig.system_id == system.id)
+    # logger.info(str(query))
+    return paginate(query.order_by(ConnectionConfig.name.asc()), params=params)
 
 
-@system_router.patch(
+@router.patch(
     "/{fides_key}/connection",
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     status_code=HTTP_200_OK,
@@ -115,7 +135,10 @@ def patch_connections(
                         )
                         connection_config = (
                             create_connection_config_from_template_no_save(
-                                db, connector_template, template_values, system_id=system.id
+                                db,
+                                connector_template,
+                                template_values,
+                                system_id=system.id,
                             )
                         )
                     except KeyOrNameAlreadyExists as exc:
@@ -136,7 +159,7 @@ def patch_connections(
         orig_data = config.dict().copy()
         config_dict = config.dict()
         config_dict.pop("saas_connector_type", None)
-        config_dict['system_id'] = system.id
+        config_dict["system_id"] = system.id
 
         try:
             connection_config = ConnectionConfig.create_or_update(db, data=config_dict)

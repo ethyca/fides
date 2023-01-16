@@ -87,7 +87,7 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     health.router,
     validate.router,
     view.router,
-    system.test_router,
+    system.router,
 ]
 
 
