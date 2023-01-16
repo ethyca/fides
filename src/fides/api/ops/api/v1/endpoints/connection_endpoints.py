@@ -9,7 +9,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import ValidationError, conlist
-from sqlalchemy import or_
+from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import (
@@ -112,6 +112,7 @@ def get_connections(
     disabled: Optional[bool] = None,
     test_status: Optional[TestStatus] = None,
     system_type: Optional[SystemType] = None,
+    orphaned_from_system: Optional[bool] = False,
     connection_type: Optional[List[str]] = Query(default=None),  # type: ignore
 ) -> AbstractPage[ConnectionConfig]:
     """Returns all connection configurations in the database.
@@ -166,6 +167,9 @@ def get_connections(
         query = query.filter(
             ConnectionConfig.last_test_succeeded.is_(test_status.str_to_bool())
         )
+
+    if orphaned_from_system:
+        query = query.filter(ConnectionConfig.system_id.is_(null()))
 
     if system_type:
         if system_type == SystemType.saas:
