@@ -11,8 +11,6 @@ on:
 env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.7"
-  GIT_COMMIT_SHA: ${{ env.GITHUB_SHA }}
-  GIT_BRANCH: ${{ env.GITHUB_REF_NAME }}
 
 # Send coverage reports to code climate
 jobs:
@@ -30,6 +28,13 @@ jobs:
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
+
+      - name: Format Test Coverage File
+        run: |
+          export GIT_COMMIT_SHA=${GITHUB_SHA}
+          export GIT_BRANCH=${GITHUB_REF_NAME}
+          echo $GIT_COMMIT_SHA
+          echo $GIT_BRANCH
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -180,7 +185,10 @@ jobs:
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Format Test Coverage File
-        run: nox -s "format_coverage(${{ matrix.test_selection }})"
+        run: |
+          export GIT_COMMIT_SHA=${GITHUB_SHA}
+          export GIT_BRANCH=${GITHUB_REF_NAME}
+          nox -s "format_coverage(${{ matrix.test_selection }})"
 
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v3
