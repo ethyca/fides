@@ -21,6 +21,7 @@ from fides.api.ops.api.v1.endpoints.connection_endpoints import (
     validate_secrets,
 )
 from fides.api.ops.api.v1.scope_registry import CONNECTION_CREATE_OR_UPDATE
+from fides.api.ops.api.v1.urn_registry import CONNECTION_TYPES
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration.connection_config import (
@@ -126,7 +127,7 @@ def patch_connections(
                         )
                         connection_config = (
                             create_connection_config_from_template_no_save(
-                                db, connector_template, template_values
+                                db, connector_template, template_values, system_id=system.id
                             )
                         )
                     except KeyOrNameAlreadyExists as exc:
@@ -147,6 +148,7 @@ def patch_connections(
         orig_data = config.dict().copy()
         config_dict = config.dict()
         config_dict.pop("saas_connector_type", None)
+        config_dict['system_id'] = system.id
 
         try:
             connection_config = ConnectionConfig.create_or_update(db, data=config_dict)

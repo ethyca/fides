@@ -85,6 +85,7 @@ def create_connection_config_from_template_no_save(
     db: Session,
     template: ConnectorTemplate,
     template_values: SaasConnectionTemplateValues,
+    system_id: Optional[str] = None
 ) -> ConnectionConfig:
     """Creates a SaaS connection config from a template without saving it."""
     # Load saas config from template and replace every instance of "<instance_fides_key>" with the fides_key
@@ -93,17 +94,22 @@ def create_connection_config_from_template_no_save(
         template.config, "<instance_fides_key>", template_values.instance_key
     )
 
+    data = {
+        "name": template_values.name,
+        "key": template_values.key,
+        "description": template_values.description,
+        "connection_type": ConnectionType.saas,
+        "access": AccessLevel.write,
+        "saas_config": config_from_template,
+    }
+
+    if system_id:
+        data['system_id'] = system_id
+
     # Create SaaS ConnectionConfig
     connection_config = ConnectionConfig.create_without_saving(
         db,
-        data={
-            "name": template_values.name,
-            "key": template_values.key,
-            "description": template_values.description,
-            "connection_type": ConnectionType.saas,
-            "access": AccessLevel.write,
-            "saas_config": config_from_template,
-        },
+        data=data
     )
 
     return connection_config
