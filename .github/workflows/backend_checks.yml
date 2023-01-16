@@ -339,11 +339,11 @@ jobs:
       - name: Download container
         uses: actions/download-artifact@v3
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Download Coverage Artifacts
         uses: actions/download-artifact@v3
