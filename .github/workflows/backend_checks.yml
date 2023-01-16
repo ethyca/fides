@@ -177,11 +177,14 @@ jobs:
       - name: Run test suite
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
+      - name: Format Test Coverage File
+        run: nox -s "format_coverage(${{ matrix.test_selection }})"
+
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.test_selection }}
-          path: coverage/${{ matrix.test_selection }}.lcov
+          path: coverage/${{ matrix.test_selection }}/codeclimate.json
 
   ##################
   ## Unsafe Tests ##

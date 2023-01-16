@@ -227,12 +227,21 @@ def pytest(session: nox.Session, test_group: str) -> None:
 
 
 @nox.session()
+@nox.parametrize(
+    "test_group",
+    TEST_GROUPS,
+)
 def format_coverage(session: nox.Session, test_group: str) -> None:
-    """Format the coverage output file from the test run."""
+    """
+    Generate a Code Climate coverage file from a pytest coverage file.
+
+    Expects a 'coverage/<test_group>.lcov' file to exist.
+    Writes a new file to 'coverage/<test_group>/codeclimate.json'
+    """
 
     download_cc_reporter = "curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && "
     set_permissions = "chmod +x ./cc-test-reporter && "
-    format_test_coverage = "./cc-test-reporter -d format-coverage -t lcov -o coverage/{test_group}/codeclimate.json coverage/{test_group}.lcov ;"
+    format_test_coverage = f"./cc-test-reporter -d format-coverage -t lcov -o coverage/{test_group}/codeclimate.json coverage/{test_group}.lcov ;"
 
     session.run(
         *RUN_NO_DEPS,
