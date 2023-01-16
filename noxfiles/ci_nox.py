@@ -161,7 +161,6 @@ def minimal_config_startup(session: nox.Session) -> None:
 ############
 ## Pytest ##
 ############
-
 TEST_GROUPS = [
     nox.param("ctl-unit", id="ctl-unit"),
     nox.param("ctl-not-external", id="ctl-not-external"),
@@ -191,12 +190,11 @@ def validate_test_matrix(session: nox.Session) -> None:
     """
     Validates that all test groups are represented in the test matrix.
     """
-    test_group_ids = [param.id for param in TEST_GROUPS]
-    test_matrix_keys = TEST_MATRIX.keys()
+    test_group_ids = sorted([str(param) for param in TEST_GROUPS])
+    test_matrix_keys = sorted(TEST_MATRIX.keys())
 
-    for param_id in test_group_ids:
-        if param_id not in test_matrix_keys:
-            session.error(f"Test Matrix missing key: {param_id}")
+    if not test_group_ids == test_matrix_keys:
+        session.error(f"TEST_GROUPS and TEST_MATRIX do not match")
 
 
 @nox.session()
@@ -219,33 +217,13 @@ def pytest(session: nox.Session, test_group: str) -> None:
     """
     Runs Pytests.
 
-    The test_matrix contains all possible testing permutations,
-    and should match the 'mark' session parameters.
+    As new TEST_GROUPS are added, the TEST_MATRIX must also be updated.
     """
     session.notify("teardown")
 
     validate_test_matrix(session)
     coverage_arg = f"--cov-report=lcov:coverage/{test_group}.lcov"
     TEST_MATRIX[test_group](session=session, coverage_arg=coverage_arg)
-
-
-@nox.session()
-@nox.parametrize(
-    "dist",
-    [
-        nox.param("sdist", id="source"),
-        nox.param("bdist_wheel", id="wheel"),
-    ],
-)
-def python_build(session: nox.Session, dist: str) -> None:
-    "Build the Python distribution."
-    session.run(
-        *RUN_NO_DEPS,
-        "python",
-        "setup.py",
-        dist,
-        external=True,
-    )
 
 
 @nox.session()
@@ -269,6 +247,8 @@ def format_coverage(session: nox.Session, test_group: str) -> None:
 def upload_sum_coverage(session: nox.Session) -> None:
     """
     Format, combine and upload the test coverage files.
+
+    This should only be used in CI to keep coverage statistics consistent.
     """
     try:
         cc_reported_key = environ["CC_TEST_REPORTER_ID"]
@@ -286,5 +266,24 @@ def upload_sum_coverage(session: nox.Session) -> None:
         "bash",
         "-c",
         download_cc_reporter + set_permissions + upload_test_coverage,
+        external=True,
+    )
+
+
+@nox.session()
+@nox.parametrize(
+    "dist",
+    [
+        nox.param("sdist", id="source"),
+        nox.param("bdist_wheel", id="wheel"),
+    ],
+)
+def python_build(session: nox.Session, dist: str) -> None:
+    "Build the Python distribution."
+    session.run(
+        *RUN_NO_DEPS,
+        "python",
+        "setup.py",
+        dist,
         external=True,
     )
