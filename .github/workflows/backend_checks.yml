@@ -29,13 +29,6 @@ jobs:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
 
-      - name: Format Test Coverage File
-        run: |
-          export GIT_COMMIT_SHA=${GITHUB_SHA}
-          export GIT_BRANCH=${GITHUB_REF_NAME}
-          echo $GIT_COMMIT_SHA
-          echo $GIT_BRANCH
-
       - name: Install Nox
         run: pip install nox>=2022
 
