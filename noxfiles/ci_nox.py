@@ -1,6 +1,6 @@
 """Contains the nox sessions used during CI checks."""
-from os import environ
 from functools import partial
+from os import environ
 from typing import Callable, Dict
 
 import nox
@@ -8,6 +8,7 @@ import nox
 from constants_nox import IMAGE_NAME, RUN, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG
 from test_setup_nox import pytest_ctl, pytest_lib, pytest_ops
 from utils_nox import install_requirements
+
 
 ###################
 ## Static Checks ##
@@ -197,7 +198,7 @@ def validate_test_matrix(session: nox.Session) -> None:
     test_matrix_keys = sorted(TEST_MATRIX.keys())
 
     if not test_group_ids == test_matrix_keys:
-        session.error(f"TEST_GROUPS and TEST_MATRIX do not match")
+        session.error("TEST_GROUPS and TEST_MATRIX do not match")
 
 
 @nox.session()
@@ -271,7 +272,7 @@ def upload_sum_coverage(session: nox.Session) -> None:
 
     download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
     sum_test_coverage = (
-        f"./cc-test-reporter sum-coverage -p 4 coverage/**/codeclimate.json && "
+        "./cc-test-reporter sum-coverage -p 4 coverage/**/codeclimate.json && "
     )
     upload_test_coverage = (
         f"./cc-test-reporter -d upload-coverage -r {cc_reported_key} ;"
