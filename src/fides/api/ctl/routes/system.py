@@ -11,10 +11,8 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ctl.database.crud import get_resource
 from fides.api.ctl.routes.crud import routers as crud_routers
 from fides.api.ctl.sql_models import System
-from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1.endpoints.connection_endpoints import (
     requeue_requires_input_requests,
@@ -38,26 +36,16 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 
-test_router = APIRouter(tags=["Test"], prefix="/api/v1/system")
+system_router = next(
+    (router for router in crud_routers if router.prefix == "/api/v1/system"), None
+)
 
-# system_router = next(
-#     (router for router in crud_routers if router.prefix == "/api/v1/system"), None
-# )
-#
-# if system_router is None:
-#     logger.error("was unable to find the system router")
-#     raise Exception("oops didn't find the system router")
+if system_router is None:
+    logger.error("Unable to find the system router")
+    raise Exception("Unable to find the system router")
 
 
-# @test_router.patch(
-#     "hello-world",
-#     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
-# )
-# def get_hello_world():
-#     return "hello_world"
-
-
-@test_router.patch(
+@system_router.patch(
     "/{fides_key}/connection",
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     status_code=HTTP_200_OK,
