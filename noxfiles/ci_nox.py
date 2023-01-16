@@ -184,6 +184,9 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-saas": partial(pytest_ops, mark="saas"),
     "lib": pytest_lib,
 }
+TEST_REPORTER_URL = (
+    "https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64"
+)
 
 
 def validate_test_matrix(session: nox.Session) -> None:
@@ -239,15 +242,14 @@ def format_coverage(session: nox.Session, test_group: str) -> None:
     Writes a new file to 'coverage/<test_group>/codeclimate.json'
     """
 
-    download_cc_reporter = "curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && "
-    set_permissions = "chmod +x ./cc-test-reporter && "
+    download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
     format_test_coverage = f"./cc-test-reporter -d format-coverage -t lcov -o coverage/{test_group}/codeclimate.json coverage/{test_group}.lcov ;"
 
     session.run(
         *RUN_NO_DEPS,
         "bash",
         "-c",
-        download_cc_reporter + set_permissions + format_test_coverage,
+        download_cc_reporter + format_test_coverage,
         external=True,
     )
 
@@ -264,8 +266,10 @@ def upload_sum_coverage(session: nox.Session) -> None:
     except KeyError:
         session.error("The CC_TEST_REPORTER_ID env var is required for this session")
 
-    download_cc_reporter = "curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter && "
-    set_permissions = "chmod +x ./cc-test-reporter && "
+    download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
+    sum_test_coverage = (
+        f"./cc-test-reporter -d sum-coverage coverage/**/codeclimate.json && "
+    )
     upload_test_coverage = (
         f"./cc-test-reporter -d upload-coverage -r {cc_reported_key} ;"
     )
@@ -274,7 +278,7 @@ def upload_sum_coverage(session: nox.Session) -> None:
         *RUN_NO_DEPS,
         "bash",
         "-c",
-        download_cc_reporter + set_permissions + upload_test_coverage,
+        download_cc_reporter + sum_test_coverage + upload_test_coverage,
         external=True,
     )
 
