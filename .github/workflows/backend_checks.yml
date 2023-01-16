@@ -11,6 +11,8 @@ on:
 env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.7"
+  GIT_COMMIT_SHA: ${{ vars.GITHUB_SHA }}
+  GIT_BRANCH: ${{ vars.GITHUB_REF_NAME }}
 
 # Send coverage reports to code climate
 jobs:
@@ -356,7 +358,10 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Sum Coverage
+        run: nox -s sum_coverage
+
       - name: Upload Coverage to Code Climate
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE_TEST_REPORTER_ID }}
-        run: nox -s upload_sum_coverage
+        run: nox -s upload_coverage

@@ -5,7 +5,14 @@ from typing import Callable, Dict
 
 import nox
 
-from constants_nox import IMAGE_NAME, RUN, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG
+from constants_nox import (
+    IMAGE_NAME,
+    RUN,
+    RUN_COVERAGE,
+    RUN_NO_DEPS,
+    START_APP,
+    WITH_TEST_CONFIG,
+)
 from test_setup_nox import pytest_ctl, pytest_lib, pytest_ops
 from utils_nox import install_requirements
 
@@ -247,7 +254,7 @@ def format_coverage(session: nox.Session, test_group: str) -> None:
     format_test_coverage = f"./cc-test-reporter -d format-coverage -t lcov -o coverage/{test_group}/codeclimate.json coverage/{test_group}.lcov ;"
 
     session.run(
-        *RUN_NO_DEPS,
+        *RUN_COVERAGE,
         "bash",
         "-c",
         download_cc_reporter + format_test_coverage,
@@ -256,14 +263,30 @@ def format_coverage(session: nox.Session, test_group: str) -> None:
 
 
 @nox.session()
-def upload_sum_coverage(session: nox.Session) -> None:
+def sum_coverage(session: nox.Session) -> None:
     """
-    Format, combine and upload the test coverage files.
+    Combine multiple Code Climate coverage files.
+    """
+    download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
+    sum_test_coverage = (
+        "./cc-test-reporter sum-coverage -p 4 coverage/**/codeclimate.json ;"
+    )
+
+    session.run(
+        *RUN_NO_DEPS,
+        "bash",
+        "-c",
+        download_cc_reporter + sum_test_coverage,
+        external=True,
+    )
+
+
+@nox.session()
+def upload_coverage(session: nox.Session) -> None:
+    """
+    Upload a test coverage file.
 
     This should only be used in CI to keep coverage statistics consistent.
-
-    The 'sum-coverage' command expects to find 4 different coverage files to sum
-    and will throw an error otherwise.
     """
     try:
         cc_reported_key = environ["CC_TEST_REPORTER_ID"]
@@ -271,9 +294,6 @@ def upload_sum_coverage(session: nox.Session) -> None:
         session.error("The CC_TEST_REPORTER_ID env var is required for this session")
 
     download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
-    sum_test_coverage = (
-        "./cc-test-reporter sum-coverage -p 4 coverage/**/codeclimate.json && "
-    )
     upload_test_coverage = (
         f"./cc-test-reporter -d upload-coverage -r {cc_reported_key} ;"
     )
@@ -282,7 +302,7 @@ def upload_sum_coverage(session: nox.Session) -> None:
         *RUN_NO_DEPS,
         "bash",
         "-c",
-        download_cc_reporter + sum_test_coverage + upload_test_coverage,
+        download_cc_reporter + upload_test_coverage,
         external=True,
     )
 
