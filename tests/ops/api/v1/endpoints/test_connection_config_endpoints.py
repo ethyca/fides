@@ -644,7 +644,7 @@ class TestPatchConnections:
 
         call_args = mocked_prepare_and_log_request._mock_call_args[0]
 
-        assert call_args[0] == "PATCH: http://testserver/api/v1/connection"
+        assert call_args[0] == f"PATCH: http://testserver{url}"
         assert call_args[1] == "testserver"
         assert call_args[2] == 200
         assert isinstance(call_args[3], datetime)
