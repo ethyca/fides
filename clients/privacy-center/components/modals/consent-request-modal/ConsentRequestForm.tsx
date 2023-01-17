@@ -21,7 +21,7 @@ import { ErrorToastOptions } from "~/common/toast-options";
 import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
-import { config, hostUrl } from "~/constants";
+import { config, defaultIdentityInput, hostUrl } from "~/constants";
 import dynamic from "next/dynamic";
 import * as Yup from "yup";
 import { ModalViews, VerificationType } from "../types";
@@ -43,10 +43,8 @@ const useConsentRequestForm = ({
   isVerificationRequired: boolean;
   successHandler: () => void;
 }) => {
-  // If no identity inputs are configured, use an optional email field
-  const identityInputs = config.consent?.identity_inputs ?? {
-    email: "optional",
-  };
+  const identityInputs =
+    config.consent?.identity_inputs ?? defaultIdentityInput;
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const formik = useFormik({

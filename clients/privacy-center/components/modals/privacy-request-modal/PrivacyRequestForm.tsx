@@ -22,7 +22,7 @@ import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
 
 import { PrivacyRequestOption } from "~/types/config";
-import { hostUrl, config } from "~/constants";
+import { hostUrl, config, defaultIdentityInput } from "~/constants";
 
 import dynamic from "next/dynamic";
 import * as Yup from "yup";
@@ -47,10 +47,7 @@ const usePrivacyRequestForm = ({
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 }) => {
-  // If no identity inputs are configured, use an optional email field
-  const identityInputs = action?.identity_inputs ?? {
-    email: "optional",
-  };
+  const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const formik = useFormik({
