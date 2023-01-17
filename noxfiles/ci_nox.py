@@ -263,12 +263,12 @@ def format_coverage(session: nox.Session, test_group: str) -> None:
             .replace(path_to_replace.format("3.8"), "src/")
         )
 
-    with open(f"coverage/{test_group}.lcov", "w", encoding="utf-8") as lcov_file:
+    with open(f"coverage/{test_group}-fixed.lcov", "w", encoding="utf-8") as lcov_file:
         lcov_file.write(fixed_file)
 
     # Run the Code Climate Reporter tool
     download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
-    format_test_coverage = f"./cc-test-reporter -d format-coverage -t lcov -o coverage/{test_group}/codeclimate.json coverage/{test_group}.lcov ;"
+    format_test_coverage = f"./cc-test-reporter -d format-coverage -t lcov -o coverage/{test_group}/codeclimate.json coverage/{test_group}-fixed.lcov ;"
     session.run(
         *RUN_COVERAGE,
         "bash",
