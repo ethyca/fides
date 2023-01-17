@@ -178,6 +178,7 @@ jobs:
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Format Test Coverage File
+        if: ${{ matrix.python_version}} == "3.8.14"
         run: |
           export GIT_COMMIT_SHA=${GITHUB_SHA}
           export GIT_BRANCH=${GITHUB_REF_NAME}
@@ -185,6 +186,7 @@ jobs:
 
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v3
+        if: ${{ matrix.python_version}} == "3.8.14"
         with:
           name: ${{ matrix.test_selection }}
           path: coverage/${{ matrix.test_selection }}/codeclimate.json
