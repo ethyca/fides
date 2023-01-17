@@ -253,10 +253,14 @@ def format_coverage(session: nox.Session, test_group: str) -> None:
     # This is a workaround because we test against an installed
     # package instead of our dev source files. More info in:
     # https://github.com/ethyca/fides/pull/2198
+    path_to_replace = "/usr/local/lib/python{}/site-packages/"
     with open(f"coverage/{test_group}.lcov", "r", encoding="utf-8") as lcov_file:
         coverage_file = lcov_file.read()
-        fixed_file = coverage_file.replace(
-            "/usr/local/lib/python3.10/site-packages/", "src/"
+        # Replace all possible versions of Python we test
+        fixed_file = (
+            coverage_file.replace(path_to_replace.format("3.10"), "src/")
+            .replace(path_to_replace.format("3.9"), "src/")
+            .replace(path_to_replace.format("3.8"), "src/")
         )
 
     with open(f"coverage/{test_group}.lcov", "w", encoding="utf-8") as lcov_file:
