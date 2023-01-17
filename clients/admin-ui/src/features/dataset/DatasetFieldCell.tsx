@@ -29,7 +29,7 @@ const DatasetFieldCell = ({
   }
 
   if (attribute === "data_categories") {
-    const classifiedCategory = classifyField?.classifications.reduce(
+    const topClassification = classifyField?.classifications.reduce(
       (maxClassification, next) => {
         if (
           (maxClassification.aggregated_score ?? 0) <
@@ -40,19 +40,20 @@ const DatasetFieldCell = ({
         return maxClassification;
       }
     );
+    const classifiedCategory =
+      topClassification !== undefined ? [topClassification.label] : [];
+
     const assignedCategories = field.data_categories ?? [];
     // Only show the classified categories if none have been directly assigned to the dataset.
     const categories =
-      assignedCategories.length > 0
-        ? assignedCategories
-        : [classifiedCategory?.label];
+      assignedCategories.length > 0 ? assignedCategories : classifiedCategory;
 
     return (
       <Tooltip
         placement="right"
         label={
           // TODO: Related to #724, the design wants this to be clickable but our tooltip doesn't support that.
-          categories === [classifiedCategory?.label]
+          categories === classifiedCategory
             ? "Fides has generated these data categories for you. You can override them by modifying the field."
             : ""
         }
