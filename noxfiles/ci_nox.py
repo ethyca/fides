@@ -251,7 +251,7 @@ def format_coverage(session: nox.Session, test_group: str) -> None:
     """
 
     download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
-    format_test_coverage = f"./cc-test-reporter -d format-coverage -t lcov -o coverage/{test_group}/codeclimate.json coverage/{test_group}.lcov ;"
+    format_test_coverage = f"./cc-test-reporter -d format-coverage -p $(readlink -f .) -t lcov -o coverage/{test_group}/codeclimate.json coverage/{test_group}.lcov ;"
 
     session.run(
         *RUN_COVERAGE,
