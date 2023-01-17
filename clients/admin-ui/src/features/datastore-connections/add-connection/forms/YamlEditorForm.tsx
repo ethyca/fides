@@ -1,36 +1,14 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Divider,
-  ErrorWarningIcon,
-  Flex,
-  Heading,
-  HStack,
-  SlideFade,
-  Tag,
-  Text,
-  VStack,
-} from "@fidesui/react";
+import { Button, ButtonGroup, Divider, Flex, VStack } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
 import { Dataset } from "datastore-connections/types";
 import yaml, { YAMLException } from "js-yaml";
-import { narrow } from "narrow-minded";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useFeatures } from "~/features/common/features";
-
-const Editor = dynamic(
-  // @ts-ignore
-  () => import("@monaco-editor/react").then((mod) => mod.default),
-  { ssr: false }
-);
-
-const isYamlException = (error: unknown): error is YAMLException =>
-  narrow({ name: "string" }, error) && error.name === "YAMLException";
+import { Editor, isYamlException } from "~/features/common/yaml/helpers";
+import YamlError from "~/features/common/yaml/YamlError";
 
 type YamlEditorFormProps = {
   data: Dataset[];
@@ -79,8 +57,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
     router.push(DATASTORE_CONNECTION_ROUTE);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleMount = (editor: any, _monaco: any) => {
+  const handleMount = (editor: any) => {
     monacoRef.current = editor;
     (monacoRef.current as any).focus();
   };
@@ -93,7 +70,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
 
   return (
     <Flex gap="97px">
-      <VStack align="stretch" w="918px">
+      <VStack align="stretch" w="75%">
         <Divider color="gray.100" />
         <Editor
           defaultLanguage="yaml"
@@ -139,72 +116,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
         </ButtonGroup>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
-        <SlideFade in>
-          <Box w="fit-content">
-            <Divider color="gray.100" />
-            <HStack mt="16px">
-              <Heading as="h5" color="gray.700" size="xs">
-                YAML
-              </Heading>
-              <Tag colorScheme="red" size="sm" variant="solid">
-                Error
-              </Tag>
-            </HStack>
-            <Box
-              bg="red.50"
-              border="1px solid"
-              borderColor="red.300"
-              color="red.300"
-              mt="16px"
-              borderRadius="6px"
-            >
-              <HStack
-                alignItems="flex-start"
-                margin={["14px", "17px", "14px", "17px"]}
-              >
-                <ErrorWarningIcon />
-                {isEmptyState && (
-                  <Box>
-                    <Heading
-                      as="h5"
-                      color="red.500"
-                      fontWeight="semibold"
-                      size="xs"
-                    >
-                      Error message:
-                    </Heading>
-                    <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      Yaml system is required
-                    </Text>
-                  </Box>
-                )}
-                {yamlError && (
-                  <Box>
-                    <Heading
-                      as="h5"
-                      color="red.500"
-                      fontWeight="semibold"
-                      size="xs"
-                    >
-                      Error message:
-                    </Heading>
-                    <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      {yamlError.message}
-                    </Text>
-                    <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      {yamlError.reason}
-                    </Text>
-                    <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      Ln <b>{yamlError.mark.line}</b>, Col{" "}
-                      <b>{yamlError.mark.column}</b>, Pos{" "}
-                      <b>{yamlError.mark.position}</b>
-                    </Text>
-                  </Box>
-                )}
-              </HStack>
-            </Box>
-          </Box>
-        </SlideFade>
+        <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />
       )}
     </Flex>
   );
