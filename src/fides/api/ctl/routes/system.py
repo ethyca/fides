@@ -14,7 +14,6 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api import deps
@@ -22,8 +21,15 @@ from fides.api.ops.api.v1.endpoints.connection_endpoints import (
     requeue_requires_input_requests,
     validate_secrets,
 )
-from fides.api.ops.api.v1.scope_registry import CONNECTION_CREATE_OR_UPDATE, CONNECTION_READ
-from fides.api.ops.api.v1.urn_registry import CONNECTION_TYPES
+from fides.api.ops.api.v1.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_READ,
+)
+from fides.api.ops.api.v1.urn_registry import (
+    CONNECTION_TYPES,
+    SYSTEM_CONNECTIONS,
+    V1_URL_PREFIX,
+)
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration.connection_config import (
@@ -40,7 +46,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 
-router = APIRouter(tags=["System"], prefix=f"{API_PREFIX}/system")
+router = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}{SYSTEM_CONNECTIONS}")
 
 
 def validate_system(db: Session, fides_key: str) -> System:
@@ -54,7 +60,7 @@ def validate_system(db: Session, fides_key: str) -> System:
 
 
 @router.get(
-    "/{fides_key}/connection",
+    "",
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
     status_code=HTTP_200_OK,
     response_model=Page[ConnectionConfigurationResponse],
@@ -72,7 +78,7 @@ def get_system_connections(
 
 
 @router.patch(
-    "/{fides_key}/connection",
+    "",
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     status_code=HTTP_200_OK,
     response_model=BulkPutConnectionConfiguration,
