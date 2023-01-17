@@ -1484,7 +1484,6 @@ def authenticated_fides_client(
     return test_fides_client
 
 
-
 @pytest.fixture(scope="function")
 def system(db: Session) -> System:
 
@@ -1493,7 +1492,7 @@ def system(db: Session) -> System:
         data={
             "fides_key": f"system_key-f{uuid4()}",
             "name": f"system-{uuid4()}",
-            "description": "fixture-made-system"
-        }
+            "description": "fixture-made-system",
+        },
     )
     return system
