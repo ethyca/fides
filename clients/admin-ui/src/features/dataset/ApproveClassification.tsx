@@ -53,6 +53,7 @@ const ApproveClassification = () => {
         return;
       }
       toast(successToastParams("Collection classified and approved"));
+      // Validate if any fileds still require category approval
       let uncategorizedCount = 0;
       updatedDataset.collections.forEach((updatedCollection) => {
         updatedCollection.fields.forEach((updatedField) => {
@@ -64,6 +65,7 @@ const ApproveClassification = () => {
           }
         });
       });
+      // Only update the dataset as classified when all fields have been categorized
       if (uncategorizedCount === 0) {
         const statusResult = await updateClassifyInstance({
           dataset_fides_key: dataset.fides_key,
