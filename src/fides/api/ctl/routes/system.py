@@ -22,7 +22,7 @@ from fides.api.ops.api.v1.endpoints.connection_endpoints import (
     requeue_requires_input_requests,
     validate_secrets,
 )
-from fides.api.ops.api.v1.scope_registry import CONNECTION_CREATE_OR_UPDATE
+from fides.api.ops.api.v1.scope_registry import CONNECTION_CREATE_OR_UPDATE, CONNECTION_READ
 from fides.api.ops.api.v1.urn_registry import CONNECTION_TYPES
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.api import BulkUpdateFailed
@@ -43,25 +43,31 @@ from fides.lib.exceptions import KeyOrNameAlreadyExists
 router = APIRouter(tags=["System"], prefix=f"{API_PREFIX}/system")
 
 
-@router.get(
-    "/{fides_key}/connection",
-    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
-    status_code=HTTP_200_OK,
-    response_model=Page[ConnectionConfigurationResponse],
-)
-def get_system_connections(
-    fides_key: str, params: Params = Depends(), db: Session = Depends(deps.get_db)
-) -> AbstractPage[ConnectionConfigurationResponse]:
-
+def validate_system(db: Session, fides_key: str) -> System:
     system = System.get_by(db, field="fides_key", value=fides_key)
     if system is None:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="A valid system must be provided to create or update connections",
         )
+    return system
+
+
+@router.get(
+    "/{fides_key}/connection",
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
+    status_code=HTTP_200_OK,
+    response_model=Page[ConnectionConfigurationResponse],
+)
+def get_system_connections(
+    fides_key: str, params: Params = Depends(), db: Session = Depends(deps.get_db)
+) -> AbstractPage[ConnectionConfigurationResponse]:
+    """
+    Return all the connection configs related to a system.
+    """
+    system = validate_system(db, fides_key)
     query = ConnectionConfig.query(db)
     query = query.filter(ConnectionConfig.system_id == system.id)
-    # logger.info(str(query))
     return paginate(query.order_by(ConnectionConfig.name.asc()), params=params)
 
 
@@ -77,20 +83,15 @@ def patch_connections(
     db: Session = Depends(deps.get_db),
 ) -> BulkPutConnectionConfiguration:
     """
-    Given a list of connection config data elements, optionally containing the secrets,
-    create or update corresponding ConnectionConfig objects or report failure
+    Given a valid System fides key, a list of connection config data elements, optionally
+    containing the secrets, create or update corresponding ConnectionConfig objects or report
+    failure.
 
     If the key in the payload exists, it will be used to update an existing ConnectionConfiguration.
     Otherwise, a new ConnectionConfiguration will be created for you.
     """
 
-    system = System.get_by(db, field="fides_key", value=fides_key)
-    if system is None:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="A valid system must be provided to create or update connections",
-        )
-
+    system = validate_system(db, fides_key)
     created_or_updated: List[ConnectionConfigurationResponse] = []
     failed: List[BulkUpdateFailed] = []
     logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
