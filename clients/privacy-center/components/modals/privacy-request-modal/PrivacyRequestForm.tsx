@@ -229,7 +229,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
             {action.description}
           </Text>
           <Stack spacing={3}>
-            {action.identity_inputs.name ? (
+            {action.identity_inputs?.name ? (
               <FormControl
                 id="name"
                 isInvalid={touched.name && Boolean(errors.name)}
@@ -251,7 +251,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.name}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {action.identity_inputs.email ? (
+            {action.identity_inputs?.email ? (
               <FormControl
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
@@ -274,7 +274,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {action.identity_inputs.phone ? (
+            {action.identity_inputs?.phone ? (
               <FormControl
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}

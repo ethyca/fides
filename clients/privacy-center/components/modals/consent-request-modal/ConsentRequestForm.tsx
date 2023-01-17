@@ -188,7 +188,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
             </Text>
           ) : null}
           <Stack spacing={3}>
-            {config.consent?.identity_inputs.email ? (
+            {config.consent?.identity_inputs?.email ? (
               <FormControl
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
@@ -212,7 +212,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {config.consent?.identity_inputs.phone ? (
+            {config.consent?.identity_inputs?.phone ? (
               <FormControl
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
