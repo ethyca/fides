@@ -43,6 +43,10 @@ const useConsentRequestForm = ({
   isVerificationRequired: boolean;
   successHandler: () => void;
 }) => {
+  // If no identity inputs are configured, use an optional email field
+  const identityInputs = config.consent?.identity_inputs ?? {
+    email: "optional",
+  };
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const formik = useFormik({
@@ -114,7 +118,7 @@ const useConsentRequestForm = ({
     validationSchema: Yup.object().shape({
       email: (() => {
         let validation = Yup.string();
-        if (config.consent?.identity_inputs?.email === "required") {
+        if (identityInputs.email === "required") {
           validation = validation
             .email("Email is invalid")
             .required("Email is required");
@@ -123,7 +127,7 @@ const useConsentRequestForm = ({
       })(),
       phone: (() => {
         let validation = Yup.string();
-        if (config.consent?.identity_inputs?.phone === "required") {
+        if (identityInputs?.phone === "required") {
           validation = validation
             .required("Phone is required")
             // E.164 international standard format
@@ -134,7 +138,7 @@ const useConsentRequestForm = ({
     }),
   });
 
-  return { ...formik, isLoading };
+  return { ...formik, isLoading, identityInputs };
 };
 
 type ConsentRequestFormProps = {
@@ -165,6 +169,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     dirty,
     setFieldValue,
     resetForm,
+    identityInputs,
   } = useConsentRequestForm({
     onClose,
     setCurrentView,
@@ -188,15 +193,13 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
             </Text>
           ) : null}
           <Stack spacing={3}>
-            {config.consent?.identity_inputs?.email ? (
+            {identityInputs.email ? (
               <FormControl
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
               >
                 <FormLabel>
-                  {config.consent?.identity_inputs.email === "required"
-                    ? "Email*"
-                    : "Email"}
+                  {identityInputs.email === "required" ? "Email*" : "Email"}
                 </FormLabel>
                 <Input
                   id="email"
@@ -212,15 +215,13 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {config.consent?.identity_inputs?.phone ? (
+            {identityInputs?.phone ? (
               <FormControl
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
               >
                 <FormLabel>
-                  {config.consent?.identity_inputs.phone === "required"
-                    ? "Phone*"
-                    : "Phone"}
+                  {identityInputs.phone === "required" ? "Phone*" : "Phone"}
                 </FormLabel>
                 <Input
                   as={PhoneInput}
