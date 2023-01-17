@@ -1,11 +1,6 @@
 import json
-from datetime import datetime
-from unittest import mock
-from unittest.mock import Mock
-from uuid import uuid4
 
 import pytest
-from fastapi import HTTPException
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
@@ -15,14 +10,7 @@ from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.api.ops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-from fides.api.ops.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
-from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.lib.models.client import ClientDetail
+from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
 from tests.ops.api.v1.endpoints.test_connection_config_endpoints import (
     TestPatchConnections,
 )
@@ -62,7 +50,6 @@ class TestGetConnections:
         url,
         db: Session,
     ) -> None:
-        # Test get connection configs happy path
         connections = [
             {
                 "name": "My Main Postgres DB",
