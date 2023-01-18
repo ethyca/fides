@@ -31,7 +31,6 @@ import { EditableType } from "./types";
 const ALL_COLUMNS: ColumnMetadata<DatasetField>[] = [
   { name: "Field Name", attribute: "name" },
   { name: "Description", attribute: "description" },
-  { name: "Identifiability", attribute: "data_qualifier" },
   { name: "Personal Data Categories", attribute: "data_categories" },
 ];
 
@@ -67,9 +66,8 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const activeCollection = useSelector(selectActiveCollection);
   const activeEditor = useSelector(selectActiveEditor);
 
-  const [columns, setColumns] = useState<ColumnMetadata<DatasetField>[]>(
-    ALL_COLUMNS.filter((column) => column.name !== "Identifiability")
-  );
+  const [columns, setColumns] =
+    useState<ColumnMetadata<DatasetField>[]>(ALL_COLUMNS);
 
   // Query subscriptions:
   useGetAllDataCategoriesQuery();

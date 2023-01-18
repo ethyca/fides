@@ -134,7 +134,6 @@ describe("Datasets with Fides Classify", () => {
      */
     const rowContains = ({
       name,
-      identifiability,
       taxonomyEntities,
     }: {
       name: string;
