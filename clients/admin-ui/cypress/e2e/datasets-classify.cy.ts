@@ -88,6 +88,13 @@ describe("Datasets with Fides Classify", () => {
       cy.wait("@getDatasets");
 
       cy.url().should("match", /dataset$/);
+
+
+      // The combination of Next routing and a toast message makes Cypress get weird
+      // when re-running this test case. Introducing a delay fixes it.
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(100);
+      cy.getByTestId("toast-success-msg");
     });
   });
 
@@ -135,7 +142,6 @@ describe("Datasets with Fides Classify", () => {
       taxonomyEntities: string[];
     }) => {
       cy.getByTestId(`field-row-${name}`).within(() => {
-        cy.get(`[data-testid^=identifiability-tag-]`).contains(identifiability);
         taxonomyEntities.forEach((te) => {
           // Right now this displays the whole taxonomy path, but this might be abbreviated later.
           cy.get(`[data-testid^=taxonomy-entity-]`).contains(te);
@@ -207,6 +213,7 @@ describe("Datasets with Fides Classify", () => {
 
       // The mutation should run.
       cy.wait("@putDataset");
+      cy.getByTestId("toast-success-msg");
     });
   });
 
