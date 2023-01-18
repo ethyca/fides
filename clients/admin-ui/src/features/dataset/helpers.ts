@@ -1,7 +1,9 @@
 import produce from "immer";
 
 import {
+  Classification,
   ClassifyDataset,
+  ClassifyField,
   Dataset,
   DatasetCollection,
   DatasetField,
@@ -65,6 +67,18 @@ export const getUpdatedDatasetFromField = (
   );
 };
 
+export const getTopClassification = (
+  classifyField: ClassifyField
+): Classification =>
+  classifyField.classifications.reduce((maxClassification, next) => {
+    if (
+      (maxClassification.aggregated_score ?? 0) < (next.aggregated_score ?? 0)
+    ) {
+      return next;
+    }
+    return maxClassification;
+  });
+
 /**
  * Returns a new dataset object with the top-scoring classification results filling in data
  * categories that were left blank on the dataset. Uses immer to efficiently modify a draft object.
@@ -105,17 +119,7 @@ export const getUpdatedDatasetFromClassifyDataset = (
           return;
         }
 
-        const topClassification = classifyField.classifications.reduce(
-          (maxClassification, next) => {
-            if (
-              (maxClassification.aggregated_score ?? 0) <
-              (next.aggregated_score ?? 0)
-            ) {
-              return next;
-            }
-            return maxClassification;
-          }
-        );
+        const topClassification = getTopClassification(classifyField);
 
         draftField.data_categories = [topClassification.label];
       });

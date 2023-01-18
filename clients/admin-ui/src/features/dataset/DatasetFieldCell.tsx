@@ -1,5 +1,6 @@
 import { Box, Tooltip } from "@fidesui/react";
 
+import { getTopClassification } from "~/features/dataset/helpers";
 import IdentifiabilityTag from "~/features/taxonomy/IdentifiabilityTag";
 import TaxonomyEntityTag from "~/features/taxonomy/TaxonomyEntityTag";
 import { ClassifyField, DatasetField } from "~/types/api";
@@ -29,17 +30,11 @@ const DatasetFieldCell = ({
   }
 
   if (attribute === "data_categories") {
-    const topClassification = classifyField?.classifications.reduce(
-      (maxClassification, next) => {
-        if (
-          (maxClassification.aggregated_score ?? 0) <
-          (next.aggregated_score ?? 0)
-        ) {
-          return next;
-        }
-        return maxClassification;
-      }
-    );
+    const topClassification =
+      classifyField !== undefined
+        ? getTopClassification(classifyField)
+        : undefined;
+
     const classifiedCategory =
       topClassification !== undefined ? [topClassification.label] : [];
 
