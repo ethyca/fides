@@ -179,7 +179,8 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
         config = build_config(config_dict=settings)
         return config
     except FileNotFoundError:
-        print("No config file found.")
+        if verbose:
+            print("No config file found.")
     except IOError:
         echo_red(f"Error reading config file: {config_path}")
 
