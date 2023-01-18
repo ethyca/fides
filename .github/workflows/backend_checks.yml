@@ -347,7 +347,11 @@ jobs:
           path: coverage/ops-saas/codeclimate.json
 
   Coverage-Upload:
-    needs: Safe-Tests
+    needs:
+      - Safe-Tests
+      - External-SaaS-Connectors
+      - External-Datastores
+      - Pytest-Ctl-External
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
