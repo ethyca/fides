@@ -157,7 +157,6 @@ const PrivacyDeclarationStep = ({ system, onSuccess, abridged }: Props) => {
         <Button
           colorScheme="primary"
           size="sm"
-          disabled={formDeclarations.length === 0}
           isLoading={isLoading}
           data-testid="next-btn"
           onClick={handleSubmit}

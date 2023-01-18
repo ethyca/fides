@@ -1,4 +1,3 @@
-# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -36,6 +35,7 @@ The types of changes are:
   * Dedicated folder for integrations.
 * Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
 * Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
+* Access and erasure support for Friendbuy Nextgen [#2085](https://github.com/ethyca/fides/pull/2085)
 
 ### Changed
 
@@ -43,6 +43,8 @@ The types of changes are:
   * Overrides can be saved in the browser.
   * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
   * No longer use `react-feature-flags` library.
+  * Can have descriptions. [#2243](https://github.com/ethyca/fides/pull/2243)
+* Made privacy declarations optional when adding systems manually - [#2173](https://github.com/ethyca/fides/pull/2173)
 * Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
 * Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
 
