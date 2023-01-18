@@ -1,15 +1,16 @@
 """Add custom metadata tables
 
-Revision ID: 2ecfe67f86e9
+Revision ID: a08024ba7e2b
 Revises: 3caf11127442
-Create Date: 2023-01-12 16:23:00.608960
+Create Date: 2023-01-18 16:10:23.832614
 
 """
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
+
 
 # revision identifiers, used by Alembic.
-revision = "2ecfe67f86e9"
+revision = "a08024ba7e2b"
 down_revision = "3caf11127442"
 branch_labels = None
 depends_on = None
@@ -32,17 +33,10 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("fides_key", sa.String(), nullable=True),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("allowed_values", sa.ARRAY(sa.String()), nullable=True),
         sa.PrimaryKeyConstraint("id"),
-    )
-    op.create_index(
-        op.f("ix_plus_custom_field_value_list_fides_key"),
-        "plus_custom_field_value_list",
-        ["fides_key"],
-        unique=True,
     )
     op.create_index(
         op.f("ix_plus_custom_field_value_list_id"),
@@ -65,7 +59,6 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("fides_key", sa.String(), nullable=True),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column(
@@ -91,12 +84,6 @@ def upgrade():
             ["plus_custom_field_value_list.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
-    )
-    op.create_index(
-        op.f("ix_plus_custom_field_definition_fides_key"),
-        "plus_custom_field_definition",
-        ["fides_key"],
-        unique=True,
     )
     op.create_index(
         op.f("ix_plus_custom_field_definition_field_definition"),
@@ -131,7 +118,6 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("fides_key", sa.String(), nullable=True),
         sa.Column(
             "resource_type",
             sa.Enum(
@@ -153,12 +139,6 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_plus_custom_field_fides_key"),
-        "plus_custom_field",
-        ["fides_key"],
-        unique=True,
-    )
-    op.create_index(
         op.f("ix_plus_custom_field_id"), "plus_custom_field", ["id"], unique=False
     )
     op.create_index(
@@ -176,9 +156,6 @@ def downgrade():
         op.f("ix_plus_custom_field_resource_id"), table_name="plus_custom_field"
     )
     op.drop_index(op.f("ix_plus_custom_field_id"), table_name="plus_custom_field")
-    op.drop_index(
-        op.f("ix_plus_custom_field_fides_key"), table_name="plus_custom_field"
-    )
     op.drop_table("plus_custom_field")
     op.drop_index(
         op.f("ix_plus_custom_field_definition_name"),
@@ -192,17 +169,9 @@ def downgrade():
         op.f("ix_plus_custom_field_definition_field_definition"),
         table_name="plus_custom_field_definition",
     )
-    op.drop_index(
-        op.f("ix_plus_custom_field_definition_fides_key"),
-        table_name="plus_custom_field_definition",
-    )
     op.drop_table("plus_custom_field_definition")
     op.drop_index(
         op.f("ix_plus_custom_field_value_list_id"),
-        table_name="plus_custom_field_value_list",
-    )
-    op.drop_index(
-        op.f("ix_plus_custom_field_value_list_fides_key"),
         table_name="plus_custom_field_value_list",
     )
     op.drop_table("plus_custom_field_value_list")
