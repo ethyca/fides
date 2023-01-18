@@ -280,7 +280,7 @@ def sum_coverage(session: nox.Session) -> None:
     """
     download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
     sum_test_coverage = (
-        "./cc-test-reporter sum-coverage --parts 7 coverage/**/codeclimate.json ;"
+        "./cc-test-reporter sum-coverage --parts 4 coverage/**/codeclimate.json ;"
     )
 
     session.run(
