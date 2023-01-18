@@ -67,8 +67,9 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const activeCollection = useSelector(selectActiveCollection);
   const activeEditor = useSelector(selectActiveEditor);
 
-  const [columns, setColumns] =
-    useState<ColumnMetadata<DatasetField>[]>(ALL_COLUMNS);
+  const [columns, setColumns] = useState<ColumnMetadata<DatasetField>[]>(
+    ALL_COLUMNS.filter((column) => column.name !== "Identifiability")
+  );
 
   // Query subscriptions:
   useGetAllDataCategoriesQuery();
