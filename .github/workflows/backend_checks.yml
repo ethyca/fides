@@ -204,7 +204,6 @@ jobs:
     timeout-minutes: 15
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -254,7 +253,6 @@ jobs:
     timeout-minutes: 15
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -296,7 +294,6 @@ jobs:
     needs: Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    continue-on-error: true
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     permissions:
