@@ -53,7 +53,7 @@ const ApproveClassification = () => {
         return;
       }
       toast(successToastParams("Collection classified and approved"));
-      // Validate if any fileds still require category approval
+      // Validate if any fields still require category approval
       let uncategorizedCount = 0;
       updatedDataset.collections.forEach((updatedCollection) => {
         updatedCollection.fields.forEach((updatedField) => {
