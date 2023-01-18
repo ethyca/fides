@@ -338,7 +338,6 @@ class CustomFieldValueList(Base):
 
     __tablename__ = "plus_custom_field_value_list"
 
-    fides_key = Column(String, index=True, unique=True)
     name = Column(String, nullable=False)
     description = Column(String)
     allowed_values = Column(ARRAY(String))
@@ -355,7 +354,6 @@ class CustomFieldDefinition(Base):
 
     __tablename__ = "plus_custom_field_definition"
 
-    fides_key = Column(String, index=True, unique=True)
     name = Column(String, index=True, nullable=False)
     description = Column(String)
     field_type = Column(
@@ -383,7 +381,6 @@ class CustomField(Base):
 
     __tablename__ = "plus_custom_field"
 
-    fides_key = Column(String, index=True, unique=True)
     resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
     resource_id = Column(String, index=True, nullable=False)
     custom_field_definition_id = Column(
