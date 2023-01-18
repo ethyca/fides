@@ -46,6 +46,7 @@ The types of changes are:
 * Made privacy declarations optional when adding systems manually - [#2173](https://github.com/ethyca/fides/pull/2173)
 * Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
 * Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
+* Update sample project resources for `fides evaluate` usage in `fides deploy` [#2253](https://github.com/ethyca/fides/pull/2253)
 
 ### Removed
 
