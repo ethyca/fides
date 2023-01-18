@@ -250,21 +250,14 @@ def format_coverage(session: nox.Session, test_group: str) -> None:
     Writes a new file to 'coverage/<test_group>/codeclimate.json'
     """
 
-    # This is a workaround because we test against an installed
-    # package instead of our dev source files. More info in:
-    # https://github.com/ethyca/fides/pull/2198
-    path_to_replace = "/usr/local/lib/python{}/site-packages/"
-    with open(f"coverage/{test_group}.lcov", "r", encoding="utf-8") as lcov_file:
-        coverage_file = lcov_file.read()
-        # Replace all possible versions of Python we test
-        fixed_file = (
-            coverage_file.replace(path_to_replace.format("3.10"), "src/")
-            .replace(path_to_replace.format("3.9"), "src/")
-            .replace(path_to_replace.format("3.8"), "src/")
-        )
-
-    with open(f"coverage/{test_group}-fixed.lcov", "w", encoding="utf-8") as lcov_file:
-        lcov_file.write(fixed_file)
+    # Run the script that fixes the path
+    session.run(
+        *RUN_NO_DEPS,
+        "python",
+        "scripts/fix_coverage.py",
+        test_group,
+        external=True,
+    )
 
     # Run the Code Climate Reporter tool
     download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
