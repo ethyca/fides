@@ -277,9 +277,7 @@ def sum_coverage(session: nox.Session) -> None:
     Combine multiple Code Climate coverage files.
     """
     download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
-    sum_test_coverage = (
-        "./cc-test-reporter sum-coverage -p 4 coverage/**/codeclimate.json ;"
-    )
+    sum_test_coverage = "./cc-test-reporter sum-coverage coverage/**/codeclimate.json ;"
 
     session.run(
         *RUN_NO_DEPS,

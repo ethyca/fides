@@ -232,11 +232,17 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
+      - name: Format Test Coverage File
+        run: |
+          export GIT_COMMIT_SHA=${GITHUB_SHA}
+          export GIT_BRANCH=${GITHUB_REF_NAME}
+          nox -s "format_coverage(ctl-external)"
+
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ctl-external
-          path: coverage/ctl-external.lcov
+          path: coverage/ctl-external/codeclimate.json
 
   External-Datastores:
     needs: Build
@@ -274,11 +280,17 @@ jobs:
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
         run: nox -s "pytest(ops-external-datastores)"
 
+      - name: Format Test Coverage File
+        run: |
+          export GIT_COMMIT_SHA=${GITHUB_SHA}
+          export GIT_BRANCH=${GITHUB_REF_NAME}
+          nox -s "format_coverage(ops-external-datastores)"
+
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ops-external-datastores
-          path: coverage/ops-external-datastores.lcov
+          path: coverage/ops-external-datastores/codeclimate.json
 
   External-SaaS-Connectors:
     needs: Build
@@ -325,11 +337,17 @@ jobs:
           VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
         run: nox -s "pytest(ops-saas)"
 
+      - name: Format Test Coverage File
+        run: |
+          export GIT_COMMIT_SHA=${GITHUB_SHA}
+          export GIT_BRANCH=${GITHUB_REF_NAME}
+          nox -s "format_coverage(ops-saas)"
+
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ops-saas
-          path: coverage/ops-saas.lcov
+          path: coverage/ops-saas/codeclimate.json
 
   Coverage-Upload:
     needs: Safe-Tests
