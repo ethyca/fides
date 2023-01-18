@@ -42,6 +42,7 @@ The types of changes are:
   * Overrides can be saved in the browser.
   * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
   * No longer use `react-feature-flags` library.
+  * Can have descriptions. [#2243](https://github.com/ethyca/fides/pull/2243)
 * Made privacy declarations optional when adding systems manually - [#2173](https://github.com/ethyca/fides/pull/2173)
 * Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
 * Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
