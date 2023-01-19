@@ -45,6 +45,7 @@ The types of changes are:
   * Can have descriptions. [#2243](https://github.com/ethyca/fides/pull/2243)
 * Made privacy declarations optional when adding systems manually - [#2173](https://github.com/ethyca/fides/pull/2173)
 * Removed an unclear logging message. [#2266](https://github.com/ethyca/fides/pull/2266)
+* Allow any user with `user:delete` scope to delete other users [#2148](https://github.com/ethyca/fides/pull/2148)
 * Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
 * Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
 * Only approve the specific collection instead of the entire dataset, display only top 1 classification by default [#2226](https://github.com/ethyca/fides/pull/2226)
@@ -57,6 +58,7 @@ The types of changes are:
 ### Fixed
 
 * Remove next-auth from privacy center to fix JS console error [#2090](https://github.com/ethyca/fides/pull/2090)
+* Admin UI - Added Missing ability to assign `user:delete` in the permissions checkboxes [#2148](https://github.com/ethyca/fides/pull/2148)
 * Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
 * Side nav disappears when viewing request details [#2129](https://github.com/ethyca/fides/pull/2155)
 * Remove usage of load dataset button and other dataset UI modifications [#2149](https://github.com/ethyca/fides/pull/2149)
