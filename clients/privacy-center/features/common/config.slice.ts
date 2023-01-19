@@ -1,20 +1,50 @@
-import { createSelector, createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { produce } from "immer";
 
 import type { RootState } from "~/app/store";
 import { config as initialConfig } from "~/constants";
+import { ConfigConsentOption } from "~/types/config";
 
-const initialState = initialConfig;
+type State = {
+  consent?: {
+    consentOptions?: ConfigConsentOption[];
+  };
+};
+const initialState: State = {};
 
-export const slice = createSlice({
+export const configSlice = createSlice({
   name: "config",
   initialState,
-  reducers: {},
+  reducers: {
+    overrideConsentOptions(
+      draftState,
+      { payload }: PayloadAction<ConfigConsentOption[]>
+    ) {
+      if (!draftState.consent) {
+        draftState.consent = {};
+      }
+      draftState.consent.consentOptions = payload;
+    },
+  },
 });
 
-export const { reducer } = slice;
+export const { reducer } = configSlice;
 
-export const selectConfig = (state: RootState) => state.config;
-export const selectConfigConsent = createSelector(
+/**
+ * The stored config state, which is the subset of configs options that can be modified at runtime.
+ */
+export const selectConfigState = (state: RootState) => state.config;
+
+/**
+ * The app config with all runtime overrides applied.
+ */
+export const selectConfig = createSelector(selectConfigState, (configState) =>
+  produce(initialConfig, (draft) => {
+    Object.assign(draft, configState);
+  })
+);
+
+export const selectConfigConsentOptions = createSelector(
   selectConfig,
-  (config) => config.consent
+  (config) => config.consent?.consentOptions ?? []
 );
