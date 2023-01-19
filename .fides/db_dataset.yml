@@ -1452,15 +1452,15 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: name
       data_categories:
-      - system.operation
+      - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: description
       data_categories:
-      - system.operation
+      - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: allowed_values
       data_categories:
-      - system.operation
+      - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: plus_custom_field
     description: 'Table used to store custom fields for resources'
