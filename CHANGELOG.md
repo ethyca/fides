@@ -44,6 +44,7 @@ The types of changes are:
   * No longer use `react-feature-flags` library.
   * Can have descriptions. [#2243](https://github.com/ethyca/fides/pull/2243)
 * Made privacy declarations optional when adding systems manually - [#2173](https://github.com/ethyca/fides/pull/2173)
+* Removed an unclear logging message. [#2266](https://github.com/ethyca/fides/pull/2266)
 * Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
 * Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
 * Only approve the specific collection instead of the entire dataset, display only top 1 classification by default [#2226](https://github.com/ethyca/fides/pull/2226)
