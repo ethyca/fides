@@ -4068,21 +4068,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Health Health Get",
-                  "type": "object",
-                  "additionalProperties": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      }
-                    ]
-                  }
+                  "$ref": "#/components/schemas/CoreHealthCheck"
                 },
                 "example": {
                   "webserver": "healthy",
@@ -4809,7 +4795,7 @@
           "Connections"
         ],
         "summary": "Patch Connections",
-        "description": "Given a list of connection config data elements, create or update corresponding ConnectionConfig objects\nor report failure\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.\n\nNote that ConnectionConfiguration.secrets are not updated through this endpoint.",
+        "description": "Given a list of connection config data elements, optionally containing the secrets,\ncreate or update corresponding ConnectionConfig objects or report failure\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.",
         "operationId": "patch_connections_api_v1_connection_patch",
         "requestBody": {
           "content": {
@@ -4819,7 +4805,7 @@
                 "maxItems": 50,
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/CreateConnectionConfiguration"
+                  "$ref": "#/components/schemas/CreateConnectionConfigurationWithSecrets"
                 }
               }
             }
@@ -6554,6 +6540,78 @@
       }
     },
     "/api/v1/dsr/policy/{policy_key}/rule": {
+      "get": {
+        "tags": [
+          "DSR Policy"
+        ],
+        "summary": "Get Rule List",
+        "description": "Return a paginated list of all `Rule` records associated with the given `Policy`.\nThrows a 404 if the given `Policy` can't be found.",
+        "operationId": "get_rule_list_api_v1_dsr_policy__policy_key__rule_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Policy Key",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            },
+            "name": "policy_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_RuleResponseWithTargets_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "rule:read"
+            ]
+          }
+        ]
+      },
       "patch": {
         "tags": [
           "DSR Policy"
@@ -6620,6 +6678,65 @@
       }
     },
     "/api/v1/dsr/policy/{policy_key}/rule/{rule_key}": {
+      "get": {
+        "tags": [
+          "DSR Policy"
+        ],
+        "summary": "Get Rule",
+        "description": "Return a single `Rule` with the given key, associated with the given `Policy`",
+        "operationId": "get_rule_api_v1_dsr_policy__policy_key__rule__rule_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Policy Key",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            },
+            "name": "policy_key",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Rule Key",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            },
+            "name": "rule_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleResponseWithTargets"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "rule:read"
+            ]
+          }
+        ]
+      },
       "delete": {
         "tags": [
           "DSR Policy"
@@ -6674,6 +6791,88 @@
       }
     },
     "/api/v1/dsr/policy/{policy_key}/rule/{rule_key}/target": {
+      "get": {
+        "tags": [
+          "DSR Policy"
+        ],
+        "summary": "Get Rule Target List",
+        "description": "Return a paginated list of all `Rule Target` records associated with the given `Rule`\nThrows a 404 if the given `Rule` or `Policy` can't be found.",
+        "operationId": "get_rule_target_list_api_v1_dsr_policy__policy_key__rule__rule_key__target_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Policy Key",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            },
+            "name": "policy_key",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Rule Key",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            },
+            "name": "rule_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_RuleTarget_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "rule:read"
+            ]
+          }
+        ]
+      },
       "patch": {
         "tags": [
           "DSR Policy"
@@ -6750,6 +6949,75 @@
       }
     },
     "/api/v1/dsr/policy/{policy_key}/rule/{rule_key}/target/{rule_target_key}": {
+      "get": {
+        "tags": [
+          "DSR Policy"
+        ],
+        "summary": "Get Rule Target",
+        "description": "Return a single `Rule Target` associated with the given `Rule` and `Policy`",
+        "operationId": "get_rule_target_api_v1_dsr_policy__policy_key__rule__rule_key__target__rule_target_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Policy Key",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            },
+            "name": "policy_key",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Rule Key",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            },
+            "name": "rule_key",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Rule Target Key",
+              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "type": "string"
+            },
+            "name": "rule_target_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleTarget"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "rule:read"
+            ]
+          }
+        ]
+      },
       "delete": {
         "tags": [
           "DSR Policy"
@@ -11147,8 +11415,60 @@
         },
         "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
       },
-      "CreateConnectionConfiguration": {
-        "title": "CreateConnectionConfiguration",
+      "CoreHealthCheck": {
+        "title": "CoreHealthCheck",
+        "required": [
+          "webserver",
+          "version",
+          "database",
+          "cache",
+          "workers_enabled",
+          "workers"
+        ],
+        "type": "object",
+        "properties": {
+          "webserver": {
+            "title": "Webserver",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          },
+          "database": {
+            "title": "Database",
+            "enum": [
+              "healthy",
+              "unhealthy",
+              "needs migration"
+            ],
+            "type": "string"
+          },
+          "cache": {
+            "title": "Cache",
+            "enum": [
+              "healthy",
+              "unhealthy",
+              "no cache configured"
+            ],
+            "type": "string"
+          },
+          "workers_enabled": {
+            "title": "Workers Enabled",
+            "type": "boolean"
+          },
+          "workers": {
+            "title": "Workers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Healthcheck schema"
+      },
+      "CreateConnectionConfigurationWithSecrets": {
+        "title": "CreateConnectionConfigurationWithSecrets",
         "required": [
           "name",
           "connection_type",
@@ -11179,10 +11499,58 @@
           "description": {
             "title": "Description",
             "type": "string"
+          },
+          "secrets": {
+            "title": "Secrets",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MongoDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/MySQLDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/RedshiftDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SnowflakeDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/MSSQLDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/MariaDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/BigQueryDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SaaSSchema"
+              },
+              {
+                "$ref": "#/components/schemas/EmailDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+              },
+              {
+                "$ref": "#/components/schemas/TimescaleDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/FidesDocsSchema"
+              }
+            ]
+          },
+          "saas_connector_type": {
+            "title": "Saas Connector Type",
+            "type": "string"
           }
         },
         "additionalProperties": false,
-        "description": "Schema for creating a ConnectionConfiguration\n\nNote that secrets are *NOT* allowed to be supplied here."
+        "description": "Schema for creating a connection configuration including secrets."
       },
       "CurrentStep": {
         "title": "CurrentStep",
@@ -12077,6 +12445,10 @@
         "title": "ExecutionAndAuditLogResponse",
         "type": "object",
         "properties": {
+          "connection_key": {
+            "title": "Connection Key",
+            "type": "string"
+          },
           "collection_name": {
             "title": "Collection Name",
             "type": "string"
@@ -12151,6 +12523,10 @@
             "title": "Updated At",
             "type": "string",
             "format": "date-time"
+          },
+          "connection_key": {
+            "title": "Connection Key",
+            "type": "string"
           },
           "dataset_name": {
             "title": "Dataset Name",
@@ -13100,7 +13476,15 @@
             "$ref": "#/components/schemas/MessagingServiceType"
           },
           "details": {
-            "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+            "title": "Details",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              }
+            ]
           }
         },
         "description": "Messaging Config Request Schema"
@@ -13224,6 +13608,21 @@
         },
         "additionalProperties": false,
         "description": "The details required to represent a Mailgun email configuration."
+      },
+      "MessagingServiceDetailsTwilioEmail": {
+        "title": "MessagingServiceDetailsTwilioEmail",
+        "required": [
+          "twilio_email_from"
+        ],
+        "type": "object",
+        "properties": {
+          "twilio_email_from": {
+            "title": "Twilio Email From",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The details required to represent a Twilio email configuration."
       },
       "MessagingServiceType": {
         "title": "MessagingServiceType",
@@ -13640,6 +14039,74 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PolicyWebhookResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_RuleResponseWithTargets_": {
+        "title": "Page[RuleResponseWithTargets]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleResponseWithTargets"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_RuleTarget_": {
+        "title": "Page[RuleTarget]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleTarget"
             }
           },
           "total": {
@@ -14830,6 +15297,42 @@
         },
         "description": "The schema to use when returning a Rule via the API. This schema uses a censored version\nof the `PolicyMaskingSpec` that omits the configuration to avoid exposing secrets."
       },
+      "RuleResponseWithTargets": {
+        "title": "RuleResponseWithTargets",
+        "required": [
+          "name",
+          "action_type"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string"
+          },
+          "action_type": {
+            "$ref": "#/components/schemas/ActionType"
+          },
+          "targets": {
+            "title": "Targets",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleTarget"
+            }
+          },
+          "storage_destination": {
+            "$ref": "#/components/schemas/StorageDestinationResponse"
+          },
+          "masking_strategy": {
+            "$ref": "#/components/schemas/PolicyMaskingSpecResponse"
+          }
+        },
+        "description": "The schema to use when returning a Rule via the API and when including the Rule's targets\nis desired. This schema uses a censored version of the `PolicyMaskingSpec` that omits the\nconfiguration to avoid exposing secrets."
+      },
       "RuleTarget": {
         "title": "RuleTarget",
         "required": [
@@ -15331,8 +15834,7 @@
         "title": "StorageDetailsS3",
         "required": [
           "auth_method",
-          "bucket",
-          "object_name"
+          "bucket"
         ],
         "type": "object",
         "properties": {
@@ -15346,10 +15848,6 @@
           },
           "bucket": {
             "title": "Bucket",
-            "type": "string"
-          },
-          "object_name": {
-            "title": "Object Name",
             "type": "string"
           },
           "max_retries": {
