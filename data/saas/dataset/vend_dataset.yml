@@ -12,6 +12,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: string
           - name: customer_code
             data_categories: [system.operations]
