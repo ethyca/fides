@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from fides.core.config import get_config
 from fides.core.config.database_settings import DatabaseSettings
-from fides.lib.exceptions import MissingConfig
+from fides.core.config.security_settings import SecurityEnv
 
 REQUIRED_ENV_VARS = {
     "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
@@ -15,6 +15,17 @@ REQUIRED_ENV_VARS = {
     "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET": "fidesadminsecret",
     "FIDES__SECURITY__DRP_JWT_SECRET": "secret",
 }
+
+
+@pytest.mark.unit
+class TestSecurityEnv:
+    def test_security_invalid(self):
+        """
+        Test that an exception is raised when an invalid Enum value is used.
+        """
+        with pytest.raises(ValueError):
+            SecurityEnv("invalid")
+
 
 # Unit
 @patch.dict(
