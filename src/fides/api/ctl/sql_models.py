@@ -372,6 +372,7 @@ class CustomFieldDefinition(Base):
         "CustomFieldValueList",
         back_populates="custom_field_definition",
     )
+    active = Column(BOOLEAN, nullable=False, default=True)
 
     UniqueConstraint("name", "resource_type")
 

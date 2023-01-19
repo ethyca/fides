@@ -78,6 +78,7 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("field_definition", sa.String(), nullable=True),
+        sa.Column("active", sa.BOOLEAN(), nullable=False),
         sa.ForeignKeyConstraint(
             ["allow_list_id"],
             ["plus_custom_field_value_list.id"],
