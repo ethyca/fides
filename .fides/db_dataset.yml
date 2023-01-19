@@ -1533,6 +1533,9 @@ dataset:
     - name: resource_type
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: active
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: plus_system_scans
     description: 'A table used to store results of a infrastructure system scan'
     data_categories: null
