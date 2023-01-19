@@ -324,7 +324,7 @@ def create_dsr_policy(key: str):
     if response.ok:
         policies = (response.json())["succeeded"]
         if len(policies) > 0:
-            logger.info("Created fidesops policy with key=%s via {url}", key)
+            logger.info("Created fidesops policy with key={key} via {url}")
             return response.json()
 
     raise RuntimeError(
