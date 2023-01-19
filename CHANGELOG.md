@@ -66,6 +66,7 @@ The types of changes are:
 * Fix Cookie House purchase modal flashing 'Error' in title [#2274](https://github.com/ethyca/fides/pull/2274)
 * Stop dependency from upgrading `packaging` to version with known issue [#2273](https://github.com/ethyca/fides/pull/2273)
 * Privacy center config no longer requires `identity_inputs` and will use `email` as a default [#2263](https://github.com/ethyca/fides/pull/2263)
+* No longer display remaining days for privacy requests in terminal states [#2292](https://github.com/ethyca/fides/pull/2292)
 
 ### Removed
 
