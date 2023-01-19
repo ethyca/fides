@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -49,7 +49,7 @@ from fides.lib.exceptions import KeyOrNameAlreadyExists
 router = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}{SYSTEM_CONNECTIONS}")
 
 
-def validate_system(db: Session, fides_key: str) -> System:
+def get_system(db: Session, fides_key: str) -> System:
     system = System.get_by(db, field="fides_key", value=fides_key)
     if system is None:
         raise HTTPException(
@@ -71,33 +71,18 @@ def get_system_connections(
     """
     Return all the connection configs related to a system.
     """
-    system = validate_system(db, fides_key)
+    system = get_system(db, fides_key)
     query = ConnectionConfig.query(db)
     query = query.filter(ConnectionConfig.system_id == system.id)
     return paginate(query.order_by(ConnectionConfig.name.asc()), params=params)
 
 
-@router.patch(
-    "",
-    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
-    status_code=HTTP_200_OK,
-    response_model=BulkPutConnectionConfiguration,
-)
-def patch_connections(
-    fides_key: str,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
-    db: Session = Depends(deps.get_db),
+def patch_connection_configs(
+    db: Session,
+    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),
+    system: Optional[System] = None,
 ) -> BulkPutConnectionConfiguration:
-    """
-    Given a valid System fides key, a list of connection config data elements, optionally
-    containing the secrets, create or update corresponding ConnectionConfig objects or report
-    failure.
 
-    If the key in the payload exists, it will be used to update an existing ConnectionConfiguration.
-    Otherwise, a new ConnectionConfiguration will be created for you.
-    """
-
-    system = validate_system(db, fides_key)
     created_or_updated: List[ConnectionConfigurationResponse] = []
     failed: List[BulkUpdateFailed] = []
     logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
@@ -140,14 +125,23 @@ def patch_connections(
                             secrets=config.secrets,
                             instance_key=config.key,
                         )
-                        connection_config = (
-                            create_connection_config_from_template_no_save(
-                                db,
-                                connector_template,
-                                template_values,
-                                system_id=system.id,
+                        if system:
+                            connection_config = (
+                                create_connection_config_from_template_no_save(
+                                    db,
+                                    connector_template,
+                                    template_values,
+                                    system_id=system.id,
+                                )
                             )
-                        )
+                        else:
+                            connection_config = (
+                                create_connection_config_from_template_no_save(
+                                    db,
+                                    connector_template,
+                                    template_values,
+                                )
+                            )
                     except KeyOrNameAlreadyExists as exc:
                         raise HTTPException(
                             status_code=HTTP_400_BAD_REQUEST,
@@ -166,7 +160,8 @@ def patch_connections(
         orig_data = config.dict().copy()
         config_dict = config.dict()
         config_dict.pop("saas_connector_type", None)
-        config_dict["system_id"] = system.id
+        if system:
+            config_dict["system_id"] = system.id
 
         try:
             connection_config = ConnectionConfig.create_or_update(db, data=config_dict)
@@ -209,3 +204,26 @@ def patch_connections(
         succeeded=created_or_updated,
         failed=failed,
     )
+
+
+@router.patch(
+    "",
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
+    status_code=HTTP_200_OK,
+    response_model=BulkPutConnectionConfiguration,
+)
+def patch_connections(
+    fides_key: str,
+    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    db: Session = Depends(deps.get_db),
+) -> BulkPutConnectionConfiguration:
+    """
+    Given a valid System fides key, a list of connection config data elements, optionally
+    containing the secrets, create or update corresponding ConnectionConfig objects or report
+    failure.
+
+    If the key in the payload exists, it will be used to update an existing ConnectionConfiguration.
+    Otherwise, a new ConnectionConfiguration will be created for you.
+    """
+    system = get_system(db, fides_key)
+    return patch_connection_configs(db, configs, system)
