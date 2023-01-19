@@ -130,7 +130,7 @@ def upgrade():
         ),
         sa.Column("resource_id", sa.String(), nullable=False),
         sa.Column("custom_field_definition_id", sa.String(), nullable=False),
-        sa.Column("value", sa.String(), nullable=True),
+        sa.Column("value", sa.ARRAY(sa.String()), nullable=True),
         sa.ForeignKeyConstraint(
             ["custom_field_definition_id"],
             ["plus_custom_field_definition.id"],
