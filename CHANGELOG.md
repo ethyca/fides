@@ -1,4 +1,3 @@
-# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -17,8 +16,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.4.0...main)
 
+### Docs
+
+* Update the docs landing page and remove redundant docs [#2184](https://github.com/ethyca/fides/pull/2184)
+
 ### Added
 
+* Added the `user` command group to the CLI. [#2153](https://github.com/ethyca/fides/pull/2153)
 * Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
 * Added Fides version number to account dropdown in the UI [#2140](https://github.com/ethyca/fides/pull/2140)
@@ -28,6 +32,9 @@ The types of changes are:
 * Privacy Center `fides-consent.js`:
   * `Fides.shopify` integration function. [#2152](https://github.com/ethyca/fides/pull/2152)
   * Dedicated folder for integrations.
+* Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
+* Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
+* Access and erasure support for Friendbuy Nextgen [#2085](https://github.com/ethyca/fides/pull/2085)
 
 ### Changed
 
@@ -35,9 +42,14 @@ The types of changes are:
   * Overrides can be saved in the browser.
   * Use `NEXT_PUBLIC_APP_ENV` for app-specific environment config.
   * No longer use `react-feature-flags` library.
+  * Can have descriptions. [#2243](https://github.com/ethyca/fides/pull/2243)
+* Made privacy declarations optional when adding systems manually - [#2173](https://github.com/ethyca/fides/pull/2173)
+* Removed an unclear logging message. [#2266](https://github.com/ethyca/fides/pull/2266)
 * Allow any user with `user:delete` scope to delete other users [#2148](https://github.com/ethyca/fides/pull/2148)
 * Dynamic imports of custom overrides and SaaS test fixtures [#2169](https://github.com/ethyca/fides/pull/2169)
 * Added `AuthenticatedClient` to custom request override interface [#2171](https://github.com/ethyca/fides/pull/2171)
+* Only approve the specific collection instead of the entire dataset, display only top 1 classification by default [#2226](https://github.com/ethyca/fides/pull/2226)
+* Update sample project resources for `fides evaluate` usage in `fides deploy` [#2253](https://github.com/ethyca/fides/pull/2253)
 
 ### Removed
 
@@ -49,9 +61,13 @@ The types of changes are:
 * Admin UI - Added Missing ability to assign `user:delete` in the permissions checkboxes [#2148](https://github.com/ethyca/fides/pull/2148)
 * Nav bug: clicking on Privacy Request breadcrumb takes me to Home instead of /privacy-requests [#497](https://github.com/ethyca/fides/pull/2141)
 * Side nav disappears when viewing request details [#2129](https://github.com/ethyca/fides/pull/2155)
+* Remove usage of load dataset button and other dataset UI modifications [#2149](https://github.com/ethyca/fides/pull/2149)
 * Improve readability for exceptions raised from custom request overrides [#2157](https://github.com/ethyca/fides/pull/2157)
 * Importing custom request overrides on server startup [#2186](https://github.com/ethyca/fides/pull/2186)
 * Remove warning when env vars default to blank strings in docker-compose [#2188](https://github.com/ethyca/fides/pull/2188)
+* Fix Cookie House purchase modal flashing 'Error' in title [#2274](https://github.com/ethyca/fides/pull/2274)
+* Stop dependency from upgrading `packaging` to version with known issue [#2273](https://github.com/ethyca/fides/pull/2273)
+* Privacy center config no longer requires `identity_inputs` and will use `email` as a default [#2263](https://github.com/ethyca/fides/pull/2263)
 
 ### Removed
 
@@ -156,7 +172,6 @@ The types of changes are:
 
 * Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
 
-
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
 ### Added
@@ -238,7 +253,6 @@ The types of changes are:
 ### Security
 
 * Bumped versions of packages that use OpenSSL [#1683](https://github.com/ethyca/fides/pull/1683)
-
 
 ## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
 

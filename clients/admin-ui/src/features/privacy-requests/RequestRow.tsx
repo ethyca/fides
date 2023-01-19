@@ -240,6 +240,7 @@ const RequestRow: React.FC<{
           {request.status === "error" && (
             <ReprocessButton
               buttonProps={{ mr: "-px", size: "xs" }}
+              handleBlur={handleBlur}
               subjectRequest={request}
             />
           )}
@@ -249,7 +250,10 @@ const RequestRow: React.FC<{
                 size="xs"
                 mr="-px"
                 bg="white"
-                onClick={handleApproveRequest}
+                onClick={() => {
+                  handleApproveRequest();
+                  handleBlur();
+                }}
                 isLoading={approveRequestResult.isLoading}
                 _loading={{
                   opacity: 1,
