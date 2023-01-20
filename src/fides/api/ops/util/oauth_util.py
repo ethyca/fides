@@ -115,6 +115,18 @@ def verify_callback_oauth(
     return webhook
 
 
+async def get_root_client(db: Session = Depends(get_db)) -> ClientDetail:
+    """Gets the root_client directly."""
+    client_id = CONFIG.security.oauth_root_client_id
+    client = ClientDetail.get(
+        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
+    )
+    if not client:
+        logger.debug("Auth token belongs to an invalid client_id.")
+        raise AuthorizationError(detail="Not Authorized for this action")
+    return client
+
+
 async def verify_oauth_client(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),

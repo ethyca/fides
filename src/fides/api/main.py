@@ -56,6 +56,7 @@ from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
+from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client
 from fides.core.config import FidesConfig, get_config
 from fides.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
@@ -80,6 +81,9 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     validate.router,
     view.router,
 ]
+
+if CONFIG.security.env.value == "demo":
+    app.dependency_overrides[verify_oauth_client] = get_root_client
 
 
 @app.middleware("http")
