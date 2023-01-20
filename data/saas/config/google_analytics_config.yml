@@ -72,7 +72,7 @@ saas_config:
               "client_id": "<client_id>",
               "client_secret": "<client_secret>",
               "grant_type": "refresh_token",
-              "refresh_token": "<refresh_token>",
+              "refresh_token": "<refresh_token>"
             }
 
   test_request:
