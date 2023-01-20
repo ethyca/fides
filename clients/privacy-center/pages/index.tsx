@@ -108,7 +108,13 @@ const Home: NextPage = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <Image src={config.logo_path} margin="8px" height="68px" alt="Logo" />
+          <Image
+            src={config.logo_path}
+            margin="8px"
+            height="68px"
+            alt="Logo"
+            data-testid="logo"
+          />
         </Flex>
       </header>
 
@@ -120,6 +126,7 @@ const Home: NextPage = () => {
               color="gray.600"
               fontWeight="semibold"
               textAlign="center"
+              data-testid="heading"
             >
               {config.title}
             </Heading>
@@ -129,6 +136,7 @@ const Home: NextPage = () => {
               maxWidth={624}
               textAlign="center"
               color="gray.600"
+              data-testid="description"
             >
               {config.description}
             </Text>
