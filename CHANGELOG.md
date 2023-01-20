@@ -38,6 +38,7 @@ The types of changes are:
 * Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
 * Privacy Center consent options can now be marked as `executable` in order to propagate consent requests [#2193](https://github.com/ethyca/fides/pull/2193)
 * Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
+* Add support for passing browser identities to consent request patches [#2304](https://github.com/ethyca/fides/pull/2304)
 
 ### Changed
 
