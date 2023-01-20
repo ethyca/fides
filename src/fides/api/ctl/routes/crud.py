@@ -8,7 +8,7 @@ generated programmatically for each resource.
 
 from typing import Dict, List
 
-from fastapi import Depends, Response, status
+from fastapi import Depends, Response, status, Security
 from fideslang import model_map
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +20,8 @@ from fides.api.ctl.database.crud import (
     update_resource,
     upsert_resources,
 )
+from fides.api.ops.api.v1 import scope_registry
+from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import (
     API_PREFIX,
@@ -45,6 +47,11 @@ for model_type, fides_model in model_map.items():
         "/",
         response_model=fides_model,
         status_code=status.HTTP_201_CREATED,
+        dependencies=[
+            Security(
+                verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_CREATE]
+            )
+        ],
         responses={
             status.HTTP_403_FORBIDDEN: {
                 "content": {
@@ -77,7 +84,14 @@ for model_type, fides_model in model_map.items():
             raise errors.ForbiddenError(resource_type, resource.fides_key)
         return await create_resource(sql_model, resource.dict(), db)
 
-    @router.get("/", response_model=List[fides_model], name="List")
+    @router.get(
+        "/",
+        dependencies=[
+            Security(verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_READ])
+        ],
+        response_model=List[fides_model],
+        name="List",
+    )
     async def ls(  # pylint: disable=invalid-name
         resource_type: str = get_resource_type(router),
         db: AsyncSession = Depends(get_async_db),
@@ -86,7 +100,13 @@ for model_type, fides_model in model_map.items():
         sql_model = sql_model_map[resource_type]
         return await list_resource(sql_model, db)
 
-    @router.get("/{fides_key}", response_model=fides_model)
+    @router.get(
+        "/{fides_key}",
+        dependencies=[
+            Security(verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_READ])
+        ],
+        response_model=fides_model,
+    )
     async def get(
         fides_key: str,
         resource_type: str = get_resource_type(router),
@@ -99,6 +119,11 @@ for model_type, fides_model in model_map.items():
     @router.put(
         "/",
         response_model=fides_model,
+        dependencies=[
+            Security(
+                verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_UPDATE]
+            )
+        ],
         responses={
             status.HTTP_403_FORBIDDEN: {
                 "content": {
@@ -132,6 +157,15 @@ for model_type, fides_model in model_map.items():
 
     @router.post(
         "/upsert",
+        dependencies=[
+            Security(
+                verify_oauth_client_cli,
+                scopes=[
+                    scope_registry.CLI_OBJECTS_CREATE,
+                    scope_registry.CLI_OBJECTS_UPDATE,
+                ],
+            )
+        ],
         responses={
             status.HTTP_200_OK: {
                 "content": {
@@ -202,6 +236,11 @@ for model_type, fides_model in model_map.items():
 
     @router.delete(
         "/{fides_key}",
+        dependencies=[
+            Security(
+                verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_DELETE]
+            )
+        ],
         responses={
             status.HTTP_403_FORBIDDEN: {
                 "content": {
