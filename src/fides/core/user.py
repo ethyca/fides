@@ -135,15 +135,21 @@ def update_user_permissions(
         headers=auth_header,
         json=request_data,
     )
-    handle_cli_response(response, verbose=False)
+    handle_cli_response(response=response, verbose=False)
     return response
 
 
-def get_auth_header() -> Dict[str, str]:
+def get_auth_header(verbose: bool = True) -> Dict[str, str]:
     """
     Executes all of the logic required to form a valid auth header.
     """
-    credentials = read_credentials_file()
+    try:
+        credentials = read_credentials_file()
+    except FileNotFoundError:
+        if verbose:
+            echo_red("No credentials file found.")
+        raise SystemExit(1)
+
     access_token = credentials.access_token
     auth_header = create_auth_header(access_token)
     return auth_header
@@ -156,12 +162,6 @@ def create_command(
     Given new user information, create a new user via the API using
     the local credentials file.
     """
-
-    try:
-        credentials = read_credentials_file()
-    except FileNotFoundError:
-        echo_red("No credentials file found.")
-        raise SystemExit(1)
 
     auth_header = get_auth_header()
     user_response = create_user(
