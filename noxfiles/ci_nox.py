@@ -276,7 +276,7 @@ def sum_coverage(session: nox.Session) -> None:
     """
     Combine multiple Code Climate coverage files.
 
-    7 files are expected for summation, one from each of the test groups run in CI.
+    4 files are expected for summation, one from each of the safe test groups run in CI.
     """
     download_cc_reporter = f"curl -L {TEST_REPORTER_URL} > ./cc-test-reporter && chmod +x ./cc-test-reporter && "
     sum_test_coverage = (
