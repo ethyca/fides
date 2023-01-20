@@ -91,6 +91,7 @@ def get_connections(
     orphaned_from_system: Optional[bool] = None,
     connection_type: Optional[List[str]] = Query(default=None),  # type: ignore
 ) -> AbstractPage[ConnectionConfig]:
+    # pylint: disable=too-many-branches
     """Returns all connection configurations in the database.
     Optionally filter the key, name, and description with a search query param.
 
