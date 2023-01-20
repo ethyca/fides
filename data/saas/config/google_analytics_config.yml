@@ -37,6 +37,8 @@ saas_config:
               value: <state>
             - name: prompt
               value: consent
+            - name: access_type
+              value: offline
             - name: scope
               value: https://www.googleapis.com/auth/analytics.user.deletion
         token_request:
