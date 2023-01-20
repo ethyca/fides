@@ -16,6 +16,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.5.0...main)
 
+### Added
+* Add new connection config routes that couple them with systems [#2249](https://github.com/ethyca/fides/pull/2249)
+
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)

@@ -33,7 +33,7 @@ from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
 
 # CRUD Endpoints
-routers = []
+routers: List[APIRouter] = []
 for model_type, fides_model in model_map.items():
     # Programmatically define routers for each resource type
     router = APIRouter(

@@ -4,7 +4,7 @@ from typing import Optional
 
 import pytest
 
-from fides.api.ops.api.v1.endpoints.connection_endpoints import validate_secrets
+from fides.api.ops.util.connection_util import validate_secrets
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.connection_configuration.connection_config import (
