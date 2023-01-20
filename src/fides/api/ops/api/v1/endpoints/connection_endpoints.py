@@ -8,19 +8,12 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
-from pydantic import ValidationError, conlist
+from pydantic import conlist
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_204_NO_CONTENT,
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
+from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
-from fides.api.ctl.routes.system import patch_connection_configs
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -31,57 +24,39 @@ from fides.api.ops.api.v1.urn_registry import (
     CONNECTION_BY_KEY,
     CONNECTION_SECRETS,
     CONNECTION_TEST,
-    CONNECTION_TYPES,
     CONNECTIONS,
-    SAAS_CONFIG,
     V1_URL_PREFIX,
 )
 from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.ops.models.manual_webhook import AccessManualWebhook
-from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.ops.schemas.api import BulkUpdateFailed
-from fides.api.ops.schemas.connection_configuration import (
-    connection_secrets_schemas,
-    get_connection_secrets_schema,
-)
+from fides.api.ops.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
-    SaasConnectionTemplateValues,
     SystemType,
     TestStatus,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
-    ConnectionConfigSecretsSchema,
     TestStatusMessage,
-)
-from fides.api.ops.schemas.connection_configuration.connection_secrets_saas import (
-    validate_saas_secrets_external_references,
 )
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.connectors import get_connector
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    create_connection_config_from_template_no_save,
-    load_registry,
-    registry_file,
-)
-from fides.api.ops.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
-)
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.connection_util import (
+    patch_connection_configs,
+    requeue_requires_input_requests,
+    validate_secrets,
+)
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -113,7 +88,7 @@ def get_connections(
     disabled: Optional[bool] = None,
     test_status: Optional[TestStatus] = None,
     system_type: Optional[SystemType] = None,
-    orphaned_from_system: Optional[bool] = False,
+    orphaned_from_system: Optional[bool] = None,
     connection_type: Optional[List[str]] = Query(default=None),  # type: ignore
 ) -> AbstractPage[ConnectionConfig]:
     """Returns all connection configurations in the database.
@@ -169,8 +144,11 @@ def get_connections(
             ConnectionConfig.last_test_succeeded.is_(test_status.str_to_bool())
         )
 
-    if orphaned_from_system:
-        query = query.filter(ConnectionConfig.system_id.is_(null()))
+    if orphaned_from_system is not None:
+        if orphaned_from_system:
+            query = query.filter(ConnectionConfig.system_id.is_(null()))
+        else:
+            query = query.filter(ConnectionConfig.system_id.is_not(null()))  # type: ignore
 
     if system_type:
         if system_type == SystemType.saas:
@@ -245,49 +223,6 @@ def delete_connection(
     # so we queue any privacy requests that are no longer blocked by webhooks
     if connection_type == ConnectionType.manual_webhook:
         requeue_requires_input_requests(db)
-
-
-def validate_secrets(
-    db: Session,
-    request_body: connection_secrets_schemas,
-    connection_config: ConnectionConfig,
-) -> ConnectionConfigSecretsSchema:
-    """Validate incoming connection configuration secrets."""
-
-    connection_type = connection_config.connection_type
-    saas_config = connection_config.get_saas_config()
-    if connection_type == ConnectionType.saas and saas_config is None:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=_validate_secrets_error_message(),
-        )
-
-    try:
-        schema = get_connection_secrets_schema(connection_type.value, saas_config)  # type: ignore
-        logger.info(
-            "Validating secrets on connection config with key '{}'",
-            connection_config.key,
-        )
-        connection_secrets = schema.parse_obj(request_body)
-    except ValidationError as e:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
-        )
-
-    # SaaS secrets with external references must go through extra validation
-    if connection_type == ConnectionType.saas:
-        try:
-            validate_saas_secrets_external_references(db, schema, connection_secrets)  # type: ignore
-        except FidesopsValidationError as e:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message
-            )
-
-    return connection_secrets
-
-
-def _validate_secrets_error_message() -> str:
-    return f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
 
 
 def connection_status(
@@ -375,28 +310,3 @@ def test_connection_config_secrets(
     connection_config = get_connection_config_or_error(db, connection_key)
     msg = f"Test completed for ConnectionConfig with key: {connection_key}."
     return connection_status(connection_config, msg, db)
-
-
-def requeue_requires_input_requests(db: Session) -> None:
-    """
-    Queue privacy requests with request status "requires_input" if they are no longer blocked by
-    access manual webhooks.
-
-    For use when all access manual webhooks have been either disabled or deleted, leaving privacy requests
-    lingering in a "requires_input" state.
-    """
-    if not AccessManualWebhook.get_enabled(db):
-        for pr in PrivacyRequest.filter(
-            db=db,
-            conditions=(PrivacyRequest.status == PrivacyRequestStatus.requires_input),
-        ):
-            logger.info(
-                "Queuing privacy request '{} with '{}' status now that manual inputs are no longer required.",
-                pr.id,
-                pr.status.value,
-            )
-            pr.status = PrivacyRequestStatus.in_processing
-            pr.save(db=db)
-            queue_privacy_request(
-                privacy_request_id=pr.id,
-            )

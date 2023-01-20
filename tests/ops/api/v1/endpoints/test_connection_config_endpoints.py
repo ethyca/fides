@@ -33,6 +33,7 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.lib.models.client import ClientDetail
+from tests.ops.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
 
@@ -308,7 +309,7 @@ class TestPatchConnections:
         )
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
+        "fides.api.ops.util.connection_util.queue_privacy_request"
     )
     def test_disable_manual_webhook(
         self,
@@ -995,6 +996,64 @@ class TestGetConnections:
         assert len(ordered) == 3
         assert ordered[0].key == items[0]["key"]
 
+    def test_orphaned_connections_filter(
+            self,
+            db,
+            api_client: TestClient,
+            generate_auth_header,
+            url,
+            system
+    ):
+        configs = []
+        total_orphaned_configs = 10
+        for i in range(0, total_orphaned_configs):
+            data = {
+                "name": str(uuid4()),
+                "key": f"my_postgres_db_{i}_orphaned_read_config",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.read,
+                "secrets": integration_secrets["postgres_example"],
+                "description": "Read-only connection config",
+            }
+
+            configs.append(ConnectionConfig.create(
+                db=db,
+                data=data,
+            ))
+
+        total_non_orphaned_configs = 12
+        for i in range(0, total_non_orphaned_configs):
+            data = {
+                "name": str(uuid4()),
+                "key": f"my_postgres_db_{i}_non_orphaned_read_config",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.read,
+                "secrets": integration_secrets["postgres_example"],
+                "description": "Read-only connection config",
+            }
+            data["system_id"] = system.id
+
+            configs.append(ConnectionConfig.create(
+                db=db,
+                data=data,
+            ))
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == total_orphaned_configs + total_non_orphaned_configs
+
+        resp = api_client.get(url + "?orphaned_from_system=True", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == total_orphaned_configs
+
+        resp = api_client.get(url + "?orphaned_from_system=False", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == total_non_orphaned_configs
+
+        for config in configs:
+            config.delete(db)
+
 
 class TestGetConnection:
     @pytest.fixture(scope="function")
@@ -1099,7 +1158,7 @@ class TestDeleteConnection:
         )
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
+        "fides.api.ops.util.connection_util.queue_privacy_request"
     )
     def test_delete_manual_webhook_connection_config(
         self,
