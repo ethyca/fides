@@ -10,7 +10,7 @@ export type Config = {
     icon_path: string;
     title: string;
     description: string;
-    identity_inputs: Record<string, string>;
+    identity_inputs?: Record<string, string>;
     consentOptions: ConfigConsentOption[];
   };
 };
@@ -20,7 +20,7 @@ export type PrivacyRequestOption = {
   icon_path: string;
   title: string;
   description: string;
-  identity_inputs: Record<string, string>;
+  identity_inputs?: Record<string, string>;
 };
 
 export type ConfigConsentOption = {
