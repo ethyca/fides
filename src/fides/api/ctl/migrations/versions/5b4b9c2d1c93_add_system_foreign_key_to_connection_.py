@@ -1,7 +1,7 @@
 """add_system_foreign_key_to_connection_config
 
 Revision ID: 5b4b9c2d1c93
-Revises: 3caf11127442
+Revises: a08024ba7e2b
 Create Date: 2023-01-13 19:39:11.936347
 
 """
