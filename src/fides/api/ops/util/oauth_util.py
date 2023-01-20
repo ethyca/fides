@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from functools import update_wrapper
-
-from typing import Callable
 from types import FunctionType
+from typing import Callable
+
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
 from jose import exceptions

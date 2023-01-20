@@ -4,13 +4,13 @@ Contains all of the endpoints required to validate credentials.
 from enum import Enum
 from typing import Callable, Dict, Union
 
-from fastapi import Response, status, Security
+from fastapi import Response, Security, status
 from pydantic import BaseModel
 
-from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.api.ops.api.v1 import scope_registry
+from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,

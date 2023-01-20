@@ -2,7 +2,7 @@
 
 # pylint: disable=C0115,C0116, E0213
 
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 from .fides_settings import FidesSettings
 

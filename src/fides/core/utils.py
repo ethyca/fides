@@ -1,6 +1,6 @@
 """Utils to help with API calls."""
-import json
 import glob
+import json
 import re
 from functools import partial
 from hashlib import sha1

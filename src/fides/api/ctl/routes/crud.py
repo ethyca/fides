@@ -8,7 +8,7 @@ generated programmatically for each resource.
 
 from typing import Dict, List
 
-from fastapi import Depends, Response, status, Security
+from fastapi import Depends, Response, Security, status
 from fideslang import model_map
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,8 +20,6 @@ from fides.api.ctl.database.crud import (
     update_resource,
     upsert_resources,
 )
-from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import (
     API_PREFIX,
@@ -33,6 +31,8 @@ from fides.api.ctl.routes.util import (
 from fides.api.ctl.sql_models import models_with_default_field, sql_model_map
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.api.ops.api.v1 import scope_registry
+from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 
 # CRUD Endpoints
 routers = []
