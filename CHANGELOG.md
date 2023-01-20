@@ -16,6 +16,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.5.0...main)
 
+### Added
+* Add new connection config routes that couple them with systems [#2249](https://github.com/ethyca/fides/pull/2249)
+
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
@@ -42,7 +45,6 @@ The types of changes are:
 * Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
 * Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
 * Access and erasure support for Friendbuy Nextgen [#2085](https://github.com/ethyca/fides/pull/2085)
-* Add new connection config routes that couple them with systems [#2249](https://github.com/ethyca/fides/pull/2249)
 
 ### Changed
 
