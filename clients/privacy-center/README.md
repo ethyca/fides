@@ -20,7 +20,6 @@ You may configure the appearance of this web application at build time by modify
   - Title
   - Description
   - Icon
-  - Policy key
   - Which consent management options are present, and each option's:
     - The Fides Data Use that the user may consent to
     - Descriptive information for the type of consent
