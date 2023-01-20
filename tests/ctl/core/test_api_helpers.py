@@ -38,7 +38,7 @@ def created_resources(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             json_resource=base_resource.json(exclude_none=True),
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         created_keys.append(base_resource.fides_key)
 
@@ -50,7 +50,7 @@ def created_resources(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             resource_id=created_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
 
@@ -62,7 +62,7 @@ def delete_resource_type(test_config: FidesConfig, resource_type: str) -> None:
         for resource in _api.ls(
             url,
             resource_type,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         ).json()
     ]
     for fides_key in fides_keys:
@@ -70,7 +70,7 @@ def delete_resource_type(test_config: FidesConfig, resource_type: str) -> None:
             url,
             resource_type,
             fides_key,
-            test_config.user.request_headers,
+            test_config.user.auth_header,
         )
 
 
@@ -91,7 +91,7 @@ class TestGetServerResource:
             url=test_config.cli.server_url,
             resource_type=resource_type,
             resource_key=resource_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         assert result.fides_key == resource_key
 
@@ -107,7 +107,7 @@ class TestGetServerResource:
             url=test_config.cli.server_url,
             resource_type=resource_type,
             resource_key=resource_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         assert not result
 
@@ -130,7 +130,7 @@ class TestGetServerResources:
             url=test_config.cli.server_url,
             resource_type=resource_type,
             existing_keys=resource_keys,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         assert set(resource_keys) == set(resource.fides_key for resource in result)
 
@@ -146,7 +146,7 @@ class TestGetServerResources:
             url=test_config.cli.server_url,
             resource_type=resource_type,
             existing_keys=resource_keys,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         assert result == []
 
@@ -158,7 +158,7 @@ class TestListServerResources:
         result = _api_helpers.list_server_resources(
             url=test_config.cli.server_url,
             resource_type=resource_type,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             exclude_keys=[],
         )
         assert result
@@ -169,7 +169,7 @@ class TestListServerResources:
         result: List[FidesModel] = _api_helpers.list_server_resources(
             url=test_config.cli.server_url,
             resource_type=resource_type,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             exclude_keys=[],
         )
         assert result == []

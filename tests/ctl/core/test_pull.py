@@ -17,7 +17,7 @@ def test_pull_existing_resources(test_config: FidesConfig) -> None:
     """Placeholder test."""
     test_dir = ".fides/"
     existing_keys = pull_existing_resources(
-        test_dir, test_config.cli.server_url, test_config.user.request_headers
+        test_dir, test_config.cli.server_url, test_config.user.auth_header
     )
     git_reset(test_dir)
     assert len(existing_keys) > 1

@@ -20,13 +20,13 @@ def create_server_datasets(test_config: FidesConfig, datasets: List[Dataset]) ->
             url=test_config.cli.server_url,
             resource_type="dataset",
             resource_id=dataset.fides_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         api.create(
             url=test_config.cli.server_url,
             resource_type="dataset",
             json_resource=dataset.json(exclude_none=True),
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
 
@@ -370,7 +370,7 @@ class TestDatabase:
             manifest_dir="",
             coverage_threshold=100,
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
     def test_generate_dataset_coverage_failure(
@@ -387,7 +387,7 @@ class TestDatabase:
                 manifest_dir="",
                 coverage_threshold=100,
                 url=test_config.cli.server_url,
-                headers=test_config.user.request_headers,
+                headers=test_config.user.auth_header,
             )
 
     def test_dataset_coverage_manifest_passes(
@@ -408,5 +408,5 @@ class TestDatabase:
             manifest_dir=f"{tmpdir}",
             coverage_threshold=100,
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )

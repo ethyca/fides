@@ -91,7 +91,7 @@ def test_generate(
 
     response = test_client.post(
         test_config.cli.server_url + API_PREFIX + "/generate/",
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
         data=dumps(data),
     )
     generate_response = GenerateResponse.parse_raw(response.text)
@@ -127,7 +127,7 @@ def test_generate_failure(
 
     response = test_client.post(
         test_config.cli.server_url + API_PREFIX + "/generate/",
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
         data=dumps(data),
     )
 

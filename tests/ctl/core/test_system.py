@@ -18,7 +18,7 @@ def create_server_systems(test_config: FidesConfig, systems: List[System]) -> No
             url=test_config.cli.server_url,
             resource_type="system",
             json_resource=system.json(exclude_none=True),
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
 
@@ -28,7 +28,7 @@ def delete_server_systems(test_config: FidesConfig, systems: List[System]) -> No
             url=test_config.cli.server_url,
             resource_type="system",
             resource_id=system.fides_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
 
@@ -216,7 +216,7 @@ def test_get_all_server_systems(
 ) -> None:
     actual_result = _system.get_all_server_systems(
         url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
         exclude_systems=[],
     )
     assert actual_result
@@ -232,7 +232,7 @@ def test_scan_system_aws_passes(
         organization_key="default_organization",
         aws_config=None,
         url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
     )
 
 
@@ -244,7 +244,7 @@ def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesConfig) -> Non
         organization_key="default_organization",
         aws_config=None,
         url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
     )
     assert actual_result
 
@@ -263,7 +263,7 @@ def test_generate_system_okta(tmpdir: LocalPath, test_config: FidesConfig) -> No
             token=os.environ["OKTA_CLIENT_TOKEN"],
         ),
         url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
     )
     assert actual_result
 
@@ -280,7 +280,7 @@ def test_scan_system_okta_success(tmpdir: LocalPath, test_config: FidesConfig) -
             token=os.environ["OKTA_CLIENT_TOKEN"],
         ),
         url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
     )
     _system.scan_system_okta(
         manifest_dir=file_name,
@@ -291,7 +291,7 @@ def test_scan_system_okta_success(tmpdir: LocalPath, test_config: FidesConfig) -
         organization_key="default_organization",
         coverage_threshold=100,
         url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
     )
     assert True
 
@@ -308,5 +308,5 @@ def test_scan_system_okta_fail(tmpdir: LocalPath, test_config: FidesConfig) -> N
             coverage_threshold=100,
             organization_key="default_organization",
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )

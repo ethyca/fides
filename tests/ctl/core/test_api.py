@@ -21,7 +21,7 @@ TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifi
 def get_existing_key(test_config: FidesConfig, resource_type: str) -> int:
     """Get an ID that is known to exist."""
     return _api.ls(
-        test_config.cli.server_url, resource_type, test_config.user.request_headers
+        test_config.cli.server_url, resource_type, test_config.user.auth_header
     ).json()[-1]["fides_key"]
 
 
@@ -64,7 +64,7 @@ class TestCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         print(result.text)
         assert result.status_code == 201
@@ -74,7 +74,7 @@ class TestCrud:
         result = _api.ls(
             url=test_config.cli.server_url,
             resource_type=endpoint,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         print(result.text)
         assert result.status_code == 200
@@ -84,7 +84,7 @@ class TestCrud:
         existing_id = get_existing_key(test_config, endpoint)
         result = _api.get(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             resource_id=existing_id,
         )
@@ -105,7 +105,7 @@ class TestCrud:
         print(manifest.json(exclude_none=True))
         result = _api.get(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             resource_id=resource_key,
         )
@@ -122,7 +122,7 @@ class TestCrud:
         manifest = resources_dict[endpoint]
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
@@ -136,7 +136,7 @@ class TestCrud:
         manifest = resources_dict[endpoint]
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             resources=[loads(manifest.json())],
         )
@@ -153,7 +153,7 @@ class TestCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=resource_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         print(result.text)
         assert result.status_code == 200
@@ -171,7 +171,7 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=resource.fides_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         assert result.status_code == 403
 
@@ -185,7 +185,7 @@ class TestDefaultTaxonomyCrud:
 
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             json_resource=json_resource,
         )
@@ -199,7 +199,7 @@ class TestDefaultTaxonomyCrud:
         resources = [r.dict() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             resources=resources,
         )
@@ -215,7 +215,7 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         assert result.status_code == 403
 
@@ -223,7 +223,7 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
@@ -234,7 +234,7 @@ class TestDefaultTaxonomyCrud:
         manifest.is_default = True
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             resources=[manifest.dict()],
         )
@@ -244,7 +244,7 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
@@ -256,13 +256,13 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
         manifest.is_default = True
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
@@ -281,12 +281,12 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=second_item.json(exclude_none=True),
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             resources=[manifest.dict(), second_item.dict()],
         )
@@ -296,13 +296,13 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=second_item.fides_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
 
