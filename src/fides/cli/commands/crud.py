@@ -24,7 +24,7 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
             url=config.cli.server_url,
             resource_type=resource_type,
             resource_id=fides_key,
-            headers=config.user.request_headers,
+            headers=config.user.auth_header,
         )
     )
 
@@ -43,7 +43,7 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
         url=config.cli.server_url,
         resource_type=resource_type,
         resource_key=fides_key,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         raw=True,
     )
     print_divider()
@@ -62,7 +62,7 @@ def list_resources(ctx: click.Context, resource_type: str) -> None:
     resources = list_server_resources(
         url=config.cli.server_url,
         resource_type=resource_type,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         exclude_keys=[],
         raw=True,
     )

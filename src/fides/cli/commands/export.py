@@ -38,7 +38,7 @@ def export_system(
     _export.export_system(
         url=config.cli.server_url,
         system_list=taxonomy.system,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         manifests_dir=manifests_dir,
         dry=dry,
     )
@@ -62,7 +62,7 @@ def export_dataset(
     _export.export_dataset(
         url=config.cli.server_url,
         dataset_list=taxonomy.dataset,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         manifests_dir=manifests_dir,
         dry=dry,
     )
@@ -86,7 +86,7 @@ def export_organization(
     _export.export_organization(
         url=config.cli.server_url,
         organization_list=taxonomy.organization,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         manifests_dir=manifests_dir,
         dry=dry,
     )
@@ -126,7 +126,7 @@ def export_datamap(
     config = ctx.obj["CONFIG"]
     _export.export_datamap(
         url=config.cli.server_url,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         organization_fides_key=org_key,
         output_directory=output_dir,
         dry=dry,

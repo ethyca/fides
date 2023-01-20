@@ -38,7 +38,7 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     _push.push(
         url=config.cli.server_url,
         taxonomy=taxonomy,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         dry=dry,
         diff=diff,
     )
@@ -87,13 +87,13 @@ def evaluate(
         _push.push(
             url=config.cli.server_url,
             taxonomy=taxonomy,
-            headers=config.user.request_headers,
+            headers=config.user.auth_header,
             dry=dry,
         )
 
     _evaluate.evaluate(
         url=config.cli.server_url,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         manifests_dir=manifests_dir,
         policy_fides_key=fides_key,
         message=message,
@@ -106,7 +106,7 @@ def evaluate(
         pretty_echo("Auditing Organization Resource Compliance")
         _audit.audit_organizations(
             url=config.cli.server_url,
-            headers=config.user.request_headers,
+            headers=config.user.auth_header,
             include_keys=[
                 organization.fides_key for organization in taxonomy.organization
             ],
@@ -115,7 +115,7 @@ def evaluate(
         pretty_echo("Auditing System Resource Compliance")
         _audit.audit_systems(
             url=config.cli.server_url,
-            headers=config.user.request_headers,
+            headers=config.user.auth_header,
             include_keys=[system.fides_key for system in taxonomy.system],
         )
 
@@ -169,6 +169,6 @@ def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -
     _pull.pull(
         url=config.cli.server_url,
         manifests_dir=manifests_dir,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         all_resources_file=all_resources,
     )

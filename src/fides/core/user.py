@@ -139,6 +139,16 @@ def update_user_permissions(
     return response
 
 
+def get_auth_header() -> Dict[str, str]:
+    """
+    Executes all of the logic required to form a valid auth header.
+    """
+    credentials = read_credentials_file()
+    access_token = credentials.access_token
+    auth_header = create_auth_header(access_token)
+    return auth_header
+
+
 def create_command(
     username: str, password: str, first_name: str, last_name: str, server_url: str
 ) -> None:
@@ -153,8 +163,7 @@ def create_command(
         echo_red("No credentials file found.")
         raise SystemExit(1)
 
-    access_token = credentials.access_token
-    auth_header = create_auth_header(access_token)
+    auth_header = get_auth_header()
     user_response = create_user(
         username=username,
         password=password,
@@ -192,9 +201,7 @@ def get_permissions_command(server_url: str) -> None:
     """
     credentials = read_credentials_file()
     user_id = credentials.user_id
-    access_token = credentials.access_token
-
-    auth_header = create_auth_header(access_token)
+    auth_header = get_auth_header()
     permissions: List[str] = get_user_permissions(user_id, auth_header, server_url)
 
     print("Permissions:")

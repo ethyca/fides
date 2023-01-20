@@ -6,10 +6,9 @@ from functools import partial
 from hashlib import sha1
 from json.decoder import JSONDecodeError
 from os.path import isfile
-from typing import Dict, Iterator, List
+from typing import Iterator, List
 
 import click
-import jwt
 import requests
 import sqlalchemy
 from fideslang.models import DatasetField, FidesModel
@@ -85,24 +84,6 @@ def get_db_engine(connection_string: str) -> Engine:
     except Exception as err:
         raise Exception(f"Database connection failed with engine:\n{engine}!") from err
     return engine
-
-
-def jwt_encode(user_id: int, api_key: str) -> str:
-    """
-    Encode user information into server-required JWT token
-    """
-    return jwt.encode({"uid": user_id}, api_key, algorithm="HS256")
-
-
-def generate_request_headers(user_id: str, api_key: str) -> Dict[str, str]:
-    """
-    Generate the headers for a request.
-    """
-    return {
-        "Content-Type": "application/json",
-        "user-id": str(user_id),
-        "Authorization": f"Bearer {jwt_encode(1, api_key)}",
-    }
 
 
 def get_all_level_fields(fields: list) -> Iterator[DatasetField]:

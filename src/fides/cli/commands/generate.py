@@ -172,7 +172,7 @@ def generate_system_okta(
         include_null=include_null,
         organization_key=org_key,
         url=config.cli.server_url,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
     )
 
 
@@ -221,5 +221,5 @@ def generate_system_aws(
         organization_key=org_key,
         aws_config=aws_config,
         url=config.cli.server_url,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
     )
