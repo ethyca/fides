@@ -1,3 +1,14 @@
+"""
+This module contains every scope used in the application.
+
+The format for defining a scope is:
+    <SCOPE_SECTION>_<SCOPE_NAME> = "<scope_section>:<scope_name>"
+    CLIENT_CREATE = "client:create"
+
+`SCOPE_REGISTRY` is intended as a comprehensive list of all available scopes.
+
+There is a redundant `fides/lib/oauth/scopes.py` file that should not be used.
+"""
 CLIENT_CREATE = "client:create"
 CLIENT_UPDATE = "client:update"
 CLIENT_READ = "client:read"
@@ -71,6 +82,12 @@ USER_PASSWORD_RESET = "user:reset-password"
 USER_PERMISSION_CREATE = "user-permission:create"
 USER_PERMISSION_UPDATE = "user-permission:update"
 USER_PERMISSION_READ = "user-permission:read"
+
+# These permissions all endpoints used by the CLI's `push` & `evaluate` commands
+CLI_OBJECTS_CREATE = "cli-objects:create"
+CLI_OBJECTS_READ = "cli-objects:read"
+CLI_OBJECTS_UPDATE = "cli-objects:update"
+CLI_OBJECTS_DELETE = "cli-objects:delete"
 
 SCOPE_REGISTRY = [
     CLIENT_CREATE,
