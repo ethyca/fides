@@ -4167,6 +4167,142 @@
         }
       }
     },
+    "/api/v1/system/{fides_key}/connection": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get System Connections",
+        "description": "Return all the connection configs related to a system.",
+        "operationId": "get_system_connections_api_v1_system__fides_key__connection_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ConnectionConfigurationResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:read"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Patch Connections",
+        "description": "Given a valid System fides key, a list of connection config data elements, optionally\ncontaining the secrets, create or update corresponding ConnectionConfig objects or report\nfailure.\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.",
+        "operationId": "patch_connections_api_v1_system__fides_key__connection_patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Configs",
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateConnectionConfigurationWithSecrets"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPutConnectionConfiguration"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/user": {
       "get": {
         "tags": [
@@ -4722,6 +4858,15 @@
               "$ref": "#/components/schemas/SystemType"
             },
             "name": "system_type",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Orphaned From System",
+              "type": "boolean"
+            },
+            "name": "orphaned_from_system",
             "in": "query"
           },
           {
