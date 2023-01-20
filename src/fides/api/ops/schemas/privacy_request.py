@@ -256,6 +256,7 @@ class ConsentPreferencesWithVerificationCode(BaseSchema):
     consent: List[Consent]
     policy_key: Optional[FidesOpsKey] = None
     executable_options: Optional[List[ConsentWithExecutableStatus]]
+    browser_identity: Optional[Identity]
 
 
 class ConsentRequestResponse(BaseSchema):
