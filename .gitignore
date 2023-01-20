@@ -2,6 +2,8 @@
 
 # frontend
 ui-build/
+coverage/
+cc-test-reporter
 
 ## generic files to ignore
 *~
