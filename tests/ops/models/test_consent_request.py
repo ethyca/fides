@@ -24,6 +24,7 @@ from fides.api.ops.schemas.privacy_request import (
     ConsentWithExecutableStatus,
     PrivacyRequestResponse,
 )
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.core.config import get_config
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
@@ -180,3 +181,50 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         )
 
         assert not mock_create_privacy_request.called
+
+    @mock.patch(
+        "fides.api.ops.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
+    )
+    def test_merge_in_browser_identity_with_provided_identity(
+        self, mock_create_privacy_request, db, consent_policy
+    ):
+        mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
+            succeeded=[
+                PrivacyRequestResponse(
+                    id="fake_privacy_request_id",
+                    status=PrivacyRequestStatus.pending,
+                    policy=PolicyResponse.from_orm(consent_policy),
+                )
+            ],
+            failed=[],
+        )
+        provided_identity_data = {
+            "privacy_request_id": None,
+            "field_name": "email",
+            "encrypted_value": {"value": "test@email.com"},
+        }
+        provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+        browser_identity = Identity(user_id="user_id_from_browser")
+
+        consent_preferences = ConsentPreferences(
+            consent=[{"data_use": "advertising", "opt_in": False}]
+        )
+
+        queue_privacy_request_to_propagate_consent(
+            db=db,
+            provided_identity=provided_identity,
+            policy=DEFAULT_CONSENT_POLICY,
+            consent_preferences=consent_preferences,
+            executable_consents=[
+                ConsentWithExecutableStatus(data_use="advertising", executable=True)
+            ],
+            browser_identity=browser_identity,
+        )
+
+        assert mock_create_privacy_request.called
+        call_kwargs = mock_create_privacy_request.call_args[1]
+        identity_of_privacy_request = call_kwargs["data"][0].identity
+        assert identity_of_privacy_request.email == "test@email.com"
+        assert identity_of_privacy_request.user_id == browser_identity.user_id
+
+        provided_identity.delete(mock_create_privacy_request)
