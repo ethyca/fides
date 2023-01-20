@@ -21,7 +21,6 @@ The types of changes are:
 * Unified Fides Resources: Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
 * Unified Fides Resources: Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
 
-
 ### Changed
 
 * Unified Fides Resources: Removed several fidesops schemas for DSR's in favor of updated Fideslang schemas [#2009](https://github.com/ethyca/fides/pull/2009)
@@ -29,6 +28,10 @@ The types of changes are:
 * Unified Fides Resources: Updated UI dataset config routes to use new unified routes [#2113](https://github.com/ethyca/fides/pull/2113)
 * Unified Fides Resources: Validate request body on crud endpoints on upsert. Validate dataset data categories before save. [#2134](https://github.com/ethyca/fides/pull/2134/)
 * Unified Fides Resources: Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
+
+### Fixed
+
+* Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
 
 ## [2.5.0](https://github.com/ethyca/fides/compare/2.4.0...2.5.0)
 
@@ -85,6 +88,7 @@ The types of changes are:
 * Fix Cookie House purchase modal flashing 'Error' in title [#2274](https://github.com/ethyca/fides/pull/2274)
 * Stop dependency from upgrading `packaging` to version with known issue [#2273](https://github.com/ethyca/fides/pull/2273)
 * Privacy center config no longer requires `identity_inputs` and will use `email` as a default [#2263](https://github.com/ethyca/fides/pull/2263)
+* No longer display remaining days for privacy requests in terminal states [#2292](https://github.com/ethyca/fides/pull/2292)
 
 ### Removed
 
