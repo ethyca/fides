@@ -3,12 +3,14 @@ Contains an endpoint for extracting a data map from the server
 """
 from typing import Dict, List
 
-from fastapi import Depends, Response, status
+from fastapi import Depends, Response, status, Security
 from fideslang.parse import parse_dict
 from loguru import logger as log
 from pandas import DataFrame
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fides.api.ops.api.v1 import scope_registry
+from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 from fides.api.ctl.database.crud import get_resource, list_resource
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import API_PREFIX
@@ -33,6 +35,9 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 
 @router.get(
     "/{organization_fides_key}",
+    dependencies=[
+        Security(verify_oauth_client_cli, scopes=[scope_registry.DATAMAP_READ])
+    ],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {

@@ -35,11 +35,15 @@ CONSENT_READ = "consent:read"
 
 DATABASE_RESET = "database:reset"
 
+DATAMAP_READ = "datamap:read"
+
 DATASET_CREATE_OR_UPDATE = "dataset:create_or_update"
 DATASET_READ = "dataset:read"
 DATASET_DELETE = "dataset:delete"
 
 ENCRYPTION_EXEC = "encryption:exec"
+
+GENERATE_EXEC = "generate:exec"
 
 MESSAGING_CREATE_OR_UPDATE = "messaging:create_or_update"
 MESSAGING_READ = "messaging:read"
@@ -88,6 +92,8 @@ USER_PERMISSION_CREATE = "user-permission:create"
 USER_PERMISSION_UPDATE = "user-permission:update"
 USER_PERMISSION_READ = "user-permission:read"
 
+VALIDATE_EXEC = "validate:exec"
+
 WEBHOOK_CREATE_OR_UPDATE = "webhook:create_or_update"
 WEBHOOK_READ = "webhook:read"
 WEBHOOK_DELETE = "webhook:delete"
@@ -111,10 +117,12 @@ SCOPE_REGISTRY = [
     CONSENT_READ,
     CONNECTION_TYPE_READ,
     DATABASE_RESET,
+    DATAMAP_READ,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
     ENCRYPTION_EXEC,
+    GENERATE_EXEC,
     POLICY_CREATE_OR_UPDATE,
     POLICY_READ,
     POLICY_DELETE,
@@ -152,4 +160,5 @@ SCOPE_REGISTRY = [
     USER_PERMISSION_CREATE,
     USER_PERMISSION_UPDATE,
     USER_PERMISSION_READ,
+    VALIDATE_EXEC,
 ]
