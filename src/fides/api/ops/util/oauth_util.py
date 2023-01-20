@@ -191,3 +191,10 @@ async def verify_oauth_client(
         logger.debug("Client no longer allowed to issue these scopes.")
         raise AuthorizationError(detail="Not Authorized for this action")
     return client
+
+
+verify_oauth_client_cli = verify_oauth_client
+verify_oauth_client_cli.__doc__ = """
+This function copy is a workaround to let CLI-related endpoints use the same logic
+for oauth verification but be able to be overridden separately
+"""
