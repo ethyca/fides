@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from functools import update_wrapper
 
+from typing import Callable
+from types import FunctionType
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
 from jose import exceptions
@@ -38,6 +40,20 @@ JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 oauth2_scheme = OAuth2ClientCredentialsBearer(
     tokenUrl=(V1_URL_PREFIX + TOKEN),
 )
+
+
+def copy_func(source_function: Callable) -> Callable:
+    """Based on http://stackoverflow.com/a/6528148/190597 (Glenn Maynard)"""
+    target_function = FunctionType(
+        source_function.__code__,
+        source_function.__globals__,
+        name=source_function.__name__,
+        argdefs=source_function.__defaults__,
+        closure=source_function.__closure__,
+    )
+    target_function = update_wrapper(target_function, source_function)
+    target_function.__kwdefaults__ = source_function.__kwdefaults__
+    return target_function
 
 
 async def get_current_user(
@@ -193,8 +209,6 @@ async def verify_oauth_client(
     return client
 
 
-verify_oauth_client_cli = verify_oauth_client
-verify_oauth_client_cli.__doc__ = """
-This function copy is a workaround to let CLI-related endpoints use the same logic
-for oauth verification but be able to be overridden separately
-"""
+# This is a workaround so that we can override CLI-related endpoints and
+# all other endpoints separately.
+verify_oauth_client_cli = copy_func(verify_oauth_client)

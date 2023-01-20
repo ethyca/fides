@@ -82,13 +82,13 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     view.router,
 ]
 
-if CONFIG.security.env.value == "demo":
-    # This remove all auth requirements
-    app.dependency_overrides[verify_oauth_client] = get_root_client
-    app.dependency_overrides[verify_oauth_client_cli] = get_root_client
-elif CONFIG.security.env.value == "dev":
+if CONFIG.security.env.value == "dev":
     # This removes auth requirements for CLI-related endpoints
     # and is the default
+    app.dependency_overrides[verify_oauth_client_cli] = get_root_client
+elif CONFIG.security.env.value == "demo":
+    # This remove all auth requirements
+    app.dependency_overrides[verify_oauth_client] = get_root_client
     app.dependency_overrides[verify_oauth_client_cli] = get_root_client
 elif CONFIG.security.env.value == "prod":
     # This is the most secure, so all security deps are maintained
