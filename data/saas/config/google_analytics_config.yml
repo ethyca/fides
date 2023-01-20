@@ -7,21 +7,19 @@ saas_config:
 
   connector_params:
 
-    - name: domain
-      default: www.googleapis.com
     - name: client_id
     - name: client_secret
     - name: redirect_uri
-    - name: propertyId
+    - name: property_id
       description: GA4 Property
 
   client_config:
     protocol: https
-    host: <domain>
+    host: www.googleapis.com
     authentication:
       strategy: oauth2_authorization_code
       configuration:
-        expires_in: 7200
+        expires_in: 3599
         authorization_request:
           method: GET
           path: /o/oauth2/v2/auth
@@ -76,9 +74,17 @@ saas_config:
             }
 
   test_request:
-    method: GET
-    path: /users/ping
-
+    method: POST
+    path: /analytics/v3/userDeletion/userDeletionRequests:upsert
+    body: |
+      {
+        "kind": "analytics#userDeletionRequest",
+        "id": {
+          "type": "USER_ID",
+          "userId": "fides_test_user_id"
+        },
+        "propertyId": "<property_id>"
+      }
 
   consent_requests:
     opt_out:
@@ -91,7 +97,7 @@ saas_config:
             "type": "USER_ID",
             "userId": "<user_id>"
           },
-          "propertyId": "<propertyId>"
+          "propertyId": "<property_id>"
         }
 
   endpoints: []
