@@ -122,6 +122,7 @@ SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
 
+SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 
 # User URLs
 USERS = "/user"

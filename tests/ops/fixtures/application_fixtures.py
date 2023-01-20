@@ -13,6 +13,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ctl.sql_models import System
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -1472,3 +1473,17 @@ def authenticated_fides_client(
 ) -> FidesClient:
     test_fides_client.login()
     return test_fides_client
+
+
+@pytest.fixture(scope="function")
+def system(db: Session) -> System:
+
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+        },
+    )
+    return system
