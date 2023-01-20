@@ -90,4 +90,12 @@ export type AppDispatch = AppStore["dispatch"];
 
 export const persistor = persistStore(store);
 
+/**
+ * The store is exposed on the window object when running in the Cypress test environment. This
+ * enables the custom `cy.dispatch` command.
+ */
+if (typeof window !== "undefined" && window.Cypress) {
+  window.store = store;
+}
+
 export default store;
