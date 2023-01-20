@@ -12,7 +12,7 @@ const HomeBanner: React.FC = () => {
       background="linear-gradient(180deg, #FFFFFF 0%, #F8F8FF 100%);"
       h="300px"
     >
-      <Flex flexDir="column" pos="absolute" px="36px" w="597px">
+      <Flex flexDir="column" mt="40px" pos="absolute" px="36px" w="597px">
         {hasSystems && (
           <>
             <Text
