@@ -16,6 +16,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.5.0...main)
 
+### Fixed
+
+* Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
 
 ## [2.5.0](https://github.com/ethyca/fides/compare/2.4.0...2.5.0)
 
