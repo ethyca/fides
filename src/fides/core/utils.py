@@ -1,4 +1,5 @@
 """Utils to help with API calls."""
+import json
 import glob
 import re
 from functools import partial
@@ -23,6 +24,21 @@ logger.bind(name="server_api")
 
 echo_red = partial(click.secho, fg="red", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)
+
+def check_response_status(response: requests.Response) -> requests.Response:
+    """
+    Verify that a response object is 'ok', otherwise print the error and raise
+    an exception.
+    """
+    if response.ok:
+        return response
+
+    try:
+        echo_red(response.json())
+    except json.JSONDecodeError:
+        echo_red(response.text)
+    finally:
+        raise SystemExit(1)
 
 
 def check_response(response: requests.Response) -> requests.Response:
