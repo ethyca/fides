@@ -42,6 +42,8 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
 )
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 
+# pylint: disable=too-many-nested-blocks,too-many-branches
+
 
 def requeue_requires_input_requests(db: Session) -> None:
     """
