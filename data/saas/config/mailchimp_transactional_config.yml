@@ -36,11 +36,17 @@ saas_config:
         }
 
     opt_out:
-      method: POST
-      path: /allowlists/delete
-      body: |
-        {
-          "email": "<email>"
-        }
+      - method: POST
+        path: /allowlists/delete
+        body: |
+          {
+            "email": "<email>"
+          }
+      - method: POST
+        path: /rejects/add
+        body: |
+          {
+            "email": "<email>"
+          }
 
   endpoints: []

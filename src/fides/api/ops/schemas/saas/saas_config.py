@@ -214,8 +214,28 @@ class SaaSRequestMap(BaseModel):
 class ConsentRequestMap(BaseModel):
     """A map of actions to Consent requests"""
 
-    opt_in: Optional[SaaSRequest] = None
-    opt_out: Optional[SaaSRequest] = None
+    opt_in: Union[SaaSRequest, List[SaaSRequest]] = []
+    opt_out: Union[SaaSRequest, List[SaaSRequest]] = []
+
+    @validator("opt_in")
+    def validate_opt_in(
+        cls,
+        opt_in: Union[SaaSRequest, List[SaaSRequest]],
+    ) -> List[SaaSRequest]:
+        """Convert all opt in request formats to a list of opt in requests"""
+        if isinstance(opt_in, SaaSRequest):
+            return [opt_in]
+        return opt_in
+
+    @validator("opt_out")
+    def validate_opt_out(
+        cls,
+        opt_out: Union[SaaSRequest, List[SaaSRequest]],
+    ) -> List[SaaSRequest]:
+        """Convert all opt out request formats to a list of opt out requests"""
+        if isinstance(opt_out, SaaSRequest):
+            return [opt_out]
+        return opt_out
 
 
 class Endpoint(BaseModel):
