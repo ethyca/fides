@@ -37,6 +37,7 @@ from fides.api.ctl.ui import (
     get_package_file_map,
     get_path_to_admin_ui_file,
     match_route,
+    path_is_in_ui_directory,
 )
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ctl.utils.logger import setup as setup_logging
@@ -311,23 +312,14 @@ def read_other_paths(request: Request) -> Response:
     if not ui_file:
         ui_file = get_path_to_admin_ui_file(path)
 
-    if ui_file and ui_file.is_file():
-        # We've found a file, but first safety check that this file is really only from our UI directory
-        ui_directory = get_path_to_admin_ui_file("")
-        if not ui_directory:
-            logger.debug("Unable to locate UI directory")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
-            )
-
-        # Check that the UI directory is part of the requested file's file path
-        if ui_directory in ui_file.parents:
-            logger.debug(
-                "catchall request path '{}' matched static admin UI file: {}",
-                path,
-                ui_file,
-            )
-            return FileResponse(ui_file)
+    # Serve up the file as long as it is within the UI directory
+    if ui_file and ui_file.is_file() and path_is_in_ui_directory(ui_file):
+        logger.debug(
+            "catchall request path '{}' matched static admin UI file: {}",
+            path,
+            ui_file,
+        )
+        return FileResponse(ui_file)
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
