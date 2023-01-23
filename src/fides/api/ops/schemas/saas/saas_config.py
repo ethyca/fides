@@ -214,8 +214,22 @@ class SaaSRequestMap(BaseModel):
 class ConsentRequestMap(BaseModel):
     """A map of actions to Consent requests"""
 
-    opt_in: Optional[SaaSRequest] = None
-    opt_out: Optional[SaaSRequest] = None
+    opt_in: Union[SaaSRequest, List[SaaSRequest]] = []
+    opt_out: Union[SaaSRequest, List[SaaSRequest]] = []
+
+    @validator("opt_in", "opt_out")
+    def validate_list_field(
+        cls,
+        field_value: Union[SaaSRequest, List[SaaSRequest]],
+    ) -> List[SaaSRequest]:
+        """Convert all opt_in/opt_out request formats to a list of requests.
+
+        We allow either a single request or a list of requests to be defined, but this makes
+        sure that everything is a list once that data has been read in.
+        """
+        if isinstance(field_value, SaaSRequest):
+            return [field_value]
+        return field_value
 
 
 class Endpoint(BaseModel):

@@ -429,32 +429,33 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         for consent in consent_preferences:
             request_action: str = "opt_in" if consent.opt_in else "opt_out"
-            consent_request: Optional[
+            consent_requests: List[
                 SaaSRequest
             ] = self._get_consent_requests_by_preference(consent.opt_in)
 
-            if not consent_request:
+            if not consent_requests:
                 logger.info(
-                    "Skipping consent requests on node {}: No '{}' request defined",
+                    "Skipping consent requests on node {}: No '{}' requests defined",
                     node.address.value,
                     request_action,
                 )
                 continue
 
-            self.set_saas_request_state(consent_request)
+            for consent_request in consent_requests:
+                self.set_saas_request_state(consent_request)
 
-            param_values: Dict[str, Any] = self.secrets
-            param_values.update(identity_data)
+                param_values: Dict[str, Any] = self.secrets
+                param_values.update(identity_data)
 
-            prepared_request: SaaSRequestParams = map_param_values(
-                request_action,
-                f"{self.configuration.name}",
-                consent_request,
-                self.secrets,
-            )
-            client: AuthenticatedClient = self.create_client()
-            client.send(prepared_request)
-            self.unset_connector_state()
+                prepared_request: SaaSRequestParams = map_param_values(
+                    request_action,
+                    f"{self.configuration.name}",
+                    consent_request,
+                    self.secrets,
+                )
+                client: AuthenticatedClient = self.create_client()
+                client.send(prepared_request)
+        self.unset_connector_state()
         return True
 
     def close(self) -> None:
@@ -580,15 +581,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Error executing override mask function '{override_function_name}'"
             )
 
-    def _get_consent_requests_by_preference(
-        self, opt_in: bool
-    ) -> Optional[SaaSRequest]:
+    def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
         """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
         consent_requests: Optional[
             ConsentRequestMap
         ] = self.saas_config.consent_requests
 
         if not consent_requests:
-            return None
+            return []
 
-        return consent_requests.opt_in if opt_in else consent_requests.opt_out
+        return consent_requests.opt_in if opt_in else consent_requests.opt_out  # type: ignore
