@@ -1,6 +1,7 @@
 from typing import Any, Dict, Set
 
 import pytest
+from fideslang.models import Dataset
 
 from fides.api.ops.graph.config import (
     CollectionAddress,
@@ -13,7 +14,6 @@ from fides.api.ops.graph.graph import DatasetGraph, Edge
 from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.ops.service.connectors.query_config import (
@@ -169,7 +169,7 @@ class TestSQLQueryConfig:
     def test_update_rule_target_fields(
         self, erasure_policy, example_datasets, connection_config
     ):
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
@@ -203,7 +203,7 @@ class TestSQLQueryConfig:
     def test_generate_update_stmt_one_field(
         self, erasure_policy, example_datasets, connection_config
     ):
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
@@ -230,7 +230,7 @@ class TestSQLQueryConfig:
         example_datasets,
         connection_config,
     ):
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
@@ -261,7 +261,7 @@ class TestSQLQueryConfig:
     def test_generate_update_stmt_multiple_fields_same_rule(
         self, erasure_policy, example_datasets, connection_config
     ):
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
@@ -320,7 +320,7 @@ class TestSQLQueryConfig:
     def test_generate_update_stmts_from_multiple_rules(
         self, erasure_policy_two_rules, example_datasets, connection_config
     ):
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
@@ -419,9 +419,9 @@ class TestMongoQueryConfig:
         integration_mongodb_config,
         connection_config,
     ):
-        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        dataset_postgres = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
-        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        dataset_mongo = Dataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, integration_mongodb_config.key
         )
@@ -481,9 +481,9 @@ class TestMongoQueryConfig:
         integration_mongodb_config,
         connection_config,
     ):
-        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        dataset_postgres = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
-        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        dataset_mongo = Dataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, integration_mongodb_config.key
         )
@@ -544,9 +544,9 @@ class TestMongoQueryConfig:
         integration_mongodb_config,
         connection_config,
     ):
-        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        dataset_postgres = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
-        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        dataset_mongo = Dataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, integration_mongodb_config.key
         )

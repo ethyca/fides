@@ -6,6 +6,7 @@ import requests
 from requests import Response
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -89,16 +90,20 @@ def slack_enterprise_dataset_config(
     slack_enterprise_connection_config.name = fides_key
     slack_enterprise_connection_config.key = fides_key
     slack_enterprise_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, slack_enterprise_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": slack_enterprise_connection_config.id,
             "fides_key": fides_key,
-            "dataset": slack_enterprise_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 class SlackTestClient:

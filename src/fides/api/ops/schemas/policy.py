@@ -1,9 +1,10 @@
 from typing import Any, Dict, List, Optional
 
+from fideslang.validation import FidesKey
+
 from fides.api.ops.models.policy import ActionType, DrpAction
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.schemas.storage.storage import StorageDestinationResponse
 from fides.api.ops.util.data_category import DataCategory
 
@@ -29,7 +30,7 @@ class RuleTarget(BaseSchema):
     """An external representation of a Rule's target DataCategory within a Fidesops Policy"""
 
     name: Optional[str]
-    key: Optional[FidesOpsKey]
+    key: Optional[FidesKey]
     data_category: DataCategory  # type: ignore
 
     class Config:
@@ -42,7 +43,7 @@ class RuleBase(BaseSchema):
     """An external representation of a Rule within a Fidesops Policy"""
 
     name: str
-    key: Optional[FidesOpsKey]
+    key: Optional[FidesKey]
     action_type: ActionType
 
     class Config:
@@ -57,7 +58,7 @@ class RuleCreate(RuleBase):
     over a composite object.
     """
 
-    storage_destination_key: Optional[FidesOpsKey]
+    storage_destination_key: Optional[FidesKey]
     masking_strategy: Optional[PolicyMaskingSpec]
 
 
@@ -94,7 +95,7 @@ class Policy(BaseSchema):
     """An external representation of a Fidesops Policy"""
 
     name: str
-    key: Optional[FidesOpsKey]
+    key: Optional[FidesKey]
     drp_action: Optional[DrpAction]
     execution_timeframe: Optional[int]
 

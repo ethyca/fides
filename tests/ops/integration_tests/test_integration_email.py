@@ -1,6 +1,7 @@
 from unittest import mock
 
 import pytest as pytest
+from fideslang.models import Dataset
 
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
@@ -12,7 +13,6 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     ManualAction,
 )
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingServiceType,
@@ -74,8 +74,8 @@ async def test_email_connector_cache_and_delayed_send(
         "email_dataset:payment": [],
     }
 
-    dataset_postgres = FidesopsDataset(**example_datasets[0])
-    dataset_email = FidesopsDataset(**example_datasets[9])
+    dataset_postgres = Dataset(**example_datasets[0])
+    dataset_email = Dataset(**example_datasets[9])
     postgres_graph = convert_dataset_to_graph(
         dataset_postgres, integration_postgres_config.key
     )

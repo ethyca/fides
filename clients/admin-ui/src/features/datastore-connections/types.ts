@@ -1,4 +1,8 @@
-import { ConnectionType, SystemType } from "~/types/api";
+import {
+  ConnectionType,
+  DatasetConfigCtlDataset,
+  SystemType,
+} from "~/types/api";
 
 import {
   AccessLevel,
@@ -52,16 +56,9 @@ export type PatchAccessManualWebhookRequest = CreateAccessManualWebhookRequest;
 export type PatchAccessManualWebhookResponse =
   CreateAccessManualWebhookResponse;
 
-export type PatchDatasetsRequest = {
+export type PatchDatasetsConfigRequest = {
   connection_key: string;
-  datasets: Dataset[];
-};
-
-export type DatasetsReponse = {
-  items: Dataset[];
-  total: number;
-  page: number;
-  size: number;
+  dataset_pairs: DatasetConfigCtlDataset[];
 };
 
 export type Dataset = {
