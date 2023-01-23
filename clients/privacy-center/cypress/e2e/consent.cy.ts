@@ -233,5 +233,18 @@ describe("Consent settings", () => {
           ]);
       });
     });
+
+    describe("when globalPrivacyControl is enabled", () => {
+      it("uses the globalPrivacyControl default", () => {
+        cy.visit("/fides-consent-demo.html?globalPrivacyControl=true");
+        cy.get("#consent-json");
+        cy.window().then((win) => {
+          expect(win).to.have.nested.property("Fides.consent").that.eql({
+            data_sales: false,
+            tracking: false,
+          });
+        });
+      });
+    });
   });
 });
