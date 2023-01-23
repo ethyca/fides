@@ -22,7 +22,7 @@ def test_db_reset_dev_mode_enabled(
 
 def test_db_reset_dev_mode_disabled(
     test_config: FidesConfig,
-    test_config_dev_mode_disabled: FidesConfig,
+    test_config_dev_mode_disabled: FidesConfig,  # temporarily switches off config.dev_mode
     test_client: TestClient,
 ) -> None:
     with pytest.raises(
