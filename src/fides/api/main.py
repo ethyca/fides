@@ -313,7 +313,11 @@ def read_other_paths(request: Request) -> Response:
         ui_file = get_path_to_admin_ui_file(path)
 
     # Serve up the file as long as it is within the UI directory
-    if ui_file and ui_file.is_file() and path_is_in_ui_directory(ui_file):
+    if ui_file and ui_file.is_file():
+        if not path_is_in_ui_directory(ui_file):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+            )
         logger.debug(
             "catchall request path '{}' matched static admin UI file: {}",
             path,
