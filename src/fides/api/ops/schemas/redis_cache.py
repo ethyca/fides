@@ -11,6 +11,7 @@ class Identity(BaseSchema):
 
     phone_number: Optional[str] = None
     email: Optional[str] = None
+    user_id: Optional[str] = None
 
     @validator("phone_number")
     @classmethod
@@ -24,6 +25,6 @@ class Identity(BaseSchema):
         return value
 
     class Config:
-        """Only allow phone_number and email to be supplied"""
+        """Only allow phone_number, email, and user ID to be supplied"""
 
         extra = Extra.forbid

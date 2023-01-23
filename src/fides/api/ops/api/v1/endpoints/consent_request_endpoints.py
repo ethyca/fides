@@ -231,6 +231,7 @@ def queue_privacy_request_to_propagate_consent(
     policy: Union[FidesKey, str],
     consent_preferences: ConsentPreferences,
     executable_consents: Optional[List[ConsentWithExecutableStatus]] = [],
+    browser_identity: Optional[Identity] = None,
 ) -> Optional[BulkPostPrivacyRequests]:
     """
     Queue a privacy request to carry out propagating consent preferences server-side to third-party systems.
@@ -238,7 +239,8 @@ def queue_privacy_request_to_propagate_consent(
     Only propagate consent preferences which are considered "executable" by the current system. If none of the
     consent preferences are executable, no Privacy Request is queued.
     """
-    identity = Identity()
+    # Create an identity based on any provided browser_identity
+    identity = browser_identity if browser_identity else Identity()
     setattr(
         identity,
         provided_identity.field_name.value,  # type:ignore[attr-defined]
@@ -339,6 +341,7 @@ def set_consent_preferences(
         data.policy_key or DEFAULT_CONSENT_POLICY,
         consent_preferences,
         data.executable_options,
+        data.browser_identity,
     )
 
     if privacy_request_creation_results:
