@@ -31,6 +31,10 @@ The types of changes are:
 * Unified Fides Resources: Validate request body on crud endpoints on upsert. Validate dataset data categories before save. [#2134](https://github.com/ethyca/fides/pull/2134/)
 * Unified Fides Resources: Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
 
+### Developer Experience
+
+* Fides: Update cypress tests to reflect nav 2.0 [#2221](https://github.com/ethyca/fides/pull/2336)
+
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
