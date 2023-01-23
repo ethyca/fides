@@ -8,6 +8,7 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -107,16 +108,20 @@ def domo_dataset_config(
     domo_connection_config.name = fides_key
     domo_connection_config.key = fides_key
     domo_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, domo_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": domo_connection_config.id,
             "fides_key": fides_key,
-            "dataset": domo_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 class DomoTestClient:

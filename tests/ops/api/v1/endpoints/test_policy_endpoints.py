@@ -863,7 +863,7 @@ class TestCreatePolicies:
         assert resp.status_code == 422
         assert (
             json.loads(resp.text)["detail"][0]["msg"]
-            == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
+            == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: here*is*an*invalid*key"
         )
 
     def test_create_policy_already_exists(

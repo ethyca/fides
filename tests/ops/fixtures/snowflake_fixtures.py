@@ -5,6 +5,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -66,13 +67,17 @@ def snowflake_example_test_dataset_config(
 ) -> Generator:
     dataset = example_datasets[2]
     fides_key = dataset["fides_key"]
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
+
     dataset_config = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": snowflake_connection_config.id,
             "fides_key": fides_key,
-            "dataset": dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset_config
     dataset_config.delete(db=db)
+    ctl_dataset.delete(db=db)

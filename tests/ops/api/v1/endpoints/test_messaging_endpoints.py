@@ -139,7 +139,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
+            == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
         )
 
     def test_post_email_config_with_key(
