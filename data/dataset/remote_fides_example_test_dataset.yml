@@ -6,5 +6,5 @@ dataset:
       - name: placeholder
         fields:
           - name: placeholder
-            fidesops_meta:
+            fides_meta:
               identity: email

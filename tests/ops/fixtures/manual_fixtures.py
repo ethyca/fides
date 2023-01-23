@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -38,13 +39,17 @@ def manual_dataset_config(
     integration_manual_config.name = fides_key
     integration_manual_config.key = fides_key
     integration_manual_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, manual_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": integration_manual_config.id,
             "fides_key": fides_key,
-            "dataset": manual_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)

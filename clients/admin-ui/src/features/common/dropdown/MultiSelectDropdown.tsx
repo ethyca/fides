@@ -1,4 +1,3 @@
-import { PlacementWithLogical } from "@chakra-ui/react";
 import {
   ArrowDownLineIcon,
   Box,
@@ -6,6 +5,7 @@ import {
   HStack,
   Menu,
   MenuButton,
+  PlacementWithLogical,
   Text,
   Tooltip,
 } from "@fidesui/react";

@@ -228,7 +228,7 @@ def test_tree_1() -> None:
     seed = {"email": "foo@bar.com"}
     traversal_map, terminators = generate_traversal(
         seed,
-        Dataset(
+        GraphDataset(
             name="s1",
             collections=[t1, t2, t3, t4],
             connection_key="mock_connection_config_key",
@@ -314,7 +314,7 @@ def test_traversal_ordering() -> None:
         ],
     )
     graph = DatasetGraph(
-        Dataset(
+        GraphDataset(
             name="mysql",
             collections=[customers, addresses, orders],
             connection_key="mock_connection_config_key",
@@ -522,7 +522,7 @@ def test_variant_traversals() -> None:
     )
 
     graph = DatasetGraph(
-        Dataset(
+        GraphDataset(
             name="mysql",
             collections=[customers, users],
             connection_key="mock_connection_config_key",
