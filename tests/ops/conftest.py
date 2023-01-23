@@ -4,6 +4,7 @@ import asyncio
 import json
 from typing import Any, Callable, Dict, Generator, List
 
+import loguru as logger
 import pytest
 import requests
 from fastapi.testclient import TestClient
@@ -327,3 +328,10 @@ def set_notification_service_type_mailgun():
     CONFIG.notifications.notification_service_type = MessagingServiceType.MAILGUN.value
     yield
     CONFIG.notifications.notification_service_type = original_value
+
+
+@pytest.fixture
+def loguru_caplog(caplog):
+    handler_id = logger.add(caplog.handler, format="{message}")
+    yield caplog
+    logger.remove(handler_id)
