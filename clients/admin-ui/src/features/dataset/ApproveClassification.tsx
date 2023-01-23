@@ -47,8 +47,9 @@ const ApproveClassification = () => {
     const updatedDataset = getUpdatedDatasetFromClassifyDataset(
       dataset,
       classifyDataset,
-      classifyCollection?.name,
       features.flags.datasetClassificationUpdates
+        ? classifyCollection?.name
+        : undefined
     );
 
     try {
