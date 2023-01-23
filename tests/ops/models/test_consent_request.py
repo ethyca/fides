@@ -141,7 +141,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             call_kwargs["authenticated"] is True
         ), "We already validated identity with a verification code earlier in the request"
 
-        provided_identity.delete(mock_create_privacy_request)
+        provided_identity.delete(db)
 
     @mock.patch(
         "fides.api.ops.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
@@ -227,4 +227,4 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         assert identity_of_privacy_request.email == "test@email.com"
         assert identity_of_privacy_request.user_id == browser_identity.user_id
 
-        provided_identity.delete(mock_create_privacy_request)
+        provided_identity.delete(db)

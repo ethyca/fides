@@ -16,8 +16,8 @@ depends_on = None
 
 
 def upgrade():
+    # ALTER TYPE statements cannot be executed in a transaction block, so use an autocommit block
     with op.get_context().autocommit_block():
-        print("hi")
         op.execute("ALTER TYPE providedidentitytype ADD VALUE 'user_id'")
 
 
