@@ -2,7 +2,8 @@
   "navV2": {
     "development": true,
     "test": true,
-    "production": true
+    "production": true,
+    "description": "The updated navigation experience with links to related features in the sidebar."
   },
   "configWizardStepper": {
     "development": true,

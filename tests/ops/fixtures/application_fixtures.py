@@ -12,6 +12,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ctl.sql_models import System
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -1214,8 +1216,43 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
+def ctl_dataset(db: Session, example_datasets):
+    dataset = CtlDataset(
+        fides_key="postgres_example_subscriptions_dataset",
+        organization_fides_key="default_organization",
+        name="Postgres Example Subscribers Dataset",
+        description="Example Postgres dataset created in test fixtures",
+        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        retention="No retention or erasure policy",
+        collections=[
+            {
+                "name": "subscriptions",
+                "fields": [
+                    {
+                        "name": "id",
+                        "data_categories": ["system.operations"],
+                    },
+                    {
+                        "name": "email",
+                        "data_categories": ["user.contact.email"],
+                        "fidesops_meta": {
+                            "identity": "email",
+                        },
+                    },
+                ],
+            },
+        ],
+    )
+    db.add(dataset)
+    db.commit()
+    yield dataset
+    dataset.delete(db)
+
+
+@pytest.fixture(scope="function")
 def dataset_config(
     connection_config: ConnectionConfig,
+    ctl_dataset,
     db: Session,
 ) -> Generator:
     dataset_config = DatasetConfig.create(
@@ -1223,31 +1260,7 @@ def dataset_config(
         data={
             "connection_config_id": connection_config.id,
             "fides_key": "postgres_example_subscriptions_dataset",
-            "dataset": {
-                "fides_key": "postgres_example_subscriptions_dataset",
-                "name": "Postgres Example Subscribers Dataset",
-                "description": "Example Postgres dataset created in test fixtures",
-                "dataset_type": "PostgreSQL",
-                "location": "postgres_example.test",
-                "collections": [
-                    {
-                        "name": "subscriptions",
-                        "fields": [
-                            {
-                                "name": "id",
-                                "data_categories": ["system.operations"],
-                            },
-                            {
-                                "name": "email",
-                                "data_categories": ["user.contact.email"],
-                                "fidesops_meta": {
-                                    "identity": "email",
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset_config
@@ -1256,38 +1269,17 @@ def dataset_config(
 
 @pytest.fixture(scope="function")
 def dataset_config_preview(
-    connection_config: ConnectionConfig, db: Session
+    connection_config: ConnectionConfig, db: Session, ctl_dataset
 ) -> Generator:
+    ctl_dataset.fides_key = "postgres"
+    db.add(ctl_dataset)
+    db.commit()
     dataset_config = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config.id,
             "fides_key": "postgres",
-            "dataset": {
-                "fides_key": "postgres",
-                "name": "Postgres Example Subscribers Dataset",
-                "description": "Example Postgres dataset created in test fixtures",
-                "dataset_type": "PostgreSQL",
-                "location": "postgres_example.test",
-                "collections": [
-                    {
-                        "name": "subscriptions",
-                        "fields": [
-                            {
-                                "name": "id",
-                                "data_categories": ["system.operations"],
-                            },
-                            {
-                                "name": "email",
-                                "data_categories": ["user.contact.email"],
-                                "fidesops_meta": {
-                                    "identity": "email",
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset_config
@@ -1481,3 +1473,17 @@ def authenticated_fides_client(
 ) -> FidesClient:
     test_fides_client.login()
     return test_fides_client
+
+
+@pytest.fixture(scope="function")
+def system(db: Session) -> System:
+
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+        },
+    )
+    return system

@@ -5,6 +5,7 @@ from itertools import product
 from typing import Any, Dict, List, Literal, Optional, TypeVar
 
 import pydash
+from fideslang.models import FidesDatasetReference
 from loguru import logger
 
 from fides.api.ops.common_exceptions import FidesopsException
@@ -12,7 +13,6 @@ from fides.api.ops.graph.config import ScalarField
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.query_config import QueryConfig
@@ -346,10 +346,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 # however, `references` in update requests can, currently, only reference
                 # the same collection the same collection, and so it is highly unlikely
                 # that this would be an external reference at this point.
-                reference: FidesopsDatasetReference = (
-                    SaaSConfig.resolve_param_reference(
-                        param_value.references[0], self.secrets
-                    )
+                reference: FidesDatasetReference = SaaSConfig.resolve_param_reference(
+                    param_value.references[0], self.secrets
                 )
                 param_values[param_value.name] = pydash.get(
                     collection_values, reference.field

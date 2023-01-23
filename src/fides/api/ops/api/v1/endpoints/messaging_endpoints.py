@@ -4,6 +4,7 @@ from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -38,7 +39,6 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.messaging.messaging_crud_service import (
     create_or_update_messaging_config,
     delete_messaging_config,
@@ -97,7 +97,7 @@ def post_config(
     response_model=MessagingConfigResponse,
 )
 def patch_config_by_key(
-    config_key: FidesOpsKey,
+    config_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
     messaging_config: MessagingConfigRequest,
@@ -132,7 +132,7 @@ def patch_config_by_key(
     response_model=TestMessagingStatusMessage,
 )
 def put_config_secrets(
-    config_key: FidesOpsKey,
+    config_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
     unvalidated_messaging_secrets: possible_messaging_secrets,
@@ -205,7 +205,7 @@ def get_configs(
     response_model=MessagingConfigResponse,
 )
 def get_config_by_key(
-    config_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
+    config_key: FidesKey, *, db: Session = Depends(deps.get_db)
 ) -> MessagingConfigResponse:
     """
     Retrieves configs for messaging service by key.
@@ -227,7 +227,7 @@ def get_config_by_key(
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_DELETE])],
 )
 def delete_config_by_key(
-    config_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
+    config_key: FidesKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
     """
     Deletes messaging configs by key.

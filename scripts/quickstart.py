@@ -236,7 +236,7 @@ def validate_dataset(connection_key: str, yaml_path: str):
 
 def create_dataset(connection_key: str, yaml_path: str):
     """
-    Create a dataset in fidesops given a YAML manifest file.
+    Create a dataset and a datasetconfig in fides given a YAML manifest file.
     Requires the `connection_key` for the PostgreSQL connection, and `yaml_path`
     that is a local filepath to a .yml dataset Fides manifest file.
     Returns the response JSON if successful, or throws an error otherwise.
@@ -246,19 +246,39 @@ def create_dataset(connection_key: str, yaml_path: str):
     with open(yaml_path, "r") as file:
         dataset = yaml.safe_load(file).get("dataset", [])[0]
 
+    # Create ctl_dataset resource first
     dataset_create_data = [dataset]
-    dataset_path = ops_urls.DATASETS.format(connection_key=connection_key)
+    dataset_path = "/dataset/upsert"
     url = f"{FIDESOPS_V1_API_URL}{dataset_path}"
-    response = requests.patch(
+    response = requests.post(
         url,
         headers=oauth_header,
         json=dataset_create_data,
     )
 
     if response.ok:
+        json_data = response.json()
+        logger.info("{} via {}", json_data["message"], url)
+    else:
+        raise RuntimeError(
+            f"fides dataset creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+        )
+
+    # Now link that ctl_dataset to the DatasetConfig
+    dataset_config_path = ops_urls.DATASET_CONFIGS.format(connection_key=connection_key)
+    url = f"{FIDESOPS_V1_API_URL}{dataset_config_path}"
+
+    fides_key = dataset["fides_key"]
+    response = requests.patch(
+        url,
+        headers=oauth_header,
+        json=[{"fides_key": fides_key, "ctl_dataset_fides_key": fides_key}],
+    )
+
+    if response.ok:
         datasets = (response.json())["succeeded"]
         if len(datasets) > 0:
-            logger.info(f"Created fidesops dataset via {url}")
+            logger.info(f"Created fidesops dataset config via {url}")
             return response.json()
 
     raise RuntimeError(
@@ -324,7 +344,7 @@ def create_dsr_policy(key: str):
     if response.ok:
         policies = (response.json())["succeeded"]
         if len(policies) > 0:
-            logger.info("Created fidesops policy with key=%s via {url}", key)
+            logger.info("Created fidesops policy with key={} via {}", key, url)
             return response.json()
 
     raise RuntimeError(

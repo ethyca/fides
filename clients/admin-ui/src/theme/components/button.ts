@@ -1,6 +1,4 @@
-import { ComponentStyleConfig } from "@chakra-ui/react";
-
-const theme: ComponentStyleConfig = {
+const theme = {
   variants: {
     /**
      * This variant should be unnecessary: Chakra's "solid" variant accomplishes the same thing

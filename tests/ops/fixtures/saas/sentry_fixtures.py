@@ -4,6 +4,7 @@ import pydash
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -86,13 +87,17 @@ def sentry_dataset_config(
     sentry_connection_config.name = fides_key
     sentry_connection_config.key = fides_key
     sentry_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, sentry_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": sentry_connection_config.id,
             "fides_key": fides_key,
-            "dataset": sentry_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)

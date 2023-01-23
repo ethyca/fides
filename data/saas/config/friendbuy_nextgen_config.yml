@@ -1,0 +1,48 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Frienddbuy Nextgen SaaS Config
+  type: friendbuy_nextgen
+  description: A sample schema representing the Frienddbuy Nextgen connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: key
+    - name: secret
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: friendbuy_nextgen
+      configuration:
+        key: <key>
+        secret: <secret>
+
+  test_request:
+    method: GET
+    path: /v1/user-data
+    query_params:
+      - name: email
+        value: test@test.com
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: /v1/user-data
+          query_params:
+            - name: email
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+        delete:
+          request_override: friendbuy_nextgen_user_delete
+          param_values:
+            - name: email
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.emails
+                  direction: from
