@@ -49,8 +49,7 @@ const DatasetConfiguration: React.FC = () => {
   return (
     <VStack align="stretch" flex="1">
       <Box color="gray.700" fontSize="14px" mb={4}>
-        View your system yaml below! You can also modify the yaml if you need to
-        assign any references between datasets.
+        View your system yaml below!
       </Box>
       {(isFetching || isLoading) && (
         <Center>
