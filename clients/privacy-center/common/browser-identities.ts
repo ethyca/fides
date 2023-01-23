@@ -13,9 +13,13 @@ const GA_COOKIE_KEY = "_ga";
 const GA_COOKIE_REGEX = /=\w+\.\w+\.(\w+\.\w+)/;
 
 export const inspectForBrowserIdentities = () => {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
   // Returns a string of all cookies on the page separated by semicolons
   // For example, 'cookie1=value1; cookie2=value2'
-  const { cookie } = document;
+  const { cookie } = window.document;
 
   const gaCookie = cookie
     .split("; ")
