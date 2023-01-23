@@ -9,5 +9,10 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "privacyRequestsConfiguration": {
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
