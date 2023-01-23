@@ -308,9 +308,7 @@ class TestPatchConnections:
             == "ensure this value has at most 50 items"
         )
 
-    @mock.patch(
-        "fides.api.ops.util.connection_util.queue_privacy_request"
-    )
+    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
     def test_disable_manual_webhook(
         self,
         mock_queue,
@@ -997,12 +995,7 @@ class TestGetConnections:
         assert ordered[0].key == items[0]["key"]
 
     def test_orphaned_connections_filter(
-            self,
-            db,
-            api_client: TestClient,
-            generate_auth_header,
-            url,
-            system
+        self, db, api_client: TestClient, generate_auth_header, url, system
     ):
         configs = []
         total_orphaned_configs = 10
@@ -1016,10 +1009,12 @@ class TestGetConnections:
                 "description": "Read-only connection config",
             }
 
-            configs.append(ConnectionConfig.create(
-                db=db,
-                data=data,
-            ))
+            configs.append(
+                ConnectionConfig.create(
+                    db=db,
+                    data=data,
+                )
+            )
 
         total_non_orphaned_configs = 12
         for i in range(0, total_non_orphaned_configs):
@@ -1033,15 +1028,20 @@ class TestGetConnections:
             }
             data["system_id"] = system.id
 
-            configs.append(ConnectionConfig.create(
-                db=db,
-                data=data,
-            ))
+            configs.append(
+                ConnectionConfig.create(
+                    db=db,
+                    data=data,
+                )
+            )
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
 
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
-        assert len(resp.json()["items"]) == total_orphaned_configs + total_non_orphaned_configs
+        assert (
+            len(resp.json()["items"])
+            == total_orphaned_configs + total_non_orphaned_configs
+        )
 
         resp = api_client.get(url + "?orphaned_from_system=True", headers=auth_header)
         assert resp.status_code == 200
@@ -1157,9 +1157,7 @@ class TestDeleteConnection:
             is None
         )
 
-    @mock.patch(
-        "fides.api.ops.util.connection_util.queue_privacy_request"
-    )
+    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
     def test_delete_manual_webhook_connection_config(
         self,
         mock_queue,

@@ -1,219 +1,85 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
-from fideslang.models import Dataset, DatasetCollection, DatasetFieldBase
-from pydantic import BaseModel, ConstrainedStr, Field, validator
+from fideslang.models import Dataset, DatasetCollection, DatasetField
+from fideslang.validation import FidesKey
+from loguru import logger
+from pydantic import BaseModel, validator
+from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import (
-    InvalidDataLengthValidationError,
-    InvalidDataTypeValidationError,
-)
-from fides.api.ops.graph.config import EdgeDirection
-from fides.api.ops.graph.data_type import is_valid_data_type, parse_data_type_string
+from fides.api.ctl.sql_models import DataCategory  # type: ignore[attr-defined]
+from fides.api.ops import common_exceptions
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
-from fides.api.ops.util.data_category import _validate_data_category
+from fides.api.ops.util.data_category import (
+    DataCategory as DefaultTaxonomyDataCategories,
+)
+
+
+def get_data_categories_from_db(db: Session) -> List[FidesKey]:
+    """Query for existing data categories in the db using a synchronous session"""
+    return [cat[0] for cat in db.query(DataCategory.fides_key).all()]
+
+
+def validate_data_categories_against_db(
+    dataset: Dataset, defined_data_categories: List[FidesKey]
+) -> None:
+    """
+    Validate that data_categories defined on the Dataset, Collection, and Field levels exist
+    in the database.  Doing this instead of a traditional validator function to have
+    access to a database session.
+
+    If no data categories in the database, default to using data categories from the default taxonomy.
+    """
+    if not defined_data_categories:
+        logger.info(
+            "No data categories in the database: reverting to default data categories."
+        )
+        defined_data_categories = list(DefaultTaxonomyDataCategories.__members__.keys())
+
+    class DataCategoryValidationMixin(BaseModel):
+        @validator("data_categories", check_fields=False, allow_reuse=True)
+        def valid_data_categories(
+            cls, v: Optional[List[FidesKey]]
+        ) -> Optional[List[FidesKey]]:
+            """Validate that all annotated data categories exist in the taxonomy"""
+            return _valid_data_categories(v, defined_data_categories)
+
+    class FieldDataCategoryValidation(DatasetField, DataCategoryValidationMixin):
+        fields: Optional[List["FieldDataCategoryValidation"]]
+
+    FieldDataCategoryValidation.update_forward_refs()
+
+    class CollectionDataCategoryValidation(
+        DatasetCollection, DataCategoryValidationMixin
+    ):
+        fields: List[FieldDataCategoryValidation] = []
+
+    class DatasetDataCategoryValidation(Dataset, DataCategoryValidationMixin):
+        collections: List[CollectionDataCategoryValidation]
+
+    DatasetDataCategoryValidation(**dataset.dict())
 
 
 def _valid_data_categories(
-    data_categories: Optional[List[FidesOpsKey]],
-) -> Optional[List[FidesOpsKey]]:
+    proposed_data_categories: Optional[List[FidesKey]],
+    defined_data_categories: List[FidesKey],
+) -> Optional[List[FidesKey]]:
     """
-    Ensure that every data category provided matches a valid category defined in
-    the current taxonomy. Throws an error if any of the categories are invalid,
+    Ensure that every data category provided matches a valid defined data category.
+    Throws an error if any of the categories are invalid,
     or otherwise returns the list of categories unchanged.
     """
 
-    if data_categories:
-        return [dc for dc in data_categories if _validate_data_category(dc)]
-    return data_categories
-
-
-def _valid_data_type(data_type_str: Optional[str]) -> Optional[str]:
-    """If the data_type is provided ensure that it is a member of DataType."""
-
-    dt, _ = parse_data_type_string(data_type_str)
-    if not is_valid_data_type(dt):  # type: ignore
-        raise InvalidDataTypeValidationError(
-            f"The data type {data_type_str} is not supported."
-        )
-
-    return data_type_str
-
-
-def _valid_data_length(data_length: Optional[int]) -> Optional[int]:
-    """If the data_length is provided ensure that it is a positive non-zero value."""
-
-    if data_length is not None and data_length <= 0:
-        raise InvalidDataLengthValidationError(
-            f"Illegal length ({data_length}). Only positive non-zero values are allowed."
-        )
-
-    return data_length
-
-
-class FidesCollectionKey(ConstrainedStr):
-    """
-    Dataset:Collection name where both dataset and collection names are valid FidesKeys
-    """
-
-    @classmethod
-    def validate(cls, value: str) -> str:
-        """
-        Overrides validation to check FidesCollectionKey format, and that both the dataset
-        and collection names have the FidesKey format.
-        """
-        values = value.split(".")
-        if len(values) == 2:
-            FidesOpsKey.validate(values[0])
-            FidesOpsKey.validate(values[1])
-            return value
-        raise ValueError(
-            "FidesCollection must be specified in the form 'FidesKey.FidesKey'"
-        )
-
-
-# NOTE: this extends pydantic.BaseModel instead of our BaseSchema, for
-# consistency with other fideslang models
-class FidesopsDatasetReference(BaseModel):
-    """Reference to a field from another Collection"""
-
-    dataset: FidesOpsKey
-    field: str
-    direction: Optional[EdgeDirection]
-
-
-class FidesopsDatasetMeta(BaseModel):
-    """ "Dataset-level fidesops-specific annotations used for query traversal"""
-
-    after: Optional[List[FidesOpsKey]]
-
-
-class FidesopsCollectionMeta(BaseModel):
-    """Collection-level fidesops-specific annotations used for query traversal"""
-
-    after: Optional[List[FidesCollectionKey]]
-
-
-class FidesopsMeta(BaseModel):
-    """Fidesops-specific annotations used for query traversal"""
-
-    references: Optional[List[FidesopsDatasetReference]]
-    identity: Optional[str]
-    primary_key: Optional[bool]
-    data_type: Optional[str]
-    """Optionally specify the data type. Fidesops will attempt to cast values to this type when querying."""
-    length: Optional[int]
-    """Optionally specify the allowable field length. Fidesops will not generate values that exceed this size."""
-    return_all_elements: Optional[bool]
-    """Optionally specify to query for the entire array if the array is an entrypoint into the node. Default is False."""
-    read_only: Optional[bool]
-    """Optionally specify if a field is read-only, meaning it can't be updated or deleted."""
-
-    @validator("data_type")
-    def valid_data_type(cls, v: Optional[str]) -> Optional[str]:
-        """Validate that all annotated data categories exist in the taxonomy"""
-        return _valid_data_type(v)
-
-    @validator("length")
-    def valid_length(cls, v: Optional[int]) -> Optional[int]:
-        """Validate that the provided length is valid"""
-        return _valid_data_length(v)
-
-
-class FidesopsDatasetField(DatasetFieldBase):
-    """Extends fideslang DatasetField model with additional Fidesops annotations"""
-
-    fidesops_meta: Optional[FidesopsMeta]
-    fields: Optional[List["FidesopsDatasetField"]] = []
-
-    @validator("data_categories")
-    def valid_data_categories(
-        cls, v: Optional[List[FidesOpsKey]]
-    ) -> Optional[List[FidesOpsKey]]:
-        """Validate that all annotated data categories exist in the taxonomy"""
-        return _valid_data_categories(v)
-
-    @validator("fidesops_meta")
-    def valid_meta(cls, meta_values: Optional[FidesopsMeta]) -> Optional[FidesopsMeta]:
-        """Validate upfront that the return_all_elements flag can only be specified on array fields"""
-        if not meta_values:
-            return meta_values
-
-        is_array: bool = bool(
-            meta_values.data_type and meta_values.data_type.endswith("[]")
-        )
-        if not is_array and meta_values.return_all_elements is not None:
-            raise ValueError(
-                "The 'return_all_elements' attribute can only be specified on array fields."
+    def validate_category(data_category: FidesKey) -> FidesKey:
+        if data_category not in defined_data_categories:
+            raise common_exceptions.DataCategoryNotSupported(
+                f"The data category {data_category} is not supported."
             )
-        return meta_values
+        return data_category
 
-    @validator("fields")
-    def validate_object_fields(
-        cls,
-        fields: Optional[List["FidesopsDatasetField"]],
-        values: Dict[str, Any],
-    ) -> Optional[List["FidesopsDatasetField"]]:
-        """Two validation checks for object fields:
-        - If there are sub-fields specified, type should be either empty or 'object'
-        - Additionally object fields cannot have data_categories.
-        """
-        declared_data_type = None
-
-        if values.get("fidesops_meta"):
-            declared_data_type = values["fidesops_meta"].data_type
-
-        if fields and declared_data_type:
-            data_type, _ = parse_data_type_string(declared_data_type)
-            if data_type != "object":
-                raise InvalidDataTypeValidationError(
-                    f"The data type {data_type} is not compatible with specified sub-fields."
-                )
-
-        if (fields or declared_data_type == "object") and values.get("data_categories"):
-            raise ValueError(
-                "Object fields cannot have specified data_categories. Specify category on sub-field instead"
-            )
-
-        return fields
-
-
-# this is required for the recursive reference in the pydantic model:
-FidesopsDatasetField.update_forward_refs()
-
-
-class FidesopsDatasetCollection(DatasetCollection):
-    """Overrides fideslang DatasetCollection model with additional Fidesops annotations"""
-
-    fidesops_meta: Optional[FidesopsCollectionMeta]
-    fields: List[FidesopsDatasetField]
-    """Overrides fideslang.models.DatasetCollection.fields"""
-
-    @validator("data_categories")
-    def valid_data_categories(
-        cls, v: Optional[List[FidesOpsKey]]
-    ) -> Optional[List[FidesOpsKey]]:
-        """Validate that all annotated data categories exist in the taxonomy"""
-        return _valid_data_categories(v)
-
-
-class FidesopsDataset(Dataset):
-    """Overrides fideslang Collection model with additional Fidesops annotations"""
-
-    fides_key: FidesOpsKey = Field(
-        description="A unique key used to identify this resource."
-    )
-    fidesops_meta: Optional[FidesopsDatasetMeta]
-    collections: List[FidesopsDatasetCollection]
-    """Overrides fideslang.models.Collection.collections"""
-
-    @validator("data_categories")
-    def valid_data_categories(
-        cls, v: Optional[List[FidesOpsKey]]
-    ) -> Optional[List[FidesOpsKey]]:
-        """Validate that all annotated data categories exist in the taxonomy"""
-        return _valid_data_categories(v)
+    if proposed_data_categories:
+        return [dc for dc in proposed_data_categories if validate_category(dc)]
+    return proposed_data_categories
 
 
 class DatasetTraversalDetails(BaseSchema):
@@ -233,14 +99,31 @@ class ValidateDatasetResponse(BaseSchema):
     traversable or not.
     """
 
-    dataset: FidesopsDataset
+    dataset: Dataset
     traversal_details: DatasetTraversalDetails
+
+
+class DatasetConfigCtlDataset(BaseSchema):
+    fides_key: FidesKey  # The fides_key for the DatasetConfig
+    ctl_dataset_fides_key: FidesKey  # The fides_key for the ctl_datasets record
+
+
+class DatasetConfigSchema(BaseSchema):
+    """Returns the DatasetConfig fides key and the linked Ctl Dataset"""
+
+    fides_key: FidesKey
+    ctl_dataset: Dataset
+
+    class Config:
+        """Set ORM Mode to True."""
+
+        orm_mode = True
 
 
 class BulkPutDataset(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of Datasets."""
 
-    succeeded: List[FidesopsDataset]
+    succeeded: List[Dataset]
     failed: List[BulkUpdateFailed]
 
 

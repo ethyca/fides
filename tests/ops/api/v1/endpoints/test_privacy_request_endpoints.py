@@ -54,13 +54,7 @@ from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import (
-    ActionType,
-    CurrentStep,
-    Policy,
-    Rule,
-    RuleTarget,
-)
+from fides.api.ops.models.policy import ActionType, CurrentStep, Policy
 from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
