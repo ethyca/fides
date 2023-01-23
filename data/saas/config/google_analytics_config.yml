@@ -92,6 +92,11 @@ saas_config:
     opt_out:
       method: POST
       path: /analytics/v3/userDeletion/userDeletionRequests:upsert
+      param_values:
+        - name: user_id
+          identity: user_id
+        - name: property_id
+          connector_param: property_id
       body: |
         {
           "kind": "analytics#userDeletionRequest",
