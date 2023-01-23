@@ -1,7 +1,7 @@
 """add privacyrequest consent preferences and ruleuse table
 
 Revision ID: de456534dbda
-Revises: 3caf11127442
+Revises: d6c6c6555c86
 Create Date: 2023-01-03 22:59:45.144538
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "de456534dbda"
-down_revision = "3caf11127442"
+down_revision = "d6c6c6555c86"
 branch_labels = None
 depends_on = None
 

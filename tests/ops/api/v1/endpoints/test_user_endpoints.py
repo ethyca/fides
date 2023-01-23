@@ -218,13 +218,6 @@ class TestDeleteUser:
         response = api_client.delete(url, headers=auth_header)
         assert HTTP_403_FORBIDDEN == response.status_code
 
-    def test_delete_user_not_admin_root_or_self(
-        self, url, api_client, db, generate_auth_header, user
-    ):
-        auth_header = generate_auth_header([USER_DELETE])
-        response = api_client.delete(url, headers=auth_header)
-        assert HTTP_403_FORBIDDEN == response.status_code
-
     def test_delete_nonexistent_user(self, api_client, db, generate_auth_header, user):
         auth_header = generate_auth_header([USER_DELETE])
         url = f"{V1_URL_PREFIX}{USERS}/nonexistent_user"
@@ -268,6 +261,81 @@ class TestDeleteUser:
 
         response = api_client.delete(
             f"{V1_URL_PREFIX}{USERS}/{user.id}", headers=auth_header
+        )
+        assert HTTP_204_NO_CONTENT == response.status_code
+
+        db.expunge_all()
+
+        user_search = FidesUser.get_by(db, field="id", value=saved_user_id)
+        assert user_search is None
+
+        client_search = ClientDetail.get_by(db, field="id", value=saved_client_id)
+        assert client_search is None
+
+        permissions_search = FidesUserPermissions.get_by(
+            db, field="id", value=saved_permissions_id
+        )
+        assert permissions_search is None
+
+    def test_delete_user(self, api_client, db, generate_auth_header):
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_delete_user",
+                "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+            },
+        )
+
+        FidesUserPermissions.create(
+            db=db, data={"user_id": user.id, "scopes": [USER_DELETE]}
+        )
+
+        other_user = FidesUser.create(
+            db=db,
+            data={
+                "username": "user_to_delete",
+                "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+            },
+        )
+
+        saved_user_id = other_user.id
+
+        FidesUserPermissions.create(
+            db=db, data={"user_id": other_user.id, "scopes": [PRIVACY_REQUEST_READ]}
+        )
+
+        assert other_user.permissions is not None
+        saved_permissions_id = other_user.permissions.id
+
+        client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[USER_DELETE],
+            user_id=user.id,
+        )
+
+        other_user_client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[PRIVACY_REQUEST_READ],
+            user_id=other_user.id,
+        )
+
+        assert other_user_client.user == other_user
+        saved_client_id = other_user_client.id
+
+        payload = {
+            JWE_PAYLOAD_SCOPES: [USER_DELETE],
+            JWE_PAYLOAD_CLIENT_ID: client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        auth_header = {"Authorization": "Bearer " + jwe}
+
+        response = api_client.delete(
+            f"{V1_URL_PREFIX}{USERS}/{other_user.id}", headers=auth_header
         )
         assert HTTP_204_NO_CONTENT == response.status_code
 
@@ -339,10 +407,6 @@ class TestDeleteUser:
             db, field="id", value=saved_permission_id
         )
         assert permissions_search is None
-
-        # Deleted user's client is also deleted
-        client_search = ClientDetail.get_by(db, field="id", value=client_id)
-        assert client_search is None
 
         # Admin client who made the request is not deleted
         admin_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)

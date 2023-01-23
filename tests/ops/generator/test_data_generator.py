@@ -1,4 +1,5 @@
 import yaml
+from fideslang.models import Dataset
 
 from fides.api.ops.graph.graph import *
 
@@ -7,7 +8,6 @@ from fides.api.ops.graph.graph import *
 #  -------------------------------------------
 from fides.api.ops.graph.traversal import Traversal
 from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
-from fides.api.ops.schemas.dataset import FidesopsDataset
 
 from . import sql_data_generator
 
@@ -19,21 +19,21 @@ f = """dataset:
       - name: user
         fields:
           - name: id
-            fidesops_meta:
+            fides_meta:
               primary_key: True
               data_type: integer
               references:
                 - dataset: db
                   field: address.user_id
           - name: email
-            fidesops_meta:
+            fides_meta:
               identity: email
           - name: name
 
       - name: address
         fields:
           - name: id
-            fidesops_meta:
+            fides_meta:
               primary_key: True
               data_type: integer
           - name: user_id
@@ -44,11 +44,11 @@ f = """dataset:
 """
 
 
-def parse_yaml() -> Dataset:
+def parse_yaml() -> GraphDataset:
     """Test that 'after' parameters are properly read"""
     d = yaml.safe_load(f)
     dataset = d.get("dataset")[0]
-    d: FidesopsDataset = FidesopsDataset.parse_obj(dataset)
+    d: Dataset = Dataset.parse_obj(dataset)
     return convert_dataset_to_graph(d, "ignore")
 
 

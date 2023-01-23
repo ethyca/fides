@@ -8,9 +8,12 @@ generated programmatically for each resource.
 
 from typing import Dict, List
 
-from fastapi import Depends, Response, status
-from fideslang import model_map
+from fastapi import Depends, HTTPException, Response, status
+from fideslang import Dataset, FidesModel, model_map
+from fideslang.validation import FidesKey
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.ctl.database.crud import (
     create_resource,
@@ -28,12 +31,43 @@ from fides.api.ctl.routes.util import (
     forbid_if_editing_is_default,
     get_resource_type,
 )
-from fides.api.ctl.sql_models import models_with_default_field, sql_model_map
+from fides.api.ctl.sql_models import (
+    DataCategory,
+    models_with_default_field,
+    sql_model_map,
+)
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.api.ops.schemas.dataset import validate_data_categories_against_db
+
+
+async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:
+    """Similar method to one on the ops side except this uses an async session to retrieve data categories"""
+    resources = await list_resource(DataCategory, async_session)
+    data_categories = [res.fides_key for res in resources]
+    return data_categories
+
+
+async def validate_data_categories(
+    resource: FidesModel, async_session: AsyncSession
+) -> None:
+    """Validate data categories defined on Datasets against data categories in the db"""
+    if not isinstance(resource, Dataset):
+        return
+
+    try:
+        defined_data_categories: List[FidesKey] = await get_data_categories_from_db(
+            async_session
+        )
+        validate_data_categories_against_db(resource, defined_data_categories)
+    except PydanticValidationError as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+        )
+
 
 # CRUD Endpoints
-routers = []
+routers: List[APIRouter] = []
 for model_type, fides_model in model_map.items():
     # Programmatically define routers for each resource type
     router = APIRouter(
@@ -73,6 +107,7 @@ for model_type, fides_model in model_map.items():
         will return a `403 Forbidden`.
         """
         sql_model = sql_model_map[resource_type]
+        await validate_data_categories(resource, db)
         if sql_model in models_with_default_field and resource.is_default:
             raise errors.ForbiddenError(resource_type, resource.fides_key)
         return await create_resource(sql_model, resource.dict(), db)
@@ -127,6 +162,7 @@ for model_type, fides_model in model_map.items():
         with a `403 Forbidden` if attempted.
         """
         sql_model = sql_model_map[resource_type]
+        await validate_data_categories(resource, db)
         await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
         return await update_resource(sql_model, resource.dict(), db)
 
@@ -171,7 +207,7 @@ for model_type, fides_model in model_map.items():
         },
     )
     async def upsert(
-        resources: List[Dict],
+        resources: List[fides_model],
         response: Response,
         resource_type: str = get_resource_type(router),
         db: AsyncSession = Depends(get_async_db),
@@ -188,8 +224,12 @@ for model_type, fides_model in model_map.items():
         """
 
         sql_model = sql_model_map[resource_type]
-        await forbid_if_editing_any_is_default(sql_model, resources, db)
-        result = await upsert_resources(sql_model, resources, db)
+        resource_dicts = [resource.dict() for resource in resources]
+        for resource in resources:
+            await validate_data_categories(resource, db)
+
+        await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
+        result = await upsert_resources(sql_model, resource_dicts, db)
         response.status_code = (
             status.HTTP_201_CREATED if result[0] > 0 else response.status_code
         )

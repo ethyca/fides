@@ -2,6 +2,7 @@ import uuid
 from unittest import mock
 
 import pytest
+from fideslang.models import Dataset
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
@@ -19,7 +20,6 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
 )
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.core.config import get_config
@@ -49,9 +49,9 @@ def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):
 def mongo_postgres_dataset_graph(
     example_datasets, integration_postgres_config, integration_mongodb_config
 ):
-    dataset_postgres = FidesopsDataset(**example_datasets[0])
+    dataset_postgres = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = FidesopsDataset(**example_datasets[1])
+    dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(
         dataset_mongo, integration_mongodb_config.key
     )
@@ -121,11 +121,11 @@ class TestDeleteCollection:
             name="mongo_example_in_progress",
         )
         mongo_connection_config.save(db)
-        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        dataset_postgres = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(
             dataset_postgres, integration_postgres_config.key
         )
-        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        dataset_mongo = Dataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, mongo_connection_config.key
         )
@@ -236,7 +236,7 @@ class TestDeleteCollection:
         integration_mongodb_config.delete(db)
 
         # Just rebuilding a graph without the deleted config.
-        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        dataset_postgres = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(
             dataset_postgres, integration_postgres_config.key
         )
@@ -387,11 +387,11 @@ class TestSkipDisabledCollection:
         )
         mongo_connection_config.save(db)
 
-        dataset_postgres = FidesopsDataset(**example_datasets[0])
+        dataset_postgres = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(
             dataset_postgres, integration_postgres_config.key
         )
-        dataset_mongo = FidesopsDataset(**example_datasets[1])
+        dataset_mongo = Dataset(**example_datasets[1])
         mongo_graph = convert_dataset_to_graph(
             dataset_mongo, mongo_connection_config.key
         )

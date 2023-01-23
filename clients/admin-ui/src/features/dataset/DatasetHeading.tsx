@@ -51,10 +51,9 @@ const DatasetHeading = () => {
             <StepperCircleCheckmarkIcon fontSize="2xl" />
           </HStack>
           <Text fontSize="sm" color="gray.600" maxW="720px">
-            {fieldCountMessage} Please confirm all dataset fields to finish
-            annotating this system. For each table, please review the
-            recommended data categories. You can accept the automated
-            suggestions, or update any field as appropriate before approving.
+            {fieldCountMessage} For each table, please review the recommended
+            data categories. You can accept the recommendation or update any
+            field before approving.
           </Text>
         </>
       ) : (

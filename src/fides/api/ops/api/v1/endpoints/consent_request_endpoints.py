@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Tuple, Union
 
 from fastapi import Depends, HTTPException, Security
+from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -52,7 +53,6 @@ from fides.api.ops.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
@@ -228,7 +228,7 @@ def get_consent_preferences(
 def queue_privacy_request_to_propagate_consent(
     db: Session,
     provided_identity: ProvidedIdentity,
-    policy: Union[FidesOpsKey, str],
+    policy: Union[FidesKey, str],
     consent_preferences: ConsentPreferences,
     executable_consents: Optional[List[ConsentWithExecutableStatus]] = [],
     browser_identity: Optional[Identity] = None,
