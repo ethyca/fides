@@ -21,12 +21,17 @@ export const NavSideBar = () => {
     <VStack as="nav" align="left" spacing={4} width="200px">
       <Heading size="md">{nav.active.title}</Heading>
       <NavList>
-        {nav.active.children.map(({ title, path }) => {
+        {nav.active.children.map(({ dataTestId, path, title }) => {
           // We still need to handle cross-zone links.
           const { href, isActive } = resolveZoneLink({ href: path, router });
 
           return (
-            <NavSideBarLink key={title} href={href} isActive={isActive}>
+            <NavSideBarLink
+              dataTestId={dataTestId}
+              key={title}
+              href={href}
+              isActive={isActive}
+            >
               {title}
             </NavSideBarLink>
           );

@@ -4,24 +4,31 @@ import React, { ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
+  dataTestId?: string;
   href: string;
   isActive?: boolean;
   isDisabled?: boolean;
 }
 
 export const NavLink = ({
-  variant,
   children,
+  dataTestId,
   href,
   isActive,
   isDisabled,
+  variant,
 }: Props & { variant: "primary" | "secondary" }) => {
   const LinkComponent = variant === "primary" ? PrimaryLink : SecondaryLink;
 
   // Don't let Next's router wrap links that are disabled.
   if (isDisabled) {
     return (
-      <LinkComponent isDisabled={isDisabled} href={href} isActive={isActive}>
+      <LinkComponent
+        data-testid={dataTestId}
+        href={href}
+        isActive={isActive}
+        isDisabled={isDisabled}
+      >
         {children}
       </LinkComponent>
     );
@@ -29,7 +36,9 @@ export const NavLink = ({
 
   return (
     <NextLink href={href} passHref>
-      <LinkComponent isActive={isActive}>{children}</LinkComponent>
+      <LinkComponent data-testid={dataTestId} isActive={isActive}>
+        {children}
+      </LinkComponent>
     </NextLink>
   );
 };

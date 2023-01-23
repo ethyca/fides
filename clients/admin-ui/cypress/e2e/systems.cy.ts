@@ -8,10 +8,9 @@ describe("System management page", () => {
     );
   });
 
-  // TODO: Update Cypress test to reflect the nav bar 2.0
-  it.skip("Can navigate to the system management page", () => {
-    cy.visit("/");
-    cy.getByTestId("nav-link-Systems").click();
+  it("Can navigate to the system management page", () => {
+    cy.visit("/system");
+    cy.getByTestId("nav-link-view-systems").click();
     cy.wait("@getSystems");
     cy.getByTestId("system-management");
   });

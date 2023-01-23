@@ -31,7 +31,12 @@ export const NavTopBar = () => {
         const isActive = group.title === nav.active?.title;
 
         return (
-          <NavTopBarLink key={group.title} href={href} isActive={isActive}>
+          <NavTopBarLink
+            key={group.title}
+            dataTestId={group.dataTestId}
+            href={href}
+            isActive={isActive}
+          >
             {group.title}
           </NavTopBarLink>
         );

@@ -1,5 +1,4 @@
-// TODO: Update Cypress test to reflect the nav bar 2.0
-describe.skip("Nav Bar", () => {
+describe("Nav Bar", () => {
   beforeEach(() => {
     cy.login();
   });
@@ -7,27 +6,20 @@ describe.skip("Nav Bar", () => {
   it("Renders all page links", () => {
     cy.visit("/");
 
-    cy.getByTestId("nav-link-Privacy Requests");
-    cy.getByTestId("nav-link-Connections");
-    cy.getByTestId("nav-link-User Management");
-    cy.getByTestId("nav-link-Datasets");
-    cy.getByTestId("nav-link-Taxonomy");
-    cy.getByTestId("nav-link-Systems");
-  });
+    cy.getByTestId("nav-link-home")
+      .should("have.attr", "href", "/")
+      .contains("Home");
 
-  it("Renders the active page based on the current route", () => {
-    // Start on the dataset page.
-    cy.visit("/dataset");
+    cy.getByTestId("nav-link-privacy-requests")
+      .should("have.attr", "href", "/privacy-requests")
+      .contains("Privacy requests");
 
-    // The nav should reflect the active page.
-    cy.getByTestId("nav-link-Datasets").should("have.attr", "data-active");
-    cy.getByTestId("nav-link-Taxonomy").should("not.have.attr", "data-active");
+    cy.getByTestId("nav-link-data-map")
+      .should("have.attr", "href", "/system")
+      .contains("Data map");
 
-    // Navigate by clicking a nav link.
-    cy.getByTestId("nav-link-Taxonomy").click();
-
-    // The nav should update which page is active.
-    cy.getByTestId("nav-link-Taxonomy").should("have.attr", "data-active");
-    cy.getByTestId("nav-link-Datasets").should("not.have.attr", "data-active");
+    cy.getByTestId("nav-link-management")
+      .should("have.attr", "href", "/taxonomy")
+      .contains("Management");
   });
 });

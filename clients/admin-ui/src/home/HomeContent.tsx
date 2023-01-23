@@ -54,16 +54,12 @@ const HomeContent: React.FC = () => {
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
-            <Link
-              data-testid={item.name}
-              href={item.href}
-              key={item.key}
-              passHref
-            >
+            <Link href={item.href} key={item.key} passHref>
               <Flex
                 background={item.backgroundColor}
                 borderRadius="8px"
                 boxShadow="base"
+                data-testid={item.dataTestId}
                 flexDirection="column"
                 maxH="164px"
                 overflow="hidden"

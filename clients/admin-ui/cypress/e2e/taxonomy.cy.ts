@@ -15,10 +15,9 @@ describe("Taxonomy management page", () => {
     }).as("getDataQualifiers");
   });
 
-  // TODO: Update Cypress test to reflect the nav bar 2.0
-  it.skip("Can navigate to the taxonomy page", () => {
-    cy.visit("/");
-    cy.getByTestId("nav-link-Taxonomy").click();
+  it("Can navigate to the taxonomy page", () => {
+    cy.visit("/taxonomy");
+    cy.getByTestId("nav-link-taxonomy").click();
     cy.getByTestId("taxonomy-tabs");
     cy.getByTestId("tab-Data Categories");
     cy.getByTestId("tab-Data Uses");

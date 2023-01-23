@@ -21,7 +21,7 @@ import { stubHomePage, stubPlus, stubSystemCrud } from "./stubs";
 // Stub global subscriptions because they are required for every page. These just default
 // responses -- interceptions defined later will override them.
 beforeEach(() => {
-  stubHomePage();
+  stubHomePage(true, true);
   stubSystemCrud();
   stubPlus(false);
 });

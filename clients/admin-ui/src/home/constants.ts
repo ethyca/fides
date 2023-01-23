@@ -20,6 +20,7 @@ export enum ModuleCardKeys {
 export const MODULE_CARD_ITEMS: ModuleCard[] = [
   {
     backgroundColor: "orange.50",
+    dataTestId: "add-systems-card",
     description:
       "As your organization grows you can continue adding systems to your Fides data map.",
     descriptionColor: "gray.500",
@@ -34,6 +35,7 @@ export const MODULE_CARD_ITEMS: ModuleCard[] = [
   },
   {
     backgroundColor: "purple.50",
+    dataTestId: "manage-systems-card",
     description:
       "Review and update system information across your data map including data categories and purposes of processing.",
     descriptionColor: "gray.500",
@@ -48,6 +50,7 @@ export const MODULE_CARD_ITEMS: ModuleCard[] = [
   },
   {
     backgroundColor: "teal.50",
+    dataTestId: "configure-privacy-requests-card",
     description:
       "Connect your systems and configure privacy request processing for DSRs (access and erasure).",
     descriptionColor: "gray.500",
@@ -63,6 +66,7 @@ export const MODULE_CARD_ITEMS: ModuleCard[] = [
 
   {
     backgroundColor: "pink.50",
+    dataTestId: "review-privacy-requests-card",
     description:
       "Review, approve and process privacy requests across your systems on behalf of your users.",
     descriptionColor: "gray.500",

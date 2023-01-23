@@ -13,10 +13,9 @@ describe("Dataset", () => {
   });
 
   describe("List of datasets view", () => {
-    // TODO: Update Cypress test to reflect the nav bar 2.0
-    it.skip("Can navigate to the datasets list view", () => {
-      cy.visit("/");
-      cy.getByTestId("nav-link-Datasets").click();
+    it("Can navigate to the datasets list view", () => {
+      cy.visit("/dataset");
+      cy.getByTestId("nav-link-manage-datasets").click();
       cy.wait("@getDatasets");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");

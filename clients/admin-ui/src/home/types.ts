@@ -1,5 +1,6 @@
 export type ModuleCard = {
   backgroundColor: string;
+  dataTestId: string;
   description: string;
   descriptionColor: string;
   hoverBorderColor: string;

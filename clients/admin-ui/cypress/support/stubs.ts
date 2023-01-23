@@ -87,9 +87,19 @@ export const stubPlus = (available: boolean, options?: HealthCheck) => {
   }
 };
 
-export const stubHomePage = () => {
-  cy.intercept("GET", "/api/v1/privacy-request*", {
-    statusCode: 200,
-    body: { items: [], total: 0, page: 1, size: 25 },
-  }).as("getPrivacyRequests");
+export const stubHomePage = (hasConnections: boolean, hasSystems: boolean) => {
+  if (hasConnections) {
+    cy.intercept("GET", "/api/v1/connection?size=5&page=1", {
+      fixture: "connections.json",
+    }).as("getConnections");
+  } else {
+    cy.intercept("GET", "/api/v1/connection?size=5&page=1", { body: [] }).as("getConnections");
+  }
+  if (hasSystems) {
+    cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
+      "getSystems"
+    );
+  } else {
+     cy.intercept("GET", "/api/v1/system", { body: [] }).as("getSystems");
+  }
 };
