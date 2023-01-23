@@ -254,7 +254,7 @@ class ConsentPreferencesWithVerificationCode(BaseSchema):
 
     code: Optional[str]
     consent: List[Consent]
-    policy_key: Optional[FidesOpsKey] = None
+    policy_key: Optional[FidesKey] = None
     executable_options: Optional[List[ConsentWithExecutableStatus]]
 
 

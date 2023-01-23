@@ -5,6 +5,7 @@ import pydash
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -87,16 +88,22 @@ def mailchimp_transactional_dataset_config(
     mailchimp_transactional_connection_config.name = fides_key
     mailchimp_transactional_connection_config.key = fides_key
     mailchimp_transactional_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db, mailchimp_transactional_dataset
+    )
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": mailchimp_transactional_connection_config.id,
             "fides_key": fides_key,
-            "dataset": mailchimp_transactional_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")
