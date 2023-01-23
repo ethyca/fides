@@ -86,7 +86,8 @@ export const getTopClassification = (
 export const getUpdatedDatasetFromClassifyDataset = (
   dataset: Dataset,
   classifyDataset: ClassifyDataset,
-  activeCollection: string | undefined
+  activeCollection: string | undefined,
+  datasetClassificationUpdates: boolean
 ): Dataset =>
   produce(dataset, (draftDataset) => {
     const classifyCollectionMap = new Map(
@@ -98,7 +99,10 @@ export const getUpdatedDatasetFromClassifyDataset = (
         draftCollection.name
       );
 
-      if (classifyCollection?.name !== activeCollection) {
+      if (
+        classifyCollection?.name !== activeCollection &&
+        datasetClassificationUpdates
+      ) {
         return;
       }
 
