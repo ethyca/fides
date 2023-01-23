@@ -3,6 +3,7 @@ import pytest
 from fides.core.config.security_settings import SecuritySettings
 
 
+@pytest.mark.unit
 class TestSecuirtySettings:
     def test_validate_encryption_key_length_default_value(self):
         settings = SecuritySettings()
