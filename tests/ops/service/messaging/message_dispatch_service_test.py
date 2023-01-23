@@ -201,6 +201,21 @@ def test_sms_dispatch_twilio_success(
     )
 
 
+def test_sms_dispatch_twilio_no_to(db, messaging_config_twilio_sms):
+    with pytest.raises(MessageDispatchException) as err:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(phone_number=None),
+            service_type=MessagingServiceType.TWILIO_TEXT.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+        )
+
+    assert "No phone identity supplied." in str(err.value)
+
+
 @mock.patch(
     "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
 )
