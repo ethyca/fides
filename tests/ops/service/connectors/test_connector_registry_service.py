@@ -175,7 +175,7 @@ def update_config(
         secondary_mailchimp_dataset,
     ) = secondary_mailchimp_instance
     secondary_mailchimp_saas_config = secondary_mailchimp_config.saas_config
-    secondary_mailchimp_dataset.dataset["description"] = mailchimp_template_dataset[
+    secondary_mailchimp_dataset.ctl_dataset.description = mailchimp_template_dataset[
         "description"
     ]
     assert secondary_mailchimp_saas_config["version"] == mailchimp_version
@@ -189,7 +189,7 @@ def update_config(
         tertiary_mailchimp_dataset,
     ) = tertiary_mailchimp_instance
     tertiary_mailchimp_saas_config = tertiary_mailchimp_config.saas_config
-    tertiary_mailchimp_dataset.dataset["description"] = mailchimp_template_dataset[
+    tertiary_mailchimp_dataset.ctl_dataset.description = mailchimp_template_dataset[
         "description"
     ]
     tertiary_mailchimp_saas_config = (
@@ -206,7 +206,7 @@ def update_config(
         secondary_sendgrid_dataset,
     ) = secondary_sendgrid_instance
     secondary_sendgrid_saas_config = secondary_sendgrid_config.saas_config
-    secondary_sendgrid_dataset.dataset["description"] = sendgrid_template_dataset[
+    secondary_sendgrid_dataset.ctl_dataset.description = sendgrid_template_dataset[
         "description"
     ]
     assert secondary_sendgrid_saas_config["version"] == sendgrid_version
@@ -349,13 +349,13 @@ def validate_updated_instances_additions(
     fides_key: str,
 ):
     # check for dataset additions to template
-    assert updated_dataset_config.dataset["description"] == NEW_DATASET_DESCRIPTION
+    assert updated_dataset_config.ctl_dataset.description == NEW_DATASET_DESCRIPTION
     assert (
-        len(updated_dataset_config.dataset["collections"])
+        len(updated_dataset_config.ctl_dataset.collections)
         == len(original_template_dataset["collections"]) + 1
     )
-    assert NEW_COLLECTION in updated_dataset_config.dataset["collections"]
-    assert NEW_FIELD in updated_dataset_config.dataset["collections"][0]["fields"]
+    assert NEW_COLLECTION in updated_dataset_config.ctl_dataset.collections
+    assert NEW_FIELD in updated_dataset_config.ctl_dataset.collections[0]["fields"]
 
     # check for config additions to template
     updated_saas_config = updated_dataset_config.connection_config.saas_config
@@ -448,7 +448,7 @@ def validate_updated_instances_removals(
 ):
     # check for dataset removals to template
     assert (
-        len(updated_dataset_config.dataset["collections"])
+        len(updated_dataset_config.ctl_dataset.collections)
         == len(original_template_dataset["collections"]) - 1
     )
 

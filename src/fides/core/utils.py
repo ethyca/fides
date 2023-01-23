@@ -12,8 +12,8 @@ import jwt
 import requests
 import sqlalchemy
 from fideslang.models import DatasetField, FidesModel
-from fideslang.validation import FidesValidationError
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -123,7 +123,7 @@ def check_fides_key(proposed_fides_key: str) -> str:
     try:
         FidesModel(fides_key=proposed_fides_key)
         return proposed_fides_key
-    except FidesValidationError as error:
+    except ValidationError as error:
         echo_red(error)
         return sanitize_fides_key(proposed_fides_key)
 

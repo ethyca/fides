@@ -23,6 +23,7 @@ import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
+import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import PII from "../common/PII";
 import RequestStatusBadge from "../common/RequestStatusBadge";
@@ -175,7 +176,11 @@ const RequestRow: React.FC<{
         <RequestStatusBadge status={request.status} />
       </Td>
       <Td py={1}>
-        <DaysLeftTag daysLeft={request.days_left} includeText={false} />
+        <DaysLeftTag
+          daysLeft={request.days_left}
+          includeText={false}
+          status={request.status as ApiPrivacyRequestStatus}
+        />
       </Td>
       <Td py={1}>
         <Tag

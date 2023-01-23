@@ -99,6 +99,18 @@ async def test_mailchimp_transactional_consent_request_task(
     body = response.json()
     assert body == [], "Verify email has been removed from allowlist"
 
+    request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/rejects/list",
+        body=json.dumps({"email": mailchimp_transactional_identity_email}),
+    )
+    response = connector.create_client().send(request)
+    body = response.json()[0]
+    assert (
+        body["email"] == mailchimp_transactional_identity_email
+    ), "Verify email has been added to denylist"
+    assert body["detail"] == "Added manually via the the API"
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp_transactional
@@ -133,7 +145,7 @@ async def test_mailchimp_transactional_consent_prepared_requests(
 
     assert mocked_client_send.called
     saas_request_params: SaaSRequestParams = mocked_client_send.call_args[0][0]
-    assert saas_request_params.path == "/allowlists/delete"
+    assert saas_request_params.path == "/rejects/add"
     assert (
         mailchimp_transactional_identity_email
         in mocked_client_send.call_args[0][0].body

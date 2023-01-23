@@ -25,7 +25,7 @@ from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fides.api.ops.graph.config import CollectionAddress, Dataset
+from fides.api.ops.graph.config import CollectionAddress, GraphDataset
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.datasetconfig import DatasetConfig
@@ -479,7 +479,7 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
 
     Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
     """
-    consent_datasets: List[Dataset] = []
+    consent_datasets: List[GraphDataset] = []
 
     for dataset_config in datasets:
         connection_type: ConnectionType = (

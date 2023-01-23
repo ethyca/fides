@@ -1,4 +1,5 @@
 import json
+from typing import List
 from unittest import mock
 from unittest.mock import Mock
 
@@ -338,13 +339,14 @@ class TestConsentRequests:
             mailchimp_transactional_connection_config
         )
 
-        opt_in_request: SaaSRequest = connector._get_consent_requests_by_preference(
-            opt_in=True
-        )
-        assert opt_in_request.path == "/allowlists/add"
+        opt_in_request: List[
+            SaaSRequest
+        ] = connector._get_consent_requests_by_preference(opt_in=True)
+        assert opt_in_request[0].path == "/allowlists/add"
 
-        opt_out_request: SaaSRequest = connector._get_consent_requests_by_preference(
-            opt_in=False
-        )
+        opt_out_request: List[
+            SaaSRequest
+        ] = connector._get_consent_requests_by_preference(opt_in=False)
 
-        assert opt_out_request.path == "/allowlists/delete"
+        assert opt_out_request[0].path == "/allowlists/delete"
+        assert opt_out_request[1].path == "/rejects/add"

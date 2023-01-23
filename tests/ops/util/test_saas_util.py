@@ -3,9 +3,9 @@ import pytest
 from fides.api.ops.common_exceptions import FidesopsException
 from fides.api.ops.graph.config import (
     Collection,
-    Dataset,
     FieldAddress,
     FieldPath,
+    GraphDataset,
     ObjectField,
     ScalarField,
 )
@@ -28,7 +28,7 @@ class TestMergeDatasets:
     def test_add_identity(self):
         """Augment a SaaS dataset collection with an identity reference"""
 
-        saas_dataset = Dataset(
+        saas_dataset = GraphDataset(
             name="saas_dataset",
             collections=[
                 Collection(
@@ -41,7 +41,7 @@ class TestMergeDatasets:
             connection_key="connection_key",
         )
 
-        saas_config = Dataset(
+        saas_config = GraphDataset(
             name="saas_config",
             collections=[
                 Collection(
@@ -68,7 +68,7 @@ class TestMergeDatasets:
     def test_add_reference(self):
         """Augment a SaaS dataset collection with a dataset reference"""
 
-        saas_dataset = Dataset(
+        saas_dataset = GraphDataset(
             name="saas_dataset",
             collections=[
                 Collection(
@@ -81,7 +81,7 @@ class TestMergeDatasets:
             connection_key="connection_key",
         )
 
-        saas_config = Dataset(
+        saas_config = GraphDataset(
             name="saas_config",
             collections=[
                 Collection(
@@ -123,7 +123,7 @@ class TestMergeDatasets:
     @pytest.mark.unit_saas
     def test_add_with_object_fields(self):
         """Verify complex SaaS dataset fields are preserved after merging"""
-        saas_dataset = Dataset(
+        saas_dataset = GraphDataset(
             name="saas_dataset",
             collections=[
                 Collection(
@@ -142,7 +142,7 @@ class TestMergeDatasets:
             connection_key="connection_key",
         )
 
-        saas_config = Dataset(
+        saas_config = GraphDataset(
             name="saas_config",
             collections=[
                 Collection(
@@ -169,7 +169,7 @@ class TestMergeDatasets:
     @pytest.mark.unit_saas
     def test_merge_same_scalar_field(self):
         """Merge two scalar fields between datsets with the same collection/field name"""
-        saas_dataset = Dataset(
+        saas_dataset = GraphDataset(
             name="saas_dataset",
             collections=[
                 Collection(
@@ -182,7 +182,7 @@ class TestMergeDatasets:
             connection_key="connection_key",
         )
 
-        saas_config = Dataset(
+        saas_config = GraphDataset(
             name="saas_config",
             collections=[
                 Collection(
@@ -212,7 +212,7 @@ class TestMergeDatasets:
     @pytest.mark.unit_saas
     def test_merge_same_object_field(self):
         """Merge a scalar and object field between datsets with the same collection/field name"""
-        saas_dataset = Dataset(
+        saas_dataset = GraphDataset(
             name="saas_dataset",
             collections=[
                 Collection(
@@ -231,7 +231,7 @@ class TestMergeDatasets:
             connection_key="connection_key",
         )
 
-        saas_config = Dataset(
+        saas_config = GraphDataset(
             name="saas_config",
             collections=[
                 Collection(

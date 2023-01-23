@@ -17,6 +17,27 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.5.0...main)
 
 
+### Added
+
+* Unified Fides Resources: Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
+* Unified Fides Resources: Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
+* Add new connection config routes that couple them with systems [#2249](https://github.com/ethyca/fides/pull/2249)
+* Consent Propagation: Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
+* Consent Propagation: Privacy Center consent options can now be marked as `executable` in order to propagate consent requests [#2193](https://github.com/ethyca/fides/pull/2193)
+* Consent Propagation: Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
+
+### Changed
+
+* Unified Fides Resources: Removed several fidesops schemas for DSR's in favor of updated Fideslang schemas [#2009](https://github.com/ethyca/fides/pull/2009)
+* Unified Fides Resources: Removed DatasetConfig.dataset field [#2096](https://github.com/ethyca/fides/pull/2096)
+* Unified Fides Resources: Updated UI dataset config routes to use new unified routes [#2113](https://github.com/ethyca/fides/pull/2113)
+* Unified Fides Resources: Validate request body on crud endpoints on upsert. Validate dataset data categories before save. [#2134](https://github.com/ethyca/fides/pull/2134/)
+* Unified Fides Resources: Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
+
+### Fixed
+
+* Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
+
 ## [2.5.0](https://github.com/ethyca/fides/compare/2.4.0...2.5.0)
 
 ### Docs
@@ -26,6 +47,7 @@ The types of changes are:
 ### Added
 
 * Added the `user` command group to the CLI. [#2153](https://github.com/ethyca/fides/pull/2153)
+* Added `Code Climate` test coverage uploads.  [#2198](https://github.com/ethyca/fides/pull/2198)
 * Added the connection key to the execution log [#2100](https://github.com/ethyca/fides/pull/2100)
 * Added endpoints to retrieve DSR `Rule`s and `Rule Target`s [#2116](https://github.com/ethyca/fides/pull/2116)
 * Added Fides version number to account dropdown in the UI [#2140](https://github.com/ethyca/fides/pull/2140)
@@ -38,9 +60,7 @@ The types of changes are:
 * Adds support for Twilio email service (Sendgrid) [#2154](https://github.com/ethyca/fides/pull/2154)
 * Access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
 * Access and erasure support for Friendbuy Nextgen [#2085](https://github.com/ethyca/fides/pull/2085)
-* Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
-* Privacy Center consent options can now be marked as `executable` in order to propagate consent requests [#2193](https://github.com/ethyca/fides/pull/2193)
-* Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
+
 
 ### Changed
 
@@ -74,10 +94,12 @@ The types of changes are:
 * Fix Cookie House purchase modal flashing 'Error' in title [#2274](https://github.com/ethyca/fides/pull/2274)
 * Stop dependency from upgrading `packaging` to version with known issue [#2273](https://github.com/ethyca/fides/pull/2273)
 * Privacy center config no longer requires `identity_inputs` and will use `email` as a default [#2263](https://github.com/ethyca/fides/pull/2263)
+* No longer display remaining days for privacy requests in terminal states [#2292](https://github.com/ethyca/fides/pull/2292)
 
 ### Removed
 
 * Remove "Create New System" button when viewing systems. All systems can now be created via the "Add systems" button on the home page. [#2132](https://github.com/ethyca/fides/pull/2132)
+
 
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
