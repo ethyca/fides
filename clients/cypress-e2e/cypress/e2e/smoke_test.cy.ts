@@ -1,4 +1,8 @@
-import { API_URL } from "../support/constants";
+import {
+  ADMIN_UI_URL,
+  API_URL,
+  PRIVACY_CENTER_URL,
+} from "../support/constants";
 
 describe("Smoke test", () => {
   it("can submit an access request from the privacy center", () => {
@@ -9,7 +13,7 @@ describe("Smoke test", () => {
     cy.intercept("GET", `${API_URL}/privacy-request*`).as("getRequests");
 
     // Submit the access request from the privacy center
-    cy.visit("localhost:3001");
+    cy.visit(PRIVACY_CENTER_URL);
     cy.getByTestId("card").contains("Access your data").click();
     cy.getByTestId("privacy-request-form").within(() => {
       cy.get("input#name").type("Jenny");
@@ -20,8 +24,8 @@ describe("Smoke test", () => {
     });
 
     // Approve the request in the admin UI
-    cy.visit("localhost:3000");
-    cy.origin("http://localhost:3000", () => {
+    cy.visit(ADMIN_UI_URL);
+    cy.origin(ADMIN_UI_URL, () => {
       // Makes custom commands available to all subsequent cy.origin() commands
       // https://docs.cypress.io/api/commands/origin#Custom-commands
       require("../support/commands");
@@ -56,7 +60,7 @@ describe("Smoke test", () => {
     cy.intercept(`${API_URL}/connection_type`).as("getConnectionType");
     cy.intercept(`${API_URL}/connection*`).as("getConnections");
 
-    cy.visit("localhost:3000");
+    cy.visit(ADMIN_UI_URL);
     cy.login();
     cy.get("div").contains("Configure privacy requests").click();
     cy.get("a").contains("Connection manager").click();
