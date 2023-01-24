@@ -29,6 +29,11 @@ import * as Yup from "yup";
 import { ModalViews } from "../types";
 
 import "react-phone-number-input/style.css";
+import {
+  emailValidation,
+  nameValidation,
+  phoneValidation,
+} from "../validation";
 
 const PhoneInput = dynamic(() => import("react-phone-number-input"), {
   ssr: false,
@@ -141,32 +146,9 @@ const usePrivacyRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
-      name: (() => {
-        let validation = Yup.string();
-        if (identityInputs.name === "required") {
-          validation = validation.required("Name is required");
-        }
-        return validation;
-      })(),
-      email: (() => {
-        let validation = Yup.string();
-        if (identityInputs.email === "required") {
-          validation = validation
-            .email("Email is invalid")
-            .required("Email is required");
-        }
-        return validation;
-      })(),
-      phone: (() => {
-        let validation = Yup.string();
-        if (identityInputs.phone === "required") {
-          validation = validation
-            .required("Phone is required")
-            // E.164 international standard format
-            .matches(/^\+[1-9]\d{1,14}$/, "Phone is invalid");
-        }
-        return validation;
-      })(),
+      name: nameValidation(identityInputs?.name),
+      email: emailValidation(identityInputs?.email),
+      phone: phoneValidation(identityInputs?.phone),
     }),
   });
 
