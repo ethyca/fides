@@ -426,32 +426,33 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             "Starting consent request for node: '{}'",
             node.address.value,
         )
+        self.set_privacy_request_state(privacy_request, node)
+        query_config = self.query_config(node)
 
-        for consent in consent_preferences:
-            request_action: str = "opt_in" if consent.opt_in else "opt_out"
+        for consent_options in consent_preferences:
+            query_config.action = (
+                "opt_in" if consent_options.opt_in else "opt_out"
+            )  # For logging purposes
+
             consent_requests: List[
                 SaaSRequest
-            ] = self._get_consent_requests_by_preference(consent.opt_in)
+            ] = self._get_consent_requests_by_preference(consent_options.opt_in)
 
             if not consent_requests:
                 logger.info(
                     "Skipping consent requests on node {}: No '{}' requests defined",
                     node.address.value,
-                    request_action,
+                    query_config.action,
                 )
                 continue
 
             for consent_request in consent_requests:
                 self.set_saas_request_state(consent_request)
 
-                param_values: Dict[str, Any] = self.secrets
-                param_values.update(identity_data)
-
-                prepared_request: SaaSRequestParams = map_param_values(
-                    request_action,
-                    f"{self.configuration.name}",
-                    consent_request,
-                    self.secrets,
+                prepared_request: SaaSRequestParams = (
+                    query_config.generate_consent_stmt(
+                        policy, privacy_request, consent_request
+                    )
                 )
                 client: AuthenticatedClient = self.create_client()
                 client.send(prepared_request)

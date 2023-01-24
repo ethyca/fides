@@ -30,6 +30,9 @@ saas_config:
     opt_in:
       method: POST
       path: /allowlists/add
+      param_values:
+        - name: email
+          identity: email
       body: |
         {
           "email": "<email>"
@@ -38,12 +41,18 @@ saas_config:
     opt_out:
       - method: POST
         path: /allowlists/delete
+        param_values:
+          - name: email
+            identity: email
         body: |
           {
             "email": "<email>"
           }
       - method: POST
         path: /rejects/add
+        param_values:
+          - name: email
+            identity: email
         body: |
           {
             "email": "<email>"
