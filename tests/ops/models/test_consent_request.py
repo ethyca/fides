@@ -204,7 +204,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             "encrypted_value": {"value": "test@email.com"},
         }
         provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
-        browser_identity = Identity(user_id="user_id_from_browser")
+        browser_identity = Identity(ga_client_id="user_id_from_browser")
 
         consent_preferences = ConsentPreferences(
             consent=[{"data_use": "advertising", "opt_in": False}]
@@ -225,6 +225,6 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         call_kwargs = mock_create_privacy_request.call_args[1]
         identity_of_privacy_request = call_kwargs["data"][0].identity
         assert identity_of_privacy_request.email == "test@email.com"
-        assert identity_of_privacy_request.user_id == browser_identity.user_id
+        assert identity_of_privacy_request.ga_client_id == browser_identity.ga_client_id
 
         provided_identity.delete(db)

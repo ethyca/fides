@@ -715,7 +715,7 @@ class TestSaveConsent:
                 {"data_use": "advertising", "executable": True},
                 {"data_use": "improve", "executable": False},
             ],
-            "browser_identity": {"user_id": "test_user_id"},
+            "browser_identity": {"ga_client_id": "test_ga_client_id"},
         }
         response = api_client.patch(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
@@ -737,7 +737,7 @@ class TestSaveConsent:
             "create a Privacy Request provided identity "
         )
         assert identity.phone_number is None
-        assert identity.user_id == "test_user_id", (
+        assert identity.ga_client_id == "test_ga_client_id", (
             "Browser identity pulled from Consent Provided Identity and persisted "
             "to a Privacy Request provided identity"
         )
