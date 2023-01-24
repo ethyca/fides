@@ -191,3 +191,7 @@ class IdentityVerificationException(FidesopsException):
 
 class NoSuchConnectionTypeSecretSchemaError(Exception):
     """Exception for when a connection type secret schema is not found."""
+
+
+class InvalidCacheVerificationToken(FidesopsException):
+    """Exception for when the Fides cache decodes data with an unrecognized verification token."""
