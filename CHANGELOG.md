@@ -26,6 +26,8 @@ The types of changes are:
 * Consent Propagation: Privacy Center consent options can now be marked as `executable` in order to propagate consent requests [#2193](https://github.com/ethyca/fides/pull/2193)
 * Consent Propagation: Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
 * Consent Propagation: Add support for passing browser identities to consent request patches [#2304](https://github.com/ethyca/fides/pull/2304)
+* Consent Propagation: Allow defining a list of opt-in and/or opt-out requests [#2315](https://github.com/ethyca/fides/pull/2315)
+* Consent Propagation: Add a Google Analytics Consent Connector [#2302](https://github.com/ethyca/fides/pull/2302)
 
 ### Changed
 
