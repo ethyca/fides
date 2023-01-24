@@ -105,11 +105,11 @@ jobs:
       - name: Format
         run: npm run format:ci
 
-      - name: Jest test
-        run: npm run test:ci
-
       - name: Build
         run: npm run build
+
+      - name: Jest test
+        run: npm run test:ci
 
   Privacy-Center-Cypress:
     runs-on: ubuntu-latest
