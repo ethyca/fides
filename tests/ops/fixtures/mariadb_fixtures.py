@@ -5,6 +5,7 @@ import pytest
 import sqlalchemy
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -68,12 +69,15 @@ def mariadb_example_test_dataset_config(
     connection_config_mariadb.name = fides_key
     connection_config_mariadb.key = fides_key
     connection_config_mariadb.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, mariadb_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config_mariadb.id,
             "fides_key": fides_key,
-            "dataset": mariadb_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset

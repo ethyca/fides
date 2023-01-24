@@ -54,7 +54,7 @@
         "url": "https://example.com/privacy#email-marketing",
         "default": true,
         "highlight": false,
-        "cookieKeys": []
+        "cookieKeys": ["tracking"]
       },
       {
         "fidesDataUseKey": "improve",
@@ -63,7 +63,7 @@
         "url": "https://example.com/privacy#analytics",
         "default": true,
         "highlight": false,
-        "cookieKeys": []
+        "cookieKeys": ["tracking"]
       }
     ]
   }

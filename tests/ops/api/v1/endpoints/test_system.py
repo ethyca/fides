@@ -3,8 +3,13 @@ import json
 import pytest
 from fastapi_pagination import Params
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
+from starlette.status import (
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+)
 from starlette.testclient import TestClient
+
 from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
@@ -14,6 +19,7 @@ from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
 from tests.ops.api.v1.endpoints.test_connection_config_endpoints import (
     TestPatchConnections,
 )
+
 page_size = Params().size
 
 
@@ -28,12 +34,18 @@ def url_invalid_system() -> str:
 
 
 class TestPatchSystemConnections(TestPatchConnections):
-    def test_patch_connections_with_invalid_system(self, api_client: TestClient, generate_auth_header, url_invalid_system):
+    def test_patch_connections_with_invalid_system(
+        self, api_client: TestClient, generate_auth_header, url_invalid_system
+    ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.patch(url_invalid_system, headers=auth_header, json=[])
 
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == "A valid system must be provided to create or update connections"
+        assert (
+            resp.json()["detail"]
+            == "A valid system must be provided to create or update connections"
+        )
+
 
 class TestGetConnections:
     def test_get_connections_not_authenticated(
@@ -42,13 +54,19 @@ class TestGetConnections:
         resp = api_client.get(url, headers={})
         assert resp.status_code == HTTP_401_UNAUTHORIZED
 
-    def test_get_connections_with_invalid_system(self, api_client: TestClient, generate_auth_header, url_invalid_system):
+    def test_get_connections_with_invalid_system(
+        self, api_client: TestClient, generate_auth_header, url_invalid_system
+    ):
 
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url_invalid_system, headers=auth_header)
 
-        assert resp.json()["detail"] == "A valid system must be provided to create or update connections"
+        assert (
+            resp.json()["detail"]
+            == "A valid system must be provided to create or update connections"
+        )
         assert resp.status_code == HTTP_404_NOT_FOUND
+
     def test_get_connections_wrong_scope(
         self, api_client: TestClient, generate_auth_header, connection_config, url
     ) -> None:

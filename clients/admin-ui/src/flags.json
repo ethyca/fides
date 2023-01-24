@@ -14,5 +14,10 @@
     "development": true,
     "test": true,
     "production": false
+    },
+  "datasetClassificationUpdates": {
+    "development": true,
+    "test": false,
+    "production": false
   }
 }

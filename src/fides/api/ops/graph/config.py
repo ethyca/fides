@@ -82,6 +82,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
 
+from fideslang.validation import FidesKey
 from pydantic import BaseModel, validator
 
 from fides.api.ops.common_exceptions import FidesopsException
@@ -90,7 +91,6 @@ from fides.api.ops.graph.data_type import (
     DataTypeConverter,
     get_data_type_converter,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.collection_util import merge_dicts
 from fides.api.ops.util.querytoken import QueryToken
 
@@ -239,7 +239,7 @@ class Field(BaseModel, ABC):
     """references to other fields in any other datasets"""
     identity: Optional[SeedAddress] = None
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
-    data_categories: Optional[List[FidesOpsKey]]
+    data_categories: Optional[List[FidesKey]]
     data_type_converter: DataTypeConverter = DataType.no_op.value
     return_all_elements: Optional[bool] = None
     # Should field be returned by query if it is in an entrypoint array field, or just if it matches query?
@@ -308,8 +308,8 @@ class ObjectField(Field):
     @validator("data_categories")
     @classmethod
     def validate_data_categories(
-        cls, value: Optional[List[FidesOpsKey]]
-    ) -> Optional[List[FidesOpsKey]]:
+        cls, value: Optional[List[FidesKey]]
+    ) -> Optional[List[FidesKey]]:
         """To prevent mismatches between data categories on an ObjectField and a nested ScalarField, only
         allow data categories to be defined on the individual fields.
 
@@ -365,7 +365,7 @@ class ObjectField(Field):
 # pylint: disable=too-many-arguments
 def generate_field(
     name: str,
-    data_categories: Optional[List[str]],
+    data_categories: Optional[List[FidesKey]],
     identity: Optional[str],
     data_type_name: str,
     references: List[Tuple[FieldAddress, Optional[EdgeDirection]]],
@@ -466,7 +466,7 @@ class Collection(BaseModel):
         return self.field_dict[field_path] if field_path in self.field_dict else None
 
     @property
-    def field_paths_by_category(self) -> Dict[FidesOpsKey, List[FieldPath]]:
+    def field_paths_by_category(self) -> Dict[FidesKey, List[FieldPath]]:
         """Returns mapping of data categories to a list of FieldPaths, flips FieldPaths -> categories
         to be categories -> FieldPaths.
 
@@ -491,7 +491,7 @@ class Collection(BaseModel):
         arbitrary_types_allowed = True
 
 
-class Dataset(BaseModel):
+class GraphDataset(BaseModel):
     """Master collection of collections that are accessed in a common way"""
 
     name: str
@@ -499,4 +499,4 @@ class Dataset(BaseModel):
     # an optional list of datasets that this dataset must run after
     after: Set[DatasetAddress] = set()
     # ConnectionConfig key
-    connection_key: FidesOpsKey
+    connection_key: FidesKey
