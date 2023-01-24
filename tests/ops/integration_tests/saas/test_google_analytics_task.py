@@ -39,7 +39,7 @@ async def test_google_analytics_consent_request_task(
     consent_policy,
     google_analytics_connection_config,
     google_analytics_dataset_config,
-    google_analytics_user_id,
+    google_analytics_client_id,
 ) -> None:
     """Full consent request based on the Google Analytics SaaS config"""
 
@@ -48,7 +48,7 @@ async def test_google_analytics_consent_request_task(
         consent_preferences=[{"data_use": "advertising", "opt_in": False}],
     )
 
-    identity = Identity(**{"user_id": google_analytics_user_id})
+    identity = Identity(**{"ga_client_id": google_analytics_client_id})
     privacy_request.cache_identity(identity)
 
     dataset_name = "google_analytics_instance"
@@ -58,7 +58,7 @@ async def test_google_analytics_consent_request_task(
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
         [google_analytics_connection_config],
-        {"user_id": google_analytics_user_id},
+        {"ga_client_id": google_analytics_client_id},
         db,
     )
 
@@ -99,7 +99,7 @@ async def test_google_analytics_consent_prepared_requests(
     consent_policy,
     google_analytics_connection_config,
     google_analytics_dataset_config,
-    google_analytics_user_id,
+    google_analytics_client_id,
 ) -> None:
     """Assert attributes of the PreparedRequest created by the client for running the consent request"""
 
@@ -108,7 +108,7 @@ async def test_google_analytics_consent_prepared_requests(
         consent_preferences=[{"data_use": "advertising", "opt_in": False}],
     )
 
-    identity = Identity(**{"user_id": google_analytics_user_id})
+    identity = Identity(**{"ga_client_id": google_analytics_client_id})
     privacy_request.cache_identity(identity)
 
     await graph_task.run_consent_request(
@@ -116,7 +116,7 @@ async def test_google_analytics_consent_prepared_requests(
         consent_policy,
         build_consent_dataset_graph([google_analytics_dataset_config]),
         [google_analytics_connection_config],
-        {"user_id": google_analytics_user_id},
+        {"ga_client_id": google_analytics_client_id},
         db,
     )
 
@@ -128,5 +128,5 @@ async def test_google_analytics_consent_prepared_requests(
     )
     body = mocked_client_send.call_args[0][0].body
 
-    assert google_analytics_user_id in body
+    assert google_analytics_client_id in body
     assert google_analytics_connection_config.secrets["property_id"] in body
