@@ -1285,6 +1285,7 @@ class TestGetPrivacyRequests:
             "email": TEST_EMAIL,
             "phone_number": TEST_PHONE,
             "user_id": None,
+            "browser_id": None,
         }
         assert first_row["Policy key"] == "example_access_request_policy"
         assert first_row["Request status"] == "approved"
