@@ -2,18 +2,6 @@
 ARG PYTHON_VERSION="3.10.7"
 
 
-###################
-## Frontend Base ##
-###################
-FROM node:16 as frontend
-
-# Build the admin-ui frontend
-WORKDIR /fides/clients/admin-ui
-COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
-RUN npm install
-COPY clients/admin-ui/ .
-RUN npm run export
-
 #########################
 ## Compile Python Deps ##
 #########################
@@ -98,6 +86,18 @@ CMD [ "fides", "webserver" ]
 FROM backend as dev
 
 RUN pip install -e . --no-deps
+
+###################
+## Frontend Base ##
+###################
+FROM node:16-slim as frontend
+
+# Build the admin-ui frontend
+WORKDIR /fides/clients/admin-ui
+COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
+RUN npm install
+COPY clients/admin-ui/ .
+RUN npm run export
 
 #############################
 ## Production Application ##
