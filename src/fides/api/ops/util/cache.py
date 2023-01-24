@@ -92,7 +92,7 @@ class FidesopsRedis(Redis):
         to later verify that the data was encoded by this Fides instance.
         """
         return base64.b64encode(
-            pickle.dumps(obj) + ":" + CONFIG.security.app_encryption_key
+            pickle.dumps(obj) + ":" + CONFIG.security.app_encryption_key.encode("utf-8")
         )
 
     @staticmethod
@@ -110,7 +110,7 @@ class FidesopsRedis(Redis):
             # delimiter.
             decoded = base64.b64decode(bs).rsplit(":")
             try:
-                verified = decoded[1] == CONFIG.security.app_encryption_key
+                verified = decoded[1] == CONFIG.security.app_encryption_key.decode("utf-8")
             except IndexError:
                 verified = False
 
