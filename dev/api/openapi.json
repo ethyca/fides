@@ -14766,7 +14766,6 @@
       "PrivacyDeclaration": {
         "title": "PrivacyDeclaration",
         "required": [
-          "name",
           "data_categories",
           "data_use",
           "data_subjects"
