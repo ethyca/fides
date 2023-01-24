@@ -1,4 +1,4 @@
-"""Add user_id as a provided identity type
+"""Add ga_client_id as a provided identity type
 
 Revision ID: 392992c7733a
 Revises: de456534dbda
@@ -16,7 +16,7 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("ALTER TYPE providedidentitytype ADD VALUE 'user_id'")
+    op.execute("ALTER TYPE providedidentitytype ADD VALUE 'ga_client_id'")
 
 
 def downgrade():
