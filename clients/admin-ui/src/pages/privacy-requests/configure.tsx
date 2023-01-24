@@ -1,4 +1,10 @@
-import { Box, Breadcrumb, BreadcrumbItem, Heading } from "@fidesui/react";
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  Heading,
+} from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
@@ -9,10 +15,18 @@ const ConfigurePrivacyRequests: NextPage = () => (
     <Box mb={8}>
       <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
         <BreadcrumbItem>
-          <NextLink href="/privacy-requests">Privacy requests</NextLink>
+          <BreadcrumbLink as={NextLink} href="/privacy-requests">
+            Privacy requests
+          </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbItem>
-          <NextLink href="/privacy-requests/configure">Configuration</NextLink>
+        <BreadcrumbItem color="purple.400">
+          <BreadcrumbLink
+            as={NextLink}
+            href="/privacy-requests/configure"
+            isCurrentPage
+          >
+            Configuration
+          </BreadcrumbLink>
         </BreadcrumbItem>
       </Breadcrumb>
     </Box>
