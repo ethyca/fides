@@ -34,6 +34,11 @@ The types of changes are:
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
+* Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
+
+### Security
+
+* Add a check to the catchall path to prevent returning paths outside of the UI directory [#2330](https://github.com/ethyca/fides/pull/2330)
 
 ## [2.5.0](https://github.com/ethyca/fides/compare/2.4.0...2.5.0)
 
