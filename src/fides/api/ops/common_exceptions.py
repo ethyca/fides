@@ -193,5 +193,5 @@ class NoSuchConnectionTypeSecretSchemaError(Exception):
     """Exception for when a connection type secret schema is not found."""
 
 
-class UnrecognizedCacheData(FidesopsException):
+class UnrecognizedCacheData(Exception):
     """Exception for when the Fides cache decodes data with an unrecognized verification token."""

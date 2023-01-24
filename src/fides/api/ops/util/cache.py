@@ -85,18 +85,29 @@ class FidesopsRedis(Redis):
 
     @staticmethod
     def encode_obj(obj: Any) -> bytes:
-        """Encode an object to a base64 string that can be stored in Redis"""
+        """
+        Encode an object to a base64 string that can be stored in Redis.
+
+        Any pickled Python objects are encoded alongside the app's encryption key
+        to later verify that the data was encoded by this Fides instance.
+        """
         return base64.b64encode(
             pickle.dumps(obj) + ":" + CONFIG.security.app_encryption_key
         )
 
     @staticmethod
     def decode_obj(bs: Optional[bytes]) -> Any:
-        """Decode an object from its base64 representation.
+        """
+        Decode an object from its base64 representation. Once decoded the
+        verification token is checked to ensure this data was encoded by
+        Fides (or a source with access to the app's secret encryption key).
 
-        Since Redis may not contain a value
-        for a given key it's possible we may try to decode an empty object."""
+        Since Redis may not contain a value for a given key it's possible
+        we may try to decode an empty object.
+        """
         if bs:
+            # Use `.rsplit` to ensure only the last : is taken to be the
+            # delimiter.
             decoded = base64.b64decode(bs).rsplit(":")
             try:
                 to_verify = decoded[1]
