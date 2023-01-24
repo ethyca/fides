@@ -110,7 +110,9 @@ class FidesopsRedis(Redis):
             # delimiter.
             decoded = base64.b64decode(bs).rsplit(":")
             try:
-                verified = decoded[1] == CONFIG.security.app_encryption_key.decode("utf-8")
+                verified = (
+                    decoded[1].decode("utf-8") == CONFIG.security.app_encryption_key
+                )
             except IndexError:
                 verified = False
 
