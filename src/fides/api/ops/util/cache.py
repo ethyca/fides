@@ -86,7 +86,7 @@ class FidesopsRedis(Redis):
     @staticmethod
     def encode_obj(obj: Any) -> bytes:
         """Encode an object to a base64 string that can be stored in Redis"""
-        return base64.b64encode(json.dumps(obj))
+        return base64.b64encode(json.dumps(obj).encode("utf-8"))
 
     @staticmethod
     def decode_obj(bs: Optional[bytes]) -> Any:
