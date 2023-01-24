@@ -53,5 +53,29 @@ describe("Privacy request", () => {
 
       cy.getByTestId("request-submitted");
     });
+
+    it("requires valid inputs", () => {
+      cy.visit("/");
+      cy.getByTestId("card").contains("Access your data").click();
+
+      cy.getByTestId("privacy-request-form").within(() => {
+        // This block uses `.root()` to keep queries within the form. This is necessary because of
+        // `.blur()` which triggers input validation.
+        cy.root().get("input#email").type("invalid email");
+        cy.root().get("input#phone").type("123 456 7890 1234567").blur();
+
+        cy.root().should("contain", "Email is invalid");
+        cy.root().should("contain", "Phone is invalid");
+        cy.root().get("button").contains("Continue").should("be.disabled");
+
+        cy.root().get("input#email").type("valid@example.com");
+        cy.root().get("input#phone").clear().type("123 456 7890").blur();
+        cy.root().get("button").contains("Continue").should("be.enabled");
+
+        // The phone input is optional (in the default config) so it can be left blank.
+        cy.root().get("input#phone").clear().blur();
+        cy.root().get("button").contains("Continue").should("be.enabled");
+      });
+    });
   });
 });

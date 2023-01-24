@@ -56,7 +56,7 @@
         "url": "https://example.com/privacy#email-marketing",
         "default": true,
         "highlight": false,
-        "cookieKeys": [],
+        "cookieKeys": ["tracking"],
         "executable": false
       },
       {
@@ -66,7 +66,7 @@
         "url": "https://example.com/privacy#analytics",
         "default": true,
         "highlight": false,
-        "cookieKeys": [],
+        "cookieKeys": ["tracking"],
         "executable": false
       }
     ]
