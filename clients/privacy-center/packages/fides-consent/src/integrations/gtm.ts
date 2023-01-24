@@ -10,6 +10,7 @@ declare global {
  */
 export const gtm = () => {
   const dataLayer = window.dataLayer ?? [];
+  window.dataLayer = dataLayer;
   dataLayer.push({
     Fides: {
       consent: window.Fides.consent,
