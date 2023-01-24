@@ -1,16 +1,6 @@
 import { hostUrl } from "~/constants";
 
 describe("Privacy request", () => {
-  beforeEach(() => {
-    // All of these tests assume identity verification is required.
-    cy.intercept("GET", `${hostUrl}/id-verification/config`, {
-      body: {
-        identity_verification_required: true,
-        valid_email_config_exists: false,
-      },
-    }).as("getVerificationConfig");
-  });
-
   describe("when requesting data access", () => {
     beforeEach(() => {
       cy.intercept("POST", `${hostUrl}/privacy-request`, {

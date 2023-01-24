@@ -2,15 +2,6 @@ import { hostUrl } from "~/constants";
 import { CONSENT_COOKIE_NAME } from "fides-consent";
 
 describe("Consent settings", () => {
-  beforeEach(() => {
-    // All of these tests assume identity verification is required.
-    cy.intercept("GET", `${hostUrl}/id-verification/config`, {
-      body: {
-        identity_verification_required: true,
-      },
-    }).as("getVerificationConfig");
-  });
-
   describe("when the user isn't verified", () => {
     beforeEach(() => {
       cy.intercept("POST", `${hostUrl}/consent-request`, {
