@@ -110,12 +110,12 @@ class FidesopsRedis(Redis):
             # delimiter.
             decoded = base64.b64decode(bs).rsplit(":")
             try:
-                to_verify = decoded[1]
+                verified = decoded[1] == CONFIG.security.app_encryption_key
             except IndexError:
+                verified = False
+
+            if not verified:
                 raise common_exceptions.UnrecognizedCacheData()
-            else:
-                if not to_verify == CONFIG.security.app_encryption_key:
-                    raise common_exceptions.UnrecognizedCacheData()
 
             return pickle.loads(decoded[0])
         return None
