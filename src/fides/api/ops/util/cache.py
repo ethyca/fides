@@ -101,10 +101,10 @@ class FidesopsRedis(Redis):
             try:
                 to_verify = decoded[1]
             except IndexError:
-                raise common_exceptions.InvalidCacheVerificationToken()
+                raise common_exceptions.UnrecognizedCacheData()
             else:
                 if not to_verify == CONFIG.security.app_encryption_key:
-                    raise common_exceptions.InvalidCacheVerificationToken()
+                    raise common_exceptions.UnrecognizedCacheData()
 
             return pickle.loads(decoded[0])
         return None
