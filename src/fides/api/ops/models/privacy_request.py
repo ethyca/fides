@@ -768,6 +768,7 @@ class ProvidedIdentityType(EnumType):
     email = "email"
     phone_number = "phone_number"
     user_id = "user_id"
+    browser_id = "browser_id"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904
