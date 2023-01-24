@@ -1,3 +1,4 @@
+from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
@@ -127,8 +128,12 @@ def delighted_create_erasure_data(
         "person": people_id,
         "score": "3"
     }
+    #need to add person info to body
     response = requests.post(
         url=f"{base_url}/v1/survey_responses.json", auth=auth, json=survey_response_data
     )
+
+    sleep(60)
+
     survey_response = response.json()
     yield survey_response, peoples_response
