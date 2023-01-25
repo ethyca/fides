@@ -94,6 +94,14 @@ def test_config(test_config_path: str) -> Generator:
     yield get_config(test_config_path)
 
 
+@pytest.fixture(scope="function")
+def test_config_dev_mode_disabled() -> Generator:
+    original_value = CONFIG.dev_mode
+    CONFIG.dev_mode = False
+    yield CONFIG
+    CONFIG.dev_mode = original_value
+
+
 @pytest.fixture(scope="session")
 def test_client() -> Generator:
     """Starlette test client fixture. Easier to use mocks with when testing out API calls"""
