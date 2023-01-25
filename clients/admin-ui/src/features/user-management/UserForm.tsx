@@ -18,6 +18,8 @@ import * as Yup from "yup";
 import { CustomTextInput } from "~/features/common/form/inputs";
 
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
+import { passwordValidation } from "../common/form/validation";
+import NewPasswordModal from "./NewPasswordModal";
 import { User, UserCreateResponse } from "./types";
 import UpdatePasswordModal from "./UpdatePasswordModal";
 import { useUpdateUserPermissionsMutation } from "./user-management.slice";
@@ -36,14 +38,7 @@ const ValidationSchema = Yup.object().shape({
   username: Yup.string().required().label("Username"),
   first_name: Yup.string().label("First name"),
   last_name: Yup.string().label("Last name"),
-  password: Yup.string()
-    .required()
-    .min(8, "Password must have at least eight characters.")
-    .matches(/[0-9]/, "Password must have at least one number.")
-    .matches(/[A-Z]/, "Password must have at least one capital letter.")
-    .matches(/[a-z]/, "Password must have at least one lowercase letter.")
-    .matches(/[\W]/, "Password must have at least one symbol.")
-    .label("Password"),
+  password: passwordValidation.label("Password"),
   scopes: Yup.array().of(Yup.string()),
 });
 
@@ -59,6 +54,7 @@ interface Props {
   initialValues?: FormValues;
   canEditNames?: boolean;
   canChangePassword?: boolean;
+  canForceResetPassword?: boolean;
 }
 
 const UserForm = ({
@@ -66,6 +62,7 @@ const UserForm = ({
   initialValues,
   canEditNames,
   canChangePassword,
+  canForceResetPassword,
 }: Props) => {
   const router = useRouter();
   const { handleError } = useAPIHelper();
@@ -138,8 +135,14 @@ const UserForm = ({
                     tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
                   />
                 ) : (
-                  canChangePassword &&
-                  profileId != null && <UpdatePasswordModal id={profileId} />
+                  <>
+                    {canChangePassword && profileId != null && (
+                      <UpdatePasswordModal id={profileId} />
+                    )}
+                    {canForceResetPassword && profileId != null && (
+                      <NewPasswordModal id={profileId} />
+                    )}
+                  </>
                 )}
               </Stack>
               <Divider mb={7} mt={7} />

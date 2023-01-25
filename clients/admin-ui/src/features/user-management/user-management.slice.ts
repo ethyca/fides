@@ -5,6 +5,7 @@ import { utf8ToB64 } from "common/utils";
 
 import type { RootState } from "~/app/store";
 import { BASE_URL } from "~/constants";
+import { UserForcePasswordReset } from "~/types/api";
 
 import { selectToken } from "../auth";
 import {
@@ -151,6 +152,19 @@ export const userApi = createApi({
       }),
       invalidatesTags: ["User"],
     }),
+    forceResetUserPassword: build.mutation<
+      UserResponse,
+      { id: string } & UserForcePasswordReset
+    >({
+      query: ({ id, new_password }) => ({
+        url: `user/${id}/force-reset-password`,
+        method: "POST",
+        body: {
+          new_password: utf8ToB64(new_password),
+        },
+      }),
+      invalidatesTags: ["User"],
+    }),
     updateUserPermissions: build.mutation<
       UserPermissions,
       UserPermissionsEditParams
@@ -182,4 +196,5 @@ export const {
   useUpdateUserPasswordMutation,
   useUpdateUserPermissionsMutation,
   useGetUserPermissionsQuery,
+  useForceResetUserPasswordMutation,
 } = userApi;

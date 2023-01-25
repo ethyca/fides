@@ -41,12 +41,16 @@ const useUserForm = (profile: User, permissions: UserPermissions) => {
       ? userPermissions.scopes.includes("user:update")
       : false;
   }
+  const canForceResetPassword = userPermissions
+    ? userPermissions.scopes.includes("user:password-reset")
+    : false;
 
   return {
     handleSubmit,
     isOwnProfile,
     canUpdateUser,
     initialValues,
+    canForceResetPassword,
   };
 };
 
@@ -55,8 +59,13 @@ interface Props {
   permissions: UserPermissions;
 }
 const EditUserForm = ({ user, permissions }: Props) => {
-  const { isOwnProfile, handleSubmit, canUpdateUser, initialValues } =
-    useUserForm(user, permissions);
+  const {
+    isOwnProfile,
+    handleSubmit,
+    canUpdateUser,
+    initialValues,
+    canForceResetPassword,
+  } = useUserForm(user, permissions);
 
   return (
     <div>
@@ -70,6 +79,7 @@ const EditUserForm = ({ user, permissions }: Props) => {
           initialValues={initialValues}
           canEditNames={canUpdateUser}
           canChangePassword={isOwnProfile}
+          canForceResetPassword={canForceResetPassword}
         />
       </main>
     </div>
