@@ -8,6 +8,7 @@ from typing import Dict, Optional, Union
 
 from fastapi import Response
 from fastapi.responses import FileResponse
+from loguru import logger
 
 FIDES_DIRECTORY = "src/fides"
 ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
@@ -23,8 +24,12 @@ def get_package_path() -> Optional[Path]:
     return None
 
 
-def get_path_to_admin_ui_file(path: str) -> Optional[Path]:
-    """Return a path to a packaged admin UI file."""
+def get_path_to_admin_ui_file(path: str = "") -> Optional[Path]:
+    """
+    Return a path to a packaged admin UI file.
+
+    If no path is given, returns the path to the root of the UI directory
+    """
     package_path = get_package_path()
     if package_path is None:
         return None
@@ -125,6 +130,16 @@ def match_route(route_file_map: Dict[re.Pattern, Path], route: str) -> Optional[
 
     # If no static matches exist, fallback to the first match
     return sorted(matches)[0]
+
+
+def path_is_in_ui_directory(path: Path) -> bool:
+    """Checks if the path exists within the UI directory"""
+    ui_directory = get_path_to_admin_ui_file()
+    if not ui_directory:
+        logger.debug("Unable to locate UI directory")
+        return False
+
+    return ui_directory in path.parents
 
 
 def _is_dynamic_path(path: Path) -> bool:

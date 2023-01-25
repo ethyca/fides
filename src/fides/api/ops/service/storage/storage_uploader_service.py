@@ -1,11 +1,11 @@
 from typing import Any, Dict, Optional
 
+from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import StorageUploadError
 from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
@@ -15,9 +15,7 @@ from fides.api.ops.schemas.storage.storage import (
 from fides.api.ops.tasks.storage import upload_to_local, upload_to_s3
 
 
-def upload(
-    db: Session, *, request_id: str, data: Dict, storage_key: FidesOpsKey
-) -> str:
+def upload(db: Session, *, request_id: str, data: Dict, storage_key: FidesKey) -> str:
     """
     Retrieves storage configs and calls appropriate upload method
     :param db: SQLAlchemy Session

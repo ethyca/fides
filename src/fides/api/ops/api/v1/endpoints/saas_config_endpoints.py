@@ -2,6 +2,7 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
+from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -14,7 +15,6 @@ from starlette.status import (
 )
 
 from fides.api.ops.api import deps
-from fides.api.ops.api.v1.endpoints.connection_endpoints import validate_secrets
 from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
@@ -42,7 +42,6 @@ from fides.api.ops.schemas.saas.saas_config import (
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
@@ -58,6 +57,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     upsert_dataset_config_from_template,
 )
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.connection_util import validate_secrets
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 
@@ -65,7 +65,7 @@ router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 
 # Helper method to inject the parent ConnectionConfig into these child routes
 def _get_saas_connection_config(
-    connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
     logger.info("Finding connection config with key '{}'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
@@ -334,6 +334,7 @@ def instantiate_connection_from_template(
         template_values.instance_key,
         saas_connector_type,
     )
+
     return SaasConnectionTemplateResponse(
-        connection=connection_config, dataset=dataset_config.dataset
+        connection=connection_config, dataset=dataset_config.ctl_dataset
     )

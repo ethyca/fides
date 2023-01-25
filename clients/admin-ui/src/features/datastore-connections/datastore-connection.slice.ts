@@ -1,19 +1,20 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { addCommonHeaders } from "common/CommonHeaders";
 
-import { SystemType } from "~/types/api";
+import { baseApi } from "~/features/common/api.slice";
+import {
+  BulkPutDataset,
+  Page_DatasetConfigSchema_,
+  SystemType,
+} from "~/types/api";
 
 import type { RootState } from "../../app/store";
-import { BASE_URL, CONNECTION_ROUTE } from "../../constants";
-import { selectToken } from "../auth";
+import { CONNECTION_ROUTE } from "../../constants";
 import { DisabledStatus, TestingStatus } from "./constants";
 import {
   CreateAccessManualWebhookRequest,
   CreateAccessManualWebhookResponse,
   CreateSassConnectionConfigRequest,
   CreateSassConnectionConfigResponse,
-  DatasetsReponse,
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionRequest,
@@ -26,7 +27,7 @@ import {
   GetAllEnabledAccessManualWebhooksResponse,
   PatchAccessManualWebhookRequest,
   PatchAccessManualWebhookResponse,
-  PatchDatasetsRequest,
+  PatchDatasetsConfigRequest,
 } from "./types";
 
 function mapFiltersToSearchParams({
@@ -149,17 +150,7 @@ export const selectDatastoreConnectionFilters = (
 
 export const { reducer } = datastoreConnectionSlice;
 
-export const datastoreConnectionApi = createApi({
-  reducerPath: "datastoreConnectionApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["DatastoreConnection"],
+export const datastoreConnectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createAccessManualWebhook: build.mutation<
       CreateAccessManualWebhookResponse,
@@ -181,7 +172,8 @@ export const datastoreConnectionApi = createApi({
         method: "POST",
         body: { ...params },
       }),
-      invalidatesTags: ["DatastoreConnection"],
+      // Creating a connection config also creates a dataset behind the scenes
+      invalidatesTags: ["DatastoreConnection", "Datasets"],
     }),
     deleteDatastoreConnection: build.mutation({
       query: (id) => ({
@@ -223,9 +215,9 @@ export const datastoreConnectionApi = createApi({
       ],
       keepUnusedDataFor: 1,
     }),
-    getDatasets: build.query<DatasetsReponse, string>({
+    getDatasetConfigs: build.query<Page_DatasetConfigSchema_, string>({
       query: (key) => ({
-        url: `${CONNECTION_ROUTE}/${key}/dataset`,
+        url: `${CONNECTION_ROUTE}/${key}/datasetconfig`,
       }),
       providesTags: () => ["DatastoreConnection"],
     }),
@@ -284,11 +276,14 @@ export const datastoreConnectionApi = createApi({
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
-    patchDataset: build.mutation<any, PatchDatasetsRequest>({
+    patchDatasetConfigs: build.mutation<
+      BulkPutDataset,
+      PatchDatasetsConfigRequest
+    >({
       query: (params) => ({
-        url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset`,
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/datasetconfig`,
         method: "PATCH",
-        body: params.datasets,
+        body: params.dataset_pairs,
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
@@ -331,12 +326,12 @@ export const {
   useGetAccessManualHookQuery,
   useGetAllEnabledAccessManualHooksQuery,
   useGetAllDatastoreConnectionsQuery,
-  useGetDatasetsQuery,
+  useGetDatasetConfigsQuery,
   useGetDatastoreConnectionByKeyQuery,
   useDeleteDatastoreConnectionMutation,
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchAccessManualWebhookMutation,
-  usePatchDatasetMutation,
+  usePatchDatasetConfigsMutation,
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionsMutation,
   useUpdateDatastoreConnectionSecretsMutation,

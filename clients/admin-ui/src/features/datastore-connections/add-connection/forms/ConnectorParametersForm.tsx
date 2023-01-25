@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-import { isNumeric } from "@chakra-ui/utils";
 import {
   Button,
   ButtonGroup,
@@ -9,6 +8,7 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
+  isNumeric,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -286,6 +286,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                         connectionOption!.human_readable
                       } connection`}
                       size="sm"
+                      data-testid="input-name"
                     />
                     <FormErrorMessage>{props.errors.name}</FormErrorMessage>
                   </VStack>
