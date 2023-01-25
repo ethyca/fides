@@ -53,24 +53,23 @@ const ConfigurePrivacyRequests: NextPage = () => (
         subjects. You&apos;ll need to set up config variables to send out
         messages from Fides. Configure your settings here.
       </Box>
-      <Box
-        border="1px solid"
-        borderColor="gray.300"
-        borderRadius="md"
-        _hover={{ borderColor: "purple.300", cursor: "pointer" }}
-        // onClick={() => {
-        // configure messaging route
-        // }}
-        p={6}
-      >
-        <Heading mb={2} size="sm">
-          Configure storage
-        </Heading>
-        The data produced by an access request will need to be uploaded to a
-        storage destination (e.g. an S3 bucket) in order to be returned to the
-        user. At least one storage destination must be configured to process
-        access requests. Configure your settings here.
-      </Box>
+      <NextLink href="/privacy-requests/configure/storage" passHref>
+        <Box
+          border="1px solid"
+          borderColor="gray.300"
+          borderRadius="md"
+          _hover={{ borderColor: "purple.300", cursor: "pointer" }}
+          p={6}
+        >
+          <Heading mb={2} size="sm">
+            Configure storage
+          </Heading>
+          The data produced by an access request will need to be uploaded to a
+          storage destination (e.g. an S3 bucket) in order to be returned to the
+          user. At least one storage destination must be configured to process
+          access requests. Configure your settings here.
+        </Box>
+      </NextLink>
     </Box>
   </Layout>
 );
