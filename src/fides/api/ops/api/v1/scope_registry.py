@@ -66,7 +66,6 @@ USER_CREATE = "user:create"
 USER_UPDATE = "user:update"
 USER_READ = "user:read"
 USER_DELETE = "user:delete"
-USER_PASSWORD_RESET = "user:reset-password"
 
 USER_PERMISSION_CREATE = "user-permission:create"
 USER_PERMISSION_UPDATE = "user-permission:update"
@@ -121,7 +120,6 @@ SCOPE_REGISTRY = [
     USER_CREATE,
     USER_UPDATE,
     USER_READ,
-    USER_PASSWORD_RESET,
     USER_DELETE,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_UPDATE,

@@ -22,7 +22,6 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_READ,
     USER_CREATE,
     USER_DELETE,
-    USER_PASSWORD_RESET,
     USER_READ,
     USER_UPDATE,
 )
@@ -658,10 +657,7 @@ class TestUpdateUserPassword:
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
             f"{url_no_id}/{user.id}/reset-password",
             headers=auth_header,
@@ -691,10 +687,7 @@ class TestUpdateUserPassword:
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,
@@ -720,10 +713,7 @@ class TestUpdateUserPassword:
         OLD_PASSWORD = "oldpassword"
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,

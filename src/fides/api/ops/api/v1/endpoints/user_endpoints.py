@@ -15,11 +15,7 @@ from starlette.status import (
 from fides.api.ops.api import deps
 from fides.api.ops.api.deps import get_db
 from fides.api.ops.api.v1 import urn_registry as urls
-from fides.api.ops.api.v1.scope_registry import (
-    SCOPE_REGISTRY,
-    USER_PASSWORD_RESET,
-    USER_UPDATE,
-)
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY, USER_UPDATE
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import (
@@ -83,7 +79,7 @@ def update_user(
 
 @router.post(
     urls.USER_PASSWORD_RESET,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_PASSWORD_RESET])],
+    dependencies=[Security(verify_oauth_client)],
     status_code=HTTP_200_OK,
     response_model=UserResponse,
 )
