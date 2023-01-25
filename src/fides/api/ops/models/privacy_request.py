@@ -767,7 +767,7 @@ class ProvidedIdentityType(EnumType):
 
     email = "email"
     phone_number = "phone_number"
-    user_id = "user_id"
+    ga_client_id = "ga_client_id"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904

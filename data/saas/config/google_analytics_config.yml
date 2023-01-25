@@ -82,8 +82,8 @@ saas_config:
       {
         "kind": "analytics#userDeletionRequest",
         "id": {
-          "type": "USER_ID",
-          "userId": "fides_test_user_id"
+          "type": "CLIENT_ID",
+          "userId": "fides_test_ga_client_id"
         },
         "propertyId": "<property_id>"
       }
@@ -93,16 +93,16 @@ saas_config:
       method: POST
       path: /analytics/v3/userDeletion/userDeletionRequests:upsert
       param_values:
-        - name: user_id
-          identity: user_id
+        - name: ga_client_id
+          identity: ga_client_id
         - name: property_id
           connector_param: property_id
       body: |
         {
           "kind": "analytics#userDeletionRequest",
           "id": {
-            "type": "USER_ID",
-            "userId": "<user_id>"
+            "type": "CLIENT_ID",
+            "userId": "<ga_client_id>"
           },
           "propertyId": "<property_id>"
         }

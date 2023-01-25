@@ -40,8 +40,8 @@ def google_analytics_secrets(saas_config):
 
 
 @pytest.fixture(scope="session")
-def google_analytics_user_id(saas_config):
-    return "fides_test_user_id"
+def google_analytics_client_id(saas_config):
+    return "fides_test_client_id"
 
 
 @pytest.fixture
