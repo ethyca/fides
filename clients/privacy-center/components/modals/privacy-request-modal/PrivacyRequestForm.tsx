@@ -22,13 +22,18 @@ import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
 
 import { PrivacyRequestOption } from "~/types/config";
-import { hostUrl, config } from "~/constants";
+import { hostUrl, config, defaultIdentityInput } from "~/constants";
 
 import dynamic from "next/dynamic";
 import * as Yup from "yup";
 import { ModalViews } from "../types";
 
 import "react-phone-number-input/style.css";
+import {
+  emailValidation,
+  nameValidation,
+  phoneValidation,
+} from "../validation";
 
 const PhoneInput = dynamic(() => import("react-phone-number-input"), {
   ssr: false,
@@ -47,6 +52,7 @@ const usePrivacyRequestForm = ({
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 }) => {
+  const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const formik = useFormik({
@@ -140,36 +146,13 @@ const usePrivacyRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
-      name: (() => {
-        let validation = Yup.string();
-        if (action?.identity_inputs?.name === "required") {
-          validation = validation.required("Name is required");
-        }
-        return validation;
-      })(),
-      email: (() => {
-        let validation = Yup.string();
-        if (action?.identity_inputs?.email === "required") {
-          validation = validation
-            .email("Email is invalid")
-            .required("Email is required");
-        }
-        return validation;
-      })(),
-      phone: (() => {
-        let validation = Yup.string();
-        if (action?.identity_inputs?.phone === "required") {
-          validation = validation
-            .required("Phone is required")
-            // E.164 international standard format
-            .matches(/^\+[1-9]\d{1,14}$/, "Phone is invalid");
-        }
-        return validation;
-      })(),
+      name: nameValidation(identityInputs?.name),
+      email: emailValidation(identityInputs?.email),
+      phone: phoneValidation(identityInputs?.phone),
     }),
   });
 
-  return { ...formik, isLoading };
+  return { ...formik, isLoading, identityInputs };
 };
 
 type PrivacyRequestFormProps = {
@@ -204,6 +187,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
     isValid,
     dirty,
     resetForm,
+    identityInputs,
   } = usePrivacyRequestForm({
     onClose,
     action,
@@ -229,15 +213,13 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
             {action.description}
           </Text>
           <Stack spacing={3}>
-            {action.identity_inputs.name ? (
+            {identityInputs.name ? (
               <FormControl
                 id="name"
                 isInvalid={touched.name && Boolean(errors.name)}
               >
                 <FormLabel>
-                  {action.identity_inputs.name === "required"
-                    ? "Name*"
-                    : "Name"}
+                  {identityInputs.name === "required" ? "Name*" : "Name"}
                 </FormLabel>
                 <Input
                   id="name"
@@ -251,15 +233,13 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.name}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {action.identity_inputs.email ? (
+            {identityInputs.email ? (
               <FormControl
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
               >
                 <FormLabel>
-                  {action.identity_inputs.email === "required"
-                    ? "Email*"
-                    : "Email"}
+                  {identityInputs.email === "required" ? "Email*" : "Email"}
                 </FormLabel>
                 <Input
                   id="email"
@@ -274,15 +254,13 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {action.identity_inputs.phone ? (
+            {identityInputs.phone ? (
               <FormControl
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
               >
                 <FormLabel>
-                  {action.identity_inputs.phone === "required"
-                    ? "Phone*"
-                    : "Phone"}
+                  {identityInputs.phone === "required" ? "Phone*" : "Phone"}
                 </FormLabel>
                 <Input
                   as={PhoneInput}

@@ -91,6 +91,10 @@ extra:
     provider: mike
     default: stable
 
+watch:
+  - docs
+  - overrides
+
 plugins:
   # The "Last Update" footer only shows in production
   - git-revision-date:

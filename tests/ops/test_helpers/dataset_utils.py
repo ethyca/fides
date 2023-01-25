@@ -2,6 +2,7 @@ import re
 from typing import Any, Dict, Iterable, List, Optional
 
 import yaml
+from fideslang.models import Dataset
 
 from fides.api.ops.graph.config import (
     Collection,
@@ -13,7 +14,6 @@ from fides.api.ops.graph.config import (
 from fides.api.ops.graph.data_type import DataType, get_data_type, to_data_type_string
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.util.collection_util import Row
 
 SAAS_DATASET_DIRECTORY = "data/saas/dataset/"
@@ -31,7 +31,7 @@ def update_dataset(
     """
 
     generated_dataset = generate_dataset(
-        dataset_config.dataset,
+        Dataset.from_orm(dataset_config.ctl_dataset).dict(),
         api_data,
         [endpoint["name"] for endpoint in connection_config.saas_config["endpoints"]],
     )
@@ -111,12 +111,10 @@ def generate_collections(
     the existing collections if no API data is available.
     """
 
-    # convert FidesopsDataset to Dataset to be able to use the Collection helpers
+    # convert FidesLang Dataset to graph Dataset to be able to use the Collection helpers
     collection_map = {}
     if dataset:
-        graph = convert_dataset_to_graph(
-            FidesopsDataset(**dataset), dataset["fides_key"]
-        )
+        graph = convert_dataset_to_graph(Dataset(**dataset), dataset["fides_key"])
         collection_map = {
             collection.name: collection for collection in graph.collections
         }

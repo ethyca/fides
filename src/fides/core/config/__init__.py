@@ -171,15 +171,14 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
     env_config_path = getenv(DEFAULT_CONFIG_PATH_ENV_VAR)
     config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
-    if verbose:
-        print(f"Loading config from: {config_path}")
 
     try:
         settings = toml.load(config_path)
         config = build_config(config_dict=settings)
+        print(f"Loaded config from: {config_path}")
         return config
     except FileNotFoundError:
-        print("No config file found.")
+        pass
     except IOError:
         echo_red(f"Error reading config file: {config_path}")
 

@@ -1,6 +1,5 @@
-import { ArrowBackIcon } from "@chakra-ui/icons";
-import { useDisclosure } from "@chakra-ui/react";
 import {
+  ArrowBackIcon,
   Box,
   CloseSolidIcon,
   Divider,
@@ -12,6 +11,7 @@ import {
   Flex,
   IconButton,
   Text,
+  useDisclosure,
 } from "@fidesui/react";
 import { ExecutionLog } from "privacy-requests/types";
 import React, { useState } from "react";

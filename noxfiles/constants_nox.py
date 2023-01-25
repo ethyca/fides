@@ -42,6 +42,10 @@ CI_ARGS = "-T" if getenv("CI") else "--user=root"
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDES__CLI__ANALYTICS_ID")
 ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 
+# Used for Code Climate
+GIT_BRANCH = ("-e", "GIT_BRANCH")
+GIT_COMMIT_SHA = ("-e", "GIT_COMMIT_SHA")
+
 # Reusable Commands
 RUN = (
     "docker",
@@ -65,6 +69,18 @@ RUN_NO_DEPS = (
     "run",
     "--no-deps",
     "--rm",
+    *ANALYTICS_ID_OVERRIDE,
+    CI_ARGS,
+    IMAGE_NAME,
+)
+RUN_COVERAGE = (
+    "docker",
+    "compose",
+    "run",
+    "--no-deps",
+    "--rm",
+    *GIT_BRANCH,
+    *GIT_COMMIT_SHA,
     *ANALYTICS_ID_OVERRIDE,
     CI_ARGS,
     IMAGE_NAME,

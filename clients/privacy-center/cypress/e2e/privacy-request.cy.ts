@@ -1,16 +1,6 @@
 import { hostUrl } from "~/constants";
 
 describe("Privacy request", () => {
-  beforeEach(() => {
-    // All of these tests assume identity verification is required.
-    cy.intercept("GET", `${hostUrl}/id-verification/config`, {
-      body: {
-        identity_verification_required: true,
-        valid_email_config_exists: false,
-      },
-    }).as("getVerificationConfig");
-  });
-
   describe("when requesting data access", () => {
     beforeEach(() => {
       cy.intercept("POST", `${hostUrl}/privacy-request`, {
@@ -52,6 +42,30 @@ describe("Privacy request", () => {
       cy.wait("@postPrivacyRequestVerify");
 
       cy.getByTestId("request-submitted");
+    });
+
+    it("requires valid inputs", () => {
+      cy.visit("/");
+      cy.getByTestId("card").contains("Access your data").click();
+
+      cy.getByTestId("privacy-request-form").within(() => {
+        // This block uses `.root()` to keep queries within the form. This is necessary because of
+        // `.blur()` which triggers input validation.
+        cy.root().get("input#email").type("invalid email");
+        cy.root().get("input#phone").type("123 456 7890 1234567").blur();
+
+        cy.root().should("contain", "Email is invalid");
+        cy.root().should("contain", "Phone is invalid");
+        cy.root().get("button").contains("Continue").should("be.disabled");
+
+        cy.root().get("input#email").type("valid@example.com");
+        cy.root().get("input#phone").clear().type("123 456 7890").blur();
+        cy.root().get("button").contains("Continue").should("be.enabled");
+
+        // The phone input is optional (in the default config) so it can be left blank.
+        cy.root().get("input#phone").clear().blur();
+        cy.root().get("button").contains("Continue").should("be.enabled");
+      });
     });
   });
 });
