@@ -97,6 +97,12 @@ class UserPasswordReset(BaseSchema):
     new_password: str
 
 
+class UserForcePasswordReset(BaseSchema):
+    """Only a new password, for the case where the user does not remember their password"""
+
+    new_password: str
+
+
 class UserUpdate(BaseSchema):
     """Data required to update a FidesopsUser"""
 

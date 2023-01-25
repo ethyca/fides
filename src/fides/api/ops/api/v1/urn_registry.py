@@ -128,6 +128,7 @@ SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
+USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
 
 # User Permission URLs
 USER_PERMISSIONS = "/user/{user_id}/permission"

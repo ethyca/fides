@@ -22,6 +22,7 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_READ,
     USER_CREATE,
     USER_DELETE,
+    USER_PASSWORD_RESET,
     USER_READ,
     USER_UPDATE,
 )
@@ -726,6 +727,63 @@ class TestUpdateUserPassword:
         db.expunge(application_user)
         application_user = application_user.refresh_from_db(db=db)
         assert application_user.credentials_valid(password=NEW_PASSWORD)
+
+    def test_force_update_different_user_password_without_scope(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        """A user without the proper scope cannot change another user's password"""
+        NEW_PASSWORD = "newpassword"
+        old_hashed_password = user.hashed_password
+
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+        db.expunge(user)
+        user = user.refresh_from_db(db=db)
+        assert (
+            user.hashed_password == old_hashed_password
+        ), "Password changed on the user"
+
+    def test_force_update_different_user_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        """
+        A user with the right scope should be able to set a new password
+        for another user.
+        """
+        NEW_PASSWORD = "newpassword"
+        auth_header = generate_auth_header_for_user(
+            user=application_user, scopes=[USER_PASSWORD_RESET]
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+
+        assert resp.status_code == HTTP_200_OK
+        db.expunge(user)
+        user = user.refresh_from_db(db=db)
+        assert user.credentials_valid(password=NEW_PASSWORD)
 
 
 class TestUserLogin:
