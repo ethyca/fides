@@ -506,61 +506,6 @@ class TestFilterResults:
         remove_empty_containers(results)
         assert results == expected
 
-        # # No empty dicts or arrays
-        # orig = {"A": {"B": {"C": 0}, "G": {"H": None}}, "I": 0, "J": False}
-        # results = copy.deepcopy(orig)
-        # remove_empty_containers(results)
-        # assert results == orig
-
-        # Empty arrays
-        # results = {"A": [], "B": [], "C": False}
-        # remove_empty_containers(results)
-        # assert results == {"C": False}
-
-        # Empty dicts
-        # results = {"A": {}, "B": {}, "C": {}}
-        # remove_empty_containers(results)
-        # assert results == {}
-
-        # Empty array removed, which causes "C" key to be popped, which causes "B" to be popped
-        # orig = {"A": {"B": {"C": []}, "G": {"H": None}}, "I": 0, "J": False}
-        # results = copy.deepcopy(orig)
-        # remove_empty_containers(results)
-        # assert results == {"A": {"G": {"H": None}}, "I": 0, "J": False}
-
-        # Deeply nested empty array and deeply nested empty dict removed - G - H - I levels gone and A - B - C levels gone
-        # orig = {"A": {"B": {"C": []}, "G": {"H": {"I": {}}}}, "J": 0}
-        # results = copy.deepcopy(orig)
-        # remove_empty_containers(results)
-        # assert results == {"J": 0}
-
-        # orig = {
-        #    "A": [{"B": "C", "D": {}}, {"B": "G", "D": {}}, {"B": "J", "D": {"J": "K"}}]
-        # }
-        # results = copy.deepcopy(orig)
-        # remove_empty_containers(results)
-        # assert results == {"A": [{"B": "C"}, {"B": "G"}, {"B": "J", "D": {"J": "K"}}]}
-
-        ## Empty dict returns original empty dict
-        # orig = {}
-        # results = copy.deepcopy(orig)
-        # remove_empty_containers(results)
-        # assert results == {}
-
-        ## Empty dict returned
-        # orig = {"A": {}}
-        # results = copy.deepcopy(orig)
-        # remove_empty_containers(results)
-        # assert results == {}
-
-        ## Removing multiple levels of empty arrays and empty dicts
-        # orig = {
-        #    "A": [[{"B": "C", "D": [{"F": {}}, {"G": []}]}, {"B": "D"}, {"B": "G"}]]
-        # }
-        # results = copy.deepcopy(orig)
-        # remove_empty_containers(results)
-        # assert results == {"A": [[{"B": "C"}, {"B": "D"}, {"B": "G"}]]}
-
     def test_filter_data_categories(self):
         """Test different combinations of data categories to ensure the access_request_results are filtered properly"""
         access_request_results = {
