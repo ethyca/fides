@@ -144,7 +144,7 @@ const Consent: NextPage = () => {
         executable: d.executable ?? false,
       })),
       browser_identity: browserIdentity
-        ? { user_id: browserIdentity }
+        ? { ga_client_id: browserIdentity.gaClientId }
         : undefined,
     };
 

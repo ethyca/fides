@@ -1,3 +1,7 @@
+interface BrowserIdentities {
+  gaClientId?: string;
+}
+
 /**
  * With some consent requests, we also want to send information that only
  * the browser would know about, for example, the value of a Google Analytics
@@ -12,7 +16,9 @@ const GA_COOKIE_KEY = "_ga";
 // The GA cookie only uses the last two sections as the clientId
 const GA_COOKIE_REGEX = /=\w+\.\w+\.(\w+\.\w+)/;
 
-export const inspectForBrowserIdentities = () => {
+export const inspectForBrowserIdentities = ():
+  | BrowserIdentities
+  | undefined => {
   if (typeof window === "undefined") {
     return undefined;
   }
@@ -28,5 +34,6 @@ export const inspectForBrowserIdentities = () => {
     return undefined;
   }
   const match = gaCookie.match(GA_COOKIE_REGEX);
-  return match ? match[1] : undefined;
+  const gaClientId = match ? match[1] : undefined;
+  return { gaClientId };
 };
