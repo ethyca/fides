@@ -3,6 +3,8 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
+  Button,
+  Divider,
   Heading,
   Radio,
   RadioGroup,
@@ -19,6 +21,8 @@ const StorageConfiguration = () => {
   const initialValues = {
     format: "",
   };
+
+  const FORM_ID = "s3-privacy-requests-storage-configuration";
 
   return (
     <Layout title="Configure Privacy Requests - Storage">
@@ -88,7 +92,7 @@ const StorageConfiguration = () => {
         </Heading>
         <Stack>
           <Formik initialValues={initialValues} onSubmit={() => {}}>
-            <Form id="s3-privacy-requests-storage-configuration">
+            <Form id={FORM_ID}>
               <CustomSelect
                 name="format"
                 label="Format"
@@ -109,6 +113,54 @@ const StorageConfiguration = () => {
               />
             </Form>
           </Formik>
+          <Button onClick={() => {}} mr={2} size="sm" variant="outline">
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            colorScheme="primary"
+            size="sm"
+            data-testid="save-btn"
+            form={FORM_ID}
+            isLoading={false}
+          >
+            Save
+          </Button>
+        </Stack>
+        <Divider />
+        <Heading fontSize="md" fontWeight="semibold" mt={10}>
+          Storage destination
+        </Heading>
+        Use the key returned in the last step to provide and authenticate your
+        storage destination’s secrets:
+        <Stack>
+          <Formik initialValues={initialValues} onSubmit={() => {}}>
+            <Form id={"123"}>
+              <CustomTextInput name="config_key" label="Config key" />
+              <CustomTextInput
+                name="aws_access_key_ID"
+                label="AWS access key ID"
+              />
+
+              <CustomTextInput
+                name="aws_secret_access_key"
+                label="AWS secret access key"
+              />
+            </Form>
+          </Formik>
+          <Button onClick={() => {}} mr={2} size="sm" variant="outline">
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            colorScheme="primary"
+            size="sm"
+            data-testid="save-btn"
+            form={FORM_ID}
+            isLoading={false}
+          >
+            Save
+          </Button>
         </Stack>
       </Box>
     </Layout>
