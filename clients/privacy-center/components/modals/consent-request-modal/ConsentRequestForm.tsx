@@ -12,24 +12,20 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-
 import { useFormik } from "formik";
+import { Headers } from "headers-polyfill";
+import * as Yup from "yup";
 
 import { ErrorToastOptions } from "~/common/toast-options";
-
-import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
-import { FormErrorMessage } from "~/components/FormErrorMessage";
-
 import { config, defaultIdentityInput, hostUrl } from "~/constants";
-import dynamic from "next/dynamic";
-import * as Yup from "yup";
-import { emailValidation, phoneValidation } from "../validation";
-import { ModalViews, VerificationType } from "../types";
-
-const PhoneInput = dynamic(() => import("react-phone-number-input"), {
-  ssr: false,
-});
+import { PhoneInput } from "~/components/phone-input";
+import { FormErrorMessage } from "~/components/FormErrorMessage";
+import {
+  emailValidation,
+  phoneValidation,
+} from "~/components/modals/validation";
+import { ModalViews, VerificationType } from "~/components/modals/types";
 
 const useConsentRequestForm = ({
   onClose,
@@ -203,14 +199,9 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 isRequired={identityInputs.phone === "required"}
               >
                 <FormLabel>Phone</FormLabel>
-                <Input
-                  as={PhoneInput}
+                <PhoneInput
                   id="phone"
                   name="phone"
-                  type="tel"
-                  focusBorderColor="primary.500"
-                  placeholder="000 000 0000"
-                  defaultCountry="US"
                   onChange={(value) => {
                     setFieldValue("phone", value, true);
                   }}
