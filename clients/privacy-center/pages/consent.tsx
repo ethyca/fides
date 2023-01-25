@@ -12,6 +12,7 @@ import {
 } from "@fidesui/react";
 import { useRouter } from "next/router";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import produce from "immer";
 
 import {
   makeConsentItems,
@@ -84,6 +85,27 @@ const Consent: NextPage = () => {
       setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
     },
     [consentOptions]
+  );
+
+  /**
+   * Set the consent value for an option in the `consentItems` array. We're storing a whole array in
+   * the state, so we need to use `produce` to modify a single property but still get a new object
+   * that works with React rendering.
+   */
+  const setConsentValue = useCallback(
+    (item: ConsentItem, value: boolean) => {
+      const updatedConsentItems = produce(consentItems, (draftItems) => {
+        const itemToUpdate = draftItems.find(
+          (candidate) => candidate.fidesDataUseKey === item.fidesDataUseKey
+        );
+        if (!itemToUpdate) {
+          return;
+        }
+        itemToUpdate.consentValue = value;
+      });
+      setConsentItems(updatedConsentItems);
+    },
+    [consentItems]
   );
 
   /**
@@ -296,19 +318,12 @@ const Consent: NextPage = () => {
           </Stack>
 
           <Flex m={-2} flexDirection="column">
-            {consentItems.map((option) => (
+            {consentItems.map((item) => (
               <ConsentItemCard
-                key={option.fidesDataUseKey}
-                fidesDataUseKey={option.fidesDataUseKey}
-                name={option.name}
-                description={option.description}
-                highlight={option.highlight}
-                url={option.url}
-                defaultValue={option.defaultValue}
-                consentValue={option.consentValue}
+                key={item.fidesDataUseKey}
+                item={item}
                 setConsentValue={(value) => {
-                  /* eslint-disable-next-line no-param-reassign */
-                  option.consentValue = value;
+                  setConsentValue(item, value);
                 }}
               />
             ))}
