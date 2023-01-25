@@ -1,5 +1,6 @@
 import {
   Button,
+  Divider,
   Flex,
   Heading,
   Image,
@@ -10,9 +11,13 @@ import {
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 
-import { getConsentContext, setConsentCookie } from "fides-consent";
+import {
+  getConsentContext,
+  resolveConsentValue,
+  setConsentCookie,
+} from "fides-consent";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
@@ -31,9 +36,10 @@ import {
   usePostConsentRequestVerificationMutation,
   useUpdateConsentRequestPreferencesMutation,
 } from "~/features/consent/consent.slice";
-import { makeCookieKeyConsent } from "~/features/consent/helpers";
+import { getGpcStatus, makeCookieKeyConsent } from "~/features/consent/helpers";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
+import { GpcBanner } from "~/features/consent/GpcMessages";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -60,6 +66,8 @@ const Consent: NextPage = () => {
     updateConsentRequestPreferencesMutationTrigger,
     updateConsentRequestPreferencesMutationResult,
   ] = useUpdateConsentRequestPreferencesMutation();
+
+  const consentContext = useMemo(() => getConsentContext(), []);
 
   // TODO(#2299): Use error utils from shared package.
   const toastError = useCallback(
@@ -103,10 +111,10 @@ const Consent: NextPage = () => {
       makeCookieKeyConsent({
         consentOptions,
         fidesKeyToConsent: persistedFidesKeyToConsent,
-        consentContext: getConsentContext(),
+        consentContext,
       })
     );
-  }, [consentOptions, persistedFidesKeyToConsent]);
+  }, [consentOptions, persistedFidesKeyToConsent, consentContext]);
 
   /**
    * When the Id verification method is known, trigger the request that will
@@ -208,11 +216,16 @@ const Consent: NextPage = () => {
    * Update the consent choices on the backend.
    */
   const saveUserConsentOptions = useCallback(() => {
-    const consent = consentOptions.map((option) => ({
-      data_use: option.fidesDataUseKey,
-      data_use_description: option.description,
-      opt_in: fidesKeyToConsent[option.fidesDataUseKey] ?? false,
-    }));
+    const consent = consentOptions.map((option) => {
+      const defaultValue = resolveConsentValue(option.default, consentContext);
+      const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
+
+      return {
+        data_use: option.fidesDataUseKey,
+        data_use_description: option.description,
+        opt_in: value,
+      };
+    });
 
     const executableOptions = consentOptions.map((option) => ({
       data_use: option.fidesDataUseKey,
@@ -232,11 +245,12 @@ const Consent: NextPage = () => {
       },
     });
   }, [
+    consentContext,
     consentOptions,
-    fidesKeyToConsent,
     consentRequestId,
-    verificationCode,
+    fidesKeyToConsent,
     updateConsentRequestPreferencesMutationTrigger,
+    verificationCode,
   ]);
 
   /**
@@ -269,6 +283,29 @@ const Consent: NextPage = () => {
     redirectToIndex,
   ]);
 
+  const items = useMemo(
+    () =>
+      consentOptions.map((option) => {
+        const defaultValue = resolveConsentValue(
+          option.default,
+          consentContext
+        );
+        const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
+        const gpcStatus = getGpcStatus({
+          value,
+          consentOption: option,
+          consentContext,
+        });
+
+        return {
+          option,
+          value,
+          gpcStatus,
+        };
+      }),
+    [consentContext, consentOptions, fidesKeyToConsent]
+  );
+
   return (
     <div>
       <Head>
@@ -295,8 +332,8 @@ const Consent: NextPage = () => {
         </Flex>
       </header>
 
-      <main data-testid="consent">
-        <Stack align="center" py={["6", "16"]} px={5} spacing={8}>
+      <Stack as="main" align="center" data-testid="consent">
+        <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
           <Stack align="center" spacing={3}>
             <Heading
               fontSize={["3xl", "4xl"]}
@@ -309,48 +346,58 @@ const Consent: NextPage = () => {
             <Text
               fontSize={["small", "medium"]}
               fontWeight="medium"
-              maxWidth={624}
+              maxWidth="624px"
               textAlign="center"
               color="gray.600"
             >
-              When you use our services, you’re trusting us with your
+              When you use our services, you&apos;re trusting us with your
               information. We understand this is a big responsibility and work
               hard to protect your information and put you in control.
             </Text>
           </Stack>
 
-          <Flex m={-2} flexDirection="column">
-            {consentOptions.map((option) => (
-              <ConsentItemCard key={option.fidesDataUseKey} option={option} />
-            ))}
-          </Flex>
+          {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
 
-          <Stack direction="row" justifyContent="flex-start" width="720px">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                router.push("/");
-              }}
+          <Stack direction="column" spacing={4}>
+            {items.map((item, index) => (
+              <React.Fragment key={item.option.fidesDataUseKey}>
+                {index > 0 ? <Divider /> : null}
+                <ConsentItemCard {...item} />
+              </React.Fragment>
+            ))}
+
+            <Stack
+              direction="row"
+              justifyContent="flex-start"
+              paddingX={12}
+              width="full"
             >
-              Cancel
-            </Button>
-            <Button
-              bg="primary.800"
-              _hover={{ bg: "primary.400" }}
-              _active={{ bg: "primary.500" }}
-              colorScheme="primary"
-              size="sm"
-              onClick={() => {
-                saveUserConsentOptions();
-              }}
-              data-testid="save-btn"
-            >
-              Save
-            </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  router.push("/");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                bg="primary.800"
+                _hover={{ bg: "primary.400" }}
+                _active={{ bg: "primary.500" }}
+                colorScheme="primary"
+                size="sm"
+                onClick={() => {
+                  saveUserConsentOptions();
+                }}
+                data-testid="save-btn"
+              >
+                Save
+              </Button>
+            </Stack>
           </Stack>
         </Stack>
-      </main>
+      </Stack>
     </div>
   );
 };

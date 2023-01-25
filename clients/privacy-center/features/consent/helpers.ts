@@ -5,7 +5,7 @@ import {
 } from "fides-consent";
 
 import { ConfigConsentOption } from "~/types/config";
-import { FidesKeyToConsent } from "./types";
+import { FidesKeyToConsent, GpcStatus } from "./types";
 
 export const makeCookieKeyConsent = ({
   consentOptions,
@@ -30,4 +30,29 @@ export const makeCookieKeyConsent = ({
     });
   });
   return cookieKeyConsent;
+};
+
+export const getGpcStatus = ({
+  value,
+  consentOption,
+  consentContext,
+}: {
+  value: boolean;
+  consentOption: ConfigConsentOption;
+  consentContext: ConsentContext;
+}): GpcStatus => {
+  // If GPC is not enabled, it won't be applied at all.
+  if (!consentContext.globalPrivacyControl) {
+    return GpcStatus.NONE;
+  }
+  // Options that are plain booleans apply without considering GPC.
+  if (typeof consentOption.default !== "object") {
+    return GpcStatus.NONE;
+  }
+
+  if (value === consentOption.default.globalPrivacyControl) {
+    return GpcStatus.APPLIED;
+  }
+
+  return GpcStatus.OVERRIDDEN;
 };
