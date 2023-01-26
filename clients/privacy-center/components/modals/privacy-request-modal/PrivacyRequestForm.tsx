@@ -12,32 +12,23 @@ import {
   useToast,
 } from "@fidesui/react";
 import React, { useEffect, useState } from "react";
-
 import { useFormik } from "formik";
-
+import * as Yup from "yup";
 import { Headers } from "headers-polyfill";
+
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
-import { FormErrorMessage } from "~/components/FormErrorMessage";
-
 import { PrivacyRequestOption } from "~/types/config";
 import { hostUrl, config, defaultIdentityInput } from "~/constants";
-
-import dynamic from "next/dynamic";
-import * as Yup from "yup";
-import { ModalViews } from "../types";
-
-import "react-phone-number-input/style.css";
+import { PhoneInput } from "~/components/phone-input";
+import { ModalViews } from "~/components/modals/types";
+import { FormErrorMessage } from "~/components/FormErrorMessage";
 import {
   emailValidation,
   nameValidation,
   phoneValidation,
-} from "../validation";
-
-const PhoneInput = dynamic(() => import("react-phone-number-input"), {
-  ssr: false,
-});
+} from "~/components/modals/validation";
 
 const usePrivacyRequestForm = ({
   onClose,
@@ -259,14 +250,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 isRequired={identityInputs.phone === "required"}
               >
                 <FormLabel>Phone</FormLabel>
-                <Input
-                  as={PhoneInput}
+                <PhoneInput
                   id="phone"
                   name="phone"
-                  type="tel"
-                  focusBorderColor="primary.500"
-                  placeholder="000 000 0000"
-                  defaultCountry="US"
                   onChange={(value) => {
                     setFieldValue("phone", value, true);
                   }}
