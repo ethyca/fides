@@ -118,7 +118,7 @@ def test_mask_arguments_null_in_list():
 def test_mask_datetime():
     configuration = HashMaskingConfiguration()
     masker = HashMaskingStrategy(configuration)
-    expected = ["Sb9RzoQls/Nymd23qY4ZXoy/HBDrZAxeRgKNYv5LwwxlsPE="]
+    expected = ["a6597d576d8fb7ff58047db31f6c526bf984db454fa2460cdf7cf4f9d72a6d09"]
 
     secret = MaskingSecretCache[str](
         secret="adobo",
