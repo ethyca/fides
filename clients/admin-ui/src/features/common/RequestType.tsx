@@ -23,8 +23,6 @@ const RequestType = ({ rules }: RequestTypeProps) => {
       bg="primary.400"
       fontWeight="medium"
       fontSize="sm"
-      mr={1}
-      mb={4}
     >
       {action_type}
     </Tag>
