@@ -19,6 +19,10 @@ The types of changes are:
 
 ## [2.5.1](https://github.com/ethyca/fides/compare/2.5.0...2.5.1)
 
+### Developer Experience
+
+* Allow db resets only if `config.dev_mode` is `True` [#2321](https://github.com/ethyca/fides/pull/2321)
+
 ### Fixed
 
 * Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
