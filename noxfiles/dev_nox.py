@@ -169,11 +169,15 @@ def full_seeded_env(
     session.log(
         "Using secrets set in '.env' for example setup scripts (see 'example.env' for options)"
     )
+    if fides_image == "test":
+        session.log(
+            "Fides Admin UI (production build) running at http://localhost:8080 (user: 'fidestest', pass: 'Apassword1!')"
+        )
     session.log(
-        "Fides Admin UI running at http://localhost:3000 (user: 'fidestest', pass: 'Apassword1!')"
+        "Fides Admin UI (dev) running at http://localhost:3000 (user: 'fidestest', pass: 'Apassword1!')"
     )
     session.log(
-        "Fides Privacy Center running at http://localhost:3001 (user: 'jane@example.com')"
+        "Fides Privacy Center (production build) running at http://localhost:3001 (user: 'jane@example.com')"
     )
     session.log(
         "Example Postgres Database running at localhost:6432 (user: 'postgres', pass: 'postgres', db: 'postgres_example')"
