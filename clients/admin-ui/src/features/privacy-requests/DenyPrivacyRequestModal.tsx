@@ -8,7 +8,10 @@ import {
   ModalOverlay,
   Textarea,
 } from "@fidesui/react";
+import { CustomTextArea } from "common/form/inputs";
+import { Form,Formik } from "formik";
 import React from "react";
+import * as Yup from "yup";
 
 type DenyModalProps = {
   isOpen: boolean;
@@ -22,7 +25,8 @@ type DenyModalProps = {
 const closeModal = (
   handleMenuClose: () => void,
   handleDenyRequest: (reason: string) => Promise<any>,
-  denialReason: string
+  denialReason: string,
+  setSubitting: (isSubmitting: boolean) => void
 ) => {
   handleDenyRequest(denialReason).then(() => {
     handleMenuClose();
@@ -45,45 +49,65 @@ const DenyPrivacyRequestModal = ({
   >
     <ModalOverlay />
     <ModalContent width="100%" maxWidth="456px">
-      <ModalHeader>Privacy Request Denial</ModalHeader>
-      <ModalBody color="gray.500" fontSize="14px">
-        Please enter a reason for denying this privacy request. Please note:
-        this can be seen by the user in their notification email.
-      </ModalBody>
-      <ModalBody>
-        <Textarea
-          focusBorderColor="primary.600"
-          value={denialReason}
-          onChange={onChange}
-          disabled={isLoading}
-        />
-      </ModalBody>
-      <ModalFooter>
-        <Button
-          size="sm"
-          width="100%"
-          maxWidth="198px"
-          colorScheme="gray.200"
-          mr={3}
-          disabled={isLoading}
-          onClick={handleMenuClose}
-        >
-          Close
-        </Button>
-        <Button
-          size="sm"
-          width="100%"
-          maxWidth="198px"
-          colorScheme="primary"
-          variant="solid"
-          isLoading={isLoading}
-          onClick={() => {
-            closeModal(handleMenuClose, handleDenyRequest, denialReason);
-          }}
-        >
-          Confirm
-        </Button>
-      </ModalFooter>
+      <Formik
+        initialValues={{ denialReason: "" }}
+        validationSchema={Yup.object({
+          denialReason: Yup.string().required("Required"),
+        })}
+        onSubmit={(values, { setSubmitting }) => {
+          closeModal(
+            handleMenuClose,
+            handleDenyRequest,
+            values.denialReason,
+            setSubmitting
+          );
+        }}
+      >
+        {({ isSubmitting }) => (
+          <Form>
+            <ModalHeader>Privacy Request Denial</ModalHeader>
+            <ModalBody color="gray.500" fontSize="14px">
+              Please enter a reason for denying this privacy request. Please
+              note: this can be seen by the user in their notification email.
+            </ModalBody>
+            <ModalBody>
+              {/*   focusBorderColor="primary.600" */}
+              <CustomTextArea
+                name="denialReason"
+                textAreaProps={{
+                  focusBorderColor: "primary.600",
+                  isFullWidth: true,
+                  resize: "none",
+                }}
+              />
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                size="sm"
+                width="100%"
+                maxWidth="198px"
+                colorScheme="gray.200"
+                mr={3}
+                disabled={isSubmitting}
+                onClick={handleMenuClose}
+              >
+                Close
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                width="100%"
+                maxWidth="198px"
+                colorScheme="primary"
+                variant="solid"
+                isLoading={isSubmitting}
+              >
+                Confirm
+              </Button>
+            </ModalFooter>
+          </Form>
+        )}
+      </Formik>
     </ModalContent>
   </Modal>
 );
