@@ -24,6 +24,7 @@ import { addCommonHeaders } from "~/common/CommonHeaders";
 import { config, defaultIdentityInput, hostUrl } from "~/constants";
 import dynamic from "next/dynamic";
 import * as Yup from "yup";
+import { emailValidation, phoneValidation } from "../validation";
 import { ModalViews, VerificationType } from "../types";
 
 const PhoneInput = dynamic(() => import("react-phone-number-input"), {
@@ -114,25 +115,8 @@ const useConsentRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
-      email: (() => {
-        let validation = Yup.string();
-        if (identityInputs.email === "required") {
-          validation = validation
-            .email("Email is invalid")
-            .required("Email is required");
-        }
-        return validation;
-      })(),
-      phone: (() => {
-        let validation = Yup.string();
-        if (identityInputs?.phone === "required") {
-          validation = validation
-            .required("Phone is required")
-            // E.164 international standard format
-            .matches(/^\+[1-9]\d{1,14}$/, "Phone is invalid");
-        }
-        return validation;
-      })(),
+      email: emailValidation(identityInputs?.email),
+      phone: phoneValidation(identityInputs?.phone),
     }),
   });
 
