@@ -2,7 +2,7 @@
 This script is used to seed the application database with example
 data for DSR processing.
 
-This script is only designed to be run from the Nox session 'nox -s test_env'.
+This script is only designed to be run from the Nox sessions 'nox -s test_env' or 'nox -s dev_env'.
 """
 
 from setup import constants, get_secret
