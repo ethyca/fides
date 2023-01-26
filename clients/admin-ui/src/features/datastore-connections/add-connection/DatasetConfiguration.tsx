@@ -205,9 +205,7 @@ const DatasetConfiguration: React.FC = () => {
           </>
         ) : null}
         <Box data-testid="yaml-editor-section">
-          <Copy mb={4}>
-            View your dataset YAML below!
-          </Copy>
+          <Copy mb={4}>View your dataset YAML below!</Copy>
           {isSuccess && data!?.items ? (
             <YamlEditorForm
               data={data.items.map((item) => item.ctl_dataset)}
