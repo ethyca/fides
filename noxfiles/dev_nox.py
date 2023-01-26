@@ -1,4 +1,6 @@
 """Contains the nox sessions for running development environments."""
+from typing import Literal
+
 from nox import Session
 from nox import session as nox_session
 from nox.command import CommandFailed
@@ -76,6 +78,23 @@ def dev(session: Session) -> None:
 def test_env(session: Session) -> None:
     """
     Spins up a comprehensive test environment seeded with data.
+    """
+    full_seeded_env(session, fides_image="test")
+
+
+@nox_session()
+def dev_env(session: Session) -> None:
+    """
+    Spins up a comprehensive dev environment with hot reloading and seeded with data.
+    """
+    full_seeded_env(session, fides_image="dev")
+
+
+def full_seeded_env(
+    session: Session, fides_image: Literal["test", "dev"] = "test"
+) -> None:
+    """
+    Spins up a comprehensive environment seeded with data.
 
     Posargs:
     test: instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
@@ -100,7 +119,7 @@ def test_env(session: Session) -> None:
     session.notify("teardown", posargs=["volumes"])
 
     session.log("Building images...")
-    build(session, "dev")
+    build(session, fides_image)
     build(session, "admin_ui")
     build(session, "privacy_center")
 
@@ -134,9 +153,14 @@ def test_env(session: Session) -> None:
         env=test_env_vars,
     )
 
+    # Make spaces in the info message line up
+    title = (
+        "FIDES TEST ENVIRONMENT" if fides_image == "test" else "FIDES DEV ENVIRONMENT "
+    )
+
     session.log("****************************************")
     session.log("*                                      *")
-    session.log("*        FIDES TEST ENVIRONMENT        *")
+    session.log(f"*        {title}        *")
     session.log("*                                      *")
     session.log("****************************************")
     session.log("")
