@@ -3,26 +3,41 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  Button,
-  Divider,
   Heading,
   Radio,
   RadioGroup,
   Stack,
 } from "@fidesui/react";
-import { Formik, Form } from "formik";
 import NextLink from "next/link";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { useState } from "react";
 import Layout from "~/features/common/Layout";
+import S3StorageConfiguration from "./S3StorageConfiguration";
+import { useSetActiveStorageMutation } from "~/features/privacy-requests/privacy-requests.slice";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 
 const StorageConfiguration = () => {
-  //  Need to keep track of steps
+  const [selected, setSelected] = useState("");
+  const { errorAlert, successAlert } = useAlert();
+  const [saveStorageType] = useSetActiveStorageMutation();
 
-  const initialValues = {
-    format: "",
+  const handleChange = async (value: string) => {
+    // helpers.setSubmitting(true);
+    setSelected(value);
+
+    const payload = await saveStorageType({
+      active_default_storage_type: value,
+    });
+    if ("error" in payload) {
+      errorAlert(
+        getErrorMessage(payload.error),
+        `Configuring storage type has failed to save due to the following:`
+      );
+    } else {
+      successAlert(`Configure storage type saved successfully.`);
+    }
+    // helpers.setSubmitting(false);
   };
-
-  const FORM_ID = "s3-privacy-requests-storage-configuration";
 
   return (
     <Layout title="Configure Privacy Requests - Storage">
@@ -61,107 +76,22 @@ const StorageConfiguration = () => {
           Choose storage type to configure
         </Heading>
         <RadioGroup
-          //   onChange={handleChange}
-          //   value={selected.value}
-          //   data-testid={`input-${field.name}`}
+          onChange={handleChange}
+          value={selected}
+          data-testid={`privacy-requests-storage-selection`}
           colorScheme="secondary"
           p={3}
         >
           <Stack direction="row">
-            <Radio
-              // key={o.value}
-              // value={o.value}
-              // data-testid={`option-${o.value}`}
-              mr={5}
-            >
+            <Radio key="local" value="local" data-testid="option-local" mr={5}>
               Local
             </Radio>
-            <Radio
-            // key={o.value}
-            // value={o.value}
-            // data-testid={`option-${o.value}`}
-            >
+            <Radio key="s3" value="s3" data-testid="option-s3">
               S3
             </Radio>
           </Stack>
         </RadioGroup>
-        {/* Local route */}
-        {/* S3 route */}
-        <Heading fontSize="md" fontWeight="semibold" mt={10}>
-          S3 storage configuration
-        </Heading>
-        <Stack>
-          <Formik initialValues={initialValues} onSubmit={() => {}}>
-            <Form id={FORM_ID}>
-              <CustomSelect
-                name="format"
-                label="Format"
-                options={[
-                  { label: "json", value: "json" },
-                  { label: "csv", value: "csv" },
-                ]}
-              />
-              <CustomTextInput
-                name="auth_method"
-                label="Auth method"
-                placeholder="Optional"
-              />
-              <CustomTextInput
-                name="bucket"
-                label="Bucket"
-                placeholder="Optional"
-              />
-            </Form>
-          </Formik>
-          <Button onClick={() => {}} mr={2} size="sm" variant="outline">
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            colorScheme="primary"
-            size="sm"
-            data-testid="save-btn"
-            form={FORM_ID}
-            isLoading={false}
-          >
-            Save
-          </Button>
-        </Stack>
-        <Divider />
-        <Heading fontSize="md" fontWeight="semibold" mt={10}>
-          Storage destination
-        </Heading>
-        Use the key returned in the last step to provide and authenticate your
-        storage destination’s secrets:
-        <Stack>
-          <Formik initialValues={initialValues} onSubmit={() => {}}>
-            <Form id={"123"}>
-              <CustomTextInput name="config_key" label="Config key" />
-              <CustomTextInput
-                name="aws_access_key_ID"
-                label="AWS access key ID"
-              />
-
-              <CustomTextInput
-                name="aws_secret_access_key"
-                label="AWS secret access key"
-              />
-            </Form>
-          </Formik>
-          <Button onClick={() => {}} mr={2} size="sm" variant="outline">
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            colorScheme="primary"
-            size="sm"
-            data-testid="save-btn"
-            form={FORM_ID}
-            isLoading={false}
-          >
-            Save
-          </Button>
-        </Stack>
+        {selected === "s3" ? <S3StorageConfiguration /> : null}
       </Box>
     </Layout>
   );

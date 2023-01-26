@@ -353,6 +353,32 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Notification"],
     }),
+    getStorageDetails: build.query<any, any>({
+      query: (params) => ({
+        url: `storage/default/${params.storage_type}`,
+      }),
+    }),
+    setActiveStorage: build.mutation<any, any>({
+      query: (params) => ({
+        url: `storage/settings`,
+        method: "PUT",
+        body: params,
+      }),
+    }),
+    setStorageDetails: build.mutation<any, any>({
+      query: (params) => ({
+        url: `storage/default/${params.storage_type}`,
+        method: "PUT",
+        body: params,
+      }),
+    }),
+    setStorageSecrets: build.mutation<any, any>({
+      query: (params) => ({
+        url: `storage/default/${params.storage_type}/secret`,
+        method: "PUT",
+        body: params,
+      }),
+    }),
     uploadManualWebhookData: build.mutation<
       any,
       PatchUploadManualWebhookDataRequest
@@ -377,4 +403,8 @@ export const {
   useRetryMutation,
   useSaveNotificationMutation,
   useUploadManualWebhookDataMutation,
+  useGetStorageDetailsQuery,
+  useSetActiveStorageMutation,
+  useSetStorageDetailsMutation,
+  useSetStorageSecretsMutation,
 } = privacyRequestApi;
