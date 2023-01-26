@@ -1,4 +1,6 @@
 import type { AppProps } from "next/app";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 /*
  * This import needed to be updated to '@chakra-ui/react' from "@fidesui/react".
  * Under the hood fidesui is importing from "@chakra-ui/provider" instead "chakra-ui/react".
@@ -7,19 +9,31 @@ import type { AppProps } from "next/app";
  * */
 import { ChakraProvider } from "@chakra-ui/react";
 
-import "@fontsource/inter/700.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/500.css";
 import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
 
-import "../config/config.css";
+import store, { persistor } from "~/app/store";
+import "~/config/config.css";
+import theme from "~/theme";
 
-import theme from "../theme";
+const SafeHydrate: React.FC = ({ children }) => (
+  <div suppressHydrationWarning>
+    {typeof window === "undefined" ? null : children}
+  </div>
+);
 
 const MyApp = ({ Component, pageProps }: AppProps) => (
-  <ChakraProvider theme={theme}>
-    <Component {...pageProps} />
-  </ChakraProvider>
+  <SafeHydrate>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ChakraProvider theme={theme}>
+          <Component {...pageProps} />
+        </ChakraProvider>
+      </PersistGate>
+    </Provider>
+  </SafeHydrate>
 );
 
 export default MyApp;

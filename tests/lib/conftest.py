@@ -29,13 +29,6 @@ from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 ROOT_PATH = Path().absolute()
 
 
-@pytest.fixture(scope="session")
-def config():
-    config = get_config()
-    config.is_test_mode = True
-    yield config
-
-
 @pytest.fixture
 def db(config):
     """Yield a connection to the test DB."""

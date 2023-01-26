@@ -3,6 +3,7 @@ from __future__ import annotations
 from os.path import exists
 from typing import Dict, Iterable, List, Optional, Union
 
+from fideslang.models import Dataset
 from loguru import logger
 from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
@@ -19,7 +20,6 @@ from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
 )
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.util.saas_util import (
     load_config,
@@ -52,7 +52,7 @@ class ConnectorTemplate(BaseModel):
     @validator("dataset")
     def validate_dataset(cls, dataset: str) -> str:
         """Validates the dataset at the given path"""
-        FidesopsDataset(**load_dataset(dataset)[0])
+        Dataset(**load_dataset(dataset)[0])
         return dataset
 
     @validator("icon")
@@ -132,9 +132,9 @@ def upsert_dataset_config_from_template(
     data = {
         "connection_config_id": connection_config.id,
         "fides_key": template_values.instance_key,
-        "dataset": dataset_from_template,
+        "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
     }
-    dataset_config = DatasetConfig.create_or_update(db, data=data)
+    dataset_config = DatasetConfig.upsert_with_ctl_dataset(db, data=data)
     return dataset_config
 
 

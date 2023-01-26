@@ -1,3 +1,4 @@
+from random import randint
 from typing import Any, Dict, Generator
 
 import pydash
@@ -25,6 +26,7 @@ from fides.lib.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("firebase_auth")
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 
 
 @pytest.fixture
@@ -76,7 +78,7 @@ def firebase_auth_secrets(saas_config):
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def firebase_auth_user(firebase_auth_secrets) -> Generator:
     app = initialize_firebase(firebase_auth_secrets)
 
@@ -114,6 +116,7 @@ def firebase_auth_user(firebase_auth_secrets) -> Generator:
         email_verified=False,
         display_name="John Doe",
         photo_url="http://www.example.com/12345678/photo.png",
+        phone_number="+1" + str(randint(1000000000, 9999999999)),
         disabled=False,
         provider_data=[up1, up2],
     )
@@ -159,13 +162,16 @@ def firebase_auth_dataset_config(
     firebase_auth_connection_config.name = fides_key
     firebase_auth_connection_config.key = fides_key
     firebase_auth_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, firebase_auth_dataset)
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": firebase_auth_connection_config.id,
             "fides_key": fides_key,
-            "dataset": firebase_auth_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)

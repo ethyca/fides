@@ -29,7 +29,9 @@ import { hostUrl, config } from "~/constants";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { VerificationType } from "~/components/modals/types";
 import { useLocalStorage } from "~/common/hooks";
-import ConsentItemCard from "../components/ConsentItemCard";
+import { useAppSelector } from "~/app/hooks";
+import { selectConfigConsentOptions } from "~/features/common/config.slice";
+import ConsentItemCard from "~/components/ConsentItemCard";
 
 const Consent: NextPage = () => {
   const content: any = [];
@@ -38,6 +40,7 @@ const Consent: NextPage = () => {
   const router = useRouter();
   const toast = useToast();
   const [consentItems, setConsentItems] = useState<ConsentItem[]>([]);
+  const consentOptions = useAppSelector(selectConfigConsentOptions);
 
   useEffect(() => {
     const getUserConsents = async () => {
@@ -96,15 +99,12 @@ const Consent: NextPage = () => {
         return;
       }
 
-      const updatedConsentItems = makeConsentItems(
-        data,
-        config.consent?.consentOptions ?? []
-      );
+      const updatedConsentItems = makeConsentItems(data, consentOptions);
       setConsentItems(updatedConsentItems);
       setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
     };
     getUserConsents();
-  }, [router, consentRequestId, verificationCode, toast]);
+  }, [router, consentRequestId, verificationCode, toast, consentOptions]);
 
   consentItems.forEach((option) => {
     content.push(
@@ -157,10 +157,7 @@ const Consent: NextPage = () => {
       });
       router.push("/");
     }
-    const updatedConsentItems = makeConsentItems(
-      data,
-      config.consent?.consentOptions ?? []
-    );
+    const updatedConsentItems = makeConsentItems(data, consentOptions);
     setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
     toast({
       title: "Your consent preferences have been saved",
@@ -170,7 +167,14 @@ const Consent: NextPage = () => {
     router.push("/");
     // TODO: display alert on successful patch
     // TODO: display error alert on failed patch
-  }, [verificationCode, consentItems, consentRequestId, toast, router]);
+  }, [
+    verificationCode,
+    consentItems,
+    consentRequestId,
+    toast,
+    router,
+    consentOptions,
+  ]);
 
   return (
     <div>

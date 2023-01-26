@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "name": "mongodb_connector",
+      "key": "mongodb_connector",
+      "description": null,
+      "connection_type": "mongodb",
+      "access": "write",
+      "created_at": "2022-12-23T15:03:25.163340+00:00",
+      "updated_at": "2022-12-23T15:03:25.177787+00:00",
+      "disabled": false,
+      "last_test_timestamp": "2022-12-23T15:03:25.206745+00:00",
+      "last_test_succeeded": true,
+      "saas_config": null
+    },
+    {
+      "name": "postgres_connector",
+      "key": "postgres_connector",
+      "description": null,
+      "connection_type": "postgres",
+      "access": "write",
+      "created_at": "2022-12-23T15:03:25.062083+00:00",
+      "updated_at": "2022-12-23T15:03:25.087398+00:00",
+      "disabled": false,
+      "last_test_timestamp": "2022-12-23T15:03:25.098056+00:00",
+      "last_test_succeeded": true,
+      "saas_config": null
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 5
+}
