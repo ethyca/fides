@@ -6,20 +6,16 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Textarea,
 } from "@fidesui/react";
 import { CustomTextArea } from "common/form/inputs";
-import { Form,Formik } from "formik";
+import { Form, Formik } from "formik";
 import React from "react";
 import * as Yup from "yup";
 
 type DenyModalProps = {
   isOpen: boolean;
-  isLoading: boolean;
   handleMenuClose: () => void;
   handleDenyRequest: (reason: string) => Promise<any>;
-  denialReason: string;
-  onChange: (e: any) => void;
 };
 
 const closeModal = (
@@ -29,16 +25,14 @@ const closeModal = (
   setSubitting: (isSubmitting: boolean) => void
 ) => {
   handleDenyRequest(denialReason).then(() => {
+    setSubitting(false);
     handleMenuClose();
   });
 };
 
 const DenyPrivacyRequestModal = ({
   isOpen,
-  isLoading,
   handleMenuClose,
-  denialReason,
-  onChange,
   handleDenyRequest,
 }: DenyModalProps) => (
   <Modal

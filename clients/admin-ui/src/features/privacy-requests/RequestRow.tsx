@@ -140,7 +140,6 @@ const RequestRow: React.FC<{
     handleIdCopy,
     menuOpen,
     approveRequestResult,
-    denyRequestResult,
     hoverButtonRef,
     modalOpen,
     handleModalClose,
@@ -149,8 +148,6 @@ const RequestRow: React.FC<{
     handleFocus,
     handleBlur,
     focused,
-    denialReason,
-    setDenialReason,
     handleViewDetails,
   } = useRequestRow(request);
   const showMenu = hovered || menuOpen || focused;
@@ -279,13 +276,8 @@ const RequestRow: React.FC<{
               </Button>
               <DenyPrivacyRequestModal
                 isOpen={modalOpen}
-                isLoading={denyRequestResult.isLoading}
                 handleMenuClose={handleModalClose}
                 handleDenyRequest={handleDenyRequest}
-                denialReason={denialReason}
-                onChange={(e) => {
-                  setDenialReason(e.target.value);
-                }}
               />
             </>
           )}
