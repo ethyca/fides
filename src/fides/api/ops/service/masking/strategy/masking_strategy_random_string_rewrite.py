@@ -34,6 +34,7 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         """Replaces the value with a random lowercase string of the configured length"""
         if values is None:
             return None
+
         masked_values: List[str] = []
         for _ in range(len(values)):
             masked: str = "".join(

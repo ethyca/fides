@@ -47,6 +47,7 @@ class HashMaskingStrategy(MaskingStrategy):
         is None"""
         if values is None:
             return None
+
         masking_meta: Dict[
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
@@ -58,7 +59,11 @@ class HashMaskingStrategy(MaskingStrategy):
 
         masked_values: List[str] = []
         for value in values:
-            masked: str = self.algorithm_function(value, salt)  # type: ignore
+            if value is None:
+                masked_values.append(None)
+                continue
+
+            masked: str = self.algorithm_function(str(value), salt)  # type: ignore
             if self.format_preservation is not None:
                 formatter = FormatPreservation(self.format_preservation)
                 masked = formatter.format(masked)

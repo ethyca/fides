@@ -40,6 +40,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
     ) -> Optional[List[str]]:
         if values is None:
             return None
+
         if self.mode == AesEncryptionMaskingConfiguration.Mode.GCM:
             masking_meta: Dict[
                 SecretType, MaskingSecretMeta
@@ -59,10 +60,14 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
 
             masked_values: List[str] = []
             for value in values:
+                if value is None:
+                    masked_values.append(None)
+                    continue
+
                 nonce: bytes | None = self._generate_nonce(
-                    value, key_hmac, request_id, masking_meta  # type: ignore
+                    str(value), key_hmac, request_id, masking_meta  # type: ignore
                 )
-                masked: str = encrypt(value, key, nonce)  # type: ignore
+                masked: str = encrypt(str(value), key, nonce)  # type: ignore
                 if self.format_preservation is not None:
                     formatter = FormatPreservation(self.format_preservation)
                     masked = formatter.format(masked)
