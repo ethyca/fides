@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 
@@ -117,6 +117,7 @@ export const selectPrivacyRequestFilters = (
   verbose: state.subjectRequests.verbose,
 });
 
+const selectSubjectRequests = (state: RootState) => state.subjectRequests;
 export const selectRequestStatus = (state: RootState) =>
   state.subjectRequests.status;
 
@@ -125,8 +126,10 @@ export const selectRetryRequests = (state: RootState): RetryRequests => ({
   errorRequests: state.subjectRequests.errorRequests,
 });
 
-export const selectRevealPII = (state: RootState) =>
-  state.subjectRequests.revealPII;
+export const selectRevealPII = createSelector(
+  selectSubjectRequests,
+  (state) => state.revealPII
+);
 
 // Subject requests state (filters, etc.)
 type SubjectRequestsState = {
