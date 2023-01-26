@@ -104,6 +104,7 @@ export type { SystemsDiff } from "./models/SystemsDiff";
 export { SystemType } from "./models/SystemType";
 export type { UserCreate } from "./models/UserCreate";
 export type { UserCreateResponse } from "./models/UserCreateResponse";
+export type { UserForcePasswordReset } from "./models/UserForcePasswordReset";
 export type { UserLogin } from "./models/UserLogin";
 export type { UserLoginResponse } from "./models/UserLoginResponse";
 export type { UserPasswordReset } from "./models/UserPasswordReset";
