@@ -17,6 +17,7 @@ import {
   useToast,
 } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
+import RequestType from "common/RequestType";
 import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
@@ -33,7 +34,6 @@ import {
   useDenyRequestMutation,
 } from "./privacy-requests.slice";
 import { PrivacyRequestEntity } from "./types";
-import RequestType from "common/RequestType";
 
 const useRequestRow = (request: PrivacyRequestEntity) => {
   const {
@@ -183,7 +183,7 @@ const RequestRow: React.FC<{
         />
       </Td>
       <Td py={1}>
-        <RequestType rules={request.policy.rules}/>
+        <RequestType rules={request.policy.rules} />
       </Td>
       <Td py={1}>
         <Text fontSize="xs">
