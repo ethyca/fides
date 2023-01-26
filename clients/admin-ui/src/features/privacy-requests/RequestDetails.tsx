@@ -1,4 +1,4 @@
-import { Box,Divider, Flex, Heading, HStack, Text } from "@fidesui/react";
+import { Box, Divider, Flex, Heading, HStack, Text } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
 import { PrivacyRequestEntity } from "privacy-requests/types";
 
