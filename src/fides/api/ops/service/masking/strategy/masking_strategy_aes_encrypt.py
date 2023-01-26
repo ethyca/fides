@@ -37,7 +37,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
 
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
-    ) -> Optional[List[str]]:
+    ) -> Optional[List[Optional[str]]]:
         if values is None:
             return None
 
@@ -58,7 +58,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
             # and therefore the same masked val through the aes strategy. This is called convergent encryption, with this
             # implementation loosely based on https://www.vaultproject.io/docs/secrets/transit#convergent-encryption
 
-            masked_values: List[str] = []
+            masked_values: List[Optional[str]] = []
             for value in values:
                 if value is None:
                     masked_values.append(None)

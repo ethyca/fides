@@ -37,7 +37,7 @@ class HmacMaskingStrategy(MaskingStrategy):
 
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
-    ) -> Optional[List[str]]:
+    ) -> Optional[List[Optional[str]]]:
         """
         Returns a hash using the hmac algorithm, generating a hash of each of the supplied value and the secret hmac_key.
         Returns None if the provided value is None.
@@ -55,7 +55,7 @@ class HmacMaskingStrategy(MaskingStrategy):
             request_id, SecretType.salt, masking_meta[SecretType.salt]
         )
 
-        masked_values: List[str] = []
+        masked_values: List[Optional[str]] = []
         for value in values:
             if value is None:
                 masked_values.append(None)
