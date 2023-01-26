@@ -11,9 +11,9 @@ import { useAppSelector } from "~/app/hooks";
 const PIIToggle: React.FC = () => {
   const dispatch = useDispatch();
   const revealPII = useAppSelector(selectRevealPII);
-  const handleToggle = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleToggle = (event: ChangeEvent<HTMLInputElement>) =>
     dispatch(setRevealPII(event.target.checked));
-  };
+
   return (
     <Switch
       colorScheme="secondary"
