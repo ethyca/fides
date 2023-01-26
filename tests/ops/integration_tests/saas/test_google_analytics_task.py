@@ -12,9 +12,8 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.saas.saas_config import SaaSRequest
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.ops.service.connectors import SaaSConnector, get_connector
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
@@ -130,3 +129,42 @@ async def test_google_analytics_consent_prepared_requests(
 
     assert google_analytics_client_id in body
     assert google_analytics_connection_config.secrets["property_id"] in body
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_google_analytics
+@pytest.mark.asyncio
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
+@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+async def test_google_analytics_no_ga_client_id(
+    mocked_client_send,
+    db,
+    consent_policy,
+    google_analytics_connection_config,
+    google_analytics_dataset_config,
+) -> None:
+    """Test that the google analytics connector does not fail if there is no ga_client_id
+    We skip the request because it is marked as skip_missing_param_values=True.
+
+    We won't always have this piece of identity data.
+    """
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()),
+        consent_preferences=[{"data_use": "advertising", "opt_in": False}],
+    )
+    dataset_name = "google_analytics_instance"
+
+    v = await graph_task.run_consent_request(
+        privacy_request,
+        consent_policy,
+        build_consent_dataset_graph([google_analytics_dataset_config]),
+        [google_analytics_connection_config],
+        {},
+        db,
+    )
+
+    assert not mocked_client_send.called
+    assert v == {
+        f"{dataset_name}:{dataset_name}": True
+    }, "graph has one node which succeeded (consent request was skipped)"

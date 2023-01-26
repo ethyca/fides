@@ -92,6 +92,7 @@ saas_config:
     opt_out:
       method: POST
       path: /analytics/v3/userDeletion/userDeletionRequests:upsert
+      skip_missing_param_values: true
       param_values:
         - name: ga_client_id
           identity: ga_client_id

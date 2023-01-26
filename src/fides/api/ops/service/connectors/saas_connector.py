@@ -449,11 +449,21 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             for consent_request in consent_requests:
                 self.set_saas_request_state(consent_request)
 
-                prepared_request: SaaSRequestParams = (
-                    query_config.generate_consent_stmt(
-                        policy, privacy_request, consent_request
+                try:
+                    prepared_request: SaaSRequestParams = (
+                        query_config.generate_consent_stmt(
+                            policy, privacy_request, consent_request
+                        )
                     )
-                )
+                except ValueError as exc:
+                    if consent_request.skip_missing_param_values:
+                        logger.info(
+                            "Skipping optional consent request on node {}: {}",
+                            node.address.value,
+                            exc,
+                        )
+                        continue
+                    raise exc
                 client: AuthenticatedClient = self.create_client()
                 client.send(prepared_request)
         self.unset_connector_state()
