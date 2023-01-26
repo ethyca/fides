@@ -4,7 +4,6 @@ import {
   Checkbox,
   Divider,
   Heading,
-  HStack,
   Stack,
   Text,
 } from "@fidesui/react";
@@ -16,13 +15,12 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
+import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
+import { passwordValidation } from "~/features/common/form/validation";
 
-import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
-import { passwordValidation } from "../common/form/validation";
-import NewPasswordModal from "./NewPasswordModal";
+import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
-import UpdatePasswordModal from "./UpdatePasswordModal";
 import { useUpdateUserPermissionsMutation } from "./user-management.slice";
 
 const defaultInitialValues = {
@@ -55,7 +53,6 @@ interface Props {
   initialValues?: FormValues;
   canEditNames?: boolean;
   canChangePassword?: boolean;
-  canForceResetPassword?: boolean;
 }
 
 const UserForm = ({
@@ -63,7 +60,6 @@ const UserForm = ({
   initialValues,
   canEditNames,
   canChangePassword,
-  canForceResetPassword,
 }: Props) => {
   const router = useRouter();
   const { handleError } = useAPIHelper();
@@ -127,24 +123,7 @@ const UserForm = ({
                   placeholder="Enter last name of user"
                   disabled={nameDisabled}
                 />
-                {isNewUser ? (
-                  <CustomTextInput
-                    name="password"
-                    label="Password"
-                    placeholder="********"
-                    type="password"
-                    tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  />
-                ) : (
-                  <HStack>
-                    {canChangePassword && profileId != null && (
-                      <UpdatePasswordModal id={profileId} />
-                    )}
-                    {canForceResetPassword && profileId != null && (
-                      <NewPasswordModal id={profileId} />
-                    )}
-                  </HStack>
-                )}
+                <PasswordManagement profileId={profileId} />
               </Stack>
               <Divider mb={7} mt={7} />
               <Heading fontSize="xl" colorScheme="primary">
