@@ -1,4 +1,4 @@
-import { Box, Divider, Flex, Heading, HStack, Text, Tag} from "@fidesui/react";
+import { Box, Divider, Flex, Heading, HStack, Tag,Text } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
 import { PrivacyRequestEntity } from "privacy-requests/types";
 
@@ -51,7 +51,11 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Policy key:
         </Text>
-        <Tag color="white" bg="primary.400" fontWeight="medium" fontSize="sm">{subjectRequest.policy.key}</Tag>
+        <Box>
+          <Tag color="white" bg="primary.400" fontWeight="medium" fontSize="sm">
+            {subjectRequest.policy.key}
+          </Tag>
+        </Box>
       </Flex>
       <Flex alignItems="flex-start">
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
