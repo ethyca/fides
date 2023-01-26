@@ -4,6 +4,7 @@ import {
   Checkbox,
   Divider,
   Heading,
+  HStack,
   Stack,
   Text,
 } from "@fidesui/react";
@@ -135,14 +136,14 @@ const UserForm = ({
                     tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
                   />
                 ) : (
-                  <>
+                  <HStack>
                     {canChangePassword && profileId != null && (
                       <UpdatePasswordModal id={profileId} />
                     )}
                     {canForceResetPassword && profileId != null && (
                       <NewPasswordModal id={profileId} />
                     )}
-                  </>
+                  </HStack>
                 )}
               </Stack>
               <Divider mb={7} mt={7} />

@@ -73,15 +73,7 @@ const NewPasswordModal = ({ id }: Props) => {
 
   return (
     <>
-      <Button
-        bg="primary.800"
-        _hover={{ bg: "primary.400" }}
-        _active={{ bg: "primary.500" }}
-        colorScheme="primary"
-        maxWidth="40%"
-        size="sm"
-        onClick={onOpen}
-      >
+      <Button colorScheme="primary" size="sm" onClick={onOpen}>
         Reset password
       </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>

@@ -78,15 +78,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
 
   return (
     <>
-      <Button
-        bg="primary.800"
-        _hover={{ bg: "primary.400" }}
-        _active={{ bg: "primary.500" }}
-        colorScheme="primary"
-        maxWidth="40%"
-        size="sm"
-        onClick={onOpen}
-      >
+      <Button colorScheme="primary" size="sm" onClick={onOpen}>
         Update Password
       </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
