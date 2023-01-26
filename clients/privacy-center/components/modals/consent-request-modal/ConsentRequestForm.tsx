@@ -179,10 +179,9 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
               <FormControl
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
+                isRequired={identityInputs.email === "required"}
               >
-                <FormLabel>
-                  {identityInputs.email === "required" ? "Email*" : "Email"}
-                </FormLabel>
+                <FormLabel>Email</FormLabel>
                 <Input
                   id="email"
                   name="email"
@@ -201,10 +200,9 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
               <FormControl
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
+                isRequired={identityInputs.phone === "required"}
               >
-                <FormLabel>
-                  {identityInputs.phone === "required" ? "Phone*" : "Phone"}
-                </FormLabel>
+                <FormLabel>Phone</FormLabel>
                 <Input
                   as={PhoneInput}
                   id="phone"
