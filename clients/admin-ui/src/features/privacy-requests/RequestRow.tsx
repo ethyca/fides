@@ -10,7 +10,6 @@ import {
   MenuList,
   MoreIcon,
   Portal,
-  Tag,
   Td,
   Text,
   Tr,
@@ -34,6 +33,7 @@ import {
   useDenyRequestMutation,
 } from "./privacy-requests.slice";
 import { PrivacyRequestEntity } from "./types";
+import RequestType from "common/RequestType";
 
 const useRequestRow = (request: PrivacyRequestEntity) => {
   const {
@@ -183,16 +183,7 @@ const RequestRow: React.FC<{
         />
       </Td>
       <Td py={1}>
-        <Tag
-          color="white"
-          bg="primary.400"
-          px={2}
-          py={0.5}
-          size="sm"
-          fontWeight="medium"
-        >
-          {request.policy.name}
-        </Tag>
+        <RequestType rules={request.policy.rules}/>
       </Td>
       <Td py={1}>
         <Text fontSize="xs">
