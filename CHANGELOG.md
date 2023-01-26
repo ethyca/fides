@@ -38,7 +38,7 @@ The types of changes are:
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
 * Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
 * Privacy Center identity inputs validate even when they are optional. [#2308](https://github.com/ethyca/fides/pull/2308)
-* The PII toggle will remember the selection between pages [#2388](https://github.com/ethyca/fides/pull/2388)
+* The PII toggle defaults to false and PII will be hidden on page load [#2388](https://github.com/ethyca/fides/pull/2388)
 
 ### Security
 
