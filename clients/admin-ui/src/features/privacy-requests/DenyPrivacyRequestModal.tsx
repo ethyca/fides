@@ -18,7 +18,7 @@ type DenyModalProps = {
   handleDenyRequest: (reason: string) => Promise<any>;
 };
 
-const closeModal = (
+const handleSubmit = (
   handleMenuClose: () => void,
   handleDenyRequest: (reason: string) => Promise<any>,
   denialReason: string,
@@ -49,7 +49,7 @@ const DenyPrivacyRequestModal = ({
           denialReason: Yup.string().required("Required"),
         })}
         onSubmit={(values, { setSubmitting }) => {
-          closeModal(
+          handleSubmit(
             handleMenuClose,
             handleDenyRequest,
             values.denialReason,
