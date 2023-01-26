@@ -22,10 +22,10 @@ const closeModal = (
   handleMenuClose: () => void,
   handleDenyRequest: (reason: string) => Promise<any>,
   denialReason: string,
-  setSubitting: (isSubmitting: boolean) => void
+  setSubmitting: (isSubmitting: boolean) => void
 ) => {
   handleDenyRequest(denialReason).then(() => {
-    setSubitting(false);
+    setSubmitting(false);
     handleMenuClose();
   });
 };
@@ -65,7 +65,6 @@ const DenyPrivacyRequestModal = ({
               note: this can be seen by the user in their notification email.
             </ModalBody>
             <ModalBody>
-              {/*   focusBorderColor="primary.600" */}
               <CustomTextArea
                 name="denialReason"
                 textAreaProps={{
