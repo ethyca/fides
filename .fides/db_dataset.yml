@@ -430,7 +430,7 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: fidesctl_meta
+    - name: fides_meta
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -974,6 +974,10 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: system_id
+      description: 'The identifier of the system to locate this data within'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: consent
     description: 'A database table used to map consent preference to identities'
     data_categories: []
@@ -1025,10 +1029,10 @@ dataset:
     - name: connection_config_id
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: created_at
-      data_categories: [system.operations]
+    - name: ctl_dataset_id
+      data_categories: [ system.operations ]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: dataset
+    - name: created_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: fides_key

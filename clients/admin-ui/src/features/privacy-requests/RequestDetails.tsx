@@ -1,6 +1,8 @@
-import { Divider, Flex, Heading, HStack, Text } from "@fidesui/react";
+import { Box, Divider, Flex, Heading, HStack, Text } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
 import { PrivacyRequestEntity } from "privacy-requests/types";
+
+import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import ClipboardButton from "../common/ClipboardButton";
 import RequestStatusBadge from "../common/RequestStatusBadge";
@@ -41,7 +43,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Request Type:
         </Text>
-        <RequestType rules={policy.rules} />
+        <Box mr={1} mb={4}>
+          <RequestType rules={policy.rules} />
+        </Box>
       </Flex>
       <Flex alignItems="flex-start">
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
@@ -56,7 +60,11 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
             />
           )}
 
-          <DaysLeftTag daysLeft={subjectRequest.days_left} includeText />
+          <DaysLeftTag
+            daysLeft={subjectRequest.days_left}
+            includeText
+            status={subjectRequest.status as ApiPrivacyRequestStatus}
+          />
         </HStack>
       </Flex>
     </>

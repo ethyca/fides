@@ -1,8 +1,13 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
-import { Dataset, GenerateRequestPayload, GenerateResponse } from "~/types/api";
+import { baseApi } from "~/features/common/api.slice";
+import {
+  BulkPutDataset,
+  Dataset,
+  GenerateRequestPayload,
+  GenerateResponse,
+} from "~/types/api";
 
 import { EditableType } from "./types";
 
@@ -22,12 +27,7 @@ interface DatasetDeleteResponse {
   resource: Dataset;
 }
 
-export const datasetApi = createApi({
-  reducerPath: "datasetApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
-  }),
-  tagTypes: ["Dataset", "Datasets"],
+const datasetApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllDatasets: build.query<Dataset[], void>({
       query: () => ({ url: `dataset/` }),
@@ -59,6 +59,17 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Datasets"],
     }),
+    /**
+     * Also accepts unknown for the same reason as above
+     */
+    upsertDatasets: build.mutation<BulkPutDataset, Dataset[] | unknown>({
+      query: (datasets) => ({
+        url: `dataset/upsert`,
+        method: "POST",
+        body: datasets,
+      }),
+      invalidatesTags: ["Datasets"],
+    }),
     deleteDataset: build.mutation<DatasetDeleteResponse, string>({
       query: (key) => ({
         url: `dataset/${key}`,
@@ -81,6 +92,7 @@ export const {
   useGetAllDatasetsQuery,
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
+  useUpsertDatasetsMutation,
   useCreateDatasetMutation,
   useDeleteDatasetMutation,
   useGenerateDatasetMutation,

@@ -12,9 +12,10 @@ import {
   useConsentRequestModal,
   ConsentRequestModal,
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
-import { hostUrl, config } from "~/constants";
-import PrivacyCard from "../components/PrivacyCard";
-import ConsentCard from "../components/ConsentCard";
+import { config } from "~/constants";
+import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+import PrivacyCard from "~/components/PrivacyCard";
+import ConsentCard from "~/components/ConsentCard";
 
 const Home: NextPage = () => {
   const [isVerificationRequired, setIsVerificationRequired] =
@@ -43,30 +44,25 @@ const Home: NextPage = () => {
     successHandler: consentModalSuccessHandler,
   } = useConsentRequestModal();
 
+  const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
+
   useEffect(() => {
-    const getConfig = async () => {
-      try {
-        const response = await fetch(`${hostUrl}/id-verification/config/`, {
-          headers: {
-            "X-Fides-Source": "fidesops-privacy-center",
-          },
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          toast({
-            description: data.detail,
-            ...ConfigErrorToastOptions,
-          });
-        }
-        setIsVerificationRequired(data.identity_verification_required);
-      } catch (e) {
-        toast(ConfigErrorToastOptions);
-        // eslint-disable-next-line no-console
-        console.error(e);
-      }
-    };
-    getConfig();
-  }, [setIsVerificationRequired, toast]);
+    if (getIdVerificationConfigQuery.isError) {
+      // TODO(#2299): Use error utils from shared package.
+      const errorData = (getIdVerificationConfigQuery.error as any)?.data;
+      toast({
+        description: errorData?.detail,
+        ...ConfigErrorToastOptions,
+      });
+      return;
+    }
+
+    if (getIdVerificationConfigQuery.isSuccess) {
+      setIsVerificationRequired(
+        getIdVerificationConfigQuery.data.identity_verification_required
+      );
+    }
+  }, [getIdVerificationConfigQuery, setIsVerificationRequired, toast]);
 
   const content: any = [];
 
@@ -112,7 +108,13 @@ const Home: NextPage = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <Image src={config.logo_path} margin="8px" height="68px" alt="Logo" />
+          <Image
+            src={config.logo_path}
+            margin="8px"
+            height="68px"
+            alt="Logo"
+            data-testid="logo"
+          />
         </Flex>
       </header>
 
@@ -124,6 +126,7 @@ const Home: NextPage = () => {
               color="gray.600"
               fontWeight="semibold"
               textAlign="center"
+              data-testid="heading"
             >
               {config.title}
             </Heading>
@@ -133,6 +136,7 @@ const Home: NextPage = () => {
               maxWidth={624}
               textAlign="center"
               color="gray.600"
+              data-testid="description"
             >
               {config.description}
             </Text>

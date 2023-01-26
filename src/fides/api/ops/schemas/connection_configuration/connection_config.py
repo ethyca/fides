@@ -2,14 +2,14 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Union
 
+from fideslang.models import Dataset
+from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra
 
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration import connection_secrets_schemas
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.schemas.saas.saas_config import SaaSConfigBase
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class CreateConnectionConfiguration(BaseModel):
@@ -20,7 +20,7 @@ class CreateConnectionConfiguration(BaseModel):
     """
 
     name: str
-    key: Optional[FidesOpsKey]
+    key: Optional[FidesKey]
     connection_type: ConnectionType
     access: AccessLevel
     disabled: Optional[bool] = False
@@ -91,7 +91,7 @@ class ConnectionConfigurationResponse(BaseModel):
     """
 
     name: str
-    key: FidesOpsKey
+    key: FidesKey
     description: Optional[str]
     connection_type: ConnectionType
     access: AccessLevel
@@ -126,12 +126,12 @@ class SaasConnectionTemplateValues(BaseModel):
     """Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"""
 
     name: str  # For ConnectionConfig
-    key: Optional[FidesOpsKey]  # For ConnectionConfig
+    key: Optional[FidesKey]  # For ConnectionConfig
     description: Optional[str]  # For ConnectionConfig
     secrets: connection_secrets_schemas  # For ConnectionConfig
-    instance_key: FidesOpsKey  # For DatasetConfig.fides_key
+    instance_key: FidesKey  # For DatasetConfig.fides_key
 
 
 class SaasConnectionTemplateResponse(BaseModel):
     connection: ConnectionConfigurationResponse
-    dataset: FidesopsDataset
+    dataset: Dataset
