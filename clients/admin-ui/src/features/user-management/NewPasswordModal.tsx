@@ -73,7 +73,12 @@ const NewPasswordModal = ({ id }: Props) => {
 
   return (
     <>
-      <Button colorScheme="primary" size="sm" onClick={onOpen}>
+      <Button
+        colorScheme="primary"
+        size="sm"
+        onClick={onOpen}
+        data-testid="reset-password-btn"
+      >
         Reset password
       </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
@@ -119,6 +124,7 @@ const NewPasswordModal = ({ id }: Props) => {
                       isLoading={isSubmitting}
                       type="submit"
                       width="50%"
+                      data-testid="submit-btn"
                     >
                       Change Password
                     </Button>

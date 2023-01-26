@@ -78,7 +78,12 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
 
   return (
     <>
-      <Button colorScheme="primary" size="sm" onClick={onOpen}>
+      <Button
+        colorScheme="primary"
+        size="sm"
+        onClick={onOpen}
+        data-testid="update-password-btn"
+      >
         Update Password
       </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
@@ -96,6 +101,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
                   placeholder="Old Password"
                   type="password"
                   value={oldPasswordValue}
+                  data-testid="input-oldPassword"
                 />
               </FormControl>
               <FormControl>
@@ -106,6 +112,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
                   placeholder="New Password"
                   type="password"
                   value={newPasswordValue}
+                  data-testid="input-newPassword"
                 />
               </FormControl>
             </Stack>
@@ -133,6 +140,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
               type="submit"
               variant="solid"
               width="50%"
+              data-testid="submit-btn"
             >
               Change Password
             </Button>

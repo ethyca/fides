@@ -56,7 +56,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
 
   return (
     <>
-      <Table size="sm">
+      <Table size="sm" data-testid="user-management-table">
         <Thead>
           <Tr>
             <Th pl={0}>Username</Th>

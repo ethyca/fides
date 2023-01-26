@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "id": "fid_bad38cda-476b-4d25-9883-798ba1415f40",
+      "username": "user_3",
+      "created_at": "2023-01-26T16:24:50.718476+00:00",
+      "first_name": "User",
+      "last_name": "Three"
+    },
+    {
+      "id": "fid_560cceb5-f567-4d76-a905-1e16ada1c143",
+      "username": "user_2",
+      "created_at": "2023-01-26T16:23:56.023966+00:00",
+      "first_name": "User",
+      "last_name": "Two"
+    },
+    {
+      "id": "fid_ee8f54ce-19f7-4640-b311-1cc1e77e7166",
+      "username": "user_1",
+      "created_at": "2023-01-26T16:16:49.575653+00:00",
+      "first_name": "User",
+      "last_name": "One"
+    },
+    {
+      "id": "123",
+      "username": "cypress-user@ethyca.com",
+      "created_at": "2022-09-28T16:15:30.994Z",
+      "first_name": "Cypress",
+      "last_name": "User"
+    }
+  ],
+  "total": 4,
+  "page": 1,
+  "size": 25
+}

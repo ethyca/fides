@@ -1,0 +1,33 @@
+{
+  "scopes": [
+    "privacy-request:read",
+    "privacy-request:review",
+    "privacy-request:resume",
+    "connection:read",
+    "connection:create_or_update",
+    "connection:instantiate",
+    "connection_type:read",
+    "connection:delete",
+    "consent:read",
+    "dataset:read",
+    "dataset:create_or_update",
+    "dataset:delete",
+    "policy:read",
+    "policy:create_or_update",
+    "user:read",
+    "user:create",
+    "user:update",
+    "user:delete",
+    "user:password-reset",
+    "user-permission:create",
+    "user-permission:update",
+    "user-permission:read",
+    "privacy-request:upload_data",
+    "privacy-request:view_data",
+    "webhook:create_or_update",
+    "webhook:read",
+    "webhook:delete"
+  ],
+  "id": "123",
+  "user_id": "123"
+}
