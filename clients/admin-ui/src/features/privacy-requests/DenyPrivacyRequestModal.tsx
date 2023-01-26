@@ -69,7 +69,6 @@ const DenyPrivacyRequestModal = ({
                 name="denialReason"
                 textAreaProps={{
                   focusBorderColor: "primary.600",
-                  isFullWidth: true,
                   resize: "none",
                 }}
               />
