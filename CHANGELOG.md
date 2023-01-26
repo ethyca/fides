@@ -33,6 +33,11 @@ The types of changes are:
 * Update fideslang to 1.3.3 [#2343](https://github.com/ethyca/fides/pull/2343)
 * Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
 
+### Developer Experience
+
+* `nox -s test_env` now uses a production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
+* `nox -s dev_env` replaces the functionality of the former `nox -s test_env` and still uses a dev fides image so hot reloading can work [#2399](https://github.com/ethyca/fides/pull/2399)
+
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
