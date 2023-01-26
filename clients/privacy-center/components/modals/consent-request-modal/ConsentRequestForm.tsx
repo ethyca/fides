@@ -3,7 +3,6 @@ import {
   Button,
   chakra,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Input,
   ModalBody,
@@ -20,6 +19,7 @@ import { ErrorToastOptions } from "~/common/toast-options";
 
 import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
+import { FormErrorMessage } from "~/components/FormErrorMessage";
 
 import { config, defaultIdentityInput, hostUrl } from "~/constants";
 import dynamic from "next/dynamic";
@@ -174,7 +174,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
               We will send you a verification code.
             </Text>
           ) : null}
-          <Stack spacing={3}>
+          <Stack>
             {identityInputs.email ? (
               <FormControl
                 id="email"

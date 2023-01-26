@@ -2,7 +2,6 @@ import {
   Button,
   chakra,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Input,
   ModalBody,
@@ -20,6 +19,7 @@ import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
+import { FormErrorMessage } from "~/components/FormErrorMessage";
 
 import { PrivacyRequestOption } from "~/types/config";
 import { hostUrl, config, defaultIdentityInput } from "~/constants";
@@ -212,7 +212,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
           <Text fontSize="sm" color="gray.500" mb={4}>
             {action.description}
           </Text>
-          <Stack spacing={3}>
+          <Stack>
             {identityInputs.name ? (
               <FormControl
                 id="name"
