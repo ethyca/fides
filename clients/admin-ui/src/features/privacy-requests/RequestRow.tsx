@@ -10,7 +10,6 @@ import {
   MenuList,
   MoreIcon,
   Portal,
-  Tag,
   Td,
   Text,
   Tr,
@@ -18,6 +17,7 @@ import {
   useToast,
 } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
+import RequestType from "common/RequestType";
 import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
@@ -183,16 +183,7 @@ const RequestRow: React.FC<{
         />
       </Td>
       <Td py={1}>
-        <Tag
-          color="white"
-          bg="primary.400"
-          px={2}
-          py={0.5}
-          size="sm"
-          fontWeight="medium"
-        >
-          {request.policy.name}
-        </Tag>
+        <RequestType rules={request.policy.rules} />
       </Td>
       <Td py={1}>
         <Text fontSize="xs">

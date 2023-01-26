@@ -31,6 +31,7 @@ The types of changes are:
 * Unified Fides Resources: Validate request body on crud endpoints on upsert. Validate dataset data categories before save. [#2134](https://github.com/ethyca/fides/pull/2134/)
 * Unified Fides Resources: Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
 * Update fideslang to 1.3.3 [#2343](https://github.com/ethyca/fides/pull/2343)
+* Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
 
 ### Fixed
 
