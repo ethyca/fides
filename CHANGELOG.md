@@ -23,6 +23,7 @@ The types of changes are:
 * Unified Fides Resources: Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
 * Add new connection config routes that couple them with systems [#2249](https://github.com/ethyca/fides/pull/2249)
 * Endpoints to allow a user with the `user:password-reset` scope to reset users' passwords. In addition, users no longer require a scope to edit their own passwords. [#2373](https://github.com/ethyca/fides/pull/2373)
+* New form to reset a user's password without knowing an old password [#2390](https://github.com/ethyca/fides/pull/2390)
 
 ### Changed
 
