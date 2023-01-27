@@ -33,6 +33,10 @@ The types of changes are:
 * Update fideslang to 1.3.3 [#2343](https://github.com/ethyca/fides/pull/2343)
 * Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
 
+### Developer Experience
+
+* Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
+
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
