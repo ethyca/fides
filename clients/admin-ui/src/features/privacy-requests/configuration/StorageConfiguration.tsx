@@ -10,11 +10,13 @@ import {
 } from "@fidesui/react";
 import NextLink from "next/link";
 import { useState } from "react";
-import Layout from "~/features/common/Layout";
-import S3StorageConfiguration from "./S3StorageConfiguration";
-import { useSetActiveStorageMutation } from "~/features/privacy-requests/privacy-requests.slice";
+
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import Layout from "~/features/common/Layout";
+import { useSetActiveStorageMutation } from "~/features/privacy-requests/privacy-requests.slice";
+
+import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
   const [selected, setSelected] = useState("");
@@ -78,7 +80,7 @@ const StorageConfiguration = () => {
         <RadioGroup
           onChange={handleChange}
           value={selected}
-          data-testid={`privacy-requests-storage-selection`}
+          data-testid="privacy-requests-storage-selection"
           colorScheme="secondary"
           p={3}
         >
