@@ -6,7 +6,7 @@ coverage:
     patch:
       default:
         target: 100%
-notify:
+comment:
   after_n_builds: 4
 ignore:
   - "**/migrations"
