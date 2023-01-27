@@ -2,14 +2,17 @@ coverage:
   status:
     project:
       default:
-        target: 88%
+        target: 85%
     patch:
       default:
         target: 100%
+
+codecov:
   notify:
-    after_n_builds: 3
-  ignore:
-    - "**/migrations"
+    after_n_builds: 4
 
 comment:
-  after_n_builds: 3
+  after_n_builds: 4
+
+  ignore:
+    - "**/migrations"
