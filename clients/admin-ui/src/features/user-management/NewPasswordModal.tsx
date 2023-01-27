@@ -28,7 +28,7 @@ const ValidationSchema = Yup.object().shape({
   password: passwordValidation.label("Password"),
   passwordConfirmation: Yup.string()
     .required()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
+    .oneOf([Yup.ref("password")], "Passwords must match")
     .label("Password confirmation"),
 });
 const initialValues = { password: "", passwordConfirmation: "" };
@@ -44,7 +44,6 @@ const useNewPasswordModal = (id: string) => {
       id,
       new_password: values.password,
     });
-    // TODO error handling and whatnot
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
