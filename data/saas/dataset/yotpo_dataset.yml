@@ -1,0 +1,530 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: yotpo
+    description: A sample dataset representing the Yotpo connector for Fides
+    collections:
+      - name: get_utoken_(core)
+        fields:
+          - name: access_token
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+      - name: customer_(core)
+        fields:
+          - name: external_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: email
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: phone_number
+          - name: first_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: last_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: gender
+          - name: account_created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: account_status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: default_language
+          - name: default_currency
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: tags
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: address
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: address1
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: address2
+              - name: city
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: company
+              - name: state
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: zip
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: province_code
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: country_code
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: phone_number
+          - name: custom_properties
+          - name: accepts_email_marketing
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: accepts_sms_marketing
+      - name: reviews_-_merchant_(ugc)
+        fields:
+          - name: status
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: code
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: message
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: response
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: bottomline
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: total_reviews
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: average_score
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+              - name: reviews
+                fidesops_meta:
+                  data_type: 'object[]'
+                fields:
+                  - name: '0'
+                    fidesops_meta:
+                      data_type: object
+                    fields:
+                      - name: id
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          primary_key: True
+                          data_type: integer
+                      - name: title
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: content
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: score
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: integer
+                      - name: users
+                      - name: products
+                        fidesops_meta:
+                          data_type: 'object[]'
+                        fields:
+                          - name: '0'
+                            fidesops_meta:
+                              data_type: object
+                            fields:
+                              - name: Location_idx
+                                data_categories: [system.operations]
+                                fidesops_meta:
+                                  data_type: 'integer[]'
+                              - name: Product
+                                fidesops_meta:
+                                  data_type: object
+                                fields:
+                                  - name: id
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: integer
+                                  - name: name
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                                  - name: slug
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                                  - name: product_url
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                                  - name: shorten_url
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                                  - name: images
+                                  - name: social_network_links
+                                    fidesops_meta:
+                                      data_type: object
+                                    fields:
+                                      - name: linkedin
+                                        data_categories: [system.operations]
+                                        fidesops_meta:
+                                          data_type: string
+                                      - name: facebook
+                                        data_categories: [system.operations]
+                                        fidesops_meta:
+                                          data_type: string
+                                      - name: twitter
+                                        data_categories: [system.operations]
+                                        fidesops_meta:
+                                          data_type: string
+                                      - name: google_oauth2
+                                        data_categories: [system.operations]
+                                        fidesops_meta:
+                                          data_type: string
+                                  - name: facebook_testemonials_page_product_url
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                          - name: '1'
+                            fidesops_meta:
+                              data_type: object
+                            fields:
+                              - name: Location_idx
+                                data_categories: [system.operations]
+                                fidesops_meta:
+                                  data_type: 'integer[]'
+                              - name: Product
+                                fidesops_meta:
+                                  data_type: object
+                                fields:
+                                  - name: id
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: integer
+                                  - name: name
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                                  - name: slug
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                                  - name: product_url
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                                  - name: shorten_url
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                                  - name: images
+                                  - name: social_network_links
+                                    fidesops_meta:
+                                      data_type: object
+                                    fields:
+                                      - name: linkedin
+                                        data_categories: [system.operations]
+                                        fidesops_meta:
+                                          data_type: string
+                                      - name: facebook
+                                        data_categories: [system.operations]
+                                        fidesops_meta:
+                                          data_type: string
+                                      - name: twitter
+                                        data_categories: [system.operations]
+                                        fidesops_meta:
+                                          data_type: string
+                                      - name: google_oauth2
+                                        data_categories: [system.operations]
+                                        fidesops_meta:
+                                          data_type: string
+                                  - name: facebook_testemonials_page_product_url
+                                    data_categories: [system.operations]
+                                    fidesops_meta:
+                                      data_type: string
+                      - name: votes_up
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: integer
+                      - name: votes_down
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: integer
+                      - name: user_type
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: user_vote
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: integer
+                      - name: deleted
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: boolean
+                      - name: new
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: boolean
+                      - name: verified_buyer
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: boolean
+                      - name: archived
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: boolean
+                      - name: social_pushed
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: boolean
+                      - name: facebook_pushed
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: integer
+                      - name: twitter_pushed
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: integer
+                      - name: created_at
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: updated_at
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: user
+                        fidesops_meta:
+                          data_type: object
+                        fields:
+                          - name: id
+                            data_categories: [system.operations]
+                            fidesops_meta:
+                              data_type: integer
+                          - name: display_name
+                            data_categories: [system.operations]
+                            fidesops_meta:
+                              data_type: string
+                          - name: slug
+                          - name: social_image
+                          - name: is_social_connected
+                            data_categories: [system.operations]
+                            fidesops_meta:
+                              data_type: boolean
+                          - name: bio
+                          - name: score
+                      - name: products_apps
+                        fidesops_meta:
+                          data_type: object
+                        fields:
+                          - name: id
+                            data_categories: [system.operations]
+                            fidesops_meta:
+                              data_type: integer
+                          - name: product_url
+                            data_categories: [system.operations]
+                            fidesops_meta:
+                              data_type: string
+                          - name: domain_key
+                            data_categories: [system.operations]
+                            fidesops_meta:
+                              data_type: string
+                          - name: product
+                            fidesops_meta:
+                              data_type: object
+                            fields:
+                              - name: id
+                                data_categories: [system.operations]
+                                fidesops_meta:
+                                  data_type: integer
+                              - name: name
+                                data_categories: [system.operations]
+                                fidesops_meta:
+                                  data_type: string
+                      - name: account
+                        fidesops_meta:
+                          data_type: object
+                        fields:
+                          - name: id
+                            data_categories: [system.operations]
+                            fidesops_meta:
+                              data_type: integer
+                          - name: domain
+                            data_categories: [system.operations]
+                            fidesops_meta:
+                              data_type: string
+      - name: email_analytics_(ugc)
+        fields:
+          - name: records
+        fidesops_meta:
+          primary_key: True
+
+      - name: visual_ugc_(ugc)
+        fields:
+          - name: status
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: code
+                data_categories: [system.operations]
+                fidesops_meta:
+                  primary_key: True
+                  data_type: integer
+              - name: message
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: response
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: pagination
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: page
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: per_page
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: total
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+              - name: images
+      - name: customers_(loyalty)
+        fields:
+          - name: total_spend_cents
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: total_purchases
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: perks_redeemed
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: last_purchase_at
+          - name: first_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: last_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: phone_number
+          - name: email
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: points_balance
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: points_earned
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: last_seen_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: thirty_party_id
+          - name: third_party_id
+          - name: pos_account_id
+          - name: has_store_account
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: credit_balance
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: credit_balance_in_customer_currency
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: opt_in
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: opted_in_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: points_expire_at
+          - name: vip_tier_actions_completed
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: points_earned
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: amount_spent_cents
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: amount_spent_cents_in_customer_currency
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: purchases_made
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: referrals_completed
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: campaigns_completed
+          - name: vip_tier_upgrade_requirements
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: points_needed
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: amount_cents_needed
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: amount_cents_needed_in_customer_currency
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: purchases_needed
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: referrals_needed
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: campaigns_needed
