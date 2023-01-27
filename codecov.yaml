@@ -6,9 +6,10 @@ coverage:
     patch:
       default:
         target: 100%
+  notify:
+    after_n_builds: 3
+  ignore:
+    - "**/migrations"
+
 comment:
   after_n_builds: 3
-notify:
-  after_n_builds: 3
-ignore:
-  - "**/migrations"
