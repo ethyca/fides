@@ -1,15 +1,8 @@
-/**
- * Based off of fides.toml
- *
- * TODO: if this becomes too cumbersome to keep in sync, we may also want to look
- * into other ways of sharing constants
- * https://docs.cypress.io/guides/guides/environment-variables#Option-3-CYPRESS_
- */
 export const CREDENTIALS = {
-  username: "root_user",
-  password: "Testpassword1!",
+  username: Cypress.env("USERNAME"),
+  password: Cypress.env("PASSWORD"),
 };
 
-export const API_URL = "http://0.0.0.0:8080/api/v1";
-export const ADMIN_UI_URL = "http://localhost:3000";
-export const PRIVACY_CENTER_URL = "http://localhost:3001";
+export const API_URL = Cypress.env("API_URL");
+export const ADMIN_UI_URL = Cypress.env("ADMIN_UI_URL");
+export const PRIVACY_CENTER_URL = Cypress.env("PRIVACY_CENTER_URL");
