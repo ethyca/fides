@@ -1,40 +1,58 @@
-import { Button, Divider,Heading, Stack } from "@fidesui/react";
-import { Form,Formik } from "formik";
-import { useEffect, useState } from "react";
+import { Button, Divider, Heading, Stack } from "@fidesui/react";
+import { Form, Formik } from "formik";
+import { useState } from "react";
 
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import {
-  useGetStorageDetailsQuery,
   useSetStorageDetailsMutation,
   useSetStorageSecretsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
-const S3StorageConfiguration = () => {
+interface StorageData {
+  details: { auth_method: string; bucket: string };
+  format: string;
+}
+
+interface SecretsStorageData {
+  aws_access_key_id: string;
+  aws_secret_access_key: string;
+}
+
+const S3StorageConfiguration = ({
+  details: { auth_method, bucket },
+  format,
+}: StorageData) => {
   const [authMethod, setAuthMethod] = useState("");
   const [setStorageDetails] = useSetStorageDetailsMutation();
   const [setStorageSecrets] = useSetStorageSecretsMutation();
+  const { errorAlert, successAlert } = useAlert();
+  const CONFIG_FORM_ID = "s3-privacy-requests-storage-configuration-config";
+  const KEYS_FORM_ID = "s3-privacy-requests-storage-configuration-keys";
+
   const initialValues = {
-    format: "",
+    type: "s3",
+    details: {
+      auth_method: auth_method ?? "",
+      bucket: bucket ?? "",
+    },
+    format: format ?? "",
   };
 
-  // on load, check to see if we already have this info saved
-  useEffect(() => {
-    const { data: existingData, isLoading: isLoadingStorageDetailsData } =
-      useGetStorageDetailsQuery("s3");
+  const initialSecretValues = {
+    aws_access_key_id: "",
+    aws_secret_access_key: "",
+  };
 
-    console.log("exist", existingData);
-    console.log("isloading", isLoadingStorageDetailsData);
-  }, []);
-
-  const handleSubmitStorageConfiguration = async (newValues) => {
-    console.log("newVals", newValues);
-    setAuthMethod(newValues.auth_method);
-
-    // helpers.setSubmitting(true);
-    setSelected(value);
-
+  const handleSubmitStorageConfiguration = async (newValues: StorageData) => {
     const payload = await setStorageDetails({
-      //   active_default_storage_type: value,
+      type: "s3",
+      details: {
+        auth_method: newValues.details.auth_method,
+        bucket: newValues.details.bucket,
+      },
+      format: newValues.format,
     });
     if ("error" in payload) {
       errorAlert(
@@ -42,28 +60,15 @@ const S3StorageConfiguration = () => {
         `Configuring storage details has failed to save due to the following:`
       );
     } else {
+      setAuthMethod(newValues.details.auth_method);
       successAlert(`Storage details saved successfully.`);
     }
-    // helpers.setSubmitting(false);
-
-    //     PUT /storage/default/{storage_type}  body should look something like:
-    //  {
-    // 	"type": "s3",
-    // 	"details": {
-    //   		"auth_method": "secret_keys",
-    //   		"bucket": "my_bucket",
-    // 	},
-    // 	"format": "json"
-    //   }
   };
 
-  const handleSubmitStorageSecrets = async (newValues) => {
-    console.log("newvals2", newValues);
-
-    // helpers.setSubmitting(true);
-
+  const handleSubmitStorageSecrets = async (newValues: SecretsStorageData) => {
     const payload = await setStorageSecrets({
-      //   active_default_storage_type: value,
+      aws_access_key_id: newValues.aws_access_key_id,
+      aws_secret_access_key: newValues.aws_secret_access_key,
     });
     if ("error" in payload) {
       errorAlert(
@@ -73,22 +78,7 @@ const S3StorageConfiguration = () => {
     } else {
       successAlert(`Storage secrets saved successfully.`);
     }
-    // helpers.setSubmitting(false);
-
-    //     for config secrets:
-    // PUT /storage/default/{storage_type}/secret body will look like:
-    // { "aws_access_key_id" : "my_access_key_id",
-    //    "aws_secret_access_key": "my_secret_access_key"
-    // }
   };
-
-  const handleCancel = () => {
-    console.log("cancel");
-    // Unclear in designs what cancel does?
-  };
-
-  const CONFIG_FORM_ID = "s3-privacy-requests-storage-configuration-config";
-  const KEYS_FORM_ID = "s3-privacy-requests-storage-configuration-keys";
 
   return (
     <>
@@ -100,7 +90,7 @@ const S3StorageConfiguration = () => {
           initialValues={initialValues}
           onSubmit={handleSubmitStorageConfiguration}
         >
-          {({ isSubmitting }) => (
+          {({ isSubmitting, resetForm }) => (
             <Form id={CONFIG_FORM_ID}>
               <CustomSelect
                 name="format"
@@ -124,7 +114,12 @@ const S3StorageConfiguration = () => {
                 placeholder="Optional"
               />
 
-              <Button onClick={handleCancel} mr={2} size="sm" variant="outline">
+              <Button
+                onClick={() => resetForm()}
+                mr={2}
+                size="sm"
+                variant="outline"
+              >
                 Cancel
               </Button>
               <Button
@@ -152,10 +147,10 @@ const S3StorageConfiguration = () => {
           storage destination’s secrets:
           <Stack>
             <Formik
-              initialValues={initialValues}
+              initialValues={initialSecretValues}
               onSubmit={handleSubmitStorageSecrets}
             >
-              {({ isSubmitting }) => (
+              {({ isSubmitting, resetForm }) => (
                 <Form id={KEYS_FORM_ID}>
                   <CustomTextInput
                     name="aws_access_key_ID"
@@ -168,7 +163,7 @@ const S3StorageConfiguration = () => {
                   />
 
                   <Button
-                    onClick={handleCancel}
+                    onClick={() => resetForm()}
                     mr={2}
                     size="sm"
                     variant="outline"

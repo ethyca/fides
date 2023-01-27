@@ -14,18 +14,23 @@ import { useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
-import { useSetActiveStorageMutation } from "~/features/privacy-requests/privacy-requests.slice";
+import {
+  useGetStorageDetailsQuery,
+  useSetActiveStorageMutation,
+} from "~/features/privacy-requests/privacy-requests.slice";
 
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
   const [selected, setSelected] = useState("");
+  const [existingStorageData, setExistingStorageData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { errorAlert, successAlert } = useAlert();
   const [saveStorageType] = useSetActiveStorageMutation();
 
-  const handleChange = async (value: string) => {
-    // helpers.setSubmitting(true);
-    setSelected(value);
+  const useStorageSelection = async (value: string) => {
+    const { data: existingData } = useGetStorageDetailsQuery(value);
+    setIsLoading(true);
 
     const payload = await saveStorageType({
       active_default_storage_type: value,
@@ -35,10 +40,13 @@ const StorageConfiguration = () => {
         getErrorMessage(payload.error),
         `Configuring storage type has failed to save due to the following:`
       );
+      setIsLoading(false);
     } else {
       successAlert(`Configure storage type saved successfully.`);
+      setSelected(value);
+      setExistingStorageData(existingData);
+      setIsLoading(false);
     }
-    // helpers.setSubmitting(false);
   };
 
   return (
@@ -78,7 +86,8 @@ const StorageConfiguration = () => {
           Choose storage type to configure
         </Heading>
         <RadioGroup
-          onChange={handleChange}
+          _disabled={isLoading}
+          onChange={useStorageSelection}
           value={selected}
           data-testid="privacy-requests-storage-selection"
           colorScheme="secondary"
@@ -93,7 +102,9 @@ const StorageConfiguration = () => {
             </Radio>
           </Stack>
         </RadioGroup>
-        {selected === "s3" ? <S3StorageConfiguration /> : null}
+        {selected === "s3" ? (
+          <S3StorageConfiguration existingStorageData={existingStorageData} />
+        ) : null}
       </Box>
     </Layout>
   );
