@@ -2,7 +2,7 @@
 Contains all of the generic CRUD endpoints that can be
 generated programmatically for each resource.
 """
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from loguru import logger as log
 from sqlalchemy import column
@@ -80,6 +80,32 @@ async def get_resource(
                 not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
                 log.bind(error=not_found_error.detail["error"]).error("Resource not found")  # type: ignore[index]
                 raise not_found_error
+
+            return sql_resource
+
+
+async def get_custom_field_for_resource(
+    sql_model: Base, resource_id: str, async_session: AsyncSession
+) -> Optional[List[Base]]:
+    """
+    Get custom fields from the databse for a resource.
+
+    Returns a SQLAlchemy model of that custom field.
+    """
+    with log.contextualize(sql_model=sql_model.__name__, resource_id=resource_id):
+        async with async_session.begin():
+            try:
+                log.debug("Fetching custom field for resource")
+                query = select(sql_model).where(sql_model.resource_id == resource_id)
+                result = await async_session.execute(query)
+            except SQLAlchemyError:
+                sa_error = errors.QueryError()
+                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                    "Failed to fetch custom fields"
+                )
+                raise sa_error
+
+            sql_resource = result.scalars().all()
 
             return sql_resource
 
