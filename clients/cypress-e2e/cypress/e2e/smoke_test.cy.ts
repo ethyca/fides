@@ -63,9 +63,9 @@ describe("Smoke test", () => {
     cy.visit(ADMIN_UI_URL);
     cy.login();
     cy.get("div").contains("Configure privacy requests").click();
+    cy.wait("@getConnections");
     cy.get("a").contains("Connection manager").click();
     cy.wait("@getConnectionType");
-    cy.wait("@getConnections");
     cy.getByTestId("connection-grid-item-mongodb_connector").within(() => {
       // TODO: UI does not appear to indicate when test fails
       cy.get("button").contains("Test").click();
