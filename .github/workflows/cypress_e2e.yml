@@ -1,0 +1,50 @@
+name: Cypress E2E Tests
+
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+
+env:
+  CI: true
+
+jobs:
+  Cypress-E2E:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Start the test environment
+        run: nox -s test_env
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: |
+          cd clients/cypress-e2e
+          npm install
+
+      - name: Cypress E2E tests
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: clients/cypress-e2e
+          install: false
+          wait-on: "http://localhost:3000"
+          wait-on-timeout: 120
+        # TODO: add the cypress record key to github secrets, then uncomment out
+        #   record: true
+        # env:
+        #   # pass the Cypress Cloud record key as an environment variable
+        #   CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+        #   # pass GitHub token to allow accurately detecting a build vs a re-run build
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
