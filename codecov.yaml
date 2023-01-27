@@ -7,8 +7,8 @@ coverage:
       default:
         target: 100%
 comment:
-  after_n_builds: 4
+  after_n_builds: 3
 notify:
-  after_n_builds: 4
+  after_n_builds: 3
 ignore:
   - "**/migrations"
