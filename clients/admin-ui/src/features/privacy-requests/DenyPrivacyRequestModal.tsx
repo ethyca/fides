@@ -57,7 +57,7 @@ const DenyPrivacyRequestModal = ({
           );
         }}
       >
-        {({ isSubmitting }) => (
+        {({ isSubmitting, dirty, isValid }) => (
           <Form>
             <ModalHeader>Privacy Request Denial</ModalHeader>
             <ModalBody color="gray.500" fontSize="14px">
@@ -92,6 +92,7 @@ const DenyPrivacyRequestModal = ({
                 maxWidth="198px"
                 colorScheme="primary"
                 variant="solid"
+                disabled={!dirty || !isValid}
                 isLoading={isSubmitting}
               >
                 Confirm
