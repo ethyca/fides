@@ -14,5 +14,5 @@ codecov:
 comment:
   after_n_builds: 4
 
-  ignore:
-    - "**/migrations"
+ignore:
+  - "**/migrations"
