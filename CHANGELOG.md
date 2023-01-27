@@ -37,12 +37,14 @@ The types of changes are:
 
 * `nox -s test_env` now uses a production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
 * `nox -s dev_env` replaces the functionality of the former `nox -s test_env` and still uses a dev fides image so hot reloading can work [#2399](https://github.com/ethyca/fides/pull/2399)
+* Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
 
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
 * Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
 * Privacy Center identity inputs validate even when they are optional. [#2308](https://github.com/ethyca/fides/pull/2308)
+* Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
 
 ### Security
 

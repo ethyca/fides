@@ -3,7 +3,6 @@ import {
   Button,
   chakra,
   FormControl,
-  FormErrorMessage,
   HStack,
   Input,
   ModalBody,
@@ -21,6 +20,7 @@ import { ErrorToastOptions } from "~/common/toast-options";
 import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { useLocalStorage } from "~/common/hooks";
+import { FormErrorMessage } from "~/components/FormErrorMessage";
 
 import { hostUrl } from "~/constants";
 import { ModalViews, VerificationType } from "./types";
@@ -178,7 +178,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
             A verification code has been sent. Return to this window and enter
             the code below.
           </Text>
-          <Stack spacing={3}>
+          <Stack>
             <FormControl
               id="code"
               isInvalid={touched.code && Boolean(errors.code)}
