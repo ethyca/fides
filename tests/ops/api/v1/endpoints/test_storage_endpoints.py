@@ -18,6 +18,7 @@ from fides.api.ops.api.v1.urn_registry import (
     STORAGE_CONFIG,
     STORAGE_DEFAULT,
     STORAGE_DEFAULT_BY_TYPE,
+    STORAGE_DEFAULT_SECRETS,
     STORAGE_SECRETS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
@@ -705,6 +706,20 @@ class TestGetDefaultStorageConfig:
         )
         assert 422 == response.status_code
 
+    def test_get_default_config_not_exist(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            (V1_URL_PREFIX + STORAGE_DEFAULT_BY_TYPE).format(
+                storage_type=StorageType.s3.value
+            ),
+            headers=auth_header,
+        )
+        assert 404 == response.status_code
+
     def test_get_default_config(
         self,
         url,
@@ -985,3 +1000,151 @@ class TestPutDefaultStorageConfig:
         assert response.status_code == 422
         assert "field required" in response.text
         assert "bucket" in response.text
+
+
+class TestPutDefaultStorageConfigSecretsS3:
+    @pytest.fixture(scope="function")
+    def url(self, storage_config_default) -> str:
+        return (V1_URL_PREFIX + STORAGE_DEFAULT_SECRETS).format(
+            storage_type=StorageType.s3.value
+        )
+
+    @pytest.fixture(scope="function")
+    def payload(self):
+        return {
+            StorageSecrets.AWS_ACCESS_KEY_ID.value: "1345234524",
+            StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "23451345834789",
+        }
+
+    def test_put_default_config_secrets_unauthenticated(
+        self, api_client: TestClient, payload, url
+    ):
+        response = api_client.put(url, headers={}, json=payload)
+        assert 401 == response.status_code
+
+    def test_put_default_config_secrets_wrong_scope(
+        self, api_client: TestClient, payload, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_put_default_config_secret_invalid_config(
+        self, api_client: TestClient, payload, generate_auth_header
+    ):
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        url = (V1_URL_PREFIX + STORAGE_DEFAULT_SECRETS).format(
+            storage_type="invalid_type"
+        )
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+
+    def test_update_default_with_invalid_secrets_key(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(
+            url + "?verify=False", headers=auth_header, json={"bad_key": "12345"}
+        )
+        assert response.status_code == 400
+        assert response.json() == {
+            "detail": [
+                "field required ('aws_access_key_id',)",
+                "field required ('aws_secret_access_key',)",
+                "extra fields not permitted ('bad_key',)",
+            ]
+        }
+
+    def test_put_default_config_secrets_without_verifying(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        storage_config_default,
+    ):
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(
+            url + "?verify=False", headers=auth_header, json=payload
+        )
+        assert 200 == response.status_code
+
+        db.refresh(storage_config_default)
+
+        assert json.loads(response.text) == {
+            "msg": "Secrets updated for default config of storage type: s3.",
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert (
+            storage_config_default.secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value]
+            == "1345234524"
+        )
+        assert (
+            storage_config_default.secrets[StorageSecrets.AWS_SECRET_ACCESS_KEY.value]
+            == "23451345834789"
+        )
+
+    @mock.patch("fides.api.ops.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    def test_put_default_config_secrets_and_verify(
+        self,
+        mock_valid: Mock,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        storage_config_default,
+    ):
+        mock_valid.return_value = True
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+
+        db.refresh(storage_config_default)
+
+        assert json.loads(response.text) == {
+            "msg": "Secrets updated for default config of storage type: s3.",
+            "test_status": "succeeded",
+            "failure_reason": None,
+        }
+        assert (
+            storage_config_default.secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value]
+            == "1345234524"
+        )
+        assert (
+            storage_config_default.secrets[StorageSecrets.AWS_SECRET_ACCESS_KEY.value]
+            == "23451345834789"
+        )
+
+        mock_valid.reset_mock()
+        mock_valid.return_value = False
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert json.loads(response.text) == {
+            "msg": "Secrets updated for default config of storage type: s3.",
+            "test_status": "failed",
+            "failure_reason": None,
+        }
+
+    @mock.patch(
+        "fides.api.ops.service.storage.storage_authenticator_service.get_s3_session"
+    )
+    def test_put_default_s3_config_secrets_and_verify(
+        self,
+        get_s3_session_mock: Mock,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        get_s3_session_mock.assert_called_once_with(
+            S3AuthMethod.SECRET_KEYS.value,
+            {
+                "aws_access_key_id": payload["aws_access_key_id"],
+                "aws_secret_access_key": payload["aws_secret_access_key"],
+            },
+        )
