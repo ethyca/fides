@@ -28,8 +28,7 @@ const StorageConfiguration = () => {
   const { errorAlert, successAlert } = useAlert();
   const [saveStorageType] = useSetActiveStorageMutation();
 
-  const useStorageSelection = async (value: string) => {
-    const { data: existingData } = useGetStorageDetailsQuery(value);
+  const handleChange = async (value: string) => {
     setIsLoading(true);
 
     const payload = await saveStorageType({
@@ -44,6 +43,7 @@ const StorageConfiguration = () => {
     } else {
       successAlert(`Configure storage type saved successfully.`);
       setSelected(value);
+      const { data: existingData } = useGetStorageDetailsQuery(value);
       setExistingStorageData(existingData);
       setIsLoading(false);
     }
@@ -87,7 +87,7 @@ const StorageConfiguration = () => {
         </Heading>
         <RadioGroup
           _disabled={isLoading}
-          onChange={useStorageSelection}
+          onChange={handleChange}
           value={selected}
           data-testid="privacy-requests-storage-selection"
           colorScheme="secondary"
