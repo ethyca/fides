@@ -1,5 +1,3 @@
-import { useFeatures } from "~/features/common/features";
-
 export type NavConfigRoute = {
   title?: string;
   path: string;
@@ -14,61 +12,50 @@ export type NavConfigGroup = {
   routes: NavConfigRoute[];
 };
 
-export const NAV_CONFIG = () => {
-  const features = useFeatures();
-
-  return [
-    // Goes last because its root path will match everything.
-    {
-      title: "Home",
-      routes: [
-        {
-          path: "/",
-          exact: true,
-        },
-      ],
-    },
-    {
-      title: "Privacy requests",
-      requiresConnections: true,
-      routes: [
-        { title: "Request manager", path: "/privacy-requests" },
-        { title: "Connection manager", path: "/datastore-connection" },
-        ...(features.flags.privacyRequestsConfiguration
-          ? [
-              {
-                title: "Configuration",
-                path: "/privacy-requests/configure",
-              },
-            ]
-          : []),
-      ],
-    },
-    {
-      title: "Data map",
-      requiresSystems: true,
-      routes: [
-        { title: "View map", path: "/datamap", requiresPlus: true },
-        { title: "View systems", path: "/system" },
-        { title: "Add systems", path: "/add-systems" },
-        { title: "Manage datasets", path: "/dataset" },
-        {
-          title: "Classify systems",
-          path: "/classify-systems",
-          requiresPlus: true,
-        },
-      ],
-    },
-    {
-      title: "Management",
-      routes: [
-        { title: "Taxonomy", path: "/taxonomy" },
-        { title: "Users", path: "/user-management" },
-        { title: "About Fides", path: "/management/about" },
-      ],
-    },
-  ];
-};
+export const NAV_CONFIG: NavConfigGroup[] = [
+  // Goes last because its root path will match everything.
+  {
+    title: "Home",
+    routes: [
+      {
+        path: "/",
+        exact: true,
+      },
+    ],
+  },
+  {
+    title: "Privacy requests",
+    requiresConnections: true,
+    routes: [
+      { title: "Request manager", path: "/privacy-requests" },
+      { title: "Connection manager", path: "/datastore-connection" },
+      { title: "Configuration", path: "/privacy-requests/configure" },
+    ],
+  },
+  {
+    title: "Data map",
+    requiresSystems: true,
+    routes: [
+      { title: "View map", path: "/datamap", requiresPlus: true },
+      { title: "View systems", path: "/system" },
+      { title: "Add systems", path: "/add-systems" },
+      { title: "Manage datasets", path: "/dataset" },
+      {
+        title: "Classify systems",
+        path: "/classify-systems",
+        requiresPlus: true,
+      },
+    ],
+  },
+  {
+    title: "Management",
+    routes: [
+      { title: "Taxonomy", path: "/taxonomy" },
+      { title: "Users", path: "/user-management" },
+      { title: "About Fides", path: "/management/about" },
+    ],
+  },
+];
 
 export type NavGroupChild = {
   title: string;
@@ -94,14 +81,14 @@ export const configureNavGroups = ({
   hasSystems = false,
   hasConnections = false,
 }: {
-  config: () => NavConfigGroup[];
+  config: NavConfigGroup[];
   hasPlus?: boolean;
   hasSystems?: boolean;
   hasConnections?: boolean;
 }): NavGroup[] => {
   const navGroups: NavGroup[] = [];
 
-  config().forEach((group) => {
+  config.forEach((group) => {
     // Skip groups with unmet requirements.
     if (
       (group.requiresConnections && !hasConnections) ||

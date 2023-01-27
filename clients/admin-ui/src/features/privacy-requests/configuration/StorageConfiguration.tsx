@@ -7,6 +7,7 @@ import {
   Radio,
   RadioGroup,
   Stack,
+  Text,
 } from "@fidesui/react";
 import NextLink from "next/link";
 import { useState } from "react";
@@ -21,9 +22,20 @@ import {
 
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
+interface StorageData {
+  type: string;
+  details: {
+    auth_method: string;
+    bucket: string;
+  };
+  format: string;
+}
+
 const StorageConfiguration = () => {
-  const [selected, setSelected] = useState("");
-  const [existingStorageData, setExistingStorageData] = useState([]);
+  const [existingStorageData, setExistingStorageData] = useState<StorageData>();
+  const { data: existingData } = useGetStorageDetailsQuery(
+    existingStorageData?.type
+  );
   const [isLoading, setIsLoading] = useState(false);
   const { errorAlert, successAlert } = useAlert();
   const [saveStorageType] = useSetActiveStorageMutation();
@@ -42,8 +54,6 @@ const StorageConfiguration = () => {
       setIsLoading(false);
     } else {
       successAlert(`Configure storage type saved successfully.`);
-      setSelected(value);
-      const { data: existingData } = useGetStorageDetailsQuery(value);
       setExistingStorageData(existingData);
       setIsLoading(false);
     }
@@ -63,7 +73,7 @@ const StorageConfiguration = () => {
               Configuration
             </BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbItem color="purple.400">
+          <BreadcrumbItem color="complimentary.500">
             <BreadcrumbLink
               as={NextLink}
               href="/privacy-requests/configure/storage"
@@ -80,15 +90,25 @@ const StorageConfiguration = () => {
       </Heading>
 
       <Box display="flex" flexDirection="column" width="50%">
-        To configure a Storage destination, first choose a method to store your
-        results. Fides currently supports Local and S3 storage methods.
+        <Box>
+          To configure a Storage destination, first choose a method to store
+          your results. Fides currently supports{" "}
+          <Text as="span" color="complimentary.500">
+            Local
+          </Text>{" "}
+          and{" "}
+          <Text as="span" color="complimentary.500">
+            S3
+          </Text>{" "}
+          storage methods.
+        </Box>
         <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose storage type to configure
         </Heading>
         <RadioGroup
           _disabled={isLoading}
           onChange={handleChange}
-          value={selected}
+          value={existingStorageData?.type}
           data-testid="privacy-requests-storage-selection"
           colorScheme="secondary"
           p={3}
@@ -102,7 +122,7 @@ const StorageConfiguration = () => {
             </Radio>
           </Stack>
         </RadioGroup>
-        {selected === "s3" ? (
+        {existingStorageData?.type === "s3" ? (
           <S3StorageConfiguration existingStorageData={existingStorageData} />
         ) : null}
       </Box>

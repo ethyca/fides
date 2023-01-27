@@ -12,7 +12,7 @@
   },
   "privacyRequestsConfiguration": {
     "development": true,
-    "test": true,
+    "test": false,
     "production": false
     },
   "datasetClassificationUpdates": {

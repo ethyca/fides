@@ -19,7 +19,7 @@ const ConfigurePrivacyRequests: NextPage = () => (
             Privacy requests
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbItem color="purple.400">
+        <BreadcrumbItem color="complimentary.500">
           <BreadcrumbLink
             as={NextLink}
             href="/privacy-requests/configure"
@@ -34,14 +34,15 @@ const ConfigurePrivacyRequests: NextPage = () => (
       Configure your privacy requests
     </Heading>
     <Box display="flex" alignItems="center" mb={5}>
+      {/* Subsequent PR will have messaging provider option to configure
       <Box
         border="1px solid"
         borderColor="gray.300"
         borderRadius="md"
-        _hover={{ borderColor: "purple.300", cursor: "pointer" }}
-        // onClick={() => {
-        // configure messaging route
-        // }}
+        _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
+        onClick={() => {
+        configure messaging route
+        }}
         mr={5}
         p={6}
       >
@@ -52,13 +53,13 @@ const ConfigurePrivacyRequests: NextPage = () => (
         configurations for sending processing notices to privacy request
         subjects. You&apos;ll need to set up config variables to send out
         messages from Fides. Configure your settings here.
-      </Box>
+      </Box> */}
       <NextLink href="/privacy-requests/configure/storage" passHref>
         <Box
           border="1px solid"
           borderColor="gray.300"
           borderRadius="md"
-          _hover={{ borderColor: "purple.300", cursor: "pointer" }}
+          _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
           p={6}
         >
           <Heading mb={2} size="sm">
