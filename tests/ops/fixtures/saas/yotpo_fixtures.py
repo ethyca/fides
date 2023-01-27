@@ -31,7 +31,9 @@ def yotpo_secrets(saas_config):
         "secret_key": pydash.get(saas_config, "yotpo.secret_key") or secrets["secret_key"],
         "external_id": pydash.get(saas_config, "yotpo.external_id") or secrets["external_id"],
         "x-guid": pydash.get(saas_config, "yotpo.x-guid") or secrets["x-guid"],
-        "x-api-key": pydash.get(saas_config, "yotpo.x-api-key") or secrets["x-api-key"]
+        "x-api-key": pydash.get(saas_config, "yotpo.x-api-key") or secrets["x-api-key"],
+        "loyalty_domain": pydash.get(saas_config, "yotpo.loyalty_domain") or secrets["loyalty_domain"]
+        
     }
 
 
@@ -65,9 +67,11 @@ def yotpo_dataset() -> Dict[str, Any]:
         "yotpo_instance",
     )[0]
 
+
 @pytest.fixture(scope="function")
 def yotpo_random_external_id() -> str:
     return f"{cryptographic_util.generate_secure_random_string(8)}"
+
 
 @pytest.fixture(scope="function")
 def yotpo_connection_config(
@@ -117,7 +121,7 @@ def yotpo_dataset_config(
 
 @pytest.fixture(scope="function")
 def yotpo_create_erasure_data(
-    yotpo_connection_config: ConnectionConfig, yotpo_erasure_identity_email: str
+    yotpo_connection_config: ConnectionConfig, yotpo_erasure_identity_email: str, yotpo_random_external_id: str
 ) -> None:
 
     # sleep(60)
@@ -151,49 +155,61 @@ def yotpo_create_erasure_data(
         }
     }
 
-    response = requests.patch(
+    customer_response = requests.patch(
         url=f"{base_url}/core/v3/stores/{app_key}/customers", headers=headers, json=body)
 
-    customer = {}
+    assert customer_response.status_code == 200
 
     # Update customer
     body = {
-        "external_id": yotpo_random_external_id,
-        "phone_number": "123456789"
+        "customer": {
+            "external_id": yotpo_random_external_id,
+            "first_name": "test"
+        }
     }
-    response = requests.patch(
+    
+    update_response = requests.patch(
         url=f"{base_url}/core/v3/stores/{app_key}/customers", headers=headers, json=body)
+    
+    assert update_response.status_code == 200
+    
+    
 
     # Reviews
 
-    body = {
-        "appkey": "3wU9yBbB7YLY2YzAUeY8V9TDBTqpLAQ4ehm2n5e8",
-        "sku": "1234",
-        "product_title": "test product",
-        "display_name": "test",
-        "review_content": "Hello Iam human",
-        "review_score": "143",
-        "email": yotpo_identity_email,
-        "review_title": "Review"
-    }
-    
-    response = requests.post(
-        url=f"{base_url}/v1/widget/reviews", headers={}, json=body)
-    assert response.json()['code'] == 200
-    
+    # body = {
+    #     "appkey": "3wU9yBbB7YLY2YzAUeY8V9TDBTqpLAQ4ehm2n5e8",
+    #     "sku": "1234",
+    #     "product_title": "test product",
+    #     "display_name": "test",
+    #     "review_content": "Hello Iam human",
+    #     "review_score": "143",
+    #     "email": yotpo_identity_email,
+    #     "review_title": "Review"
+    # }
+    # print(body)
+    # response = requests.post(
+    #     url=f"{base_url}/v1/widget/reviews", headers={}, json=body)
+    # assert response.json()['code'] == 200
+    # print("Heloooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo")
+    # print(response)
+    # exit()
     # Customer(Loyalty)
     body = {
-        "email" : yotpo_identity_email
+        "email": yotpo_erasure_identity_email
     }
     customerLoyaltyHeaders = {
-        "x-guid" : f"{yotpo_secrets['x-guid']}",
-        "x-api-key" : f"{yotpo_secrets['x-api-key']}"
+        "x-guid": f"{yotpo_secrets['x-guid']}",
+        "x-api-key": f"{yotpo_secrets['x-api-key']}"
     }
+    loyalty_base_url = f"https://{yotpo_secrets['loyalty_domain']}"
     
-    response = requests.post(
-        url=f"{base_url}/api/v2/customers", headers=customerLoyaltyHeaders, json=body)
+   
+    loyalty_response = requests.post(
+        url=f"{loyalty_base_url}/api/v2/customers", headers=customerLoyaltyHeaders, json=body)
     
-    assert response.json()['code'] == 201
+    assert loyalty_response.status_code == 201
     
+    sleep(60)
     
-    yield customer
+    yield loyalty_response

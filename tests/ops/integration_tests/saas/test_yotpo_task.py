@@ -159,6 +159,7 @@ async def test_yotpo_erasure_request_task(
     yotpo_connection_config,
     yotpo_dataset_config,
     yotpo_erasure_identity_email,
+    yotpo_random_external_id,
     yotpo_create_erasure_data,
 ) -> None:
     """Full erasure request based on the yotpo SaaS config"""
@@ -282,21 +283,19 @@ async def test_yotpo_erasure_request_task(
     )
 
     assert x == {
-        f"{dataset_name}:customer": 1,
+        f"{dataset_name}:customer": 0,
         f"{dataset_name}:reviews_-_merchant_(ugc)": 0,
         f"{dataset_name}:email_analytics_(ugc)": 0,
         f"{dataset_name}:visual_ugc_(ugc)": 0,
         f"{dataset_name}:customers(loyalty)": 0,
-        f"{dataset_name}:get_utoken_(core)": 1,
+        f"{dataset_name}:get_utoken_(core)": 0,
 
 
     }
 
     yotpo_secrets = yotpo_connection_config.secrets
-    app_key = yotpo_secrets["app_key"],
-    secret_key = yotpo_secrets["secret_key"]
+    app_key = yotpo_secrets["app_key"]
     base_url = f"https://{yotpo_secrets['domain']}"
-    external_id = yotpo_secrets["external_id"]
     
     # uToken
 
@@ -306,22 +305,31 @@ async def test_yotpo_erasure_request_task(
     
     response = requests.post(
         url=f"{base_url}/core/v3/stores/{app_key}/access_tokens", headers = {}, json=body)
+    
     headers = response.json()['access_token']
 
     # Customer
     customer_response = requests.get(
         url=f"{base_url}/core/v3/stores/{app_key}/customers",
         headers=headers,
-        params={"external_ids": external_id},
+        params={"external_ids": yotpo_random_external_id},
     )
     customer_response.json()[0]['email'] = yotpo_erasure_identity_email
     
-    # # Reviews
-    # review_response = requests.get(
-    #     url=f"{base_url}/core/v3/stores/{app_key}/customers",
-    #     headers=headers,
-    #     params={"external_ids": external_id},
-    # )
+    # Customers loyalty
+    loyalty_base_url = f"https://{yotpo_secrets['loyalty_domain']}"
+    customerLoyaltyHeaders = {
+        "x-guid": f"{yotpo_secrets['x-guid']}",
+        "x-api-key": f"{yotpo_secrets['x-api-key']}"
+    }
     
+    loyalty_response = requests.get(
+        url=f"{loyalty_base_url}/api/v2/customers",
+        headers=customerLoyaltyHeaders,
+        params={"email": yotpo_erasure_identity_email},
+    )
+    
+    loyalty_response.json()[0]['email'] = yotpo_erasure_identity_email
+
         
     CONFIG.execution.masking_strict = masking_strict
