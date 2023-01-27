@@ -19,8 +19,15 @@ The types of changes are:
 
 ### Added
 
+* Admin UI
+  * Create custom fields from a resource screen - Button to Trigger modal [#524](https://github.com/ethyca/fides/pull/2536)
+  * Create Custom Lists [#525](https://github.com/ethyca/fides/pull/2536)
+  * Create Custom Field Definition [#526](https://github.com/ethyca/fides/pull/2536)
+  * Provide a custom field value in a resource [#528](https://github.com/ethyca/fides/pull/2536)
+
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
+
 
 ### Changed
 
