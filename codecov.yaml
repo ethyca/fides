@@ -8,3 +8,5 @@ coverage:
         target: 100%
 notify:
   after_n_builds: 4
+ignore:
+  **/migrations/**
