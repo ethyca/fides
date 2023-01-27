@@ -8,7 +8,12 @@ saas_config:
     connector_params:
       - name: domain
       - name: access_token
-  
+
+    external_references:
+      - name: surveymonkey_survey_id
+        label: Surveymonkey Survey ID
+        description: Dataset reference to the location of Surveymonkey Survey IDs
+
     client_config:
       protocol: https
       host: <domain>
@@ -45,80 +50,64 @@ saas_config:
                 <masked_object_fields>
               }
             param_values:
-              - name: placeholder
-                identity: email
               - name: contact_id
                 references:
                   - dataset: <instance_fides_key>
                     field: contacts.id
                     direction: from
-      - name: surveys
-        requests:
-          read:
-            method: GET
-            path: /v3/surveys
-            param_values:
-              - name: placeholder
-                identity: email
-            data_path: data
       - name: survey_collectors
         requests:
           read:
             method: GET
             path: /v3/surveys/<survey_id>/collectors
             param_values:
-              - name: placeholder
-                identity: email
               - name: survey_id
                 references:
-                  - dataset: <instance_fides_key>
-                    field: surveys.id
-                    direction: from
+                  - surveymonkey_survey_id
             data_path: data
-      # - name: collector_messages
-      #   requests:
-      #     read:
-      #       method: GET
-      #       path: /v3/collectors/collector_id/messages
-      #       param_values:
-      #         - name: placeholder
-      #           identity: email
-      #         - name: collector_id
-      #           references:
-      #             - dataset: <instance_fides_key>
-      #               field: survey_collectors.id
-      #               direction: from
-      #       data_path: data
-      # - name: message_recipients
-      #   requests:
-      #     read:
-      #       method: GET
-      #       path: /v3/collectors/collector_id/messages/message_id/
-      #       param_values:
-      #         - name: placeholder
-      #           identity: email
-      #         - name: message_id
-      #           references:
-      #             - dataset: <instance_fides_key>
-      #               field: collector_messages.id
-      #               direction: from
-      #         - name: collector_id
-      #           references:
-      #             - dataset: <instance_fides_key>
-      #               field: collector_messages.collector_id
-      #               direction: from
-      #       data_path: data
+            pagination:
+              strategy: link
+              configuration:
+                source: body
+                path: links.next
       - name: survey_responses
         requests:
           read:
             method: GET
-            path: /v3/surveys/<survey_id>/responses/bulk
+            path: /v3/collectors/<collector_id>/responses/bulk
             param_values:
-              - name: placeholder
-                identity: email
-              - name: survey_id
+              - name: collector_id
                 references:
                   - dataset: <instance_fides_key>
-                    field: surveys.id
+                    field: survey_collectors.id
                     direction: from
+            postprocessors:
+              - strategy: filter
+                configuration:
+                  field: metadata.contact.email.value
+                  value:
+                    identity: email
             data_path: data
+            pagination:
+              strategy: link
+              configuration:
+                source: body
+                path: links.next
+          update:
+            method: PATCH
+            path: /v3/collectors/<collector_id>/responses/<response_id>
+            body: |
+              {
+                <masked_object_fields>
+              }
+            param_values:
+              - name: collector_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: survey_responses.collector_id
+                    direction: from
+              - name: response_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: survey_responses.id
+                    direction: from
