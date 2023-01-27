@@ -18,6 +18,14 @@ Then, in this folder:
 npm run cy:run
 ```
 
+### Environment variables
+
+We specify environment variables for our server URLs so that it is possible to run the test suite against different environments. These can be found in [cypress.config.ts](./cypress.config.ts) and each one can be overwritten by prefixing with `CYPRESS_`. For example:
+
+```sh
+export CYPRESS_ADMIN_UI_URL="http://localhost:8080"
+```
+
 ## Development notes
 
 Because we are testing full end to end, changes Cypress makes will propagate to the test database and be saved. This means the tests we write here are ideally resilient to data in the database. Therefore, for example, we may not be able to say "Approve the privacy request", but instead may have to say "Approve the most recent privacy request" since another test may have added a privacy request, or we ourselves may have added another privacy request while developing the test.
