@@ -40,7 +40,6 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.storage.storage import (
-    DEFAULT_STORAGE_KEY,
     FileNaming,
     S3AuthMethod,
     StorageDetails,
@@ -190,11 +189,12 @@ def storage_config_default(db: Session) -> Generator:
         db=db,
         data={
             "name": "default storage config",
-            "key": DEFAULT_STORAGE_KEY,
-            "type": StorageType.local,
+            "key": "default_storage_key",
+            "type": StorageType.s3,
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
             },
             "format": ResponseFormat.json,
         },

@@ -22,7 +22,7 @@ from fides.api.ops.common_exceptions import (
 )
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.storage import StorageConfig, default_storage_config
+from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.core.config import get_config
 from fides.lib.db.base_class import Base, FidesBase
@@ -295,10 +295,10 @@ class Rule(Base):
         """
         if self.storage_destination:
             return self.storage_destination
-        storage_destination = default_storage_config(db)
+        storage_destination = active_default_storage_config(db)
         if storage_destination is None:
             raise StorageConfigNotFoundException(
-                f"The given rule `{self.key}` has no `storage_destination` configured, and there is no default storage configuration defined"
+                f"The given rule `{self.key}` has no `storage_destination` configured, and there is no active default storage configuration defined"
             )
         return storage_destination
 

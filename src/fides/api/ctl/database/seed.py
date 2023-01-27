@@ -17,10 +17,7 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_TRANSFER,
 )
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
-from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.storage.storage import DEFAULT_STORAGE_KEY
 from fides.core.config import get_config
-from fides.core.config.storage_settings import StorageSettings
 from fides.lib.db.base_class import FidesBase
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 from fides.lib.models.client import ClientDetail
@@ -171,27 +168,27 @@ def load_default_access_policy(
             f"Skipping {DEFAULT_ACCESS_POLICY} creation as it already exists in the database"
         )
 
-    local_storage_config = StorageConfig.get_by(
-        db_session, field="key", value=DEFAULT_STORAGE_KEY
-    )
-    if not local_storage_config:
-        log.info(f"Creating: {DEFAULT_STORAGE_KEY}...")
-        default_storage_config: StorageConfig = StorageConfig.create(
-            db=db_session, data=StorageSettings.default_storage_destination.dict()
-        )
-        if (
-            hasattr(StorageSettings, "default_storage_secrets")
-            and StorageSettings.default_storage_secrets
-        ):
-            default_storage_config.set_secrets(
-                db=db_session,
-                storage_secrets=StorageSettings.default_storage_secrets.dict(),
-            )
+    # local_storage_config = StorageConfig.get_by(
+    #     db_session, field="key", value=DEFAULT_LOCAL_STORAGE_KEY
+    # )
+    # if not local_storage_config:
+    #     log.info(f"Creating: {DEFAULT_LOCAL_STORAGE_KEY}...")
+    #     default_storage_config: StorageConfig = StorageConfig.create(
+    #         db=db_session, data=StorageSettings.default_storage_destination.dict()
+    #     )
+    #     if (
+    #         hasattr(StorageSettings, "default_storage_secrets")
+    #         and StorageSettings.default_storage_secrets
+    #     ):
+    #         default_storage_config.set_secrets(
+    #             db=db_session,
+    #             storage_secrets=StorageSettings.default_storage_secrets.dict(),
+    #         )
 
-    else:
-        log.info(
-            f"Skipping {DEFAULT_STORAGE_KEY} creation as it already exists in the database"
-        )
+    # else:
+    #     log.info(
+    #         f"Skipping {DEFAULT_LOCAL_STORAGE_KEY} creation as it already exists in the database"
+    #     )
 
     access_rule: Optional[FidesBase] = Rule.get_by(
         db_session, field="key", value=DEFAULT_ACCESS_POLICY_RULE

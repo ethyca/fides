@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Optional
 
 from loguru import logger
 from pydantic import ValidationError
-from sqlalchemy import Boolean, Column, Enum, String
+from sqlalchemy import Boolean, Column, Enum, Index, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
@@ -13,15 +13,8 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.ops.common_exceptions import StorageConfigValidationError
 from fides.api.ops.db.base_class import JSONTypeOverride
-from fides.api.ops.schemas.storage.storage import (
-    DEFAULT_STORAGE_KEY,
-    SUPPORTED_STORAGE_SECRETS,
-    ResponseFormat,
-    StorageSecretsS3,
-    StorageType,
-)
+from fides.api.ops.schemas.storage.storage import ResponseFormat, StorageType
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
@@ -29,7 +22,6 @@ from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.storage_util import get_schema_for_secrets
 from fides.core.config import get_config
 from fides.lib.db.base import Base
-from fides.lib.db.base_class import FidesBase  # type: ignore[attr-defined]
 
 CONFIG = get_config()
 
@@ -42,7 +34,7 @@ class StorageConfig(Base):
     # allows JSON to detect in-place mutations to the structure (when used with sqlalchemy)
     details = Column(MutableDict.as_mutable(JSONB), nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
-    is_default = Column(Boolean, default=False)
+    is_default = Column(Boolean, index=True, default=False)
     secrets = Column(
         MutableDict.as_mutable(
             StringEncryptedType(
@@ -57,6 +49,16 @@ class StorageConfig(Base):
 
     format = Column(
         Enum(ResponseFormat), server_default="json", nullable=False, default="json"
+    )
+
+    __table_args__ = (
+        Index(
+            "only_one_default_per_type",
+            type,
+            is_default,
+            unique=True,
+            postgresql_where=(is_default),
+        ),
     )
 
     def set_secrets(
@@ -87,36 +89,36 @@ class StorageConfig(Base):
         self.secrets = storage_secrets
         self.save(db=db)
 
-    @classmethod
-    def create(cls, db: Session, *, data: dict[str, Any]) -> StorageConfig:
-        """Validate this object's data before deferring to the superclass on create"""
-        if not "is_default" in data.keys():
-            data["is_default"] = False
-        _validate_default_storage_config(data["key"], data["is_default"])
-        return super().create(db=db, data=data)
 
-    def save(self, db: Session) -> StorageConfig:
-        """Validate this object's data before deferring to the superclass on save"""
-        _validate_default_storage_config(self.key, self.is_default)
-        return super().save(db=db)
+def default_storage_config_by_type(
+    db: Session, storage_type: StorageType
+) -> Optional[StorageConfig]:
+    """
+    Retrieve the default storage config for the given type by querying for the
+    `StorageConfig` record with the given type and with `is_default` set to `True`.
 
-
-def default_storage_config(db: Session) -> StorageConfig:
-    default_storage: StorageConfig = StorageConfig.get_by(
-        db=db, field="key", value=DEFAULT_STORAGE_KEY
+    There should only ever be one `StorageConfig` record that
+    matches this criteria at any point.
+    """
+    if not isinstance(storage_type, StorageType):
+        # try to coerce into an enum
+        try:
+            storage_type = StorageType[storage_type]
+        except KeyError:
+            raise ValueError(
+                "storage_type argument must be a valid StorageType enum member."
+            )
+    default_storage: Optional[StorageConfig] = (
+        db.query(StorageConfig).filter_by(is_default=True, type=storage_type).first()
     )
     return default_storage
 
 
-def _validate_default_storage_config(key: str, is_default: bool) -> None:
+def active_default_storage_config(db: Session):
     """
-    Validate to ensure `is_default` is only set to `True` if and only if it's the default storage config
+    Retrieve the active default storage config.
+
+    At this point, this is just hardcoded to the default s3 config.
+    TODO: update to rely on config setting to determine the active default.
     """
-    if key == DEFAULT_STORAGE_KEY and not is_default:
-        raise StorageConfigValidationError(
-            "`is_default` must be set to true if updating the default storage policy"
-        )
-    if key != DEFAULT_STORAGE_KEY and is_default:
-        raise StorageConfigValidationError(
-            "`is_default` can only be set to true on the default storage policy"
-        )
+    return default_storage_config_by_type(db, StorageType.local)

@@ -36,6 +36,9 @@ STORAGE_CONFIG = "/storage/config"
 STORAGE_SECRETS = "/storage/config/{config_key}/secret"
 STORAGE_BY_KEY = "/storage/config/{config_key}"
 STORAGE_UPLOAD = "/storage/{request_id}"
+STORAGE_DEFAULT = "/storage/default"
+STORAGE_DEFAULT_SECRETS = "/storage/default/{storage_type}/secret"
+STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
 
 # Email URLs
 MESSAGING_CONFIG = "/messaging/config"

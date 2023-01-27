@@ -16,6 +16,8 @@ from fides.api.ops.api.v1.scope_registry import (
 from fides.api.ops.api.v1.urn_registry import (
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
+    STORAGE_DEFAULT,
+    STORAGE_DEFAULT_BY_TYPE,
     STORAGE_SECRETS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
@@ -28,7 +30,6 @@ from fides.api.ops.schemas.storage.storage import (
     S3AuthMethod,
     StorageDetails,
     StorageSecrets,
-    StorageSecretsS3,
     StorageType,
 )
 from fides.lib.models.client import ClientDetail
@@ -204,6 +205,7 @@ class TestPatchStorageConfig:
                     },
                     "key": "my_s3_bucket",
                     "format": "csv",
+                    "is_default": False,
                 }
             ],
             "failed": [],
@@ -347,7 +349,6 @@ class TestPutStorageConfigSecretsS3:
         response = api_client.put(
             url + "?verify=False", headers=auth_header, json={"bad_key": "12345"}
         )
-
         assert response.status_code == 400
         assert response.json() == {
             "detail": [
@@ -487,6 +488,7 @@ class TestGetStorageConfigs:
                         "naming": "request_id",
                     },
                     "format": "json",
+                    "is_default": False,
                 }
             ],
             "page": 1,
@@ -542,6 +544,7 @@ class TestGetStorageConfig:
             },
             "key": "my_test_config",
             "format": "json",
+            "is_default": False,
         }
 
 
@@ -570,6 +573,22 @@ class TestDeleteConfig:
             headers=auth_header,
         )
         assert 404 == response.status_code
+
+    def test_delete_default_config_rejected(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        storage_config_default,
+    ):
+        auth_header = generate_auth_header([STORAGE_DELETE])
+        response = api_client.delete(
+            (V1_URL_PREFIX + STORAGE_BY_KEY).format(
+                config_key=storage_config_default.key
+            ),
+            headers=auth_header,
+        )
+        assert 400 == response.status_code
+        assert "Default storage configurations cannot be deleted." in response.text
 
     def test_delete_config(
         self,
@@ -600,3 +619,369 @@ class TestDeleteConfig:
         db.expunge_all()
         config = db.query(StorageConfig).filter_by(key=storage_config.key).first()
         assert config is None
+
+
+class TestGetDefaultStorageConfigs:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + STORAGE_DEFAULT
+
+    def test_get_default_configs_not_authenticated(
+        self, api_client: TestClient, url
+    ) -> None:
+        response = api_client.get(url)
+        assert 401 == response.status_code
+
+    def test_get_default_configs_wrong_scope(
+        self, api_client: TestClient, url, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header([STORAGE_DELETE])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_default_configs(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        storage_config_default: StorageConfig,
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        expected_response = {
+            "items": [
+                {
+                    "name": storage_config_default.name,
+                    "type": storage_config_default.type.value,
+                    "details": {
+                        "auth_method": storage_config_default.details["auth_method"],
+                        "naming": storage_config_default.details["naming"],
+                    },
+                    "key": storage_config_default.key,
+                    "format": storage_config_default.format.value,
+                    "is_default": True,
+                }
+            ],
+            "page": 1,
+            "size": PAGE_SIZE,
+            "total": 1,
+        }
+        response_body = json.loads(response.text)
+        assert expected_response == response_body
+
+
+class TestGetDefaultStorageConfig:
+    @pytest.fixture(scope="function")
+    def url(self, storage_config_default: StorageConfig) -> str:
+        return (V1_URL_PREFIX + STORAGE_DEFAULT_BY_TYPE).format(
+            storage_type=storage_config_default.type.value
+        )
+
+    def test_get_default_config_not_authenticated(self, url, api_client: TestClient):
+        response = api_client.get(url)
+        assert 401 == response.status_code
+
+    def test_get_default_config_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header([STORAGE_DELETE])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_default_config_invalid(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        storage_config_default: StorageConfig,
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            (V1_URL_PREFIX + STORAGE_DEFAULT_BY_TYPE).format(storage_type="invalid"),
+            headers=auth_header,
+        )
+        assert 422 == response.status_code
+
+    def test_get_default_config(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        storage_config_default: StorageConfig,
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+
+        response_body = response.json()
+
+        assert response_body == {
+            "name": storage_config_default.name,
+            "type": storage_config_default.type.value,
+            "details": {
+                "auth_method": storage_config_default.details["auth_method"],
+                "naming": storage_config_default.details["naming"],
+            },
+            "key": storage_config_default.key,
+            "format": storage_config_default.format.value,
+            "is_default": True,
+        }
+
+
+class TestPutDefaultStorageConfig:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + STORAGE_DEFAULT
+
+    @pytest.fixture(scope="function")
+    def payload(self):
+        return {
+            "type": StorageType.s3.value,
+            "details": {
+                "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                "bucket": "some-bucket",
+                "max_retries": 10,
+            },
+            "format": "csv",
+        }
+
+    def test_put_default_storage_config_not_authenticated(
+        self,
+        api_client: TestClient,
+        payload,
+        url,
+    ):
+        response = api_client.put(url, headers={}, json=payload)
+        assert 401 == response.status_code
+
+    def test_put_default_storage_config_incorrect_scope(
+        self,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_put_default_storage(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+
+        assert response_body["key"] is not None
+        assert response_body["type"] == payload["type"]
+        assert response_body["details"]["bucket"] == payload["details"]["bucket"]
+        assert response_body["is_default"] == True
+        storage_configs = db.query(StorageConfig).filter_by(is_default=True).all()
+        assert len(storage_configs) == 1
+        assert storage_configs[0].key == response_body["key"]
+        assert storage_configs[0].type.value == payload["type"]
+        assert storage_configs[0].details["bucket"] == payload["details"]["bucket"]
+        assert storage_configs[0].is_default
+
+        storage_configs[0].delete(db)
+
+    def test_put_storage_config_with_key_rejected(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        payload["key"] = "my_s3_bucket"
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+
+    def test_put_storage_config_with_name_rejected(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        payload["name"] = "my_s3_bucket"
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+
+    @pytest.mark.parametrize(
+        "auth_method", [S3AuthMethod.SECRET_KEYS.value, S3AuthMethod.AUTOMATIC.value]
+    )
+    def test_put_default_storage_config_with_different_auth_methods(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        auth_method,
+    ):
+        payload["details"]["auth_method"] = auth_method
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        config_key = response_body["key"]
+        storage_config = StorageConfig.get_by(db, field="key", value=config_key)
+        assert auth_method == response_body["details"]["auth_method"]
+        assert auth_method == storage_config.details["auth_method"]
+        assert storage_config.is_default
+        storage_config.delete(db)
+
+    def test_put_default_storage_config_twice_only_one_record(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        # try an initial put, assert it works well
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        config_key = response_body["key"]
+        storage_configs = (
+            db.query(StorageConfig)
+            .filter_by(is_default=True, type=payload["type"])
+            .all()
+        )
+        assert len(storage_configs) == 1
+        storage_config = storage_configs[0]
+        assert storage_config.key == config_key
+        assert storage_config.details["bucket"] == payload["details"]["bucket"]
+
+        # try a follow-up put after changing a detail assert it made the update to existing record
+        payload["details"]["bucket"] = "a-new-bucket"
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        assert config_key == response_body["key"]
+        storage_configs = (
+            db.query(StorageConfig)
+            .filter_by(is_default=True, type=payload["type"])
+            .all()
+        )
+        assert len(storage_configs) == 1
+        storage_config = storage_configs[0]
+        db.refresh(storage_config)
+        assert storage_config.key == config_key
+        assert storage_config.details["bucket"] == "a-new-bucket"
+
+        storage_config.delete(db)
+
+    def test_put_default_config_local_rejects_s3_details(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
+    ):
+        payload["type"] = StorageType.local.value
+        payload[
+            "format"
+        ] = (
+            ResponseFormat.json.value
+        )  # change to JSON because that's what local expects
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert response.status_code == 422
+
+    def test_put_default_config_local_rejects_csv(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        payload: dict,
+    ):
+        payload["type"] = StorageType.local.value
+        payload.pop(
+            "details"
+        )  # get rid of details since local doesn't need any details
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+        # 422 here is due to csv not being allowed for local storage
+        assert response.status_code == 422
+
+    def test_put_default_config_local(
+        self,
+        db,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        payload: dict,
+    ):
+        payload["type"] = StorageType.local.value
+        payload[
+            "format"
+        ] = (
+            ResponseFormat.json.value
+        )  # change to JSON because that's what local expects
+        payload["details"] = {
+            "naming": FileNaming.request_id.value
+        }  # currently this is the only thing that can be set for local storage
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+
+        assert response_body["key"] is not None
+        assert response_body["type"] == payload["type"]
+        assert response_body["details"]["naming"] == payload["details"]["naming"]
+        assert response_body["is_default"] == True
+        storage_configs = db.query(StorageConfig).filter_by(is_default=True).all()
+        assert len(storage_configs) == 1
+        assert storage_configs[0].key == response_body["key"]
+        assert storage_configs[0].type.value == payload["type"]
+        assert storage_configs[0].details["naming"] == payload["details"]["naming"]
+        assert storage_configs[0].is_default
+
+    def test_put_default_storage_config_missing_detail(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json={
+                "type": StorageType.s3.value,
+                "details": {
+                    # "bucket": "removed-from-payload",
+                    "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                    "naming": "request_id",
+                    "max_retries": 10,
+                },
+            },
+        )
+        assert response.status_code == 422
+        assert "field required" in response.text
+        assert "bucket" in response.text

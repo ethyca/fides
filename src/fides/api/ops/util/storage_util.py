@@ -1,4 +1,5 @@
-from fides.api.ops.common_exceptions import ValidationError
+from pydantic import ValidationError
+
 from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     StorageSecretsS3,
