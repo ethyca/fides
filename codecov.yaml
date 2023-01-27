@@ -6,3 +6,5 @@ coverage:
     patch:
       default:
         target: 100%
+notify:
+  after_n_builds: 12
