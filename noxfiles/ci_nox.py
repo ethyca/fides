@@ -1,6 +1,5 @@
 """Contains the nox sessions used during CI checks."""
 from functools import partial
-from os import environ
 from typing import Callable, Dict
 
 import nox
