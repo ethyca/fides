@@ -15,7 +15,7 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.5.0...main)
-
+*  Access and erasure support for Surveymonkey [#2419](https://github.com/ethyca/fides/pull/2419)
 
 ### Added
 
