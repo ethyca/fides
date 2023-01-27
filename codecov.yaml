@@ -9,4 +9,4 @@ coverage:
 notify:
   after_n_builds: 4
 ignore:
-  **/migrations/**
+  - "**/migrations"
