@@ -61,11 +61,11 @@ const S3StorageConfiguration = ({
     if ("error" in payload) {
       errorAlert(
         getErrorMessage(payload.error),
-        `Configuring storage details has failed to save due to the following:`
+        `Updating S3 storage details has failed due to the following:`
       );
     } else {
       setAuthMethod(newValues.details.auth_method);
-      successAlert(`Storage details saved successfully.`);
+      successAlert(`S3 storage credentials successfully updated.`);
     }
   };
 
@@ -77,10 +77,10 @@ const S3StorageConfiguration = ({
     if ("error" in payload) {
       errorAlert(
         getErrorMessage(payload.error),
-        `Configuring storage secrets has failed to save due to the following:`
+        `Updating S3 storage secrets has failed due to the following:`
       );
     } else {
-      successAlert(`Storage secrets saved successfully.`);
+      successAlert(`S3 storage secrets successfully updated.`);
     }
   };
 
