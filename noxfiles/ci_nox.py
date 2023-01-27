@@ -184,9 +184,6 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-saas": partial(pytest_ops, mark="saas"),
     "lib": pytest_lib,
 }
-TEST_REPORTER_URL = (
-    "https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64"
-)
 
 
 def validate_test_matrix(session: nox.Session) -> None:
