@@ -1,8 +1,7 @@
+from datetime import datetime
+
 from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fides.api.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AesEncryptionMaskingStrategy,
-)
 from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
@@ -95,5 +94,39 @@ def test_mask_arguments_null():
     cache_secret(secret, request_id)
 
     masked = masker.mask(None, request_id)
+    assert expected == masked
+    clear_cache_secrets(request_id)
+
+
+def test_mask_arguments_null_in_list():
+    configuration = HashMaskingConfiguration()
+    masker = HashMaskingStrategy(configuration)
+    expected = [None]
+
+    secret = MaskingSecretCache[str](
+        secret="adobo",
+        masking_strategy=HashMaskingStrategy.name,
+        secret_type=SecretType.salt,
+    )
+    cache_secret(secret, request_id)
+
+    masked = masker.mask([None], request_id)
+    assert expected == masked
+    clear_cache_secrets(request_id)
+
+
+def test_mask_datetime():
+    configuration = HashMaskingConfiguration()
+    masker = HashMaskingStrategy(configuration)
+    expected = ["a6597d576d8fb7ff58047db31f6c526bf984db454fa2460cdf7cf4f9d72a6d09"]
+
+    secret = MaskingSecretCache[str](
+        secret="adobo",
+        masking_strategy=HashMaskingStrategy.name,
+        secret_type=SecretType.salt,
+    )
+    cache_secret(secret, request_id)
+
+    masked = masker.mask([datetime(2000, 1, 1)], request_id)
     assert expected == masked
     clear_cache_secrets(request_id)

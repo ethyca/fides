@@ -2,15 +2,6 @@ import { hostUrl } from "~/constants";
 import { CONSENT_COOKIE_NAME } from "fides-consent";
 
 describe("Consent settings", () => {
-  beforeEach(() => {
-    // All of these tests assume identity verification is required.
-    cy.intercept("GET", `${hostUrl}/id-verification/config`, {
-      body: {
-        identity_verification_required: true,
-      },
-    }).as("getVerificationConfig");
-  });
-
   describe("when the user isn't verified", () => {
     beforeEach(() => {
       cy.intercept("POST", `${hostUrl}/consent-request`, {
@@ -76,6 +67,41 @@ describe("Consent settings", () => {
           req.reply(req.body);
         }
       ).as("patchConsentPreferences");
+
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.dispatch({
+        type: "config/overrideConsentOptions",
+        payload: [
+          {
+            fidesDataUseKey: "advertising",
+            name: "Test advertising",
+            description: "",
+            url: "https://example.com/privacy#data-sales",
+            default: true,
+            highlight: false,
+            cookieKeys: ["data_sales"],
+          },
+          {
+            fidesDataUseKey: "advertising.first_party",
+            name: "Test advertising.first_party",
+            description: "",
+            url: "https://example.com/privacy#email-marketing",
+            default: true,
+            highlight: false,
+            cookieKeys: ["tracking"],
+          },
+          {
+            fidesDataUseKey: "improve",
+            name: "Test improve",
+            description: "",
+            url: "https://example.com/privacy#analytics",
+            default: true,
+            highlight: false,
+            cookieKeys: ["tracking"],
+          },
+        ],
+      });
     });
 
     it("lets the user update their consent", () => {
@@ -83,6 +109,7 @@ describe("Consent settings", () => {
       cy.getByTestId("consent");
 
       cy.getByTestId(`consent-item-card-advertising.first_party`).within(() => {
+        cy.contains("Test advertising.first_party");
         cy.getRadio().should("not.be.checked");
       });
       cy.getByTestId(`consent-item-card-improve`).within(() => {

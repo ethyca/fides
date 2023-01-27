@@ -3,6 +3,7 @@ from typing import Dict
 
 from fides.api.ctl.database import database
 from fides.api.ctl.routes.util import API_PREFIX
+from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.core.config import FidesConfig, get_config
 
@@ -24,6 +25,11 @@ async def db_action(action: DBActions) -> Dict:
 
     action_text = "initialized"
     if action == DBActions.reset:
+        if not CONFIG.dev_mode:
+            raise errors.FunctionalityNotConfigured(
+                "unable to reset fides database outside of dev_mode."
+            )
+
         database.reset_db(CONFIG.database.sync_database_uri)
         action_text = DBActions.reset
     await database.configure_db(CONFIG.database.sync_database_uri)

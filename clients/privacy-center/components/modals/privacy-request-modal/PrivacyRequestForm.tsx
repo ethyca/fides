@@ -2,7 +2,6 @@ import {
   Button,
   chakra,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Input,
   ModalBody,
@@ -13,31 +12,23 @@ import {
   useToast,
 } from "@fidesui/react";
 import React, { useEffect, useState } from "react";
-
 import { useFormik } from "formik";
-
+import * as Yup from "yup";
 import { Headers } from "headers-polyfill";
+
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
-
 import { PrivacyRequestOption } from "~/types/config";
 import { hostUrl, config, defaultIdentityInput } from "~/constants";
-
-import dynamic from "next/dynamic";
-import * as Yup from "yup";
-import { ModalViews } from "../types";
-
-import "react-phone-number-input/style.css";
+import { PhoneInput } from "~/components/phone-input";
+import { ModalViews } from "~/components/modals/types";
+import { FormErrorMessage } from "~/components/FormErrorMessage";
 import {
   emailValidation,
   nameValidation,
   phoneValidation,
-} from "../validation";
-
-const PhoneInput = dynamic(() => import("react-phone-number-input"), {
-  ssr: false,
-});
+} from "~/components/modals/validation";
 
 const usePrivacyRequestForm = ({
   onClose,
@@ -212,15 +203,14 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
           <Text fontSize="sm" color="gray.500" mb={4}>
             {action.description}
           </Text>
-          <Stack spacing={3}>
+          <Stack>
             {identityInputs.name ? (
               <FormControl
                 id="name"
                 isInvalid={touched.name && Boolean(errors.name)}
+                isRequired={identityInputs.name === "required"}
               >
-                <FormLabel>
-                  {identityInputs.name === "required" ? "Name*" : "Name"}
-                </FormLabel>
+                <FormLabel>Name</FormLabel>
                 <Input
                   id="name"
                   name="name"
@@ -237,10 +227,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
               <FormControl
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
+                isRequired={identityInputs.email === "required"}
               >
-                <FormLabel>
-                  {identityInputs.email === "required" ? "Email*" : "Email"}
-                </FormLabel>
+                <FormLabel>Email</FormLabel>
                 <Input
                   id="email"
                   name="email"
@@ -258,18 +247,12 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
               <FormControl
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
+                isRequired={identityInputs.phone === "required"}
               >
-                <FormLabel>
-                  {identityInputs.phone === "required" ? "Phone*" : "Phone"}
-                </FormLabel>
-                <Input
-                  as={PhoneInput}
+                <FormLabel>Phone</FormLabel>
+                <PhoneInput
                   id="phone"
                   name="phone"
-                  type="tel"
-                  focusBorderColor="primary.500"
-                  placeholder="000 000 0000"
-                  defaultCountry="US"
                   onChange={(value) => {
                     setFieldValue("phone", value, true);
                   }}
