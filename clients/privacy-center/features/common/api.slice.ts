@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { addCommonHeaders } from "~/common/CommonHeaders";
 import { hostUrl } from "~/constants";
 
 /**
@@ -11,9 +12,7 @@ export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: fetchBaseQuery({
     baseUrl: hostUrl,
-    headers: {
-      "X-Fides-Source": "fides-privacy-center",
-    },
+    prepareHeaders: (headers) => addCommonHeaders(headers),
   }),
   tagTypes: [],
   endpoints: () => ({}),
