@@ -9,10 +9,10 @@ coverage:
 
 codecov:
   notify:
-    after_n_builds: 4
+    after_n_builds: 12
 
 comment:
-  after_n_builds: 4
+  after_n_builds: 12
 
 ignore:
   - "**/migrations"
