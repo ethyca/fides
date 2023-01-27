@@ -1,0 +1,184 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: yotpo SaaS Config
+  type: yotpo
+  description: A sample schema representing the yotpo connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: api.yotpo.com
+    - name: app_key
+    - name: secret_key
+    - name: external_id
+
+  client_config:
+    protocol: https
+    host: <domain>
+    # authentication:
+    #   strategy: no_authentication
+    #   configuration: {}
+
+  test_request:
+    method: POST
+    path: /core/v3/stores/<app_key>/access_tokens
+    query_params:
+      - name: ''
+        value: ''
+    body: |
+      {
+        "secret": "<secret_key>"
+      }
+    param_values:
+      - name: app_key
+        connector_param: app_key
+      - name: secret_key
+        connector_param: secret_key
+
+  endpoints:
+    - name: get_utoken_(core)
+      requests:
+        read:
+          method: POST
+          path: /core/v3/stores/<app_key>/access_tokens
+          body: |
+            {
+              "secret": "<secret_key>"
+            }
+          param_values:
+            - name: placeholder
+              identity : email
+            - name: app_key
+              connector_param: app_key
+            - name: secret_key
+              connector_param: secret_key
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /core/v3/stores/<app_key>/customers
+          headers:
+            - name: X-Yotpo-Token
+              value: <get_utoken_(core)_access_token>
+          query_params:
+            - name: external_ids
+              value: <external_id>
+          data_path: customers
+          param_values:
+            - name: app_key
+              connector_param: app_key
+            - name: get_utoken_(core)_access_token
+              references:
+                - dataset: <instance_fides_key>
+                  field: get_utoken_(core).access_token
+                  direction: from
+            - name: external_id
+              connector_param: external_id
+        update:
+          method: PATCH
+          path: core/v3/stores/<app_key>/customers
+          headers:
+            - name: X-Yotpo-Token
+              value: <get_utoken_(core)_access_token>
+          body: |
+            { 
+            "customer" : {
+            <all_object_fields>
+            }
+            }
+          param_values:
+            - name: app_key
+              connector_param: app_key
+            - name: get_utoken_(core)_access_token
+              references:
+                - dataset: <instance_fides_key>
+                  field: get_utoken_(core).access_token
+                  direction: from
+    - name: reviews_-_merchant_(ugc)
+      requests:
+        read:
+          method: GET
+          path: /products/<app_key>/yotpo_global_reviews/reviews.json
+          query_params:
+            - name: user_reference
+              value: <customer_external_id>
+          param_values:
+            - name: app_key
+              connector_param: app_key
+            - name: customer_external_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.external_id
+                  direction: from
+    - name: email_analytics_(ugc)
+      requests:
+        read:
+          method: GET
+          path: /analytics/v1/emails/<app_key>/export/raw_data
+          query_params:
+            - name: token
+              value: <get_utoken_(core)_access_token>
+          # postprocessors:
+          #   - strategy: filter
+          #     configuration:
+          #       field: email
+          #       value: '={{$identity["email"]}}'
+          param_values:
+            - name: app_key
+              connector_param: app_key
+            - name: get_utoken_(core)_access_token
+              references:
+                - dataset: <instance_fides_key>
+                  field: get_utoken_(core).access_token
+                  direction: from
+    - name: visual_ugc_(ugc)
+      requests:
+        read:
+          method: GET
+          path: /v1/apps/<app_key>/images/export
+          query_params:
+            - name: source
+              value: review
+            - name: utoken
+              value: <get_utoken_(core)_access_token>
+          param_values:
+            - name: app_key
+              connector_param: app_key
+            - name: get_utoken_(core)_access_token
+              references:
+                - dataset: <instance_fides_key>
+                  field: get_utoken_(core).access_token
+                  direction: from
+    - name: customers(loyalty)
+      requests:
+        read:
+          method: GET
+          path: /api/v2/customers
+          client_config:
+            protocol: https
+            host: loyalty.yotpo.com
+            # authentication:
+            #   strategy: no_authentication
+            #   configuration: {}
+          headers:
+            - name: x-guid
+              value: zRq1J-Wy4NBRZdl65QCifA
+            - name: x-api-key
+              value: 8cyHrd7mQEgCTWQmU7TKSQtt
+          query_params:
+            - name: customer_email
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+        update:
+          method: POST
+          path: /api/v2/customers
+          body: |
+            {
+              "email": "<email>"
+            }
+          param_values:
+            - name: email
+              identity: email
+    
