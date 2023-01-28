@@ -7,6 +7,7 @@ from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas import Msg
+from fides.api.ops.schemas.privacy_request import Consent
 
 
 class MessagingMethod(Enum):
@@ -38,6 +39,7 @@ class MessagingActionType(str, Enum):
     # verify email upon acct creation
     CONSENT_REQUEST = "consent_request"
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
+    CONSENT_REQUEST_EMAIL_FULFILLMENT = "consent_request_email_fulfillment"
     MESSAGE_ERASURE_REQUEST_FULFILLMENT = "message_erasure_fulfillment"
     PRIVACY_REQUEST_ERROR_NOTIFICATION = "privacy_request_error_notification"
     PRIVACY_REQUEST_RECEIPT = "privacy_request_receipt"
@@ -47,7 +49,7 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
 
 
-class ErrorNotificaitonBodyParams(BaseModel):
+class ErrorNotificationBodyParams(BaseModel):
     """Body params required for privacy request error notifications."""
 
     unsent_errors: int
@@ -84,6 +86,15 @@ class RequestReviewDenyBodyParams(BaseModel):
     rejection_reason: Optional[str]
 
 
+class ConsentEmailFulfillmentBodyParams(BaseModel):
+    """Body params required for privacy request receipt template"""
+
+    processor: str
+    user_identity: str
+    third_party_vendor_name: str
+    consent_preferences: List[Consent]  # Consent schema
+
+
 class FidesopsMessage(
     BaseModel,
     smart_union=True,
@@ -94,6 +105,7 @@ class FidesopsMessage(
     action_type: MessagingActionType
     body_params: Optional[
         Union[
+            ConsentEmailFulfillmentBodyParams,
             SubjectIdentityVerificationBodyParams,
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,

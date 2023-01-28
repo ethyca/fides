@@ -22,6 +22,12 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email imp
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     EmailSchema as EmailSchema,
 )
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+    ConsentEmailDocsSchema as ConsentEmailDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+    ConsentEmailSchema as ConsentEmailSchema,
+)
 from fides.api.ops.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
     FidesDocsSchema,
@@ -106,6 +112,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
     ConnectionType.timescale.value: TimescaleSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
+    ConnectionType.email_consent.value: ConsentEmailSchema,
 }
 
 
@@ -149,4 +156,5 @@ connection_secrets_schemas = Union[
     ManualWebhookSchemaforDocs,
     TimescaleDocsSchema,
     FidesDocsSchema,
+    ConsentEmailDocsSchema,
 ]

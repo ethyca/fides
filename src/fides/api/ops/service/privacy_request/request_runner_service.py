@@ -50,6 +50,9 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import FidesConnector
+from fides.api.ops.service.connectors.consent_email_connector import (
+    consent_email_connector_erasure_send,
+)
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
@@ -427,6 +430,29 @@ async def run_privacy_request(
             except MessageDispatchException as exc:
                 privacy_request.cache_failed_checkpoint_details(
                     step=CurrentStep.erasure_email_post_send, collection=None
+                )
+                privacy_request.error_processing(db=session)
+                await fideslog_graph_failure(
+                    failed_graph_analytics_event(privacy_request, exc)
+                )
+                # If dev mode, log traceback
+                _log_exception(exc, CONFIG.dev_mode)
+                return
+
+        # Send erasure requests via email to third parties where applicable
+        if policy.get_rules_for_action(
+            action_type=ActionType.consent
+        ) and can_run_checkpoint(
+            request_checkpoint=CurrentStep.consent_email_post_send,
+            from_checkpoint=resume_step,
+        ):
+            try:
+                consent_email_connector_erasure_send(
+                    db=session, privacy_request=privacy_request, identity=identity_data
+                )
+            except MessageDispatchException as exc:
+                privacy_request.cache_failed_checkpoint_details(
+                    step=CurrentStep.consent_email_post_send, collection=None
                 )
                 privacy_request.error_processing(db=session)
                 await fideslog_graph_failure(

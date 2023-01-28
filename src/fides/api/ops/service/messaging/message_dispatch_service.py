@@ -25,8 +25,9 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
+    ConsentEmailFulfillmentBodyParams,
     EmailForActionType,
-    ErrorNotificaitonBodyParams,
+    ErrorNotificationBodyParams,
     FidesopsMessage,
     MessagingActionType,
     MessagingMethod,
@@ -73,7 +74,7 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
                 kwargs={
                     "message_meta": FidesopsMessage(
                         action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
-                        body_params=ErrorNotificaitonBodyParams(
+                        body_params=ErrorNotificationBodyParams(
                             unsent_errors=len(unsent_errors)
                         ),
                     ).dict(),
@@ -117,6 +118,7 @@ def dispatch_message(
     message_body_params: Optional[
         Union[
             AccessRequestCompleteBodyParams,
+            ConsentEmailFulfillmentBodyParams,
             SubjectIdentityVerificationBodyParams,
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
@@ -268,6 +270,12 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=base_template.render(
                 {"dataset_collection_action_required": body_params}
             ),
+        )
+    if action_type == MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Notification of user's consent preference changes from < Processors name >",
+            body=base_template.render({"body": body_params}),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         base_template = get_email_template(action_type)

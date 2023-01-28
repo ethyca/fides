@@ -80,6 +80,7 @@ EXECUTION_CHECKPOINTS = [
     CurrentStep.erasure,
     CurrentStep.consent,
     CurrentStep.erasure_email_post_send,
+    CurrentStep.consent_email_post_send,
     CurrentStep.post_webhooks,
 ]
 

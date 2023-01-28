@@ -9,11 +9,7 @@ from fides.api.ops.models.connectionconfig import ConnectionTestStatus
 from fides.api.ops.schemas import Msg
 
 
-class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
-    """Abstract Base Schema for updating Connection Configuration Secrets"""
-
-    url: Optional[str] = None  # User can always specify the URL directly
-
+class RequiredComponentsValidator(BaseModel, abc.ABC):
     _required_components: List[str]
 
     def __init_subclass__(cls: BaseModel, **kwargs: Any):  # type: ignore
@@ -45,6 +41,14 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
 
         extra = Extra.forbid
         orm_mode = True
+
+
+class ConnectionConfigSecretsSchema(RequiredComponentsValidator):
+    """Abstract Base Schema for updating Connection Configuration Secrets"""
+
+    url: Optional[str] = None  # User can always specify the URL directly
+
+    _required_components = ["url"]
 
 
 class TestStatusMessage(Msg):
