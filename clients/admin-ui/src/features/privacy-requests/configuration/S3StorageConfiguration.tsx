@@ -6,17 +6,18 @@ import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import {
-  useSetStorageDetailsMutation,
-  useSetStorageSecretsMutation,
+  useCreateStorageDetailsMutation,
+  useCreateStorageSecretsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
-interface StorageData {
-  type: string;
-  details: {
-    auth_method: string;
-    bucket: string;
+interface Props {
+  existingStorageData: {
+    details: {
+      auth_method: string;
+      bucket: string;
+    };
+    format: string;
   };
-  format: string;
 }
 
 interface SecretsStorageData {
@@ -25,12 +26,14 @@ interface SecretsStorageData {
 }
 
 const S3StorageConfiguration = ({
-  details: { auth_method, bucket },
-  format,
-}: StorageData) => {
+  existingStorageData: {
+    details: { auth_method, bucket },
+    format,
+  },
+}: Props) => {
   const [authMethod, setAuthMethod] = useState("");
-  const [setStorageDetails] = useSetStorageDetailsMutation();
-  const [setStorageSecrets] = useSetStorageSecretsMutation();
+  const [setStorageDetails] = useCreateStorageDetailsMutation();
+  const [setStorageSecrets] = useCreateStorageSecretsMutation();
   const { errorAlert, successAlert } = useAlert();
   const CONFIG_FORM_ID = "s3-privacy-requests-storage-configuration-config";
   const KEYS_FORM_ID = "s3-privacy-requests-storage-configuration-keys";
@@ -49,7 +52,9 @@ const S3StorageConfiguration = ({
     aws_secret_access_key: "",
   };
 
-  const handleSubmitStorageConfiguration = async (newValues: StorageData) => {
+  const handleSubmitStorageConfiguration = async (
+    newValues: Props["existingStorageData"]
+  ) => {
     const payload = await setStorageDetails({
       type: "s3",
       details: {

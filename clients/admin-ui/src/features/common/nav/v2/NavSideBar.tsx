@@ -3,8 +3,8 @@ import { Heading, VStack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
 
-import { resolveZoneLink } from "~/features/common/nav/zone-config";
 import { useFeatures } from "~/features/common/features";
+import { resolveZoneLink } from "~/features/common/nav/zone-config";
 
 import { useNav } from "./hooks";
 import { NavSideBarLink } from "./NavLink";
@@ -32,8 +32,7 @@ export const NavSideBar = () => {
             !features.flags.privacyRequestsConfiguration
           ) {
             return null;
-          } else
-            return (
+          } return (
               <NavSideBarLink key={title} href={href} isActive={isActive}>
                 {title}
               </NavSideBarLink>

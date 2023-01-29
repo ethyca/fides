@@ -16,8 +16,8 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import {
+  useCreateActiveStorageMutation,
   useGetStorageDetailsQuery,
-  useSetActiveStorageMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import S3StorageConfiguration from "./S3StorageConfiguration";
@@ -36,13 +36,10 @@ const StorageConfiguration = () => {
   const { data: existingData } = useGetStorageDetailsQuery(
     existingStorageData?.type
   );
-  const [isLoading, setIsLoading] = useState(false);
   const { errorAlert, successAlert } = useAlert();
-  const [saveStorageType] = useSetActiveStorageMutation();
+  const [saveStorageType, { isLoading }] = useCreateActiveStorageMutation();
 
   const handleChange = async (value: string) => {
-    setIsLoading(true);
-
     const payload = await saveStorageType({
       active_default_storage_type: value,
     });
@@ -51,11 +48,9 @@ const StorageConfiguration = () => {
         getErrorMessage(payload.error),
         `Configuring storage type has failed to save due to the following:`
       );
-      setIsLoading(false);
     } else {
       successAlert(`Configure storage type saved successfully.`);
       setExistingStorageData(existingData);
-      setIsLoading(false);
     }
   };
 
@@ -106,7 +101,7 @@ const StorageConfiguration = () => {
           Choose storage type to configure
         </Heading>
         <RadioGroup
-          _disabled={isLoading}
+          isDisabled={isLoading}
           onChange={handleChange}
           value={existingStorageData?.type}
           data-testid="privacy-requests-storage-selection"
