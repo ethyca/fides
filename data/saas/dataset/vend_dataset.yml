@@ -19,7 +19,6 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: source_unique_id
-            data_categories: [system.operations]
           - name: first_name
             data_categories: [user.name]
             fidesops_meta:
@@ -49,21 +48,15 @@ dataset:
             fidesops_meta:
               data_type: integer
           - name: note
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: gender            
+          - name: gender
             data_categories: [user.gender]
             fidesops_meta:
-              data_type: string 
+              data_type: string
           - name: date_of_birth
             data_categories: [user.date_of_birth]
             fidesops_meta:
               data_type: string
           - name: company_name
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: do_not_email
             data_categories: [system.operations]
             fidesops_meta:
@@ -85,11 +78,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: twitter
-            data_categories: [user.social]
+            data_categories: [user]
             fidesops_meta:
               data_type: string
           - name: website
-            data_categories: [user.social]
+            data_categories: [user]
             fidesops_meta:
               data_type: string
           - name: physical_address_1
@@ -165,9 +158,6 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: deleted_at
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: customer_group_ids
             data_categories: [system.operations]
             fidesops_meta:
@@ -177,13 +167,7 @@ dataset:
             fidesops_meta:
               data_type: integer
           - name: postal_postcode
-            data_categories: [user.contact.address.postal_code]
-            fidesops_meta:
-              data_type: string
           - name: time_until_deletion
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
       - name: sales
         fields:
           - name: data
@@ -223,21 +207,9 @@ dataset:
                     fidesops_meta:
                       data_type: string
                   - name: source_id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
                   - name: complete_open_sequence_id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
                   - name: accounts_transaction_id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
                   - name: has_unsynced_on_account_payments
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
                   - name: status
                     data_categories: [system.operations]
                     fidesops_meta:
@@ -251,13 +223,7 @@ dataset:
                     fidesops_meta:
                       data_type: string
                   - name: return_for
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
                   - name: return_ids
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
                   - name: total_loyalty
                     data_categories: [system.operations]
                     fidesops_meta:
@@ -275,9 +241,6 @@ dataset:
                     fidesops_meta:
                       data_type: string
                   - name: deleted_at
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
                   - name: line_items
                     fidesops_meta:
                       data_type: 'object[]'
@@ -343,9 +306,6 @@ dataset:
                             fidesops_meta:
                               data_type: integer
                           - name: note
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: string
                           - name: price_set
                             data_categories: [system.operations]
                             fidesops_meta:
@@ -359,11 +319,7 @@ dataset:
                             fidesops_meta:
                               data_type: integer
                           - name: gift_card_number
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
                           - name: tax_components
-                            data_categories: [system.operations]
                             fidesops_meta:
                               data_type: 'object[]'
                             fields:
@@ -380,9 +336,6 @@ dataset:
                                     fidesops_meta:
                                       data_type: integer
                           - name: promotions
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
                           - name: unit_loyalty_value
                             data_categories: [system.operations]
                             fidesops_meta:
@@ -428,17 +381,8 @@ dataset:
                             fidesops_meta:
                               data_type: boolean
                   - name: payments
-                    data_categories: [user.account.payment]
-                    fidesops_meta:
-                      data_type: integer
                   - name: adjustments
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
                   - name: external_applications
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
                   - name: version
                     data_categories: [system.operations]
                     fidesops_meta:
@@ -480,7 +424,6 @@ dataset:
             fidesops_meta:
               data_type: integer
           - name: page_info
-            data_categories: [system.operations]
             fidesops_meta:
               data_type: object
             fields:
@@ -497,7 +440,6 @@ dataset:
                 fidesops_meta:
                   data_type: boolean
           - name: version
-            data_categories: [system.operations]
             fidesops_meta:
               data_type: object
             fields:
