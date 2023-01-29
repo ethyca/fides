@@ -34,26 +34,24 @@ const ConfigurePrivacyRequests: NextPage = () => (
       Configure your privacy requests
     </Heading>
     <Box display="flex" alignItems="center" mb={5}>
-      {/* Subsequent PR will have messaging provider option to configure
-      <Box
-        border="1px solid"
-        borderColor="gray.300"
-        borderRadius="md"
-        _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
-        onClick={() => {
-        configure messaging route
-        }}
-        mr={5}
-        p={6}
-      >
-        <Heading mb={2} size="sm">
-          Configure messaging provider
-        </Heading>
-        Fides supports email (Mailgun & Twillio) and SMS (Twillio) server
-        configurations for sending processing notices to privacy request
-        subjects. You&apos;ll need to set up config variables to send out
-        messages from Fides. Configure your settings here.
-      </Box> */}
+      <NextLink href="/privacy-requests/configure/messaging" passHref>
+        <Box
+          border="1px solid"
+          borderColor="gray.300"
+          borderRadius="md"
+          _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
+          mr={5}
+          p={6}
+        >
+          <Heading mb={2} size="sm">
+            Configure messaging provider
+          </Heading>
+          Fides supports email (Mailgun & Twillio) and SMS (Twillio) server
+          configurations for sending processing notices to privacy request
+          subjects. You&apos;ll need to set up config variables to send out
+          messages from Fides. Configure your settings here.
+        </Box>
+      </NextLink>
       <NextLink href="/privacy-requests/configure/storage" passHref>
         <Box
           border="1px solid"

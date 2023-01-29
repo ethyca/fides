@@ -379,6 +379,32 @@ export const privacyRequestApi = createApi({
         body: params,
       }),
     }),
+    getMessagingConfigurationDetails: build.query<any, any>({
+      query: (params) => ({
+        url: `messaging/config/${params.config_key}`,
+      }),
+    }),
+    createMessagingConfiguration: build.mutation<any, any>({
+      query: (params) => ({
+        url: `messaging/config`,
+        method: "PUT",
+        body: params,
+      }),
+    }),
+    updateMessagingConfiguration: build.mutation<any, any>({
+      query: (params) => ({
+        url: `messaging/config/${params.config_key}`,
+        method: "PATCH",
+        body: params,
+      }),
+    }),
+    createMessagingConfigurationSecrets: build.mutation<any, any>({
+      query: (params) => ({
+        url: `messaging/config/${params.config_key}/secret`,
+        method: "PUT",
+        body: params,
+      }),
+    }),
     uploadManualWebhookData: build.mutation<
       any,
       PatchUploadManualWebhookDataRequest
@@ -407,4 +433,8 @@ export const {
   useCreateActiveStorageMutation,
   useCreateStorageDetailsMutation,
   useCreateStorageSecretsMutation,
+  useGetMessagingConfigurationDetailsQuery,
+  useCreateMessagingConfigurationMutation,
+  useUpdateMessagingConfigurationMutation,
+  useCreateMessagingConfigurationSecretsMutation,
 } = privacyRequestApi;
