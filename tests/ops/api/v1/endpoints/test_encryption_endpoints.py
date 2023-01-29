@@ -1,9 +1,7 @@
 import json
 from unittest import mock
-from unittest.mock import Mock
 
 import pytest
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     ENCRYPTION_EXEC,
@@ -27,35 +25,33 @@ CONFIG = get_config()
 
 class TestGetEncryptionKey:
     @pytest.fixture
-    def url(self) -> str:
+    def url(self):
         return V1_URL_PREFIX + ENCRYPTION_KEY
 
-    def test_get_encryption_key_not_authorized(self, api_client: TestClient, url):
+    def test_get_encryption_key_not_authorized(self, api_client, url):
         response = api_client.get(url)
 
         assert response.status_code == 401
 
-    def test_get_encryption_key_wrong_scope(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        response = api_client.get(
-            url, headers=generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        )
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
+    def test_get_encryption_key_wrong_scope(self, auth_header, api_client, url):
+        response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[ENCRYPTION_EXEC]], indirect=True)
     @mock.patch(
         "fides.api.ops.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
     )
     def test_get_encryption_key(
         self,
-        mock_generate_secure_random: Mock,
-        api_client: TestClient,
-        generate_auth_header,
+        mock_generate_secure_random,
+        auth_header,
+        api_client,
         url,
     ):
         mock_generate_secure_random.return_value = "a key"
 
-        response = api_client.get(url, headers=generate_auth_header([ENCRYPTION_EXEC]))
+        response = api_client.get(url, headers=auth_header)
 
         assert response.status_code == 200
         assert response.text == '"' + mock_generate_secure_random.return_value + '"'
@@ -63,54 +59,35 @@ class TestGetEncryptionKey:
 
 class TestAESEncrypt:
     @pytest.fixture
-    def url(self) -> str:
+    def url(self):
         return V1_URL_PREFIX + ENCRYPT_AES
 
-    def test_aes_encrypt_not_authorized(self, api_client: TestClient, url):
+    def test_aes_encrypt_not_authorized(self, api_client, url):
         request_body = {"value": "plain_val", "key": "key"}
         response = api_client.put(url, json=request_body)
         assert response.status_code == 401
 
-    def test_aes_encrypt_wrong_scope(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        response = api_client.put(
-            url, headers=generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        )
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
+    def test_aes_encrypt_wrong_scope(self, auth_header, api_client, url):
+        response = api_client.put(url, headers=auth_header)
         assert response.status_code == 403
 
-    def test_invalid_key(
-        self,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-    ):
+    @pytest.mark.parametrize("auth_header", [[ENCRYPTION_EXEC]], indirect=True)
+    def test_invalid_key(self, auth_header, url, api_client):
         plain_val = "plain value"
         key = "short"
         request_body = {"value": plain_val, "key": key}
 
-        response = api_client.put(
-            url,
-            headers=generate_auth_header([ENCRYPTION_EXEC]),
-            json=request_body,
-        )
+        response = api_client.put(url, headers=auth_header, json=request_body)
         assert response.status_code == 422
 
-    def test_aes_encrypt(
-        self,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-    ):
+    @pytest.mark.parametrize("auth_header", [[ENCRYPTION_EXEC]], indirect=True)
+    def test_aes_encrypt(self, auth_header, url, api_client):
         plain_val = "plain value"
         key = "zfkslapqlwodaqld"
         request_body = {"value": plain_val, "key": key}
 
-        response = api_client.put(
-            url,
-            headers=generate_auth_header([ENCRYPTION_EXEC]),
-            json=request_body,
-        )
+        response = api_client.put(url, headers=auth_header, json=request_body)
         response_body = json.loads(response.text)
         encrypted_value = response_body["encrypted_value"]
         nonce = b64_str_to_bytes(response_body["nonce"])
@@ -126,35 +103,23 @@ class TestAESEncrypt:
 
 class TestAESDecrypt:
     @pytest.fixture
-    def url(self) -> str:
+    def url(self):
         return V1_URL_PREFIX + DECRYPT_AES
 
-    def test_aes_decrypt_not_authorized(
-        self, url, api_client: TestClient, generate_auth_header
-    ):
+    @pytest.mark.parametrize("auth_header", [[]], indirect=True)
+    def test_aes_decrypt_not_authorized(self, auth_header, url, api_client):
         request = {"value": "encrypted_value", "key": "key", "nonce": "nonce"}
-        response = api_client.put(
-            url,
-            headers=generate_auth_header([]),
-            json=request,
-        )
+        response = api_client.put(url, headers=auth_header, json=request)
 
         assert response.status_code == 403
 
-    def test_aes_decrypt_wrong_scope(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        response = api_client.put(
-            url, headers=generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        )
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
+    def test_aes_decrypt_wrong_scope(self, auth_header, api_client, url):
+        response = api_client.put(url, headers=auth_header)
         assert response.status_code == 403
 
-    def test_aes_decrypt(
-        self,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-    ):
+    @pytest.mark.parametrize("auth_header", [[ENCRYPTION_EXEC]], indirect=True)
+    def test_aes_decrypt(self, auth_header, url, api_client):
         key = "zfkslapqlwodaqld"
         nonce = b'\x18\xf5"+\xdbj\xe6O\xc7|\x19\xd2'
         orig_data = "test_data"
@@ -168,11 +133,7 @@ class TestAESDecrypt:
             "nonce": bytes_to_b64_str(nonce),
         }
 
-        response = api_client.put(
-            url,
-            headers=generate_auth_header([ENCRYPTION_EXEC]),
-            json=request,
-        )
+        response = api_client.put(url, headers=auth_header, json=request)
         response_body = json.loads(response.text)
 
         assert response.status_code == 200

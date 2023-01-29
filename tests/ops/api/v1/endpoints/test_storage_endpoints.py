@@ -1,12 +1,8 @@
 import json
-from typing import Dict
 from unittest import mock
-from unittest.mock import Mock
 
 import pytest
 from fastapi_pagination import Params
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
@@ -28,21 +24,19 @@ from fides.api.ops.schemas.storage.storage import (
     S3AuthMethod,
     StorageDetails,
     StorageSecrets,
-    StorageSecretsS3,
     StorageType,
 )
-from fides.lib.models.client import ClientDetail
 
 PAGE_SIZE = Params().size
 
 
 class TestUploadData:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, privacy_request) -> str:
+    def url(self, privacy_request):
         return (V1_URL_PREFIX + STORAGE_UPLOAD).format(request_id=privacy_request.id)
 
     @pytest.fixture(scope="function")
-    def payload(self, oauth_client: ClientDetail, privacy_request) -> Dict:
+    def payload(self):
         return {
             "storage_key": "s3_destination_key",
             "data": {
@@ -52,36 +46,32 @@ class TestUploadData:
             },
         }
 
-    def test_upload_data_not_authenticated(self, url, api_client: TestClient, payload):
+    def test_upload_data_not_authenticated(self, url, api_client, payload):
         response = api_client.post(url, headers={}, json=payload)
         assert 401 == response.status_code
 
-    def test_upload_data_wrong_scope(
-        self, url, api_client: TestClient, payload, generate_auth_header
-    ):
-        auth_header = generate_auth_header([STORAGE_READ])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_upload_data_wrong_scope(self, auth_header, url, api_client, payload):
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_invalid_privacy_request(
-        self, api_client: TestClient, payload, generate_auth_header
-    ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
+    def test_invalid_privacy_request(self, auth_header, api_client, payload):
         url = (V1_URL_PREFIX + STORAGE_UPLOAD).format(request_id="invalid-id")
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
     @mock.patch("fides.api.ops.api.v1.endpoints.storage_endpoints.upload")
     def test_post_upload_data(
         self,
-        mock_post_upload_data: Mock,
-        api_client: TestClient,
-        generate_auth_header,
+        mock_post_upload_data,
+        auth_header,
+        api_client,
         url,
         privacy_request,
         payload,
-    ) -> None:
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+    ):
         expected_location = f"https://bucket.s3.amazonaws.com/{privacy_request.id}.json"
         mock_post_upload_data.return_value = expected_location
 
@@ -100,7 +90,7 @@ class TestUploadData:
 
 class TestPatchStorageConfig:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self):
         return V1_URL_PREFIX + STORAGE_CONFIG
 
     @pytest.fixture(scope="function")
@@ -121,52 +111,44 @@ class TestPatchStorageConfig:
 
     def test_patch_storage_config_not_authenticated(
         self,
-        api_client: TestClient,
+        api_client,
         payload,
         url,
     ):
         response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
     def test_patch_storage_config_incorrect_scope(
-        self,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
+        self, auth_header, api_client, payload, url
     ):
-        auth_header = generate_auth_header([STORAGE_READ])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_storage_config_with_no_key(
         self,
-        db: Session,
-        api_client: TestClient,
+        auth_header,
+        api_client,
         payload,
         url,
-        generate_auth_header,
     ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert 200 == response.status_code
         response_body = json.loads(response.text)
 
         assert response_body["succeeded"][0]["key"] == "test_destination"
-        storage_config = db.query(StorageConfig).filter_by(key="test_destination")[0]
-        storage_config.delete(db)
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
     def test_put_storage_config_with_invalid_key(
         self,
-        db: Session,
-        api_client: TestClient,
+        auth_header,
+        api_client,
         payload,
         url,
-        generate_auth_header,
     ):
         payload[0]["key"] = "*invalid-key"
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
@@ -174,22 +156,14 @@ class TestPatchStorageConfig:
             == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
         )
 
-    def test_patch_storage_config_with_key(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-    ):
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
+    def test_patch_storage_config_with_key(self, auth_header, api_client, payload, url):
         payload[0]["key"] = "my_s3_bucket"
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
 
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
-        storage_config = db.query(StorageConfig).filter_by(key="my_s3_bucket")[0]
 
         expected_response = {
             "succeeded": [
@@ -209,37 +183,28 @@ class TestPatchStorageConfig:
             "failed": [],
         }
         assert expected_response == response_body
-        storage_config.delete(db)
 
     @pytest.mark.parametrize(
         "auth_method", [S3AuthMethod.SECRET_KEYS.value, S3AuthMethod.AUTOMATIC.value]
     )
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_storage_config_with_different_auth_methods(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-        auth_method,
+        self, auth_header, api_client, payload, url, auth_method
     ):
         payload[0]["key"] = "my_s3_bucket"
         payload[0]["details"]["auth_method"] = auth_method
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert 200 == response.status_code
         response_body = json.loads(response.text)
-        storage_config = db.query(StorageConfig).filter_by(key="my_s3_bucket")[0]
         assert auth_method == response_body["succeeded"][0]["details"]["auth_method"]
-        storage_config.delete(db)
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_config_response_format_not_specified(
         self,
+        auth_header,
         url,
-        db: Session,
-        api_client: TestClient,
-        generate_auth_header,
+        api_client,
     ):
         key = "my_s3_upload"
         payload = [
@@ -255,7 +220,6 @@ class TestPatchStorageConfig:
                 },
             }
         ]
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
 
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 200
@@ -274,16 +238,8 @@ class TestPatchStorageConfig:
             == ResponseFormat.json.value
         )
 
-        storage_config = StorageConfig.get_by(db=db, field="key", value=key)
-        storage_config.delete(db)
-
-    def test_patch_storage_config_missing_detail(
-        self,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-    ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
+    def test_patch_storage_config_missing_detail(self, auth_header, api_client, url):
         response = api_client.patch(
             url,
             headers=auth_header,
@@ -309,7 +265,7 @@ class TestPatchStorageConfig:
 
 class TestPutStorageConfigSecretsS3:
     @pytest.fixture(scope="function")
-    def url(self, storage_config) -> str:
+    def url(self, storage_config):
         return (V1_URL_PREFIX + STORAGE_SECRETS).format(config_key=storage_config.key)
 
     @pytest.fixture(scope="function")
@@ -319,31 +275,25 @@ class TestPutStorageConfigSecretsS3:
             StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "23451345834789",
         }
 
-    def test_put_config_secrets_unauthenticated(
-        self, api_client: TestClient, payload, url
-    ):
+    def test_put_config_secrets_unauthenticated(self, api_client, payload, url):
         response = api_client.put(url, headers={}, json=payload)
         assert 401 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
     def test_put_config_secrets_wrong_scope(
-        self, api_client: TestClient, payload, url, generate_auth_header
+        self, auth_header, api_client, payload, url
     ):
-        auth_header = generate_auth_header([STORAGE_READ])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_put_config_secret_invalid_config(
-        self, api_client: TestClient, payload, generate_auth_header
-    ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
+    def test_put_config_secret_invalid_config(self, auth_header, api_client, payload):
         url = (V1_URL_PREFIX + STORAGE_SECRETS).format(config_key="invalid_key")
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
-    def test_update_with_invalid_secrets_key(
-        self, api_client: TestClient, generate_auth_header, url
-    ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
+    def test_update_with_invalid_secrets_key(self, auth_header, api_client, url):
         response = api_client.put(
             url + "?verify=False", headers=auth_header, json={"bad_key": "12345"}
         )
@@ -357,16 +307,10 @@ class TestPutStorageConfigSecretsS3:
             ]
         }
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
     def test_put_config_secrets_without_verifying(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-        storage_config,
+        self, auth_header, db, api_client, payload, url, storage_config
     ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.put(
             url + "?verify=False", headers=auth_header, json=payload
         )
@@ -388,19 +332,12 @@ class TestPutStorageConfigSecretsS3:
             == "23451345834789"
         )
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
     @mock.patch("fides.api.ops.api.v1.endpoints.storage_endpoints.secrets_are_valid")
     def test_put_config_secrets_and_verify(
-        self,
-        mock_valid: Mock,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-        storage_config,
+        self, mock_valid, auth_header, db, api_client, payload, url, storage_config
     ):
         mock_valid.return_value = True
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
@@ -429,18 +366,13 @@ class TestPutStorageConfigSecretsS3:
             "failure_reason": None,
         }
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
     @mock.patch(
         "fides.api.ops.service.storage.storage_authenticator_service.get_s3_session"
     )
     def test_put_s3_config_secrets_and_verify(
-        self,
-        get_s3_session_mock: Mock,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
+        self, get_s3_session_mock, auth_header, api_client, payload, url
     ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         get_s3_session_mock.assert_called_once_with(
@@ -454,25 +386,21 @@ class TestPutStorageConfigSecretsS3:
 
 class TestGetStorageConfigs:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self):
         return V1_URL_PREFIX + STORAGE_CONFIG
 
-    def test_get_configs_not_authenticated(self, api_client: TestClient, url) -> None:
+    def test_get_configs_not_authenticated(self, api_client, url):
         response = api_client.get(url)
         assert 401 == response.status_code
 
-    def test_get_configs_wrong_scope(
-        self, api_client: TestClient, url, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header([STORAGE_DELETE])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_DELETE]], indirect=True)
+    def test_get_configs_wrong_scope(self, auth_header, api_client, url):
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_get_configs(
-        self, db, api_client: TestClient, url, generate_auth_header, storage_config
-    ):
-        auth_header = generate_auth_header([STORAGE_READ])
-        response = api_client.get(V1_URL_PREFIX + STORAGE_CONFIG, headers=auth_header)
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_get_configs(self, auth_header, api_client, url, storage_config):
+        response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
 
         expected_response = {
@@ -499,34 +427,29 @@ class TestGetStorageConfigs:
 
 class TestGetStorageConfig:
     @pytest.fixture(scope="function")
-    def url(self, storage_config) -> str:
+    def url(self, storage_config):
         return (V1_URL_PREFIX + STORAGE_BY_KEY).format(config_key=storage_config.key)
 
-    def test_get_config_not_authenticated(self, url, api_client: TestClient):
+    def test_get_config_not_authenticated(self, url, api_client):
         response = api_client.get(url)
         assert 401 == response.status_code
 
-    def test_get_config_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header
-    ):
-        auth_header = generate_auth_header([STORAGE_DELETE])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_DELETE]], indirect=True)
+    def test_get_config_wrong_scope(self, auth_header, url, api_client):
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_get_config_invalid(
-        self, api_client: TestClient, generate_auth_header, storage_config
-    ):
-        auth_header = generate_auth_header([STORAGE_READ])
+    @pytest.mark.usefixtures("storage_config")
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_get_config_invalid(self, auth_header, api_client):
         response = api_client.get(
             (V1_URL_PREFIX + STORAGE_BY_KEY).format(config_key="invalid"),
             headers=auth_header,
         )
         assert 404 == response.status_code
 
-    def test_get_config(
-        self, url, api_client: TestClient, generate_auth_header, storage_config
-    ):
-        auth_header = generate_auth_header([STORAGE_READ])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_get_config(self, auth_header, url, api_client, storage_config):
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
 
@@ -547,37 +470,29 @@ class TestGetStorageConfig:
 
 class TestDeleteConfig:
     @pytest.fixture(scope="function")
-    def url(self, storage_config) -> str:
+    def url(self, storage_config):
         return (V1_URL_PREFIX + STORAGE_BY_KEY).format(config_key=storage_config.key)
 
-    def test_delete_config_not_authenticated(self, url, api_client: TestClient):
+    def test_delete_config_not_authenticated(self, url, api_client):
         response = api_client.delete(url)
         assert 401 == response.status_code
 
-    def test_delete_config_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header
-    ):
-        auth_header = generate_auth_header([STORAGE_READ])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_delete_config_wrong_scope(self, auth_header, api_client, url):
         response = api_client.delete(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_delete_config_invalid(
-        self, api_client: TestClient, generate_auth_header, storage_config
-    ):
-        auth_header = generate_auth_header([STORAGE_DELETE])
+    @pytest.mark.usefixtures("storage_config")
+    @pytest.mark.parametrize("auth_header", [[STORAGE_DELETE]], indirect=True)
+    def test_delete_config_invalid(self, auth_header, api_client):
         response = api_client.delete(
             (V1_URL_PREFIX + STORAGE_BY_KEY).format(config_key="invalid"),
             headers=auth_header,
         )
         assert 404 == response.status_code
 
-    def test_delete_config(
-        self,
-        db: Session,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-    ):
+    @pytest.mark.parametrize("auth_header", [[STORAGE_DELETE]], indirect=True)
+    def test_delete_config(self, auth_header, db, url, api_client):
         # Creating new config, so we don't run into issues trying to clean up a deleted fixture
         storage_config = StorageConfig.create(
             db=db,
@@ -593,7 +508,6 @@ class TestDeleteConfig:
             },
         )
         url = (V1_URL_PREFIX + STORAGE_BY_KEY).format(config_key=storage_config.key)
-        auth_header = generate_auth_header([STORAGE_DELETE])
         response = api_client.delete(url, headers=auth_header)
         assert response.status_code == 204
 

@@ -32,7 +32,7 @@ from fides.lib.models.client import ClientDetail
 
 class TestGetConnections:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy) -> str:
+    def url(self):
         return V1_URL_PREFIX + CONNECTION_TYPES
 
     @pytest.fixture(scope="session")
@@ -43,21 +43,19 @@ class TestGetConnections:
         resp = api_client.get(url, headers={})
         assert resp.status_code == 401
 
-    def test_get_connection_types_forbidden(
-        self, api_client, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
+    def test_get_connection_types_forbidden(self, auth_header, api_client, url):
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
     def test_get_connection_types(
         self,
+        auth_header,
         api_client: TestClient,
-        generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        saas_template_registry,
+    ):
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
         assert resp.status_code == 200
@@ -88,15 +86,14 @@ class TestGetConnections:
         assert "custom" not in [item["identifier"] for item in data]
         assert "manual" not in [item["identifier"] for item in data]
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
     def test_search_connection_types(
         self,
+        auth_header,
         api_client,
-        generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
+        saas_template_registry,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
-
         search = "str"
         expected_saas_templates = [
             (
@@ -164,15 +161,14 @@ class TestGetConnections:
         for expected_data in expected_saas_data:
             assert expected_data in data
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
     def test_search_connection_types_case_insensitive(
         self,
+        auth_header,
         api_client,
-        generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
+        saas_template_registry,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
-
         search = "St"
         expected_saas_types = [
             (
@@ -248,15 +244,14 @@ class TestGetConnections:
         for expected_data in expected_saas_data:
             assert expected_data in data
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
     def test_search_system_type(
         self,
+        auth_header,
         api_client,
-        generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
+        saas_template_registry,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
-
         resp = api_client.get(url + "?system_type=nothing", headers=auth_header)
         assert resp.status_code == 422
 
@@ -270,15 +265,14 @@ class TestGetConnections:
         data = resp.json()["items"]
         assert len(data) == 9
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
     def test_search_system_type_and_connection_type(
         self,
+        auth_header,
         api_client,
-        generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
+        saas_template_registry,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
-
         search = "str"
         resp = api_client.get(
             url + f"?search={search}&system_type=saas", headers=auth_header
@@ -299,8 +293,8 @@ class TestGetConnections:
         data = resp.json()["items"]
         assert len(data) == 2
 
-    def test_search_manual_system_type(self, api_client, generate_auth_header, url):
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
+    def test_search_manual_system_type(self, auth_header, api_client, url):
 
         resp = api_client.get(url + "?system_type=manual", headers=auth_header)
         assert resp.status_code == 200
@@ -318,26 +312,26 @@ class TestGetConnections:
 
 class TestGetConnectionSecretSchema:
     @pytest.fixture(scope="function")
-    def base_url(self, oauth_client: ClientDetail, policy) -> str:
+    def base_url(self):
         return V1_URL_PREFIX + CONNECTION_TYPE_SECRETS
 
     def test_get_connection_secret_schema_not_authenticated(self, api_client, base_url):
         resp = api_client.get(base_url.format(connection_type="sentry"), headers={})
         assert resp.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_get_connection_secret_schema_forbidden(
-        self, api_client, base_url, generate_auth_header
+        self, auth_header, api_client, base_url
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             base_url.format(connection_type="sentry"), headers=auth_header
         )
         assert resp.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
     def test_get_connection_secret_schema_not_found(
-        self, api_client: TestClient, generate_auth_header, base_url
+        self, auth_header, api_client, base_url
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(
             base_url.format(connection_type="connection_type_we_do_not_support"),
             headers=auth_header,
@@ -348,10 +342,10 @@ class TestGetConnectionSecretSchema:
             == "No connection type found with name 'connection_type_we_do_not_support'."
         )
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
     def test_get_connection_secret_schema_mongodb(
-        self, api_client: TestClient, generate_auth_header, base_url
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        self, auth_header, api_client, base_url
+    ):
         resp = api_client.get(
             base_url.format(connection_type="mongodb"), headers=auth_header
         )
@@ -370,10 +364,10 @@ class TestGetConnectionSecretSchema:
             "additionalProperties": False,
         }
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
     def test_get_connection_secret_schema_hubspot(
-        self, api_client: TestClient, generate_auth_header, base_url
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        self, auth_header, api_client, base_url
+    ):
         resp = api_client.get(
             base_url.format(connection_type="hubspot"), headers=auth_header
         )
@@ -394,10 +388,10 @@ class TestGetConnectionSecretSchema:
             "additionalProperties": False,
         }
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_TYPE_READ]], indirect=True)
     def test_get_connection_secrets_manual_webhook(
-        self, api_client: TestClient, generate_auth_header, base_url
+        self, auth_header, api_client, base_url
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(
             base_url.format(connection_type="manual_webhook"), headers=auth_header
         )
@@ -412,7 +406,7 @@ class TestGetConnectionSecretSchema:
 
 class TestInstantiateConnectionFromTemplate:
     @pytest.fixture(scope="function")
-    def base_url(self) -> str:
+    def base_url(self):
         return V1_URL_PREFIX + SAAS_CONNECTOR_FROM_TEMPLATE
 
     def test_instantiate_connection_not_authenticated(self, api_client, base_url):
@@ -421,19 +415,19 @@ class TestInstantiateConnectionFromTemplate:
         )
         assert resp.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_instantiate_connection_wrong_scope(
-        self, generate_auth_header, api_client, base_url
+        self, auth_header, api_client, base_url
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.post(
             base_url.format(saas_connector_type="mailchimp"), headers=auth_header
         )
         assert resp.status_code == 403
 
-    def test_instantiate_nonexistent_template(
-        self, generate_auth_header, api_client, base_url
-    ):
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONNECTION_INSTANTIATE]], indirect=True
+    )
+    def test_instantiate_nonexistent_template(self, auth_header, api_client, base_url):
         request_body = {
             "instance_key": "test_instance_key",
             "secrets": {},
@@ -452,10 +446,12 @@ class TestInstantiateConnectionFromTemplate:
             == f"SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONNECTION_INSTANTIATE]], indirect=True
+    )
     def test_instance_key_already_exists(
-        self, generate_auth_header, api_client, base_url, dataset_config
+        self, auth_header, api_client, base_url, dataset_config
     ):
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": dataset_config.fides_key,
             "secrets": {
@@ -478,10 +474,10 @@ class TestInstantiateConnectionFromTemplate:
             == f"SaaS connector instance key '{dataset_config.fides_key}' already exists."
         )
 
-    def test_template_secrets_validation(
-        self, generate_auth_header, api_client, base_url, db
-    ):
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONNECTION_INSTANTIATE]], indirect=True
+    )
+    def test_template_secrets_validation(self, auth_header, api_client, base_url, db):
         # Secrets have one field missing, one field extra
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
@@ -517,10 +513,12 @@ class TestInstantiateConnectionFromTemplate:
         ).first()
         assert connection_config is None, "ConnectionConfig not persisted"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONNECTION_INSTANTIATE]], indirect=True
+    )
     def test_connection_config_key_already_exists(
-        self, db, generate_auth_header, api_client, base_url, connection_config
+        self, auth_header, api_client, base_url, connection_config
     ):
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
             "secrets": {
@@ -543,10 +541,12 @@ class TestInstantiateConnectionFromTemplate:
             in resp.json()["detail"]
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONNECTION_INSTANTIATE]], indirect=True
+    )
     def test_connection_config_name_already_exists(
-        self, db, generate_auth_header, api_client, base_url, connection_config
+        self, auth_header, api_client, base_url, connection_config
     ):
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
             "secrets": {
@@ -569,10 +569,12 @@ class TestInstantiateConnectionFromTemplate:
             in resp.json()["detail"]
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONNECTION_INSTANTIATE]], indirect=True
+    )
     def test_create_connection_from_template_without_supplying_connection_key(
-        self, db, generate_auth_header, api_client, base_url
+        self, auth_header, db, api_client, base_url
     ):
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
             "secrets": {
@@ -602,11 +604,11 @@ class TestInstantiateConnectionFromTemplate:
         assert dataset_config is not None
 
         assert connection_config.key == "mailchimp_connector"
-        dataset_config.delete(db)
-        connection_config.delete(db)
 
-    def test_invalid_instance_key(self, db, generate_auth_header, api_client, base_url):
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONNECTION_INSTANTIATE]], indirect=True
+    )
+    def test_invalid_instance_key(self, auth_header, api_client, base_url):
         request_body = {
             "instance_key": "< this is an invalid key! >",
             "secrets": {
@@ -629,15 +631,17 @@ class TestInstantiateConnectionFromTemplate:
             "type": "value_error.fidesvalidation",
         }
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONNECTION_INSTANTIATE]], indirect=True
+    )
     @mock.patch(
         "fides.api.ops.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
     )
     def test_dataset_config_saving_fails(
-        self, mock_create_dataset, db, generate_auth_header, api_client, base_url
+        self, mock_create_dataset, auth_header, db, api_client, base_url
     ):
         mock_create_dataset.side_effect = Exception("KeyError")
 
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
             "secrets": {
@@ -671,8 +675,11 @@ class TestInstantiateConnectionFromTemplate:
         ).first()
         assert dataset_config is None
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONNECTION_INSTANTIATE]], indirect=True
+    )
     def test_instantiate_connection_from_template(
-        self, db, generate_auth_header, api_client, base_url
+        self, auth_header, db, api_client, base_url
     ):
         connection_config = ConnectionConfig.filter(
             db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
@@ -685,7 +692,6 @@ class TestInstantiateConnectionFromTemplate:
         ).first()
         assert dataset_config is None
 
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
         request_body = {
             "instance_key": "secondary_mailchimp_instance",
             "secrets": {
@@ -736,7 +742,3 @@ class TestInstantiateConnectionFromTemplate:
 
         assert dataset_config.connection_config_id == connection_config.id
         assert dataset_config.ctl_dataset_id is not None
-
-        dataset_config.delete(db)
-        connection_config.delete(db)
-        dataset_config.ctl_dataset.delete(db=db)

@@ -154,12 +154,12 @@ class TestConsentRequest:
         "email_connection_config",
         "email_dataset_config",
         "subject_identity_verification_required",
+        "set_notification_service_type_to_twilio_sms",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
     def test_consent_request_email_and_phone_use_config(
         self,
         mock_dispatch_message,
-        set_notification_service_type_to_twilio_sms,
         api_client,
         db,
         url,
@@ -182,12 +182,12 @@ class TestConsentRequest:
         "email_connection_config",
         "email_dataset_config",
         "subject_identity_verification_required",
+        "set_notification_service_type_to_none",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
     def test_consent_request_email_and_phone_default_to_email(
         self,
         mock_dispatch_message,
-        set_notification_service_type_to_none,
         api_client,
         db,
         url,
@@ -746,10 +746,8 @@ class TestSaveConsent:
 
 
 class TestGetConsentPreferences:
-    def test_get_consent_preferences_wrong_scope(
-        self, generate_auth_header, api_client
-    ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
+    def test_get_consent_preferences_wrong_scope(self, auth_header, api_client):
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}",
             headers=auth_header,
@@ -758,10 +756,8 @@ class TestGetConsentPreferences:
 
         assert response.status_code == 403
 
-    def test_get_consent_preferences_no_identity_data(
-        self, generate_auth_header, api_client
-    ):
-        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+    @pytest.mark.parametrize("auth_header", [[CONSENT_READ]], indirect=True)
+    def test_get_consent_preferences_no_identity_data(self, auth_header, api_client):
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}",
             headers=auth_header,
@@ -771,10 +767,8 @@ class TestGetConsentPreferences:
         assert response.status_code == 400
         assert "No identity information" in response.json()["detail"]
 
-    def test_get_consent_preferences_identity_not_found(
-        self, generate_auth_header, api_client
-    ):
-        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+    @pytest.mark.parametrize("auth_header", [[CONSENT_READ]], indirect=True)
+    def test_get_consent_preferences_identity_not_found(self, auth_header, api_client):
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}",
             headers=auth_header,
@@ -784,11 +778,12 @@ class TestGetConsentPreferences:
         assert response.status_code == 404
         assert "Identity not found" in response.json()["detail"]
 
+    @pytest.mark.parametrize("auth_header", [[CONSENT_READ]], indirect=True)
     def test_get_consent_preferences(
         self,
+        auth_header,
         provided_identity_and_consent_request,
         db,
-        generate_auth_header,
         api_client,
     ):
         provided_identity, _ = provided_identity_and_consent_request
@@ -810,7 +805,6 @@ class TestGetConsentPreferences:
             data["provided_identity_id"] = provided_identity.id
             Consent.create(db, data=data)
 
-        auth_header = generate_auth_header(scopes=[CONSENT_READ])
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}",
             headers=auth_header,
