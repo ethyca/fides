@@ -10,13 +10,13 @@ class TestGetConnections:
     def url(self) -> str:
         return urls.V1_URL_PREFIX + urls.CONFIG
 
+    @pytest.mark.parametrize("auth_header", [[scopes.CONFIG_READ]], indirect=True)
     def test_get_config(
         self,
+        auth_header,
         api_client: TestClient,
-        generate_auth_header,
         url,
     ) -> None:
-        auth_header = generate_auth_header(scopes=[scopes.CONFIG_READ])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
 

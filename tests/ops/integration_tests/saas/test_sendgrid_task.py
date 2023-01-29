@@ -9,7 +9,7 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.core.config import get_config
-from tests.ops.fixtures.saas.sendgrid_fixtures import contact_exists
+from tests.fixtures.saas.sendgrid_fixtures import contact_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 

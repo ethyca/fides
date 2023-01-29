@@ -11,7 +11,6 @@ from fastapi import FastAPI
 from sqlalchemy_utils.functions import create_database, database_exists
 from starlette.testclient import TestClient
 
-from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -91,20 +90,6 @@ def oauth_client(db):
     db.refresh(client)
     yield client
     client.delete(db)
-
-
-@pytest.fixture
-def auth_header(request, oauth_client, config):
-    client_id = oauth_client.id
-
-    payload = {
-        JWE_PAYLOAD_SCOPES: request.param,
-        JWE_PAYLOAD_CLIENT_ID: client_id,
-        JWE_ISSUED_AT: datetime.now().isoformat(),
-    }
-    jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
-
-    return {"Authorization": "Bearer " + jwe}
 
 
 @pytest.fixture

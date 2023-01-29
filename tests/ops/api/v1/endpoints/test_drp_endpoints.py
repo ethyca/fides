@@ -1,12 +1,9 @@
 from datetime import datetime
-from typing import Callable
 from unittest import mock
 from uuid import uuid4
 
 import jwt
 import pytest
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     POLICY_READ,
@@ -33,9 +30,6 @@ from fides.api.ops.util.cache import (
     get_drp_request_body_cache_key,
     get_identity_cache_key,
 )
-from fides.core.config import get_config
-
-CONFIG = get_config()
 
 
 class TestCreateDrpPrivacyRequest:
@@ -51,9 +45,9 @@ class TestCreateDrpPrivacyRequest:
         run_access_request_mock,
         url,
         db,
-        api_client: TestClient,
-        policy_drp_action,
+        api_client,
         cache,
+        config,
     ):
         TEST_EMAIL = "test@example.com"
         TEST_PHONE_NUMBER = "+12345678910"
@@ -62,7 +56,7 @@ class TestCreateDrpPrivacyRequest:
             "phone_number": TEST_PHONE_NUMBER,
         }
         encoded_identity: str = jwt.encode(
-            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -107,10 +101,9 @@ class TestCreateDrpPrivacyRequest:
         persisted_identity = pr.get_persisted_identity()
         assert persisted_identity.email == TEST_EMAIL
         assert persisted_identity.phone_number == TEST_PHONE_NUMBER
-
-        pr.delete(db=db)
         assert run_access_request_mock.called
 
+    @pytest.mark.usefixtures("policy_drp_action")
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
@@ -119,14 +112,14 @@ class TestCreateDrpPrivacyRequest:
         run_access_request_mock,
         url,
         db,
-        api_client: TestClient,
-        policy_drp_action,
+        api_client,
         cache,
+        config,
     ):
 
         identity = {"email": "test@example.com", "address": "something"}
         encoded_identity: str = jwt.encode(
-            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -173,19 +166,18 @@ class TestCreateDrpPrivacyRequest:
             identity_attribute="address",
         )
         assert cache.get(fidesops_identity_key_address) is None
-        pr.delete(db=db)
         assert run_access_request_mock.called
 
+    @pytest.mark.usefixtures("policy_drp_action")
     def test_create_drp_privacy_request_no_jwt(
         self,
         url,
-        db,
-        api_client: TestClient,
-        policy_drp_action,
+        api_client,
+        config,
     ):
 
-        original_secret = CONFIG.security.drp_jwt_secret
-        CONFIG.security.drp_jwt_secret = None
+        original_secret = config.security.drp_jwt_secret
+        config.security.drp_jwt_secret = None
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(identity, "secret", algorithm="HS256")
         data = {
@@ -196,19 +188,19 @@ class TestCreateDrpPrivacyRequest:
         }
         resp = api_client.post(url, json=data)
         assert resp.status_code == 500
-        CONFIG.security.drp_jwt_secret = original_secret
+        config.security.drp_jwt_secret = original_secret
 
+    @pytest.mark.usefixtures("policy_drp_action")
     def test_create_drp_privacy_request_no_exercise(
         self,
         url,
-        db,
-        api_client: TestClient,
-        policy_drp_action,
+        api_client,
+        config,
     ):
 
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
-            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -219,17 +211,17 @@ class TestCreateDrpPrivacyRequest:
         resp = api_client.post(url, json=data)
         assert resp.status_code == 422
 
+    @pytest.mark.usefixtures("policy_drp_action")
     def test_create_drp_privacy_request_invalid_exercise(
         self,
         url,
-        db,
-        api_client: TestClient,
-        policy_drp_action,
+        api_client,
+        config,
     ):
 
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
-            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -240,17 +232,17 @@ class TestCreateDrpPrivacyRequest:
         resp = api_client.post(url, json=data)
         assert resp.status_code == 422
 
+    @pytest.mark.usefixtures("policy")
     def test_create_drp_privacy_request_no_associated_policy(
         self,
         url,
-        db,
-        api_client: TestClient,
-        policy,
+        api_client,
+        config,
     ):
 
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
-            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -274,9 +266,10 @@ class TestCreateDrpPrivacyRequest:
         run_access_request_mock,
         url,
         db,
-        api_client: TestClient,
+        api_client,
         cache,
         policy,
+        config,
     ):
         TEST_EMAIL = "test@example.com"
         TEST_PHONE_NUMBER = "+12345678910"
@@ -285,7 +278,7 @@ class TestCreateDrpPrivacyRequest:
             "phone_number": TEST_PHONE_NUMBER,
         }
         encoded_identity: str = jwt.encode(
-            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
+            identity, config.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -391,8 +384,8 @@ class TestGetPrivacyRequestDRP:
 
     def test_get_privacy_requests_unauthenticated(
         self,
-        api_client: TestClient,
-        url_for_privacy_request: str,
+        api_client,
+        url_for_privacy_request,
     ):
         response = api_client.get(
             url_for_privacy_request,
@@ -400,26 +393,26 @@ class TestGetPrivacyRequestDRP:
         )
         assert 401 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_CREATE_OR_UPDATE]], indirect=True)
     def test_get_privacy_requests_wrong_scope(
         self,
-        api_client: TestClient,
-        generate_auth_header: Callable,
-        url_for_privacy_request: str,
+        auth_header,
+        api_client,
+        url_for_privacy_request,
     ):
-        auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
         response = api_client.get(
             url_for_privacy_request,
             headers=auth_header,
         )
         assert 403 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[PRIVACY_REQUEST_READ]], indirect=True)
     def test_get_non_drp_privacy_request(
         self,
-        api_client: TestClient,
-        generate_auth_header: Callable,
-        url_for_privacy_request: str,
+        auth_header,
+        api_client,
+        url_for_privacy_request,
     ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
             url_for_privacy_request,
             headers=auth_header,
@@ -443,19 +436,19 @@ class TestGetPrivacyRequestDRP:
             (PrivacyRequestStatus.error, PrivacyRequestDRPStatus.expired),
         ],
     )
+    @pytest.mark.parametrize("auth_header", [[PRIVACY_REQUEST_READ]], indirect=True)
     def test_get_privacy_request_with_drp_action(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header: Callable,
-        url_for_privacy_request_with_drp_action: str,
-        privacy_request_with_drp_action: PrivacyRequest,
-        privacy_request_status: PrivacyRequestStatus,
-        expected_drp_status: PrivacyRequestDRPStatus,
+        auth_header,
+        api_client,
+        db,
+        url_for_privacy_request_with_drp_action,
+        privacy_request_with_drp_action,
+        privacy_request_status,
+        expected_drp_status,
     ):
         privacy_request_with_drp_action.status = privacy_request_status
         privacy_request_with_drp_action.save(db=db)
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
             url_for_privacy_request_with_drp_action,
             headers=auth_header,
@@ -478,13 +471,13 @@ class TestGetDrpDataRights:
     def url_for_data_rights(self) -> str:
         return V1_URL_PREFIX + DRP_DATA_RIGHTS
 
+    @pytest.mark.usefixtures("policy")
+    @pytest.mark.parametrize("auth_header", [[POLICY_READ]], indirect=True)
     def test_get_drp_data_rights_no_drp_policy(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header: Callable,
-        url_for_data_rights: str,
-        policy,
+        auth_header,
+        api_client,
+        url_for_data_rights,
     ):
         expected_response = {
             "version": "0.5",
@@ -492,7 +485,6 @@ class TestGetDrpDataRights:
             "actions": [],
             "user_relationships": None,
         }
-        auth_header = generate_auth_header(scopes=[POLICY_READ])
         response = api_client.get(
             url_for_data_rights,
             headers=auth_header,
@@ -500,13 +492,13 @@ class TestGetDrpDataRights:
         assert 200 == response.status_code
         assert response.json() == expected_response
 
+    @pytest.mark.usefixtures("policy_drp_action")
+    @pytest.mark.parametrize("auth_header", [[POLICY_READ]], indirect=True)
     def test_get_drp_data_rights_one_drp_policy(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header: Callable,
-        url_for_data_rights: str,
-        policy_drp_action,
+        auth_header,
+        api_client,
+        url_for_data_rights,
     ):
         expected_response = {
             "version": "0.5",
@@ -514,7 +506,6 @@ class TestGetDrpDataRights:
             "actions": [DrpAction.access.value],
             "user_relationships": None,
         }
-        auth_header = generate_auth_header(scopes=[POLICY_READ])
         response = api_client.get(
             url_for_data_rights,
             headers=auth_header,
@@ -522,14 +513,13 @@ class TestGetDrpDataRights:
         assert 200 == response.status_code
         assert response.json() == expected_response
 
+    @pytest.mark.usefixtures("policy_drp_action", "policy_drp_action_erasure")
+    @pytest.mark.parametrize("auth_header", [[POLICY_READ]], indirect=True)
     def test_get_drp_data_rights_multiple_drp_policies(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header: Callable,
-        url_for_data_rights: str,
-        policy_drp_action,
-        policy_drp_action_erasure,
+        auth_header,
+        api_client,
+        url_for_data_rights,
     ):
         expected_response = {
             "version": "0.5",
@@ -537,7 +527,6 @@ class TestGetDrpDataRights:
             "actions": [DrpAction.access.value, DrpAction.deletion.value],
             "user_relationships": None,
         }
-        auth_header = generate_auth_header(scopes=[POLICY_READ])
         response = api_client.get(
             url_for_data_rights,
             headers=auth_header,
@@ -551,23 +540,20 @@ class TestDrpRevoke:
     def url(self) -> str:
         return V1_URL_PREFIX + DRP_REVOKE
 
-    def test_revoke_not_authenticated(
-        self, api_client: TestClient, privacy_request, url
-    ):
+    @pytest.mark.usefixtures("privacy_request")
+    def test_revoke_not_authenticated(self, api_client, url):
         response = api_client.post(url, headers={})
         assert 401 == response.status_code
 
-    def test_revoke_wrong_scope(
-        self, api_client: TestClient, generate_auth_header, url
-    ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+    @pytest.mark.parametrize("auth_header", [[PRIVACY_REQUEST_READ]], indirect=True)
+    def test_revoke_wrong_scope(self, auth_header, api_client, url):
         response = api_client.post(url, headers=auth_header, json={})
         assert 403 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[PRIVACY_REQUEST_REVIEW]], indirect=True)
     def test_revoke_wrong_status(
-        self, db, api_client: TestClient, generate_auth_header, url, privacy_request
+        self, auth_header, db, api_client, url, privacy_request
     ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
         response = api_client.post(
             url, headers=auth_header, json={"request_id": privacy_request.id}
         )
@@ -581,14 +567,12 @@ class TestDrpRevoke:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         assert privacy_request.canceled_at is None
 
-    def test_revoke(
-        self, db, api_client: TestClient, generate_auth_header, url, privacy_request
-    ):
+    @pytest.mark.parametrize("auth_header", [[PRIVACY_REQUEST_REVIEW]], indirect=True)
+    def test_revoke(self, auth_header, db, api_client, url, privacy_request):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db)
         canceled_reason = "Accidentally submitted"
 
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
         response = api_client.post(
             url,
             headers=auth_header,

@@ -1,14 +1,11 @@
 import json
 from datetime import datetime
 from unittest import mock
-from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -32,8 +29,7 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.lib.models.client import ClientDetail
-from tests.ops.fixtures.application_fixtures import integration_secrets
+from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
 
@@ -64,28 +60,26 @@ class TestPatchConnections:
             {"name": "My Mongo DB", "connection_type": "mongodb", "access": "read"},
         ]
 
-    def test_patch_connections_not_authenticated(
-        self, api_client: TestClient, url, payload
-    ) -> None:
+    def test_patch_connections_not_authenticated(self, api_client, url, payload):
         response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
 
-    def test_malformed_token_is_forbidden(self, api_client: TestClient, url, payload):
+    def test_malformed_token_is_forbidden(self, api_client, url, payload):
         auth_header = {"Authorization": "Bearer invalid"}
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_DELETE]], indirect=True)
     def test_patch_connections_incorrect_scope(
-        self, api_client: TestClient, generate_auth_header, url, payload
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
+        self, auth_header, api_client, url, payload
+    ):
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_patch_http_connection(
-        self, url, api_client, db: Session, generate_auth_header
-    ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
+    def test_patch_http_connection(self, auth_header, url, api_client):
         payload = [
             {
                 "name": "My Post-Execution Webhook",
@@ -98,11 +92,12 @@ class TestPatchConnections:
         assert 200 == response.status_code
         body = json.loads(response.text)
         assert body["succeeded"][0]["connection_type"] == "https"
-        http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
-        http_config.delete(db)
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_connection_saas_with_secrets_exists(
-        self, url, api_client, generate_auth_header, db, mailchimp_config
+        self, auth_header, url, api_client, db, mailchimp_config
     ):
         payload = [
             {
@@ -132,7 +127,6 @@ class TestPatchConnections:
             },
         )
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         assert (
@@ -146,8 +140,11 @@ class TestPatchConnections:
         config = ConnectionConfig.get_by(db, field="key", value=payload[0]["key"])
         assert config.secrets == payload[0]["secrets"]
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_connection_saas_with_secrets_new(
-        self, url, api_client, generate_auth_header, db
+        self, auth_header, url, api_client, db
     ):
         payload = [
             {
@@ -165,7 +162,6 @@ class TestPatchConnections:
             },
         ]
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         body = json.loads(response.text)
@@ -209,17 +205,21 @@ class TestPatchConnections:
             ],
         ],
     )
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_connection_invalid_secrets(
-        self, payload, url, api_client, generate_auth_header
+        self, auth_header, payload, url, api_client
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 422
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_connections_bulk_create(
-        self, api_client: TestClient, db: Session, generate_auth_header, url, payload
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        self, auth_header, api_client, db, url, payload
+    ):
         response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert 200 == response.status_code
@@ -256,14 +256,15 @@ class TestPatchConnections:
 
         assert response_body["failed"] == []  # No failures
 
-        postgres_resource.delete(db)
         mongo_resource.delete(db)
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_connections_bulk_update_key_error(
-        self, url, api_client: TestClient, generate_auth_header, payload
-    ) -> None:
+        self, auth_header, url, api_client, payload
+    ):
         # Create resources first
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         api_client.patch(url, headers=auth_header, json=payload)
 
         # Update resources
@@ -286,8 +287,11 @@ class TestPatchConnections:
             "Key my_mongo_db already exists in ConnectionConfig" in failed[0]["message"]
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_connections_bulk_create_limit_exceeded(
-        self, url, api_client: TestClient, db: Session, generate_auth_header
+        self, auth_header, url, api_client
     ):
         payload = []
         for i in range(0, 51):
@@ -300,7 +304,6 @@ class TestPatchConnections:
                 }
             )
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
@@ -308,20 +311,21 @@ class TestPatchConnections:
             == "ensure this value has at most 50 items"
         )
 
+    @pytest.mark.usefixtures("access_manual_webhook")
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
     def test_disable_manual_webhook(
         self,
         mock_queue,
+        auth_header,
         db,
         url,
-        generate_auth_header,
         api_client,
         privacy_request_requires_input,
         integration_manual_webhook_config,
-        access_manual_webhook,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-
         # Update resources
         payload = [
             {
@@ -333,9 +337,7 @@ class TestPatchConnections:
             }
         ]
 
-        response = api_client.patch(
-            V1_URL_PREFIX + CONNECTIONS, headers=auth_header, json=payload
-        )
+        response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert 200 == response.status_code
 
@@ -351,11 +353,13 @@ class TestPatchConnections:
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_connections_bulk_update(
-        self, url, api_client: TestClient, db: Session, generate_auth_header, payload
-    ) -> None:
+        self, auth_header, url, api_client, db, payload
+    ):
         # Create resources first
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         api_client.patch(url, headers=auth_header, json=payload)
 
         # Update resources
@@ -546,10 +550,13 @@ class TestPatchConnections:
         email_resource.delete(db)
         manual_webhook_resource.delete(db)
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     @mock.patch("fides.lib.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
-        self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
-    ) -> None:
+        self, mock_create, auth_header, api_client, url
+    ):
         mock_create.side_effect = HTTPException(
             mock.Mock(status_code=400), "Test error"
         )
@@ -563,7 +570,6 @@ class TestPatchConnections:
             },
             {"name": "My Mongo DB", "connection_type": "mongodb", "access": "read"},
         ]
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 200  # Returns 200 regardless
         response_body = response.json()
@@ -594,16 +600,16 @@ class TestPatchConnections:
             "description": None,
         }
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_DELETE]], indirect=True)
     @mock.patch("fides.api.main.prepare_and_log_request")
     def test_patch_connections_incorrect_scope_analytics(
         self,
         mocked_prepare_and_log_request,
-        api_client: TestClient,
-        generate_auth_header,
+        auth_header,
+        api_client,
         payload,
-    ) -> None:
+    ):
         url = V1_URL_PREFIX + CONNECTIONS
-        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
         assert mocked_prepare_and_log_request.called
@@ -616,16 +622,18 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] == "HTTPException"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     @mock.patch("fides.api.main.prepare_and_log_request")
     def test_patch_http_connection_successful_analytics(
         self,
+        auth_header,
         mocked_prepare_and_log_request,
         api_client,
-        db: Session,
-        generate_auth_header,
+        db,
         url,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = [
             {
                 "name": "My Post-Execution Webhook",
@@ -653,27 +661,24 @@ class TestPatchConnections:
 
 class TestGetConnections:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + CONNECTIONS
 
-    def test_get_connections_not_authenticated(
-        self, api_client: TestClient, generate_auth_header, connection_config, url
-    ) -> None:
+    @pytest.mark.usefixtures("connection_config")
+    def test_get_connections_not_authenticated(self, api_client, url):
         resp = api_client.get(url, headers={})
         assert resp.status_code == 401
 
-    def test_get_connections_wrong_scope(
-        self, api_client: TestClient, generate_auth_header, connection_config, url
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize("auth_header", [[STORAGE_DELETE]], indirect=True)
+    def test_get_connections_wrong_scope(self, auth_header, api_client, url):
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 403
 
-    def test_get_connection_configs(
-        self, api_client: TestClient, generate_auth_header, connection_config, url
-    ) -> None:
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
+    def test_get_connection_configs(self, auth_header, api_client, url):
         # Test get connection configs happy path
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
 
@@ -704,20 +709,15 @@ class TestGetConnections:
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-    def test_filter_connections_disabled_and_type(
-        self,
-        db,
-        connection_config,
-        disabled_connection_config,
-        read_connection_config,
-        redshift_connection_config,
-        mongo_connection_config,
-        api_client,
-        generate_auth_header,
-        url,
-    ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
-
+    @pytest.mark.usefixtures(
+        "connection_config",
+        "disabled_connection_config",
+        "read_connection_config",
+        "redshift_connection_config",
+        "mongo_connection_config",
+    )
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
+    def test_filter_connections_disabled_and_type(self, auth_header, api_client, url):
         resp = api_client.get(url, headers=auth_header)
         items = resp.json()["items"]
         assert len(items) == 5
@@ -765,16 +765,17 @@ class TestGetConnections:
         )
         assert all([con["disabled"] is True for con in resp.json()["items"]])
 
+    @pytest.mark.usefixtures(
+        "connection_config", "disabled_connection_config", "read_connection_config"
+    )
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_filter_test_status(
         self,
+        auth_header,
         db,
-        connection_config,
-        disabled_connection_config,
-        read_connection_config,
         redshift_connection_config,
         mongo_connection_config,
         api_client,
-        generate_auth_header,
         url,
     ):
         mongo_connection_config.last_test_succeeded = True
@@ -782,7 +783,6 @@ class TestGetConnections:
         redshift_connection_config.last_test_succeeded = False
         redshift_connection_config.save(db)
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url + "?test_status=passed", headers=auth_header)
         items = resp.json()["items"]
         assert resp.status_code == 200
@@ -805,22 +805,23 @@ class TestGetConnections:
 
     @pytest.mark.integration_saas
     @pytest.mark.integration_stripe
+    @pytest.mark.usefixtures(
+        "connection_config",
+        "disabled_connection_config",
+        "read_connection_config",
+        "redshift_connection_config",
+        "mongo_connection_config",
+    )
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_filter_system_type(
         self,
-        db,
-        connection_config,
-        disabled_connection_config,
-        read_connection_config,
-        redshift_connection_config,
-        mongo_connection_config,
+        auth_header,
         api_client,
-        generate_auth_header,
         stripe_connection_config,
         integration_manual_config,
         url,
     ):
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         items = resp.json()["items"]
         assert resp.status_code == 200
@@ -849,17 +850,16 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert len(items) == 0
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_search_connections(
         self,
+        auth_header,
         db,
         connection_config,
         read_connection_config,
-        api_client: TestClient,
-        generate_auth_header,
+        api_client,
         url,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
-
         resp = api_client.get(url + "?search=primary", headers=auth_header)
         assert resp.status_code == 200
         assert len(resp.json()["items"]) == 1
@@ -894,17 +894,17 @@ class TestGetConnections:
         assert ordered[1].key == items[1]["key"]
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_filter_connection_type(
         self,
+        auth_header,
         db,
         connection_config,
         read_connection_config,
         api_client,
-        generate_auth_header,
         saas_example_connection_config,
         url,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url + "?connection_type=postgres", headers=auth_header)
         assert resp.status_code == 200
         items = resp.json()["items"]
@@ -924,7 +924,6 @@ class TestGetConnections:
         assert ordered[0].key == items[0]["key"]
         assert ordered[1].key == items[1]["key"]
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url + "?connection_type=POSTGRES", headers=auth_header)
         assert resp.status_code == 200
         items = resp.json()["items"]
@@ -994,8 +993,9 @@ class TestGetConnections:
         assert len(ordered) == 3
         assert ordered[0].key == items[0]["key"]
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_orphaned_connections_filter(
-        self, db, api_client: TestClient, generate_auth_header, url, system
+        self, auth_header, db, api_client, url, system
     ):
         configs = []
         total_orphaned_configs = 10
@@ -1034,7 +1034,6 @@ class TestGetConnections:
                     data=data,
                 )
             )
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
 
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
@@ -1057,36 +1056,32 @@ class TestGetConnections:
 
 class TestGetConnection:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
+    def url(self, connection_config) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}"
 
-    def test_get_connection_not_authenticated(
-        self, url, api_client: TestClient, connection_config
-    ) -> None:
+    @pytest.mark.usefixtures("connection_config")
+    def test_get_connection_not_authenticated(self, url, api_client):
         resp = api_client.get(url, headers={})
         assert resp.status_code == 401
 
-    def test_get_connection_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header, connection_config
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize("auth_header", [[STORAGE_DELETE]], indirect=True)
+    def test_get_connection_wrong_scope(self, auth_header, url, api_client):
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 403
 
-    def test_get_connection_does_not_exist(
-        self, api_client: TestClient, generate_auth_header, connection_config
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
+    def test_get_connection_does_not_exist(self, auth_header, api_client):
         resp = api_client.get(
             f"{V1_URL_PREFIX}{CONNECTIONS}/this_is_a_nonexistent_key",
             headers=auth_header,
         )
         assert resp.status_code == 404
 
-    def test_get_connection_config(
-        self, url, api_client: TestClient, generate_auth_header, connection_config
-    ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
+    def test_get_connection_config(self, auth_header, url, api_client):
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
 
@@ -1114,41 +1109,32 @@ class TestGetConnection:
 
 class TestDeleteConnection:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
+    def url(self, connection_config):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}"
 
-    def test_delete_connection_config_not_authenticated(
-        self, url, api_client: TestClient, generate_auth_header, connection_config
-    ) -> None:
+    @pytest.mark.usefixtures("connection_config")
+    def test_delete_connection_config_not_authenticated(self, url, api_client):
         # Test not authenticated
         resp = api_client.delete(url, headers={})
         assert resp.status_code == 401
 
-    def test_delete_connection_config_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header, connection_config
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
+    def test_delete_connection_config_wrong_scope(self, auth_header, url, api_client):
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == 403
 
-    def test_delete_connection_config_does_not_exist(
-        self, api_client: TestClient, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_DELETE]], indirect=True)
+    def test_delete_connection_config_does_not_exist(self, auth_header, api_client):
         resp = api_client.delete(
             f"{V1_URL_PREFIX}{CONNECTIONS}/non_existent_config", headers=auth_header
         )
         assert resp.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_DELETE]], indirect=True)
     def test_delete_connection_config(
-        self,
-        url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
-        connection_config,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        self, auth_header, url, api_client, db, connection_config
+    ):
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == 204
 
@@ -1157,18 +1143,19 @@ class TestDeleteConnection:
             is None
         )
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_DELETE]], indirect=True)
     @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
     def test_delete_manual_webhook_connection_config(
         self,
         mock_queue,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         integration_manual_webhook_config,
         access_manual_webhook,
         privacy_request_requires_input,
-    ) -> None:
+    ):
         """Assert both the connection config and its webhook are deleted"""
         assert (
             db.query(AccessManualWebhook).filter_by(id=access_manual_webhook.id).first()
@@ -1183,7 +1170,6 @@ class TestDeleteConnection:
         )
 
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{integration_manual_webhook_config.key}"
-        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == 204
 
@@ -1213,29 +1199,32 @@ class TestDeleteConnection:
 
 class TestPutConnectionConfigSecrets:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
+    def url(self, connection_config):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
 
-    def test_put_connection_config_secrets_not_authenticated(
-        self, url, api_client: TestClient, generate_auth_header, connection_config
-    ) -> None:
+    @pytest.mark.usefixtures("connection_config")
+    def test_put_connection_config_secrets_not_authenticated(self, url, api_client):
         resp = api_client.put(url, headers={})
         assert resp.status_code == 401
 
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_put_connection_config_secrets_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header, connection_config
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        self, auth_header, url, api_client
+    ):
         resp = api_client.put(
             url,
             headers=auth_header,
         )
         assert resp.status_code == 403
 
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_connection_config_secrets_invalid_config(
-        self, api_client: TestClient, generate_auth_header, connection_config
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        self, auth_header, api_client
+    ):
         resp = api_client.put(
             f"{V1_URL_PREFIX}{CONNECTIONS}/this_is_not_a_known_key/secret",
             headers=auth_header,
@@ -1243,10 +1232,13 @@ class TestPutConnectionConfigSecrets:
         )
         assert resp.status_code == 404
 
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_connection_config_secrets_schema_validation(
-        self, url, api_client: TestClient, generate_auth_header, connection_config
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        self, auth_header, url, api_client
+    ):
         payload = {"incorrect_postgres_uri_component": "test-1"}
         resp = api_client.put(
             url,
@@ -1279,16 +1271,18 @@ class TestPutConnectionConfigSecrets:
             json.loads(resp.text)["detail"][0]["msg"] == "value is not a valid integer"
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_connection_config_secrets(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config,
-    ) -> None:
+    ):
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {"host": "localhost", "port": "1234", "dbname": "my_test_db"}
         resp = api_client.put(
             url + "?verify=False",
@@ -1335,15 +1329,17 @@ class TestPutConnectionConfigSecrets:
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_connection_config_redshift_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         redshift_connection_config,
-    ) -> None:
+    ):
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{redshift_connection_config.key}/secret"
         payload = {
             "host": "examplecluster.abc123xyz789.us-west-1.redshift.amazonaws.com",
@@ -1376,15 +1372,17 @@ class TestPutConnectionConfigSecrets:
         assert redshift_connection_config.last_test_timestamp is None
         assert redshift_connection_config.last_test_succeeded is None
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_connection_config_bigquery_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         bigquery_connection_config_without_secrets,
-    ) -> None:
+    ):
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{bigquery_connection_config_without_secrets.key}/secret"
         payload = {
             "dataset": "some-dataset",
@@ -1431,15 +1429,17 @@ class TestPutConnectionConfigSecrets:
         assert bigquery_connection_config_without_secrets.last_test_timestamp is None
         assert bigquery_connection_config_without_secrets.last_test_succeeded is None
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_connection_config_snowflake_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         snowflake_connection_config,
-    ) -> None:
+    ):
         """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{snowflake_connection_config.key}/secret"
         payload = {
             "user_login_name": "test_user",
@@ -1472,15 +1472,17 @@ class TestPutConnectionConfigSecrets:
         assert snowflake_connection_config.last_test_timestamp is None
         assert snowflake_connection_config.last_test_succeeded is None
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_http_connection_config_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         https_connection_config,
-    ) -> None:
+    ):
         """Note: HTTP Connection Configs don't attempt to test secrets"""
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
         payload = {"url": "example.com", "authorization": "test_authorization123"}
 
@@ -1505,17 +1507,20 @@ class TestPutConnectionConfigSecrets:
         assert https_connection_config.last_test_succeeded is None
 
     @pytest.mark.unit_saas
+    @pytest.mark.usefixtures(
+        "saas_example_dataset_config", "saas_external_example_dataset_config"
+    )
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_saas_example_connection_config_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         saas_example_connection_config,
-        saas_example_dataset_config,
-        saas_external_example_dataset_config,
         saas_example_secrets,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = (
             f"{V1_URL_PREFIX}{CONNECTIONS}/{saas_example_connection_config.key}/secret"
         )
@@ -1540,17 +1545,20 @@ class TestPutConnectionConfigSecrets:
         assert saas_example_connection_config.last_test_succeeded is None
 
     @pytest.mark.unit_saas
+    @pytest.mark.usefixtures(
+        "saas_example_dataset_config", "saas_external_example_dataset_config"
+    )
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_saas_example_connection_config_secrets_invalid_external_reference(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         saas_example_connection_config,
-        saas_example_dataset_config,
-        saas_external_example_dataset_config,
         saas_example_secrets,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = (
             f"{V1_URL_PREFIX}{CONNECTIONS}/{saas_example_connection_config.key}/secret"
         )
@@ -1576,14 +1584,16 @@ class TestPutConnectionConfigSecrets:
         assert saas_example_connection_config.secrets != saas_example_secrets
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_saas_example_connection_config_secrets_missing_saas_config(
         self,
-        api_client: TestClient,
-        generate_auth_header,
+        auth_header,
+        api_client,
         saas_example_connection_config_without_saas_config,
         saas_example_secrets,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{saas_example_connection_config_without_saas_config.key}/secret"
         payload = saas_example_secrets
 
@@ -1600,17 +1610,19 @@ class TestPutConnectionConfigSecrets:
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     @mock.patch("fides.api.ops.service.connectors.email_connector.dispatch_message")
     def test_put_email_connection_config_secrets(
         self,
         mock_dispatch_message,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         email_connection_config,
         url,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+    ):
         payload = {
             "url": None,
             "to_email": "test1@example.com",

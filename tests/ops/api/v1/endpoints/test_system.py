@@ -34,10 +34,12 @@ def url_invalid_system() -> str:
 
 
 class TestPatchSystemConnections(TestPatchConnections):
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_connections_with_invalid_system(
-        self, api_client: TestClient, generate_auth_header, url_invalid_system
+        self, auth_header, api_client, url_invalid_system
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.patch(url_invalid_system, headers=auth_header, json=[])
 
         assert resp.status_code == HTTP_404_NOT_FOUND
@@ -48,17 +50,16 @@ class TestPatchSystemConnections(TestPatchConnections):
 
 
 class TestGetConnections:
-    def test_get_connections_not_authenticated(
-        self, api_client: TestClient, generate_auth_header, connection_config, url
-    ) -> None:
+    @pytest.mark.usefixtures("connection_config")
+    def test_get_connections_not_authenticated(self, api_client, url):
         resp = api_client.get(url, headers={})
         assert resp.status_code == HTTP_401_UNAUTHORIZED
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_get_connections_with_invalid_system(
-        self, api_client: TestClient, generate_auth_header, url_invalid_system
+        self, auth_header, api_client, url_invalid_system
     ):
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url_invalid_system, headers=auth_header)
 
         assert (
@@ -67,21 +68,22 @@ class TestGetConnections:
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
 
-    def test_get_connections_wrong_scope(
-        self, api_client: TestClient, generate_auth_header, connection_config, url
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize("auth_header", [[STORAGE_DELETE]], indirect=True)
+    def test_get_connections_wrong_scope(self, auth_header, api_client, url):
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_403_FORBIDDEN
 
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE, CONNECTION_READ]], indirect=True
+    )
     def test_get_connection_configs(
         self,
-        api_client: TestClient,
-        generate_auth_header,
-        connection_config,
+        auth_header,
+        api_client,
         url,
-        db: Session,
-    ) -> None:
+    ):
         connections = [
             {
                 "name": "My Main Postgres DB",
@@ -119,10 +121,8 @@ class TestGetConnections:
             },
         ]
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         api_client.patch(url, headers=auth_header, json=connections)
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
 

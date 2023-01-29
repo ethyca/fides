@@ -10,6 +10,7 @@ for filename in os.listdir(directory):
     # ignore non-Python files and the __init__.py file
     if filename.endswith(".py") and filename != "__init__.py":
         # import the module
+        print(importlib.import_module(f"{__name__}.{filename[:-3]}"))
         module = importlib.import_module(f"{__name__}.{filename[:-3]}")
 
         # add the fixtures to the global context

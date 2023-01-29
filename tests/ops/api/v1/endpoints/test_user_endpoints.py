@@ -1,6 +1,5 @@
 import json
 from datetime import datetime, timedelta
-from typing import List
 
 import pytest
 from fastapi_pagination import Params
@@ -14,7 +13,6 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
@@ -45,7 +43,6 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
-from tests.ops.conftest import generate_auth_header_for_user
 
 CONFIG = get_config()
 page_size = Params().size
@@ -53,26 +50,25 @@ page_size = Params().size
 
 class TestCreateUser:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + USERS
 
     def test_create_user_not_authenticated(self, url, api_client):
         response = api_client.post(url, headers={}, json={})
         assert HTTP_401_UNAUTHORIZED == response.status_code
 
-    def test_create_user_wrong_scope(self, url, api_client, generate_auth_header):
-        auth_header = generate_auth_header([STORAGE_READ])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_create_user_wrong_scope(self, auth_header, url, api_client):
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
     def test_create_user_bad_username(
         self,
-        db,
+        auth_header,
         api_client,
-        generate_auth_header,
         url,
     ) -> None:
-        auth_header = generate_auth_header([USER_CREATE])
         body = {
             "username": "spaces in name",
             "password": str_to_b64_str("TestP@ssword9"),
@@ -81,84 +77,71 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
     def test_username_exists(
         self,
+        auth_header,
         db,
         api_client,
-        generate_auth_header,
         url,
     ) -> None:
-        auth_header = generate_auth_header([USER_CREATE])
-
         body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
-        user = FidesUser.create(db=db, data=body)
+        FidesUser.create(db=db, data=body)
 
         response = api_client.post(url, headers=auth_header, json=body)
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["detail"] == "Username already exists."
         assert HTTP_400_BAD_REQUEST == response.status_code
 
-        user.delete(db)
-
+    @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
+    @pytest.mark.parametrize(
+        "password, message",
+        [
+            (str_to_b64_str("short"), "Password must have at least eight characters."),
+            (
+                str_to_b64_str("longerpassword"),
+                "Password must have at least one number.",
+            ),
+            (
+                str_to_b64_str("longer55password"),
+                "Password must have at least one capital letter.",
+            ),
+            (
+                str_to_b64_str("LoNgEr55paSSworD"),
+                "Password must have at least one symbol.",
+            ),
+        ],
+    )
     def test_create_user_bad_password(
         self,
-        db,
+        password,
+        message,
+        auth_header,
         api_client,
-        generate_auth_header,
         url,
     ) -> None:
-        auth_header = generate_auth_header([USER_CREATE])
-
-        body = {"username": "test_user", "password": str_to_b64_str("short")}
+        body = {"username": "test_user", "password": password}
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
-        assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "Password must have at least eight characters."
-        )
+        assert response.json()["detail"][0]["msg"] == message
 
-        body = {"username": "test_user", "password": str_to_b64_str("longerpassword")}
-        response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
-        assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "Password must have at least one number."
-        )
-
-        body = {"username": "test_user", "password": str_to_b64_str("longer55password")}
-        response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
-        assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "Password must have at least one capital letter."
-        )
-
-        body = {"username": "test_user", "password": str_to_b64_str("LoNgEr55paSSworD")}
-        response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
-        assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "Password must have at least one symbol."
-        )
-
+    @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
     def test_create_user(
         self,
+        auth_header,
         db,
         api_client,
-        generate_auth_header,
         url,
     ) -> None:
-        auth_header = generate_auth_header([USER_CREATE])
         body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
 
         response = api_client.post(url, headers=auth_header, json=body)
 
         user = FidesUser.get_by(db, field="username", value=body["username"])
-        response_body = json.loads(response.text)
         assert HTTP_201_CREATED == response.status_code
+        response_body = response.json()
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        user.delete(db)
 
     def test_create_user_as_root(
         self,
@@ -167,26 +150,24 @@ class TestCreateUser:
         root_auth_header,
         url,
     ) -> None:
-        auth_header = root_auth_header
         body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
 
-        response = api_client.post(url, headers=auth_header, json=body)
+        response = api_client.post(url, headers=root_auth_header, json=body)
 
         user = FidesUser.get_by(db, field="username", value=body["username"])
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        user.delete(db)
 
+    @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
     def test_create_user_with_name(
         self,
+        auth_header,
         db,
         api_client,
-        generate_auth_header,
         url,
     ) -> None:
-        auth_header = generate_auth_header([USER_CREATE])
         body = {
             "username": "test_user",
             "password": str_to_b64_str("TestP@ssword9"),
@@ -197,34 +178,33 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
 
         user = FidesUser.get_by(db, field="username", value=body["username"])
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        user.delete(db)
 
 
 class TestDeleteUser:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, user) -> str:
+    def url(self, user) -> str:
         return f"{V1_URL_PREFIX}{USERS}/{user.id}"
 
     def test_delete_user_not_authenticated(self, url, api_client):
         response = api_client.delete(url, headers={})
         assert HTTP_401_UNAUTHORIZED == response.status_code
 
-    def test_create_user_wrong_scope(self, url, api_client, generate_auth_header, db):
-        auth_header = generate_auth_header([STORAGE_READ])
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_create_user_wrong_scope(self, auth_header, url, api_client):
         response = api_client.delete(url, headers=auth_header)
         assert HTTP_403_FORBIDDEN == response.status_code
 
-    def test_delete_nonexistent_user(self, api_client, db, generate_auth_header, user):
-        auth_header = generate_auth_header([USER_DELETE])
+    @pytest.mark.parametrize("auth_header", [[USER_DELETE]], indirect=True)
+    def test_delete_nonexistent_user(self, auth_header, api_client):
         url = f"{V1_URL_PREFIX}{USERS}/nonexistent_user"
         response = api_client.delete(url, headers=auth_header)
         assert HTTP_404_NOT_FOUND == response.status_code
 
-    def test_delete_self(self, api_client, db, generate_auth_header):
+    def test_delete_self(self, api_client, db):
         user = FidesUser.create(
             db=db,
             data={
@@ -277,7 +257,7 @@ class TestDeleteUser:
         )
         assert permissions_search is None
 
-    def test_delete_user(self, api_client, db, generate_auth_header):
+    def test_delete_user(self, api_client, db):
         user = FidesUser.create(
             db=db,
             data={
@@ -352,7 +332,7 @@ class TestDeleteUser:
         )
         assert permissions_search is None
 
-    def test_delete_user_as_root(self, api_client, db, generate_auth_header, user):
+    def test_delete_user_as_root(self, api_client, db, user):
         other_user = FidesUser.create(
             db=db,
             data={
@@ -416,54 +396,48 @@ class TestDeleteUser:
 
 class TestGetUsers:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + USERS
 
-    def test_get_users_not_authenticated(
-        self, api_client: TestClient, url: str
-    ) -> None:
+    def test_get_users_not_authenticated(self, api_client, url) -> None:
         resp = api_client.get(url, headers={})
         assert resp.status_code == HTTP_401_UNAUTHORIZED
 
-    def test_get_users_wrong_scope(
-        self, api_client: TestClient, generate_auth_header, url
-    ):
-        auth_header = generate_auth_header(scopes=[USER_DELETE])
+    @pytest.mark.parametrize("auth_header", [[USER_DELETE]], indirect=True)
+    def test_get_users_wrong_scope(self, auth_header, api_client, url):
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_403_FORBIDDEN
 
-    def test_get_users_no_users(
-        self, api_client: TestClient, generate_auth_header, url
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[USER_READ])
+    @pytest.mark.parametrize("auth_header", [[USER_READ]], indirect=True)
+    def test_get_users_no_users(self, auth_header, api_client, url) -> None:
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 0
         assert response_body["total"] == 0
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-    def test_get_users(self, api_client: TestClient, generate_auth_header, url, db):
-        create_auth_header = generate_auth_header(scopes=[USER_CREATE])
-        saved_users: List[FidesUser] = []
+    @pytest.mark.parametrize("auth_header", [[USER_READ]], indirect=True)
+    def test_get_users(self, auth_header, api_client, url, db):
         total_users = 25
-        for i in range(total_users):
-            body = {
-                "username": f"user{i}@example.com",
-                "password": str_to_b64_str("Password123!"),
-                "first_name": "Test",
-                "last_name": "User",
-            }
-            resp = api_client.post(url, headers=create_auth_header, json=body)
-            assert resp.status_code == HTTP_201_CREATED
-            user = FidesUser.get_by(db, field="username", value=body["username"])
-            saved_users.append(user)
+        password = str_to_b64_str("Password123!")
+        [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"user{i}",
+                    "password": password,
+                    "first_name": "Test",
+                    "last_name": "User",
+                },
+            )
+            for i in range(total_users)
+        ]
 
-        get_auth_header = generate_auth_header(scopes=[USER_READ])
-        resp = api_client.get(url, headers=get_auth_header)
+        resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == total_users
         assert response_body["total"] == total_users
         assert response_body["page"] == 1
@@ -476,93 +450,74 @@ class TestGetUsers:
         assert user_data["first_name"]
         assert user_data["last_name"]
 
-        for i in range(total_users):
-            saved_users[i].delete(db)
-
-    def test_get_filtered_users(
-        self, api_client: TestClient, generate_auth_header, url, db
-    ):
-        create_auth_header = generate_auth_header(scopes=[USER_CREATE])
-        saved_users: List[FidesUser] = []
+    @pytest.mark.parametrize("auth_header", [[USER_READ]], indirect=True)
+    def test_get_filtered_users(self, auth_header, api_client, url, db):
         total_users = 50
-        for i in range(total_users):
-            body = {
-                "username": f"user{i}@example.com",
-                "password": str_to_b64_str("Password123!"),
-            }
-            resp = api_client.post(url, headers=create_auth_header, json=body)
-            assert resp.status_code == HTTP_201_CREATED
-            user = FidesUser.get_by(db, field="username", value=body["username"])
-            saved_users.append(user)
+        password = str_to_b64_str("Password123!")
+        [
+            FidesUser.create(db=db, data={"username": f"user{i}", "password": password})
+            for i in range(total_users)
+        ]
 
-        get_auth_header = generate_auth_header(scopes=[USER_READ])
-
-        resp = api_client.get(f"{url}?username={15}", headers=get_auth_header)
+        resp = api_client.get(f"{url}?username={15}", headers=auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 1
         assert response_body["total"] == 1
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-        resp = api_client.get(f"{url}?username={5}", headers=get_auth_header)
+        resp = api_client.get(f"{url}?username={5}", headers=auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 5
         assert response_body["total"] == 5
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-        resp = api_client.get(f"{url}?username=not real user", headers=get_auth_header)
+        resp = api_client.get(f"{url}?username=not real user", headers=auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 0
         assert response_body["total"] == 0
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-        for i in range(total_users):
-            saved_users[i].delete(db)
-
 
 class TestGetUser:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + USER_DETAIL
 
     @pytest.fixture(scope="function")
-    def url_no_id(self, oauth_client: ClientDetail) -> str:
+    def url_no_id(self) -> str:
         return V1_URL_PREFIX + USERS
 
-    def test_get_user_not_authenticated(self, api_client: TestClient, url: str) -> None:
+    def test_get_user_not_authenticated(self, api_client, url) -> None:
         resp = api_client.get(url, headers={})
         assert resp.status_code == HTTP_401_UNAUTHORIZED
 
-    def test_get_user_wrong_scope(
-        self, api_client: TestClient, generate_auth_header, url: str
-    ):
-        auth_header = generate_auth_header(scopes=[USER_DELETE])
+    @pytest.mark.parametrize("auth_header", [[USER_DELETE]], indirect=True)
+    def test_get_user_wrong_scope(self, auth_header, api_client, url):
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_403_FORBIDDEN
 
-    def test_get_user_does_not_exist(
-        self, api_client: TestClient, generate_auth_header, url_no_id: str
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[USER_READ])
+    @pytest.mark.parametrize("auth_header", [[USER_READ]], indirect=True)
+    def test_get_user_does_not_exist(self, auth_header, api_client, url_no_id) -> None:
         resp = api_client.get(
             f"{url_no_id}/this_is_a_nonexistent_key",
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
 
+    @pytest.mark.parametrize("auth_header", [[USER_READ]], indirect=True)
     def test_get_user(
         self,
-        api_client: TestClient,
-        generate_auth_header,
-        url_no_id: str,
+        auth_header,
+        api_client,
+        url_no_id,
         application_user,
     ) -> None:
-        auth_header = generate_auth_header(scopes=[USER_READ])
         resp = api_client.get(
             f"{url_no_id}/{application_user.id}",
             headers=auth_header,
@@ -581,20 +536,17 @@ class TestUpdateUser:
     def url_no_id(self) -> str:
         return V1_URL_PREFIX + USERS
 
+    @pytest.mark.parametrize("auth_header", [[USER_UPDATE]], indirect=True)
     def test_update_different_users_names(
         self,
+        auth_header,
         api_client,
         url_no_id,
         user,
-        application_user,
     ) -> None:
         NEW_FIRST_NAME = "another"
         NEW_LAST_NAME = "name"
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_UPDATE],
-        )
         resp = api_client.put(
             f"{url_no_id}/{user.id}",
             headers=auth_header,
@@ -611,8 +563,10 @@ class TestUpdateUser:
         assert user_data["first_name"] == NEW_FIRST_NAME
         assert user_data["last_name"] == NEW_LAST_NAME
 
+    @pytest.mark.parametrize("auth_header", [[USER_UPDATE]], indirect=True)
     def test_update_user_names(
         self,
+        auth_header,
         api_client,
         url_no_id,
         application_user,
@@ -620,10 +574,6 @@ class TestUpdateUser:
         NEW_FIRST_NAME = "another"
         NEW_LAST_NAME = "name"
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_UPDATE],
-        )
         resp = api_client.put(
             f"{url_no_id}/{application_user.id}",
             headers=auth_header,
@@ -646,8 +596,10 @@ class TestUpdateUserPassword:
     def url_no_id(self) -> str:
         return V1_URL_PREFIX + USERS
 
+    @pytest.mark.parametrize("auth_header", [[USER_PASSWORD_RESET]], indirect=True)
     def test_update_different_user_password(
         self,
+        auth_header,
         api_client,
         db,
         url_no_id,
@@ -658,10 +610,6 @@ class TestUpdateUserPassword:
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
         resp = api_client.post(
             f"{url_no_id}/{user.id}/reset-password",
             headers=auth_header,
@@ -680,8 +628,10 @@ class TestUpdateUserPassword:
         application_user = application_user.refresh_from_db(db=db)
         assert application_user.credentials_valid(password=OLD_PASSWORD)
 
+    @pytest.mark.parametrize("auth_header", [[USER_PASSWORD_RESET]], indirect=True)
     def test_update_user_password_invalid(
         self,
+        auth_header,
         api_client,
         db,
         url_no_id,
@@ -691,10 +641,6 @@ class TestUpdateUserPassword:
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,
@@ -710,8 +656,10 @@ class TestUpdateUserPassword:
         application_user = application_user.refresh_from_db(db=db)
         assert application_user.credentials_valid(password=OLD_PASSWORD)
 
+    @pytest.mark.parametrize("auth_header", [[USER_PASSWORD_RESET]], indirect=True)
     def test_update_user_password(
         self,
+        auth_header,
         api_client,
         db,
         url_no_id,
@@ -720,10 +668,6 @@ class TestUpdateUserPassword:
         OLD_PASSWORD = "oldpassword"
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,
@@ -740,10 +684,10 @@ class TestUpdateUserPassword:
 
 class TestUserLogin:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + LOGIN
 
-    def test_user_does_not_exist(self, db, url, api_client):
+    def test_user_does_not_exist(self, url, api_client):
         body = {
             "username": "does not exist",
             "password": str_to_b64_str("idonotknowmypassword"),
@@ -751,7 +695,7 @@ class TestUserLogin:
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == HTTP_404_NOT_FOUND
 
-    def test_bad_login(self, db, url, user, api_client):
+    def test_bad_login(self, url, user, api_client):
         body = {
             "username": user.username,
             "password": str_to_b64_str("idonotknowmypassword"),
@@ -831,10 +775,10 @@ class TestUserLogin:
 
 class TestUserLogout:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + LOGOUT
 
-    def test_malformed_token_ignored(self, db, url, api_client, user):
+    def test_malformed_token_ignored(self, url, api_client):
         auth_header = {"Authorization": "Bearer invalid"}
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == HTTP_204_NO_CONTENT
@@ -860,7 +804,7 @@ class TestUserLogout:
         client_search = ClientDetail.get_by(db, field="id", value=client_id)
         assert client_search is None
 
-    def test_root_user_logout(self, db, url, api_client):
+    def test_root_user_logout(self, url, api_client):
         payload = {
             JWE_PAYLOAD_SCOPES: SCOPE_REGISTRY,
             JWE_PAYLOAD_CLIENT_ID: CONFIG.security.oauth_root_client_id,
@@ -921,9 +865,9 @@ class TestUserLogout:
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_204_NO_CONTENT == response.status_code
 
-    def test_logout(self, db, url, api_client, generate_auth_header, oauth_client):
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_logout(self, auth_header, db, url, api_client, oauth_client):
         oauth_client_id = oauth_client.id
-        auth_header = generate_auth_header([STORAGE_READ])
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_204_NO_CONTENT == response.status_code
 

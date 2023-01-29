@@ -3,8 +3,7 @@ from typing import Any, List
 
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.core.config import get_config
-
-from ..fixtures.application_fixtures import faker
+from tests.fixtures.application_fixtures import faker
 
 CONFIG = get_config()
 
