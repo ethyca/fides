@@ -6,6 +6,7 @@ import requests
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -111,16 +112,20 @@ def salesforce_dataset_config(
     salesforce_connection_config.name = fides_key
     salesforce_connection_config.key = fides_key
     salesforce_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, salesforce_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": salesforce_connection_config.id,
             "fides_key": fides_key,
-            "dataset": salesforce_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")

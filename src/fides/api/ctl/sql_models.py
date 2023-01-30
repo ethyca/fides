@@ -7,6 +7,7 @@ Contains all of the SqlAlchemy models for the Fides resources.
 from enum import Enum as EnumType
 from typing import Dict
 
+from fideslang.models import Dataset as FideslangDataset
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
@@ -20,7 +21,7 @@ from sqlalchemy import (
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import BYTEA
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
@@ -197,10 +198,20 @@ class Dataset(Base, FidesBase):
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(String)
     collections = Column(JSON)
-    fidesctl_meta = Column(JSON)
+    fides_meta = Column(JSON)
     joint_controller = Column(PGEncryptedString, nullable=True)
     retention = Column(String)
     third_country_transfers = Column(ARRAY(String))
+
+    @classmethod
+    def create_from_dataset_dict(cls, db: Session, dataset: dict) -> "Dataset":
+        """Add a method to create directly using a synchronous session"""
+        validated_dataset: FideslangDataset = FideslangDataset(**dataset)
+        ctl_dataset = cls(**validated_dataset.dict())
+        db.add(ctl_dataset)
+        db.commit()
+        db.refresh(ctl_dataset)
+        return ctl_dataset
 
 
 # Evaluation

@@ -10,7 +10,13 @@ import yaml
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fides.api.ops.common_exceptions import FidesopsException
-from fides.api.ops.graph.config import Collection, CollectionAddress, Dataset, Field
+from fides.api.ops.graph.config import (
+    Collection,
+    CollectionAddress,
+    Field,
+    GraphDataset,
+)
+from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.core.config.helpers import load_file
@@ -108,9 +114,9 @@ def get_collection_after(
     return collection.after
 
 
-def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
+def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> GraphDataset:
     """
-    Merges all Collections and Fields from the config_dataset into the dataset.
+    Merges all Collections and Fields from the "config_dataset" into the "dataset".
     In the event of a collection/field name collision, the target field
     will inherit the identity and field references. This is by design since
     dataset references for SaaS connectors should not have any references.
@@ -132,7 +138,7 @@ def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
             )
         )
 
-    return Dataset(
+    return GraphDataset(
         name=dataset.name,
         collections=collections,
         connection_key=dataset.connection_key,
@@ -287,6 +293,25 @@ def map_param_values(
         query_params=query_params,
         body=formatted_body,
     )
+
+
+def get_identity(privacy_request: Optional[PrivacyRequest]) -> Optional[str]:
+    """
+    Returns a single identity or raises an exception if more than one identity is defined
+    """
+
+    if not privacy_request:
+        return None
+
+    identities: List[str] = []
+    identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
+    # filters out keys where associated value is None or empty str
+    identities = list({k for k, v in identity_data.items() if v})
+    if len(identities) > 1:
+        raise FidesopsException(
+            "Only one identity can be specified for SaaS connector traversal"
+        )
+    return identities[0] if identities else None
 
 
 def encode_file_contents(file_path: str) -> str:

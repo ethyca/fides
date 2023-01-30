@@ -4,6 +4,7 @@ import firebase_admin
 from firebase_admin import App, auth, credentials
 from firebase_admin.auth import UserRecord
 
+from fides.api.ops.common_exceptions import FidesopsException
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -15,6 +16,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.saas_util import get_identity
 
 
 @register("firebase_auth_user_access", [SaaSRequestType.READ])
@@ -33,38 +35,56 @@ def firebase_auth_user_access(  # pylint: disable=R0914
     app = initialize_firebase(secrets)
 
     processed_data = []
-
-    emails = input_data.get("email", [])
-    for email in emails:
-        user: UserRecord = auth.get_user_by_email(email, app=app)
-        row = {"email": user.email, "uid": user.uid}
-        keys = [
-            "email",
-            "uid",
-            "display_name",
-            "phone_number",
-            "photo_url",
-            "disabled",
-            "email_verified",
-        ]
-        for key in keys:
-            value = getattr(user, key)
-            if value is not None:
-                row[key] = value
-
-        if user.provider_data:
-            pds = []
-            for pd in user.provider_data:
-                pd_keys = ["display_name", "provider_id", "email", "photo_url"]
-                pd_to_add = {}
-                for key in pd_keys:
-                    value = getattr(pd, key)
-                    if value is not None:
-                        pd_to_add[key] = value
-                pds.append(pd_to_add)
-            row["provider_data"] = pds
-        processed_data.append(row)
+    identity = get_identity(privacy_request)
+    user: UserRecord
+    if identity == "email":
+        emails = input_data.get("email", [])
+        for email in emails:
+            user = auth.get_user_by_email(email, app=app)
+            processed_data.append(_user_record_to_row(user))
+    elif identity == "phone_number":
+        phone_numbers = input_data.get("phone_number", [])
+        for phone_number in phone_numbers:
+            user = auth.get_user_by_phone_number(phone_number, app=app)
+            processed_data.append(_user_record_to_row(user))
+    else:
+        raise FidesopsException(
+            "Unsupported identity type for Firebase connector. Currently only `email` and `phone_number` are supported"
+        )
     return processed_data
+
+
+def _user_record_to_row(user: UserRecord) -> Row:
+    """
+    Translates a Firebase `UserRecord` to a Fides access request result `Row`
+    """
+    row = {"uid": user.uid}
+    keys = [
+        "email",
+        "uid",
+        "display_name",
+        "phone_number",
+        "photo_url",
+        "disabled",
+        "email_verified",
+    ]
+    for key in keys:
+        value = getattr(user, key)
+        if value is not None:
+            row[key] = value
+
+    if user.provider_data:
+        pds = []
+        for pd in user.provider_data:
+            pd_keys = ["display_name", "provider_id", "email", "photo_url"]
+            pd_to_add = {}
+            for key in pd_keys:
+                value = getattr(pd, key)
+                if value is not None:
+                    pd_to_add[key] = value
+            pds.append(pd_to_add)
+        row["provider_data"] = pds
+    return row
 
 
 @register("firebase_auth_user_update", [SaaSRequestType.UPDATE])
@@ -83,9 +103,9 @@ def firebase_auth_user_update(
     rows_updated = 0
     # each update_params dict correspond to a record that needs to be updated
     for row_param_values in param_values_per_row:
-        email = row_param_values.get("email")
-        user: UserRecord = auth.get_user_by_email(email, app=app)
+        user: UserRecord = _retrieve_user_record(privacy_request, row_param_values, app)
         masked_fields = row_param_values["masked_object_fields"]
+        email = masked_fields.get("email", user.email)
         display_name = masked_fields.get("display_name", user.display_name)
         phone_number = masked_fields.get("phone_number", user.phone_number)
         photo_url = masked_fields.get("photo_url", user.photo_url)
@@ -126,11 +146,29 @@ def firebase_auth_user_delete(
     rows_updated = 0
     # each update_params dict correspond to a record that needs to be updated
     for row_param_values in param_values_per_row:
-        email = row_param_values.get("email")
-        user: UserRecord = auth.get_user_by_email(email, app=app)
+        user: UserRecord = _retrieve_user_record(privacy_request, row_param_values, app)
         auth.delete_user(user.uid, app=app)
         rows_updated += 1
     return rows_updated
+
+
+def _retrieve_user_record(
+    privacy_request: PrivacyRequest, row_param_values: Dict[str, Any], app: App
+) -> UserRecord:
+    """
+    Utility that erasure functions can use to retrieve a Firebase `UserRecord`
+    """
+    identity = get_identity(privacy_request)
+    if identity == "email":
+        email = row_param_values.get("email", [])
+        return auth.get_user_by_email(email, app=app)
+    if identity == "phone_number":
+        phone_number = row_param_values.get("phone_number", [])
+        return auth.get_user_by_phone_number(phone_number, app=app)
+
+    raise FidesopsException(
+        "Unsupported identity type for Firebase connector. Currently only `email` and `phone_number` are supported"
+    )
 
 
 def initialize_firebase(secrets: Dict[str, Any]) -> App:

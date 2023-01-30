@@ -1,4 +1,4 @@
-import { Divider, Flex, Heading, HStack, Text } from "@fidesui/react";
+import { Box, Divider, Flex, Heading, HStack, Text } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
 import { PrivacyRequestEntity } from "privacy-requests/types";
 
@@ -43,7 +43,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Request Type:
         </Text>
-        <RequestType rules={policy.rules} />
+        <Box mr={1} mb={4}>
+          <RequestType rules={policy.rules} />
+        </Box>
       </Flex>
       <Flex alignItems="flex-start">
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">

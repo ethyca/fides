@@ -1,3 +1,4 @@
+import { ConfirmationModal } from "@fidesui/components";
 import {
   Box,
   Button,
@@ -10,18 +11,18 @@ import {
   SlideFade,
   Tag,
   Text,
+  useDisclosure,
   VStack,
 } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
-import { Dataset } from "datastore-connections/types";
 import yaml, { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
-import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useFeatures } from "~/features/common/features";
+import { useGetAllDatasetsQuery } from "~/features/dataset";
+import { Dataset } from "~/types/api";
 
 const Editor = dynamic(
   // @ts-ignore
@@ -35,16 +36,19 @@ const isYamlException = (error: unknown): error is YAMLException =>
 type YamlEditorFormProps = {
   data: Dataset[];
   isSubmitting: boolean;
-  onSubmit: (value: any) => void;
+  onSubmit: (value: unknown) => void;
+  onCancel?: () => void;
+  disabled?: boolean;
 };
 
 const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   data = [],
   isSubmitting = false,
   onSubmit,
+  onCancel,
+  disabled,
 }) => {
   const monacoRef = useRef(null);
-  const router = useRouter();
   const { errorAlert } = useAlert();
   const yamlData = data.length > 0 ? yaml.dump(data) : undefined;
   const [yamlError, setYamlError] = useState(
@@ -55,6 +59,9 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   const {
     flags: { navV2 },
   } = useFeatures();
+  const warningDisclosure = useDisclosure();
+  const { data: allDatasets } = useGetAllDatasetsQuery();
+  const [overWrittenKeys, setOverWrittenKeys] = useState<string[]>([]);
 
   const validate = (value: string) => {
     yaml.load(value, { json: true });
@@ -75,10 +82,6 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
     }
   };
 
-  const handleCancel = () => {
-    router.push(DATASTORE_CONNECTION_ROUTE);
-  };
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleMount = (editor: any, _monaco: any) => {
     monacoRef.current = editor;
@@ -89,12 +92,31 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
     const value = (monacoRef.current as any).getValue();
     const yamlDoc = yaml.load(value, { json: true });
     onSubmit(yamlDoc);
+    setOverWrittenKeys([]);
+  };
+
+  const handleConfirmation = () => {
+    // Only need the confirmation if we are overwriting, which only happens when
+    // there are already datasets
+    if (allDatasets && allDatasets.length) {
+      const value: string = (monacoRef.current as any).getValue();
+      // Check if the fides key that is in the editor is the same as one that already exists
+      // If so, then it is an overwrite and we should open the confirmation modal
+      const overlappingKeys = allDatasets
+        .filter((d) => value.includes(`fides_key: ${d.fides_key}\n`))
+        .map((d) => d.fides_key);
+      setOverWrittenKeys(overlappingKeys);
+      if (overlappingKeys.length) {
+        warningDisclosure.onOpen();
+        return;
+      }
+    }
+    handleSubmit();
   };
 
   return (
     <Flex gap="97px">
-      <VStack align="stretch" w="918px">
-        <Divider color="gray.100" />
+      <VStack align="stretch" w="800px">
         <Editor
           defaultLanguage="yaml"
           defaultValue={yamlData}
@@ -107,34 +129,23 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
             minimap: {
               enabled: true,
             },
+            readOnly: disabled,
           }}
           theme="light"
         />
-        <Divider color="gray.100" />
-        <ButtonGroup
-          mt="24px !important"
-          size="sm"
-          spacing="8px"
-          variant="outline"
-        >
-          <Button onClick={handleCancel} variant="outline">
-            Cancel
-          </Button>
+        <ButtonGroup size="sm">
+          {onCancel ? <Button onClick={onCancel}>Cancel</Button> : null}
           <Button
-            bg="primary.800"
-            color="white"
-            isDisabled={isEmptyState || !!yamlError || isSubmitting}
+            colorScheme="primary"
+            isDisabled={disabled || isEmptyState || !!yamlError || isSubmitting}
             isLoading={isSubmitting}
-            loadingText="Saving Yaml system"
-            onClick={handleSubmit}
-            size="sm"
-            variant="solid"
+            loadingText="Saving"
+            onClick={handleConfirmation}
             type="submit"
-            _active={{ bg: "primary.500" }}
-            _disabled={{ opacity: "inherit" }}
-            _hover={{ bg: "primary.400" }}
+            data-testid="save-yaml-btn"
+            width="fit-content"
           >
-            Save Yaml system
+            Save
           </Button>
         </ButtonGroup>
       </VStack>
@@ -174,7 +185,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
                       Error message:
                     </Heading>
                     <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      Yaml system is required
+                      YAML dataset is required
                     </Text>
                   </Box>
                 )}
@@ -206,6 +217,35 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           </Box>
         </SlideFade>
       )}
+      <ConfirmationModal
+        isOpen={warningDisclosure.isOpen}
+        onClose={warningDisclosure.onClose}
+        onConfirm={() => {
+          handleSubmit();
+          warningDisclosure.onClose();
+        }}
+        title="Overwrite dataset"
+        message={
+          <>
+            <Text>
+              You are about to overwrite the dataset
+              {overWrittenKeys.length > 1 ? "s" : ""}{" "}
+              {overWrittenKeys.map((key, i) => {
+                const isLast = i === overWrittenKeys.length - 1;
+                return (
+                  <>
+                    <Text color="complimentary.500" as="span" fontWeight="bold">
+                      {key}
+                    </Text>
+                    {isLast ? "." : ", "}
+                  </>
+                );
+              })}
+            </Text>
+            <Text>Are you sure you would like to continue?</Text>
+          </>
+        }
+      />
     </Flex>
   );
 };

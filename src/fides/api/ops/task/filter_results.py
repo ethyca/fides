@@ -2,17 +2,17 @@ import itertools
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Union
 
+from fideslang.validation import FidesKey
 from loguru import logger
 
 from fides.api.ops.graph.config import CollectionAddress, FieldPath
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.collection_util import Row
 
 
 def filter_data_categories(
     access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
     target_categories: Set[str],
-    data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
+    data_category_fields: Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]],
     rule_key: str = "",
     fides_connector_datasets: Optional[Set[str]] = None,
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:

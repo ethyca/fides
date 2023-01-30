@@ -4,6 +4,7 @@ from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import conlist
 from requests import RequestException
@@ -39,7 +40,6 @@ from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.ops.schemas.storage.storage import (
     BulkPutStorageConfigResponse,
@@ -72,7 +72,7 @@ def upload_data(
     *,
     db: Session = Depends(deps.get_db),
     data: Dict = Body(...),
-    storage_key: FidesOpsKey = Body(...),
+    storage_key: FidesKey = Body(...),
 ) -> DataUpload:
     """
     Uploads data from an access request to specified storage destination.
@@ -162,7 +162,7 @@ def patch_config(
     response_model=TestStatusMessage,
 )
 def put_config_secrets(
-    config_key: FidesOpsKey,
+    config_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
     unvalidated_storage_secrets: possible_storage_secrets,
@@ -249,7 +249,7 @@ def get_configs(
     response_model=StorageDestinationResponse,
 )
 def get_config_by_key(
-    config_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
+    config_key: FidesKey, *, db: Session = Depends(deps.get_db)
 ) -> Optional[StorageConfig]:
     """
     Retrieves configs for storage by key.
@@ -271,7 +271,7 @@ def get_config_by_key(
     dependencies=[Security(verify_oauth_client, scopes=[STORAGE_DELETE])],
 )
 def delete_config_by_key(
-    config_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
+    config_key: FidesKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
     """
     Deletes configs by key.

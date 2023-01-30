@@ -21,7 +21,15 @@ from uvicorn import Config, Server
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.database.seed import create_or_update_parent_user
-from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
+from fides.api.ctl.routes import (
+    admin,
+    crud,
+    datamap,
+    generate,
+    health,
+    system,
+    validate,
+)
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
@@ -29,6 +37,7 @@ from fides.api.ctl.ui import (
     get_package_file_map,
     get_path_to_admin_ui_file,
     match_route,
+    path_is_in_ui_directory,
 )
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ctl.utils.logger import setup as setup_logging
@@ -84,6 +93,7 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     health.router,
     validate.router,
     view.router,
+    system.router,
 ]
 
 
@@ -249,6 +259,7 @@ async def setup_server() -> None:
         registry = load_registry(registry_file)
         db = get_api_session()
         update_saas_configs(registry, db)
+        logger.info("Finished loading saas templates")
     except Exception as e:
         logger.error(
             "Error occurred during SaaS connector template validation: {}",
@@ -333,8 +344,12 @@ def read_other_paths(request: Request) -> Response:
     if not ui_file:
         ui_file = get_path_to_admin_ui_file(path)
 
-    # If any of those worked, serve the file.
+    # Serve up the file as long as it is within the UI directory
     if ui_file and ui_file.is_file():
+        if not path_is_in_ui_directory(ui_file):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+            )
         logger.debug(
             "catchall request path '{}' matched static admin UI file: {}",
             path,

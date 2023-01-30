@@ -11,7 +11,7 @@ dataset:
             data_categories: [user.contact.address.street]
           - name: id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               primary_key: True
           - name: state
             data_categories: [user.contact.address.state]
@@ -24,7 +24,7 @@ dataset:
         fields:
           - name: address_id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: address.id
@@ -33,12 +33,12 @@ dataset:
             data_categories: [system.operations]
           - name: email
             data_categories: [user.contact.email]
-            fidesops_meta:
+            fides_meta:
               identity: email
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fidesops_meta:
+            fides_meta:
               primary_key: True
           - name: name
             data_categories: [user.name]
@@ -47,19 +47,19 @@ dataset:
         fields:
           - name: address_id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: address.id
                   direction: to
           - name: email
             data_categories: [user.contact.email]
-            fidesops_meta:
+            fides_meta:
               identity: email
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fidesops_meta:
+            fides_meta:
               primary_key: True
           - name: name
             data_categories: [user.name]
@@ -68,7 +68,7 @@ dataset:
         fields:
           - name: customer_id
             data_categories: [user.unique_id]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: customer.id
@@ -82,18 +82,18 @@ dataset:
         fields:
           - name: customer_id
             data_categories: [user.unique_id]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: customer.id
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               primary_key: True
           - name: shipping_address_id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: address.id
@@ -104,14 +104,14 @@ dataset:
         fields:
           - name: order_id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: orders.id
                   direction: from
           - name: product_id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: product.id
@@ -123,7 +123,7 @@ dataset:
         fields:
           - name: billing_address_id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: address.id
@@ -134,7 +134,7 @@ dataset:
             data_categories: [user.financial]
           - name: customer_id
             data_categories: [user.unique_id]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: customer.id
@@ -159,7 +159,7 @@ dataset:
         fields:
           - name: email
             data_categories: [user.contact.email]
-            fidesops_meta:
+            fides_meta:
               identity: email
               data_type: string
           - name: id
@@ -177,19 +177,19 @@ dataset:
         fields:
           - name: alt_email
             data_categories: [user.contact.email]
-            fidesops_meta:
+            fides_meta:
               identity: email
               data_type: string
           - name: closed
             data_categories: [system.operations]
           - name: email
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               identity: email
               data_type: string
           - name: employee_id
             data_categories: [user.unique_id]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: mssql_example_test_dataset
                   field: employee.id
@@ -203,7 +203,7 @@ dataset:
         fields:
           - name: email
             data_categories: [user.contact.email]
-            fidesops_meta:
+            fides_meta:
               identity: email
               data_type: string
           - name: last_visit

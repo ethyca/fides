@@ -5,6 +5,7 @@ from itertools import product
 from typing import Any, Dict, List, Literal, Optional, TypeVar
 
 import pydash
+from fideslang.models import FidesDatasetReference
 from loguru import logger
 
 from fides.api.ops.common_exceptions import FidesopsException
@@ -12,7 +13,6 @@ from fides.api.ops.graph.config import ScalarField
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.query_config import QueryConfig
@@ -23,6 +23,7 @@ from fides.api.ops.util.saas_util import (
     FIDESOPS_GROUPED_INPUTS,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
+    get_identity,
     unflatten_dict,
 )
 from fides.core.config import get_config
@@ -85,7 +86,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             if any(
                 param_value
                 for param_value in request.param_values or []
-                if param_value.identity == self._get_identity()
+                if param_value.identity == get_identity(self.privacy_request)
             )
         ]
 
@@ -194,24 +195,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
 
         return request_params
-
-    def _get_identity(self) -> Optional[str]:
-        """
-        Returns a single identity or raises an exception if more than one identity is defined
-        """
-
-        identities: List[str] = []
-        if self.privacy_request:
-            identity_data: Dict[
-                str, Any
-            ] = self.privacy_request.get_cached_identity_data()
-            # filters out keys where associated value is None or empty str
-            identities = list({k for k, v in identity_data.items() if v})
-            if len(identities) > 1:
-                raise FidesopsException(
-                    "Only one identity can be specified for SaaS connector traversal"
-                )
-        return identities[0] if identities else None
 
     def _filtered_secrets(self, current_request: SaaSRequest) -> Dict[str, Any]:
         """Return a filtered map of secrets used by the request"""
@@ -363,10 +346,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 # however, `references` in update requests can, currently, only reference
                 # the same collection the same collection, and so it is highly unlikely
                 # that this would be an external reference at this point.
-                reference: FidesopsDatasetReference = (
-                    SaaSConfig.resolve_param_reference(
-                        param_value.references[0], self.secrets
-                    )
+                reference: FidesDatasetReference = SaaSConfig.resolve_param_reference(
+                    param_value.references[0], self.secrets
                 )
                 param_values[param_value.name] = pydash.get(
                     collection_values, reference.field

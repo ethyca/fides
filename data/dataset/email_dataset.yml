@@ -7,11 +7,11 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               primary_key: true
           - name: customer_id
             data_categories: [user]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: postgres_example_test_dataset
                   field: customer.id
@@ -22,7 +22,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               primary_key: true
           - name: first_name
             data_categories: [user.childrens]
@@ -30,10 +30,10 @@ dataset:
             data_categories: [user.childrens]
           - name: birthday
             data_categories: [user.childrens]
-            fidesops_meta:
+            fides_meta:
               data_type: string
           - name: report_card
-            fidesops_meta:
+            fides_meta:
               data_type: object
             fields:
               - name: grades
@@ -45,7 +45,7 @@ dataset:
               - name: test_scores
                 data_categories: [ user.childrens ]
           - name: parent_id
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: email_dataset
                   field: daycare_customer.id
@@ -54,11 +54,11 @@ dataset:
         fields:
           - name: id
             data_categories: [ system.operations ]
-            fidesops_meta:
+            fides_meta:
               primary_key: true
           - name: payer_email
             data_categories: [ user.contact.email ]
-            fidesops_meta:
+            fides_meta:
               identity: email
           - name: ccn
             data_categories: [user.financial.account_number]
