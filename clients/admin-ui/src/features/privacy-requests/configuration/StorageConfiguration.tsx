@@ -22,27 +22,31 @@ import {
 
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
-interface StorageData {
-  type: string;
-  details: {
-    auth_method: string;
-    bucket: string;
-  };
-  format: string;
-}
+// interface StorageData {
+//   type: string;
+//   details: {
+//     auth_method: string;
+//     bucket: string;
+//   };
+//   format: string;
+// }
 
 const StorageConfiguration = () => {
-  const [existingStorageData, setExistingStorageData] = useState<StorageData>();
-  const { data: existingData } = useGetStorageDetailsQuery(
-    existingStorageData?.type
-  );
   const { errorAlert, successAlert } = useAlert();
+  const [storageValue, setStorageValue] = useState("");
   const [saveStorageType, { isLoading }] = useCreateActiveStorageMutation();
+  const { data: storageDetails, isFetching } =
+    useGetStorageDetailsQuery(storageValue);
 
   const handleChange = async (value: string) => {
+    // Set so can fetch to see if existing info above
+    setStorageValue(value);
+
+    // set the active storage type
     const payload = await saveStorageType({
       active_default_storage_type: value,
     });
+
     if ("error" in payload) {
       errorAlert(
         getErrorMessage(payload.error),
@@ -50,7 +54,6 @@ const StorageConfiguration = () => {
       );
     } else {
       successAlert(`Configure storage type saved successfully.`);
-      setExistingStorageData(existingData);
     }
   };
 
@@ -103,7 +106,7 @@ const StorageConfiguration = () => {
         <RadioGroup
           isDisabled={isLoading}
           onChange={handleChange}
-          value={existingStorageData?.type}
+          value={storageValue}
           data-testid="privacy-requests-storage-selection"
           colorScheme="secondary"
           p={3}
@@ -117,8 +120,8 @@ const StorageConfiguration = () => {
             </Radio>
           </Stack>
         </RadioGroup>
-        {existingStorageData?.type === "s3" ? (
-          <S3StorageConfiguration existingStorageData={existingStorageData} />
+        {storageValue === "s3" ? (
+          <S3StorageConfiguration storageDetails={storageDetails} />
         ) : null}
       </Box>
     </Layout>

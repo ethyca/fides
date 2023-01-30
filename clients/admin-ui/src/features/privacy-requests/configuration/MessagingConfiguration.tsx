@@ -20,23 +20,30 @@ import {
   useGetMessagingConfigurationDetailsQuery,
 } from "../privacy-requests.slice";
 import { useState } from "react";
+import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
+import TwilioEmailConfiguration from "./TwilioEmailConfiguration";
+import TwilioSMSConfiguration from "./TwilioSMS";
 
-interface MessagingData {}
+// interface MessagingData {}
 
 const MessagingConfiguration = () => {
-  const [existingMessagingData, setExistingMessagingData] =
-    useState<MessagingData>();
+  const { errorAlert, successAlert } = useAlert();
+  const [messagingValue, setMessagingValue] = useState("");
   const [saveMessagingConfiguration, { isLoading }] =
     useCreateMessagingConfigurationMutation();
-  const { data: existingData } = useGetMessagingConfigurationDetailsQuery(
-    existingMessagingData
-  );
-  const { errorAlert, successAlert } = useAlert();
+  const { data: messagingDetails } =
+    useGetMessagingConfigurationDetailsQuery(messagingValue);
 
   const handleChange = async (value: string) => {
+    // Set so can fetch to see if existing info above
+    setMessagingValue(value);
+
+    // set the active messaging type
     const payload = await saveMessagingConfiguration({
       config_key: value,
+      //   IS THIS THE RIGHT KEY FOR THIS CALL?
     });
+
     if ("error" in payload) {
       errorAlert(
         getErrorMessage(payload.error),
@@ -44,9 +51,11 @@ const MessagingConfiguration = () => {
       );
     } else {
       successAlert(`Configure storage type saved successfully.`);
-      setExistingMessagingData(existingData);
     }
   };
+
+  console.log("test", messagingValue);
+
   return (
     <Layout title="Configure Privacy Requests - Messaging">
       <Box mb={8}>
@@ -78,6 +87,7 @@ const MessagingConfiguration = () => {
       </Heading>
 
       <Box display="flex" flexDirection="column" width="50%">
+        {/* TEXT BELOW CHANGES DEPENDING ON TYPE GIVEN ??? */}
         <Box>
           Fides utilizes{" "}
           <Text as="span" color="complimentary.500">
@@ -93,13 +103,13 @@ const MessagingConfiguration = () => {
           </Text>{" "}
           to create a new Domain Sending Key for Fides.
         </Box>
-        <Heading mb={5} fontSize="2xl" fontWeight="semibold">
+        <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose service type to configure
         </Heading>
         <RadioGroup
-          //   isDisabled={isLoading}
+          isDisabled={isLoading}
           onChange={handleChange}
-          value={existingMessagingData ?? undefined}
+          value={messagingValue}
           data-testid="privacy-requests-messaging-provider-selection"
           colorScheme="secondary"
           p={3}
@@ -129,6 +139,13 @@ const MessagingConfiguration = () => {
             </Radio>
           </Stack>
         </RadioGroup>
+        {messagingValue === "mailgun-email" ? (
+          <MailgunEmailConfiguration />
+        ) : null}
+        {messagingValue === "twilio-email" ? (
+          <TwilioEmailConfiguration />
+        ) : null}
+        {messagingValue === "twilio-sms" ? <TwilioSMSConfiguration /> : null}
       </Box>
     </Layout>
   );

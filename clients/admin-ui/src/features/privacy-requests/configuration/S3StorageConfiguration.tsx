@@ -11,7 +11,7 @@ import {
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 interface Props {
-  existingStorageData: {
+  storageDetails: {
     details: {
       auth_method: string;
       bucket: string;
@@ -25,179 +25,183 @@ interface SecretsStorageData {
   aws_secret_access_key: string;
 }
 
-const S3StorageConfiguration = ({
-  existingStorageData: {
-    details: { auth_method, bucket },
-    format,
-  },
-}: Props) => {
-  const [authMethod, setAuthMethod] = useState("");
-  const [setStorageDetails] = useCreateStorageDetailsMutation();
-  const [setStorageSecrets] = useCreateStorageSecretsMutation();
-  const { errorAlert, successAlert } = useAlert();
-  const CONFIG_FORM_ID = "s3-privacy-requests-storage-configuration-config";
-  const KEYS_FORM_ID = "s3-privacy-requests-storage-configuration-keys";
+const S3StorageConfiguration = () =>
+  //   {
+  //   storageDetails: {
+  //     details: { auth_method, bucket },
+  //     format,
+  //   },
+  // }: Props
+  {
+    const [authMethod, setAuthMethod] = useState("");
+    const [setStorageDetails] = useCreateStorageDetailsMutation();
+    const [setStorageSecrets] = useCreateStorageSecretsMutation();
+    const { errorAlert, successAlert } = useAlert();
+    const CONFIG_FORM_ID = "s3-privacy-requests-storage-configuration-config";
+    const KEYS_FORM_ID = "s3-privacy-requests-storage-configuration-keys";
 
-  const initialValues = {
-    type: "s3",
-    details: {
-      auth_method: auth_method ?? "",
-      bucket: bucket ?? "",
-    },
-    format: format ?? "",
-  };
+    const initialValues = {
+      // type: "s3",
+      // details: {
+      //   auth_method: auth_method ?? "",
+      //   bucket: bucket ?? "",
+      // },
+      // format: format ?? "",
+    };
 
-  const initialSecretValues = {
-    aws_access_key_id: "",
-    aws_secret_access_key: "",
-  };
+    const initialSecretValues = {
+      aws_access_key_id: "",
+      aws_secret_access_key: "",
+    };
 
-  const handleSubmitStorageConfiguration = async (
-    newValues: Props["existingStorageData"]
-  ) => {
-    const payload = await setStorageDetails({
-      type: "s3",
-      details: {
-        auth_method: newValues.details.auth_method,
-        bucket: newValues.details.bucket,
-      },
-      format: newValues.format,
-    });
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Updating S3 storage details has failed due to the following:`
-      );
-    } else {
-      setAuthMethod(newValues.details.auth_method);
-      successAlert(`S3 storage credentials successfully updated.`);
-    }
-  };
+    const handleSubmitStorageConfiguration = async (
+      newValues: Props["storageDetails"]
+    ) => {
+      const payload = await setStorageDetails({
+        type: "s3",
+        details: {
+          auth_method: newValues.details.auth_method,
+          bucket: newValues.details.bucket,
+        },
+        format: newValues.format,
+      });
+      if ("error" in payload) {
+        errorAlert(
+          getErrorMessage(payload.error),
+          `Updating S3 storage details has failed due to the following:`
+        );
+      } else {
+        setAuthMethod(newValues.details.auth_method);
+        successAlert(`S3 storage credentials successfully updated.`);
+      }
+    };
 
-  const handleSubmitStorageSecrets = async (newValues: SecretsStorageData) => {
-    const payload = await setStorageSecrets({
-      aws_access_key_id: newValues.aws_access_key_id,
-      aws_secret_access_key: newValues.aws_secret_access_key,
-    });
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Updating S3 storage secrets has failed due to the following:`
-      );
-    } else {
-      successAlert(`S3 storage secrets successfully updated.`);
-    }
-  };
+    const handleSubmitStorageSecrets = async (
+      newValues: SecretsStorageData
+    ) => {
+      const payload = await setStorageSecrets({
+        aws_access_key_id: newValues.aws_access_key_id,
+        aws_secret_access_key: newValues.aws_secret_access_key,
+      });
+      if ("error" in payload) {
+        errorAlert(
+          getErrorMessage(payload.error),
+          `Updating S3 storage secrets has failed due to the following:`
+        );
+      } else {
+        successAlert(`S3 storage secrets successfully updated.`);
+      }
+    };
 
-  return (
-    <>
-      <Heading fontSize="md" fontWeight="semibold" mt={10}>
-        S3 storage configuration
-      </Heading>
-      <Stack>
-        <Formik
-          initialValues={initialValues}
-          onSubmit={handleSubmitStorageConfiguration}
-        >
-          {({ isSubmitting, resetForm }) => (
-            <Form id={CONFIG_FORM_ID}>
-              <CustomSelect
-                name="format"
-                label="Format"
-                options={[
-                  { label: "json", value: "json" },
-                  { label: "csv", value: "csv" },
-                ]}
-              />
-              <CustomSelect
-                name="auth_method"
-                label="Auth method"
-                options={[
-                  { label: "secret_keys", value: "secret_keys" },
-                  { label: "automatic", value: "automatic" },
-                ]}
-              />
-              <CustomTextInput
-                name="bucket"
-                label="Bucket"
-                placeholder="Optional"
-              />
+    return (
+      <>
+        <Heading fontSize="md" fontWeight="semibold" mt={10}>
+          S3 storage configuration
+        </Heading>
+        <Stack>
+          <Formik
+            initialValues={initialValues}
+            onSubmit={handleSubmitStorageConfiguration}
+          >
+            {({ isSubmitting, resetForm }) => (
+              <Form id={CONFIG_FORM_ID}>
+                <CustomSelect
+                  name="format"
+                  label="Format"
+                  options={[
+                    { label: "json", value: "json" },
+                    { label: "csv", value: "csv" },
+                  ]}
+                />
+                <CustomSelect
+                  name="auth_method"
+                  label="Auth method"
+                  options={[
+                    { label: "secret_keys", value: "secret_keys" },
+                    { label: "automatic", value: "automatic" },
+                  ]}
+                />
+                <CustomTextInput
+                  name="bucket"
+                  label="Bucket"
+                  placeholder="Optional"
+                />
 
-              <Button
-                onClick={() => resetForm()}
-                mr={2}
-                size="sm"
-                variant="outline"
+                <Button
+                  onClick={() => resetForm()}
+                  mr={2}
+                  size="sm"
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={isSubmitting}
+                  type="submit"
+                  colorScheme="primary"
+                  size="sm"
+                  data-testid="save-btn"
+                  form={CONFIG_FORM_ID}
+                  isLoading={false}
+                >
+                  Save
+                </Button>
+              </Form>
+            )}
+          </Formik>
+        </Stack>
+        {authMethod === "secret_keys" ? (
+          <>
+            <Divider />
+            <Heading fontSize="md" fontWeight="semibold" mt={10}>
+              Storage destination
+            </Heading>
+            Use the key returned in the last step to provide and authenticate
+            your storage destination’s secrets:
+            <Stack>
+              <Formik
+                initialValues={initialSecretValues}
+                onSubmit={handleSubmitStorageSecrets}
               >
-                Cancel
-              </Button>
-              <Button
-                disabled={isSubmitting}
-                type="submit"
-                colorScheme="primary"
-                size="sm"
-                data-testid="save-btn"
-                form={CONFIG_FORM_ID}
-                isLoading={false}
-              >
-                Save
-              </Button>
-            </Form>
-          )}
-        </Formik>
-      </Stack>
-      {authMethod === "secret_keys" ? (
-        <>
-          <Divider />
-          <Heading fontSize="md" fontWeight="semibold" mt={10}>
-            Storage destination
-          </Heading>
-          Use the key returned in the last step to provide and authenticate your
-          storage destination’s secrets:
-          <Stack>
-            <Formik
-              initialValues={initialSecretValues}
-              onSubmit={handleSubmitStorageSecrets}
-            >
-              {({ isSubmitting, resetForm }) => (
-                <Form id={KEYS_FORM_ID}>
-                  <CustomTextInput
-                    name="aws_access_key_ID"
-                    label="AWS access key ID"
-                  />
+                {({ isSubmitting, resetForm }) => (
+                  <Form id={KEYS_FORM_ID}>
+                    <CustomTextInput
+                      name="aws_access_key_ID"
+                      label="AWS access key ID"
+                    />
 
-                  <CustomTextInput
-                    name="aws_secret_access_key"
-                    label="AWS secret access key"
-                  />
+                    <CustomTextInput
+                      name="aws_secret_access_key"
+                      label="AWS secret access key"
+                    />
 
-                  <Button
-                    onClick={() => resetForm()}
-                    mr={2}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    disabled={isSubmitting}
-                    type="submit"
-                    colorScheme="primary"
-                    size="sm"
-                    data-testid="save-btn"
-                    form={KEYS_FORM_ID}
-                    isLoading={false}
-                  >
-                    Save
-                  </Button>
-                </Form>
-              )}
-            </Formik>
-          </Stack>
-        </>
-      ) : null}
-    </>
-  );
-};
+                    <Button
+                      onClick={() => resetForm()}
+                      mr={2}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      disabled={isSubmitting}
+                      type="submit"
+                      colorScheme="primary"
+                      size="sm"
+                      data-testid="save-btn"
+                      form={KEYS_FORM_ID}
+                      isLoading={false}
+                    >
+                      Save
+                    </Button>
+                  </Form>
+                )}
+              </Formik>
+            </Stack>
+          </>
+        ) : null}
+      </>
+    );
+  };
 
 export default S3StorageConfiguration;
