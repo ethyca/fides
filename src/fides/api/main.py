@@ -3,7 +3,7 @@ Contains the code that sets up the API.
 """
 from datetime import datetime, timezone
 from logging import DEBUG, WARNING
-from typing import Callable, Optional
+from typing import Callable, Optional, List
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -78,16 +78,6 @@ from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 CONFIG: FidesConfig = get_config()
 VERSION = fides.__version__
 
-app = FastAPI(title="fides", version=VERSION)
-app.state.limiter = Limiter(
-    default_limits=[CONFIG.security.request_rate_limit],
-    headers_enabled=True,
-    key_prefix=CONFIG.security.rate_limit_prefix,
-    key_func=get_remote_address,
-    retry_after="http-date",
-)
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-app.add_middleware(SlowAPIMiddleware)
 ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     admin.router,
     datamap.router,
@@ -99,12 +89,52 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
 ]
 
 
+def create_fides_app(
+    cors_origins: List[str] = CONFIG.security.cors_origins,
+    routers: List = ROUTERS,
+    app_version: str = VERSION,
+    api_prefix: str = API_PREFIX,
+    request_rate_limit: str = CONFIG.security.request_rate_limit,
+    rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
+) -> FastAPI:
+    """Return a properly configured application."""
+
+    app = FastAPI(title="fides", version=app_version)
+    app.state.limiter = Limiter(
+        default_limits=[request_rate_limit],
+        headers_enabled=True,
+        key_prefix=rate_limit_prefix,
+        key_func=get_remote_address,
+        retry_after="http-date",
+    )
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    for handler in ExceptionHandlers.get_handlers():
+        app.add_exception_handler(FunctionalityNotConfigured, handler)
+    app.add_middleware(SlowAPIMiddleware)
+
+    if cors_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[str(origin) for origin in cors_origins],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+    for router in routers:
+        app.include_router(router)
+    app.include_router(user_router, tags=["Users"], prefix=f"{api_prefix}")
+    app.include_router(api_router)
+
+    return app
+
+
 def configure_security_env_overrides(
-    application: FastAPI, security_env: str
+    application: FastAPI, security_env: str = CONFIG.security.env.value
 ) -> FastAPI:
     """
     Configures the FastAPI dependency overrides depending on the
-    value of the 'security.env'.
+    value of 'security.env'.
     """
 
     if security_env == "dev":
@@ -121,9 +151,8 @@ def configure_security_env_overrides(
     return application
 
 
-app = configure_security_env_overrides(
-    application=app, security_env=CONFIG.security.env.value
-)
+app = create_fides_app()
+app = configure_security_env_overrides(application=app)
 
 
 @app.middleware("http")
@@ -199,32 +228,7 @@ async def prepare_and_log_request(
     )
 
 
-# Set all CORS enabled origins
-
-if CONFIG.security.cors_origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in CONFIG.security.cors_origins],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-
-def configure_routes() -> None:
-    "Include all of the routers not defined in this module."
-    for router in ROUTERS:
-        app.include_router(router)
-
-    app.include_router(user_router, tags=["Users"], prefix=f"{API_PREFIX}")
-    app.include_router(api_router)
-
-
 # Configure the routes here so we can generate the openapi json file
-configure_routes()
-
-for handler in ExceptionHandlers.get_handlers():
-    app.add_exception_handler(FunctionalityNotConfigured, handler)
 
 
 @app.on_event("startup")
