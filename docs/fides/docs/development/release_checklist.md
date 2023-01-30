@@ -14,7 +14,7 @@ This checklist should be copy/pasted into the final pre-release PR, and checked 
   - If found, look at the latest database diagram, and check whether it contains the tables/columns that were added in these migrations
   - If the diagram is not up to date, follow the steps in the link above to generate a new database diagram with the up-to-date schema, ensuring that all tables and their relationships can be clearly seen
   - Open up an issue on [fidesdocs](https://github.com/ethyca/fidesdocs/issues) to update the diagram on the new docs site
-- [ ] `nox -s test_env` works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)
+- [ ] `nox -s fides_env(test)` works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)
 - [ ] `nox -s "build(sample)"` works on the release branch, creating the sample images (this is also prereq for `fides deploy up`)
 - [ ] `fides deploy up --no-pull` works using the images built in previous step (verify the admin UI, privacy center, CLI and webserver)
 

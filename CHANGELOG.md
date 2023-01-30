@@ -37,8 +37,8 @@ The types of changes are:
 
 ### Developer Experience
 
-* `nox -s test_env` now uses a production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
-* `nox -s dev_env` replaces the functionality of the former `nox -s test_env` and still uses a dev fides image so hot reloading can work [#2399](https://github.com/ethyca/fides/pull/2399)
+* `nox -s test_env` has been replaced with `nox -s fides_env(dev)` 
+* New command `nox -s fides_env(test)` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
 * Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
 
 ### Fixed
