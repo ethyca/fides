@@ -32,6 +32,7 @@ The types of changes are:
 * Unified Fides Resources: Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
 * Update fideslang to 1.3.3 [#2343](https://github.com/ethyca/fides/pull/2343)
 * Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
+* Display the policy key on the request details page [#2395](https://github.com/ethyca/fides/pull/2395)
 
 ### Developer Experience
 
