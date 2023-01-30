@@ -48,6 +48,10 @@ The types of changes are:
 
 * Add a check to the catchall path to prevent returning paths outside of the UI directory [#2330](https://github.com/ethyca/fides/pull/2330)
 
+### Developer Experience
+
+* Reduce size of local Docker images by fixing `.dockerignore` patterns [#2360](https://github.com/ethyca/fides/pull/2360)
+
 ## [2.5.0](https://github.com/ethyca/fides/compare/2.4.0...2.5.0)
 
 ### Docs
