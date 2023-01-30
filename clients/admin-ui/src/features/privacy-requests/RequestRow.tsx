@@ -10,7 +10,6 @@ import {
   MenuList,
   MoreIcon,
   Portal,
-  Tag,
   Td,
   Text,
   Tr,
@@ -18,6 +17,7 @@ import {
   useToast,
 } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
+import RequestType from "common/RequestType";
 import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
@@ -45,9 +45,8 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [denialReason, setDenialReason] = useState("");
   const [approveRequest, approveRequestResult] = useApproveRequestMutation();
-  const [denyRequest, denyRequestResult] = useDenyRequestMutation();
+  const [denyRequest] = useDenyRequestMutation();
   const handleMenuOpen = () => setMenuOpen(true);
   const handleMenuClose = () => setMenuOpen(false);
   const handleMouseEnter = () => setHovered(true);
@@ -69,9 +68,6 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
     setFocused(false);
     setHovered(false);
     setMenuOpen(false);
-    if (!denyRequestResult.isLoading) {
-      setDenialReason("");
-    }
   };
   const handleIdCopy = () => {
     onCopy();
@@ -100,7 +96,6 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   };
   return {
     approveRequestResult,
-    denyRequestResult,
     hovered,
     focused,
     menuOpen,
@@ -118,8 +113,6 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
     handleDenyRequest,
     hoverButtonRef,
     shiftFocusToHoverMenu,
-    denialReason,
-    setDenialReason,
     handleViewDetails,
   };
 };
@@ -140,7 +133,6 @@ const RequestRow: React.FC<{
     handleIdCopy,
     menuOpen,
     approveRequestResult,
-    denyRequestResult,
     hoverButtonRef,
     modalOpen,
     handleModalClose,
@@ -149,8 +141,6 @@ const RequestRow: React.FC<{
     handleFocus,
     handleBlur,
     focused,
-    denialReason,
-    setDenialReason,
     handleViewDetails,
   } = useRequestRow(request);
   const showMenu = hovered || menuOpen || focused;
@@ -183,16 +173,7 @@ const RequestRow: React.FC<{
         />
       </Td>
       <Td py={1}>
-        <Tag
-          color="white"
-          bg="primary.400"
-          px={2}
-          py={0.5}
-          size="sm"
-          fontWeight="medium"
-        >
-          {request.policy.name}
-        </Tag>
+        <RequestType rules={request.policy.rules} />
       </Td>
       <Td py={1}>
         <Text fontSize="xs">
@@ -288,13 +269,8 @@ const RequestRow: React.FC<{
               </Button>
               <DenyPrivacyRequestModal
                 isOpen={modalOpen}
-                isLoading={denyRequestResult.isLoading}
                 handleMenuClose={handleModalClose}
                 handleDenyRequest={handleDenyRequest}
-                denialReason={denialReason}
-                onChange={(e) => {
-                  setDenialReason(e.target.value);
-                }}
               />
             </>
           )}
