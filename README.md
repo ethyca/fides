@@ -8,8 +8,7 @@
 [![Code style: black][black-image]][black-url]
 [![Checked with mypy][mypy-image]][mypy-url]
 [![Twitter][twitter-image]][twitter-url]
-[![Maintainability](https://api.codeclimate.com/v1/badges/7a4ea6e95621617f7f9e/maintainability)](https://codeclimate.com/github/ethyca/fides/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/7a4ea6e95621617f7f9e/test_coverage)](https://codeclimate.com/github/ethyca/fides/test_coverage)
+[![Coverage](https://codecov.io/github/ethyca/fides/coverage.svg?branch=main)](https://codecov.io/gh/ethyca/fides)
 
 ![Fides banner](docs/fides/docs/img/fides-banner.png "Fides banner")
 

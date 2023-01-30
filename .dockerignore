@@ -7,31 +7,31 @@ src/ui-build/
 
 # Frontend
 **/node_modules
-.next
+**/.next
 
 
 # Ignore Python-Specific Files
-.mypy_cache/
-.nox/
-.pytest_cache/
-__pycache__/
-.coverage
-**.*.pyc
-**.*.pyo
-**.*.pyd
+**/.mypy_cache/
+**/.nox/
+**/.pytest_cache/
+**/__pycache__/
+**/.coverage
+**/*.pyc
+**/*.pyo
+**/*.pyd
 
 # pyenv
 .python-version
 
 # Environments
-.env
-.venv
-env/
-venv/
+**/.env
+**/.venv
+**/env/
+**/venv/
 
 # Editors
-.vscode/
-.idea/
+**/.vscode/
+**/.idea/
 
 # the docs directory is needed when building the docs container so it can't be in the
 # .dockerignore
@@ -44,7 +44,7 @@ venv/
 # Ignore cypress artifacts
 **/videos/
 **/screenshots/
-.DS_Store
+**/.DS_Store
 
 # Dev files
 .pre-commit-config.yaml

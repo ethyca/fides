@@ -33,16 +33,26 @@ The types of changes are:
 * Update fideslang to 1.3.3 [#2343](https://github.com/ethyca/fides/pull/2343)
 * Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
 * Make denial reasons required [#2400](https://github.com/ethyca/fides/pull/2400)
+* Display the policy key on the request details page [#2395](https://github.com/ethyca/fides/pull/2395)
+
+### Developer Experience
+
+* Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
 
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
 * Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
 * Privacy Center identity inputs validate even when they are optional. [#2308](https://github.com/ethyca/fides/pull/2308)
+* Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
 
 ### Security
 
 * Add a check to the catchall path to prevent returning paths outside of the UI directory [#2330](https://github.com/ethyca/fides/pull/2330)
+
+### Developer Experience
+
+* Reduce size of local Docker images by fixing `.dockerignore` patterns [#2360](https://github.com/ethyca/fides/pull/2360)
 
 ## [2.5.0](https://github.com/ethyca/fides/compare/2.4.0...2.5.0)
 
