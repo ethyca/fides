@@ -32,6 +32,8 @@ The types of changes are:
 * Unified Fides Resources: Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
 * Update fideslang to 1.3.3 [#2343](https://github.com/ethyca/fides/pull/2343)
 * Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
+* Make denial reasons required [#2400](https://github.com/ethyca/fides/pull/2400)
+* Display the policy key on the request details page [#2395](https://github.com/ethyca/fides/pull/2395)
 
 ### Developer Experience
 
@@ -49,6 +51,10 @@ The types of changes are:
 ### Security
 
 * Add a check to the catchall path to prevent returning paths outside of the UI directory [#2330](https://github.com/ethyca/fides/pull/2330)
+
+### Developer Experience
+
+* Reduce size of local Docker images by fixing `.dockerignore` patterns [#2360](https://github.com/ethyca/fides/pull/2360)
 
 ## [2.5.0](https://github.com/ethyca/fides/compare/2.4.0...2.5.0)
 
