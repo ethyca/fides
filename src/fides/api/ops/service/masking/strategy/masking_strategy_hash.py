@@ -42,11 +42,12 @@ class HashMaskingStrategy(MaskingStrategy):
 
     def mask(
         self, values: Optional[List[str]], request_id: Optional[str]
-    ) -> Optional[List[str]]:
+    ) -> Optional[List[Optional[str]]]:
         """Returns the hashed version of the provided values. Returns None if the provided value
         is None"""
         if values is None:
             return None
+
         masking_meta: Dict[
             SecretType, MaskingSecretMeta
         ] = self._build_masking_secret_meta()
@@ -56,9 +57,13 @@ class HashMaskingStrategy(MaskingStrategy):
             masking_meta[SecretType.salt],
         )
 
-        masked_values: List[str] = []
+        masked_values: List[Optional[str]] = []
         for value in values:
-            masked: str = self.algorithm_function(value, salt)  # type: ignore
+            if value is None:
+                masked_values.append(None)
+                continue
+
+            masked: str = self.algorithm_function(str(value), salt)  # type: ignore
             if self.format_preservation is not None:
                 formatter = FormatPreservation(self.format_preservation)
                 masked = formatter.format(masked)

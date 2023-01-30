@@ -45,9 +45,8 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [denialReason, setDenialReason] = useState("");
   const [approveRequest, approveRequestResult] = useApproveRequestMutation();
-  const [denyRequest, denyRequestResult] = useDenyRequestMutation();
+  const [denyRequest] = useDenyRequestMutation();
   const handleMenuOpen = () => setMenuOpen(true);
   const handleMenuClose = () => setMenuOpen(false);
   const handleMouseEnter = () => setHovered(true);
@@ -69,9 +68,6 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
     setFocused(false);
     setHovered(false);
     setMenuOpen(false);
-    if (!denyRequestResult.isLoading) {
-      setDenialReason("");
-    }
   };
   const handleIdCopy = () => {
     onCopy();
@@ -100,7 +96,6 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   };
   return {
     approveRequestResult,
-    denyRequestResult,
     hovered,
     focused,
     menuOpen,
@@ -118,8 +113,6 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
     handleDenyRequest,
     hoverButtonRef,
     shiftFocusToHoverMenu,
-    denialReason,
-    setDenialReason,
     handleViewDetails,
   };
 };
@@ -148,7 +141,6 @@ const RequestRow = ({
     handleIdCopy,
     menuOpen,
     approveRequestResult,
-    denyRequestResult,
     hoverButtonRef,
     modalOpen,
     handleModalClose,
@@ -157,8 +149,6 @@ const RequestRow = ({
     handleFocus,
     handleBlur,
     focused,
-    denialReason,
-    setDenialReason,
     handleViewDetails,
   } = useRequestRow(request);
   const showMenu = hovered || menuOpen || focused;
@@ -291,13 +281,8 @@ const RequestRow = ({
               </Button>
               <DenyPrivacyRequestModal
                 isOpen={modalOpen}
-                isLoading={denyRequestResult.isLoading}
                 handleMenuClose={handleModalClose}
                 handleDenyRequest={handleDenyRequest}
-                denialReason={denialReason}
-                onChange={(e) => {
-                  setDenialReason(e.target.value);
-                }}
               />
             </>
           )}

@@ -51,7 +51,7 @@ const Home: NextPage = () => {
       // TODO(#2299): Use error utils from shared package.
       const errorData = (getIdVerificationConfigQuery.error as any)?.data;
       toast({
-        description: errorData.detail,
+        description: errorData?.detail,
         ...ConfigErrorToastOptions,
       });
       return;

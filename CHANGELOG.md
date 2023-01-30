@@ -32,6 +32,12 @@ The types of changes are:
 * Unified Fides Resources: Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
 * Update fideslang to 1.3.3 [#2343](https://github.com/ethyca/fides/pull/2343)
 * Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
+* Make denial reasons required [#2400](https://github.com/ethyca/fides/pull/2400)
+* Display the policy key on the request details page [#2395](https://github.com/ethyca/fides/pull/2395)
+
+### Developer Experience
+
+* Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
 
 ### Fixed
 
@@ -39,10 +45,15 @@ The types of changes are:
 * Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
 * Privacy Center identity inputs validate even when they are optional. [#2308](https://github.com/ethyca/fides/pull/2308)
 * The PII toggle defaults to false and PII will be hidden on page load [#2388](https://github.com/ethyca/fides/pull/2388)
+* Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
 
 ### Security
 
 * Add a check to the catchall path to prevent returning paths outside of the UI directory [#2330](https://github.com/ethyca/fides/pull/2330)
+
+### Developer Experience
+
+* Reduce size of local Docker images by fixing `.dockerignore` patterns [#2360](https://github.com/ethyca/fides/pull/2360)
 
 ## [2.5.0](https://github.com/ethyca/fides/compare/2.4.0...2.5.0)
 

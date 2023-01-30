@@ -4,6 +4,7 @@ from os import getenv
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
+INTEGRATION_POSTGRES_COMPOSE_FILE = "docker/docker-compose.integration-postgres.yml"
 TEST_ENV_COMPOSE_FILE = "docker-compose.test-env.yml"
 REMOTE_DEBUG_COMPOSE_FILE = "docker-compose.remote-debug.yml"
 WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
@@ -12,11 +13,6 @@ WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 REGISTRY = "ethyca"
 IMAGE_NAME = "fides"
 COMPOSE_SERVICE_NAME = "fides"
-
-# Files
-COMPOSE_FILE = "docker-compose.yml"
-INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
-INTEGRATION_POSTGRES_COMPOSE_FILE = "docker/docker-compose.integration-postgres.yml"
 
 # Image Names & Tags
 REGISTRY = "ethyca"
@@ -42,10 +38,6 @@ CI_ARGS = "-T" if getenv("CI") else "--user=root"
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDES__CLI__ANALYTICS_ID")
 ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 
-# Used for Code Climate
-GIT_BRANCH = ("-e", "GIT_BRANCH")
-GIT_COMMIT_SHA = ("-e", "GIT_COMMIT_SHA")
-
 # Reusable Commands
 RUN = (
     "docker",
@@ -69,18 +61,6 @@ RUN_NO_DEPS = (
     "run",
     "--no-deps",
     "--rm",
-    *ANALYTICS_ID_OVERRIDE,
-    CI_ARGS,
-    IMAGE_NAME,
-)
-RUN_COVERAGE = (
-    "docker",
-    "compose",
-    "run",
-    "--no-deps",
-    "--rm",
-    *GIT_BRANCH,
-    *GIT_COMMIT_SHA,
     *ANALYTICS_ID_OVERRIDE,
     CI_ARGS,
     IMAGE_NAME,
