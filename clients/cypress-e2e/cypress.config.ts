@@ -9,6 +9,12 @@ export default defineConfig({
     // https://docs.cypress.io/api/commands/origin#Dependencies--Sharing-Code
     experimentalOriginDependencies: true,
   },
+
+  retries: {
+    runMode: 3,
+    openMode: 0,
+  },
+
   env: {
     // These can be overwritten by exporting `CYPRESS_{name}`, for example
     // export CYPRESS_ADMIN_UI_URL="http://staging.example.com"
