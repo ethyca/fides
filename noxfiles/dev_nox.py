@@ -1,7 +1,7 @@
 """Contains the nox sessions for running development environments."""
 from typing import Literal
 
-from nox import Session
+from nox import Session, param, parametrize
 from nox import session as nox_session
 from nox.command import CommandFailed
 
@@ -75,29 +75,23 @@ def dev(session: Session) -> None:
 
 
 @nox_session()
-def test_env(session: Session) -> None:
+@parametrize(
+    "fides_image",
+    [
+        param("dev", id="dev"),
+        param("test", id="test"),
+    ],
+)
+def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") -> None:
     """
-    Spins up a comprehensive test environment seeded with data.
-    """
-    full_seeded_env(session, fides_image="test")
+    Spins up a full fides environment seeded with data.
 
-
-@nox_session()
-def dev_env(session: Session) -> None:
-    """
-    Spins up a comprehensive dev environment with hot reloading and seeded with data.
-    """
-    full_seeded_env(session, fides_image="dev")
-
-
-def full_seeded_env(
-    session: Session, fides_image: Literal["test", "dev"] = "test"
-) -> None:
-    """
-    Spins up a comprehensive environment seeded with data.
+    Params:
+        dev = Spins up a full fides application with a dev-style docker container. This includes hot-reloading and no pre-baked UI.
+        test = Spins up a full fides application with a production-style docker container. This includes the UI being pre-built as static files.
 
     Posargs:
-    test: instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
+        test = instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
     """
 
     shell_command = "fides" if "test" in session.posargs else "/bin/bash"
