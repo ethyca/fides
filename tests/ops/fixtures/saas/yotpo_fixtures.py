@@ -153,14 +153,26 @@ def yotpo_create_erasure_data(
 
     users_response = requests.patch(url=f"{base_url}/core/v3/stores/{yotpo_secrets['app_key']}/customers", headers=headers, json=body)    
     # sleep(60)
-    error_message = f"customer with email {yotpo_erasure_identity_email} could not be added to Jira"
+    error_message = f"customer with email {yotpo_erasure_identity_email} could not be added to Yotpo"
     user_data = poll_for_existence(
         customer_exists,
         (yotpo_random_external_id, yotpo_secrets, yotpo_create_access_token),
         retries=20,
         interval=8,
         error_message=error_message,
-    )    
+    ) 
+
+    #update customer name   
+
+    body = {
+        "customer": {
+            "external_id": yotpo_random_external_id,
+            "email": yotpo_erasure_identity_email,
+            "first_name":"test_data"
+        }
+    }
+
+    # users_update_response = requests.patch(url=f"{base_url}/core/v3/stores/{yotpo_secrets['app_key']}/customers", headers=headers, json=body) 
 
 
     yield users_response.ok
@@ -189,7 +201,7 @@ def yotpo_create_loyalty_data(
 
     users_response = requests.post(url=f"{base_url}/api/v2/customers", headers=headers, json=body)
 
-    sleep(30)
+    sleep(60)
 
     yield users_response.ok
 

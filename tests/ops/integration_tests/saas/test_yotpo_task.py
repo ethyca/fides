@@ -262,6 +262,7 @@ async def test_yotpo_erasure_request_task(
 
     # Verify if user detail is updated or not
     customer_details = customer_responses.json()
+    print(customer_details)
     # assert customer_details['customers'][0]['first_name'] == "MASKED"
     # assert customer_details['customers'][0]['last_name'] == "MASKED"
 
@@ -277,6 +278,7 @@ async def test_yotpo_erasure_request_task(
         headers=headers,
         params={"customer_email": yotpo_erasure_identity_email},
     )
+    print(loyalty_response)
     # Check user is updated or not
     assert loyalty_response.status_code == 200
 

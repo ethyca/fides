@@ -11,6 +11,8 @@ saas_config:
     - name: app_key
     - name: secret_key
     - name: external
+    - name: x_guid
+    - name: x_api_key
 
   client_config:
     protocol: https
@@ -158,13 +160,17 @@ saas_config:
             #   configuration: {}
           headers:
             - name: x-guid
-              value: zRq1J-Wy4NBRZdl65QCifA
+              value: <x_guid>
             - name: x-api-key
-              value: 8cyHrd7mQEgCTWQmU7TKSQtt
+              value: <x_api_key>
           query_params:
             - name: customer_email
               value: <email>
           param_values:
+            - name: x_guid
+              connector_param: x_guid
+            - name: x_api_key
+              connector_param: x_api_key
             - name: email
               identity: email
         update:
@@ -178,11 +184,17 @@ saas_config:
             #   configuration: {}
           headers:
             - name: x-guid
-              value: zRq1J-Wy4NBRZdl65QCifA
+              value: <x_guid>
             - name: x-api-key
-              value: 8cyHrd7mQEgCTWQmU7TKSQtt
+              value: <x_api_key>
           body: |
-            {"email":<email>}
+            {
+                 <all_object_fields>               
+            }
           param_values:
+            - name: x_guid
+              connector_param: x_guid
+            - name: x_api_key
+              connector_param: x_api_key
             - name: email
               identity: email

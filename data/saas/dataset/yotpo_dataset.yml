@@ -8,7 +8,7 @@ dataset:
           - name: access_token
             data_categories: [system.operations]
             fidesops_meta:
-              primary_key: True
+              # primary_key: True
               data_type: string
       - name: customer_(core)
         fields:
@@ -126,7 +126,7 @@ dataset:
                       - name: id
                         data_categories: [system.operations]
                         fidesops_meta:
-                          primary_key: True
+                          # primary_key: True
                           data_type: integer
                       - name: title
                         data_categories: [system.operations]
@@ -375,7 +375,7 @@ dataset:
         fields:
           - name: records
         fidesops_meta:
-          primary_key: True
+          # primary_key: True
 
       - name: visual_ugc_(ugc)
         fields:
@@ -386,7 +386,7 @@ dataset:
               - name: code
                 data_categories: [system.operations]
                 fidesops_meta:
-                  primary_key: True
+                  # primary_key: True
                   data_type: integer
               - name: message
                 data_categories: [system.operations]
