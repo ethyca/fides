@@ -118,7 +118,7 @@ START_APP_WITH_EXTERNAL_POSTGRES = (
 RUN_CYPRESS_TESTS = (
     "docker",
     "run",
-    "-it",
+    "-t",
     "--network=host",
     "-v",
     f"{CWD}/clients/cypress-e2e:/e2e",
