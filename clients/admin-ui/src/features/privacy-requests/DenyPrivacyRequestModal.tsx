@@ -46,7 +46,7 @@ const DenyPrivacyRequestModal = ({
       <Formik
         initialValues={{ denialReason: "" }}
         validationSchema={Yup.object({
-          denialReason: Yup.string().required("Required"),
+          denialReason: Yup.string().required().label("Reason for denial"),
         })}
         onSubmit={(values, { setSubmitting }) => {
           handleSubmit(
