@@ -1,5 +1,4 @@
 import pytest
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1 import scope_registry as scopes
 from fides.api.ops.api.v1 import urn_registry as urls
@@ -14,7 +13,7 @@ class TestGetConnections:
     def test_get_config(
         self,
         auth_header,
-        api_client: TestClient,
+        api_client,
         url,
     ) -> None:
         resp = api_client.get(url, headers=auth_header)

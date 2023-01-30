@@ -23,7 +23,6 @@ from fides.api.ops.service.connectors.sql_connector import (
     MicrosoftSQLServerConnector,
     MySQLConnector,
 )
-from fides.lib.models.client import ClientDetail
 
 
 @pytest.mark.integration_postgres
@@ -541,7 +540,7 @@ class TestMySQLConnector:
 @pytest.mark.integration
 class TestMariaDBConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mariadb):
+    def url(self, connection_config_mariadb):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mariadb.key}/secret"
 
     @pytest.mark.parametrize(
@@ -672,7 +671,7 @@ class TestMariaDBConnectionPutSecretsAPI:
 @pytest.mark.integration
 class TestMariaDBConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mariadb):
+    def url(self, connection_config_mariadb):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mariadb.key}/test"
 
     def test_connection_configuration_test_not_authenticated(

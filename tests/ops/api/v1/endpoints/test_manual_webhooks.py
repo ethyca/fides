@@ -1,6 +1,4 @@
 import pytest
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_READ,
@@ -15,33 +13,26 @@ from fides.api.ops.api.v1.urn_registry import (
     CONNECTION_TEST,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.manual_webhook import AccessManualWebhook
 
 
 class TestGetAccessManualWebhook:
     @pytest.fixture(scope="function")
-    def url(self, integration_manual_webhook_config) -> str:
+    def url(self, integration_manual_webhook_config):
         path = V1_URL_PREFIX + ACCESS_MANUAL_WEBHOOK
         path_params = {"connection_key": integration_manual_webhook_config.key}
         return path.format(**path_params)
 
-    def test_get_manual_webhook_not_authenticated(self, api_client: TestClient, url):
+    def test_get_manual_webhook_not_authenticated(self, api_client, url):
         response = api_client.get(url, headers={})
         assert 401 == response.status_code
 
-    def test_get_manual_webhook_wrong_scopes(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header([STORAGE_READ])
-
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_get_manual_webhook_wrong_scopes(self, auth_header, api_client, url):
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_get_manual_webhook_does_not_exist(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header([WEBHOOK_READ])
-
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_READ]], indirect=True)
+    def test_get_manual_webhook_does_not_exist(self, auth_header, api_client, url):
         response = api_client.get(url, headers=auth_header)
         assert 404 == response.status_code
         assert (
@@ -49,10 +40,10 @@ class TestGetAccessManualWebhook:
             == "No access manual webhook exists for connection config with key 'manual_webhook_example'"
         )
 
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_READ]], indirect=True)
     def test_try_to_get_manual_webhook_from_postgres_connector(
-        self, api_client: TestClient, generate_auth_header, connection_config
+        self, auth_header, api_client, connection_config
     ):
-        auth_header = generate_auth_header([WEBHOOK_READ])
         url = V1_URL_PREFIX + ACCESS_MANUAL_WEBHOOK.format(
             connection_key=connection_config.key
         )
@@ -64,17 +55,15 @@ class TestGetAccessManualWebhook:
             == "Can't access manual webhooks for ConnectionConfigs of type 'postgres'"
         )
 
+    @pytest.mark.usefixtures("access_manual_webhook")
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_READ]], indirect=True)
     def test_get_manual_webhook(
         self,
-        api_client: TestClient,
-        db,
+        auth_header,
+        api_client,
         url,
-        generate_auth_header,
-        access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        auth_header = generate_auth_header([WEBHOOK_READ])
-
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
 
@@ -95,7 +84,7 @@ class TestGetAccessManualWebhook:
 
 class TestPostAccessManualWebhook:
     @pytest.fixture(scope="function")
-    def url(self, integration_manual_webhook_config) -> str:
+    def url(self, integration_manual_webhook_config):
         path = V1_URL_PREFIX + ACCESS_MANUAL_WEBHOOK
         path_params = {"connection_key": integration_manual_webhook_config.key}
         return path.format(**path_params)
@@ -110,27 +99,26 @@ class TestPostAccessManualWebhook:
             ]
         }
 
-    def test_post_manual_webhook_not_authenticated(
-        self, api_client: TestClient, payload, url
-    ):
+    def test_post_manual_webhook_not_authenticated(self, api_client, payload, url):
         response = api_client.post(url, headers={}, json=payload)
         assert 401 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_READ]], indirect=True)
     def test_post_manual_webhook_incorrect_scope(
         self,
-        api_client: TestClient,
+        auth_header,
+        api_client,
         payload,
         url,
-        generate_auth_header,
     ):
-        auth_header = generate_auth_header([WEBHOOK_READ])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
+    @pytest.mark.usefixtures("access_manual_webhook")
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
     def test_post_access_manual_webhook_already_exists(
-        self, db, api_client, url, payload, generate_auth_header, access_manual_webhook
+        self, auth_header, api_client, url, payload
     ):
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert (
@@ -138,13 +126,13 @@ class TestPostAccessManualWebhook:
             == "An Access Manual Webhook already exists for ConnectionConfig 'manual_webhook_example'."
         )
 
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
     def test_access_manual_webhook_pii_field_too_long(
-        self, db, api_client, url, generate_auth_header
+        self, auth_header, api_client, url
     ):
         payload = {
             "fields": [{"pii_field": "hello" * 100, "dsr_package_label": "First Name"}]
         }
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 422
         assert (
@@ -152,22 +140,21 @@ class TestPostAccessManualWebhook:
             == "ensure this value has at most 200 characters"
         )
 
-    def test_post_manual_webhook_duplicate_fields(
-        self, db, api_client, url, generate_auth_header
-    ):
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
+    def test_post_manual_webhook_duplicate_fields(self, auth_header, api_client, url):
         payload = {
             "fields": [
                 {"pii_field": "first_name", "dsr_package_label": "First Name"},
                 {"pii_field": "first_name", "dsr_package_label": "First Name"},
             ]
         }
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 422
         assert response.json()["detail"][0]["msg"] == "pii_fields must be unique"
 
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
     def test_post_access_manual_webhook_fields_empty_string(
-        self, db, api_client, url, generate_auth_header
+        self, auth_header, api_client, url
     ):
         payload = {
             "fields": [
@@ -175,7 +162,6 @@ class TestPostAccessManualWebhook:
                 {"pii_field": "", "dsr_package_label": "bad_label"},
             ]
         }
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 422
         assert (
@@ -183,8 +169,9 @@ class TestPostAccessManualWebhook:
             == "ensure this value has at least 1 characters"
         )
 
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
     def test_post_access_manual_webhook_pii_label_spaces(
-        self, db, api_client, url, generate_auth_header
+        self, auth_header, api_client, url
     ):
         payload = {
             "fields": [
@@ -192,7 +179,6 @@ class TestPostAccessManualWebhook:
                 {"pii_field": "   ", "dsr_package_label": "label"},
             ]
         }
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 422
         assert (
@@ -200,8 +186,9 @@ class TestPostAccessManualWebhook:
             == "ensure this value has at least 1 characters"
         )
 
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
     def test_post_access_manual_webhook_dsr_package_labels_empty_string(
-        self, db, api_client, url, generate_auth_header
+        self, auth_header, api_client, url
     ):
         payload = {
             "fields": [
@@ -209,7 +196,6 @@ class TestPostAccessManualWebhook:
                 {"pii_field": "last_name", "dsr_package_label": ""},
             ]
         }
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 201
         assert response.json()["fields"] == [
@@ -217,8 +203,9 @@ class TestPostAccessManualWebhook:
             {"pii_field": "last_name", "dsr_package_label": "last_name"},
         ]
 
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
     def test_post_access_manual_webhook_dsr_package_labels_spaces(
-        self, db, api_client, url, generate_auth_header
+        self, auth_header, api_client, url
     ):
         payload = {
             "fields": [
@@ -226,7 +213,6 @@ class TestPostAccessManualWebhook:
                 {"pii_field": "last_name", "dsr_package_label": "  "},
             ]
         }
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 201
         assert response.json()["fields"] == [
@@ -234,13 +220,13 @@ class TestPostAccessManualWebhook:
             {"pii_field": "last_name", "dsr_package_label": "last_name"},
         ]
 
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
     def test_post_access_manual_webhook_wrong_connection_config_type(
-        self, connection_config, payload, generate_auth_header, api_client
+        self, auth_header, connection_config, payload, api_client
     ):
         url = V1_URL_PREFIX + ACCESS_MANUAL_WEBHOOK.format(
             connection_key=connection_config.key
         )
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert (
@@ -248,10 +234,8 @@ class TestPostAccessManualWebhook:
             == "You can only create manual webhooks for ConnectionConfigs of type 'manual_webhook'."
         )
 
-    def test_post_webhook_no_fields(
-        self, connection_config, payload, generate_auth_header, api_client, url
-    ):
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
+    def test_post_webhook_no_fields(self, auth_header, api_client, url):
         response = api_client.post(url, headers=auth_header, json={"fields": []})
 
         assert response.status_code == 422
@@ -260,16 +244,15 @@ class TestPostAccessManualWebhook:
             == "ensure this value has at least 1 items"
         )
 
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
     def test_post_manual_webhook(
         self,
-        db: Session,
-        api_client: TestClient,
+        auth_header,
+        api_client,
         url,
         payload,
-        generate_auth_header,
         integration_manual_webhook_config,
     ):
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 201
         resp = response.json()
@@ -287,33 +270,25 @@ class TestPostAccessManualWebhook:
         assert connection_config_details["updated_at"] is not None
         assert "secrets" not in connection_config_details
 
-        manual_webhook = AccessManualWebhook.get(db=db, object_id=resp["id"])
-        manual_webhook.delete(db)
-
 
 class TestPatchAccessManualWebhook:
     @pytest.fixture(scope="function")
-    def url(self, integration_manual_webhook_config) -> str:
+    def url(self, integration_manual_webhook_config):
         path = V1_URL_PREFIX + ACCESS_MANUAL_WEBHOOK
         path_params = {"connection_key": integration_manual_webhook_config.key}
         return path.format(**path_params)
 
-    def test_patch_manual_webhook_not_authenticated(self, api_client: TestClient, url):
+    def test_patch_manual_webhook_not_authenticated(self, api_client, url):
         response = api_client.patch(url, headers={})
         assert 401 == response.status_code
 
-    def test_patch_manual_webhook_wrong_scopes(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header([WEBHOOK_READ])
-
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_READ]], indirect=True)
+    def test_patch_manual_webhook_wrong_scopes(self, auth_header, api_client, url):
         response = api_client.patch(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_patch_manual_webhook_does_not_exist(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
+    def test_patch_manual_webhook_does_not_exist(self, auth_header, api_client, url):
         payload = {
             "fields": [
                 {"pii_field": "New Field", "dsr_package_label": None},
@@ -327,16 +302,15 @@ class TestPatchAccessManualWebhook:
             == "No access manual webhook exists for connection config with key 'manual_webhook_example'"
         )
 
+    @pytest.mark.usefixtures("access_manual_webhook")
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_manual_webhook(
         self,
-        api_client: TestClient,
-        db,
+        auth_header,
+        api_client,
         url,
-        generate_auth_header,
-        access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         payload = {
             "fields": [
                 {"pii_field": "New Field", "dsr_package_label": None},
@@ -362,28 +336,22 @@ class TestPatchAccessManualWebhook:
 
 class TestDeleteAccessManualWebhook:
     @pytest.fixture(scope="function")
-    def url(self, integration_manual_webhook_config) -> str:
+    def url(self, integration_manual_webhook_config):
         path = V1_URL_PREFIX + ACCESS_MANUAL_WEBHOOK
         path_params = {"connection_key": integration_manual_webhook_config.key}
         return path.format(**path_params)
 
-    def test_delete_manual_webhook_not_authenticated(self, api_client: TestClient, url):
+    def test_delete_manual_webhook_not_authenticated(self, api_client, url):
         response = api_client.delete(url, headers={})
         assert 401 == response.status_code
 
-    def test_delete_manual_webhook_wrong_scopes(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header([WEBHOOK_READ])
-
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_READ]], indirect=True)
+    def test_delete_manual_webhook_wrong_scopes(self, auth_header, api_client, url):
         response = api_client.delete(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_delete_manual_webhook_does_not_exist(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header([WEBHOOK_DELETE])
-
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_DELETE]], indirect=True)
+    def test_delete_manual_webhook_does_not_exist(self, auth_header, api_client, url):
         response = api_client.delete(url, headers=auth_header)
         assert 404 == response.status_code
         assert (
@@ -391,17 +359,17 @@ class TestDeleteAccessManualWebhook:
             == "No access manual webhook exists for connection config with key 'manual_webhook_example'"
         )
 
+    @pytest.mark.usefixtures("access_manual_webhook")
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_DELETE]], indirect=True)
     def test_delete_manual_webhook(
         self,
-        api_client: TestClient,
+        auth_header,
+        api_client,
         db,
         url,
-        generate_auth_header,
-        access_manual_webhook,
         integration_manual_webhook_config,
     ):
         assert integration_manual_webhook_config.access_manual_webhook is not None
-        auth_header = generate_auth_header([WEBHOOK_DELETE])
 
         response = api_client.delete(url, headers=auth_header)
         assert 204 == response.status_code
@@ -411,51 +379,45 @@ class TestDeleteAccessManualWebhook:
 
 class TestGetAccessManualWebhooks:
     @pytest.fixture(scope="function")
-    def url(self, integration_manual_webhook_config) -> str:
+    def url(self):
         return V1_URL_PREFIX + ACCESS_MANUAL_WEBHOOKS
 
-    def test_get_manual_webhook_not_authenticated(self, api_client: TestClient, url):
+    def test_get_manual_webhook_not_authenticated(self, api_client, url):
         response = api_client.get(url, headers={})
         assert 401 == response.status_code
 
-    def test_get_manual_webhook_wrong_scopes(
-        self, api_client: TestClient, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header([STORAGE_READ])
-
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+    def test_get_manual_webhook_wrong_scopes(self, auth_header, api_client, url):
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
+    @pytest.mark.usefixtures("access_manual_webhook")
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_READ]], indirect=True)
     def test_disabled_webhooks(
         self,
+        auth_header,
         db,
         api_client,
         url,
-        generate_auth_header,
         integration_manual_webhook_config,
-        access_manual_webhook,
     ):
         integration_manual_webhook_config.disabled = True
         integration_manual_webhook_config.save(db)
-
-        auth_header = generate_auth_header([WEBHOOK_READ])
 
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
 
         assert len(response.json()) == 0
 
+    @pytest.mark.usefixtures("access_manual_webhook")
+    @pytest.mark.parametrize("auth_header", [[WEBHOOK_READ]], indirect=True)
     def test_get_manual_webhooks(
         self,
-        api_client: TestClient,
-        db,
+        auth_header,
+        api_client,
         url,
-        generate_auth_header,
-        access_manual_webhook,
         integration_manual_webhook_config,
     ):
-        auth_header = generate_auth_header([WEBHOOK_READ])
-
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
 
@@ -477,49 +439,44 @@ class TestGetAccessManualWebhooks:
 
 class TestManualWebhookTest:
     @pytest.fixture(scope="function")
-    def url(self, integration_manual_webhook_config) -> str:
+    def url(self, integration_manual_webhook_config):
         return V1_URL_PREFIX + CONNECTION_TEST.format(
             connection_key=integration_manual_webhook_config.key
         )
 
-    def test_connection_test_manual_webhook_not_authenticated(
-        self, api_client: TestClient, url
-    ):
+    def test_connection_test_manual_webhook_not_authenticated(self, api_client, url):
         response = api_client.get(url, headers={})
         assert 401 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
     def test_connection_test_manual_webhook_wrong_scopes(
-        self, api_client: TestClient, url, generate_auth_header
+        self, auth_header, api_client, url
     ):
-        auth_header = generate_auth_header([STORAGE_READ])
-
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
+    @pytest.mark.usefixtures("integration_manual_webhook_config")
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_test_manual_webhook_no_webhook_resource(
         self,
-        api_client: TestClient,
-        db,
+        auth_header,
+        api_client,
         url,
-        generate_auth_header,
-        integration_manual_webhook_config,
     ):
-        auth_header = generate_auth_header([CONNECTION_READ])
-
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
         assert response.json()["test_status"] == "failed"
 
+    @pytest.mark.usefixtures("integration_manual_webhook_config")
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_test_manual_webhook_no_webhook_fields(
         self,
-        api_client: TestClient,
+        auth_header,
+        api_client,
         db,
         url,
-        generate_auth_header,
-        integration_manual_webhook_config,
         access_manual_webhook,
     ):
-        auth_header = generate_auth_header([CONNECTION_READ])
         access_manual_webhook.fields = None
         access_manual_webhook.save(db)
 
@@ -527,17 +484,16 @@ class TestManualWebhookTest:
         assert 200 == response.status_code
         assert response.json()["test_status"] == "failed"
 
+    @pytest.mark.usefixtures(
+        "integration_manual_webhook_config", "access_manual_webhook"
+    )
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_test_manual_webhook(
         self,
-        api_client: TestClient,
-        db,
+        auth_header,
+        api_client,
         url,
-        generate_auth_header,
-        access_manual_webhook,
-        integration_manual_webhook_config,
     ):
-        auth_header = generate_auth_header([CONNECTION_READ])
-
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
         assert response.json()["test_status"] == "succeeded"
