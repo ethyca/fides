@@ -1,5 +1,4 @@
 import json
-import random
 from unittest import mock
 from uuid import uuid4
 

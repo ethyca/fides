@@ -104,7 +104,9 @@ class SaaSRequest(BaseModel):
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[bool] = False
     rate_limit_config: Optional[RateLimitConfig]
-    skip_missing_param_values: Optional[bool] = False
+    skip_missing_param_values: Optional[
+        bool
+    ] = False  # Skip instead of raising an exception if placeholders can't be populated in body
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""

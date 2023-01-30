@@ -282,6 +282,79 @@ class TestSaasConnector:
             == []
         )
 
+    @mock.patch(
+        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+    )
+    def test_skip_missing_param_values_masking(
+        self, mock_send: Mock, saas_example_config, saas_example_connection_config
+    ):
+        """
+        Verifies skip_missing_param_values behavior for Connector.mask_data.
+
+        If skip_missing_param_values=True and we couldn't populate the placeholders in the body,
+        we just skip the request instead of raising an exception
+        """
+        # mock the json response from calling the data_management request
+        mock_send().json.return_value = 1
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "data_management"
+            ),
+        )
+
+        traversal_node = TraversalNode(node)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        # Base case - we can populate all placeholders in request body
+        assert (
+            connector.mask_data(
+                traversal_node,
+                Policy(),
+                PrivacyRequest(id="123"),
+                {"customer_id": 1},
+                {"phone_number": "555-555-5555"},
+            )
+            == 1
+        )
+
+        #  Mock adding a new placeholder to the request body for which we don't have a value
+        connector.endpoints[
+            "data_management"
+        ].requests.update.body = (
+            '{\n  "unique_id": "<privacy_request_id>", "email": "<placeholder>"\n}\n'
+        )
+
+        # Should raise ValueError because we don't have email value for request body
+        with pytest.raises(ValueError):
+            connector.mask_data(
+                traversal_node,
+                Policy(),
+                PrivacyRequest(id="123"),
+                {"customer_id": 1},
+                {"phone_number": "555-555-5555"},
+            )
+
+        # Set skip_missing_param_values to True, so the missing placeholder just causes the request to be skipped
+        connector.endpoints[
+            "data_management"
+        ].requests.update.skip_missing_param_values = True
+        assert (
+            connector.mask_data(
+                traversal_node,
+                Policy(),
+                PrivacyRequest(id="123"),
+                {"customer_id": 1},
+                {"phone_number": "555-555-5555"},
+            )
+            == 0
+        )
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
