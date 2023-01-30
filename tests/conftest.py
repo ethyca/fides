@@ -201,6 +201,16 @@ def auth_header(request, oauth_client, config):
     return {"Authorization": "Bearer " + jwe}
 
 
+def generate_auth_header_for_user(user, scopes, config):
+    payload = {
+        JWE_PAYLOAD_SCOPES: scopes,
+        JWE_PAYLOAD_CLIENT_ID: user.client.id,
+        JWE_ISSUED_AT: datetime.now().isoformat(),
+    }
+    jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+    return {"Authorization": "Bearer " + jwe}
+
+
 @pytest.fixture
 def generate_auth_header_ctl_config(oauth_client, config):
     return _generate_auth_header(oauth_client, config.security.app_encryption_key)

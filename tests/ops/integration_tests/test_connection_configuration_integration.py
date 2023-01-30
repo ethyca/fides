@@ -3,8 +3,6 @@ import json
 import pytest
 from pymongo import MongoClient
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -20,9 +18,6 @@ from fides.api.ops.service.connectors import (
     SaaSConnector,
     get_connector,
 )
-from fides.api.ops.service.connectors.saas.authenticated_client import (
-    AuthenticatedClient,
-)
 from fides.api.ops.service.connectors.sql_connector import (
     MariaDBConnector,
     MicrosoftSQLServerConnector,
@@ -35,18 +30,20 @@ from fides.lib.models.client import ClientDetail
 @pytest.mark.integration
 class TestPostgresConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
+    def url(self, connection_config):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_postgres_db_connection_incorrect_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         connection_config,
         url,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+    ):
         payload = {"host": "localhost", "port": "1234", "dbname": "my_test_db"}
         resp = api_client.put(
             url,
@@ -75,15 +72,18 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is False
 
+    @pytest.mark.usefixtures("postgres_integration_db")
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_postgres_db_connection_connect_with_components(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config,
-        postgres_integration_db,
-    ) -> None:
+    ):
         payload = {
             "host": "postgres_example",
             "dbname": "postgres_example",
@@ -92,7 +92,6 @@ class TestPostgresConnectionPutSecretsAPI:
             "db_schema": None,
         }
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -120,20 +119,22 @@ class TestPostgresConnectionPutSecretsAPI:
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True
 
+    @pytest.mark.usefixtures("postgres_integration_db")
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_postgres_db_connection_connect_with_url(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config,
-        postgres_integration_db,
-    ) -> None:
+    ):
         payload = {
             "url": "postgresql://postgres:postgres@postgres_example/postgres_example"
         }
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -166,36 +167,31 @@ class TestPostgresConnectionPutSecretsAPI:
 @pytest.mark.integration
 class TestPostgresConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
+    def url(self, connection_config):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
         self,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config,
-    ) -> None:
-        assert connection_config.last_test_timestamp is None
-
+    ):
         resp = api_client.get(url)
         assert resp.status_code == 401
         db.refresh(connection_config)
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
     def test_connection_configuration_test_incorrect_scopes(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config,
-    ) -> None:
-        assert connection_config.last_test_timestamp is None
-
-        auth_header = generate_auth_header(scopes=[STORAGE_READ])
+    ):
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -205,19 +201,19 @@ class TestPostgresConnectionTestSecretsAPI:
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test_failed_response(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config,
-    ) -> None:
+    ):
         assert connection_config.last_test_timestamp is None
         connection_config.secrets = {"host": "invalid_host"}
         connection_config.save(db)
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -235,18 +231,18 @@ class TestPostgresConnectionTestSecretsAPI:
             == f"Test completed for ConnectionConfig with key: {connection_config.key}."
         )
 
+    @pytest.mark.usefixtures("postgres_integration_db")
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config,
-        postgres_integration_db,
-    ) -> None:
+    ):
         assert connection_config.last_test_timestamp is None
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -270,12 +266,9 @@ class TestPostgresConnectionTestSecretsAPI:
 class TestPostgresConnector:
     def test_postgres_db_connector(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        db,
         connection_config,
-        postgres_integration_db,
-    ) -> None:
+    ):
         connector = get_connector(connection_config)
         assert connector.__class__ == PostgreSQLConnector
 
@@ -294,18 +287,20 @@ class TestPostgresConnector:
 @pytest.mark.integration
 class TestMySQLConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mysql) -> str:
+    def url(self, connection_config_mysql):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/secret"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mysql_db_connection_incorrect_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         connection_config_mysql,
         url,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+    ):
         payload = {"host": "mysql_example", "port": 1234, "dbname": "my_test_db"}
         resp = api_client.put(
             url,
@@ -333,14 +328,17 @@ class TestMySQLConnectionPutSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is False
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mysql_db_connection_connect_with_components(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mysql,
-    ) -> None:
+    ):
         payload = {
             "host": "mysql_example",
             "dbname": "mysql_example",
@@ -348,7 +346,6 @@ class TestMySQLConnectionPutSecretsAPI:
             "password": "mysql_pw",
         }
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -375,19 +372,21 @@ class TestMySQLConnectionPutSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is True
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mysql_db_connection_connect_with_url(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mysql,
-    ) -> None:
+    ):
         payload = {
             "url": "mysql+pymysql://mysql_user:mysql_pw@mysql_example/mysql_example"
         }
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -419,17 +418,16 @@ class TestMySQLConnectionPutSecretsAPI:
 @pytest.mark.integration
 class TestMySQLConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mysql) -> str:
+    def url(self, connection_config_mysql):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
         self,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mysql,
-    ) -> None:
+    ):
         assert connection_config_mysql.last_test_timestamp is None
 
         resp = api_client.get(url)
@@ -438,17 +436,17 @@ class TestMySQLConnectionTestSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is None
         assert connection_config_mysql.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
     def test_connection_configuration_test_incorrect_scopes(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
         connection_config_mysql,
-    ) -> None:
+        db,
+    ):
         assert connection_config_mysql.last_test_timestamp is None
 
-        auth_header = generate_auth_header(scopes=[STORAGE_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -458,19 +456,19 @@ class TestMySQLConnectionTestSecretsAPI:
         assert connection_config_mysql.last_test_timestamp is None
         assert connection_config_mysql.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test_failed_response(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mysql,
-    ) -> None:
+    ):
         assert connection_config_mysql.last_test_timestamp is None
         connection_config_mysql.secrets = {"host": "invalid_host"}
         connection_config_mysql.save(db)
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -488,17 +486,17 @@ class TestMySQLConnectionTestSecretsAPI:
             == f"Test completed for ConnectionConfig with key: {connection_config_mysql.key}."
         )
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mysql,
-    ) -> None:
+    ):
         assert connection_config_mysql.last_test_timestamp is None
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -522,11 +520,9 @@ class TestMySQLConnectionTestSecretsAPI:
 class TestMySQLConnector:
     def test_mysql_db_connector(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        db,
         connection_config_mysql,
-    ) -> None:
+    ):
         connector = get_connector(connection_config_mysql)
         assert connector.__class__ == MySQLConnector
 
@@ -545,18 +541,20 @@ class TestMySQLConnector:
 @pytest.mark.integration
 class TestMariaDBConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mariadb) -> str:
+    def url(self, oauth_client, policy, connection_config_mariadb):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mariadb.key}/secret"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mariadb_db_connection_incorrect_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         connection_config_mariadb,
         url,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+    ):
         payload = {"host": "mariadb_example", "port": 1234, "dbname": "my_test_db"}
         resp = api_client.put(
             url,
@@ -584,14 +582,17 @@ class TestMariaDBConnectionPutSecretsAPI:
         assert connection_config_mariadb.last_test_timestamp is not None
         assert connection_config_mariadb.last_test_succeeded is False
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mariadb_db_connection_connect_with_components(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mariadb,
-    ) -> None:
+    ):
         payload = {
             "host": "mariadb_example",
             "dbname": "mariadb_example",
@@ -599,7 +600,6 @@ class TestMariaDBConnectionPutSecretsAPI:
             "password": "mariadb_pw",
         }
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -626,19 +626,21 @@ class TestMariaDBConnectionPutSecretsAPI:
         assert connection_config_mariadb.last_test_timestamp is not None
         assert connection_config_mariadb.last_test_succeeded is True
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mariadb_db_connection_connect_with_url(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mariadb,
-    ) -> None:
+    ):
         payload = {
             "url": "mariadb+pymysql://mariadb_user:mariadb_pw@mariadb_example/mariadb_example"
         }
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -670,17 +672,16 @@ class TestMariaDBConnectionPutSecretsAPI:
 @pytest.mark.integration
 class TestMariaDBConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mariadb) -> str:
+    def url(self, oauth_client, policy, connection_config_mariadb):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mariadb.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
         self,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mariadb,
-    ) -> None:
+    ):
         assert connection_config_mariadb.last_test_timestamp is None
 
         resp = api_client.get(url)
@@ -689,17 +690,17 @@ class TestMariaDBConnectionTestSecretsAPI:
         assert connection_config_mariadb.last_test_timestamp is None
         assert connection_config_mariadb.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
     def test_connection_configuration_test_incorrect_scopes(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mariadb,
-    ) -> None:
+    ):
         assert connection_config_mariadb.last_test_timestamp is None
 
-        auth_header = generate_auth_header(scopes=[STORAGE_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -709,19 +710,19 @@ class TestMariaDBConnectionTestSecretsAPI:
         assert connection_config_mariadb.last_test_timestamp is None
         assert connection_config_mariadb.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test_failed_response(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mariadb,
-    ) -> None:
+    ):
         assert connection_config_mariadb.last_test_timestamp is None
         connection_config_mariadb.secrets = {"host": "invalid_host"}
         connection_config_mariadb.save(db)
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -739,17 +740,17 @@ class TestMariaDBConnectionTestSecretsAPI:
             == f"Test completed for ConnectionConfig with key: {connection_config_mariadb.key}."
         )
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mariadb,
-    ) -> None:
+    ):
         assert connection_config_mariadb.last_test_timestamp is None
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -773,11 +774,9 @@ class TestMariaDBConnectionTestSecretsAPI:
 class TestMariaDBConnector:
     def test_mariadb_db_connector(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        db,
         connection_config_mariadb,
-    ) -> None:
+    ):
         connector = get_connector(connection_config_mariadb)
         assert connector.__class__ == MariaDBConnector
 
@@ -796,18 +795,20 @@ class TestMariaDBConnector:
 @pytest.mark.integration
 class TestMicrosoftSQLServerConnection:
     @pytest.fixture(scope="function")
-    def url_put_secret(self, oauth_client, policy, connection_config_mssql) -> str:
+    def url_put_secret(self, connection_config_mssql):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mssql.key}/secret"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mssql_db_connection_incorrect_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         connection_config_mssql,
         url_put_secret,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+    ):
         payload = {
             "username": "sa",
             "password": "incorrect",
@@ -842,14 +843,17 @@ class TestMicrosoftSQLServerConnection:
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is False
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mssql_db_connection_connect_with_components(
         self,
+        auth_header,
         url_put_secret,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mssql,
-    ) -> None:
+    ):
         payload = {
             "username": "sa",
             "password": "Mssql_pw1",
@@ -858,7 +862,6 @@ class TestMicrosoftSQLServerConnection:
             "dbname": "mssql_example",
         }
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url_put_secret,
             headers=auth_header,
@@ -885,19 +888,21 @@ class TestMicrosoftSQLServerConnection:
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is True
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mssql_db_connection_connect_with_url(
         self,
+        auth_header,
         url_put_secret,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mssql,
-    ) -> None:
+    ):
         payload = {
             "url": "mssql+pyodbc://sa:Mssql_pw1@mssql_example:1433/mssql_example?driver=ODBC+Driver+17+for+SQL+Server"
         }
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url_put_secret,
             headers=auth_header,
@@ -925,36 +930,31 @@ class TestMicrosoftSQLServerConnection:
         assert connection_config_mssql.last_test_succeeded is True
 
     @pytest.fixture(scope="function")
-    def url_test_secrets(self, oauth_client, policy, connection_config_mssql) -> str:
+    def url_test_secrets(self, connection_config_mssql):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mssql.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
         self,
         url_test_secrets,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mssql,
-    ) -> None:
-        assert connection_config_mssql.last_test_timestamp is None
-
+    ):
         resp = api_client.get(url_test_secrets)
         assert resp.status_code == 401
         db.refresh(connection_config_mssql)
         assert connection_config_mssql.last_test_timestamp is None
         assert connection_config_mssql.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
     def test_connection_configuration_test_incorrect_scopes(
         self,
+        auth_header,
         url_test_secrets,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mssql,
-    ) -> None:
-        assert connection_config_mssql.last_test_timestamp is None
-
-        auth_header = generate_auth_header(scopes=[STORAGE_READ])
+    ):
         resp = api_client.get(
             url_test_secrets,
             headers=auth_header,
@@ -964,19 +964,18 @@ class TestMicrosoftSQLServerConnection:
         assert connection_config_mssql.last_test_timestamp is None
         assert connection_config_mssql.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test_failed_response(
         self,
+        auth_header,
         url_test_secrets,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mssql,
-    ) -> None:
-        assert connection_config_mssql.last_test_timestamp is None
+    ):
         connection_config_mssql.secrets = {"host": "invalid_host"}
         connection_config_mssql.save(db)
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url_test_secrets,
             headers=auth_header,
@@ -994,17 +993,15 @@ class TestMicrosoftSQLServerConnection:
             == f"Test completed for ConnectionConfig with key: {connection_config_mssql.key}."
         )
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test(
         self,
+        auth_header,
         url_test_secrets,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         connection_config_mssql,
-    ) -> None:
-        assert connection_config_mssql.last_test_timestamp is None
-
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+    ):
         resp = api_client.get(
             url_test_secrets,
             headers=auth_header,
@@ -1024,11 +1021,9 @@ class TestMicrosoftSQLServerConnection:
 
     def test_mssql_db_connector(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        db,
         connection_config_mssql,
-    ) -> None:
+    ):
         connector = get_connector(connection_config_mssql)
         assert connector.__class__ == MicrosoftSQLServerConnector
 
@@ -1048,11 +1043,9 @@ class TestMicrosoftSQLServerConnection:
 class TestMongoConnector:
     def test_mongo_db_connector(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        db,
         mongo_connection_config,
-    ) -> None:
+    ):
         connector = get_connector(mongo_connection_config)
         assert connector.__class__ == MongoDBConnector
 
@@ -1071,18 +1064,20 @@ class TestMongoConnector:
 @pytest.mark.integration
 class TestMongoConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy, mongo_connection_config) -> str:
+    def url(self, mongo_connection_config):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{mongo_connection_config.key}/secret"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mongo_db_connection_incorrect_secrets(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         mongo_connection_config,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+    ):
         payload = {"host": "incorrect_host", "port": "1234"}
         resp = api_client.put(
             url,
@@ -1113,14 +1108,17 @@ class TestMongoConnectionPutSecretsAPI:
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is False
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mongo_db_connection_connect_with_components(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         mongo_connection_config,
-    ) -> None:
+    ):
         payload = {
             "host": "mongodb_example",
             "defaultauthdb": "mongo_test",
@@ -1128,7 +1126,6 @@ class TestMongoConnectionPutSecretsAPI:
             "password": "mongo_pass",
         }
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -1155,17 +1152,19 @@ class TestMongoConnectionPutSecretsAPI:
         assert mongo_connection_config.last_test_timestamp is not None
         assert mongo_connection_config.last_test_succeeded is True
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_mongo_db_connection_connect_with_url(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         mongo_connection_config,
-    ) -> None:
+    ):
         payload = {"url": "mongodb://mongo_user:mongo_pass@mongodb_example/mongo_test"}
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         resp = api_client.put(
             url,
             headers=auth_header,
@@ -1198,20 +1197,20 @@ class TestMongoConnectionPutSecretsAPI:
 @pytest.mark.integration_mailchimp
 class TestSaaSConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(
-        self, oauth_client: ClientDetail, policy, mailchimp_connection_config
-    ) -> str:
+    def url(self, mailchimp_connection_config):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{mailchimp_connection_config.key}/secret"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_saas_connection_incorrect_secrets(
         self,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        auth_header,
+        api_client,
+        db,
         mailchimp_connection_config,
         url,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {"domain": "can", "username": "someone", "api_key": "letmein"}
         resp = api_client.put(
             url,
@@ -1240,15 +1239,17 @@ class TestSaaSConnectionPutSecretsAPI:
         assert mailchimp_connection_config.last_test_timestamp is not None
         assert mailchimp_connection_config.last_test_succeeded is False
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_saas_connection_connect_with_components(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         mailchimp_connection_config,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = mailchimp_connection_config.secrets
         resp = api_client.put(
             url,
@@ -1270,14 +1271,16 @@ class TestSaaSConnectionPutSecretsAPI:
         assert mailchimp_connection_config.last_test_timestamp is not None
         assert mailchimp_connection_config.last_test_succeeded is True
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_saas_connection_connect_missing_secrets(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        generate_auth_header,
+        api_client,
         saas_example_secrets,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
             "domain": saas_example_secrets["domain"],
             "username": saas_example_secrets["username"],
@@ -1292,14 +1295,16 @@ class TestSaaSConnectionPutSecretsAPI:
         body = json.loads(resp.text)
         assert body["detail"][0]["msg"] == "field required"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[CONNECTION_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_saas_connection_connect_with_extra_secrets(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        generate_auth_header,
+        api_client,
         mailchimp_connection_config,
     ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {**mailchimp_connection_config.secrets, "extra": "junk"}
         resp = api_client.put(
             url,
@@ -1318,23 +1323,17 @@ class TestSaaSConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
     def url(
         self,
-        oauth_client: ClientDetail,
-        policy,
         mailchimp_connection_config,
-        mailchimp_dataset_config,
-    ) -> str:
+    ):
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{mailchimp_connection_config.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
         self,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         mailchimp_connection_config,
     ):
-        assert mailchimp_connection_config.last_test_timestamp is None
-
         resp = api_client.get(url)
         assert resp.status_code == 401
 
@@ -1342,17 +1341,15 @@ class TestSaaSConnectionTestSecretsAPI:
         assert mailchimp_connection_config.last_test_timestamp is None
         assert mailchimp_connection_config.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
     def test_connection_configuration_test_incorrect_scopes(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         mailchimp_connection_config,
     ):
-        assert mailchimp_connection_config.last_test_timestamp is None
-
-        auth_header = generate_auth_header(scopes=[STORAGE_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -1363,19 +1360,17 @@ class TestSaaSConnectionTestSecretsAPI:
         assert mailchimp_connection_config.last_test_timestamp is None
         assert mailchimp_connection_config.last_test_succeeded is None
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test_failed_response(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         mailchimp_connection_config,
     ):
-        assert mailchimp_connection_config.last_test_timestamp is None
-
         mailchimp_connection_config.secrets = {"domain": "invalid_domain"}
         mailchimp_connection_config.save(db)
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -1397,17 +1392,17 @@ class TestSaaSConnectionTestSecretsAPI:
         assert mailchimp_connection_config.last_test_timestamp is not None
         assert mailchimp_connection_config.last_test_succeeded is False
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_READ]], indirect=True)
     def test_connection_configuration_test(
         self,
+        auth_header,
         url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
         mailchimp_connection_config,
     ):
         assert mailchimp_connection_config.last_test_timestamp is None
 
-        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -1430,9 +1425,7 @@ class TestSaaSConnectionTestSecretsAPI:
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
 class TestSaasConnectorIntegration:
-    def test_saas_connector(
-        self, db: Session, mailchimp_connection_config, mailchimp_dataset_config
-    ):
+    def test_saas_connector(self, db, mailchimp_connection_config):
         connector = get_connector(mailchimp_connection_config)
         assert connector.__class__ == SaaSConnector
 
