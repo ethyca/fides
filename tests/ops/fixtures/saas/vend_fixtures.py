@@ -6,6 +6,7 @@ import pytest
 import requests
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -59,7 +60,6 @@ def vend_dataset() -> Dict[str, Any]:
         "vend_instance",
     )[0]
 
-
 @pytest.fixture(scope="function")
 def vend_connection_config(
     db: Session, vend_config, vend_secrets
@@ -79,7 +79,6 @@ def vend_connection_config(
     yield connection_config
     connection_config.delete(db)
 
-
 @pytest.fixture
 def vend_dataset_config(
     db: Session,
@@ -90,16 +89,20 @@ def vend_dataset_config(
     vend_connection_config.name = fides_key
     vend_connection_config.key = fides_key
     vend_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, vend_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": vend_connection_config.id,
             "fides_key": fides_key,
-            "dataset": vend_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")

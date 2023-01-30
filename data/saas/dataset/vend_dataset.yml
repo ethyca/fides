@@ -1,6 +1,6 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: vend
+    name: Vend Dataset
     description: A sample dataset representing the Vend connector for Fides
     collections:
       - name: customer
