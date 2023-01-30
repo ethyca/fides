@@ -123,14 +123,15 @@ def update_user_password(
     dependencies=[Security(verify_oauth_client, scopes=[USER_PASSWORD_RESET])],
     status_code=HTTP_200_OK,
 )
-def update_other_user_password(
+def force_update_password(
     *,
     db: Session = Depends(deps.get_db),
     user_id: str,
     data: UserForcePasswordReset,
 ) -> FidesUser:
     """
-    Update a user's password given a `user_id`.
+    Update any user's password given a `user_id` without needing to know the user's
+    previous password.
     """
     user: Optional[FidesUser] = FidesUser.get(db=db, object_id=user_id)
     if not user:
