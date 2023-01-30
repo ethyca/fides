@@ -138,4 +138,4 @@ async def test_kustomer_erasure_request_task(
         headers=headers,
     )
     customer = response.json()
-    assert customer[0]["attributes"]["emails"][0]["email"] == "MASKED"
+    assert customer["data"]["attributes"]["emails"][0]["email"] == "MASKED"

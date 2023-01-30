@@ -34,7 +34,7 @@ saas_config:
               identity: email
         update:
           method: PUT
-          path: v1/customers/<customer_id>
+          path: /v1/customers/<customer_id>
           body: |
             {
               <masked_object_fields>

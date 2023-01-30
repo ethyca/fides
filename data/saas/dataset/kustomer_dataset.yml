@@ -19,7 +19,7 @@ dataset:
               data_type: object
             fields:
               - name: name
-                data_categories: [user]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: displayName
@@ -53,7 +53,7 @@ dataset:
                     fidesops_meta:
                       data_type: boolean
                   - name: email
-                    data_categories: [user]
+                    data_categories: [user.contact.email]
                     fidesops_meta:
                       data_type: string
               - name: sharedEmails
