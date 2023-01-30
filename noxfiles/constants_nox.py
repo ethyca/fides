@@ -1,5 +1,5 @@
 """Define constants to be used across the noxfiles."""
-from os import getenv
+from os import getcwd, getenv
 
 # Files
 COMPOSE_FILE = "docker-compose.yml"
@@ -28,6 +28,11 @@ IMAGE_LATEST = f"{IMAGE}:latest"
 PRIVACY_CENTER_IMAGE = f"{REGISTRY}/fides-privacy-center"
 SAMPLE_APP_IMAGE = f"{REGISTRY}/fides-sample-app"
 
+# Image names for 3rd party apps
+CYPRESS_IMAGE = "cypress/included:12.3.0"
+
+# Helpful paths
+CWD = getcwd()
 
 # Disable TTY to perserve output within Github Actions logs
 # CI env variable is always set to true in Github Actions
@@ -109,4 +114,15 @@ START_APP_WITH_EXTERNAL_POSTGRES = (
     "--wait",
     "fides",
     "postgres_example",
+)
+RUN_CYPRESS_TESTS = (
+    "docker",
+    "run",
+    "-it",
+    "--network=host",
+    "-v",
+    f"{CWD}/clients/cypress-e2e:/e2e",
+    "-w",
+    "/e2e",
+    CYPRESS_IMAGE,
 )

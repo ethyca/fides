@@ -8,6 +8,7 @@ from nox.command import CommandFailed
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
     RUN,
+    RUN_CYPRESS_TESTS,
     RUN_NO_DEPS,
     START_APP,
     START_APP_REMOTE_DEBUG,
@@ -72,6 +73,17 @@ def dev(session: Session) -> None:
             datastores=datastores,
             remote_debug=remote_debug,
         )
+
+
+@nox_session()
+def e2e_test(session: Session) -> None:
+    """
+    Spins up the test_env session and runs Cypress E2E tests against it.
+    """
+    session.log("Setting up the test environment...")
+    fides_env(session, "test")
+    session.run(*RUN_CYPRESS_TESTS, external=True)
+    session.notify("teardown")
 
 
 @nox_session()
