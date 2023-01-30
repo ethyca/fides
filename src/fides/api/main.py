@@ -86,17 +86,32 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     view.router,
 ]
 
-if CONFIG.security.env.value == "dev":
-    # This removes auth requirements for CLI-related endpoints
-    # and is the default
-    app.dependency_overrides[verify_oauth_client_cli] = get_root_client
-elif CONFIG.security.env.value == "demo":
-    # This remove all auth requirements
-    app.dependency_overrides[verify_oauth_client] = get_root_client
-    app.dependency_overrides[verify_oauth_client_cli] = get_root_client
-elif CONFIG.security.env.value == "prod":
-    # This is the most secure, so all security deps are maintained
-    pass
+
+def configure_security_env_overrides(
+    application: FastAPI, security_env: str
+) -> FastAPI:
+    """
+    Configures the FastAPI dependency overrides depending on the
+    value of the 'security.env'.
+    """
+
+    if security_env == "dev":
+        # This removes auth requirements for CLI-related endpoints
+        # and is the default
+        application.dependency_overrides[verify_oauth_client_cli] = get_root_client
+    elif security_env == "demo":
+        # This remove all auth requirements
+        application.dependency_overrides[verify_oauth_client] = get_root_client
+        application.dependency_overrides[verify_oauth_client_cli] = get_root_client
+    elif security_env == "prod":
+        # This is the most secure, so all security deps are maintained
+        pass
+    return application
+
+
+app = configure_security_env_overrides(
+    application=app, security_env=CONFIG.security.env.value
+)
 
 
 @app.middleware("http")
