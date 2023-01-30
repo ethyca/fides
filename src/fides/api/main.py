@@ -18,6 +18,7 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
 
+import fides
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.database.seed import create_or_update_parent_user
@@ -75,8 +76,9 @@ from fides.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
 CONFIG: FidesConfig = get_config()
+VERSION = fides.__version__
 
-app = FastAPI(title="fides")
+app = FastAPI(title="fides", version=VERSION)
 app.state.limiter = Limiter(
     default_limits=[CONFIG.security.request_rate_limit],
     headers_enabled=True,
