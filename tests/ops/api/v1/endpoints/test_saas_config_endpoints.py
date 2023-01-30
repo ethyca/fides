@@ -1,11 +1,7 @@
 import json
-from typing import Optional
 from unittest import mock
-from unittest.mock import Mock
 
 import pytest
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     CLIENT_READ,
@@ -31,27 +27,25 @@ from tests.ops.api.v1.endpoints.test_dataset_endpoints import _reject_key
 @pytest.mark.unit_saas
 class TestValidateSaaSConfig:
     @pytest.fixture
-    def validate_saas_config_url(self, saas_example_connection_config) -> str:
+    def validate_saas_config_url(self, saas_example_connection_config):
         path = V1_URL_PREFIX + SAAS_CONFIG_VALIDATE
         path_params = {"connection_key": saas_example_connection_config.key}
         return path.format(**path_params)
 
     def test_put_validate_saas_config_not_authenticated(
         self, saas_example_config, validate_saas_config_url: str, api_client
-    ) -> None:
+    ):
         response = api_client.put(
             validate_saas_config_url, headers={}, json=saas_example_config
         )
         assert response.status_code == 401
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONFIG_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_validate_dataset_wrong_scope(
-        self,
-        saas_example_config,
-        validate_saas_config_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+        self, auth_header, saas_example_config, validate_saas_config_url, api_client
+    ):
         response = api_client.put(
             validate_saas_config_url,
             headers=auth_header,
@@ -59,14 +53,10 @@ class TestValidateSaaSConfig:
         )
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_READ]], indirect=True)
     def test_put_validate_saas_config_missing_key(
-        self,
-        saas_example_config,
-        validate_saas_config_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        self, auth_header, saas_example_config, validate_saas_config_url, api_client
+    ):
         invalid_config = _reject_key(saas_example_config, "fides_key")
         response = api_client.put(
             validate_saas_config_url, headers=auth_header, json=invalid_config
@@ -76,14 +66,10 @@ class TestValidateSaaSConfig:
         details = json.loads(response.text)["detail"]
         assert ["body", "fides_key"] in [e["loc"] for e in details]
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_READ]], indirect=True)
     def test_put_validate_saas_config_missing_endpoints(
-        self,
-        saas_example_config,
-        validate_saas_config_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        self, auth_header, saas_example_config, validate_saas_config_url, api_client
+    ):
         invalid_config = _reject_key(saas_example_config, "endpoints")
         response = api_client.put(
             validate_saas_config_url, headers=auth_header, json=invalid_config
@@ -93,14 +79,10 @@ class TestValidateSaaSConfig:
         details = json.loads(response.text)["detail"]
         assert ["body", "endpoints"] in [e["loc"] for e in details]
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_READ]], indirect=True)
     def test_put_validate_saas_config_reference_and_identity(
-        self,
-        saas_example_config,
-        validate_saas_config_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        self, auth_header, saas_example_config, validate_saas_config_url, api_client
+    ):
         saas_config = saas_example_config
         param_values = saas_config["endpoints"][0]["requests"]["read"]["param_values"][
             0
@@ -123,14 +105,10 @@ class TestValidateSaaSConfig:
             == "Must have exactly one of 'identity', 'references', or 'connector_param'"
         )
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_READ]], indirect=True)
     def test_put_validate_saas_config_wrong_reference_direction(
-        self,
-        saas_example_config,
-        validate_saas_config_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        self, auth_header, saas_example_config, validate_saas_config_url, api_client
+    ):
         saas_config = saas_example_config
         param_values = saas_config["endpoints"][0]["requests"]["read"]["param_values"][
             0
@@ -156,60 +134,60 @@ class TestValidateSaaSConfig:
 @pytest.mark.unit_saas
 class TestPutSaaSConfig:
     @pytest.fixture
-    def saas_config_url(self, saas_example_connection_config) -> str:
+    def saas_config_url(self, saas_example_connection_config):
         path = V1_URL_PREFIX + SAAS_CONFIG
         path_params = {"connection_key": saas_example_connection_config.key}
         return path.format(**path_params)
 
     def test_patch_saas_config_not_authenticated(
         self, saas_example_config, saas_config_url, api_client
-    ) -> None:
+    ):
         response = api_client.patch(
             saas_config_url, headers={}, json=saas_example_config
         )
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_READ]], indirect=True)
     def test_patch_saas_config_wrong_scope(
-        self,
-        saas_example_config,
-        saas_config_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        self, auth_header, saas_example_config, saas_config_url, api_client
+    ):
         response = api_client.patch(
             saas_config_url, headers=auth_header, json=saas_example_config
         )
         assert response.status_code == 403
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONFIG_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_saas_config_invalid_connection_key(
-        self, saas_example_config, api_client: TestClient, generate_auth_header
-    ) -> None:
+        self, auth_header, saas_example_config, api_client
+    ):
         path = V1_URL_PREFIX + SAAS_CONFIG
         path_params = {"connection_key": "nonexistent_key"}
         saas_config_url = path.format(**path_params)
 
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
         response = api_client.patch(
             saas_config_url, headers=auth_header, json=saas_example_config
         )
         assert response.status_code == 404
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONFIG_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_saas_config_create(
         self,
+        auth_header,
         saas_example_connection_config_without_saas_config,
         saas_example_config,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
-    ) -> None:
+        api_client,
+        db,
+    ):
         path = V1_URL_PREFIX + SAAS_CONFIG
         path_params = {
             "connection_key": saas_example_connection_config_without_saas_config.key
         }
         saas_config_url = path.format(**path_params)
 
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
         response = api_client.patch(
             saas_config_url, headers=auth_header, json=saas_example_config
         )
@@ -224,15 +202,13 @@ class TestPutSaaSConfig:
         saas_config = updated_config.saas_config
         assert saas_config is not None
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONFIG_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_saas_config_update(
-        self,
-        saas_example_config,
-        saas_config_url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+        self, auth_header, saas_example_config, saas_config_url, api_client, db
+    ):
+        expected_len = len(saas_example_config["endpoints"])
         saas_example_config["endpoints"].pop()
         response = api_client.patch(
             saas_config_url, headers=auth_header, json=saas_example_config
@@ -244,17 +220,7 @@ class TestPutSaaSConfig:
         )
         saas_config = connection_config.saas_config
         assert saas_config is not None
-        assert len(saas_config["endpoints"]) == 11
-
-
-def get_saas_config_url(connection_config: Optional[ConnectionConfig] = None) -> str:
-    """Helper to construct the SAAS_CONFIG URL, substituting valid/invalid keys in the path"""
-    path = V1_URL_PREFIX + SAAS_CONFIG
-    connection_key = "nonexistent_key"
-    if connection_config:
-        connection_key = connection_config.key
-    path_params = {"connection_key": connection_key}
-    return path.format(**path_params)
+        assert len(saas_config["endpoints"]) == expected_len
 
 
 @pytest.mark.unit_saas
@@ -262,54 +228,46 @@ class TestGetSaaSConfig:
     def test_get_saas_config_not_authenticated(
         self,
         saas_example_connection_config,
-        api_client: TestClient,
-    ) -> None:
+        api_client,
+    ):
         saas_config_url = get_saas_config_url(saas_example_connection_config)
         response = api_client.get(saas_config_url, headers={})
         assert response.status_code == 401
 
+    @pytest.mark.parametrize(
+        "auth_header", [[SAAS_CONFIG_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_get_saas_config_wrong_scope(
-        self,
-        saas_example_connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, saas_example_connection_config, api_client
+    ):
         saas_config_url = get_saas_config_url(saas_example_connection_config)
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
         response = api_client.get(saas_config_url, headers=auth_header)
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_READ]], indirect=True)
     def test_get_saas_config_does_not_exist(
         self,
+        auth_header,
         saas_example_connection_config_without_saas_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        api_client,
+    ):
         saas_config_url = get_saas_config_url(
             saas_example_connection_config_without_saas_config
         )
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         response = api_client.get(saas_config_url, headers=auth_header)
         assert response.status_code == 404
 
-    def test_get_saas_config_invalid_connection_key(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_READ]], indirect=True)
+    def test_get_saas_config_invalid_connection_key(self, auth_header, api_client):
         saas_config_url = get_saas_config_url(None)
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         response = api_client.get(saas_config_url, headers=auth_header)
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_READ]], indirect=True)
     def test_get_saas_config(
-        self,
-        saas_example_connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, saas_example_connection_config, api_client
+    ):
         saas_config_url = get_saas_config_url(saas_example_connection_config)
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         response = api_client.get(saas_config_url, headers=auth_header)
         assert response.status_code == 200
 
@@ -326,52 +284,40 @@ class TestGetSaaSConfig:
 class TestDeleteSaaSConfig:
     def test_delete_saas_config_not_authenticated(
         self, saas_example_connection_config, api_client
-    ) -> None:
+    ):
         saas_config_url = get_saas_config_url(saas_example_connection_config)
         response = api_client.delete(saas_config_url, headers={})
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_READ]], indirect=True)
     def test_delete_saas_config_wrong_scope(
-        self,
-        saas_example_connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, saas_example_connection_config, api_client
+    ):
         saas_config_url = get_saas_config_url(saas_example_connection_config)
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
         response = api_client.delete(saas_config_url, headers=auth_header)
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_DELETE]], indirect=True)
     def test_delete_saas_config_does_not_exist(
         self,
+        auth_header,
         saas_example_connection_config_without_saas_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        api_client,
+    ):
         saas_config_url = get_saas_config_url(
             saas_example_connection_config_without_saas_config
         )
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_DELETE])
         response = api_client.delete(saas_config_url, headers=auth_header)
         assert response.status_code == 404
 
-    def test_delete_saas_config_invalid_connection_key(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_DELETE]], indirect=True)
+    def test_delete_saas_config_invalid_connection_key(self, auth_header, api_client):
         saas_config_url = get_saas_config_url(None)
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_DELETE])
         response = api_client.delete(saas_config_url, headers=auth_header)
         assert response.status_code == 404
 
-    def test_delete_saas_config(
-        self,
-        db: Session,
-        saas_example_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_DELETE]], indirect=True)
+    def test_delete_saas_config(self, auth_header, db, saas_example_config, api_client):
         # Create a new connection config so we don't run into issues trying to clean up an
         # already deleted fixture
         fides_key = "saas_config_for_deletion_test"
@@ -387,7 +333,6 @@ class TestDeleteSaaSConfig:
             },
         )
         saas_config_url = get_saas_config_url(config_to_delete)
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_DELETE])
         response = api_client.delete(saas_config_url, headers=auth_header)
         assert response.status_code == 204
 
@@ -395,15 +340,15 @@ class TestDeleteSaaSConfig:
         db.expire(updated_config)
         assert updated_config.saas_config is None
 
+    @pytest.mark.parametrize("auth_header", [[SAAS_CONFIG_DELETE]], indirect=True)
     def test_delete_saas_config_with_dataset_and_secrets(
         self,
+        auth_header,
         saas_example_connection_config,
         saas_example_dataset_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        api_client,
+    ):
         saas_config_url = get_saas_config_url(saas_example_connection_config)
-        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_DELETE])
         response = api_client.delete(saas_config_url, headers=auth_header)
         assert response.status_code == 400
 
@@ -418,37 +363,41 @@ class TestDeleteSaaSConfig:
 
 class TestAuthorizeConnection:
     @pytest.fixture
-    def authorize_url(self, oauth2_authorization_code_connection_config) -> str:
+    def authorize_url(self, oauth2_authorization_code_connection_config):
         path = V1_URL_PREFIX + AUTHORIZE
         path_params = {
             "connection_key": oauth2_authorization_code_connection_config.key
         }
         return path.format(**path_params)
 
-    def test_client_not_authenticated(self, api_client: TestClient, authorize_url):
+    def test_client_not_authenticated(self, api_client, authorize_url):
         response = api_client.get(authorize_url)
         assert response.status_code == 401
 
-    def test_client_wrong_scope(
-        self, api_client: TestClient, authorize_url, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header([CLIENT_READ])
+    @pytest.mark.parametrize("auth_header", [[CLIENT_READ]], indirect=True)
+    def test_client_wrong_scope(self, auth_header, api_client, authorize_url):
         response = api_client.get(authorize_url, headers=auth_header)
         assert 403 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[CONNECTION_AUTHORIZE]], indirect=True)
     @mock.patch(
         "fides.api.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
     )
     def test_get_authorize_url(
-        self,
-        authorization_url_mock: Mock,
-        api_client: TestClient,
-        authorize_url,
-        generate_auth_header,
+        self, authorization_url_mock, auth_header, api_client, authorize_url
     ):
         authorization_url = "https://localhost/auth/authorize"
         authorization_url_mock.return_value = authorization_url
-        auth_header = generate_auth_header([CONNECTION_AUTHORIZE])
         response = api_client.get(authorize_url, headers=auth_header)
         assert response.ok
         assert response.text == f'"{authorization_url}"'
+
+
+def get_saas_config_url(connection_config=None):
+    """Helper to construct the SAAS_CONFIG URL, substituting valid/invalid keys in the path"""
+    path = V1_URL_PREFIX + SAAS_CONFIG
+    connection_key = "nonexistent_key"
+    if connection_config:
+        connection_key = connection_config.key
+    path_params = {"connection_key": connection_key}
+    return path.format(**path_params)
