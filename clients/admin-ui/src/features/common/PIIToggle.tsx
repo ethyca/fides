@@ -1,22 +1,26 @@
 import { Switch } from "@fidesui/react";
-import { setRevealPII } from "privacy-requests/privacy-requests.slice";
-import React, { ChangeEvent, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import React, { ChangeEvent } from "react";
 
-const PIIToggle: React.FC = () => {
-  const dispatch = useDispatch();
-  const handleToggle = (event: ChangeEvent<HTMLInputElement>) =>
-    dispatch(setRevealPII(event.target.checked));
+type PIIToggleProps = {
+  revealPII: boolean;
+  onChange: (revealPII: boolean) => void;
+};
 
-  useEffect(() => {
-    /*
-      PII should default to hidden on page load.
-      This ensures the state isn't reused as the user navigates around
+const PIIToggle = ({ revealPII, onChange }: PIIToggleProps) => {
+  /*
+    The <Switch> onChange function only takes functions with ChangeEvent<HTMLInputElement>
+    as the input type. That's why the incoming function is being wrapped.
    */
-    dispatch(setRevealPII(false));
-  }, [dispatch]);
+  const handleToggle = (event: ChangeEvent<HTMLInputElement>) =>
+    onChange(event.target.checked);
 
-  return <Switch colorScheme="secondary" onChange={handleToggle} />;
+  return (
+    <Switch
+      colorScheme="secondary"
+      isChecked={revealPII}
+      onChange={handleToggle}
+    />
+  );
 };
 
 export default PIIToggle;
