@@ -108,6 +108,7 @@ The types of changes are:
 * `nox -s test_env` has been replaced with `nox -s fides_env(dev)`
 * New command `nox -s fides_env(test)` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
 * Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
+* Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
 
 ### Fixed
 
