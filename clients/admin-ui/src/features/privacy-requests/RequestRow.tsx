@@ -117,11 +117,19 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   };
 };
 
-const RequestRow: React.FC<{
+type RequestRowProps = {
   isChecked: boolean;
   onCheckChange: (id: string, checked: boolean) => void;
   request: PrivacyRequestEntity;
-}> = ({ isChecked, onCheckChange, request }) => {
+  revealPII: boolean;
+};
+
+const RequestRow = ({
+  isChecked,
+  onCheckChange,
+  request,
+  revealPII,
+}: RequestRowProps) => {
   const {
     hovered,
     handleMenuOpen,
@@ -183,6 +191,7 @@ const RequestRow: React.FC<{
                 ? request.identity.email || request.identity.phone_number || ""
                 : ""
             }
+            revealPII={revealPII}
           />
         </Text>
       </Td>
@@ -191,7 +200,10 @@ const RequestRow: React.FC<{
       </Td>
       <Td py={1}>
         <Text fontSize="xs">
-          <PII data={request.reviewer ? request.reviewer.username : ""} />
+          <PII
+            data={request.reviewer ? request.reviewer.username : ""}
+            revealPII={revealPII}
+          />
         </Text>
       </Td>
       <Td py={1}>

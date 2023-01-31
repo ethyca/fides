@@ -125,9 +125,6 @@ export const selectRetryRequests = (state: RootState): RetryRequests => ({
   errorRequests: state.subjectRequests.errorRequests,
 });
 
-export const selectRevealPII = (state: RootState) =>
-  state.subjectRequests.revealPII;
-
 // Subject requests state (filters, etc.)
 type SubjectRequestsState = {
   checkAll: boolean;
@@ -135,7 +132,6 @@ type SubjectRequestsState = {
   from: string;
   id: string;
   page: number;
-  revealPII: boolean;
   size: number;
   sort_direction?: string;
   sort_field?: string;
@@ -150,7 +146,6 @@ const initialState: SubjectRequestsState = {
   from: "",
   id: "",
   page: 1,
-  revealPII: false,
   size: 25,
   to: "",
 };
@@ -159,9 +154,8 @@ export const subjectRequestsSlice = createSlice({
   name: "subjectRequests",
   initialState,
   reducers: {
-    clearAllFilters: ({ revealPII }) => ({
+    clearAllFilters: () => ({
       ...initialState,
-      revealPII,
     }),
     clearSortFields: (state) => ({
       ...state,
@@ -200,10 +194,6 @@ export const subjectRequestsSlice = createSlice({
       checkAll: action.payload.checkAll,
       errorRequests: action.payload.errorRequests,
     }),
-    setRevealPII: (state, action: PayloadAction<boolean>) => ({
-      ...state,
-      revealPII: action.payload,
-    }),
     setSortDirection: (state, action: PayloadAction<string>) => ({
       ...state,
       sort_direction: action.payload,
@@ -233,7 +223,6 @@ export const {
   setRequestStatus,
   setRequestTo,
   setRetryRequests,
-  setRevealPII,
   setSortDirection,
   setSortField,
   setVerbose,

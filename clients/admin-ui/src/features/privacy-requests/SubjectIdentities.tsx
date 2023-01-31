@@ -1,4 +1,5 @@
 import { Divider, Flex, Heading, Text } from "@fidesui/react";
+import { useState } from "react";
 
 import PII from "../common/PII";
 import PIIToggle from "../common/PIIToggle";
@@ -10,6 +11,7 @@ type SubjectIdentitiesProps = {
 
 const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
   const { identity } = subjectRequest;
+  const [revealPII, setRevealPII] = useState(false);
 
   return (
     <>
@@ -18,7 +20,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
           Subject identities
         </Heading>
         <Flex flexShrink={0} alignItems="flex-start">
-          <PIIToggle />
+          <PIIToggle revealPII={revealPII} onChange={setRevealPII} />
           <Text
             fontSize="xs"
             ml={2}
@@ -44,7 +46,10 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
           Email:
         </Text>
         <Text color="gray.600" fontWeight="500" fontSize="sm">
-          <PII data={identity.email ? identity.email : ""} />
+          <PII
+            data={identity.email ? identity.email : ""}
+            revealPII={revealPII}
+          />
         </Text>
       </Flex>
       <Flex alignItems="flex-start">
@@ -52,7 +57,10 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
           Mobile:
         </Text>
         <Text color="gray.600" fontWeight="500" fontSize="sm">
-          <PII data={identity.phone_number ? identity.phone_number : ""} />
+          <PII
+            data={identity.phone_number ? identity.phone_number : ""}
+            revealPII={revealPII}
+          />
         </Text>
       </Flex>
     </>
