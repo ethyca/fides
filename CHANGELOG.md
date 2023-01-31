@@ -33,6 +33,7 @@ The types of changes are:
 * Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
 * Make denial reasons required [#2400](https://github.com/ethyca/fides/pull/2400)
 * Display the policy key on the request details page [#2395](https://github.com/ethyca/fides/pull/2395)
+* Updated CSV export [#2452](https://github.com/ethyca/fides/pull/2452)
 
 ### Developer Experience
 
