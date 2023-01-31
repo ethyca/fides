@@ -10370,12 +10370,65 @@
         },
         "security": [
           {
-            "OAuth2ClientCredentialsBearer": [
-              "user:reset-password"
-            ]
-          },
-          {
             "OAuth2ClientCredentialsBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/{user_id}/force-reset-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Force Update Password",
+        "description": "Update any user's password given a `user_id` without needing to know the user's\nprevious password.",
+        "operationId": "force_update_password_api_v1_user__user_id__force_reset_password_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserForcePasswordReset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:password-reset"
+            ]
           }
         ]
       }
@@ -16426,6 +16479,20 @@
           }
         },
         "description": "Response after creating a FidesUser"
+      },
+      "UserForcePasswordReset": {
+        "title": "UserForcePasswordReset",
+        "required": [
+          "new_password"
+        ],
+        "type": "object",
+        "properties": {
+          "new_password": {
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "description": "Only a new password, for the case where the user does not remember their password"
       },
       "UserLogin": {
         "title": "UserLogin",
