@@ -785,6 +785,31 @@ class TestUpdateUserPassword:
         user = user.refresh_from_db(db=db)
         assert user.credentials_valid(password=NEW_PASSWORD)
 
+    def test_force_update_non_existent_user(
+        self,
+        api_client,
+        url_no_id,
+        application_user,
+    ) -> None:
+        """
+        Resetting on a user that does not exist should 404
+        """
+        NEW_PASSWORD = "newpassword"
+        auth_header = generate_auth_header_for_user(
+            user=application_user, scopes=[USER_PASSWORD_RESET]
+        )
+        # arbitrary id that isn't the user's
+        user_id = "fake_user_id"
+        resp = api_client.post(
+            f"{url_no_id}/{user_id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+
+        assert resp.status_code == HTTP_404_NOT_FOUND
+
 
 class TestUserLogin:
     @pytest.fixture(scope="function")
