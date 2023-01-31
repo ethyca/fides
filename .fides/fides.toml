@@ -58,9 +58,3 @@ task_always_eager = true
 
 [notifications]
 notification_service_type = "mailgun"
-
-
-[storage]
-default_storage_type = "local"
-default_storage_naming = "request_id"
-default_storage_format = "json"
