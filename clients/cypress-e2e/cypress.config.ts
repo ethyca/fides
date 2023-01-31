@@ -18,8 +18,8 @@ export default defineConfig({
   env: {
     // These can be overwritten by exporting `CYPRESS_{name}`, for example
     // export CYPRESS_ADMIN_UI_URL="http://staging.example.com"
-    API_URL: "http://0.0.0.0:8080/api/v1",
-    ADMIN_UI_URL: "http://localhost:3000",
+    API_URL: "http://localhost:8080/api/v1",
+    ADMIN_UI_URL: "http://localhost:8080",
     PRIVACY_CENTER_URL: "http://localhost:3001",
 
     // Credentials
