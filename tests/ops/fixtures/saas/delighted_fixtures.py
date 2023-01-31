@@ -5,8 +5,8 @@ import pydash
 import pytest
 import requests
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_202_ACCEPTED
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -18,30 +18,29 @@ from fides.api.ops.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.lib.cryptography import cryptographic_util
-from fides.lib.db import session
-from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("delighted")
 
-@pytest.fixture(scope="function")
+
+@pytest.fixture(scope="session")
 def delighted_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "delighted.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "delighted.username") or secrets["username"],
         "api_key": pydash.get(saas_config, "delighted.api_key") or secrets["api_key"],
-        "identity_email": pydash.get(saas_config, "delighted.identity_email") or secrets["identity_email"],
     }
 
-@pytest.fixture(scope="function")
+
+@pytest.fixture(scope="session")
 def delighted_identity_email(saas_config):
     return (
         pydash.get(saas_config, "delighted.identity_email") or secrets["identity_email"]
     )
 
 
-@pytest.fixture(scope="session")
-def delighted_erasure_identity_email():
+@pytest.fixture(scope="function")
+def delighted_erasure_identity_email() -> str:
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
@@ -65,7 +64,7 @@ def delighted_dataset() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def delighted_connection_config(
-    db: session, delighted_config, delighted_secrets
+    db: Session, delighted_config, delighted_secrets
 ) -> Generator:
     fides_key = delighted_config["fides_key"]
     connection_config = ConnectionConfig.create(
@@ -82,6 +81,7 @@ def delighted_connection_config(
     yield connection_config
     connection_config.delete(db)
 
+
 @pytest.fixture
 def delighted_dataset_config(
     db: Session,
@@ -92,16 +92,21 @@ def delighted_dataset_config(
     delighted_connection_config.name = fides_key
     delighted_connection_config.key = fides_key
     delighted_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, delighted_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": delighted_connection_config.id,
             "fides_key": fides_key,
-            "dataset": delighted_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
 
 @pytest.fixture(scope="function")
 def delighted_create_erasure_data(
