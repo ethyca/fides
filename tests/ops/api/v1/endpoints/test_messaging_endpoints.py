@@ -2,8 +2,6 @@ import json
 
 import pytest
 from fastapi_pagination import Params
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
@@ -28,7 +26,7 @@ PAGE_SIZE = Params().size
 
 class TestPostMessagingConfig:
     @pytest.fixture(scope="function")
-    def url(self) -> str:
+    def url(self):
         return V1_URL_PREFIX + MESSAGING_CONFIG
 
     @pytest.fixture(scope="function")
@@ -56,50 +54,45 @@ class TestPostMessagingConfig:
             "service_type": MessagingServiceType.TWILIO_TEXT.value,
         }
 
-    def test_post_email_config_not_authenticated(
-        self, api_client: TestClient, payload, url
-    ):
+    def test_post_email_config_not_authenticated(self, api_client, payload, url):
         response = api_client.post(url, headers={}, json=payload)
         assert 401 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_READ]], indirect=True)
     def test_post_email_config_incorrect_scope(
-        self,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
+        self, auth_header, api_client, payload, url
     ):
-        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_post_email_config_with_invalid_mailgun_details(
         self,
-        db: Session,
-        api_client: TestClient,
+        auth_header,
+        api_client,
         url,
         payload,
-        generate_auth_header,
     ):
         payload["details"] = {"invalid": "invalid"}
 
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert response.json()["detail"][0]["msg"] == "field required"
         assert response.json()["detail"][1]["msg"] == "extra fields not permitted"
 
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_post_email_config_with_not_supported_service_type(
         self,
-        db: Session,
-        api_client: TestClient,
+        auth_header,
+        api_client,
         url,
         payload,
-        generate_auth_header,
     ):
         payload["service_type"] = "twilio"
-
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
@@ -107,34 +100,24 @@ class TestPostMessagingConfig:
             == "value is not a valid enumeration member; permitted: 'MAILGUN', 'TWILIO_TEXT', 'TWILIO_EMAIL'"
         )
 
-    def test_post_email_config_with_no_key(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-    ):
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
+    def test_post_email_config_with_no_key(self, auth_header, api_client, payload, url):
         response = api_client.post(url, headers=auth_header, json=payload)
 
         assert 200 == response.status_code
         response_body = json.loads(response.text)
 
         assert response_body["key"] == "mailgun"
-        email_config = db.query(MessagingConfig).filter_by(key="mailgun")[0]
-        email_config.delete(db)
 
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_post_email_config_with_invalid_key(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
+        self, auth_header, api_client, payload, url
     ):
         payload["key"] = "*invalid-key"
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
@@ -142,24 +125,16 @@ class TestPostMessagingConfig:
             == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
         )
 
-    def test_post_email_config_with_key(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-    ):
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
+    def test_post_email_config_with_key(self, auth_header, api_client, payload, url):
         payload["key"] = "my_mailgun_messaging_config"
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
-        email_config = db.query(MessagingConfig).filter_by(
-            key="my_mailgun_messaging_config"
-        )[0]
 
         expected_response = {
             "key": "my_mailgun_messaging_config",
@@ -172,15 +147,11 @@ class TestPostMessagingConfig:
             },
         }
         assert expected_response == response_body
-        email_config.delete(db)
 
-    def test_post_email_config_missing_detail(
-        self,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-    ):
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
+    def test_post_email_config_missing_detail(self, auth_header, api_client, url):
         response = api_client.post(
             url,
             headers=auth_header,
@@ -194,14 +165,13 @@ class TestPostMessagingConfig:
         errors = response.json()["detail"]
         assert errors[0]["msg"] == "Messaging config must include details"
 
+    @pytest.mark.usefixtures("messaging_config")
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_post_email_config_service_already_exists(
-        self,
-        api_client: TestClient,
-        url,
-        messaging_config,
-        generate_auth_header,
+        self, auth_header, api_client, url
     ):
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(
             url,
             headers=auth_header,
@@ -217,24 +187,18 @@ class TestPostMessagingConfig:
             f"Key (service_type)=(MAILGUN) already exists" in response.json()["detail"]
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_post_twilio_email_config(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload_twilio_email,
-        url,
-        generate_auth_header,
+        self, auth_header, api_client, payload_twilio_email, url
     ):
         payload_twilio_email["key"] = "my_twilio_email_config"
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
         response = api_client.post(url, headers=auth_header, json=payload_twilio_email)
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
-        email_config = db.query(MessagingConfig).filter_by(
-            key="my_twilio_email_config"
-        )[0]
 
         expected_response = {
             "key": "my_twilio_email_config",
@@ -245,26 +209,19 @@ class TestPostMessagingConfig:
             },
         }
         assert expected_response == response_body
-        email_config.delete(db)
 
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_post_twilio_sms_config(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload_twilio_sms,
-        url,
-        generate_auth_header,
+        self, auth_header, api_client, payload_twilio_sms, url
     ):
         payload_twilio_sms["key"] = "my_twilio_sms_config"
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
         response = api_client.post(url, headers=auth_header, json=payload_twilio_sms)
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
-        email_config = db.query(MessagingConfig).filter_by(key="my_twilio_sms_config")[
-            0
-        ]
 
         expected_response = {
             "key": "my_twilio_sms_config",
@@ -273,12 +230,11 @@ class TestPostMessagingConfig:
             "details": None,
         }
         assert expected_response == response_body
-        email_config.delete(db)
 
 
 class TestPatchMessagingConfig:
     @pytest.fixture(scope="function")
-    def url(self, messaging_config) -> str:
+    def url(self, messaging_config):
         return (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
             config_key=messaging_config.key
         )
@@ -292,33 +248,25 @@ class TestPatchMessagingConfig:
             "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
         }
 
-    def test_patch_email_config_not_authenticated(
-        self, api_client: TestClient, payload, url
-    ):
+    def test_patch_email_config_not_authenticated(self, api_client, payload, url):
         response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_READ]], indirect=True)
     def test_patch_email_config_incorrect_scope(
-        self,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
+        self, auth_header, api_client, payload, url
     ):
-        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
+    @pytest.mark.usefixtures("messaging_config")
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_patch_email_config_with_key_not_found(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        messaging_config,
-        generate_auth_header,
+        self, auth_header, api_client, payload
     ):
         url = (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key="nonexistent_key")
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 404
@@ -326,23 +274,14 @@ class TestPatchMessagingConfig:
             "detail": "No messaging config found with key nonexistent_key"
         }
 
-    def test_patch_email_config_with_key(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-    ):
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
-
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
+    def test_patch_email_config_with_key(self, auth_header, api_client, payload, url):
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
-        email_config = db.query(MessagingConfig).filter_by(
-            key="my_mailgun_messaging_config"
-        )[0]
 
         expected_response = {
             "key": "my_mailgun_messaging_config",
@@ -355,12 +294,11 @@ class TestPatchMessagingConfig:
             },
         }
         assert expected_response == response_body
-        email_config.delete(db)
 
 
 class TestPutMessagingConfigSecretsMailgun:
     @pytest.fixture(scope="function")
-    def url(self, messaging_config) -> str:
+    def url(self, messaging_config):
         return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
             config_key=messaging_config.key
         )
@@ -371,31 +309,29 @@ class TestPutMessagingConfigSecretsMailgun:
             MessagingServiceSecrets.MAILGUN_API_KEY.value: "1345234524",
         }
 
-    def test_put_config_secrets_unauthenticated(
-        self, api_client: TestClient, payload, url
-    ):
+    def test_put_config_secrets_unauthenticated(self, api_client, payload, url):
         response = api_client.put(url, headers={}, json=payload)
         assert 401 == response.status_code
 
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_READ]], indirect=True)
     def test_put_config_secrets_wrong_scope(
-        self, api_client: TestClient, payload, url, generate_auth_header
+        self, auth_header, api_client, payload, url
     ):
-        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_put_config_secret_invalid_config(
-        self, api_client: TestClient, payload, generate_auth_header
-    ):
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
+    def test_put_config_secret_invalid_config(self, auth_header, api_client, payload):
         url = (V1_URL_PREFIX + MESSAGING_SECRETS).format(config_key="invalid_key")
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
-    def test_update_with_invalid_secrets_key(
-        self, api_client: TestClient, generate_auth_header, url
-    ):
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
+    def test_update_with_invalid_secrets_key(self, auth_header, api_client, url):
         response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
 
         assert response.status_code == 400
@@ -406,16 +342,18 @@ class TestPutMessagingConfigSecretsMailgun:
             ]
         }
 
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_config_secrets(
         self,
-        db: Session,
-        api_client: TestClient,
+        auth_header,
+        db,
+        api_client,
         payload,
         url,
-        generate_auth_header,
         messaging_config,
     ):
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
@@ -434,7 +372,7 @@ class TestPutMessagingConfigSecretsMailgun:
 
 class TestPutMessagingConfigSecretTwilioEmail:
     @pytest.fixture(scope="function")
-    def url(self, messaging_config_twilio_email) -> str:
+    def url(self, messaging_config_twilio_email):
         return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
             config_key=messaging_config_twilio_email.key
         )
@@ -443,16 +381,18 @@ class TestPutMessagingConfigSecretTwilioEmail:
     def payload(self):
         return {MessagingServiceSecrets.TWILIO_API_KEY.value: "23p48btcpy14b"}
 
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_config_secrets(
         self,
-        db: Session,
-        api_client: TestClient,
+        auth_header,
+        db,
+        api_client,
         payload,
         url,
-        generate_auth_header,
         messaging_config_twilio_email,
     ):
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
@@ -473,17 +413,20 @@ class TestPutMessagingConfigSecretTwilioEmail:
 
 class TestPutMessagingConfigSecretTwilioSms:
     @pytest.fixture(scope="function")
-    def url(self, messaging_config_twilio_sms) -> str:
+    def url(self, messaging_config_twilio_sms):
         return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
             config_key=messaging_config_twilio_sms.key
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_config_secrets_with_messaging_service_sid(
         self,
-        db: Session,
-        api_client: TestClient,
+        auth_header,
+        db,
+        api_client,
         url,
-        generate_auth_header,
         messaging_config_twilio_sms,
     ):
         payload = {
@@ -491,7 +434,6 @@ class TestPutMessagingConfigSecretTwilioSms:
             MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "3rcuinhewrf",
             MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value: "asdfasdf",
         }
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
@@ -521,20 +463,17 @@ class TestPutMessagingConfigSecretTwilioSms:
             == "asdfasdf"
         )
 
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_config_secrets_with_sender_phone(
-        self,
-        db: Session,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-        messaging_config_twilio_sms,
+        self, auth_header, db, api_client, url, messaging_config_twilio_sms
     ):
         payload = {
             MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "2asdf35tv5wsdf",
             MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23tc3",
             MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value: "+12345436543",
         }
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
@@ -570,20 +509,18 @@ class TestPutMessagingConfigSecretTwilioSms:
             is None
         )
 
+    @pytest.mark.usefixtures("messaging_config_twilio_sms")
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_config_secrets_with_sender_phone_incorrect_format(
-        self,
-        db: Session,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-        messaging_config_twilio_sms,
+        self, auth_header, api_client, url
     ):
         payload = {
             MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "2asdf35tv5wsdf",
             MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23tc3",
             MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value: "12345436543",
         }
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert (
@@ -591,19 +528,17 @@ class TestPutMessagingConfigSecretTwilioSms:
             in response.json()["detail"]
         )
 
+    @pytest.mark.usefixtures("messaging_config_twilio_sms")
+    @pytest.mark.parametrize(
+        "auth_header", [[MESSAGING_CREATE_OR_UPDATE]], indirect=True
+    )
     def test_put_config_secrets_with_no_sender_phone_nor_messaging_service_id(
-        self,
-        db: Session,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-        messaging_config_twilio_sms,
+        self, auth_header, api_client, url
     ):
         payload = {
             MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "2asdf35tv5wsdf",
             MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23tc3",
         }
-        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert (
@@ -614,24 +549,20 @@ class TestPutMessagingConfigSecretTwilioSms:
 
 class TestGetMessagingConfigs:
     @pytest.fixture(scope="function")
-    def url(self) -> str:
+    def url(self):
         return V1_URL_PREFIX + MESSAGING_CONFIG
 
-    def test_get_configs_not_authenticated(self, api_client: TestClient, url) -> None:
+    def test_get_configs_not_authenticated(self, api_client, url):
         response = api_client.get(url)
         assert 401 == response.status_code
 
-    def test_get_configs_wrong_scope(
-        self, api_client: TestClient, url, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header([MESSAGING_DELETE])
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_DELETE]], indirect=True)
+    def test_get_configs_wrong_scope(self, auth_header, api_client, url):
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_get_configs(
-        self, db, api_client: TestClient, url, generate_auth_header, messaging_config
-    ):
-        auth_header = generate_auth_header([MESSAGING_READ])
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_READ]], indirect=True)
+    def test_get_configs(self, auth_header, api_client, url, messaging_config):
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
 
@@ -658,36 +589,31 @@ class TestGetMessagingConfigs:
 
 class TestGetMessagingConfig:
     @pytest.fixture(scope="function")
-    def url(self, messaging_config) -> str:
+    def url(self, messaging_config):
         return (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
             config_key=messaging_config.key
         )
 
-    def test_get_config_not_authenticated(self, url, api_client: TestClient):
+    def test_get_config_not_authenticated(self, url, api_client):
         response = api_client.get(url)
         assert 401 == response.status_code
 
-    def test_get_config_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header
-    ):
-        auth_header = generate_auth_header([MESSAGING_DELETE])
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_DELETE]], indirect=True)
+    def test_get_config_wrong_scope(self, auth_header, url, api_client):
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_get_config_invalid(
-        self, api_client: TestClient, generate_auth_header, messaging_config
-    ):
-        auth_header = generate_auth_header([MESSAGING_READ])
+    @pytest.mark.usefixtures("messaging_config")
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_READ]], indirect=True)
+    def test_get_config_invalid(self, auth_header, api_client):
         response = api_client.get(
             (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key="invalid"),
             headers=auth_header,
         )
         assert 404 == response.status_code
 
-    def test_get_config(
-        self, url, api_client: TestClient, generate_auth_header, messaging_config
-    ):
-        auth_header = generate_auth_header([MESSAGING_READ])
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_READ]], indirect=True)
+    def test_get_config(self, auth_header, url, api_client, messaging_config):
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
 
@@ -707,37 +633,30 @@ class TestGetMessagingConfig:
 
 class TestDeleteConfig:
     @pytest.fixture(scope="function")
-    def url(self, messaging_config) -> str:
+    def url(self, messaging_config):
         return (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
             config_key=messaging_config.key
         )
 
-    def test_delete_config_not_authenticated(self, url, api_client: TestClient):
+    def test_delete_config_not_authenticated(self, url, api_client):
         response = api_client.delete(url)
         assert 401 == response.status_code
 
-    def test_delete_config_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header
-    ):
-        auth_header = generate_auth_header([MESSAGING_READ])
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_READ]], indirect=True)
+    def test_delete_config_wrong_scope(self, auth_header, url, api_client):
         response = api_client.delete(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_delete_config_invalid(self, api_client: TestClient, generate_auth_header):
-        auth_header = generate_auth_header([MESSAGING_DELETE])
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_DELETE]], indirect=True)
+    def test_delete_config_invalid(self, auth_header, api_client):
         response = api_client.delete(
             (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key="invalid"),
             headers=auth_header,
         )
         assert 404 == response.status_code
 
-    def test_delete_config(
-        self,
-        db: Session,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-    ):
+    @pytest.mark.parametrize("auth_header", [[MESSAGING_DELETE]], indirect=True)
+    def test_delete_config(self, auth_header, db, url, api_client):
         # Creating new config, so we don't run into issues trying to clean up a deleted fixture
         twilio_sms_config = MessagingConfig.create(
             db=db,
@@ -750,7 +669,6 @@ class TestDeleteConfig:
         url = (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
             config_key=twilio_sms_config.key
         )
-        auth_header = generate_auth_header([MESSAGING_DELETE])
         response = api_client.delete(url, headers=auth_header)
         assert response.status_code == 204
 
