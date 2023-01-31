@@ -334,7 +334,7 @@ def put_default_config(
     else:
         # set a name for our config if we're creating a new default
         incoming_data["name"] = default_storage_config_name(
-            incoming_storage_config.type
+            incoming_storage_config.type  # type: ignore
         )
 
     # since we're setting the default storage config for the given type, `is_default` MUST be set to `True`
