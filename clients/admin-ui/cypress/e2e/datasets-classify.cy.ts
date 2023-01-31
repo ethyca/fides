@@ -142,8 +142,7 @@ describe("Datasets with Fides Classify", () => {
     }) => {
       cy.getByTestId(`field-row-${name}`).within(() => {
         taxonomyEntities.forEach((te) => {
-          // Right now this displays the whole taxonomy path, but this might be abbreviated later.
-          cy.get(`[data-testid^=taxonomy-entity-]`).contains(te);
+          cy.getByTestIdPrefix("taxonomy-entity").contains(te);
         });
       });
     };
