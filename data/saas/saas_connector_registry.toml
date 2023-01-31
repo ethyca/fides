@@ -147,3 +147,9 @@ config = "data/saas/config/recharge_config.yml"
 dataset = "data/saas/dataset/recharge_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Recharge"
+
+[gorgias]
+config = "data/saas/config/gorgias_config.yml"
+dataset = "data/saas/dataset/gorgias_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Gorgias"

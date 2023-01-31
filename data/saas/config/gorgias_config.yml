@@ -1,0 +1,122 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Gorgias SaaS Config
+  type: gorgias
+  description: A sample schema representing the Gorgias connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: ethyca-test.gorgias.com
+    - name: user_name
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <user_name>
+        password: <api_key>
+
+  test_request:
+    method: GET
+    path: /api/customers
+
+  endpoints:
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /api/customers
+          query_params:
+            - name: email
+              value: <email>
+          data_path: data
+          param_values:
+            - name: email
+              identity: email
+        update:
+          method: PUT
+          path: /api/customers/<customer_data_id>/
+          body: |
+            <all_object_fields>
+          param_values:
+            - name: customer_data_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.data.id
+                  direction: from
+    - name: search_for_resources
+      requests:
+        read:
+          method: POST
+          path: /api/search
+          query_params:
+            - name: query
+              value: <email>
+          body: |
+            {
+              "type": "customer",
+              "query": "<email>"
+            }
+          param_values:
+            - name: email
+              identity: email
+            - name: email
+              identity: email
+    - name: tickets
+      requests:
+        read:
+          method: GET
+          path: /api/tickets
+          query_params:
+            - name: customer_id
+              value: <customer_id>
+          data_path: data
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.id
+                  direction: from
+        update:
+          method: PUT
+          path: /api/tickets/<tickets_id>/
+          body: |
+            <all_object_fields>
+          param_values:
+            - name: tickets_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: tickets.id
+                  direction: from
+    - name: ticket_messages
+      requests:
+        read:
+          method: GET
+          path: /api/tickets/<tickets_id>/messages/445729692/
+          param_values:
+            - name: tickets_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: tickets.id
+                  direction: from
+        update:
+          method: PUT
+          path: >-
+            https://ethyca-test.gorgias.com/api/tickets/<tickets_id>/messages/<ticket_messages_id>/
+          body: |
+            <all_object_fields>
+          param_values:
+            - name: tickets_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: tickets.id
+                  direction: from
+            - name: ticket_messages_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: ticket_messages.id
+                  direction: from
