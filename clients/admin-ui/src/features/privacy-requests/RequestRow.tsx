@@ -20,6 +20,7 @@ import DaysLeftTag from "common/DaysLeftTag";
 import RequestType from "common/RequestType";
 import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
+import ApprovePrivacyRequestModal from "privacy-requests/ApprovePrivacyRequestModal";
 import React, { useRef, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
@@ -44,9 +45,10 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [denyModalOpen, setDenyModalOpen] = useState(false);
+  const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [approveRequest, approveRequestResult] = useApproveRequestMutation();
-  const [denyRequest] = useDenyRequestMutation();
+  const [denyRequest, denyRequestResult] = useDenyRequestMutation();
   const handleMenuOpen = () => setMenuOpen(true);
   const handleMenuClose = () => setMenuOpen(false);
   const handleMouseEnter = () => setHovered(true);
@@ -59,15 +61,25 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   const handleFocus = () => setFocused(true);
   const handleBlur = () => setFocused(false);
   const handleApproveRequest = () => approveRequest(request);
+
   const handleDenyRequest = (reason: string) =>
     denyRequest({ id: request.id, reason });
   const { onCopy } = useClipboard(request.id);
-  const handleModalOpen = () => setModalOpen(true);
-  const handleModalClose = () => {
-    setModalOpen(false);
+  const handleDenyModalOpen = () => setDenyModalOpen(true);
+  const handleApproveModalOpen = () => setApproveModalOpen(true);
+  const resetSharedModalStates = () => {
     setFocused(false);
     setHovered(false);
     setMenuOpen(false);
+  };
+  const handleDenyModalClose = () => {
+    setDenyModalOpen(false);
+    resetSharedModalStates();
+  };
+
+  const handleApproveModalClose = () => {
+    setApproveModalOpen(false);
+    resetSharedModalStates();
   };
   const handleIdCopy = () => {
     onCopy();
@@ -96,12 +108,16 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   };
   return {
     approveRequestResult,
+    denyRequestResult,
     hovered,
     focused,
     menuOpen,
-    modalOpen,
-    handleModalOpen,
-    handleModalClose,
+    denyModalOpen,
+    approveModalOpen,
+    handleDenyModalOpen,
+    handleDenyModalClose,
+    handleApproveModalOpen,
+    handleApproveModalClose,
     handleMenuClose,
     handleMenuOpen,
     handleMouseEnter,
@@ -133,10 +149,14 @@ const RequestRow: React.FC<{
     handleIdCopy,
     menuOpen,
     approveRequestResult,
+    denyRequestResult,
     hoverButtonRef,
-    modalOpen,
-    handleModalClose,
-    handleModalOpen,
+    denyModalOpen,
+    handleDenyModalClose,
+    handleDenyModalOpen,
+    approveModalOpen,
+    handleApproveModalClose,
+    handleApproveModalOpen,
     shiftFocusToHoverMenu,
     handleFocus,
     handleBlur,
@@ -222,6 +242,7 @@ const RequestRow: React.FC<{
           onBlur={handleBlur}
           shadow="base"
           borderRadius="md"
+          backgroundColor="white"
         >
           {request.status === "error" && (
             <ReprocessButton
@@ -237,14 +258,12 @@ const RequestRow: React.FC<{
                 mr="-px"
                 bg="white"
                 onClick={() => {
-                  handleApproveRequest();
+                  handleApproveModalOpen();
                   handleBlur();
                 }}
-                isLoading={approveRequestResult.isLoading}
-                _loading={{
-                  opacity: 1,
-                  div: { opacity: 0.4 },
-                }}
+                isDisabled={
+                  approveRequestResult.isLoading || denyRequestResult.isLoading
+                }
                 _hover={{
                   bg: "gray.100",
                 }}
@@ -256,11 +275,10 @@ const RequestRow: React.FC<{
                 size="xs"
                 mr="-px"
                 bg="white"
-                onClick={handleModalOpen}
-                _loading={{
-                  opacity: 1,
-                  div: { opacity: 0.4 },
-                }}
+                onClick={handleDenyModalOpen}
+                isDisabled={
+                  approveRequestResult.isLoading || denyRequestResult.isLoading
+                }
                 _hover={{
                   bg: "gray.100",
                 }}
@@ -268,9 +286,15 @@ const RequestRow: React.FC<{
                 Deny
               </Button>
               <DenyPrivacyRequestModal
-                isOpen={modalOpen}
-                handleMenuClose={handleModalClose}
+                isOpen={denyModalOpen}
+                handleMenuClose={handleDenyModalClose}
                 handleDenyRequest={handleDenyRequest}
+              />
+              <ApprovePrivacyRequestModal
+                isOpen={approveModalOpen}
+                handleMenuClose={handleApproveModalClose}
+                handleApproveRequest={handleApproveRequest}
+                isLoading={approveRequestResult.isLoading}
               />
             </>
           )}
