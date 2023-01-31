@@ -399,15 +399,25 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
         )
 
-        prepared_requests = [
-            query_config.generate_update_stmt(row, policy, privacy_request)
-            for row in rows
-        ]
         rows_updated = 0
         client = self.create_client()
-        for prepared_request in prepared_requests:
+        for row in rows:
+            try:
+                prepared_request = query_config.generate_update_stmt(
+                    row, policy, privacy_request
+                )
+            except ValueError as exc:
+                if masking_request.skip_missing_param_values:
+                    logger.info(
+                        "Skipping optional masking request on node {}: {}",
+                        node.address.value,
+                        exc,
+                    )
+                    continue
+                raise exc
             client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
+
         self.unset_connector_state()
         return rows_updated
 
@@ -449,11 +459,21 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             for consent_request in consent_requests:
                 self.set_saas_request_state(consent_request)
 
-                prepared_request: SaaSRequestParams = (
-                    query_config.generate_consent_stmt(
-                        policy, privacy_request, consent_request
+                try:
+                    prepared_request: SaaSRequestParams = (
+                        query_config.generate_consent_stmt(
+                            policy, privacy_request, consent_request
+                        )
                     )
-                )
+                except ValueError as exc:
+                    if consent_request.skip_missing_param_values:
+                        logger.info(
+                            "Skipping optional consent request on node {}: {}",
+                            node.address.value,
+                            exc,
+                        )
+                        continue
+                    raise exc
                 client: AuthenticatedClient = self.create_client()
                 client.send(prepared_request)
         self.unset_connector_state()

@@ -187,12 +187,22 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 input_data, filtered_secrets, grouped_inputs
             )
             for param_value_map in param_value_maps:
-                request_params.append(
-                    self.generate_query(
-                        {name: [value] for name, value in param_value_map.items()},
-                        policy,
+                try:
+                    request_params.append(
+                        self.generate_query(
+                            {name: [value] for name, value in param_value_map.items()},
+                            policy,
+                        )
                     )
-                )
+                except ValueError as exc:
+                    if read_request.skip_missing_param_values:
+                        logger.info(
+                            "Skipping optional read request on node {}: {}",
+                            self.node.address.value,
+                            exc,
+                        )
+                        continue
+                    raise exc
 
         return request_params
 
