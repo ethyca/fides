@@ -74,6 +74,9 @@ ENV PYTHONUNBUFFERED=TRUE
 # Reset the busted git cache
 RUN git rm --cached -r .
 
+# This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
+RUN git config --global --add safe.directory /fides
+
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
