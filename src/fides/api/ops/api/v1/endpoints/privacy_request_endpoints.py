@@ -254,13 +254,14 @@ def privacy_request_csv_download(
 
     csv_file.writerow(
         [
+            "Status",
+            "Request Type",
+            "Subject Identity",
             "Time received",
-            "Subject identity",
-            "Policy key",
-            "Request status",
-            "Reviewer",
-            "Time approved/denied",
-            "Denial reason",
+            "Reviewed By",
+            "Request ID",
+            "Time Approved/Denied",
+            "Denial Reason",
         ]
     )
     privacy_request_ids: List[str] = [r.id for r in privacy_request_query]
@@ -278,17 +279,20 @@ def privacy_request_csv_download(
             if pr.status == PrivacyRequestStatus.denied and pr.id in denial_audit_logs
             else None
         )
+
         csv_file.writerow(
             [
-                pr.created_at,
-                pr.get_persisted_identity().dict(),
-                pr.policy.key if pr.policy else None,
                 pr.status.value if pr.status else None,
+                pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
+                pr.get_persisted_identity().dict(),
+                pr.created_at,
                 pr.reviewed_by,
+                pr.id,
                 pr.reviewed_at,
                 denial_reason,
             ]
         )
+
     f.seek(0)
     response = StreamingResponse(f, media_type="text/csv")
     response.headers[
