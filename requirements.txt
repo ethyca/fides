@@ -25,7 +25,7 @@ openpyxl==3.0.9
 packaging==21.3
 pandas==1.4.3
 passlib[bcrypt]==1.7.4
-plotly==5.4
+plotly==5.13.0
 psycopg2-binary==2.9.5
 pydantic<1.10.2
 pydash==5.1.1
