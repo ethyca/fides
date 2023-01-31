@@ -658,10 +658,7 @@ class TestUpdateUserPassword:
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
             f"{url_no_id}/{user.id}/reset-password",
             headers=auth_header,
@@ -691,10 +688,7 @@ class TestUpdateUserPassword:
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,
@@ -720,10 +714,7 @@ class TestUpdateUserPassword:
         OLD_PASSWORD = "oldpassword"
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,
@@ -736,6 +727,88 @@ class TestUpdateUserPassword:
         db.expunge(application_user)
         application_user = application_user.refresh_from_db(db=db)
         assert application_user.credentials_valid(password=NEW_PASSWORD)
+
+    def test_force_update_different_user_password_without_scope(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        """A user without the proper scope cannot change another user's password"""
+        NEW_PASSWORD = "newpassword"
+        old_hashed_password = user.hashed_password
+
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+        db.expunge(user)
+        user = user.refresh_from_db(db=db)
+        assert (
+            user.hashed_password == old_hashed_password
+        ), "Password changed on the user"
+
+    def test_force_update_different_user_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        """
+        A user with the right scope should be able to set a new password
+        for another user.
+        """
+        NEW_PASSWORD = "newpassword"
+        auth_header = generate_auth_header_for_user(
+            user=application_user, scopes=[USER_PASSWORD_RESET]
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+
+        assert resp.status_code == HTTP_200_OK
+        db.expunge(user)
+        user = user.refresh_from_db(db=db)
+        assert user.credentials_valid(password=NEW_PASSWORD)
+
+    def test_force_update_non_existent_user(
+        self,
+        api_client,
+        url_no_id,
+        application_user,
+    ) -> None:
+        """
+        Resetting on a user that does not exist should 404
+        """
+        NEW_PASSWORD = "newpassword"
+        auth_header = generate_auth_header_for_user(
+            user=application_user, scopes=[USER_PASSWORD_RESET]
+        )
+        # arbitrary id that isn't the user's
+        user_id = "fake_user_id"
+        resp = api_client.post(
+            f"{url_no_id}/{user_id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+
+        assert resp.status_code == HTTP_404_NOT_FOUND
 
 
 class TestUserLogin:
