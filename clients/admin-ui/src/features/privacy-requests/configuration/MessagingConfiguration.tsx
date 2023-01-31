@@ -31,18 +31,22 @@ const MessagingConfiguration = () => {
   const [messagingValue, setMessagingValue] = useState("");
   const [saveMessagingConfiguration, { isLoading }] =
     useCreateMessagingConfigurationMutation();
-  const { data: messagingDetails } =
-    useGetMessagingConfigurationDetailsQuery(messagingValue);
+  const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
+    config_key: messagingValue,
+  });
 
   const handleChange = async (value: string) => {
     // Set so can fetch to see if existing info above
     setMessagingValue(value);
 
-    // set the active messaging type
+    // create messaging config
     const payload = await saveMessagingConfiguration({
       config_key: value,
       //   IS THIS THE RIGHT KEY FOR THIS CALL?
     });
+
+    // set the created messaging config as default
+    // PUT /api/v1/messaging/config/{config_key}/default
 
     if ("error" in payload) {
       errorAlert(
@@ -55,6 +59,7 @@ const MessagingConfiguration = () => {
   };
 
   console.log("test", messagingValue);
+  console.log("test 2", messagingDetails);
 
   return (
     <Layout title="Configure Privacy Requests - Messaging">
@@ -140,12 +145,14 @@ const MessagingConfiguration = () => {
           </Stack>
         </RadioGroup>
         {messagingValue === "mailgun-email" ? (
-          <MailgunEmailConfiguration />
+          <MailgunEmailConfiguration messagingDetails={messagingDetails} />
         ) : null}
         {messagingValue === "twilio-email" ? (
-          <TwilioEmailConfiguration />
+          <TwilioEmailConfiguration messagingDetails={messagingDetails} />
         ) : null}
-        {messagingValue === "twilio-sms" ? <TwilioSMSConfiguration /> : null}
+        {messagingValue === "twilio-sms" ? (
+          <TwilioSMSConfiguration messagingDetails={messagingDetails} />
+        ) : null}
       </Box>
     </Layout>
   );

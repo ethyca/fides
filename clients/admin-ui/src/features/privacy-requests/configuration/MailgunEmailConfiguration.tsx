@@ -3,17 +3,24 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 import { CustomTextInput } from "~/features/common/form/inputs";
 
-const MailgunEmailConfiguration = () => {
+const MailgunEmailConfiguration = ({ messagingDetails }) => {
   const [configurationStep, setConfigurationStep] = useState("");
+
+  console.log("existing details", messagingDetails);
 
   const handleMailgunConfiguration = () => {
     // API CALL 1
-    // if successful
+    // PATCH /api/v1/messaging/config/{config_key}
+
+    // if successful - get the secret if it's there and then go to next step
+    // GET /api/v1/messaging/config/{config_key}/secret
     setConfigurationStep("2");
   };
 
   const handleMailgunAPIKeyConfiguration = () => {
     // API CALL 2
+    // PUT /api/v1messaging/config/{config_key}/secret
+
     // if successful
     setConfigurationStep("3");
   };
@@ -30,16 +37,16 @@ const MailgunEmailConfiguration = () => {
     "mailgun-messaging-config-email-form-id";
 
   const initialValues = {
-    name: "",
-    domain: "",
+    name: messagingDetails.name ?? "",
+    domain: messagingDetails.domain ?? "",
   };
 
   const initialAPIKeyValue = {
-    api_key: "",
+    api_key: messagingDetails.api_key ?? "",
   };
 
   const initialEmailValue = {
-    email: "",
+    email: messagingDetails.email ?? "",
   };
 
   return (

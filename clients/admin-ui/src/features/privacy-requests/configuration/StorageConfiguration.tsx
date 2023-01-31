@@ -17,43 +17,48 @@ import { useAlert } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import {
   useCreateActiveStorageMutation,
-  useGetStorageDetailsQuery,
+  useCreateStorageMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
-// interface StorageData {
-//   type: string;
-//   details: {
-//     auth_method: string;
-//     bucket: string;
-//   };
-//   format: string;
-// }
-
 const StorageConfiguration = () => {
   const { errorAlert, successAlert } = useAlert();
   const [storageValue, setStorageValue] = useState("");
-  const [saveStorageType, { isLoading }] = useCreateActiveStorageMutation();
-  const { data: storageDetails, isFetching } =
-    useGetStorageDetailsQuery(storageValue);
+  const [saveStorageType, { isLoading }] = useCreateStorageMutation();
+  const [saveActiveStorage] = useCreateActiveStorageMutation();
 
   const handleChange = async (value: string) => {
-    // Set so can fetch to see if existing info above
     setStorageValue(value);
 
-    // set the active storage type
-    const payload = await saveStorageType({
+    //  Local does not set any configuration details
+    if (value === "local") {
+      const storageDetailsPayload = await saveStorageType({
+        type: value,
+        format: "json",
+      });
+
+      if ("error" in storageDetailsPayload) {
+        errorAlert(
+          getErrorMessage(storageDetailsPayload.error),
+          `Configuring storage type details has failed to save due to the following:`
+        );
+      } else {
+        successAlert(`Configure storage type details saved successfully.`);
+      }
+    }
+
+    const activeStoragePayload = await saveActiveStorage({
       active_default_storage_type: value,
     });
 
-    if ("error" in payload) {
+    if ("error" in activeStoragePayload) {
       errorAlert(
-        getErrorMessage(payload.error),
-        `Configuring storage type has failed to save due to the following:`
+        getErrorMessage(activeStoragePayload.error),
+        `Configuring active storage type has failed to save due to the following:`
       );
     } else {
-      successAlert(`Configure storage type saved successfully.`);
+      successAlert(`Configure active storage type saved successfully.`);
     }
   };
 
@@ -120,9 +125,7 @@ const StorageConfiguration = () => {
             </Radio>
           </Stack>
         </RadioGroup>
-        {storageValue === "s3" ? (
-          <S3StorageConfiguration storageDetails={storageDetails} />
-        ) : null}
+        {storageValue === "s3" ? <S3StorageConfiguration /> : null}
       </Box>
     </Layout>
   );

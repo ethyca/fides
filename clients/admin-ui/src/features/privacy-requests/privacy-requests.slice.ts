@@ -360,14 +360,14 @@ export const privacyRequestApi = createApi({
     }),
     createActiveStorage: build.mutation<any, any>({
       query: (params) => ({
-        url: `storage/settings`,
+        url: `application/settings`,
         method: "PUT",
         body: params,
       }),
     }),
-    createStorageDetails: build.mutation<any, any>({
+    createStorage: build.mutation<any, any>({
       query: (params) => ({
-        url: `storage/default/${params.storage_type}`,
+        url: `storage/default`,
         method: "PUT",
         body: params,
       }),
@@ -430,10 +430,10 @@ export const {
   useSaveNotificationMutation,
   useUploadManualWebhookDataMutation,
   useGetStorageDetailsQuery,
-  useCreateActiveStorageMutation,
-  useCreateStorageDetailsMutation,
+  useCreateStorageMutation,
   useCreateStorageSecretsMutation,
   useGetMessagingConfigurationDetailsQuery,
+  useCreateActiveStorageMutation,
   useCreateMessagingConfigurationMutation,
   useUpdateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
