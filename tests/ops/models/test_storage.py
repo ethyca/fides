@@ -1,16 +1,17 @@
 from typing import Dict
 
 import pytest
-import sqlalchemy
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import StorageConfigValidationError
+from fides.api.ops.models.application_settings import ApplicationSettings
 from fides.api.ops.models.storage import (
     StorageConfig,
     active_default_storage_config,
     default_storage_config_by_type,
+    default_storage_config_name,
 )
+from fides.api.ops.schemas.application_settings import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
@@ -208,21 +209,52 @@ class TestStorageConfigModel:
 
         assert "must be a valid StorageType enum member" in str(e)
 
-    @pytest.mark.skip("still working on default retrieval based on settings")
-    def test_default_storage_retrieval(
+    def test_active_default_storage_retrieval(
         self, db: Session, storage_config_default: StorageConfig
     ):
         """
         Ensure our `active_default_storage_config` utility method works as expected
-        Both in cases where the default exists in the db and in cases when it doesn't
         """
-        # `storage_config_default` fixture creates the default config
-        # in the db, so we should be able to retrieve it successfully here
+        # `storage_config_default` fixture creates a default s3 config
+        # but until we've updated the appropriate settings in the API
+        # a local storage config is returned as our active default
         retrieved_config = active_default_storage_config(db)
-        assert storage_config_default == retrieved_config
+        assert retrieved_config.type == StorageType.local
+        assert retrieved_config.name == default_storage_config_name(
+            StorageType.local.value
+        )
+        assert retrieved_config.is_default
+        assert retrieved_config == default_storage_config_by_type(
+            db, StorageType.local.value
+        )
+
+        # now we mimic setting the active default storage type in the API
+        # and we should get back the default s3 storage config created in the fixture
+        ApplicationSettings.create_or_update(
+            db,
+            data={"api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.s3.value}},
+        )
+        retrieved_config = active_default_storage_config(db)
+        assert retrieved_config == storage_config_default
 
         # delete the default storage config in the db
-        # and we should no longer get a populated object now
+        # and we should get back an empty storage config, because we're still set to use s3
         storage_config_default.delete(db)
         retrieved_config = active_default_storage_config(db)
-        assert not retrieved_config
+        assert retrieved_config is None
+
+        # mimic setting active default back to `local` via API
+        # and we should get back the local default config
+        ApplicationSettings.create_or_update(
+            db,
+            data={
+                "api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.local.value}
+            },
+        )
+        retrieved_config = active_default_storage_config(db)
+        assert retrieved_config.type == StorageType.local
+        assert retrieved_config.name == default_storage_config_name(
+            StorageType.local.value
+        )
+        assert retrieved_config.is_default
+        assert retrieved_config == default_storage_config_by_type(db, StorageType.local)

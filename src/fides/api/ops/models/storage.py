@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Optional
 
 from loguru import logger
 from pydantic import ValidationError
@@ -14,6 +14,8 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.models.application_settings import ApplicationSettings
+from fides.api.ops.schemas.application_settings import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.storage.storage import ResponseFormat, StorageType
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
@@ -21,7 +23,7 @@ from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.storage_util import get_schema_for_secrets
 from fides.core.config import get_config
-from fides.lib.db.base import Base
+from fides.lib.db.base_class import Base
 
 CONFIG = get_config()
 
@@ -90,6 +92,15 @@ class StorageConfig(Base):
         self.save(db=db)
 
 
+def default_storage_config_name(storage_type: str) -> str:
+    """
+    Utility method for consistency in generating default storage config names.
+
+    Returns a name to be used in a default storage config for the given type.
+    """
+    return f"Default Storage Config [{storage_type}]"
+
+
 def default_storage_config_by_type(
     db: Session, storage_type: StorageType
 ) -> Optional[StorageConfig]:
@@ -99,6 +110,10 @@ def default_storage_config_by_type(
 
     There should only ever be one `StorageConfig` record that
     matches this criteria at any point.
+
+    If `local` storage type is requested and a default doesn't yet exist, we create a default.
+    `local` storage configurations, at this point, don't have any configurable settings,
+    so we can safely create a default here, at the time it's requested.
     """
     if not isinstance(storage_type, StorageType):
         # try to coerce into an enum
@@ -111,14 +126,51 @@ def default_storage_config_by_type(
     default_storage: Optional[StorageConfig] = (
         db.query(StorageConfig).filter_by(is_default=True, type=storage_type).first()
     )
+
+    if not default_storage and storage_type == StorageType.local:
+        return _create_local_default_storage(db)
     return default_storage
 
 
-def active_default_storage_config(db: Session):
+def _create_local_default_storage(db: Session) -> StorageConfig:
     """
-    Retrieve the active default storage config.
+    Creates a default `local` storage configuration record in the database.
 
-    At this point, this is just hardcoded to the default s3 config.
-    TODO: update to rely on config setting to determine the active default.
+    `local` storage configurations, at this point, don't have any configurable settings,
+    so we can safely create a standard default here, without any user input.
     """
-    return default_storage_config_by_type(db, StorageType.local)
+    return StorageConfig.create(
+        db,
+        data={
+            "name": default_storage_config_name(StorageType.local.value),
+            "type": StorageType.local,
+            "is_default": True,
+            "format": ResponseFormat.json,
+            "details": {"naming": "request_id"},
+        },
+    )
+
+
+def active_default_storage_config(db: Session) -> Optional[StorageConfig]:
+    """
+    Utility method to return the active default storage configuration.
+
+    As of now, we look at the application property `ACTIVE_DEFAULT_STORAGE_PROPERTY`
+    that's been set through the application settings API to determine the active default
+    storage type. We use that to then look up the default configuration for that given
+    storage type.
+
+    If no `ACTIVE_DEFAULT_STORAGE_PROPERTY` property has been set through the settings API,
+    then we fall back the default `local` storage configuration.
+
+    TODO: Eventually, we'll want the `ACTIVE_DEFAULT_STORAGE_PROPERTY` to be settable
+    via _either_ API or env var/toml, i.e. to be properly reconciled with the global
+    pydantic config module. For now, though, we just rely on this being set through API.
+    """
+    api_app_settings = ApplicationSettings.get_api_set_settings(db)
+    active_default_storage_type = (
+        api_app_settings[ACTIVE_DEFAULT_STORAGE_PROPERTY]
+        if ACTIVE_DEFAULT_STORAGE_PROPERTY in api_app_settings
+        else StorageType.local
+    )
+    return default_storage_config_by_type(db, active_default_storage_type)

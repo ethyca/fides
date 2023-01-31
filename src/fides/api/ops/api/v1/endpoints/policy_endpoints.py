@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
@@ -253,7 +253,9 @@ def create_or_update_rules(
             storage_destination_key = schema.storage_destination_key
             # storage key doesn't need to be specified, as there is a default to fallback to
             if storage_destination_key:
-                associated_storage_config: StorageConfig = StorageConfig.get_by(
+                associated_storage_config: Optional[
+                    StorageConfig
+                ] = StorageConfig.get_by(
                     db=db,
                     field="key",
                     value=storage_destination_key,

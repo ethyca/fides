@@ -168,28 +168,6 @@ def load_default_access_policy(
             f"Skipping {DEFAULT_ACCESS_POLICY} creation as it already exists in the database"
         )
 
-    # local_storage_config = StorageConfig.get_by(
-    #     db_session, field="key", value=DEFAULT_LOCAL_STORAGE_KEY
-    # )
-    # if not local_storage_config:
-    #     log.info(f"Creating: {DEFAULT_LOCAL_STORAGE_KEY}...")
-    #     default_storage_config: StorageConfig = StorageConfig.create(
-    #         db=db_session, data=StorageSettings.default_storage_destination.dict()
-    #     )
-    #     if (
-    #         hasattr(StorageSettings, "default_storage_secrets")
-    #         and StorageSettings.default_storage_secrets
-    #     ):
-    #         default_storage_config.set_secrets(
-    #             db=db_session,
-    #             storage_secrets=StorageSettings.default_storage_secrets.dict(),
-    #         )
-
-    # else:
-    #     log.info(
-    #         f"Skipping {DEFAULT_LOCAL_STORAGE_KEY} creation as it already exists in the database"
-    #     )
-
     access_rule: Optional[FidesBase] = Rule.get_by(
         db_session, field="key", value=DEFAULT_ACCESS_POLICY_RULE
     )

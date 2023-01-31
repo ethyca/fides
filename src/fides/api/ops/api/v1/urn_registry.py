@@ -39,6 +39,7 @@ STORAGE_UPLOAD = "/storage/{request_id}"
 STORAGE_DEFAULT = "/storage/default"
 STORAGE_DEFAULT_SECRETS = "/storage/default/{storage_type}/secret"
 STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
+STORAGE_ACTIVE_DEFAULT = "/storage/active/default"
 
 # Email URLs
 MESSAGING_CONFIG = "/messaging/config"
@@ -150,3 +151,6 @@ DRP_REVOKE = "/drp/revoke"
 
 # Registration
 REGISTRATION = "/registration"
+
+# Application Settings
+APPLICATION_SETTINGS = "/application/settings"

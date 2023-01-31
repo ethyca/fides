@@ -997,30 +997,6 @@ class TestCreateRules:
         assert "key" in rule_data["storage_destination"]
         assert "secrets" not in rule_data["storage_destination"]
 
-    def test_create_access_rule_for_policy_no_storage_fails(
-        self,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-        policy,
-    ):
-        data = [
-            {
-                "name": "test access rule",
-                "action_type": ActionType.access.value,
-            }
-        ]
-
-        auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
-        resp = api_client.patch(
-            url,
-            json=data,
-            headers=auth_header,
-        )
-        assert resp.status_code == 200
-        response_data = resp.json()["failed"]
-        assert len(response_data) == 1
-
     def test_create_erasure_rule_for_policy(
         self,
         url,

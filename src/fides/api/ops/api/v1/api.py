@@ -1,4 +1,5 @@
 from fides.api.ops.api.v1.endpoints import (
+    application_settings_endpoints,
     config_endpoints,
     connection_endpoints,
     connection_type_endpoints,
@@ -43,3 +44,4 @@ api_router.include_router(user_endpoints.router)
 api_router.include_router(user_permission_endpoints.router)
 api_router.include_router(manual_webhook_endpoints.router)
 api_router.include_router(registration_endpoints.router)
+api_router.include_router(application_settings_endpoints.router)

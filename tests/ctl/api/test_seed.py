@@ -6,13 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database import seed
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
-from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.storage.storage import (
-    FileNaming,
-    ResponseFormat,
-    StorageDetails,
-    StorageType,
-)
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
 from fides.lib.models.fides_user import FidesUser
@@ -369,11 +362,6 @@ async def test_load_default_dsr_policies(
     assert access_rule.name == "Default Access Rule"
     assert access_rule.action_type == ActionType.access.value
 
-    storage_destination: StorageConfig = access_rule.storage_destination
-    assert storage_destination.key == seed.DEFAULT_STORAGE_KEY
-    assert storage_destination.format == ResponseFormat.json
-    assert storage_destination.type == StorageType.local
-
     assert len(access_rule.targets) >= 1
 
     erasure_policy: Policy = Policy.get_by(
@@ -399,34 +387,6 @@ async def test_load_default_dsr_policies(
         },
     )
 
-    # update the default storage config
-    local_storage_config = StorageConfig.create_or_update(
-        db=db,
-        data={
-            "name": "-- changed storage name --",
-            "key": seed.DEFAULT_STORAGE_KEY,
-            "type": StorageType.local,
-            "details": {
-                StorageDetails.NAMING.value: FileNaming.request_id.value,
-            },
-            "format": ResponseFormat.json,
-        },
-    )
-
-    # create another storage config
-    s3_storage = StorageConfig.create_or_update(
-        db=db,
-        data={
-            "name": "an s3 storage config",
-            "key": "s3_storage_config",
-            "type": StorageType.s3,
-            "details": {
-                StorageDetails.NAMING.value: FileNaming.request_id.value,
-            },
-            "format": ResponseFormat.json,
-        },
-    )
-
     Rule.create_or_update(
         db=db,
         data={
@@ -434,7 +394,6 @@ async def test_load_default_dsr_policies(
             "name": "-- changed access rule name --",
             "key": seed.DEFAULT_ACCESS_POLICY_RULE,
             "policy_id": access_policy.id,
-            "storage_destination_id": s3_storage.id,
         },
     )
 
@@ -463,15 +422,5 @@ async def test_load_default_dsr_policies(
     assert access_rule.key == seed.DEFAULT_ACCESS_POLICY_RULE
     assert access_rule.name == "-- changed access rule name --"
     assert access_rule.action_type == ActionType.access.value
-    assert access_rule.storage_destination_id == s3_storage.id
-
-    storage_destination: StorageConfig = access_rule.storage_destination
-    db.refresh(storage_destination)
-    assert storage_destination.key == "s3_storage_config"
-    assert storage_destination.format == ResponseFormat.json
-    assert storage_destination.type == StorageType.s3
 
     assert len(access_rule.targets) == num_rule_targets - 1
-
-    db.refresh(local_storage_config)
-    assert local_storage_config.name == "-- changed storage name --"

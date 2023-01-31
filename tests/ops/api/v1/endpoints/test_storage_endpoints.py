@@ -14,6 +14,7 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_READ,
 )
 from fides.api.ops.api.v1.urn_registry import (
+    STORAGE_ACTIVE_DEFAULT,
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
     STORAGE_DEFAULT,
@@ -23,7 +24,9 @@ from fides.api.ops.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.models.application_settings import ApplicationSettings
+from fides.api.ops.models.storage import StorageConfig, default_storage_config_name
+from fides.api.ops.schemas.application_settings import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
@@ -1148,3 +1151,115 @@ class TestPutDefaultStorageConfigSecretsS3:
                 "aws_secret_access_key": payload["aws_secret_access_key"],
             },
         )
+
+
+class TestGetActiveDefaultStorageConfig:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + STORAGE_ACTIVE_DEFAULT
+
+    def test_get_active_default_config_not_authenticated(
+        self, url, api_client: TestClient
+    ):
+        response = api_client.get(url)
+        assert 401 == response.status_code
+
+    def test_get_active_default_config_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header([STORAGE_DELETE])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_active_default_none_set(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        retrieved_config = response.json()
+        assert retrieved_config["type"] == StorageType.local.value
+        assert retrieved_config["name"] == default_storage_config_name(
+            StorageType.local.value
+        )
+        assert retrieved_config["is_default"]
+
+    def test_get_active_default_app_setting_not_set(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        storage_config_default,
+    ):
+        """
+        Even with `storage_config_default` fixture creating a default s3 storage,
+        we should still get the fallback local config as the active default
+        since the application setting for "active default" storage is not yet set
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        retrieved_config = response.json()
+        assert retrieved_config["type"] == StorageType.local.value
+        assert retrieved_config["name"] == default_storage_config_name(
+            StorageType.local.value
+        )
+        assert retrieved_config["is_default"]
+
+    @pytest.mark.usefixtures("set_active_storage_s3")
+    def test_get_active_default_app_setting_but_not_configured(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        Without `storage_config_default` fixture creating a default s3 storage,
+        but by setting the application setting for "active default" storage to s3,
+        we should get a 404, since we have no s3 default storage configured.
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 404 == response.status_code
+
+    @pytest.mark.usefixtures("set_active_storage_s3")
+    def test_get_active_default_config(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        storage_config_default: StorageConfig,
+    ):
+        """
+        We should get back our s3 storage config default now that
+        we set s3 as the active default storage via app setting
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+
+        response_body = response.json()
+
+        assert response_body == {
+            "name": storage_config_default.name,
+            "type": storage_config_default.type.value,
+            "details": {
+                "auth_method": storage_config_default.details["auth_method"],
+                "naming": storage_config_default.details["naming"],
+            },
+            "key": storage_config_default.key,
+            "format": storage_config_default.format.value,
+            "is_default": True,
+        }

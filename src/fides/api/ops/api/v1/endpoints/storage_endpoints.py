@@ -27,6 +27,7 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_READ,
 )
 from fides.api.ops.api.v1.urn_registry import (
+    STORAGE_ACTIVE_DEFAULT,
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
     STORAGE_DEFAULT,
@@ -39,7 +40,12 @@ from fides.api.ops.api.v1.urn_registry import (
 from fides.api.ops.common_exceptions import StorageUploadError
 from fides.api.ops.models.connectionconfig import ConnectionTestStatus
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.models.storage import StorageConfig, default_storage_config_by_type
+from fides.api.ops.models.storage import (
+    StorageConfig,
+    active_default_storage_config,
+    default_storage_config_by_type,
+    default_storage_config_name,
+)
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
@@ -203,7 +209,7 @@ def put_config_secrets(
 
     logger.info("Updating storage config secrets for config with key '{}'", config_key)
     try:
-        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.dict())
+        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.dict())  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -284,7 +290,7 @@ def delete_config_by_key(
     """
     logger.info("Finding storage config with key '{}'", config_key)
 
-    storage_config: StorageConfig = StorageConfig.get_by(
+    storage_config: Optional[StorageConfig] = StorageConfig.get_by(
         db, field="key", value=config_key
     )
     if not storage_config:
@@ -295,7 +301,7 @@ def delete_config_by_key(
     if storage_config.is_default:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Default storage configurations cannot be deleted.",
+            detail="Default storage configurations cannot be deleted.",
         )
 
     logger.info("Deleting storage config with key '{}'", config_key)
@@ -312,7 +318,7 @@ def put_default_config(
     *,
     db: Session = Depends(deps.get_db),
     incoming_storage_config: StorageDestinationBase,
-) -> StorageDestinationResponse:
+) -> StorageConfig:
     """
     Create or update the default storage configuration for the given storage type
     """
@@ -327,9 +333,9 @@ def put_default_config(
         incoming_data["key"] = existing_default.key
     else:
         # set a name for our config if we're creating a new default
-        incoming_data[
-            "name"
-        ] = f"Default Storage Config [{incoming_storage_config.type}]"
+        incoming_data["name"] = default_storage_config_name(
+            incoming_storage_config.type
+        )
 
     # since we're setting the default storage config for the given type, `is_default` MUST be set to `True`
     incoming_data["is_default"] = True
@@ -339,8 +345,8 @@ def put_default_config(
         return storage_config
     except KeyOrNameAlreadyExists as exc:
         logger.warning(
-            "Create/update failed for storage config {}: {}",
-            incoming_storage_config.key,
+            "Create/update failed for default config update for storage type {}: {}",
+            incoming_storage_config.type,
             exc,
         )
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.args[0])
@@ -400,7 +406,7 @@ def put_default_config_secrets(
         storage_type.value,
     )
     try:
-        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.dict())
+        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.dict())  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -470,5 +476,26 @@ def get_default_config_by_type(
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No default config for storage type {storage_type.value}.",
+        )
+    return storage_config
+
+
+@router.get(
+    STORAGE_ACTIVE_DEFAULT,
+    dependencies=[Security(verify_oauth_client, scopes=[STORAGE_READ])],
+    response_model=StorageDestinationResponse,
+)
+def get_active_default_config(
+    *, db: Session = Depends(deps.get_db)
+) -> Optional[StorageConfig]:
+    """
+    Retrieves the active default storage config.
+    """
+    logger.info("Finding active default storage config")
+    storage_config = active_default_storage_config(db)
+    if not storage_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No active default storage config found.",
         )
     return storage_config

@@ -1,3 +1,5 @@
+from typing import Union
+
 from pydantic import ValidationError
 
 from fides.api.ops.schemas.storage.storage import (
@@ -11,13 +13,21 @@ from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
 
 
 def get_schema_for_secrets(
-    storage_type: StorageType,
+    storage_type: Union[StorageType, str],
     secrets: possible_storage_secrets,
 ) -> SUPPORTED_STORAGE_SECRETS:
     """
     Returns the secrets that pertain to `storage_type` represented as a Pydantic schema
     for validation purposes.
     """
+    if not isinstance(storage_type, StorageType):
+        # try to coerce into an enum
+        try:
+            storage_type = StorageType[storage_type]
+        except KeyError:
+            raise ValueError(
+                "storage_type argument must be a valid StorageType enum member."
+            )
     try:
         schema = {
             StorageType.s3: StorageSecretsS3,
