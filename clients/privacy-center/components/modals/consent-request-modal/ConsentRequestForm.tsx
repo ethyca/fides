@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Button,
   chakra,
@@ -42,7 +42,6 @@ const useConsentRequestForm = ({
 }) => {
   const identityInputs =
     config.consent?.identity_inputs ?? defaultIdentityInput;
-  const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
@@ -50,8 +49,6 @@ const useConsentRequestForm = ({
       phone: "",
     },
     onSubmit: async (values) => {
-      setIsLoading(true);
-
       const body = {
         email: values.email,
         phone_number: values.phone,
@@ -116,7 +113,7 @@ const useConsentRequestForm = ({
     }),
   });
 
-  return { ...formik, isLoading, identityInputs };
+  return { ...formik, identityInputs };
 };
 
 type ConsentRequestFormProps = {
@@ -144,6 +141,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     touched,
     values,
     isValid,
+    isSubmitting,
     dirty,
     setFieldValue,
     resetForm,
@@ -225,7 +223,8 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
             _hover={{ bg: "primary.400" }}
             _active={{ bg: "primary.500" }}
             colorScheme="primary"
-            disabled={!(isValid && dirty)}
+            isLoading={isSubmitting}
+            isDisabled={isSubmitting || !(isValid && dirty)}
             size="sm"
           >
             Continue
