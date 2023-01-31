@@ -49,7 +49,11 @@ const StorageConfiguration = () => {
     }
 
     const activeStoragePayload = await saveActiveStorage({
-      active_default_storage_type: value,
+      fides: {
+        storage: {
+          active_default_storage_type: value,
+        },
+      },
     });
 
     if ("error" in activeStoragePayload) {
@@ -93,6 +97,13 @@ const StorageConfiguration = () => {
       </Heading>
 
       <Box display="flex" flexDirection="column" width="50%">
+        <Box mb={5}>
+          Fides requires a storage destination to store and share the results of
+          privacy requests. For a production setup, it is highly recommended to
+          have S3 as a storage destination. Ensure you have completed the setup
+          for the storage destination and have the details handy prior to the
+          following steps.
+        </Box>
         <Box>
           To configure a Storage destination, first choose a method to store
           your results. Fides currently supports{" "}

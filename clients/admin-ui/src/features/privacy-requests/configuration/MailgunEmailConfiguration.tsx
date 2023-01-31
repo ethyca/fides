@@ -1,12 +1,15 @@
 import { Box, Button, Divider, Heading, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
+
 import { CustomTextInput } from "~/features/common/form/inputs";
 
-const MailgunEmailConfiguration = ({ messagingDetails }) => {
+const MailgunEmailConfiguration = ({
+  messagingDetails: { api_key, email, name, domain },
+}: any) => {
   const [configurationStep, setConfigurationStep] = useState("");
 
-  console.log("existing details", messagingDetails);
+  // console.log("existing details", messagingDetails);
 
   const handleMailgunConfiguration = () => {
     // API CALL 1
@@ -26,8 +29,9 @@ const MailgunEmailConfiguration = ({ messagingDetails }) => {
   };
 
   const handleTestConnection = () => {
+    setConfigurationStep("4");
     // API CALL 3 - test connection
-    console.log("test 3");
+    // console.log("test 3");
   };
 
   const MAILGUN_MESSAGING_CONFIG_FORM_ID = "mailgun-messaging-config-form-id";
@@ -37,16 +41,16 @@ const MailgunEmailConfiguration = ({ messagingDetails }) => {
     "mailgun-messaging-config-email-form-id";
 
   const initialValues = {
-    name: messagingDetails.name ?? "",
-    domain: messagingDetails.domain ?? "",
+    name: name ?? "",
+    domain: domain ?? "",
   };
 
   const initialAPIKeyValue = {
-    api_key: messagingDetails.api_key ?? "",
+    api_key: api_key ?? "",
   };
 
   const initialEmailValue = {
-    email: messagingDetails.email ?? "",
+    email: email ?? "",
   };
 
   return (
@@ -71,25 +75,27 @@ const MailgunEmailConfiguration = ({ messagingDetails }) => {
                 label="Domain"
                 placeholder="Enter domain"
               />
-              <Button
-                onClick={() => resetForm()}
-                mr={2}
-                size="sm"
-                variant="outline"
-              >
-                Cancel
-              </Button>
-              <Button
-                disabled={isSubmitting}
-                type="submit"
-                colorScheme="primary"
-                size="sm"
-                data-testid="save-btn"
-                form={MAILGUN_MESSAGING_CONFIG_FORM_ID}
-                isLoading={false}
-              >
-                Save
-              </Button>
+              <Box mt={10}>
+                <Button
+                  onClick={() => resetForm()}
+                  mr={2}
+                  size="sm"
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={isSubmitting}
+                  type="submit"
+                  colorScheme="primary"
+                  size="sm"
+                  data-testid="save-btn"
+                  form={MAILGUN_MESSAGING_CONFIG_FORM_ID}
+                  isLoading={false}
+                >
+                  Save
+                </Button>
+              </Box>
             </Form>
           )}
         </Formik>

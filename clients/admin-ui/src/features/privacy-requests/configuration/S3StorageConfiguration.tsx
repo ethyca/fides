@@ -98,30 +98,33 @@ const S3StorageConfiguration = () => {
         >
           {({ isSubmitting, resetForm }) => (
             <Form id={CONFIG_FORM_ID}>
-              <CustomSelect
-                name="format"
-                label="Format"
-                options={[
-                  { label: "json", value: "json" },
-                  { label: "csv", value: "csv" },
-                ]}
-              />
-              <CustomSelect
-                name="auth_method"
-                label="Auth method"
-                options={[
-                  { label: "secret_keys", value: "secret_keys" },
-                  { label: "automatic", value: "automatic" },
-                ]}
-              />
-              <CustomTextInput
-                name="bucket"
-                label="Bucket"
-                placeholder="Optional"
-              />
+              <Stack mt={5} spacing={5}>
+                <CustomSelect
+                  name="format"
+                  label="Format"
+                  options={[
+                    { label: "json", value: "json" },
+                    { label: "csv", value: "csv" },
+                  ]}
+                />
+                <CustomSelect
+                  name="auth_method"
+                  label="Auth method"
+                  options={[
+                    { label: "secret_keys", value: "secret_keys" },
+                    { label: "automatic", value: "automatic" },
+                  ]}
+                />
+                <CustomTextInput
+                  name="bucket"
+                  label="Bucket"
+                  placeholder="Optional"
+                />
+              </Stack>
 
               <Button
                 onClick={() => resetForm()}
+                mt={5}
                 mr={2}
                 size="sm"
                 variant="outline"
@@ -129,6 +132,7 @@ const S3StorageConfiguration = () => {
                 Cancel
               </Button>
               <Button
+                mt={5}
                 disabled={isSubmitting}
                 type="submit"
                 colorScheme="primary"
@@ -145,8 +149,8 @@ const S3StorageConfiguration = () => {
       </Stack>
       {authMethod === "secret_keys" ? (
         <>
-          <Divider />
-          <Heading fontSize="md" fontWeight="semibold" mt={10}>
+          <Divider mt={5} />
+          <Heading fontSize="md" fontWeight="semibold" mt={5}>
             Storage destination
           </Heading>
           Use the key returned in the last step to provide and authenticate your
@@ -158,18 +162,20 @@ const S3StorageConfiguration = () => {
             >
               {({ isSubmitting, resetForm }) => (
                 <Form id={KEYS_FORM_ID}>
-                  <CustomTextInput
-                    name="aws_access_key_ID"
-                    label="AWS access key ID"
-                  />
+                  <Stack mt={5} spacing={5}>
+                    <CustomTextInput
+                      name="aws_access_key_ID"
+                      label="AWS access key ID"
+                    />
 
-                  <CustomTextInput
-                    name="aws_secret_access_key"
-                    label="AWS secret access key"
-                  />
-
+                    <CustomTextInput
+                      name="aws_secret_access_key"
+                      label="AWS secret access key"
+                    />
+                  </Stack>
                   <Button
                     onClick={() => resetForm()}
+                    mt={5}
                     mr={2}
                     size="sm"
                     variant="outline"
@@ -177,6 +183,7 @@ const S3StorageConfiguration = () => {
                     Cancel
                   </Button>
                   <Button
+                    mt={5}
                     disabled={isSubmitting}
                     type="submit"
                     colorScheme="primary"

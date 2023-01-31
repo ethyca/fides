@@ -10,16 +10,16 @@ import {
   Text,
 } from "@fidesui/react";
 import NextLink from "next/link";
-
-import Layout from "~/features/common/Layout";
+import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import Layout from "~/features/common/Layout";
+
 import {
   useCreateMessagingConfigurationMutation,
   useGetMessagingConfigurationDetailsQuery,
 } from "../privacy-requests.slice";
-import { useState } from "react";
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
 import TwilioEmailConfiguration from "./TwilioEmailConfiguration";
 import TwilioSMSConfiguration from "./TwilioSMS";
@@ -58,8 +58,8 @@ const MessagingConfiguration = () => {
     }
   };
 
-  console.log("test", messagingValue);
-  console.log("test 2", messagingDetails);
+  // console.log("test", messagingValue);
+  // console.log("test 2", messagingDetails);
 
   return (
     <Layout title="Configure Privacy Requests - Messaging">
@@ -148,11 +148,9 @@ const MessagingConfiguration = () => {
           <MailgunEmailConfiguration messagingDetails={messagingDetails} />
         ) : null}
         {messagingValue === "twilio-email" ? (
-          <TwilioEmailConfiguration messagingDetails={messagingDetails} />
+          <TwilioEmailConfiguration />
         ) : null}
-        {messagingValue === "twilio-sms" ? (
-          <TwilioSMSConfiguration messagingDetails={messagingDetails} />
-        ) : null}
+        {messagingValue === "twilio-sms" ? <TwilioSMSConfiguration /> : null}
       </Box>
     </Layout>
   );
