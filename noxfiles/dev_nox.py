@@ -78,8 +78,7 @@ def dev(session: Session) -> None:
 @nox_session()
 def cypress_tests(session: Session) -> None:
     """
-    End-to-end Cypress tests designed to be run as part of
-    the 'e2e_test' session.
+    End-to-end Cypress tests designed to be run as part of the 'e2e_test' session.
     """
     session.log("Running Cypress tests...")
     session.run(*RUN_CYPRESS_TESTS, external=True)
