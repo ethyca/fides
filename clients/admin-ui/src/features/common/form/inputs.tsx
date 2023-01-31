@@ -418,7 +418,6 @@ export const CustomTextArea = ({
     <Textarea
       {...field}
       size="sm"
-      width="auto"
       mr={2}
       {...textAreaProps}
       data-testid={`input-${field.name}`}

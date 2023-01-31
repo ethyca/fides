@@ -2,6 +2,8 @@ import { Box, Tag } from "@fidesui/react";
 import { ActionType, Rule } from "privacy-requests/types";
 import React from "react";
 
+import { capitalize } from "~/features/common/utils";
+
 type RequestTypeProps = {
   rules: Rule[];
 };
@@ -11,9 +13,7 @@ const RequestType = ({ rules }: RequestTypeProps) => {
     new Set(
       rules
         .filter((d) => Object.values(ActionType).includes(d.action_type))
-        .map((d) =>
-          d.action_type === ActionType.ACCESS ? "Download" : "Delete"
-        )
+        .map((d) => capitalize(d.action_type))
     )
   );
   const tags = actions.map((action_type) => (
@@ -23,8 +23,6 @@ const RequestType = ({ rules }: RequestTypeProps) => {
       bg="primary.400"
       fontWeight="medium"
       fontSize="sm"
-      mr={1}
-      mb={4}
     >
       {action_type}
     </Tag>

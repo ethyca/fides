@@ -15,7 +15,11 @@ import RequestRow from "./RequestRow";
 import SortRequestButton from "./SortRequestButton";
 import { PrivacyRequestEntity } from "./types";
 
-const RequestTable: React.FC = () => {
+type RequestTableProps = {
+  revealPII: boolean;
+};
+
+const RequestTable = ({ revealPII }: RequestTableProps) => {
   const dispatch = useAppDispatch();
   const filters = useAppSelector(selectPrivacyRequestFilters);
   const { checkAll, errorRequests } = useAppSelector(selectRetryRequests);
@@ -104,6 +108,7 @@ const RequestTable: React.FC = () => {
               isChecked={errorRequests.includes(request.id)}
               onCheckChange={handleCheckChange}
               request={request}
+              revealPII={revealPII}
             />
           ))}
         </Tbody>
