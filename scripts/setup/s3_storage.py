@@ -51,3 +51,16 @@ def create_s3_storage(
         raise RuntimeError(
             f"fides storage secrets failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
+
+    url = f"{constants.BASE_URL}{urls.APPLICATION_SETTINGS}"
+    response = requests.patch(
+        url,
+        headers=auth_header,
+        json={"fides.storage.active_default_storage_type": "s3"},
+    )
+    if not response.ok:
+        raise RuntimeError(
+            f"Failed to make s3 storage the active default storage type!"
+        )
+
+    logger.info(f"Successfully made s3 storage the active default storage type")
