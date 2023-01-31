@@ -1,0 +1,131 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Gorgias SaaS Config
+  type: gorgias
+  description: A sample schema representing the Gorgias connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: api_key
+    - name: username
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <username>
+        password: <api_key>
+
+  test_request:
+    method: GET
+    path: /api/customers
+    query_params:
+      - name: email
+        value: <email>
+    param_values:
+      - name: email
+        identity: email
+
+  endpoints:
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /api/customers
+          query_params:
+            - name: email
+              value: <email>
+          data_path: data
+          param_values:
+            - name: email
+              identity: email
+        update:
+          method: PUT
+          path: /api/customers/<customer_id>/
+          body: |
+            {
+               <all_object_fields>  
+            }
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.id
+                  direction: from
+    - name: search
+      requests:
+        read:
+          method: POST
+          path: /api/search
+          body: |
+            {
+              "type": "customer_channel_email",
+              "query": "<email>"
+            }
+          param_values:
+            - name: email
+              identity: email
+    - name: tickets
+      requests:
+        read:
+          method: GET
+          path: /api/tickets
+          query_params:
+            - name: customer_id
+              value: <customer_id>
+            - name: limit
+              value: '30'
+          data_path: data
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.id
+                  direction: from
+        update:
+          method: PUT
+          path: /api/tickets/<tickets_id>/
+          body: |
+            <all_object_fields>
+          param_values:
+            - name: tickets_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: tickets.id
+                  direction: from
+    - name: ticket_message
+      requests:
+        read:
+          method: GET
+          path: /api/messages
+          query_params:
+            - name: ticket_id
+              value: <tickets_id>
+          data_path: data
+          param_values:
+            - name: tickets_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: tickets.id
+                  direction: from
+        update:
+          method: PUT
+          path: /api/tickets/<tickets_id>/messages/<ticket_message_id>/
+          body: |
+            {
+               <all_object_fields> 
+            }
+          param_values:
+            - name: tickets_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: tickets.id
+                  direction: from
+            - name: ticket_message_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: ticket_message.id
+                  direction: from
