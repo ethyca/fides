@@ -97,6 +97,89 @@ async def test_firebase_auth_access_request(
 @pytest.mark.integration_saas
 @pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
+async def test_firebase_auth_access_request_non_existent_users(
+    db,
+    policy,
+    firebase_auth_connection_config,
+    firebase_auth_dataset_config,
+    firebase_auth_user: auth.ImportUserRecord,
+) -> None:
+    """Ensure that firebase access request task gracefully handles non-existent users"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_firebase_access_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"email": "a_fake_email@ethyca.com"})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
+    merged_graph = firebase_auth_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    # just ensure we don't error out here
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [firebase_auth_connection_config],
+        {"email": "a_fake_email@ethyca.com"},
+        db,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:user"],
+        min_size=0,
+        keys=[
+            "uid",
+            "email",
+            "display_name",
+            "photo_url",
+            "disabled",
+            "email_verified",
+            "phone_number",
+        ],
+    )
+
+    # now do the same but with phone number
+
+    privacy_request = PrivacyRequest(
+        id=f"test_firebase_access_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"phone_number": "+10000000000"})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
+    merged_graph = firebase_auth_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    # just ensure we don't error out here
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [firebase_auth_connection_config],
+        {"phone_number": "+10000000000"},
+        db,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:user"],
+        min_size=0,
+        keys=[
+            "uid",
+            "email",
+            "display_name",
+            "photo_url",
+            "disabled",
+            "email_verified",
+            "phone_number",
+        ],
+    )
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_firebase_auth
+@pytest.mark.asyncio
 async def test_firebase_auth_access_request_phone_number_identity(
     db,
     policy,
