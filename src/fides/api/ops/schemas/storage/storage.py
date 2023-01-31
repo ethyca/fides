@@ -1,11 +1,11 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
+from fideslang.validation import FidesKey
 from pydantic import Extra, ValidationError, root_validator, validator
 from pydantic.main import BaseModel
 
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class ResponseFormat(Enum):
@@ -115,7 +115,7 @@ class StorageDestination(BaseModel):
         StorageDetailsS3,
         StorageDetailsLocal,
     ]
-    key: Optional[FidesOpsKey]
+    key: Optional[FidesKey]
     format: Optional[ResponseFormat] = ResponseFormat.json.value  # type: ignore
 
     class Config:
@@ -182,7 +182,7 @@ class StorageDestinationResponse(BaseModel):
     name: str
     type: StorageType
     details: Dict[StorageDetails, Any]
-    key: FidesOpsKey
+    key: FidesKey
     format: ResponseFormat
 
     class Config:

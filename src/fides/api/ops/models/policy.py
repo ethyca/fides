@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
+from fideslang.validation import FidesKey
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
@@ -19,7 +20,6 @@ from fides.api.ops.common_exceptions import WebhookOrderException
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.core.config import get_config
 from fides.lib.db.base_class import Base, FidesBase
@@ -152,7 +152,7 @@ class Policy(Base):
         return [rule for rule in self.rules if rule.action_type == action_type]  # type: ignore[attr-defined]
 
 
-def _get_ref_from_taxonomy(fides_key: FidesOpsKey) -> FideslangDataCategory:
+def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
     """Returns the DataCategory model from the DEFAULT_TAXONOMY corresponding to fides_key."""
     for item in DEFAULT_TAXONOMY.data_category:
         if item.fides_key == fides_key:
@@ -164,7 +164,7 @@ def _get_ref_from_taxonomy(fides_key: FidesOpsKey) -> FideslangDataCategory:
 
 
 def _is_ancestor_of_contained_categories(
-    fides_key: FidesOpsKey,
+    fides_key: FidesKey,
     data_categories: List[str],
 ) -> Tuple[bool, Optional[str]]:
     """

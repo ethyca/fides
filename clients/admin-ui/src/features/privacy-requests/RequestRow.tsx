@@ -10,7 +10,6 @@ import {
   MenuList,
   MoreIcon,
   Portal,
-  Tag,
   Td,
   Text,
   Tr,
@@ -18,11 +17,13 @@ import {
   useToast,
 } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
+import RequestType from "common/RequestType";
 import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
+import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import PII from "../common/PII";
 import RequestStatusBadge from "../common/RequestStatusBadge";
@@ -175,19 +176,14 @@ const RequestRow: React.FC<{
         <RequestStatusBadge status={request.status} />
       </Td>
       <Td py={1}>
-        <DaysLeftTag daysLeft={request.days_left} includeText={false} />
+        <DaysLeftTag
+          daysLeft={request.days_left}
+          includeText={false}
+          status={request.status as ApiPrivacyRequestStatus}
+        />
       </Td>
       <Td py={1}>
-        <Tag
-          color="white"
-          bg="primary.400"
-          px={2}
-          py={0.5}
-          size="sm"
-          fontWeight="medium"
-        >
-          {request.policy.name}
-        </Tag>
+        <RequestType rules={request.policy.rules} />
       </Td>
       <Td py={1}>
         <Text fontSize="xs">
@@ -240,6 +236,7 @@ const RequestRow: React.FC<{
           {request.status === "error" && (
             <ReprocessButton
               buttonProps={{ mr: "-px", size: "xs" }}
+              handleBlur={handleBlur}
               subjectRequest={request}
             />
           )}
@@ -249,7 +246,10 @@ const RequestRow: React.FC<{
                 size="xs"
                 mr="-px"
                 bg="white"
-                onClick={handleApproveRequest}
+                onClick={() => {
+                  handleApproveRequest();
+                  handleBlur();
+                }}
                 isLoading={approveRequestResult.isLoading}
                 _loading={{
                   opacity: 1,

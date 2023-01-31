@@ -1,12 +1,12 @@
 from typing import Dict, List
 
 import pytest
+from fideslang import FidesDatasetReference
 from pydantic import ValidationError
 
 from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.ops.graph.config import CollectionAddress, FieldAddress
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import (
     ConnectorParam,
     Endpoint,
@@ -44,7 +44,7 @@ def test_saas_request_override():
     pv = ParamValue(
         name="test_param",
         references=[
-            FidesopsDatasetReference(
+            FidesDatasetReference(
                 dataset="test_dataset", field="test_field", direction="from"
             )
         ],
@@ -285,7 +285,7 @@ class TestConnectorParam:
                             ParamValue(
                                 name="a",
                                 references=[
-                                    FidesopsDatasetReference(
+                                    FidesDatasetReference(
                                         dataset="test_dataset",
                                         field="table.a",
                                         direction="from",
@@ -295,7 +295,7 @@ class TestConnectorParam:
                             ParamValue(
                                 name="b",
                                 references=[
-                                    FidesopsDatasetReference(
+                                    FidesDatasetReference(
                                         dataset="test_dataset",
                                         field="table.b",
                                         direction="from",
@@ -312,7 +312,7 @@ class TestConnectorParam:
                             ParamValue(
                                 name="a",
                                 references=[
-                                    FidesopsDatasetReference(
+                                    FidesDatasetReference(
                                         dataset="test_dataset",
                                         field="table.a",
                                         direction="from",
@@ -322,7 +322,7 @@ class TestConnectorParam:
                             ParamValue(
                                 name="b",
                                 references=[
-                                    FidesopsDatasetReference(
+                                    FidesDatasetReference(
                                         dataset="test_dataset",
                                         field="table.b",
                                         direction="from",
@@ -349,7 +349,7 @@ class TestConnectorParam:
                                 ParamValue(
                                     name="a",
                                     references=[
-                                        FidesopsDatasetReference(
+                                        FidesDatasetReference(
                                             dataset="test_dataset",
                                             field="table.a",
                                             direction="from",
@@ -359,7 +359,7 @@ class TestConnectorParam:
                                 ParamValue(
                                     name="b",
                                     references=[
-                                        FidesopsDatasetReference(
+                                        FidesDatasetReference(
                                             dataset="test_dataset",
                                             field="table.b",
                                             direction="from",
@@ -376,7 +376,7 @@ class TestConnectorParam:
                                 ParamValue(
                                     name="b",
                                     references=[
-                                        FidesopsDatasetReference(
+                                        FidesDatasetReference(
                                             dataset="test_dataset",
                                             field="table.b",
                                             direction="from",
@@ -386,7 +386,7 @@ class TestConnectorParam:
                                 ParamValue(
                                     name="c",
                                     references=[
-                                        FidesopsDatasetReference(
+                                        FidesDatasetReference(
                                             dataset="test_dataset",
                                             field="table.c",
                                             direction="from",

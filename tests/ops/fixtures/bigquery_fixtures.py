@@ -6,6 +6,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -71,16 +72,20 @@ def bigquery_example_test_dataset_config(
     bigquery_connection_config.name = fides_key
     bigquery_connection_config.key = fides_key
     bigquery_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": bigquery_connection_config.id,
             "fides_key": fides_key,
-            "dataset": bigquery_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")

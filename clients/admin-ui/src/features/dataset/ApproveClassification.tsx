@@ -2,6 +2,7 @@ import { Button, chakra, Spacer, useToast } from "@fidesui/react";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
+import { useFeatures } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -15,6 +16,8 @@ import { selectActiveDataset, useUpdateDatasetMutation } from "./dataset.slice";
 import { getUpdatedDatasetFromClassifyDataset } from "./helpers";
 
 const ApproveClassification = () => {
+  const features = useFeatures();
+
   const dataset = useSelector(selectActiveDataset);
   const classifyDataset = useSelector(selectActiveClassifyDataset);
   const classifyCollection = useSelector(selectClassifyInstanceCollection);
@@ -43,25 +46,57 @@ const ApproveClassification = () => {
 
     const updatedDataset = getUpdatedDatasetFromClassifyDataset(
       dataset,
-      classifyDataset
+      classifyDataset,
+      features.flags.datasetClassificationUpdates
+        ? classifyCollection?.name
+        : undefined
     );
+
     try {
       const updateResult = await updateDataset(updatedDataset);
       if (isErrorResult(updateResult)) {
         toast(errorToastParams(getErrorMessage(updateResult.error)));
         return;
       }
+      if (features.flags.datasetClassificationUpdates) {
+        toast(successToastParams("Collection classified and approved"));
+        // Validate if any fields still require category approval
+        let uncategorizedCount = 0;
+        updatedDataset.collections.forEach((updatedCollection) => {
+          updatedCollection.fields.forEach((updatedField) => {
+            if (
+              !updatedField.data_categories ||
+              updatedField.data_categories.length === 0
+            ) {
+              uncategorizedCount += 1;
+            }
+          });
+        });
+        // Only update the dataset as classified when all fields have been categorized
+        if (uncategorizedCount === 0) {
+          const statusResult = await updateClassifyInstance({
+            dataset_fides_key: dataset.fides_key,
+            status: ClassificationStatus.REVIEWED,
+          });
 
-      const statusResult = await updateClassifyInstance({
-        dataset_fides_key: dataset.fides_key,
-        status: ClassificationStatus.REVIEWED,
-      });
-      if (isErrorResult(statusResult)) {
-        toast(errorToastParams(getErrorMessage(statusResult.error)));
-        return;
+          if (isErrorResult(statusResult)) {
+            toast(errorToastParams(getErrorMessage(statusResult.error)));
+            return;
+          }
+
+          toast(successToastParams("Dataset classified and approved"));
+        }
+      } else {
+        const statusResult = await updateClassifyInstance({
+          dataset_fides_key: dataset.fides_key,
+          status: ClassificationStatus.REVIEWED,
+        });
+        if (isErrorResult(statusResult)) {
+          toast(errorToastParams(getErrorMessage(statusResult.error)));
+          return;
+        }
+        toast(successToastParams("Dataset classified and approved"));
       }
-
-      toast(successToastParams("Dataset classified and approved"));
     } catch (error) {
       toast(errorToastParams(`${error}`));
     }
@@ -87,17 +122,31 @@ const ApproveClassification = () => {
         <chakra.span fontWeight="bold">{classifyCollection.name}</chakra.span>{" "}
         table that are likely to contain personal data.
       </chakra.p>
-      <Button
-        size="sm"
-        variant="primary"
-        flexShrink={0}
-        onClick={handleApprove}
-        isLoading={isLoading}
-        isDisabled={isLoading}
-        data-testid="approve-classification-btn"
-      >
-        Approve dataset classification
-      </Button>
+      {features.flags.datasetClassificationUpdates ? (
+        <Button
+          size="sm"
+          variant="primary"
+          flexShrink={0}
+          onClick={handleApprove}
+          isLoading={isLoading}
+          isDisabled={isLoading}
+          data-testid="approve-classification-btn"
+        >
+          Approve classifications
+        </Button>
+      ) : (
+        <Button
+          size="sm"
+          variant="primary"
+          flexShrink={0}
+          onClick={handleApprove}
+          isLoading={isLoading}
+          isDisabled={isLoading}
+          data-testid="approve-classification-btn"
+        >
+          Approve dataset
+        </Button>
+      )}
     </>
   );
 };

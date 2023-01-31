@@ -1,12 +1,12 @@
 from enum import Enum
 from re import compile as regex
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
+from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas import Msg
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class MessagingMethod(Enum):
@@ -118,6 +118,9 @@ class MessagingServiceDetails(Enum):
     API_VERSION = "api_version"
     DOMAIN = "domain"
 
+    # Twilio Email
+    TWILIO_EMAIL_FROM = "twilio_email_from"
+
 
 class MessagingServiceDetailsMailgun(BaseModel):
     """The details required to represent a Mailgun email configuration."""
@@ -125,6 +128,17 @@ class MessagingServiceDetailsMailgun(BaseModel):
     is_eu_domain: Optional[bool] = False
     api_version: Optional[str] = "v3"
     domain: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
+
+
+class MessagingServiceDetailsTwilioEmail(BaseModel):
+    """The details required to represent a Twilio email configuration."""
+
+    twilio_email_from: str
 
     class Config:
         """Restrict adding other fields through this schema."""
@@ -203,9 +217,11 @@ class MessagingConfigRequest(BaseModel):
     """Messaging Config Request Schema"""
 
     name: str
-    key: Optional[FidesOpsKey]
+    key: Optional[FidesKey]
     service_type: MessagingServiceType
-    details: Optional[MessagingServiceDetailsMailgun]
+    details: Optional[
+        Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
+    ]
 
     class Config:
         use_enum_values = False
@@ -219,16 +235,33 @@ class MessagingConfigRequest(BaseModel):
             values["service_type"] = service_type_pre.upper()
             service_type: MessagingServiceType = values["service_type"]
             if service_type == MessagingServiceType.MAILGUN.value:
-                if not values.get("details"):
-                    raise ValueError("Mailgun messaging config must include details")
+                cls._validate_details_schema(
+                    values=values, schema=MessagingServiceDetailsMailgun
+                )
+            if service_type == MessagingServiceType.TWILIO_EMAIL.value:
+                cls._validate_details_schema(
+                    values=values, schema=MessagingServiceDetailsTwilioEmail
+                )
         return values
+
+    @staticmethod
+    def _validate_details_schema(
+        values: Dict[str, Any],
+        schema: Union[
+            Type[MessagingServiceDetailsMailgun],
+            Type[MessagingServiceDetailsTwilioEmail],
+        ],
+    ) -> None:
+        if not values.get("details"):
+            raise ValueError("Messaging config must include details")
+        schema.validate(values.get("details"))
 
 
 class MessagingConfigResponse(BaseModel):
     """Messaging Config Response Schema"""
 
     name: str
-    key: FidesOpsKey
+    key: FidesKey
     service_type: MessagingServiceType
     details: Optional[Dict[MessagingServiceDetails, Any]]
 

@@ -10,97 +10,30 @@ edit_uri: blob/main/docs/fides/docs/
 nav:
   - Fides:
       - What is Fides?: index.md
-      - Installation:
-        - Overview: installation/overview.md
-        - Requirements: installation/requirements.md
-        - PyPI: installation/pypi.md
-        - Docker: installation/docker.md
-        - Configuration: installation/configuration.md
-      - Get Started with DSR Automation:
-          - Sample Fides Application: getting-started/sample_project.md
-          - Basic Setup: dsr_quickstart/basic_setup.md
-          - Environment Configuration: dsr_quickstart/environment_configuration.md
-          - Configure Connectors: dsr_quickstart/configure_connectors.md
-          - Connect Databases: dsr_quickstart/connect_databases.md
-          - Customize the Privacy Center: dsr_quickstart/privacy_center.md
-          - Process a DSR: dsr_quickstart/dsr_processing.md
-      - Understanding Privacy Requests:
-          - Connect to Databases: getting-started/database_connectors.md
-          - Generate Resources: getting-started/generate_resources.md
-          - Create Datasets: getting-started/datasets.md
-          - Configure Storage Destinations: getting-started/storage.md
-          - Create Execution Policies: getting-started/execution_policies.md
-          - Execute Privacy Requests: getting-started/privacy_requests.md
-      - In-Depth Guides:
-          - Authenticate with OAuth: guides/oauth.md
-          - Create Policies: guides/policies.md
-          - Extend the Taxonomy: guides/extend_taxonomy.md
-          - Generate Data Maps: guides/generate_datamaps.md
-          - Configure Messaging: guides/messaging.md
-          - View Available Connection Types: guides/connection_types.md
-          - Annotate Complex Fields: guides/complex_fields.md
-          - Configure Data Masking: guides/masking_strategies.md
-          - Execution Policy Webhooks: guides/policy_webhooks.md
-          - Report on Privacy Requests: guides/reporting.md
-          - Preview Query Execution: guides/query_execution.md
-          - Data Rights Protocol: guides/data_rights_protocol.md
-          - Configure Manual Webhooks: guides/manual_webhooks.md
-          - Understanding Privacy Request Execution: guides/request_execution.md
-      - SaaS Connectors:
-          - Connect to SaaS Applications: saas_connectors/saas_connectors.md
-          - SaaS Configuration: saas_connectors/saas_config.md
-          - SaaS OAuth2 Configuration: saas_connectors/saas_oauth2.md
-          - SaaS Post-Processors: saas_connectors/saas_postprocessors.md
-          - SaaS Pagination: saas_connectors/saas_pagination.md
-          - SaaS Rate Limiting: saas_connectors/saas_rate_limiting.md
-          - Connection Examples:
-              - Adobe Campaign: saas_connectors/example_configs/adobe.md
-              - Hubspot: saas_connectors/example_configs/hubspot.md
-              - Mailchimp: saas_connectors/example_configs/mailchimp.md
-              - Outreach: saas_connectors/example_configs/outreach.md
-              - Salesforce: saas_connectors/example_configs/salesforce.md
-              - Segment: saas_connectors/example_configs/segment.md
-              - Sendgrid: saas_connectors/example_configs/sendgrid.md
-              - Sentry: saas_connectors/example_configs/sentry.md
-              - Stripe: saas_connectors/example_configs/stripe.md
-              - Zendesk: saas_connectors/example_configs/zendesk.md
-      - CI/CD Integrations: cicd.md
-      - Deployment: deployment.md
-      - Glossary: glossary.md
       - API: api/index.md
       - CLI: cli.md
       - Community:
-        - Github, Slack, and Discord: community/overview.md
-        - Community Hints and Tips: community/hints_tips.md
-        - Code of Conduct: community/code_of_conduct.md
-        - Contributing:
-            - Overview: development/overview.md
-            - Contributing Details: development/contributing_details.md
-            - Code Style: development/code_style.md
-            - UI Development: development/ui.md
-            - Fideslog Analytics: development/fideslog.md
-            - Database Migration: development/database_migration.md
-            - Documentation: development/documentation.md
-            - Writing Tests: development/testing.md
-            - Testing Environment: development/testing_environment.md
-            - Local Fides Deploy: development/dev_deployment.md
-            - Pull Requests: development/pull_requests.md
-            - Releases: development/releases.md
-            - Release Checklist: development/release_checklist.md
-            - VSCode Debugging: development/vscode_debugging.md
-            - Jetbrains Debugging: development/jetbrains_debugging.md
-            - Using Postman: development/postman/using_postman.md
-            - Updating the Database Diagram: development/update_erd_diagram.md
-  - Fides UI:
-      - Overview: ui/overview.md
-      - Configuration Wizard: ui/wizard.md
-      - Privacy Requests: ui/privacy_requests.md
-      - Manage Datasets: ui/datasets.md
-      - Manage Connections: ui/connections.md
-      - Manage Users: ui/user_management.md
-      - Privacy Center:  ui/privacy_center.md
-      - Deployment: ui/deployment.md
-  - Fides Lang Docs: https://ethyca.github.io/fideslang/
+          - Github, Slack, and Discord: community/overview.md
+          - Community Hints and Tips: community/hints_tips.md
+          - Code of Conduct: community/code_of_conduct.md
+          - Contributing:
+              - Overview: development/overview.md
+              - Contributing Details: development/contributing_details.md
+              - Code Style: development/code_style.md
+              - UI Development: development/ui.md
+              - Fideslog Analytics: development/fideslog.md
+              - Database Migration: development/database_migration.md
+              - Documentation: development/documentation.md
+              - Writing Tests: development/testing.md
+              - Testing Environment: development/testing_environment.md
+              - Local Fides Deploy: development/dev_deployment.md
+              - Pull Requests: development/pull_requests.md
+              - Releases: development/releases.md
+              - Release Checklist: development/release_checklist.md
+              - VSCode Debugging: development/vscode_debugging.md
+              - Jetbrains Debugging: development/jetbrains_debugging.md
+              - Using Postman: development/postman/using_postman.md
+              - Updating the Database Diagram: development/update_erd_diagram.md
   - About Ethyca:
       - About Ethyca: ethyca.md
       - License: license.md
@@ -157,6 +90,10 @@ extra:
   version:
     provider: mike
     default: stable
+
+watch:
+  - docs
+  - overrides
 
 plugins:
   # The "Last Update" footer only shows in production

@@ -5,6 +5,7 @@ import pytest
 import requests
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -94,16 +95,20 @@ def dataset_config_hubspot(
     connection_config_hubspot.name = fides_key
     connection_config_hubspot.key = fides_key
     connection_config_hubspot.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, hubspot_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config_hubspot.id,
             "fides_key": fides_key,
-            "dataset": hubspot_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 class HubspotTestClient:

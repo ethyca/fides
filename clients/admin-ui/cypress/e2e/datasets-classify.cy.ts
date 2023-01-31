@@ -89,6 +89,7 @@ describe("Datasets with Fides Classify", () => {
 
       cy.url().should("match", /dataset$/);
 
+
       // The combination of Next routing and a toast message makes Cypress get weird
       // when re-running this test case. Introducing a delay fixes it.
       // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -133,7 +134,6 @@ describe("Datasets with Fides Classify", () => {
      */
     const rowContains = ({
       name,
-      identifiability,
       taxonomyEntities,
     }: {
       name: string;
@@ -141,7 +141,6 @@ describe("Datasets with Fides Classify", () => {
       taxonomyEntities: string[];
     }) => {
       cy.getByTestId(`field-row-${name}`).within(() => {
-        cy.get(`[data-testid^=identifiability-tag-]`).contains(identifiability);
         taxonomyEntities.forEach((te) => {
           // Right now this displays the whole taxonomy path, but this might be abbreviated later.
           cy.get(`[data-testid^=taxonomy-entity-]`).contains(te);
@@ -165,7 +164,7 @@ describe("Datasets with Fides Classify", () => {
       rowContains({
         name: "device",
         identifiability: "Pseudonymized",
-        taxonomyEntities: ["user.device", "user.contact.phone_number"],
+        taxonomyEntities: ["user.device"],
       });
       // The classifier thinks this is an address, but it's been overwritten.
       rowContains({
@@ -211,15 +210,8 @@ describe("Datasets with Fides Classify", () => {
 
       cy.getByTestId("approve-classification-btn").should("be.enabled").click();
 
-      // The mutations should run.
+      // The mutation should run.
       cy.wait("@putDataset");
-      cy.wait("@putClassify");
-
-      // The instance should be re-fetched.
-      cy.wait("@getClassify");
-
-      // The updated status should make the button disappear.
-      cy.getByTestId("approve-classification-btn").should("not.exist");
       cy.getByTestId("toast-success-msg");
     });
   });

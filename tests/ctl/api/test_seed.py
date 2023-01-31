@@ -5,6 +5,14 @@ from fideslang import DEFAULT_TAXONOMY, DataCategory
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database import seed
+from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas.storage.storage import (
+    FileNaming,
+    ResponseFormat,
+    StorageDetails,
+    StorageType,
+)
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
 from fides.lib.models.fides_user import FidesUser
@@ -341,3 +349,129 @@ def test_create_or_update_parent_user_username_only():
 def test_create_or_update_parent_user_password_only():
     with pytest.raises(ValueError):
         seed.create_or_update_parent_user()
+
+
+async def test_load_default_dsr_policies(
+    db,
+):
+    # seed the default dsr policies and its artifacts
+    seed.load_default_dsr_policies()
+
+    # run some basic checks on its artifacts to make sure they're populated as we expect
+    access_policy: Policy = Policy.get_by(
+        db, field="key", value=seed.DEFAULT_ACCESS_POLICY
+    )
+    assert access_policy.name == "Default Access Policy"
+    assert len(access_policy.rules) == 1
+
+    access_rule: Rule = access_policy.rules[0]
+    assert access_rule.key == seed.DEFAULT_ACCESS_POLICY_RULE
+    assert access_rule.name == "Default Access Rule"
+    assert access_rule.action_type == ActionType.access.value
+
+    storage_destination: StorageConfig = access_rule.storage_destination
+    assert storage_destination.key == seed.DEFAULT_STORAGE_KEY
+    assert storage_destination.format == ResponseFormat.json
+    assert storage_destination.type == StorageType.local
+
+    assert len(access_rule.targets) >= 1
+
+    erasure_policy: Policy = Policy.get_by(
+        db, field="key", value=seed.DEFAULT_ERASURE_POLICY
+    )
+    assert erasure_policy.name == "Default Erasure Policy"
+    assert len(erasure_policy.rules) == 1
+
+    erasure_rule: Rule = erasure_policy.rules[0]
+    assert erasure_rule.key == seed.DEFAULT_ERASURE_POLICY_RULE
+    assert erasure_rule.name == "Default Erasure Rule"
+    assert erasure_rule.action_type == ActionType.erasure.value
+
+    # make some manual changes to the artifacts to test that they will not
+    # be overwritten when we re-run the seed function
+    Policy.create_or_update(
+        db,
+        data={
+            "name": "-- changed policy name --",
+            "key": seed.DEFAULT_ACCESS_POLICY,
+            "execution_timeframe": 45,
+            "drp_action": DrpAction.access.value,
+        },
+    )
+
+    # update the default storage config
+    local_storage_config = StorageConfig.create_or_update(
+        db=db,
+        data={
+            "name": "-- changed storage name --",
+            "key": seed.DEFAULT_STORAGE_KEY,
+            "type": StorageType.local,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+            },
+            "format": ResponseFormat.json,
+        },
+    )
+
+    # create another storage config
+    s3_storage = StorageConfig.create_or_update(
+        db=db,
+        data={
+            "name": "an s3 storage config",
+            "key": "s3_storage_config",
+            "type": StorageType.s3,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+            },
+            "format": ResponseFormat.json,
+        },
+    )
+
+    Rule.create_or_update(
+        db=db,
+        data={
+            "action_type": ActionType.access.value,
+            "name": "-- changed access rule name --",
+            "key": seed.DEFAULT_ACCESS_POLICY_RULE,
+            "policy_id": access_policy.id,
+            "storage_destination_id": s3_storage.id,
+        },
+    )
+
+    num_rule_targets = len(access_rule.targets)
+    rule_target: RuleTarget = access_rule.targets[0]
+    rule_target.delete(db)
+
+    assert RuleTarget.get_by(db, field="key", value=rule_target.key) is None
+    db.refresh(access_rule)
+    assert len(access_rule.targets) == num_rule_targets - 1
+
+    # now test that re-running `load_default_dsr_policies()` does not
+    # overwrite any of the manual changed that have been made to the artifacts
+
+    seed.load_default_dsr_policies()
+
+    access_policy: Policy = Policy.get_by(
+        db, field="key", value=seed.DEFAULT_ACCESS_POLICY
+    )
+    db.refresh(access_policy)
+    assert access_policy.name == "-- changed policy name --"
+    assert len(access_policy.rules) == 1
+
+    access_rule: Rule = access_policy.rules[0]
+    db.refresh(access_policy)
+    assert access_rule.key == seed.DEFAULT_ACCESS_POLICY_RULE
+    assert access_rule.name == "-- changed access rule name --"
+    assert access_rule.action_type == ActionType.access.value
+    assert access_rule.storage_destination_id == s3_storage.id
+
+    storage_destination: StorageConfig = access_rule.storage_destination
+    db.refresh(storage_destination)
+    assert storage_destination.key == "s3_storage_config"
+    assert storage_destination.format == ResponseFormat.json
+    assert storage_destination.type == StorageType.s3
+
+    assert len(access_rule.targets) == num_rule_targets - 1
+
+    db.refresh(local_storage_config)
+    assert local_storage_config.name == "-- changed storage name --"

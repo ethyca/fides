@@ -51,6 +51,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     routes: [
       { title: "Taxonomy", path: "/taxonomy" },
       { title: "Users", path: "/user-management" },
+      { title: "About Fides", path: "/management/about" },
     ],
   },
 ];

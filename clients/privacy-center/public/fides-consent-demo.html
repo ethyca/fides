@@ -49,6 +49,13 @@
         null,
         2
       );
+
+      // Test behavior of integrations that can be configured without/before their platform scripts.
+      Fides.gtm();
+      Fides.meta({
+        consent: Fides.consent.tracking,
+        dataUse: Fides.consent.data_sales,
+      });
     })();
   </script>
 </html>

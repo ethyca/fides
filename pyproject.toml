@@ -52,6 +52,7 @@ module = [
   "plotly.*",
   "pydash.*",
   "pymongo.*",
+  "sendgrid.*",
   "snowflake.*",
   "sqlalchemy.ext.*",
   "sqlalchemy.future.*",
@@ -155,12 +156,10 @@ log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
 log_level = "INFO"
-addopts = ["--cov=fides.core",
-            "--cov=fides.cli",
-            "--cov=fides.api",
-            "--cov-report=term-missing",
+addopts = ["--cov=fides",
+            "--cov-branch",
+            "-ra",
             "-vv",
-            "--no-cov-on-fail",
             "--disable-pytest-warnings"]
 markers = [
     "unit: only runs tests that don't require non-python dependencies (i.e. a database)",
@@ -189,6 +188,7 @@ markers = [
     "integration_datadog",
     "integration_domo",
     "integration_doordash",
+    "integration_friendbuy_nextgen",
     "integration_fullstory",
     "integration_segment",
     "integration_sendgrid",
@@ -197,6 +197,7 @@ markers = [
     "integration_shopify",
     "integration_square",
     "integration_outreach",
+    "integration_recharge",
     "integration_salesforce",
     "integration_twilio_conversations",
     "integration_adobe_campaign",

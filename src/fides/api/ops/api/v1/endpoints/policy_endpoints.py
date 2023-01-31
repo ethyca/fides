@@ -4,6 +4,7 @@ from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
@@ -25,7 +26,6 @@ from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas import policy as schemas
 from fides.api.ops.schemas.api import BulkUpdateFailed
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
@@ -54,7 +54,7 @@ def get_policy_list(
     return paginate(policies, params=params)
 
 
-def get_policy_or_error(db: Session, policy_key: FidesOpsKey) -> Policy:
+def get_policy_or_error(db: Session, policy_key: FidesKey) -> Policy:
     """Helper method to load Policy or throw a 404"""
     logger.info("Finding policy with key '{}'", policy_key)
     policy = Policy.get_by(db=db, field="key", value=policy_key)
@@ -75,7 +75,7 @@ def get_policy_or_error(db: Session, policy_key: FidesOpsKey) -> Policy:
 )
 def get_policy(
     *,
-    policy_key: FidesOpsKey,
+    policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
 ) -> schemas.Policy:
     """
@@ -148,9 +148,7 @@ def create_or_update_policies(
     )
 
 
-def get_rule_or_error(
-    db: Session, policy_key: FidesOpsKey, rule_key: FidesOpsKey
-) -> Rule:
+def get_rule_or_error(db: Session, policy_key: FidesKey, rule_key: FidesKey) -> Rule:
     """
     Helper method to load Rule or throw a 404 if it can't be found.
     Also throws a 404 if a `Policy` with the given key can't be found.
@@ -179,7 +177,7 @@ def get_rule_or_error(
 def get_rule_list(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
+    policy_key: FidesKey,
     params: Params = Depends(),
 ) -> AbstractPage[Rule]:
     """
@@ -207,8 +205,8 @@ def get_rule_list(
 )
 def get_rule(
     *,
-    policy_key: FidesOpsKey,
-    rule_key: FidesOpsKey,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
 ) -> Rule:
     """
@@ -228,7 +226,7 @@ def create_or_update_rules(
         verify_oauth_client,
         scopes=[scope_registry.RULE_CREATE_OR_UPDATE],
     ),
-    policy_key: FidesOpsKey,
+    policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
     input_data: conlist(schemas.RuleCreate, max_items=50) = Body(...),  # type: ignore
 ) -> schemas.BulkPutRuleResponse:
@@ -342,8 +340,8 @@ def create_or_update_rules(
 )
 def delete_rule(
     *,
-    policy_key: FidesOpsKey,
-    rule_key: FidesOpsKey,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
 ) -> None:
     """
@@ -368,9 +366,9 @@ def delete_rule(
 
 def get_rule_target_or_error(
     db: Session,
-    policy_key: FidesOpsKey,
-    rule_key: FidesOpsKey,
-    rule_target_key: FidesOpsKey,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
+    rule_target_key: FidesKey,
 ) -> RuleTarget:
     """
     Helper method to load Rule Target or throw a 404.
@@ -402,8 +400,8 @@ def get_rule_target_or_error(
 def get_rule_target_list(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
-    rule_key: FidesOpsKey,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
     params: Params = Depends(),
 ) -> AbstractPage[RuleTarget]:
     """
@@ -431,9 +429,9 @@ def get_rule_target_list(
 )
 def get_rule_target(
     *,
-    policy_key: FidesOpsKey,
-    rule_key: FidesOpsKey,
-    rule_target_key: FidesOpsKey,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
+    rule_target_key: FidesKey,
     db: Session = Depends(deps.get_db),
 ) -> RuleTarget:
     """
@@ -452,8 +450,8 @@ def create_or_update_rule_targets(
     client: ClientDetail = Security(
         verify_oauth_client, scopes=[scope_registry.RULE_CREATE_OR_UPDATE]
     ),
-    policy_key: FidesOpsKey,
-    rule_key: FidesOpsKey,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
     input_data: conlist(schemas.RuleTarget, max_items=50) = Body(...),  # type: ignore
 ) -> schemas.BulkPutRuleTargetResponse:
@@ -548,9 +546,9 @@ def create_or_update_rule_targets(
 )
 def delete_rule_target(
     *,
-    policy_key: FidesOpsKey,
-    rule_key: FidesOpsKey,
-    rule_target_key: FidesOpsKey,
+    policy_key: FidesKey,
+    rule_key: FidesKey,
+    rule_target_key: FidesKey,
     db: Session = Depends(deps.get_db),
 ) -> None:
     """

@@ -290,5 +290,20 @@
         ]
       }
     ]
+  },
+  {
+    "fides_key": "postgres_example_test_dataset",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Postgres Example Test Dataset",
+    "description": "Example of a Postgres dataset containing a variety of related tables like customers, products, addresses, etc.",
+    "meta": null,
+    "data_categories": null,
+    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+    "fides_meta": null,
+    "joint_controller": null,
+    "retention": "No retention or erasure policy",
+    "third_country_transfers": null,
+    "collections": []
   }
 ]

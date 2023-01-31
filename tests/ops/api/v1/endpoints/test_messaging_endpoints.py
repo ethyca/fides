@@ -44,6 +44,9 @@ class TestPostMessagingConfig:
         return {
             "name": "twilio_email",
             "service_type": MessagingServiceType.TWILIO_EMAIL.value,
+            "details": {
+                MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "test@email.com"
+            },
         }
 
     @pytest.fixture(scope="function")
@@ -136,7 +139,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
+            == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
         )
 
     def test_post_email_config_with_key(
@@ -189,7 +192,7 @@ class TestPostMessagingConfig:
         )
         assert response.status_code == 422
         errors = response.json()["detail"]
-        assert errors[0]["msg"] == "Mailgun messaging config must include details"
+        assert errors[0]["msg"] == "Messaging config must include details"
 
     def test_post_email_config_service_already_exists(
         self,
@@ -237,7 +240,9 @@ class TestPostMessagingConfig:
             "key": "my_twilio_email_config",
             "name": "twilio_email",
             "service_type": MessagingServiceType.TWILIO_EMAIL.value,
-            "details": None,
+            "details": {
+                MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "test@email.com"
+            },
         }
         assert expected_response == response_body
         email_config.delete(db)

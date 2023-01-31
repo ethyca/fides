@@ -22,6 +22,12 @@ dataset = "data/saas/dataset/doordash_dataset.yml"
 icon = "data/saas/icon/doordash.svg"
 human_readable = "Doordash"
 
+[friendbuy_nextgen]
+config = "data/saas/config/friendbuy_nextgen_config.yml"
+dataset = "data/saas/dataset/friendbuy_nextgen_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Friendbuy Nextgen"
+
 [fullstory]
 config = "data/saas/config/fullstory_config.yml"
 dataset = "data/saas/dataset/fullstory_dataset.yml"
@@ -135,6 +141,11 @@ config = "data/saas/config/slack_enterprise_config.yml"
 dataset = "data/saas/dataset/slack_enterprise_dataset.yml"
 icon = "data/saas/icon/slack.svg"
 human_readable = "Slack Enterprise"
+[recharge]
+config = "data/saas/config/recharge_config.yml"
+dataset = "data/saas/dataset/recharge_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Recharge"
 
 [delighted]
 config = "data/saas/config/delighted_config.yml"

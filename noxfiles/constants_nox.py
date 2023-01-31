@@ -4,6 +4,7 @@ from os import getenv
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
+INTEGRATION_POSTGRES_COMPOSE_FILE = "docker/docker-compose.integration-postgres.yml"
 TEST_ENV_COMPOSE_FILE = "docker-compose.test-env.yml"
 REMOTE_DEBUG_COMPOSE_FILE = "docker-compose.remote-debug.yml"
 WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
@@ -12,11 +13,6 @@ WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 REGISTRY = "ethyca"
 IMAGE_NAME = "fides"
 COMPOSE_SERVICE_NAME = "fides"
-
-# Files
-COMPOSE_FILE = "docker-compose.yml"
-INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
-INTEGRATION_POSTGRES_COMPOSE_FILE = "docker/docker-compose.integration-postgres.yml"
 
 # Image Names & Tags
 REGISTRY = "ethyca"

@@ -1,6 +1,7 @@
 import abc
 from typing import Any, Dict, List, Type
 
+from fideslang import FidesDatasetReference
 from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_validator
 from pydantic.fields import FieldInfo
 from sqlalchemy.orm import Session
@@ -10,7 +11,6 @@ from fides.api.ops.models.datasetconfig import validate_dataset_reference
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
-from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 
@@ -119,7 +119,7 @@ class SaaSSchemaFactory:
         if self.saas_config.external_references:
             for external_reference in self.saas_config.external_references:
                 field_definitions[external_reference.name] = (
-                    FidesopsDatasetReference,
+                    FidesDatasetReference,
                     FieldInfo(
                         title=external_reference.label,
                         description=external_reference.description,
@@ -163,7 +163,7 @@ def validate_saas_secrets_external_references(
 ) -> None:
     external_references = schema.external_references()
     for external_reference in external_references:
-        dataset_reference: FidesopsDatasetReference = getattr(
+        dataset_reference: FidesDatasetReference = getattr(
             connection_secrets, external_reference
         )
         if dataset_reference.direction == "to":

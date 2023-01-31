@@ -47,20 +47,16 @@ const WarningModal = ({
           <AlertDialogBody pt={0}>{message}</AlertDialogBody>
 
           <AlertDialogFooter>
-            <Button
-              data-testid="warning-modal-confirm-btn"
-              onClick={() => handleConfirm()}
-              variant="outline"
-            >
-              {confirmButtonText}
+            <Button ref={cancelRef} onClick={onClose} variant="outline">
+              {cancelButtonText}
             </Button>
             <Button
               colorScheme="primary"
-              ref={cancelRef}
-              onClick={onClose}
+              data-testid="warning-modal-confirm-btn"
               ml={3}
+              onClick={() => handleConfirm()}
             >
-              {cancelButtonText}
+              {confirmButtonText}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

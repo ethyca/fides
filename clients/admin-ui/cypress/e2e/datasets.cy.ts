@@ -37,10 +37,7 @@ describe("Dataset", () => {
     it("Can load an individual dataset", () => {
       cy.visit("/dataset");
       cy.wait("@getDatasets");
-      cy.getByTestId("load-dataset-btn").should("be.disabled");
       cy.getByTestId("dataset-row-demo_users_dataset").click();
-      cy.getByTestId("load-dataset-btn").should("not.be.disabled");
-      cy.getByTestId("load-dataset-btn").click();
       // for some reason this is slow in CI, so add a timeout :(
       cy.url({ timeout: 10000 }).should(
         "contain",

@@ -133,7 +133,7 @@ def validate_read_override_function(f: Callable) -> None:
     and that it declares at least 5 parameters.
     """
     sig: Signature = signature(f)
-    if sig.return_annotation is not List[Row]:
+    if sig.return_annotation != List[Row]:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must return a List[Row]"
         )

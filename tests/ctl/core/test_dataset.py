@@ -2,13 +2,23 @@
 import os
 from typing import Dict, Generator, List
 from urllib.parse import quote_plus
+from uuid import uuid4
 
 import pytest
 import sqlalchemy
 from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from py._path.local import LocalPath
+from sqlalchemy.orm import Session
 
+from fides.api.ctl.database.crud import get_resource
+from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.core import api
 from fides.core import dataset as _dataset
 from fides.core.config import FidesConfig
@@ -130,6 +140,119 @@ def test_find_uncategorized_dataset_fields_all_categorized() -> None:
     )
     assert not uncategorized_keys
     assert total_field_count == 4
+
+
+@pytest.fixture(scope="function")
+def connection_config(
+    db: Session,
+) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_postgres_db_1",
+            "connection_type": ConnectionType.postgres,
+            "access": AccessLevel.write,
+            "disabled": False,
+            "description": "Primary postgres connection",
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.mark.unit
+async def test_upsert_db_datasets(
+    test_config: FidesConfig, db: Session, connection_config, async_session
+) -> None:
+    """
+    Upsert a CTL Dataset, link this to a DatasetConfig and then upsert that CTL Dataset again.
+
+    The id of the CTL Dataset cannot change on upsert, as the DatasetConfig has a FK to this resource.
+    """
+
+    dataset = Dataset(
+        name="ds1",
+        fides_key="ds",
+        data_categories=[],
+        description="Fides Generated Description for Schema: ds",
+        collections=[
+            DatasetCollection(
+                name="foo",
+                description="Fides Generated Description for Table: foo",
+                data_categories=[],
+                fields=[
+                    DatasetField(
+                        name=1,
+                        description="Fides Generated Description for Column: 1",
+                        data_categories=[],
+                    ),
+                    DatasetField(
+                        name=2,
+                        description="Fides Generated Description for Column: 2",
+                        data_categories=[],
+                    ),
+                ],
+            ),
+            DatasetCollection(
+                name="bar",
+                description="Fides Generated Description for Table: bar",
+                data_categories=[],
+                fields=[
+                    DatasetField(
+                        name=4,
+                        description="Fides Generated Description for Column: 4",
+                        data_categories=[],
+                    ),
+                    DatasetField(
+                        name=5,
+                        description="Fides Generated Description for Column: 5",
+                        data_categories=[],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    resp = api.upsert(
+        url=test_config.cli.server_url,
+        resource_type="dataset",
+        resources=[dataset.dict(exclude_none=True)],
+        headers=test_config.user.request_headers,
+    )
+    assert resp.status_code == 201
+    assert resp.json()["inserted"] == 1
+
+    ds: CtlDataset = await get_resource(CtlDataset, "ds", async_session)
+
+    # Create a DatasetConfig that links to the created CTL Dataset
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": "new_fides_key",
+            "ctl_dataset_id": ds.id,
+        },
+    )
+
+    ctl_dataset_id = ds.id
+    assert dataset_config.ctl_dataset_id == ctl_dataset_id
+
+    # Do another upsert of the CTL Dataset to update the name
+    dataset.name = "new name"
+    resp = api.upsert(
+        url=test_config.cli.server_url,
+        resource_type="dataset",
+        resources=[dataset.dict(exclude_none=True)],
+        headers=test_config.user.request_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["inserted"] == 0
+    assert resp.json()["updated"] == 1
+
+    db.refresh(dataset_config)
+    assert dataset_config.ctl_dataset.name == "new name"
+    assert dataset_config.ctl_dataset.id == ctl_dataset_id, "Id unchanged with upsert"
 
 
 @pytest.mark.unit

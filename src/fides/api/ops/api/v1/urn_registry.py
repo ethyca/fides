@@ -110,7 +110,9 @@ ACCESS_MANUAL_WEBHOOK = CONNECTION_BY_KEY + "/access_manual_webhook"
 # Collection URLs
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 DATASETS = CONNECTION_BY_KEY + "/dataset"
+DATASET_CONFIGS = CONNECTION_BY_KEY + "/datasetconfig"
 DATASET_BY_KEY = CONNECTION_BY_KEY + "/dataset/{fides_key}"
+DATASETCONFIG_BY_KEY = CONNECTION_BY_KEY + "/datasetconfig/{fides_key}"
 
 # YAML Collection URLs
 YAML_DATASETS = YAML + DATASETS
@@ -120,6 +122,7 @@ SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
 
+SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 
 # User URLs
 USERS = "/user"
