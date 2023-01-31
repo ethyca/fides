@@ -257,7 +257,7 @@ def privacy_request_csv_download(
             "Status",
             "Request Type",
             "Subject Identity",
-            "Time received",
+            "Time Received",
             "Reviewed By",
             "Request ID",
             "Time Approved/Denied",
