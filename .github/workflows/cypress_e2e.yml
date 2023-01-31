@@ -26,10 +26,28 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Start test environment in the background
+        run: nox -s "fides_env(test)" &
+
       - name: Install dependencies
         run: |
           cd clients/cypress-e2e
           npm install
 
-      - name: Run cypress tests against test environment
-        run: nox -s e2e_test
+      - name: Cypress E2E tests
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: clients/cypress-e2e
+          install: false
+          wait-on: "http://localhost:8080, http://localhost:3001"
+          # wait 20 minutes for the test env to be ready
+          wait-on-timeout: 1200
+          record: true
+        env:
+          # pass the Cypress Cloud record key as an environment variable
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          # pass GitHub token to allow accurately detecting a build vs a re-run build
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Teardown
+        run: nox -s teardown
