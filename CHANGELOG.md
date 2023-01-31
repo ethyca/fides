@@ -16,7 +16,6 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.5.0...main)
 
-
 ### Added
 
 * Unified Fides Resources: Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
@@ -43,7 +42,8 @@ The types of changes are:
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
 * Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
-* Privacy Center 
+* Fixed a CI bug caused by git security upgrades [#2441](https://github.com/ethyca/fides/pull/2441)
+* Privacy Center
   * Identity inputs validate even when they are optional. [#2308](https://github.com/ethyca/fides/pull/2308)
   * Submit buttons show loading state and disable while submitting. [#2401](https://github.com/ethyca/fides/pull/2401)
   * Phone inputs no longer request country SVGs from external domain. [#2378](https://github.com/ethyca/fides/pull/2378)
@@ -120,7 +120,6 @@ The types of changes are:
 ### Removed
 
 * Remove "Create New System" button when viewing systems. All systems can now be created via the "Add systems" button on the home page. [#2132](https://github.com/ethyca/fides/pull/2132)
-
 
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
