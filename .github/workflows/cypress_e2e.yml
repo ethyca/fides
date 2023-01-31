@@ -32,4 +32,4 @@ jobs:
           npm install
 
       - name: Run cypress tests against test environment
-        run: nox -s e2e_test -- test
+        run: nox -s e2e_test

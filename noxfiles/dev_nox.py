@@ -76,13 +76,23 @@ def dev(session: Session) -> None:
 
 
 @nox_session()
+def cypress_tests(session: Session) -> None:
+    """
+    End-to-end Cypress tests designed to be run as part of
+    the 'e2e_test' session.
+    """
+    session.log("Running Cypress tests...")
+    session.run(*RUN_CYPRESS_TESTS, external=True)
+
+
+@nox_session()
 def e2e_test(session: Session) -> None:
     """
     Spins up the test_env session and runs Cypress E2E tests against it.
     """
-    session.log("Setting up the test environment...")
-    fides_env(session, "test")
-    session.run(*RUN_CYPRESS_TESTS, external=True)
+    session.log("Running end-to-end tests...")
+    session.notify("fides_env(test)", posargs=["test"])
+    session.notify("cypress_tests")
     session.notify("teardown")
 
 
