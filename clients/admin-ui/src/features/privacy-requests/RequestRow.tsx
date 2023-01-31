@@ -282,6 +282,7 @@ const RequestRow = ({
                   bg: "gray.100",
                 }}
                 ref={hoverButtonRef}
+                data-testid="privacy-request-approve-btn"
               >
                 Approve
               </Button>
@@ -296,6 +297,7 @@ const RequestRow = ({
                 _hover={{
                   bg: "gray.100",
                 }}
+                data-testid="privacy-request-deny-btn"
               >
                 Deny
               </Button>

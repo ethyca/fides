@@ -139,4 +139,24 @@ export const stubPrivacyRequests = () => {
       ).as("getPrivacyRequest");
     }
   );
+
+  cy.intercept(
+    {
+      method: "PATCH",
+      pathname: "/api/v1/privacy-request/administrate/approve",
+    },
+    {
+      fixture: "privacy-requests/approve.json",
+    }
+  ).as("approvePrivacyRequest");
+
+  cy.intercept(
+    {
+      method: "PATCH",
+      pathname: "/api/v1/privacy-request/administrate/deny",
+    },
+    {
+      fixture: "privacy-requests/deny.json",
+    }
+  ).as("denyPrivacyRequest");
 };

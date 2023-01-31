@@ -50,6 +50,41 @@ describe("Privacy Requests", () => {
 
       cy.location("pathname").should("match", /^\/privacy-requests\/pri.+/);
     });
+
+    it("allows approving a new request", () => {
+      cy.get("@rowsNew")
+        .first()
+        .within(() => {
+          // The approve button shows up on hover, but there isn't a good way to simulate that in
+          // tests. Instead we click on the menu button to make all the controls appear.
+          cy.getByTestId("privacy-request-more-btn").click();
+          cy.getByTestId("privacy-request-approve-btn").click();
+        });
+
+      cy.getByTestId("continue-btn").click();
+
+      cy.wait("@approvePrivacyRequest")
+        .its("request.body.request_ids")
+        .should("have.length", 1);
+    });
+
+    it("allows denying a new request", () => {
+      cy.get("@rowsNew")
+        .first()
+        .within(() => {
+          cy.getByTestId("privacy-request-more-btn").click();
+          cy.getByTestId("privacy-request-deny-btn").click();
+        });
+
+      cy.getByTestId("deny-privacy-request-modal").within(() => {
+        cy.getByTestId("input-denialReason").type("test denial");
+        cy.getByTestId("deny-privacy-request-modal-btn").click();
+      });
+
+      cy.wait("@denyPrivacyRequest")
+        .its("request.body.request_ids")
+        .should("have.length", 1);
+    });
   });
 
   describe("The request details page", () => {

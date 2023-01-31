@@ -43,7 +43,11 @@ const DenyPrivacyRequestModal = ({
       returnFocusOnClose={false}
     >
       <ModalOverlay />
-      <ModalContent width="100%" maxWidth="456px">
+      <ModalContent
+        width="100%"
+        maxWidth="456px"
+        data-testid="deny-privacy-request-modal"
+      >
         <Formik
           initialValues={initialValues}
           validationSchema={Yup.object({
@@ -88,6 +92,7 @@ const DenyPrivacyRequestModal = ({
                   variant="solid"
                   disabled={!dirty || !isValid}
                   isLoading={isSubmitting}
+                  data-testid="deny-privacy-request-modal-btn"
                 >
                   Confirm
                 </Button>
