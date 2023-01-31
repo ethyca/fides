@@ -89,7 +89,6 @@ describe("Datasets with Fides Classify", () => {
 
       cy.url().should("match", /dataset$/);
 
-
       // The combination of Next routing and a toast message makes Cypress get weird
       // when re-running this test case. Introducing a delay fixes it.
       // eslint-disable-next-line cypress/no-unnecessary-waiting

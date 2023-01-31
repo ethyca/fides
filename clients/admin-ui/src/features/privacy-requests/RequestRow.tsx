@@ -181,6 +181,7 @@ const RequestRow = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       height="36px"
+      data-testid={`privacy-request-row-${request.id}`}
     >
       <Td px={0}>
         <Checkbox
@@ -238,6 +239,7 @@ const RequestRow = ({
           mr={2.5}
           onFocus={shiftFocusToHoverMenu}
           tabIndex={showMenu ? -1 : 0}
+          data-testid="privacy-request-more-btn"
         >
           <MoreIcon color="gray.700" w={18} h={18} />
         </Button>
@@ -320,7 +322,7 @@ const RequestRow = ({
               <MoreIcon color="gray.700" w={18} h={18} />
             </MenuButton>
             <Portal>
-              <MenuList shadow="xl">
+              <MenuList shadow="xl" data-testid="privacy-request-more-menu">
                 <MenuItem
                   _focus={{ color: "complimentary.500", bg: "gray.100" }}
                   onClick={handleIdCopy}
