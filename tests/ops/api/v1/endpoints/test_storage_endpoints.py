@@ -663,6 +663,7 @@ class TestGetDefaultStorageConfigs:
                     "details": {
                         "auth_method": storage_config_default.details["auth_method"],
                         "naming": storage_config_default.details["naming"],
+                        "bucket": "test_bucket",
                     },
                     "key": storage_config_default.key,
                     "format": storage_config_default.format.value,
@@ -742,6 +743,7 @@ class TestGetDefaultStorageConfig:
             "details": {
                 "auth_method": storage_config_default.details["auth_method"],
                 "naming": storage_config_default.details["naming"],
+                "bucket": "test_bucket",
             },
             "key": storage_config_default.key,
             "format": storage_config_default.format.value,
@@ -1258,6 +1260,7 @@ class TestGetActiveDefaultStorageConfig:
             "details": {
                 "auth_method": storage_config_default.details["auth_method"],
                 "naming": storage_config_default.details["naming"],
+                "bucket": "test_bucket",
             },
             "key": storage_config_default.key,
             "format": storage_config_default.format.value,
