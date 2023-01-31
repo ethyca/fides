@@ -172,10 +172,10 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
-        
+
       # This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
       - name: Fix git directory permissions
-      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Run test suite
         run: nox -s "pytest(${{ matrix.test_selection }})"
