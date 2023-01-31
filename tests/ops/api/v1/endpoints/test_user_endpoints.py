@@ -1,6 +1,5 @@
 import json
 from datetime import datetime, timedelta
-from typing import List
 
 import pytest
 from fastapi_pagination import Params
@@ -53,7 +52,7 @@ page_size = Params().size
 
 class TestCreateUser:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + USERS
 
     def test_create_user_not_authenticated(self, url, api_client):
@@ -67,7 +66,6 @@ class TestCreateUser:
 
     def test_create_user_bad_username(
         self,
-        db,
         api_client,
         generate_auth_header,
         url,
@@ -91,18 +89,15 @@ class TestCreateUser:
         auth_header = generate_auth_header([USER_CREATE])
 
         body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
-        user = FidesUser.create(db=db, data=body)
+        FidesUser.create(db=db, data=body)
 
         response = api_client.post(url, headers=auth_header, json=body)
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["detail"] == "Username already exists."
         assert HTTP_400_BAD_REQUEST == response.status_code
 
-        user.delete(db)
-
     def test_create_user_bad_password(
         self,
-        db,
         api_client,
         generate_auth_header,
         url,
@@ -113,7 +108,7 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "Password must have at least eight characters."
         )
 
@@ -121,7 +116,7 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "Password must have at least one number."
         )
 
@@ -129,7 +124,7 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "Password must have at least one capital letter."
         )
 
@@ -137,7 +132,7 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "Password must have at least one symbol."
         )
 
@@ -154,11 +149,10 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
 
         user = FidesUser.get_by(db, field="username", value=body["username"])
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        user.delete(db)
 
     def test_create_user_as_root(
         self,
@@ -173,11 +167,10 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
 
         user = FidesUser.get_by(db, field="username", value=body["username"])
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        user.delete(db)
 
     def test_create_user_with_name(
         self,
@@ -197,34 +190,33 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
 
         user = FidesUser.get_by(db, field="username", value=body["username"])
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        user.delete(db)
 
 
 class TestDeleteUser:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, user) -> str:
+    def url(self, user) -> str:
         return f"{V1_URL_PREFIX}{USERS}/{user.id}"
 
     def test_delete_user_not_authenticated(self, url, api_client):
         response = api_client.delete(url, headers={})
         assert HTTP_401_UNAUTHORIZED == response.status_code
 
-    def test_create_user_wrong_scope(self, url, api_client, generate_auth_header, db):
+    def test_create_user_wrong_scope(self, url, api_client, generate_auth_header):
         auth_header = generate_auth_header([STORAGE_READ])
         response = api_client.delete(url, headers=auth_header)
         assert HTTP_403_FORBIDDEN == response.status_code
 
-    def test_delete_nonexistent_user(self, api_client, db, generate_auth_header, user):
+    def test_delete_nonexistent_user(self, api_client, db, generate_auth_header):
         auth_header = generate_auth_header([USER_DELETE])
         url = f"{V1_URL_PREFIX}{USERS}/nonexistent_user"
         response = api_client.delete(url, headers=auth_header)
         assert HTTP_404_NOT_FOUND == response.status_code
 
-    def test_delete_self(self, api_client, db, generate_auth_header):
+    def test_delete_self(self, api_client, db):
         user = FidesUser.create(
             db=db,
             data={
@@ -277,7 +269,7 @@ class TestDeleteUser:
         )
         assert permissions_search is None
 
-    def test_delete_user(self, api_client, db, generate_auth_header):
+    def test_delete_user(self, api_client, db):
         user = FidesUser.create(
             db=db,
             data={
@@ -352,7 +344,7 @@ class TestDeleteUser:
         )
         assert permissions_search is None
 
-    def test_delete_user_as_root(self, api_client, db, generate_auth_header, user):
+    def test_delete_user_as_root(self, api_client, db, user):
         other_user = FidesUser.create(
             db=db,
             data={
@@ -411,12 +403,11 @@ class TestDeleteUser:
         # Admin client who made the request is not deleted
         admin_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)
         assert admin_client_search is not None
-        admin_client_search.delete(db)
 
 
 class TestGetUsers:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + USERS
 
     def test_get_users_not_authenticated(
@@ -438,32 +429,32 @@ class TestGetUsers:
         auth_header = generate_auth_header(scopes=[USER_READ])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 0
         assert response_body["total"] == 0
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
     def test_get_users(self, api_client: TestClient, generate_auth_header, url, db):
-        create_auth_header = generate_auth_header(scopes=[USER_CREATE])
-        saved_users: List[FidesUser] = []
         total_users = 25
-        for i in range(total_users):
-            body = {
-                "username": f"user{i}@example.com",
-                "password": str_to_b64_str("Password123!"),
-                "first_name": "Test",
-                "last_name": "User",
-            }
-            resp = api_client.post(url, headers=create_auth_header, json=body)
-            assert resp.status_code == HTTP_201_CREATED
-            user = FidesUser.get_by(db, field="username", value=body["username"])
-            saved_users.append(user)
+        password = str_to_b64_str("Password123!")
+        [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"user{i}",
+                    "password": password,
+                    "first_name": "Test",
+                    "last_name": "User",
+                },
+            )
+            for i in range(total_users)
+        ]
 
         get_auth_header = generate_auth_header(scopes=[USER_READ])
         resp = api_client.get(url, headers=get_auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == total_users
         assert response_body["total"] == total_users
         assert response_body["page"] == 1
@@ -476,30 +467,21 @@ class TestGetUsers:
         assert user_data["first_name"]
         assert user_data["last_name"]
 
-        for i in range(total_users):
-            saved_users[i].delete(db)
-
     def test_get_filtered_users(
         self, api_client: TestClient, generate_auth_header, url, db
     ):
-        create_auth_header = generate_auth_header(scopes=[USER_CREATE])
-        saved_users: List[FidesUser] = []
         total_users = 50
-        for i in range(total_users):
-            body = {
-                "username": f"user{i}@example.com",
-                "password": str_to_b64_str("Password123!"),
-            }
-            resp = api_client.post(url, headers=create_auth_header, json=body)
-            assert resp.status_code == HTTP_201_CREATED
-            user = FidesUser.get_by(db, field="username", value=body["username"])
-            saved_users.append(user)
+        password = str_to_b64_str("Password123!")
+        [
+            FidesUser.create(db=db, data={"username": f"user{i}", "password": password})
+            for i in range(total_users)
+        ]
 
         get_auth_header = generate_auth_header(scopes=[USER_READ])
 
         resp = api_client.get(f"{url}?username={15}", headers=get_auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 1
         assert response_body["total"] == 1
         assert response_body["page"] == 1
@@ -507,7 +489,7 @@ class TestGetUsers:
 
         resp = api_client.get(f"{url}?username={5}", headers=get_auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 5
         assert response_body["total"] == 5
         assert response_body["page"] == 1
@@ -515,23 +497,20 @@ class TestGetUsers:
 
         resp = api_client.get(f"{url}?username=not real user", headers=get_auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 0
         assert response_body["total"] == 0
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-        for i in range(total_users):
-            saved_users[i].delete(db)
-
 
 class TestGetUser:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + USER_DETAIL
 
     @pytest.fixture(scope="function")
-    def url_no_id(self, oauth_client: ClientDetail) -> str:
+    def url_no_id(self) -> str:
         return V1_URL_PREFIX + USERS
 
     def test_get_user_not_authenticated(self, api_client: TestClient, url: str) -> None:
@@ -813,7 +792,7 @@ class TestUpdateUserPassword:
 
 class TestUserLogin:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + LOGIN
 
     def test_user_does_not_exist(self, db, url, api_client):
@@ -860,8 +839,6 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
 
-        user.client.delete(db)
-
     def test_login_updates_last_login_date(self, db, url, user, api_client):
         body = {
             "username": user.username,
@@ -904,10 +881,10 @@ class TestUserLogin:
 
 class TestUserLogout:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + LOGOUT
 
-    def test_malformed_token_ignored(self, db, url, api_client, user):
+    def test_malformed_token_ignored(self, url, api_client):
         auth_header = {"Authorization": "Bearer invalid"}
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == HTTP_204_NO_CONTENT
@@ -933,7 +910,7 @@ class TestUserLogout:
         client_search = ClientDetail.get_by(db, field="id", value=client_id)
         assert client_search is None
 
-    def test_root_user_logout(self, db, url, api_client):
+    def test_root_user_logout(self, url, api_client):
         payload = {
             JWE_PAYLOAD_SCOPES: SCOPE_REGISTRY,
             JWE_PAYLOAD_CLIENT_ID: CONFIG.security.oauth_root_client_id,
