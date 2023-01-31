@@ -16,7 +16,6 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.5.0...main)
 
-
 ### Added
 
 * Unified Fides Resources: Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
@@ -32,6 +31,8 @@ The types of changes are:
 * Unified Fides Resources: Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
 * Update fideslang to 1.3.3 [#2343](https://github.com/ethyca/fides/pull/2343)
 * Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
+* Make denial reasons required [#2400](https://github.com/ethyca/fides/pull/2400)
+* Display the policy key on the request details page [#2395](https://github.com/ethyca/fides/pull/2395)
 
 ### Developer Experience
 
@@ -41,7 +42,12 @@ The types of changes are:
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
 * Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
-* Privacy Center identity inputs validate even when they are optional. [#2308](https://github.com/ethyca/fides/pull/2308)
+* Fixed a CI bug caused by git security upgrades [#2441](https://github.com/ethyca/fides/pull/2441)
+* Privacy Center
+  * Identity inputs validate even when they are optional. [#2308](https://github.com/ethyca/fides/pull/2308)
+  * Submit buttons show loading state and disable while submitting. [#2401](https://github.com/ethyca/fides/pull/2401)
+  * Phone inputs no longer request country SVGs from external domain. [#2378](https://github.com/ethyca/fides/pull/2378)
+  * Input validation errors no longer change the height of modals. [#2379](https://github.com/ethyca/fides/pull/2379)
 * Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
 
 ### Security
@@ -113,7 +119,6 @@ The types of changes are:
 ### Removed
 
 * Remove "Create New System" button when viewing systems. All systems can now be created via the "Add systems" button on the home page. [#2132](https://github.com/ethyca/fides/pull/2132)
-
 
 ## [2.4.0](https://github.com/ethyca/fides/compare/2.3.1...2.4.0)
 
