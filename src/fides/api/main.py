@@ -3,7 +3,7 @@ Contains the code that sets up the API.
 """
 from datetime import datetime, timezone
 from logging import DEBUG, WARNING
-from typing import Callable, Optional, List
+from typing import Callable, List, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -99,21 +99,21 @@ def create_fides_app(
 ) -> FastAPI:
     """Return a properly configured application."""
 
-    app = FastAPI(title="fides", version=app_version)
-    app.state.limiter = Limiter(
+    fastapi_app = FastAPI(title="fides", version=app_version)
+    fastapi_app.state.limiter = Limiter(
         default_limits=[request_rate_limit],
         headers_enabled=True,
         key_prefix=rate_limit_prefix,
         key_func=get_remote_address,
         retry_after="http-date",
     )
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     for handler in ExceptionHandlers.get_handlers():
-        app.add_exception_handler(FunctionalityNotConfigured, handler)
-    app.add_middleware(SlowAPIMiddleware)
+        fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)
+    fastapi_app.add_middleware(SlowAPIMiddleware)
 
     if cors_origins:
-        app.add_middleware(
+        fastapi_app.add_middleware(
             CORSMiddleware,
             allow_origins=[str(origin) for origin in cors_origins],
             allow_credentials=True,
@@ -122,11 +122,11 @@ def create_fides_app(
         )
 
     for router in routers:
-        app.include_router(router)
-    app.include_router(user_router, tags=["Users"], prefix=f"{api_prefix}")
-    app.include_router(api_router)
+        fastapi_app.include_router(router)
+    fastapi_app.include_router(user_router, tags=["Users"], prefix=f"{api_prefix}")
+    fastapi_app.include_router(api_router)
 
-    return app
+    return fastapi_app
 
 
 def configure_security_env_overrides(

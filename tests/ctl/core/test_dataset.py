@@ -218,7 +218,7 @@ async def test_upsert_db_datasets(
         url=test_config.cli.server_url,
         resource_type="dataset",
         resources=[dataset.dict(exclude_none=True)],
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
     )
     assert resp.status_code == 201
     assert resp.json()["inserted"] == 1
@@ -244,7 +244,7 @@ async def test_upsert_db_datasets(
         url=test_config.cli.server_url,
         resource_type="dataset",
         resources=[dataset.dict(exclude_none=True)],
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
     )
     assert resp.status_code == 200
     assert resp.json()["inserted"] == 0

@@ -80,7 +80,7 @@ class TestCrud:
 
         result = _api.create(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             json_resource=manifest.json(exclude_none=True),
             resource_type=endpoint,
         )
@@ -159,7 +159,7 @@ class TestCrud:
 
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
@@ -192,7 +192,7 @@ class TestCrud:
 
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             resources=[dict_manifest],
         )
@@ -211,7 +211,7 @@ class TestCrud:
 
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             resource_type=endpoint,
             resources=[dict_manifest],
         )
