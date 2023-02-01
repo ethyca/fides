@@ -100,6 +100,11 @@ WORKDIR /fides/clients/admin-ui
 COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
 RUN npm install
 COPY clients/admin-ui/ .
+
+####################
+## Built frontend ##
+####################
+FROM frontend as built_frontend
 RUN npm run export
 
 #############################
@@ -108,7 +113,7 @@ RUN npm run export
 FROM backend as prod
 
 # Copy frontend build over
-COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
+COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
 
 # Install without a symlink
 RUN python setup.py sdist

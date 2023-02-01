@@ -25,9 +25,9 @@ from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.config import CollectionAddress, GraphDataset
 from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import (
@@ -62,6 +62,7 @@ from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import (
     get_cached_data_for_erasures,
     run_access_request,
+    run_consent_request,
     run_erasure,
 )
 from fides.api.ops.tasks import DatabaseTask, celery_app
@@ -101,7 +102,7 @@ def get_access_manual_webhook_inputs(
     manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
 
     if not policy.get_rules_for_action(action_type=ActionType.access):
-        # Don't fetch manual inputs if this is an erasure-only request
+        # Don't fetch manual inputs unless this policy has an access rule
         return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
 
     try:
@@ -340,7 +341,10 @@ async def run_privacy_request(
             )
             access_result_urls: List[str] = []
 
-            if can_run_checkpoint(
+            if (
+                policy.get_rules_for_action(action_type=ActionType.access)
+                or policy.get_rules_for_action(action_type=ActionType.erasure)
+            ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
                 access_result: Dict[str, List[Row]] = await run_access_request(
@@ -379,6 +383,21 @@ async def run_privacy_request(
                     session=session,
                 )
 
+            if policy.get_rules_for_action(
+                action_type=ActionType.consent
+            ) and can_run_checkpoint(
+                request_checkpoint=CurrentStep.consent,
+                from_checkpoint=resume_step,
+            ):
+                await run_consent_request(
+                    privacy_request=privacy_request,
+                    policy=policy,
+                    graph=build_consent_dataset_graph(datasets),
+                    connection_configs=connection_configs,
+                    identity=identity_data,
+                    session=session,
+                )
+
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
             _log_warning(exc, CONFIG.dev_mode)
@@ -395,7 +414,9 @@ async def run_privacy_request(
             return
 
         # Send erasure requests via email to third parties where applicable
-        if can_run_checkpoint(
+        if policy.get_rules_for_action(
+            action_type=ActionType.erasure
+        ) and can_run_checkpoint(
             request_checkpoint=CurrentStep.erasure_email_post_send,
             from_checkpoint=resume_step,
         ):
@@ -423,6 +444,7 @@ async def run_privacy_request(
         )
         if not proceed:
             return
+
         if CONFIG.notifications.send_request_completion_notification:
             try:
                 initiate_privacy_request_completion_email(
@@ -449,6 +471,31 @@ async def run_privacy_request(
         privacy_request.status = PrivacyRequestStatus.complete
         logger.info("Privacy request {} run completed.", privacy_request.id)
         privacy_request.save(db=session)
+
+
+def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
+    """
+    Build the starting DatasetGraph for consent requests.
+
+    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
+    """
+    consent_datasets: List[GraphDataset] = []
+
+    for dataset_config in datasets:
+        connection_type: ConnectionType = (
+            dataset_config.connection_config.connection_type  # type: ignore
+        )
+        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
+        if (
+            connection_type == ConnectionType.saas
+            and saas_config
+            and saas_config.get("consent_requests")
+        ):
+            consent_datasets.append(
+                dataset_config.get_dataset_with_stubbed_collection()
+            )
+
+    return DatasetGraph(*consent_datasets)
 
 
 def initiate_privacy_request_completion_email(
