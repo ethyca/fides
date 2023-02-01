@@ -29,6 +29,7 @@ export const makeConsentItems = (
           name: d.name,
           url: d.url,
           cookieKeys: d.cookieKeys ?? [],
+          executable: d.executable ?? false,
         });
       } else {
         newConsentItems.push({
@@ -39,6 +40,7 @@ export const makeConsentItems = (
           url: d.url,
           defaultValue: d.default ? d.default : false,
           cookieKeys: d.cookieKeys ?? [],
+          executable: d.executable ?? false,
         });
       }
     });
@@ -54,6 +56,7 @@ export const makeConsentItems = (
     url: option.url,
     defaultValue: option.default ? option.default : false,
     cookieKeys: option.cookieKeys ?? [],
+    executable: option.executable ?? false,
   }));
 };
 

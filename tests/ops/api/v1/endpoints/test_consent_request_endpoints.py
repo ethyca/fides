@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any
+from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
+from requests import Session
 
 from fides.api.ops.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
 from fides.api.ops.api.v1.urn_registry import (
@@ -519,11 +521,16 @@ class TestSaveConsent:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_verify_then_set_consent_preferences(
         self,
+        run_privacy_request_mock,
         provided_identity_and_consent_request,
         api_client,
         verification_code,
+        db: Session,
     ):
         _, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
@@ -545,9 +552,14 @@ class TestSaveConsent:
             },
         )
         assert response.status_code == 200
-        # Assert nconsent preferences have successfully been set
         assert response.json()["consent"][0]["data_use"] == "email"
-        assert response.json()["consent"][0]["opt_in"] == True
+        assert response.json()["consent"][0]["opt_in"] is True
+        assert not run_privacy_request_mock.called, "date_use: email is not executable"
+
+        db.refresh(consent_request)
+        assert (
+            not consent_request.privacy_request_id
+        ), "No PrivacyRequest queued because none of the consent options are executable"
 
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
@@ -556,7 +568,7 @@ class TestSaveConsent:
         assert response.status_code == 200
         # Assert the code verification endpoint also returns existing consent preferences
         assert response.json()["consent"][0]["data_use"] == "email"
-        assert response.json()["consent"][0]["opt_in"] == True
+        assert response.json()["consent"][0]["opt_in"] is True
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
@@ -659,27 +671,32 @@ class TestSaveConsent:
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_set_consent_consent_preferences(
         self,
+        mock_run_privacy_request: MagicMock,
         mock_verify_identity: MagicMock,
         provided_identity_and_consent_request,
         db,
         api_client,
         verification_code,
+        consent_policy,
     ):
         provided_identity, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
 
         consent_data: list[dict[str, Any]] = [
             {
-                "data_use": "email",
+                "data_use": "advertising",
                 "data_use_description": None,
                 "opt_in": True,
             },
             {
-                "data_use": "location",
-                "data_use_description": "Location data",
-                "opt_in": False,
+                "data_use": "improve",
+                "data_use_description": None,
+                "opt_in": True,
             },
         ]
 
@@ -693,6 +710,12 @@ class TestSaveConsent:
             "code": verification_code,
             "identity": {"email": "test@email.com"},
             "consent": consent_data,
+            "policy_key": consent_policy.key,  # Optional policy_key supplied,
+            "executable_options": [
+                {"data_use": "advertising", "executable": True},
+                {"data_use": "improve", "executable": False},
+            ],
+            "browser_identity": {"ga_client_id": "test_ga_client_id"},
         }
         response = api_client.patch(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
@@ -702,6 +725,27 @@ class TestSaveConsent:
         assert response.status_code == 200
         assert response.json()["consent"] == consent_data
         mock_verify_identity.assert_called_with(verification_code)
+
+        db.refresh(consent_request)
+        assert (
+            consent_request.privacy_request_id is not None
+        ), "PrivacyRequest queued to propagate consent preferences cached on ConsentRequest"
+
+        identity = consent_request.privacy_request.get_persisted_identity()
+        assert identity.email == "test@email.com", (
+            "Identity pulled from Consent Provided Identity and used to "
+            "create a Privacy Request provided identity "
+        )
+        assert identity.phone_number is None
+        assert identity.ga_client_id == "test_ga_client_id", (
+            "Browser identity pulled from Consent Provided Identity and persisted "
+            "to a Privacy Request provided identity"
+        )
+        assert consent_request.privacy_request.consent_preferences == [
+            {"opt_in": True, "data_use": "advertising", "data_use_description": None},
+        ], "Only executable consent preferences stored"
+
+        assert mock_run_privacy_request.called
 
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     def test_set_consent_consent_preferences_without_verification(
