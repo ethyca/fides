@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Google Analytics SaaS Config
+  name: Google Analytics 4 (GA4) SaaS Config
   type: google_analytics
-  description: A schema representing the Google Analytics connector for Fides
+  description: A schema representing the Google Analytics 4 (GA4) connector for Fides
   version: 0.0.1
 
   connector_params:
@@ -11,7 +11,7 @@ saas_config:
     - name: client_secret
     - name: redirect_uri
     - name: property_id
-      description: GA4 Property
+      description: Property ID of a GA4 Property
 
   client_config:
     protocol: https
