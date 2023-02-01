@@ -11758,7 +11758,7 @@
             }
           }
         },
-        "description": "Schema for consent prefernces."
+        "description": "Schema for consent preferences."
       },
       "ConsentPreferencesWithVerificationCode": {
         "title": "ConsentPreferencesWithVerificationCode",
@@ -11777,9 +11777,61 @@
             "items": {
               "$ref": "#/components/schemas/Consent"
             }
+          },
+          "policy_key": {
+            "title": "Policy Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
+          "executable_options": {
+            "title": "Executable Options",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsentWithExecutableStatus"
+            }
+          },
+          "browser_identity": {
+            "$ref": "#/components/schemas/Identity"
           }
         },
         "description": "Schema for consent preferences including the verification code."
+      },
+      "ConsentRequestMap": {
+        "title": "ConsentRequestMap",
+        "type": "object",
+        "properties": {
+          "opt_in": {
+            "title": "Opt In",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaaSRequest"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SaaSRequest"
+                }
+              }
+            ],
+            "default": []
+          },
+          "opt_out": {
+            "title": "Opt Out",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaaSRequest"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SaaSRequest"
+                }
+              }
+            ],
+            "default": []
+          }
+        },
+        "description": "A map of actions to Consent requests"
       },
       "ConsentRequestResponse": {
         "title": "ConsentRequestResponse",
@@ -11794,6 +11846,25 @@
           }
         },
         "description": "Schema for consent request response."
+      },
+      "ConsentWithExecutableStatus": {
+        "title": "ConsentWithExecutableStatus",
+        "required": [
+          "data_use",
+          "executable"
+        ],
+        "type": "object",
+        "properties": {
+          "data_use": {
+            "title": "Data Use",
+            "type": "string"
+          },
+          "executable": {
+            "title": "Executable",
+            "type": "boolean"
+          }
+        },
+        "description": "Schema for executable consents"
       },
       "ContactDetails": {
         "title": "ContactDetails",
@@ -11969,6 +12040,7 @@
           "pre_webhooks",
           "access",
           "erasure",
+          "consent",
           "erasure_email_post_send",
           "post_webhooks"
         ],
@@ -13379,6 +13451,10 @@
           },
           "email": {
             "title": "Email",
+            "type": "string"
+          },
+          "ga_client_id": {
+            "title": "Ga Client Id",
             "type": "string"
           }
         },
@@ -14929,6 +15005,13 @@
           "encryption_key": {
             "title": "Encryption Key",
             "type": "string"
+          },
+          "consent_preferences": {
+            "title": "Consent Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Consent"
+            }
           }
         },
         "description": "Data required to create a PrivacyRequest"
@@ -15697,6 +15780,9 @@
           },
           "rate_limit_config": {
             "$ref": "#/components/schemas/RateLimitConfig"
+          },
+          "consent_requests": {
+            "$ref": "#/components/schemas/ConsentRequestMap"
           }
         },
         "description": "Used to store endpoint and param configurations for a SaaS connector.\nThis is done to separate the details of how to make the API calls\nfrom the data provided by a given API collection.\n\nThe required fields for the config are converted into a Dataset which is\nmerged with the standard Fidesops Dataset to provide a complete set of dependencies\nfor the graph traversal."
@@ -15812,6 +15898,11 @@
           },
           "rate_limit_config": {
             "$ref": "#/components/schemas/RateLimitConfig"
+          },
+          "skip_missing_param_values": {
+            "title": "Skip Missing Param Values",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,
