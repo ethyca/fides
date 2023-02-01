@@ -1,6 +1,5 @@
 """Utils to help with API calls."""
 import glob
-import json
 import re
 from functools import partial
 from hashlib import sha1
@@ -31,14 +30,9 @@ def check_response_auth(response: requests.Response) -> requests.Response:
     an exception.
     """
     if response.status_code in [401, 403]:
-        try:
-            echo_red(response.json())
-        except json.JSONDecodeError:
-            echo_red(response.text)
-        finally:
-            raise SystemExit(1)
-    else:
-        return response
+        echo_red("Authorization Error: please try 'fides user login' and try again.")
+        raise SystemExit(1)
+    return response
 
 
 def check_response(response: requests.Response) -> requests.Response:

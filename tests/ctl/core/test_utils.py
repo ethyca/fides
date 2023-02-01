@@ -127,16 +127,18 @@ def test_repeatable_unique_key() -> None:
 
 @pytest.mark.integration
 class TestCheckResponseAuth:
-    def test_check_response_auth_sys_exit(self, test_config: FidesConfig) -> None:
+    def test_check_response_auth_sys_exit(self) -> None:
         """
-        Verify that a SystemExit is raised when the response status is 403
-        Note that this must be an endpoint that requires authentication!
+        Verify that a SystemExit is raised when expected.
+
+        Note that this must be an endpoint that requires
+        authentication as it is looking for 401/403!
         """
         response = requests.get("/api/v1/cryptography/encryption/key")
         with pytest.raises(SystemExit):
             utils.check_response_auth(response)
 
-    def test_check_response_auth_ok(self, test_config: FidesConfig) -> None:
-        """Verify that a SystemExit is raised when the response is not ok."""
-        response = requests.get(test_config.cli.server_url + "/health")
+    def test_check_response_auth_ok(self) -> None:
+        """Verify that a response object is returned if no auth errors."""
+        response = requests.get("/health")
         assert utils.check_response_auth(response)
