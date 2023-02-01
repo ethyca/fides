@@ -4,7 +4,9 @@ from pathlib import PosixPath
 from typing import Generator
 
 import pytest
+import requests
 from fideslang.models import DatasetCollection, DatasetField
+from fides.core.config import FidesConfig
 
 from fides.core import utils
 from fides.core.config import get_config
@@ -122,3 +124,20 @@ def test_repeatable_unique_key() -> None:
         "test_dataset", "test_host", "test_name"
     )
     assert unique_fides_key == expected_unique_fides_key
+
+
+@pytest.mark.integration
+class TestCheckResponseAuth:
+    def test_check_response_auth_sys_exit(self, test_config: FidesConfig) -> None:
+        """
+        Verify that a SystemExit is raised when the response status is 403
+        Note that this must be an endpoint that requires authentication!
+        """
+        response = requests.get("/api/v1/cryptography/encryption/key")
+        with pytest.raises(SystemExit):
+            utils.check_response_auth(response)
+
+    def test_check_response_auth_ok(self, test_config: FidesConfig) -> None:
+        """Verify that a SystemExit is raised when the response is not ok."""
+        response = requests.get(test_config.cli.server_url + "/health")
+        assert utils.check_response_auth(response)

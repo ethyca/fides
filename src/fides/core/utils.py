@@ -30,7 +30,7 @@ def check_response_auth(response: requests.Response) -> requests.Response:
     Verify that a response object is 'ok', otherwise print the error and raise
     an exception.
     """
-    if response.status_code == 403:
+    if response.status_code in [401, 403]:
         try:
             echo_red(response.json())
         except json.JSONDecodeError:
