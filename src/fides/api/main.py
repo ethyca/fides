@@ -96,6 +96,7 @@ def create_fides_app(
     api_prefix: str = API_PREFIX,
     request_rate_limit: str = CONFIG.security.request_rate_limit,
     rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
+    security_env: str = CONFIG.security.env.value,
 ) -> FastAPI:
     """Return a properly configured application."""
 
@@ -126,33 +127,22 @@ def create_fides_app(
     fastapi_app.include_router(user_router, tags=["Users"], prefix=f"{api_prefix}")
     fastapi_app.include_router(api_router)
 
-    return fastapi_app
-
-
-def configure_security_env_overrides(
-    application: FastAPI, security_env: str = CONFIG.security.env.value
-) -> FastAPI:
-    """
-    Configures the FastAPI dependency overrides depending on the
-    value of 'security.env'.
-    """
-
     if security_env == "dev":
         # This removes auth requirements for CLI-related endpoints
         # and is the default
-        application.dependency_overrides[verify_oauth_client_cli] = get_root_client
+        fastapi_app.dependency_overrides[verify_oauth_client_cli] = get_root_client
     elif security_env == "demo":
         # This remove all auth requirements
-        application.dependency_overrides[verify_oauth_client] = get_root_client
-        application.dependency_overrides[verify_oauth_client_cli] = get_root_client
+        fastapi_app.dependency_overrides[verify_oauth_client] = get_root_client
+        fastapi_app.dependency_overrides[verify_oauth_client_cli] = get_root_client
     elif security_env == "prod":
         # This is the most secure, so all security deps are maintained
         pass
-    return application
+
+    return fastapi_app
 
 
 app = create_fides_app()
-app = configure_security_env_overrides(application=app)
 
 
 @app.middleware("http")
