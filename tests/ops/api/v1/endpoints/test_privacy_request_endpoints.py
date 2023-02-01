@@ -1284,6 +1284,7 @@ class TestGetPrivacyRequests:
         assert ast.literal_eval(first_row["Subject Identity"]) == {
             "email": TEST_EMAIL,
             "phone_number": TEST_PHONE,
+            "ga_client_id": None,
         }
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"

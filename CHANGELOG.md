@@ -14,26 +14,45 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.5.0...main)
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.5.1...main)
 
 ### Added
 
-* Unified Fides Resources: Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
-* Unified Fides Resources: Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
+* Unified Fides Resources
+  * Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
+  * Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
 * Add new connection config routes that couple them with systems [#2249](https://github.com/ethyca/fides/pull/2249)
+* Add new select/deselect all permissions buttons [#2437](https://github.com/ethyca/fides/pull/2437)
+* Endpoints to allow a user with the `user:password-reset` scope to reset users' passwords. In addition, users no longer require a scope to edit their own passwords. [#2373](https://github.com/ethyca/fides/pull/2373)
+* New form to reset a user's password without knowing an old password [#2390](https://github.com/ethyca/fides/pull/2390)
+* Consent Propagation
+  * Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
+  * Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
+  * Allow defining a list of opt-in and/or opt-out requests in consent connectors [#2315](https://github.com/ethyca/fides/pull/2315)
+  * Add a Google Analytics Consent Connector [#2302](https://github.com/ethyca/fides/pull/2302)
+  * Pass the GA Cookie from the Privacy Center [#2337](https://github.com/ethyca/fides/pull/2337)
+  * Rename "user_id" to more specific "ga_client_id" [#2356](https://github.com/ethyca/fides/pull/2356)
+  * Patch Google Analytics Consent Connector to delete by client_id [#2355](https://github.com/ethyca/fides/pull/2355)
+  * Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
 
 ### Changed
 
-* Unified Fides Resources: Removed several fidesops schemas for DSR's in favor of updated Fideslang schemas [#2009](https://github.com/ethyca/fides/pull/2009)
-* Unified Fides Resources: Removed DatasetConfig.dataset field [#2096](https://github.com/ethyca/fides/pull/2096)
-* Unified Fides Resources: Updated UI dataset config routes to use new unified routes [#2113](https://github.com/ethyca/fides/pull/2113)
-* Unified Fides Resources: Validate request body on crud endpoints on upsert. Validate dataset data categories before save. [#2134](https://github.com/ethyca/fides/pull/2134/)
-* Unified Fides Resources: Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
+* Unified Fides Resources
+  * Removed several fidesops schemas for DSR's in favor of updated Fideslang schemas [#2009](https://github.com/ethyca/fides/pull/2009)
+  * Removed DatasetConfig.dataset field [#2096](https://github.com/ethyca/fides/pull/2096)
+  * Updated UI dataset config routes to use new unified routes [#2113](https://github.com/ethyca/fides/pull/2113)
+  * Validate request body on crud endpoints on upsert. Validate dataset data categories before save. [#2134](https://github.com/ethyca/fides/pull/2134/)
+  * Updated test env setup and quickstart to use new endpoints [#2225](https://github.com/ethyca/fides/pull/2225)
+* Consent Propagation
+  * Privacy Center consent options can now be marked as `executable` in order to propagate consent requests [#2193](https://github.com/ethyca/fides/pull/2193)
+  * Add support for passing browser identities to consent request patches [#2304](https://github.com/ethyca/fides/pull/2304)
 * Update fideslang to 1.3.3 [#2343](https://github.com/ethyca/fides/pull/2343)
 * Display the request type instead of the policy name on the request table [#2382](https://github.com/ethyca/fides/pull/2382)
 * Make denial reasons required [#2400](https://github.com/ethyca/fides/pull/2400)
 * Display the policy key on the request details page [#2395](https://github.com/ethyca/fides/pull/2395)
 * Updated CSV export [#2452](https://github.com/ethyca/fides/pull/2452)
+* Privacy Request approval now uses a modal [#2443](https://github.com/ethyca/fides/pull/2443)
 
 ### Developer Experience
 
@@ -44,7 +63,6 @@ The types of changes are:
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
-* Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
 * Privacy Center identity inputs validate even when they are optional. [#2308](https://github.com/ethyca/fides/pull/2308)
 * The PII toggle defaults to false and PII will be hidden on page load [#2388](https://github.com/ethyca/fides/pull/2388)
 * Fixed a CI bug caused by git security upgrades [#2441](https://github.com/ethyca/fides/pull/2441)
@@ -54,6 +72,17 @@ The types of changes are:
   * Phone inputs no longer request country SVGs from external domain. [#2378](https://github.com/ethyca/fides/pull/2378)
   * Input validation errors no longer change the height of modals. [#2379](https://github.com/ethyca/fides/pull/2379)
 * Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
+
+
+## [2.5.1](https://github.com/ethyca/fides/compare/2.5.0...2.5.1)
+
+### Developer Experience
+
+* Allow db resets only if `config.dev_mode` is `True` [#2321](https://github.com/ethyca/fides/pull/2321)
+
+### Fixed
+
+* Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
 
 ### Security
 

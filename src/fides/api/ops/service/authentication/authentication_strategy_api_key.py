@@ -1,4 +1,5 @@
-from typing import List
+import json
+from typing import Dict, List, Optional
 
 from requests import PreparedRequest
 
@@ -17,7 +18,7 @@ from fides.api.ops.util.url_util import set_query_parameter
 
 class ApiKeyAuthenticationStrategy(AuthenticationStrategy):
     """
-    Adds an API key to each request header or query param,
+    Adds an API key to each request header, query param, or the body
     depending on configuration
     """
 
@@ -27,6 +28,7 @@ class ApiKeyAuthenticationStrategy(AuthenticationStrategy):
     def __init__(self, configuration: ApiKeyAuthenticationConfiguration):
         self.headers: List[Header] = configuration.headers  # type: ignore
         self.query_params: List[QueryParam] = configuration.query_params  # type: ignore
+        self.body: Optional[str] = configuration.body  # type: ignore
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig
@@ -59,5 +61,17 @@ class ApiKeyAuthenticationStrategy(AuthenticationStrategy):
                     query_param.name,
                     param_val,
                 )
+        if self.body:
+            body_with_api_key: Optional[str] = assign_placeholders(
+                self.body, secrets or {}
+            )
+            api_key_request_body: Dict = json.loads(body_with_api_key or "{}")
+
+            original_request_body: Dict = json.loads(request.body or "{}")
+            original_request_body.update(api_key_request_body)
+
+            request.prepare_body(
+                data=json.dumps(original_request_body), files=None, json=True
+            )
 
         return request

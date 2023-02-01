@@ -187,7 +187,7 @@ def create_privacy_request(
     or report failure and execute them within the Fidesops system.
     You cannot update privacy requests after they've been created.
     """
-    return _create_privacy_request(db, data, False)
+    return create_privacy_request_func(db, data, False)
 
 
 @router.post(
@@ -207,7 +207,7 @@ def create_privacy_request_authenticated(
     You cannot update privacy requests after they've been created.
     This route requires authentication instead of using verification codes.
     """
-    return _create_privacy_request(db, data, True)
+    return create_privacy_request_func(db, data, True)
 
 
 def _send_privacy_request_receipt_message_to_user(
@@ -1557,7 +1557,7 @@ def resume_privacy_request_from_requires_input(
     return privacy_request
 
 
-def _create_privacy_request(
+def create_privacy_request_func(
     db: Session,
     data: conlist(PrivacyRequestCreate),  # type: ignore
     authenticated: bool = False,
@@ -1578,7 +1578,12 @@ def _create_privacy_request(
 
     logger.info("Starting creation for {} privacy requests", len(data))
 
-    optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
+    optional_fields = [
+        "external_id",
+        "started_processing_at",
+        "finished_processing_at",
+        "consent_preferences",
+    ]
     for privacy_request_data in data:
         if not any(privacy_request_data.identity.dict().values()):
             logger.warning(
@@ -1616,6 +1621,9 @@ def _create_privacy_request(
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)
             if attr is not None:
+                if field == "consent_preferences":
+                    attr = [consent.dict() for consent in attr]
+
                 kwargs[field] = attr
 
         try:
