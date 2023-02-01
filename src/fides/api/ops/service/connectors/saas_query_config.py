@@ -187,12 +187,22 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 input_data, filtered_secrets, grouped_inputs
             )
             for param_value_map in param_value_maps:
-                request_params.append(
-                    self.generate_query(
-                        {name: [value] for name, value in param_value_map.items()},
-                        policy,
+                try:
+                    request_params.append(
+                        self.generate_query(
+                            {name: [value] for name, value in param_value_map.items()},
+                            policy,
+                        )
                     )
-                )
+                except ValueError as exc:
+                    if read_request.skip_missing_param_values:
+                        logger.info(
+                            "Skipping optional read request on node {}: {}",
+                            self.node.address.value,
+                            exc,
+                        )
+                        continue
+                    raise exc
 
         return request_params
 
@@ -314,6 +324,24 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return self.generate_update_request_params(param_values, current_request)
 
+    def generate_consent_stmt(
+        self,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        consent_request: SaaSRequest,
+    ) -> SaaSRequestParams:
+        """
+        Prepares SaaSRequestParams with the info needed to make an opt-out or opt-in http request.
+        Shares a lot of code with generate_update_stmt, except there is no row data being operated on,
+        so our row is an empty dict.
+        """
+
+        param_values: Dict[str, Any] = self.generate_update_param_values(
+            {}, policy, privacy_request, consent_request
+        )
+
+        return self.generate_update_request_params(param_values, consent_request)
+
     def generate_update_param_values(  # pylint: disable=R0914
         self,
         row: Row,
@@ -389,10 +417,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return param_values
 
     def generate_update_request_params(
-        self, param_values: dict[str, Any], masking_request: SaaSRequest
+        self, param_values: dict[str, Any], update_request: SaaSRequest
     ) -> SaaSRequestParams:
         """
-        A utility that, based on the provided param values and masking request,
+        A utility that, based on the provided param values and update request,
         generates the `SaaSRequestParams` that are to be used in request execution
         """
 
@@ -406,11 +434,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, masking_request, param_values  # type: ignore
+            self.action, self.collection_name, update_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for {}", masking_request.path)
-
+        logger.info("Populated request params for {}", update_request.path)
         return saas_request_params
 
     def all_value_map(self, row: Row) -> Dict[str, Any]:

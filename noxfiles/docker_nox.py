@@ -67,13 +67,12 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     Build various Docker images.
 
     Params:
-
-    admin-ui = Build the Next.js Admin UI application.
-    dev = Build the fides webserver/CLI, tagged as `local`.
-    privacy-center = Build the Next.js Privacy Center application.
-    prod = Build the fides webserver/CLI and tag it as the current application version.
-    sample = Builds all components required for the sample application.
-    test = Build the fides webserver/CLI the same as `prod`, but tag is as `local`.
+        admin-ui = Build the Next.js Admin UI application.
+        dev = Build the fides webserver/CLI, tagged as `local`.
+        privacy-center = Build the Next.js Privacy Center application.
+        prod = Build the fides webserver/CLI and tag it as the current application version.
+        sample = Builds all components required for the sample application.
+        test = Build the fides webserver/CLI the same as `prod`, but tag is as `local`.
     """
     build_platform = get_platform(session.posargs)
 
