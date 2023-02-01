@@ -89,7 +89,9 @@ saas_config:
           method: PUT
           path: /api/tickets/<tickets_id>/
           body: |
-            <all_object_fields>
+            {
+               <all_object_fields> 
+            }
           param_values:
             - name: tickets_id
               references:

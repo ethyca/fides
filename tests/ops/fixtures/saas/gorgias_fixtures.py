@@ -121,31 +121,71 @@ def gorgias_create_erasure_data(
 
     # user
     body = {
-        "user": {
             "name": "Ethyca Test Erasure",
-            "email": gorgias_erasure_identity_email,
-            "verified": "true",
-        }
+            "email": gorgias_erasure_identity_email,                    
     }
 
-    users_response = requests.post(url=f"{base_url}/api/v2/users", auth=auth, json=body)
-    user = users_response.json()["user"]
+    users_response = requests.post(url=f"{base_url}/api/customers", auth=auth, json=body)
+    user = users_response.json()    
     user_id = user["id"]
 
     # ticket
+    # ticket_data = {
+    #     "customer": {
+    #         "id": user_id,
+    #         "email": gorgias_erasure_identity_email
+    #     },
+    #     "messages": [
+    #         {
+    #             "sender": {
+    #                     "id": user_id,
+    #                     "email": gorgias_erasure_identity_email
+    #             },
+    #             "source": {
+    #                     "to": [
+    #                         {
+    #                             "name": "to_test",
+    #                             "address": "34545@email.com"
+    #                         }
+    #                     ],
+    #                     "from": {
+    #                         "name": "test",
+    #                         "address": gorgias_erasure_identity_email
+    #                     },
+    #                     "type": "email"
+    #             },
+    #             "channel": "twitter",
+    #             "from_agent": "true",
+    #             "via": "email"
+    #         }
+    #     ],
+    #     "status": "open",
+    #     "subject": "testing the tiket"
+    # }
     ticket_data = {
-        "ticket": {
-            "comment": {"body": "Test Comment"},
-            "priority": "urgent",
-            "subject": "Test Ticket",
-            "requester_id": user_id,
-            "submitter_id": user_id,
-            "description": "Test Description",
-        }
+        "customer": {
+            "id": user_id,
+            "email": gorgias_erasure_identity_email
+        },
+        "messages": [
+            {
+                "sender": {
+                        "id": user_id,
+                        "email": gorgias_erasure_identity_email
+                },
+                "channel": "twitter-direct-message",
+                "from_agent": "true",
+                "via": "instagram-ad-comment"
+            }
+        ],
+        "channel": "api",
+        "status": "open",
+        "subject": "Tested"
     }
     response = requests.post(
-        url=f"{base_url}/api/v2/tickets", auth=auth, json=ticket_data
+        url=f"{base_url}/api/tickets", auth=auth, json=ticket_data
     )
-    ticket = response.json()["ticket"]
-    ticket_id = ticket["id"]
+    ticket = response.json()   
+    print(ticket)   
+    ticket_id = ticket["id"]    
     yield ticket, user
