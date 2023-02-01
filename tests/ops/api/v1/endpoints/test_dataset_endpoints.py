@@ -1,8 +1,5 @@
-import json
 import uuid
-from typing import Dict, List, Optional
 from unittest import mock
-from unittest.mock import Mock
 
 import pydash
 import pytest
@@ -10,9 +7,8 @@ from fastapi import HTTPException
 from fastapi_pagination import Params
 from fideslang import Dataset
 from pydash import filter_
-from sqlalchemy.orm import Session, make_transient
+from sqlalchemy.orm import make_transient
 from sqlalchemy.orm.attributes import flag_modified
-from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -28,11 +24,10 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 
 
-def _reject_key(dict: Dict, key: str) -> Dict:
+def _reject_key(dict, key):
     """Return a copy of the given dictionary with the given key removed"""
     result = dict.copy()
     result.pop(key, None)
@@ -64,72 +59,60 @@ def test_example_datasets(example_datasets):
 
 class TestValidateDataset:
     @pytest.fixture
-    def validate_dataset_url(self, connection_config) -> str:
+    def validate_dataset_url(self, connection_config):
         path = V1_URL_PREFIX + DATASET_VALIDATE
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
     def test_put_validate_dataset_not_authenticated(
-        self, example_datasets: List, validate_dataset_url: str, api_client
-    ) -> None:
+        self, example_datasets, validate_dataset_url, api_client
+    ):
         response = api_client.put(
             validate_dataset_url, headers={}, json=example_datasets[0]
         )
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_put_validate_dataset_wrong_scope(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=example_datasets[0]
         )
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset_missing_key(
         self,
-        example_datasets: List,
+        auth_header,
+        example_datasets,
         validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        api_client,
+    ):
         invalid_dataset = _reject_key(example_datasets[0], "fides_key")
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
         assert response.status_code == 422
-        details = json.loads(response.text)["detail"]
+        details = response.json()["detail"]
         assert ["body", "fides_key"] in [e["loc"] for e in details]
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset_missing_collections(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         invalid_dataset = _reject_key(example_datasets[0], "collections")
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
         assert response.status_code == 422
-        details = json.loads(response.text)["detail"]
+        details = response.json()["detail"]
         assert ["body", "collections"] in [e["loc"] for e in details]
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset_nested_collections(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         invalid_dataset = example_datasets[0]
         invalid_dataset["collections"][0]["fields"].append(
             {
@@ -146,8 +129,7 @@ class TestValidateDataset:
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
-        json_response = json.loads(response.text)
-        print(json_response)
+        json_response = response.json()
 
         # if we extract the details field from the response it will contain
         # the nested fields "phone" and "count"
@@ -163,14 +145,10 @@ class TestValidateDataset:
 
         assert response.status_code == 200
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset_invalid_length(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         invalid_dataset = example_datasets[0]
 
         # string is properly read:
@@ -182,9 +160,9 @@ class TestValidateDataset:
         )
         assert response.status_code == 200
         assert (
-            json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
-                "fides_meta"
-            ]["length"]
+            response.json()["dataset"]["collections"][0]["fields"][0]["fides_meta"][
+                "length"
+            ]
             == 123
         )
 
@@ -196,18 +174,13 @@ class TestValidateDataset:
 
         assert response.status_code == 422
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value is greater than 0"
+            response.json()["detail"][0]["msg"] == "ensure this value is greater than 0"
         )
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset_invalid_data_type(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         invalid_dataset = example_datasets[0]
 
         # string is properly read:
@@ -219,9 +192,9 @@ class TestValidateDataset:
         )
         assert response.status_code == 200
         assert (
-            json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
-                "fides_meta"
-            ]["data_type"]
+            response.json()["dataset"]["collections"][0]["fields"][0]["fides_meta"][
+                "data_type"
+            ]
             == "string"
         )
 
@@ -236,18 +209,14 @@ class TestValidateDataset:
 
         assert response.status_code == 422
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "The data type stringsssssss is not supported."
         )
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset_invalid_fidesops_meta(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         invalid_dataset = example_datasets[0]
         # Add an invalid fidesops_meta annotation to ensure our type-checking is comprehensive
         invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
@@ -263,7 +232,7 @@ class TestValidateDataset:
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
         assert response.status_code == 422
-        details = json.loads(response.text)["detail"]
+        details = response.json()["detail"]
         assert [
             "body",
             "collections",
@@ -276,14 +245,10 @@ class TestValidateDataset:
             "direction",
         ] in [e["loc"] for e in details]
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset_invalid_category(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         invalid_dataset = example_datasets[0].copy()
         invalid_dataset["collections"][0]["fields"][0]["data_categories"].append(
             "user.invalid.category"
@@ -292,32 +257,28 @@ class TestValidateDataset:
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
         assert response.status_code == 422
-        details = json.loads(response.text)["detail"]
+        details = response.json()["detail"]
         assert ["collections", 0, "fields", 0, "data_categories"] in [
             e["loc"] for e in details
         ]
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset_invalid_connection_key(
-        self, example_datasets: List, api_client: TestClient, generate_auth_header
-    ) -> None:
+        self, auth_header, example_datasets, api_client
+    ):
         path = V1_URL_PREFIX + DATASET_VALIDATE
         path_params = {"connection_key": "nonexistent_key"}
         validate_dataset_url = path.format(**path_params)
 
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=example_datasets[0]
         )
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset_invalid_traversal(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         invalid_dataset = example_datasets[0].copy()
 
         # Remove all the "reference" annotations; this will make traversal impossible
@@ -329,7 +290,7 @@ class TestValidateDataset:
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
         assert response.status_code == 200
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["dataset"]
         assert response_body["traversal_details"]
         assert response_body["traversal_details"]["is_traversable"] is False
@@ -341,22 +302,17 @@ class TestValidateDataset:
             in response_body["traversal_details"]["msg"]
         )
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_validate_dataset_that_references_another_dataset(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         dataset = example_datasets[1]
 
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=dataset
         )
-        print(response.text)
         assert response.status_code == 200
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["dataset"]
         assert response_body["traversal_details"]
         assert response_body["traversal_details"]["is_traversable"] is False
@@ -366,13 +322,13 @@ class TestValidateDataset:
         )
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_validate_saas_dataset_invalid_traversal(
         self,
-        db,
+        auth_header,
         saas_example_connection_config_with_invalid_saas_config,
         saas_example_dataset,
-        api_client: TestClient,
-        generate_auth_header,
+        api_client,
     ):
         path = V1_URL_PREFIX + DATASET_VALIDATE
         path_params = {
@@ -380,7 +336,6 @@ class TestValidateDataset:
         }
         validate_dataset_url = path.format(**path_params)
 
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.put(
             validate_dataset_url,
             headers=auth_header,
@@ -388,7 +343,7 @@ class TestValidateDataset:
         )
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["dataset"]
         assert response_body["traversal_details"]
         assert response_body["traversal_details"]["is_traversable"] is False
@@ -397,19 +352,15 @@ class TestValidateDataset:
             == "Some nodes were not reachable: saas_connector_example:messages"
         )
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_put_validate_dataset(
-        self,
-        example_datasets: List,
-        validate_dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, validate_dataset_url, api_client
+    ):
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=example_datasets[0]
         )
         assert response.status_code == 200
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["dataset"]
         assert response_body["dataset"]["fides_key"] == "postgres_example_test_dataset"
         assert response_body["traversal_details"]
@@ -420,7 +371,7 @@ class TestValidateDataset:
 @pytest.mark.asyncio
 class TestPutDatasetConfigs:
     @pytest.fixture
-    def datasets_url(self, connection_config) -> str:
+    def datasets_url(self, connection_config):
         path = V1_URL_PREFIX + DATASET_CONFIGS
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
@@ -436,33 +387,29 @@ class TestPutDatasetConfigs:
 
     def test_patch_dataset_configs_not_authenticated(
         self, datasets_url, api_client, request_body
-    ) -> None:
+    ):
         response = api_client.patch(datasets_url, headers={}, json=request_body)
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_patch_dataset_configs_wrong_scope(
-        self,
-        request_body,
-        datasets_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, request_body, datasets_url, api_client
+    ):
         response = api_client.patch(
             datasets_url, headers=auth_header, json=request_body
         )
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_create_dataset_configs_by_ctl_dataset_key(
         self,
+        auth_header,
         ctl_dataset,
-        generate_auth_header,
         api_client,
         datasets_url,
         db,
         request_body,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url,
             headers=auth_header,
@@ -483,12 +430,11 @@ class TestPutDatasetConfigs:
         ), "Returns the fides_key of the ctl_dataset not the DatasetConfig"
         assert succeeded["collections"] == Dataset.from_orm(ctl_dataset).collections
 
-        dataset_config.delete(db)
-
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_create_datasetconfigs_bad_data_category(
         self,
+        auth_header,
         ctl_dataset,
-        generate_auth_header,
         api_client,
         datasets_url,
         db,
@@ -500,7 +446,6 @@ class TestPutDatasetConfigs:
         db.commit()
         db.refresh(ctl_dataset)
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url,
             headers=auth_header,
@@ -516,22 +461,23 @@ class TestPutDatasetConfigs:
             == "The data category bad_category is not supported."
         )
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_create_datasets_configs_invalid_connection_key(
-        self, request_body, api_client: TestClient, generate_auth_header
-    ) -> None:
+        self, auth_header, request_body, api_client
+    ):
         path = V1_URL_PREFIX + DATASET_CONFIGS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url, headers=auth_header, json=request_body
         )
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_configs_ctl_dataset_id_does_not_exist(
-        self, request_body, api_client: TestClient, generate_auth_header, datasets_url
-    ) -> None:
+        self, auth_header, request_body, api_client, datasets_url
+    ):
         request_body.append(
             {
                 "fides_key": "second_dataset_config",
@@ -539,36 +485,30 @@ class TestPutDatasetConfigs:
             }
         )
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url, headers=auth_header, json=request_body
         )
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_configs_bulk_create_limit_exceeded(
-        self, api_client: TestClient, request_body, generate_auth_header, datasets_url
+        self, auth_header, api_client, request_body, datasets_url
     ):
         payload = []
-        for i in range(0, 51):
+        for _ in range(0, 51):
             payload.append(request_body[0])
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(datasets_url, headers=auth_header, json=payload)
 
         assert 422 == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "ensure this value has at most 50 items"
         )
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_create_dataset_configs_bulk_create(
-        self,
-        ctl_dataset,
-        generate_auth_header,
-        api_client,
-        datasets_url,
-        db,
-        request_body,
+        self, auth_header, ctl_dataset, api_client, datasets_url, db, request_body
     ):
         request_body.append(
             {
@@ -577,7 +517,6 @@ class TestPutDatasetConfigs:
             }
         )
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url,
             headers=auth_header,
@@ -585,7 +524,7 @@ class TestPutDatasetConfigs:
         )
 
         assert response.status_code == 200
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 2
         assert len(response_body["failed"]) == 0
 
@@ -610,18 +549,9 @@ class TestPutDatasetConfigs:
         assert response_body["succeeded"][1]["fides_key"] == ctl_dataset.fides_key
         assert second_dataset_config.ctl_dataset == ctl_dataset
 
-        first_dataset_config.delete(db)
-        second_dataset_config.delete(db)
-
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_update_dataset_configs(
-        self,
-        ctl_dataset,
-        generate_auth_header,
-        api_client,
-        datasets_url,
-        db,
-        request_body,
-        dataset_config,
+        self, auth_header, ctl_dataset, api_client, datasets_url, db, dataset_config
     ):
 
         old_ctl_dataset_id = dataset_config.ctl_dataset.id
@@ -638,7 +568,6 @@ class TestPutDatasetConfigs:
         db.commit()
         db.refresh(ctl_dataset)
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url,
             headers=auth_header,
@@ -651,7 +580,7 @@ class TestPutDatasetConfigs:
         )
 
         assert response.status_code == 200
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 1
         assert len(response_body["failed"]) == 0
 
@@ -664,12 +593,13 @@ class TestPutDatasetConfigs:
         assert len(dataset_config.ctl_dataset.collections) == 1
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_configs_missing_saas_config(
         self,
+        auth_header,
         saas_example_connection_config_without_saas_config,
         saas_ctl_dataset,
-        api_client: TestClient,
-        generate_auth_header,
+        api_client,
     ):
         path = V1_URL_PREFIX + DATASET_CONFIGS
         path_params = {
@@ -677,7 +607,6 @@ class TestPutDatasetConfigs:
         }
         datasets_url = path.format(**path_params)
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url,
             headers=auth_header,
@@ -690,7 +619,7 @@ class TestPutDatasetConfigs:
         )
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
         assert (
@@ -700,13 +629,14 @@ class TestPutDatasetConfigs:
         )
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_configs_extra_reference(
         self,
+        auth_header,
         saas_example_connection_config,
         saas_ctl_dataset,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
     ):
         path = V1_URL_PREFIX + DATASET_CONFIGS
         path_params = {"connection_key": saas_example_connection_config.key}
@@ -723,7 +653,6 @@ class TestPutDatasetConfigs:
         db.add(saas_ctl_dataset)
         db.commit()
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url,
             headers=auth_header,
@@ -738,7 +667,7 @@ class TestPutDatasetConfigs:
         )
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
         assert (
@@ -748,13 +677,14 @@ class TestPutDatasetConfigs:
         )
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_configs_extra_identity(
         self,
+        auth_header,
         saas_example_connection_config,
         saas_ctl_dataset,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
     ):
         path = V1_URL_PREFIX + DATASET_CONFIGS
         path_params = {"connection_key": saas_example_connection_config.key}
@@ -765,7 +695,6 @@ class TestPutDatasetConfigs:
         db.add(saas_ctl_dataset)
         db.commit()
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url,
             headers=auth_header,
@@ -780,7 +709,7 @@ class TestPutDatasetConfigs:
         )
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
         assert (
@@ -790,13 +719,14 @@ class TestPutDatasetConfigs:
         ), "Validation is done when attaching dataset to Saas Config"
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_configs_fides_key_mismatch(
         self,
+        auth_header,
         saas_example_connection_config,
         saas_ctl_dataset,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
     ):
         path = V1_URL_PREFIX + DATASET_CONFIGS
         path_params = {"connection_key": saas_example_connection_config.key}
@@ -806,7 +736,6 @@ class TestPutDatasetConfigs:
         db.add(saas_ctl_dataset)
         db.commit()
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url,
             headers=auth_header,
@@ -822,7 +751,7 @@ class TestPutDatasetConfigs:
 
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
         assert (
@@ -831,22 +760,17 @@ class TestPutDatasetConfigs:
             "'saas_connector_example' of the connection config"
         )
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     @mock.patch("fides.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_dataset_configs_failed_response(
-        self,
-        mock_create: Mock,
-        request_body,
-        datasets_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, mock_create, auth_header, request_body, datasets_url, api_client
+    ):
         mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url, headers=auth_header, json=request_body
         )
         assert response.status_code == 200  # Returns 200 regardless
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
 
@@ -854,24 +778,18 @@ class TestPutDatasetConfigs:
             assert "Dataset create/update failed" in failed_response["message"]
             assert set(failed_response.keys()) == {"message", "data"}
 
-        for index, failed in enumerate(response_body["failed"]):
+        for _, failed in enumerate(response_body["failed"]):
             assert failed["data"]["fides_key"] == request_body[0]["fides_key"]
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_configs_failed_ctl_dataset_validation(
-        self,
-        ctl_dataset,
-        generate_auth_header,
-        api_client,
-        datasets_url,
-        db,
-        request_body,
+        self, auth_header, ctl_dataset, api_client, datasets_url, db, request_body
     ):
         ctl_dataset.organization_fides_key = None
         db.add(ctl_dataset)
         db.commit()
         db.refresh(ctl_dataset)
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url,
             headers=auth_header,
@@ -882,74 +800,65 @@ class TestPutDatasetConfigs:
 
 class TestPutDatasets:
     @pytest.fixture
-    def datasets_url(self, connection_config) -> str:
+    def datasets_url(self, connection_config):
         path = V1_URL_PREFIX + DATASETS
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
     def test_patch_datasets_not_authenticated(
-        self, example_datasets: List, datasets_url, api_client
-    ) -> None:
+        self, example_datasets, datasets_url, api_client
+    ):
         response = api_client.patch(datasets_url, headers={}, json=example_datasets)
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_patch_datasets_wrong_scope(
-        self,
-        example_datasets: List,
-        datasets_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_datasets, datasets_url, api_client
+    ):
         response = api_client.patch(
             datasets_url, headers=auth_header, json=example_datasets
         )
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_datasets_invalid_connection_key(
-        self, example_datasets: List, api_client: TestClient, generate_auth_header
-    ) -> None:
+        self, auth_header, example_datasets, api_client
+    ):
         path = V1_URL_PREFIX + DATASETS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url, headers=auth_header, json=example_datasets
         )
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_datasets_bulk_create_limit_exceeded(
-        self, api_client: TestClient, db: Session, generate_auth_header, datasets_url
+        self, auth_header, api_client, datasets_url
     ):
         payload = []
         for i in range(0, 51):
             payload.append({"collections": [{"fields": [], "fides_key": i}]})
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(datasets_url, headers=auth_header, json=payload)
 
         assert 422 == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "ensure this value has at most 50 items"
         )
 
+    @pytest.mark.usefixtures("connection_config")
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_datasets_bulk_create(
-        self,
-        example_datasets: List,
-        datasets_url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
-        connection_config,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        self, auth_header, example_datasets, datasets_url, api_client, db
+    ):
         response = api_client.patch(
             datasets_url, headers=auth_header, json=example_datasets
         )
         assert response.status_code == 200
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 11
         assert len(response_body["failed"]) == 0
 
@@ -1040,16 +949,11 @@ class TestPutDatasets:
         mariadb_config.delete(db)
         mariadb_ctl_dataset.delete(db)
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_datasets_bulk_update(
-        self,
-        example_datasets,
-        datasets_url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, example_datasets, datasets_url, api_client, db
+    ):
         # Create first, then update
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         api_client.patch(datasets_url, headers=auth_header, json=example_datasets)
 
         updated_datasets = example_datasets.copy()
@@ -1092,7 +996,7 @@ class TestPutDatasets:
         )
 
         assert response.status_code == 200
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 11
         assert len(response_body["failed"]) == 0
 
@@ -1193,13 +1097,13 @@ class TestPutDatasets:
         bigquery_ctl_dataset.delete(db)
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_datasets_missing_saas_config(
         self,
+        auth_header,
         saas_example_connection_config_without_saas_config,
         saas_example_dataset,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
     ):
         path = V1_URL_PREFIX + DATASETS
         path_params = {
@@ -1207,13 +1111,12 @@ class TestPutDatasets:
         }
         datasets_url = path.format(**path_params)
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url, headers=auth_header, json=[saas_example_dataset]
         )
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
         assert (
@@ -1223,13 +1126,13 @@ class TestPutDatasets:
         )
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_datasets_extra_reference(
         self,
+        auth_header,
         saas_example_connection_config,
         saas_example_dataset,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
     ):
         path = V1_URL_PREFIX + DATASETS
         path_params = {"connection_key": saas_example_connection_config.key}
@@ -1246,13 +1149,12 @@ class TestPutDatasets:
             ]
         }
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url, headers=auth_header, json=[invalid_dataset]
         )
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
         assert (
@@ -1262,13 +1164,14 @@ class TestPutDatasets:
         )
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_datasets_extra_identity(
         self,
+        auth_header,
         saas_example_connection_config,
         saas_example_dataset,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
     ):
         path = V1_URL_PREFIX + DATASETS
         path_params = {"connection_key": saas_example_connection_config.key}
@@ -1279,13 +1182,12 @@ class TestPutDatasets:
             "identity": "email"
         }
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url, headers=auth_header, json=[invalid_dataset]
         )
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
         assert (
@@ -1295,13 +1197,14 @@ class TestPutDatasets:
         )
 
     @pytest.mark.unit_saas
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_datasets_fides_key_mismatch(
         self,
+        auth_header,
         saas_example_connection_config,
         saas_example_dataset,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
+        api_client,
+        db,
     ):
         path = V1_URL_PREFIX + DATASETS
         path_params = {"connection_key": saas_example_connection_config.key}
@@ -1310,13 +1213,12 @@ class TestPutDatasets:
         invalid_dataset = saas_example_dataset
         invalid_dataset["fides_key"] = "different_key"
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url, headers=auth_header, json=[invalid_dataset]
         )
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
         assert (
@@ -1325,24 +1227,19 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     @mock.patch(
         "fides.api.ops.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset"
     )
     def test_patch_datasets_failed_response(
-        self,
-        mock_create: Mock,
-        example_datasets: List,
-        datasets_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, mock_create, auth_header, example_datasets, datasets_url, api_client
+    ):
         mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             datasets_url, headers=auth_header, json=example_datasets
         )
         assert response.status_code == 200  # Returns 200 regardless
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 11
 
@@ -1356,64 +1253,52 @@ class TestPutDatasets:
 
 class TestPutYamlDatasets:
     @pytest.fixture
-    def dataset_url(self, connection_config) -> str:
+    def dataset_url(self, connection_config):
         path = V1_URL_PREFIX + YAML_DATASETS
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
     def test_patch_dataset_not_authenticated(
-        self, example_yaml_dataset: str, dataset_url, api_client
-    ) -> None:
+        self, example_yaml_dataset, dataset_url, api_client
+    ):
         response = api_client.patch(dataset_url, headers={}, data=example_yaml_dataset)
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_patch_datasets_wrong_scope(
-        self,
-        example_yaml_dataset: str,
-        dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, example_yaml_dataset, dataset_url, api_client
+    ):
         response = api_client.patch(
             dataset_url, headers=auth_header, data=example_yaml_dataset
         )
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_invalid_connection_key(
-        self, example_yaml_dataset: str, api_client: TestClient, generate_auth_header
-    ) -> None:
+        self, auth_header, example_yaml_dataset, api_client
+    ):
         path = V1_URL_PREFIX + YAML_DATASETS
         path_params = {"connection_key": "nonexistent_key"}
         dataset_url = path.format(**path_params)
 
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.patch(
             dataset_url, headers=auth_header, data=example_yaml_dataset
         )
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_invalid_content_type(
-        self,
-        dataset_url: str,
-        example_datasets: str,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        self, auth_header, dataset_url, example_datasets, api_client
+    ):
         response = api_client.patch(
             dataset_url, headers=auth_header, json=example_datasets
         )
         assert response.status_code == 415
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_invalid_content(
-        self,
-        dataset_url: str,
-        example_invalid_yaml_dataset: str,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        self, auth_header, dataset_url, example_invalid_yaml_dataset, api_client
+    ):
         headers = {"Content-type": "application/x-yaml"}
         headers.update(auth_header)
         response = api_client.patch(
@@ -1421,26 +1306,21 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     @mock.patch(
         "fides.api.ops.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset"
     )
     def test_patch_datasets_failed_response(
-        self,
-        mock_create: Mock,
-        example_yaml_dataset: str,
-        dataset_url,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, mock_create, auth_header, example_yaml_dataset, dataset_url, api_client
+    ):
         mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         headers = {"Content-type": "application/x-yaml"}
         headers.update(auth_header)
         response = api_client.patch(
             dataset_url, headers=headers, data=example_yaml_dataset
         )
         assert response.status_code == 200  # Returns 200 regardless
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 0
         assert len(response_body["failed"]) == 1
 
@@ -1448,15 +1328,10 @@ class TestPutYamlDatasets:
             assert "Dataset create/update failed" in failed_response["message"]
             assert set(failed_response.keys()) == {"message", "data"}
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_dataset_create(
-        self,
-        example_yaml_dataset: List,
-        dataset_url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        self, auth_header, example_yaml_dataset, dataset_url, api_client, db
+    ):
         headers = {"Content-type": "application/x-yaml"}
         headers.update(auth_header)
         response = api_client.patch(
@@ -1464,7 +1339,7 @@ class TestPutYamlDatasets:
         )
 
         assert response.status_code == 200
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 1
         assert len(response_body["failed"]) == 0
 
@@ -1479,17 +1354,10 @@ class TestPutYamlDatasets:
         assert "Example of a Postgres dataset" in postgres_dataset["description"]
         assert len(postgres_dataset["collections"]) == 11
 
-        postgres_config.delete(db)
-
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_patch_datasets_create(
-        self,
-        example_yaml_datasets: List,
-        dataset_url,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        self, auth_header, example_yaml_datasets, dataset_url, api_client
+    ):
         headers = {"Content-type": "application/x-yaml"}
         headers.update(auth_header)
         response = api_client.patch(
@@ -1497,28 +1365,28 @@ class TestPutYamlDatasets:
         )
 
         assert response.status_code == 200
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["succeeded"]) == 2
         assert len(response_body["failed"]) == 0
 
 
 class TestGetDatasets:
     @pytest.fixture
-    def datasets_url(self, connection_config) -> str:
+    def datasets_url(self, connection_config):
         path = V1_URL_PREFIX + DATASETS
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
-    def test_get_datasets_not_authenticated(
-        self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
-    ) -> None:
+    @pytest.mark.usefixtures("dataset_config")
+    def test_get_datasets_not_authenticated(self, datasets_url, api_client):
         response = api_client.get(datasets_url, headers={})
         assert response.status_code == 401
 
+    @pytest.mark.usefixtures("dataset_config")
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_get_datasets_invalid_connection_key(
-        self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, datasets_url, api_client
+    ):
         path = V1_URL_PREFIX + DATASETS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
@@ -1526,14 +1394,13 @@ class TestGetDatasets:
         response = api_client.get(datasets_url, headers=auth_header)
         assert response.status_code == 404
 
-    def test_get_datasets(
-        self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+    @pytest.mark.usefixtures("dataset_config")
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
+    def test_get_datasets(self, auth_header, datasets_url, api_client):
         response = api_client.get(datasets_url, headers=auth_header)
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["items"]) == 1
         dataset_response = response_body["items"][0]
         assert dataset_response["fides_key"] == "postgres_example_subscriptions_dataset"
@@ -1546,21 +1413,19 @@ class TestGetDatasets:
 
 class TestGetDatasetConfigs:
     @pytest.fixture
-    def datasets_url(self, connection_config) -> str:
+    def datasets_url(self, connection_config):
         path = V1_URL_PREFIX + DATASET_CONFIGS
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
-    def test_get_dataset_configs_not_authenticated(
-        self, datasets_url, api_client: TestClient
-    ) -> None:
+    def test_get_dataset_configs_not_authenticated(self, datasets_url, api_client):
         response = api_client.get(datasets_url, headers={})
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_get_dataset_configs_invalid_connection_key(
-        self, datasets_url, api_client: TestClient, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        self, auth_header, datasets_url, api_client
+    ):
         path = V1_URL_PREFIX + DATASET_CONFIGS
         path_params = {"connection_key": "nonexistent_key"}
         datasets_url = path.format(**path_params)
@@ -1568,14 +1433,13 @@ class TestGetDatasetConfigs:
         response = api_client.get(datasets_url, headers=auth_header)
         assert response.status_code == 404
 
-    def test_get_dataset_configs(
-        self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+    @pytest.mark.usefixtures("dataset_config")
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
+    def test_get_dataset_configs(self, auth_header, datasets_url, api_client):
         response = api_client.get(datasets_url, headers=auth_header)
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body["items"]) == 1
         dataset_response = response_body["items"][0]
         assert dataset_response["fides_key"] == "postgres_example_subscriptions_dataset"
@@ -1592,9 +1456,9 @@ class TestGetDatasetConfigs:
 
 
 def get_dataset_url(
-    connection_config: Optional[ConnectionConfig] = None,
-    dataset_config: Optional[DatasetConfig] = None,
-) -> str:
+    connection_config=None,
+    dataset_config=None,
+):
     """Helper to construct the DATASET_BY_KEY URL, substituting valid/invalid keys in the path"""
     path = V1_URL_PREFIX + DATASET_BY_KEY
     connection_key = "nonexistent_key"
@@ -1610,69 +1474,54 @@ def get_dataset_url(
 class TestGetDataset:
     def test_get_dataset_not_authenticated(
         self, dataset_config, connection_config, api_client
-    ) -> None:
+    ):
         dataset_url = get_dataset_url(connection_config, dataset_config)
         response = api_client.get(dataset_url, headers={})
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_get_dataset_wrong_scope(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, dataset_config, connection_config, api_client
+    ):
         dataset_url = get_dataset_url(connection_config, dataset_config)
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 403
 
+    @pytest.mark.usefixtures("dataset_config")
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_get_dataset_does_not_exist(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, connection_config, api_client
+    ):
         dataset_url = get_dataset_url(connection_config, None)
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_get_dataset_invalid_connection_key(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, dataset_config, connection_config, api_client
+    ):
         dataset_url = get_dataset_url(None, dataset_config)
         dataset_url.replace(connection_config.key, "nonexistent_key")
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_get_dataset(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
+        self, auth_header, dataset_config, connection_config, api_client
     ):
         dataset_url = get_dataset_url(connection_config, dataset_config)
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["fides_key"] == dataset_config.fides_key
         assert len(response_body["collections"]) == 1
 
 
 def get_dataset_config_url(
-    connection_config: Optional[ConnectionConfig] = None,
-    dataset_config: Optional[DatasetConfig] = None,
-) -> str:
+    connection_config=None,
+    dataset_config=None,
+):
     """Helper to construct the DATASETCONFIG_BY_KEY URL, substituting valid/invalid keys in the path"""
     path = V1_URL_PREFIX + DATASETCONFIG_BY_KEY
     connection_key = "nonexistent_key"
@@ -1688,61 +1537,45 @@ def get_dataset_config_url(
 class TestGetDatasetConfig:
     def test_get_dataset_config_not_authenticated(
         self, dataset_config, connection_config, api_client
-    ) -> None:
+    ):
         dataset_url = get_dataset_config_url(connection_config, dataset_config)
         response = api_client.get(dataset_url, headers={})
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_CREATE_OR_UPDATE]], indirect=True)
     def test_get_dataset_config_wrong_scope(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, dataset_config, connection_config, api_client
+    ):
         dataset_url = get_dataset_config_url(connection_config, dataset_config)
-        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_get_dataset_config_does_not_exist(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, connection_config, api_client
+    ):
         dataset_url = get_dataset_config_url(connection_config, None)
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_get_dataset_config_invalid_connection_key(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, dataset_config, connection_config, api_client
+    ):
         dataset_url = get_dataset_config_url(None, dataset_config)
         dataset_url.replace(connection_config.key, "nonexistent_key")
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_get_dataset_config(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
+        self, auth_header, dataset_config, connection_config, api_client
     ):
         dataset_url = get_dataset_config_url(connection_config, dataset_config)
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(dataset_url, headers=auth_header)
         assert response.status_code == 200
 
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["fides_key"] == dataset_config.fides_key
         assert (
             response_body["ctl_dataset"]["fides_key"]
@@ -1754,55 +1587,39 @@ class TestGetDatasetConfig:
 class TestDeleteDataset:
     def test_delete_dataset_not_authenticated(
         self, dataset_config, connection_config, api_client
-    ) -> None:
+    ):
         dataset_url = get_dataset_url(connection_config, dataset_config)
         response = api_client.delete(dataset_url, headers={})
         assert response.status_code == 401
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_READ]], indirect=True)
     def test_delete_dataset_wrong_scope(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, dataset_config, connection_config, api_client
+    ):
         dataset_url = get_dataset_url(connection_config, dataset_config)
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 403
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_DELETE]], indirect=True)
     def test_delete_dataset_does_not_exist(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, connection_config, api_client
+    ):
         dataset_url = get_dataset_url(connection_config, None)
-        auth_header = generate_auth_header(scopes=[DATASET_DELETE])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_DELETE]], indirect=True)
     def test_delete_dataset_invalid_connection_key(
-        self,
-        dataset_config,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-    ) -> None:
+        self, auth_header, dataset_config, api_client
+    ):
         dataset_url = get_dataset_url(None, dataset_config)
-        auth_header = generate_auth_header(scopes=[DATASET_DELETE])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 404
 
+    @pytest.mark.parametrize("auth_header", [[DATASET_DELETE]], indirect=True)
     def test_delete_dataset(
-        self,
-        db: Session,
-        connection_config,
-        api_client: TestClient,
-        generate_auth_header,
-        ctl_dataset,
-    ) -> None:
+        self, auth_header, db, connection_config, api_client, ctl_dataset
+    ):
         # Create a new dataset config so we don't run into issues trying to clean up an
         # already deleted fixture
         dataset_config = DatasetConfig.create(
@@ -1815,7 +1632,6 @@ class TestDeleteDataset:
         )
 
         dataset_url = get_dataset_url(connection_config, dataset_config)
-        auth_header = generate_auth_header(scopes=[DATASET_DELETE])
         response = api_client.delete(dataset_url, headers=auth_header)
         assert response.status_code == 204
 
