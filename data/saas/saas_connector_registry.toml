@@ -49,7 +49,7 @@ human_readable = "Friendbuy"
 [google_analytics]
 config = "data/saas/config/google_analytics_config.yml"
 dataset = "data/saas/dataset/google_analytics_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/google_analytics.svg"
 human_readable = "Google Analytics"
 
 [hubspot]
@@ -159,3 +159,9 @@ config = "data/saas/config/recharge_config.yml"
 dataset = "data/saas/dataset/recharge_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Recharge"
+
+[universal_analytics]
+config = "data/saas/config/universal_analytics_config.yml"
+dataset = "data/saas/dataset/universal_analytics_dataset.yml"
+icon = "data/saas/icon/google_analytics.svg"
+human_readable = "Universal Analytics"

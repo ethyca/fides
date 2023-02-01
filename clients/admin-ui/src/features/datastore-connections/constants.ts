@@ -28,6 +28,7 @@ export enum SaasType {
   DOORDASH = "doordash",
   FIREBASE_AUTH = "firebase_auth",
   FULLSTORY = "fullstory",
+  GOOGLE_ANALYTICS = "google_analytics",
   HUBSPOT = "hubspot",
   MAILCHIMP = "mailchimp",
   OUTREACH = "outreach",
@@ -41,6 +42,7 @@ export enum SaasType {
   SQUARE = "square",
   STRIPE = "stripe",
   TWILIO_CONVERSATIONS = "twilio_conversations",
+  UNIVERSAL_ANALYTICS = "universal_analytics",
   ZENDESK = "zendesk",
 }
 
@@ -80,6 +82,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   [SaasType.DOORDASH, "doordash.svg"],
   [SaasType.FIREBASE_AUTH, "firebase.svg"],
   [SaasType.FULLSTORY, "fullstory.svg"],
+  [SaasType.GOOGLE_ANALYTICS, "google_analytics.svg"],
   [SaasType.HUBSPOT, "hubspot.svg"],
   [SaasType.MAILCHIMP, "mailchimp.svg"],
   [SaasType.OUTREACH, "outreach.svg"],
@@ -93,6 +96,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   [SaasType.SQUARE, "square.svg"],
   [SaasType.STRIPE, "stripe.svg"],
   [SaasType.TWILIO_CONVERSATIONS, "twilio.svg"],
+  [SaasType.UNIVERSAL_ANALYTICS, "google_analytics.svg"],
   [SaasType.ZENDESK, "zendesk.svg"],
 ]);
 
