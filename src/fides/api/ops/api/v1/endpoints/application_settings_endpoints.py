@@ -35,7 +35,7 @@ def update_settings(
     """
     Updates the global application settings record.
 
-    Only given provided will be updated, others will be unaffected,
+    Only keys provided will be updated, others will be unaffected,
     i.e. true PATCH behavior.
     """
     logger.info("Updating application settings")

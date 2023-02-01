@@ -22,7 +22,10 @@ from fides.api.ops.common_exceptions import (
 )
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.storage import StorageConfig, active_default_storage_config
+from fides.api.ops.models.storage import (
+    StorageConfig,
+    get_active_default_storage_config,
+)
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.core.config import get_config
 from fides.lib.db.base_class import Base, FidesBase
@@ -242,7 +245,7 @@ class Rule(Base):
         ForeignKey(StorageConfig.id_field_path),
         nullable=True,
     )
-    storage_destination = relationship(
+    _storage_destination = relationship(
         StorageConfig,
         backref="rules",
     )
@@ -293,9 +296,9 @@ class Rule(Base):
         If the Rule does not have an explicit `storage_destination` set, then the
         application's default storage config will be returned
         """
-        if self.storage_destination:
-            return self.storage_destination
-        storage_destination = active_default_storage_config(db)
+        if self._storage_destination:
+            return self._storage_destination
+        storage_destination = get_active_default_storage_config(db)
         if storage_destination is None:
             raise StorageConfigNotFoundException(
                 f"The given rule `{self.key}` has no `storage_destination` configured, and there is no active default storage configuration defined"

@@ -207,7 +207,6 @@ def storage_config_default(db: Session) -> Generator:
         },
     )
     yield sc
-    sc.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -217,7 +216,6 @@ def storage_config_default_local(db: Session) -> Generator:
     """
     sc = _create_local_default_storage(db)
     yield sc
-    sc.delete(db)
 
 
 @pytest.fixture(scope="function")

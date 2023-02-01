@@ -88,7 +88,7 @@ def test_create_erasure_rule_with_destination_is_invalid(
                 "client_id": policy.client_id,
                 "name": "Invalid Rule",
                 "policy_id": policy.id,
-                "storage_destination_id": policy.rules[0].storage_destination.id,
+                "storage_destination_id": policy.rules[0]._storage_destination.id,
                 "masking_strategy": {
                     "strategy": HashMaskingStrategy.name,
                     "configuration": {
@@ -129,7 +129,7 @@ def test_create_rule_no_action_is_invalid(
                 "client_id": policy.client_id,
                 "name": "Invalid Rule",
                 "policy_id": policy.id,
-                "storage_destination_id": policy.rules[0].storage_destination.id,
+                "storage_destination_id": policy.rules[0]._storage_destination.id,
             },
         )
     assert exc.value.args[0] == "action_type is required."
@@ -147,7 +147,7 @@ def test_consent_action_is_unsupported(
                 "client_id": policy.client_id,
                 "name": "Invalid Rule",
                 "policy_id": policy.id,
-                "storage_destination_id": policy.rules[0].storage_destination.id,
+                "storage_destination_id": policy.rules[0]._storage_destination.id,
             },
         )
     assert exc.value.args[0] == "consent Rules are not supported at this time."
@@ -165,7 +165,7 @@ def test_update_action_is_unsupported(
                 "client_id": policy.client_id,
                 "name": "Invalid Rule",
                 "policy_id": policy.id,
-                "storage_destination_id": policy.rules[0].storage_destination.id,
+                "storage_destination_id": policy.rules[0]._storage_destination.id,
             },
         )
     assert exc.value.args[0] == "update Rules are not supported at this time."
@@ -182,7 +182,7 @@ def test_create_access_rule(
             "client_id": policy.client_id,
             "name": "Valid Access Rule",
             "policy_id": policy.id,
-            "storage_destination_id": policy.rules[0].storage_destination.id,
+            "storage_destination_id": policy.rules[0]._storage_destination.id,
         },
     )
     assert Rule.get(db=db, object_id=rule.id) is not None
@@ -372,11 +372,11 @@ def test_rule_get_storage_destination_local(
     rule_storage_config = rule.get_storage_destination(db)
     assert rule_storage_config == storage_config
 
-    rule.storage_destination = None
+    rule._storage_destination = None
     rule_storage_config = rule.get_storage_destination(db)
     assert rule_storage_config == storage_config_default_local
 
-    rule.storage_destination = storage_config
+    rule._storage_destination = storage_config
     rule_storage_config = rule.get_storage_destination(db)
     assert rule_storage_config == storage_config
 
@@ -390,7 +390,7 @@ def test_rule_get_storage_destination_non_local(
     works as expected to retrieve a non-local storage config
     """
     rule: Rule = policy.rules[0]
-    rule.storage_destination = None
+    rule._storage_destination = None
     rule_storage_config = rule.get_storage_destination(db)
 
     assert rule_storage_config == storage_config_default
@@ -406,7 +406,7 @@ def test_rule_get_storage_destination_not_found(
     throws an error if the active default storage hasn't been configured
     """
     rule: Rule = policy.rules[0]
-    rule.storage_destination = None
+    rule._storage_destination = None
 
     with pytest.raises(StorageConfigNotFoundException):
         rule_storage_config = rule.get_storage_destination(db)

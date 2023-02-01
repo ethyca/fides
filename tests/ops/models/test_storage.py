@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from fides.api.ops.models.application_settings import ApplicationSettings
 from fides.api.ops.models.storage import (
     StorageConfig,
-    active_default_storage_config,
     default_storage_config_by_type,
     default_storage_config_name,
+    get_active_default_storage_config,
 )
 from fides.api.ops.schemas.application_settings import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.storage.storage import (
@@ -218,7 +218,7 @@ class TestStorageConfigModel:
         # `storage_config_default` fixture creates a default s3 config
         # but until we've updated the appropriate settings in the API
         # a local storage config is returned as our active default
-        retrieved_config = active_default_storage_config(db)
+        retrieved_config = get_active_default_storage_config(db)
         assert retrieved_config.type == StorageType.local
         assert retrieved_config.name == default_storage_config_name(
             StorageType.local.value
@@ -234,13 +234,13 @@ class TestStorageConfigModel:
             db,
             data={"api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.s3.value}},
         )
-        retrieved_config = active_default_storage_config(db)
+        retrieved_config = get_active_default_storage_config(db)
         assert retrieved_config == storage_config_default
 
         # delete the default storage config in the db
         # and we should get back an empty storage config, because we're still set to use s3
         storage_config_default.delete(db)
-        retrieved_config = active_default_storage_config(db)
+        retrieved_config = get_active_default_storage_config(db)
         assert retrieved_config is None
 
         # mimic setting active default back to `local` via API
@@ -251,7 +251,7 @@ class TestStorageConfigModel:
                 "api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.local.value}
             },
         )
-        retrieved_config = active_default_storage_config(db)
+        retrieved_config = get_active_default_storage_config(db)
         assert retrieved_config.type == StorageType.local
         assert retrieved_config.name == default_storage_config_name(
             StorageType.local.value

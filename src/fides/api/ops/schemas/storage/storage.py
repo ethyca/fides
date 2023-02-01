@@ -194,7 +194,7 @@ class StorageDestinationResponse(BaseModel):
     details: Dict[StorageDetails, Any]
     key: FidesKey
     format: ResponseFormat
-    is_default: bool
+    is_default: bool = False
 
     class Config:
         orm_mode = True

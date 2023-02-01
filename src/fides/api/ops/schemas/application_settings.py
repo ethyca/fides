@@ -61,7 +61,7 @@ class ApplicationSettingsUpdate(ApplicationSettings):
 
 def validate_active_default_storage_type(value: Any) -> None:
     """
-    Validation method for values of the "active default storage" application property.
+    Validation function for values of the "active default storage" application property.
 
     TODO: Eventually this should be driven by a more formal validation schema for this
     the application settings that is properly hooked up to the global pydantic config module.

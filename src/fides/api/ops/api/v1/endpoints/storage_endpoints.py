@@ -42,9 +42,9 @@ from fides.api.ops.models.connectionconfig import ConnectionTestStatus
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import (
     StorageConfig,
-    active_default_storage_config,
     default_storage_config_by_type,
     default_storage_config_name,
+    get_active_default_storage_config,
 )
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
@@ -492,7 +492,7 @@ def get_active_default_config(
     Retrieves the active default storage config.
     """
     logger.info("Finding active default storage config")
-    storage_config = active_default_storage_config(db)
+    storage_config = get_active_default_storage_config(db)
     if not storage_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

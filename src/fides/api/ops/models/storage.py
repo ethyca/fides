@@ -36,7 +36,7 @@ class StorageConfig(Base):
     # allows JSON to detect in-place mutations to the structure (when used with sqlalchemy)
     details = Column(MutableDict.as_mutable(JSONB), nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
-    is_default = Column(Boolean, index=True, default=False)
+    is_default = Column(Boolean, index=True, default=False, nullable=False)
     secrets = Column(
         MutableDict.as_mutable(
             StringEncryptedType(
@@ -151,7 +151,7 @@ def _create_local_default_storage(db: Session) -> StorageConfig:
     )
 
 
-def active_default_storage_config(db: Session) -> Optional[StorageConfig]:
+def get_active_default_storage_config(db: Session) -> Optional[StorageConfig]:
     """
     Utility method to return the active default storage configuration.
 

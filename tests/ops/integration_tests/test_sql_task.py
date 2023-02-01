@@ -727,7 +727,7 @@ async def test_filter_on_data_categories(
             "client_id": policy.client_id,
             "name": "Valid Access Rule",
             "policy_id": policy.id,
-            "storage_destination_id": policy.rules[0].storage_destination.id,
+            "storage_destination_id": policy.rules[0]._storage_destination.id,
         },
     )
 
