@@ -178,7 +178,7 @@ const UserForm = ({
                     selectAllPermissions(formik);
                   }}
                 >
-                  Select all permissions
+                  Select all
                 </Button>
 
                 <Button
@@ -188,9 +188,10 @@ const UserForm = ({
                     deselectAllPermissions(formik);
                   }}
                 >
-                  Deselect all permissions
+                  Deselect all
                 </Button>
               </Box>
+              <Text>To apply the changes, click 'Save' below.</Text>
               <Divider mb={2} mt={2} />
               <Stack spacing={[1, 5]} direction="column">
                 {USER_PRIVILEGES.map((policy) => {
