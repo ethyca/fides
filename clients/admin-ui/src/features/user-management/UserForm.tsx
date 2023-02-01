@@ -10,9 +10,10 @@ import {
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useAPIHelper } from "common/hooks";
-import { Form, Formik } from "formik";
+import { Form, Formik, FormikProps } from "formik";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
+import { useCallback, useMemo } from "react";
 import * as Yup from "yup";
 
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "~/constants";
@@ -23,12 +24,14 @@ import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
 import { useUpdateUserPermissionsMutation } from "./user-management.slice";
 
+const requiredPermission = "privacy-request:read";
+
 const defaultInitialValues = {
   username: "",
   first_name: "",
   last_name: "",
   password: "",
-  scopes: ["privacy-request:read"],
+  scopes: [requiredPermission],
 };
 
 export type FormValues = typeof defaultInitialValues;
@@ -82,7 +85,7 @@ const UserForm = ({
     const { data } = result;
     const userWithPrivileges = {
       user_id: data.id,
-      scopes: [...new Set([...values.scopes, "privacy-request:read"])],
+      scopes: [...new Set([...values.scopes, requiredPermission])],
     };
     const updateUserPermissionsResult = await updateUserPermissions(
       userWithPrivileges
@@ -95,13 +98,32 @@ const UserForm = ({
     ? ValidationSchema
     : ValidationSchema.omit(["password"]);
 
+  const scopes = useMemo(
+    () => USER_PRIVILEGES.map((policy) => policy.scope),
+    []
+  );
+
+  const selectAllPermissions = useCallback(
+    (formikHelpers: FormikProps<FormValues>) => {
+      formikHelpers.setFieldValue("scopes", [...scopes]);
+    },
+    [scopes]
+  );
+
+  const deselectAllPermissions = useCallback(
+    (formikHelpers: FormikProps<FormValues>) => {
+      formikHelpers.setFieldValue("scopes", [requiredPermission]);
+    },
+    []
+  );
+
   return (
     <Formik
       onSubmit={handleSubmit}
       initialValues={initialValues ?? defaultInitialValues}
       validationSchema={validationSchema}
     >
-      {({ values, setFieldValue }) => (
+      {(formik) => (
         <Form>
           <Box maxW={["xs", "xs", "100%"]} width="100%">
             <Stack mb={8} spacing={6}>
@@ -127,28 +149,51 @@ const UserForm = ({
               </Stack>
               <Divider mb={7} mt={7} />
               <Heading fontSize="xl" colorScheme="primary">
-                Privileges
+                Permissions
               </Heading>
-              <Text>Select privileges to assign to this user</Text>
-              <Divider mb={2} mt={2} />
+              <Text>Select permissions to assign to this user</Text>
+              <Box>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  mr={3}
+                  onClick={() => {
+                    selectAllPermissions(formik);
+                  }}
+                >
+                  Select all
+                </Button>
 
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    deselectAllPermissions(formik);
+                  }}
+                >
+                  Deselect all
+                </Button>
+              </Box>
+              <Text>To apply the changes, click &apos;Save&apos; below.</Text>
+              <Divider mb={2} mt={2} />
               <Stack spacing={[1, 5]} direction="column">
                 {USER_PRIVILEGES.map((policy) => {
-                  const isChecked = values.scopes.indexOf(policy.scope) >= 0;
+                  const isChecked =
+                    formik.values.scopes.indexOf(policy.scope) >= 0;
                   return (
                     <Checkbox
                       colorScheme="purple"
                       key={policy.privilege}
                       onChange={() => {
                         if (!isChecked) {
-                          setFieldValue(`scopes`, [
-                            ...values.scopes,
+                          formik.setFieldValue(`scopes`, [
+                            ...formik.values.scopes,
                             policy.scope,
                           ]);
                         } else {
-                          setFieldValue(
+                          formik.setFieldValue(
                             "scopes",
-                            values.scopes.filter(
+                            formik.values.scopes.filter(
                               (scope) => scope !== policy.scope
                             )
                           );
@@ -158,12 +203,12 @@ const UserForm = ({
                       name="scopes"
                       isChecked={isChecked}
                       value={
-                        policy.scope === "privacy-request:read"
+                        policy.scope === requiredPermission
                           ? undefined
                           : policy.scope
                       }
-                      isDisabled={policy.scope === "privacy-request:read"}
-                      isReadOnly={policy.scope === "privacy-request:read"}
+                      isDisabled={policy.scope === requiredPermission}
+                      isReadOnly={policy.scope === requiredPermission}
                     >
                       {policy.privilege}
                     </Checkbox>
