@@ -86,7 +86,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   [SaasType.GOOGLE_ANALYTICS, "google_analytics.svg"],
   [SaasType.HUBSPOT, "hubspot.svg"],
   [SaasType.MAILCHIMP, "mailchimp.svg"],
-  [SaasType.MAILCHIMP_TRANSACTIONAL, "mailchimp.svg"],
+  [SaasType.MAILCHIMP_TRANSACTIONAL, "mandrill.svg"],
   [SaasType.OUTREACH, "outreach.svg"],
   [SaasType.ROLLBAR, "rollbar.svg"],
   [SaasType.SALESFORCE, "salesforce.svg"],

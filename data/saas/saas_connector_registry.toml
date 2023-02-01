@@ -67,7 +67,7 @@ human_readable = "Mailchimp"
 [mailchimp_transactional]
 config = "data/saas/config/mailchimp_transactional_config.yml"
 dataset = "data/saas/dataset/mailchimp_transactional_dataset.yml"
-icon = "data/saas/icon/mailchimp.svg"
+icon = "data/saas/icon/mandrill.svg"
 human_readable = "Mailchimp Transactional (Mandrill)"
 
 [outreach]
