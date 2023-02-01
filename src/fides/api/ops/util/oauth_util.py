@@ -132,9 +132,10 @@ def verify_callback_oauth(
     return webhook
 
 
-async def get_root_client(db: Session = Depends(get_db)) -> ClientDetail:
+async def get_root_client(
+    db: Session = Depends(get_db), client_id: str = CONFIG.security.oauth_root_client_id
+) -> ClientDetail:
     """Gets the root_client directly."""
-    client_id = CONFIG.security.oauth_root_client_id
     client = ClientDetail.get(
         db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
     )
