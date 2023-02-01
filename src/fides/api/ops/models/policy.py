@@ -32,6 +32,7 @@ class CurrentStep(EnumType):
     pre_webhooks = "pre_webhooks"
     access = "access"
     erasure = "erasure"
+    consent = "consent"
     erasure_email_post_send = "erasure_email_post_send"
     post_webhooks = "post_webhooks"
 
@@ -83,6 +84,7 @@ def _validate_rule(
     """Check that the rule's action_type and storage_destination are valid."""
     if not action_type:
         raise common_exceptions.RuleValidationError("action_type is required.")
+
     if action_type == ActionType.erasure.value:
         if storage_destination_id is not None:
             raise common_exceptions.RuleValidationError(
@@ -97,7 +99,7 @@ def _validate_rule(
             raise common_exceptions.RuleValidationError(
                 "Access Rules must have a storage destination."
             )
-    if action_type in [ActionType.consent.value, ActionType.update.value]:
+    if action_type in [ActionType.update.value]:
         raise common_exceptions.RuleValidationError(
             f"{action_type} Rules are not supported at this time."
         )
@@ -150,6 +152,11 @@ class Policy(Base):
     def get_rules_for_action(self, action_type: ActionType) -> List["Rule"]:
         """Returns all Rules related to this Policy filtered by `action_type`."""
         return [rule for rule in self.rules if rule.action_type == action_type]  # type: ignore[attr-defined]
+
+    def get_consent_rule(self) -> Optional["Rule"]:
+        """Returns a Consent Rule if it exists. There should only be one."""
+        consent_rules = self.get_rules_for_action(ActionType.consent)
+        return consent_rules[0] if consent_rules else None
 
 
 def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
@@ -269,7 +276,28 @@ class Rule(Base):
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
-        """Validate this object's data before deferring to the superclass on update"""
+        """Validate this object's data before deferring to the superclass on create"""
+        policy_id: Optional[str] = data.get("policy_id")
+
+        if not policy_id:
+            raise common_exceptions.RuleValidationError(
+                "Policy id must be specified on Rule create."
+            )
+
+        policy = Policy.get_by(db=db, field="id", value=policy_id)
+        if not policy:
+            raise common_exceptions.RuleValidationError(
+                "Policy id must be specified on Rule create."
+            )
+        existing_consent_rules = policy.get_rules_for_action(ActionType.consent)
+
+        if (
+            existing_consent_rules
+            and data.get("action_type") == ActionType.consent.value
+        ):
+            raise common_exceptions.RuleValidationError(
+                f"Policies can only have one consent rule attached.  Existing rule {existing_consent_rules[0].key} found."
+            )
         _validate_rule(
             action_type=data.get("action_type"),
             storage_destination_id=data.get("storage_destination_id"),
