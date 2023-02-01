@@ -113,9 +113,9 @@ async def test_gorgias_access_request_task(
             "closed_datetime",
             "snooze_datetime",
             "trashed_datetime",
-            # "integrations",
-            # "messages_count",
-            # "excerpt",
+            "integrations",
+            "messages_count",
+            "excerpt",
         ],
     )
 
