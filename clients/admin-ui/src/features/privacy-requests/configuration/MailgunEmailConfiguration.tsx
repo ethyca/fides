@@ -8,15 +8,15 @@ import { useAlert } from "~/features/common/hooks";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
-  useGetMessagingConfigurationDetailsQuery,
+  // useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 const MailgunEmailConfiguration = () => {
   const { errorAlert, successAlert } = useAlert();
   const [configurationStep, setConfigurationStep] = useState("");
-  const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "mailgun",
-  });
+  // const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
+  //   type: "mailgun",
+  // });
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
   const [createMessagingConfigurationSecrets] =
