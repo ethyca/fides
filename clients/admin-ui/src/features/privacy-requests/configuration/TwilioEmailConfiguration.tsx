@@ -22,7 +22,7 @@ const TwilioEmailConfiguration = () => {
   const [createMessagingConfigurationSecrets] =
     useCreateMessagingConfigurationSecretsMutation();
 
-  const handleTwilioEmailConfiguration = async (value) => {
+  const handleTwilioEmailConfiguration = async (value: { email: string }) => {
     const payload = await createMessagingConfiguration({
       type: "twilio_email",
       details: {
@@ -41,7 +41,9 @@ const TwilioEmailConfiguration = () => {
     }
   };
 
-  const handleTwilioEmailConfigurationSecrets = async (value) => {
+  const handleTwilioEmailConfigurationSecrets = async (value: {
+    api_key: string;
+  }) => {
     const payload = await createMessagingConfigurationSecrets({
       twilio_api_key: value.api_key,
     });

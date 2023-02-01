@@ -17,7 +17,12 @@ const TwilioSMSConfiguration = () => {
   const [createMessagingConfigurationSecrets] =
     useCreateMessagingConfigurationSecretsMutation();
 
-  const handleTwilioTextConfigurationSecrets = async (value) => {
+  const handleTwilioTextConfigurationSecrets = async (value: {
+    account_sid: string;
+    auth_token: string;
+    messaging_service_sid: string;
+    phone: string;
+  }) => {
     const payload = await createMessagingConfigurationSecrets({
       twilio_account_sid: value.account_sid,
       twilio_auth_token: value.auth_token,
@@ -38,10 +43,10 @@ const TwilioSMSConfiguration = () => {
   const TWILIO_TEXT_FORM_ID = "twilio-text-form-id";
 
   const initialValues = {
-    twilio_account_sid: messagingDetails.account_sid ?? "",
-    twilio_auth_token: messagingDetails.auth_token ?? "",
-    twilio_messaging_service_sid: messagingDetails.messaging_service_sid ?? "",
-    twilio_sender_phone_number: messagingDetails.phone ?? "",
+    account_sid: messagingDetails.account_sid ?? "",
+    auth_token: messagingDetails.auth_token ?? "",
+    messaging_service_sid: messagingDetails.messaging_service_sid ?? "",
+    phone: messagingDetails.phone ?? "",
   };
 
   return (

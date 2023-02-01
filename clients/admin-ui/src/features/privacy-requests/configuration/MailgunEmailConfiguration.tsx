@@ -22,7 +22,7 @@ const MailgunEmailConfiguration = () => {
   const [createMessagingConfigurationSecrets] =
     useCreateMessagingConfigurationSecretsMutation();
 
-  const handleMailgunConfiguration = async (value) => {
+  const handleMailgunConfiguration = async (value: { domain: string }) => {
     const payload = await createMessagingConfiguration({
       type: "mailgun",
       details: {
@@ -42,7 +42,9 @@ const MailgunEmailConfiguration = () => {
     }
   };
 
-  const handleMailgunAPIKeyConfiguration = async (value) => {
+  const handleMailgunAPIKeyConfiguration = async (value: {
+    api_key: string;
+  }) => {
     const payload = await createMessagingConfigurationSecrets({
       mailgun_api_key: value.api_key,
     });
