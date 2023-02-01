@@ -25,7 +25,7 @@ human_readable = "Doordash"
 [friendbuy_nextgen]
 config = "data/saas/config/friendbuy_nextgen_config.yml"
 dataset = "data/saas/dataset/friendbuy_nextgen_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/friendbuy.svg"
 human_readable = "Friendbuy Nextgen"
 
 [fullstory]
@@ -43,7 +43,7 @@ human_readable = "Firebase Auth"
 [friendbuy]
 config = "data/saas/config/friendbuy_config.yml"
 dataset = "data/saas/dataset/friendbuy_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/friendbuy.svg"
 human_readable = "Friendbuy"
 
 [google_analytics]
@@ -157,7 +157,7 @@ human_readable = "Slack Enterprise"
 [recharge]
 config = "data/saas/config/recharge_config.yml"
 dataset = "data/saas/dataset/recharge_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/recharge.svg"
 human_readable = "Recharge"
 
 [universal_analytics]
