@@ -29,12 +29,13 @@ The types of changes are:
   * Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
   * Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
   * Allow defining a list of opt-in and/or opt-out requests in consent connectors [#2315](https://github.com/ethyca/fides/pull/2315)
-  * Add a Google Analytics Consent Connector [#2302](https://github.com/ethyca/fides/pull/2302)
+  * Add a Google Analytics Consent Connector for GA4 properties [#2302](https://github.com/ethyca/fides/pull/2302)
   * Pass the GA Cookie from the Privacy Center [#2337](https://github.com/ethyca/fides/pull/2337)
   * Rename "user_id" to more specific "ga_client_id" [#2356](https://github.com/ethyca/fides/pull/2356)
   * Patch Google Analytics Consent Connector to delete by client_id [#2355](https://github.com/ethyca/fides/pull/2355)
   * Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
-
+  * Adds a new Universal Analytics Connector that works with the UA Tracking Id
+  
 ### Changed
 
 * Unified Fides Resources
