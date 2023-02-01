@@ -185,7 +185,7 @@ def gorgias_create_erasure_data(
     response = requests.post(
         url=f"{base_url}/api/tickets", auth=auth, json=ticket_data
     )
-    ticket = response.json()   
-    print(ticket)   
-    ticket_id = ticket["id"]    
+    ticket = response.json()     
+    ticket_id = ticket["id"]
+    sleep(60)    
     yield ticket, user
