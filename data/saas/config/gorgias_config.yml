@@ -102,7 +102,7 @@ saas_config:
                   direction: from
         update:
           method: PUT
-          path: /api/tickets/<tickets_id>/messages/ <ticket_messages_id>
+          path: /api/tickets/<tickets_id>/messages/<ticket_messages_id>
           body: |
             {
             <all_object_fields>
@@ -131,3 +131,4 @@ saas_config:
           param_values:
             - name: email
               identity: email
+          data_path: data

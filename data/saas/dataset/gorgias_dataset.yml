@@ -169,13 +169,17 @@ dataset:
           - name: snooze_datetime
           - name: trashed_datetime
           - name: integrations
+            fidesops_meta:
+              read_only: True
           - name: messages_count
             data_categories: [system.operations]
             fidesops_meta:
+              read_only: True
               data_type: integer
           - name: excerpt
             data_categories: [system.operations]
             fidesops_meta:
+              read_only: True
               data_type: string
       - name: ticket_messages
         fields:
@@ -317,32 +321,15 @@ dataset:
               data_type: boolean
       - name: search
         fields:
-          - name: data
+          - name: id
+            data_categories: [system.operations]
             fidesops_meta:
-              data_type: 'object[]'
-            fields:
-              - name: '0'
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
-                  - name: name
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: email
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-          - name: object
+              data_type: integer
+          - name: name
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: uri
+          - name: email
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: meta
