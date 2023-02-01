@@ -69,11 +69,13 @@ const MailgunEmailConfiguration = () => {
   //   "mailgun-messaging-config-email-form-id";
 
   const initialValues = {
-    domain: messagingDetails.domain ?? "",
+    // domain: messagingDetails.domain ?? "",
+    domain: "",
   };
 
   const initialAPIKeyValue = {
-    api_key: messagingDetails.api_key ?? "",
+    // api_key: messagingDetails.api_key ?? "",
+    api_key: "",
   };
 
   // const initialEmailValue = {
@@ -92,11 +94,13 @@ const MailgunEmailConfiguration = () => {
         >
           {({ isSubmitting, resetForm }) => (
             <Form id={MAILGUN_MESSAGING_CONFIG_FORM_ID}>
-              <CustomTextInput
-                name="domain"
-                label="Domain"
-                placeholder="Enter domain"
-              />
+              <Stack mt={5} spacing={5}>
+                <CustomTextInput
+                  name="domain"
+                  label="Domain"
+                  placeholder="Enter domain"
+                />
+              </Stack>
               <Box mt={10}>
                 <Button
                   onClick={() => resetForm()}

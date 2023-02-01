@@ -79,11 +79,13 @@ const TwilioEmailConfiguration = () => {
         >
           {({ isSubmitting, resetForm }) => (
             <Form id={TWILIO_EMAIL_FORM_ID}>
-              <CustomTextInput
-                name="email"
-                label="Email"
-                placeholder="Enter email"
-              />
+              <Stack mt={5} spacing={5}>
+                <CustomTextInput
+                  name="email"
+                  label="Email"
+                  placeholder="Enter email"
+                />
+              </Stack>
               <Box mt={10}>
                 <Button
                   onClick={() => resetForm()}
@@ -122,11 +124,13 @@ const TwilioEmailConfiguration = () => {
             >
               {({ isSubmitting, resetForm }) => (
                 <Form id={TWILIO_EMAIL_API_KEY_FORM_ID}>
-                  <CustomTextInput
-                    name="api-key"
-                    label="API key"
-                    type="password"
-                  />
+                  <Stack mt={5} spacing={5}>
+                    <CustomTextInput
+                      name="api-key"
+                      label="API key"
+                      type="password"
+                    />
+                  </Stack>
                   <Button
                     onClick={() => resetForm()}
                     mr={2}

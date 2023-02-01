@@ -56,27 +56,29 @@ const TwilioSMSConfiguration = () => {
         >
           {({ isSubmitting, resetForm }) => (
             <Form id={TWILIO_TEXT_FORM_ID}>
-              <CustomTextInput
-                name="account_sid"
-                label="Account SID"
-                placeholder="Enter account SID"
-              />
-              <CustomTextInput
-                name="auth_token"
-                label="Auth token"
-                placeholder="Enter auth token"
-                type="password"
-              />
-              <CustomTextInput
-                name="messaging_service_sid"
-                label="Messaging Service SID"
-                placeholder="Enter messaging service SID"
-              />
-              <CustomTextInput
-                name="phone"
-                label="Phone Number"
-                placeholder="Enter phone number"
-              />
+              <Stack mt={5} spacing={5}>
+                <CustomTextInput
+                  name="account_sid"
+                  label="Account SID"
+                  placeholder="Enter account SID"
+                />
+                <CustomTextInput
+                  name="auth_token"
+                  label="Auth token"
+                  placeholder="Enter auth token"
+                  type="password"
+                />
+                <CustomTextInput
+                  name="messaging_service_sid"
+                  label="Messaging Service SID"
+                  placeholder="Enter messaging service SID"
+                />
+                <CustomTextInput
+                  name="phone"
+                  label="Phone Number"
+                  placeholder="Enter phone number"
+                />
+              </Stack>
               <Box mt={10}>
                 <Button
                   onClick={() => resetForm()}
