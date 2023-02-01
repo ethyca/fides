@@ -15,8 +15,11 @@ import { useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
+import {
+  useCreateActiveMessagingConfigurationMutation,
+  useCreateMessagingConfigurationMutation,
+} from "~/features/privacy-requests/privacy-requests.slice";
 
-import { useCreateActiveMessagingConfigurationMutation } from "../privacy-requests.slice";
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
 import TwilioEmailConfiguration from "./TwilioEmailConfiguration";
 import TwilioSMSConfiguration from "./TwilioSMS";
@@ -24,6 +27,8 @@ import TwilioSMSConfiguration from "./TwilioSMS";
 const MessagingConfiguration = () => {
   const { errorAlert, successAlert } = useAlert();
   const [messagingValue, setMessagingValue] = useState("");
+  const [createMessagingConfiguration] =
+    useCreateMessagingConfigurationMutation();
   const [saveActiveConfiguration] =
     useCreateActiveMessagingConfigurationMutation();
 
@@ -39,6 +44,20 @@ const MessagingConfiguration = () => {
       );
     } else {
       successAlert(`Configure storage type saved successfully.`);
+    }
+
+    // twilio text doesn't save additional details, only secrets
+    if (value === "twilio_text") {
+      const twilioTextPayload = await createMessagingConfiguration({});
+
+      if ("error" in twilioTextPayload) {
+        errorAlert(
+          getErrorMessage(twilioTextPayload.error),
+          `Configuring messaging provider has failed to save due to the following:`
+        );
+      } else {
+        successAlert(`Configure messaging provider saved successfully.`);
+      }
     }
   };
 

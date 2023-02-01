@@ -1,14 +1,14 @@
 import { Box, Button, Divider, Heading, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import {
-  useGetMessagingConfigurationDetailsQuery,
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
+  useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 const MailgunEmailConfiguration = () => {
