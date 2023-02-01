@@ -191,7 +191,7 @@ const UserForm = ({
                   Deselect all
                 </Button>
               </Box>
-              <Text>To apply the changes, click 'Save' below.</Text>
+              <Text>To apply the changes, click &apos;Save&apos; below.</Text>
               <Divider mb={2} mt={2} />
               <Stack spacing={[1, 5]} direction="column">
                 {USER_PRIVILEGES.map((policy) => {
