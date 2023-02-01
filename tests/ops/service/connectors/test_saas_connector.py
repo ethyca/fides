@@ -327,7 +327,7 @@ class TestSaasConnector:
         connector.endpoints[
             "data_management"
         ].requests.update.body = (
-            '{\n  "unique_id": "<privacy_request_id>", "email": "<placeholder>"\n}\n'
+            '{\n  "unique_id": "<privacy_request_id>", "email": "<test_val>"\n}\n'
         )
 
         # Should raise ValueError because we don't have email value for request body
