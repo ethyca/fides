@@ -50,7 +50,7 @@ human_readable = "Friendbuy"
 config = "data/saas/config/google_analytics_config.yml"
 dataset = "data/saas/dataset/google_analytics_dataset.yml"
 icon = "data/saas/icon/google_analytics.svg"
-human_readable = "Google Analytics"
+human_readable = "Google Analytics 4"
 
 [hubspot]
 config = "data/saas/config/hubspot_config.yml"
