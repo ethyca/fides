@@ -101,5 +101,27 @@ describe("Privacy Requests", () => {
         cy.getByTestId("request-status-badge").contains("New");
       });
     });
+
+    it("allows approving a new request", () => {
+      cy.getByTestId("privacy-request-approve-btn").click();
+      cy.getByTestId("continue-btn").click();
+
+      cy.wait("@approvePrivacyRequest")
+        .its("request.body.request_ids")
+        .should("have.length", 1);
+    });
+
+    it("allows denying a new request", () => {
+      cy.getByTestId("privacy-request-deny-btn").click();
+
+      cy.getByTestId("deny-privacy-request-modal").within(() => {
+        cy.getByTestId("input-denialReason").type("test denial");
+        cy.getByTestId("deny-privacy-request-modal-btn").click();
+      });
+
+      cy.wait("@denyPrivacyRequest")
+        .its("request.body.request_ids")
+        .should("have.length", 1);
+    });
   });
 });
