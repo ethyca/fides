@@ -14,6 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from fides.api.ctl.sql_models import CustomField, CustomFieldDefinition
 from fides.api.ctl.utils import errors
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
@@ -84,19 +85,26 @@ async def get_resource(
             return sql_resource
 
 
-async def get_custom_field_for_resource(
-    sql_model: Base, resource_id: str, async_session: AsyncSession
-) -> Optional[List[Base]]:
-    """
-    Get custom fields from the databse for a resource.
+async def get_resource_with_custom_field(
+    sql_model: Base, fides_key: str, async_session: AsyncSession
+) -> Base:
+    """Get a resource from the databse by its FidesKey including it's custom fields.
 
-    Returns a SQLAlchemy model of that custom field.
+    Returns a SQLAlchemy model of that resource.
     """
-    with log.contextualize(sql_model=sql_model.__name__, resource_id=resource_id):
+    with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
         async with async_session.begin():
             try:
-                log.debug("Fetching custom field for resource")
-                query = select(sql_model).where(sql_model.resource_id == resource_id)
+                log.debug("Fetching resource including custom fields")
+                query = (
+                    select(sql_model, CustomField)
+                    .join(
+                        sql_model,
+                        sql_model.id == CustomField.resource_id,
+                        isouter=True,
+                    )
+                    .where(sql_model.fides_key == fides_key)
+                )
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
@@ -105,7 +113,7 @@ async def get_custom_field_for_resource(
                 )
                 raise sa_error
 
-            sql_resource = result.scalars().all()
+            sql_resource = result.scalars().first()
 
             return sql_resource
 

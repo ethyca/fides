@@ -5,7 +5,11 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl import sql_models
-from fides.api.ctl.database.crud import delete_resource, list_resource
+from fides.api.ctl.database.crud import (
+    delete_resource,
+    get_resource_with_custom_field,
+    list_resource,
+)
 from fides.core import api as _api
 from fides.core.config import FidesConfig
 from tests.ctl.types import FixtureRequest
@@ -62,3 +66,42 @@ async def test_cascade_delete_taxonomy_children(
     resources = await list_resource(sql_model, async_session)
     remaining_keys = {resource.fides_key for resource in resources}
     assert len(set(keys).intersection(remaining_keys)) == 0
+
+
+async def test_get_resouce_with_custom_field(db, async_session):
+    system_data = {
+        "registry_id": 1,
+        "system_type": "test",
+        "fides_key": "system_test",
+    }
+    system = sql_models.System.create(db=db, data=system_data)
+
+    custom_definition_data = {
+        "name": "test1",
+        "description": "test",
+        "field_type": "string",
+        "resource_type": "system",
+        "field_definition": "string",
+    }
+
+    custom_field_definition = sql_models.CustomFieldDefinition.create(
+        db=db, data=custom_definition_data
+    )
+
+    custom_field = sql_models.CustomField.create(
+        db=db,
+        data={
+            "resource_type": custom_field_definition.resource_type,
+            "resource_id": system.id,
+            "custom_field_definition_id": custom_field_definition.id,
+            "value": "Test value 1",
+        },
+    )
+
+    result = await get_resource_with_custom_field(
+        sql_models.System, system.id, async_session
+    )
+    print("here")
+    print(result.__dict__)
+
+    assert 0
