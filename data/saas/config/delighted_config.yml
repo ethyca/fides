@@ -42,6 +42,9 @@ saas_config:
         delete:
           method: DELETE
           path: /v1/people/email:<email>
+          headers:
+            - name: Accept
+              value: application/json
           param_values:
             - name: email
               identity: email
