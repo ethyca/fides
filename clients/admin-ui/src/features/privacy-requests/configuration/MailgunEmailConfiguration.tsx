@@ -1,57 +1,77 @@
 import { Box, Button, Divider, Heading, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
+import {
+  useGetMessagingConfigurationDetailsQuery,
+  useCreateMessagingConfigurationMutation,
+  useCreateMessagingConfigurationSecretsMutation,
+} from "~/features/privacy-requests/privacy-requests.slice";
 
-const MailgunEmailConfiguration = ({
-  messagingDetails: { api_key, email, name, domain },
-}: any) => {
+const MailgunEmailConfiguration = () => {
+  const { errorAlert, successAlert } = useAlert();
   const [configurationStep, setConfigurationStep] = useState("");
+  const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
+    type: "mailgun",
+  });
+  const [createMessagingConfiguration] =
+    useCreateMessagingConfigurationMutation();
+  const [createMessagingConfigurationSecrets] =
+    useCreateMessagingConfigurationSecretsMutation();
 
-  // console.log("existing details", messagingDetails);
+  const handleMailgunConfiguration = async (value) => {
+    const payload = await createMessagingConfiguration({});
 
-  const handleMailgunConfiguration = () => {
-    // API CALL 1
-    // PATCH /api/v1/messaging/config/{config_key}
-
-    // if successful - get the secret if it's there and then go to next step
-    // GET /api/v1/messaging/config/{config_key}/secret
-    setConfigurationStep("2");
+    if ("error" in payload) {
+      errorAlert(
+        getErrorMessage(payload.error),
+        `Configuring storage type has failed to save due to the following:`
+      );
+    } else {
+      successAlert(`Configure storage type saved successfully.`);
+      setConfigurationStep("2");
+    }
   };
 
-  const handleMailgunAPIKeyConfiguration = () => {
-    // API CALL 2
-    // PUT /api/v1messaging/config/{config_key}/secret
+  const handleMailgunAPIKeyConfiguration = async (value) => {
+    const payload = await createMessagingConfigurationSecrets({});
 
-    // if successful
-    setConfigurationStep("3");
+    if ("error" in payload) {
+      errorAlert(
+        getErrorMessage(payload.error),
+        `Configuring storage type has failed to save due to the following:`
+      );
+    } else {
+      successAlert(`Configure storage type saved successfully.`);
+      setConfigurationStep("3");
+    }
   };
 
-  const handleTestConnection = () => {
-    setConfigurationStep("4");
-    // API CALL 3 - test connection
-    // console.log("test 3");
-  };
+  // const handleTestConnection = () => {
+  //   setConfigurationStep("4");
+  // };
 
   const MAILGUN_MESSAGING_CONFIG_FORM_ID = "mailgun-messaging-config-form-id";
   const MAILGUN_MESSAGING_CONFIG_API_KEY_FORM_ID =
     "mailgun-messaging-config-api-key-form-id";
-  const MAILGUN_MESSAGING_CONFIG_EMAIL_FORM_ID =
-    "mailgun-messaging-config-email-form-id";
+  // const MAILGUN_MESSAGING_CONFIG_EMAIL_FORM_ID =
+  //   "mailgun-messaging-config-email-form-id";
 
   const initialValues = {
-    name: name ?? "",
-    domain: domain ?? "",
+    name: messagingDetails.name ?? "",
+    domain: messagingDetails.domain ?? "",
   };
 
   const initialAPIKeyValue = {
-    api_key: api_key ?? "",
+    api_key: messagingDetails.api_key ?? "",
   };
 
-  const initialEmailValue = {
-    email: email ?? "",
-  };
+  // const initialEmailValue = {
+  //   email: email ?? "",
+  // };
 
   return (
     <Box>
@@ -143,6 +163,7 @@ const MailgunEmailConfiguration = ({
           </Stack>
         </>
       ) : null}
+      {/* This will be added in the next sprint
       {configurationStep === "3" ? (
         <>
           <Divider />
@@ -183,9 +204,9 @@ const MailgunEmailConfiguration = ({
                 </Form>
               )}
             </Formik>
-          </Stack>
+      </Stack>
         </>
-      ) : null}
+      ) : null} */}
     </Box>
   );
 };

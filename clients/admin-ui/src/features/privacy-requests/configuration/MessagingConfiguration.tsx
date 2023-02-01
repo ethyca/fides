@@ -16,37 +16,21 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 
-import {
-  useCreateMessagingConfigurationMutation,
-  useGetMessagingConfigurationDetailsQuery,
-} from "../privacy-requests.slice";
+import { useCreateActiveMessagingConfigurationMutation } from "../privacy-requests.slice";
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
 import TwilioEmailConfiguration from "./TwilioEmailConfiguration";
 import TwilioSMSConfiguration from "./TwilioSMS";
 
-// interface MessagingData {}
-
 const MessagingConfiguration = () => {
   const { errorAlert, successAlert } = useAlert();
   const [messagingValue, setMessagingValue] = useState("");
-  const [saveMessagingConfiguration, { isLoading }] =
-    useCreateMessagingConfigurationMutation();
-  const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    config_key: messagingValue,
-  });
+  const [saveActiveConfiguration] =
+    useCreateActiveMessagingConfigurationMutation();
 
   const handleChange = async (value: string) => {
-    // Set so can fetch to see if existing info above
     setMessagingValue(value);
 
-    // create messaging config
-    const payload = await saveMessagingConfiguration({
-      config_key: value,
-      //   IS THIS THE RIGHT KEY FOR THIS CALL?
-    });
-
-    // set the created messaging config as default
-    // PUT /api/v1/messaging/config/{config_key}/default
+    const payload = await saveActiveConfiguration({ type: value });
 
     if ("error" in payload) {
       errorAlert(
@@ -57,9 +41,6 @@ const MessagingConfiguration = () => {
       successAlert(`Configure storage type saved successfully.`);
     }
   };
-
-  // console.log("test", messagingValue);
-  // console.log("test 2", messagingDetails);
 
   return (
     <Layout title="Configure Privacy Requests - Messaging">
@@ -92,27 +73,21 @@ const MessagingConfiguration = () => {
       </Heading>
 
       <Box display="flex" flexDirection="column" width="50%">
-        {/* TEXT BELOW CHANGES DEPENDING ON TYPE GIVEN ??? */}
         <Box>
-          Fides utilizes{" "}
+          Fides requires a messsaging provider for sending processing notices to
+          privacy request subjects, and allows for Subject Identity Verification
+          in privacy requests. Please follow the{" "}
           <Text as="span" color="complimentary.500">
-            Mailgun
+            documentation
           </Text>{" "}
-          to support email server configurations for sending processing notices
-          to privacy request subjects, and allows for Subject Identity
-          Verification in privacy requests. Ensure you register or use an
-          existing Mailgun account prior to the following steps. If needed,
-          follow the{" "}
-          <Text as="span" color="complimentary.500">
-            Mailgun documentation
-          </Text>{" "}
-          to create a new Domain Sending Key for Fides.
+          to setup a messaging service that Fides supports. Ensure you have
+          completed the setup for the preferred messaging provider and have the
+          details handy prior to the following steps.
         </Box>
         <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose service type to configure
         </Heading>
         <RadioGroup
-          isDisabled={isLoading}
           onChange={handleChange}
           value={messagingValue}
           data-testid="privacy-requests-messaging-provider-selection"
@@ -145,7 +120,7 @@ const MessagingConfiguration = () => {
           </Stack>
         </RadioGroup>
         {messagingValue === "mailgun-email" ? (
-          <MailgunEmailConfiguration messagingDetails={messagingDetails} />
+          <MailgunEmailConfiguration />
         ) : null}
         {messagingValue === "twilio-email" ? (
           <TwilioEmailConfiguration />

@@ -379,30 +379,35 @@ export const privacyRequestApi = createApi({
         body: params,
       }),
     }),
-    getMessagingConfigurationDetails: build.query<any, any>({
+    createActiveMessagingConfiguration: build.mutation<any, any>({
       query: (params) => ({
-        url: `messaging/config/${params.config_key}`,
-      }),
-    }),
-    createMessagingConfiguration: build.mutation<any, any>({
-      query: (params) => ({
-        url: `messaging/config`,
+        url: `application/settings`,
         method: "PUT",
         body: params,
       }),
     }),
-    updateMessagingConfiguration: build.mutation<any, any>({
+    getMessagingConfigurationDetails: build.query<any, any>({
       query: (params) => ({
-        url: `messaging/config/${params.config_key}`,
-        method: "PATCH",
+        url: `messaging/default/${params.messaging_type}`,
+      }),
+    }),
+    createMessagingConfiguration: build.mutation<any, any>({
+      query: (params) => ({
+        url: `messaging/default/${params.messaging_type}`,
+        method: "PUT",
         body: params,
       }),
     }),
     createMessagingConfigurationSecrets: build.mutation<any, any>({
       query: (params) => ({
-        url: `messaging/config/${params.config_key}/secret`,
+        url: `messaging/default/${params.messaging_type}/secret`,
         method: "PUT",
         body: params,
+      }),
+    }),
+    getConfigurationSettings: build.query<any, any>({
+      query: () => ({
+        url: `application/settings`,
       }),
     }),
     uploadManualWebhookData: build.mutation<
@@ -432,9 +437,10 @@ export const {
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
-  useGetMessagingConfigurationDetailsQuery,
   useCreateActiveStorageMutation,
+  useCreateActiveMessagingConfigurationMutation,
+  useGetMessagingConfigurationDetailsQuery,
   useCreateMessagingConfigurationMutation,
-  useUpdateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
+  useGetConfigurationSettingsQuery,
 } = privacyRequestApi;
