@@ -122,7 +122,11 @@ const TwilioEmailConfiguration = () => {
             >
               {({ isSubmitting, resetForm }) => (
                 <Form id={TWILIO_EMAIL_API_KEY_FORM_ID}>
-                  <CustomTextInput name="api-key" label="API key" />
+                  <CustomTextInput
+                    name="api-key"
+                    label="API key"
+                    type="password"
+                  />
                   <Button
                     onClick={() => resetForm()}
                     mr={2}

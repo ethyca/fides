@@ -136,9 +136,10 @@ const MailgunEmailConfiguration = () => {
               {({ isSubmitting, resetForm }) => (
                 <Form id={MAILGUN_MESSAGING_CONFIG_API_KEY_FORM_ID}>
                   <CustomTextInput
-                    name="api-key"
+                    name="api_key"
                     label="API key"
                     placeholder="Optional"
+                    type="password"
                   />
                   <Button
                     onClick={() => resetForm()}

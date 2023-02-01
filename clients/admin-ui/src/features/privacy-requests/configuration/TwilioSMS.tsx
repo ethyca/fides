@@ -65,6 +65,7 @@ const TwilioSMSConfiguration = () => {
                 name="auth_token"
                 label="Auth token"
                 placeholder="Enter auth token"
+                type="password"
               />
               <CustomTextInput
                 name="messaging_service_sid"
