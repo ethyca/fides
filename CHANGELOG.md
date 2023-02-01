@@ -14,7 +14,8 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.5.0...main)
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.5.1...main)
 
 ### Added
 
@@ -60,7 +61,6 @@ The types of changes are:
 ### Fixed
 
 * Home screen header scaling and responsiveness issues [#2200](https://github.com/ethyca/fides/pull/2277)
-* Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
 * Privacy Center identity inputs validate even when they are optional. [#2308](https://github.com/ethyca/fides/pull/2308)
 * The PII toggle defaults to false and PII will be hidden on page load [#2388](https://github.com/ethyca/fides/pull/2388)
 * Fixed a CI bug caused by git security upgrades [#2441](https://github.com/ethyca/fides/pull/2441)
@@ -70,6 +70,17 @@ The types of changes are:
   * Phone inputs no longer request country SVGs from external domain. [#2378](https://github.com/ethyca/fides/pull/2378)
   * Input validation errors no longer change the height of modals. [#2379](https://github.com/ethyca/fides/pull/2379)
 * Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
+
+
+## [2.5.1](https://github.com/ethyca/fides/compare/2.5.0...2.5.1)
+
+### Developer Experience
+
+* Allow db resets only if `config.dev_mode` is `True` [#2321](https://github.com/ethyca/fides/pull/2321)
+
+### Fixed
+
+* Added a feature flag for the recent dataset classification UX changes [#2335](https://github.com/ethyca/fides/pull/2335)
 
 ### Security
 
