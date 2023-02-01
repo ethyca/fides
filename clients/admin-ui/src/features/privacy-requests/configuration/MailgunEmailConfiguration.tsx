@@ -23,7 +23,13 @@ const MailgunEmailConfiguration = () => {
     useCreateMessagingConfigurationSecretsMutation();
 
   const handleMailgunConfiguration = async (value) => {
-    const payload = await createMessagingConfiguration({});
+    const payload = await createMessagingConfiguration({
+      type: "mailgun",
+      details: {
+        is_eu_domain: "false",
+        domain: value.domain,
+      },
+    });
 
     if ("error" in payload) {
       errorAlert(
@@ -37,7 +43,9 @@ const MailgunEmailConfiguration = () => {
   };
 
   const handleMailgunAPIKeyConfiguration = async (value) => {
-    const payload = await createMessagingConfigurationSecrets({});
+    const payload = await createMessagingConfigurationSecrets({
+      mailgun_api_key: value.api_key,
+    });
 
     if ("error" in payload) {
       errorAlert(
@@ -61,7 +69,6 @@ const MailgunEmailConfiguration = () => {
   //   "mailgun-messaging-config-email-form-id";
 
   const initialValues = {
-    name: messagingDetails.name ?? "",
     domain: messagingDetails.domain ?? "",
   };
 
@@ -85,11 +92,6 @@ const MailgunEmailConfiguration = () => {
         >
           {({ isSubmitting, resetForm }) => (
             <Form id={MAILGUN_MESSAGING_CONFIG_FORM_ID}>
-              <CustomTextInput
-                name="name"
-                label="Name"
-                placeholder="Enter name"
-              />
               <CustomTextInput
                 name="domain"
                 label="Domain"
