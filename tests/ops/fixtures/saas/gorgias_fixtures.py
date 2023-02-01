@@ -6,6 +6,7 @@ import pytest
 import requests
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -91,16 +92,20 @@ def gorgias_dataset_config(
     gorgias_connection_config.name = fides_key
     gorgias_connection_config.key = fides_key
     gorgias_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, gorgias_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": gorgias_connection_config.id,
             "fides_key": fides_key,
-            "dataset": gorgias_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 def customer_exists(gorgias_erasure_identity_email: str, gorgias_secrets):
     """
@@ -139,19 +144,78 @@ def gorgias_create_erasure_data(
     # user
     body = {
             "name": "Ethyca Test Erasure",
-            "emailAddress": gorgias_erasure_identity_email,
+            "email": gorgias_erasure_identity_email,
     }
 
     users_response = requests.post(url=f"{base_url}/api/customers", headers=headers, json=body)
     user = users_response.json()
+    user_id = user["id"]
+    # sleep(30)
 
-    sleep(30)
+    # error_message = f"customer with email {gorgias_erasure_identity_email} could not be added to gorgias"
+    # poll_for_existence(
+    #     customer_exists,
+    #     (gorgias_erasure_identity_email, gorgias_secrets),
+    #     error_message=error_message,
+    # )
+    #ticket
+    ticket_data = {
+        "customer": {
+            "id": user_id,
+            "email": gorgias_erasure_identity_email
+        },
+        "messages": [
+            {
+                "sender": {
+                        "id": user_id,
+                        "email": gorgias_erasure_identity_email
+                },
+                "channel": "twitter-direct-message",
+                "from_agent": "true",
+                "via": "instagram-ad-comment"
+            }
+        ],
+        "channel": "api",
+        "status": "open",
+        "subject": "Tested"
+    }
 
-    error_message = f"customer with email {gorgias_erasure_identity_email} could not be added to gorgias"
-    poll_for_existence(
-        customer_exists,
-        (gorgias_erasure_identity_email, gorgias_secrets),
-        error_message=error_message,
+    response = requests.post(
+        url=f"{base_url}/api/tickets", headers=headers, json=ticket_data
     )
+    ticket = response.json() 
+    ticket_id = ticket['id']
+    #ticket_message
+    ticket_message = {
+        "receiver": {
+            "id": 402623999,
+            "email": "sound@ethyca.com"
+        },
+        "sender": {
+            "id": 402609674,
+            "email": "vivek_test@gmail.com"
+        },
+        "source": {
+            "to": [
+                {
+                        "address": "sound@ethyca.com",
+                        "name": "soundarya"
+                }
+            ],
+            "from": {
+                "address": "vivek_test@gmail.com",
+                "name": "vivek"
+            }
+        },
+        "channel": "api",
+        "from_agent": True,
+        "via": "api",
+        "subject": "Re:Refund request"
+    }
 
-    yield user
+    message_response = requests.post(
+        url=f"{base_url}/api/tickets/{ticket_id}/messages", headers=headers, json=ticket_data
+    )
+    ticket_message = message_response.json()
+
+    yield user, ticket, ticket_message

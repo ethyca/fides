@@ -111,7 +111,7 @@ saas_config:
             - name: tickets_id
               references:
                 - dataset: <instance_fides_key>
-                  field: tickets.id
+                  field: ticket_messages.ticket_id
                   direction: from
             - name: ticket_messages_id
               references:
