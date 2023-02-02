@@ -22,7 +22,6 @@ class SecurityEnv(Enum):
     be configured to run in.
     """
 
-    DEMO = "demo"
     DEV = "dev"
     PROD = "prod"
 

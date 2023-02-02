@@ -28,17 +28,6 @@ class TestConfigureSecurityEnvOverrides:
         test_app = create_fides_app(security_env=security_env)
         assert test_app.dependency_overrides[verify_oauth_client_cli] == get_root_client
 
-    def test_configure_security_env_overrides_demo(self) -> None:
-        """
-        This test verifies that when set to 'demo', both oauth client
-        checks get overwritten.
-        """
-        security_env = "demo"
-        test_app = FastAPI(title="test")
-        test_app = create_fides_app(security_env=security_env)
-        assert test_app.dependency_overrides[verify_oauth_client] == get_root_client
-        assert test_app.dependency_overrides[verify_oauth_client_cli] == get_root_client
-
     def test_configure_security_env_overrides_prod(self) -> None:
         """
         This test verifies that when set to 'prod', there are no

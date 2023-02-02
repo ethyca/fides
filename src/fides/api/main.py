@@ -66,11 +66,7 @@ from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
-from fides.api.ops.util.oauth_util import (
-    get_root_client,
-    verify_oauth_client,
-    verify_oauth_client_cli,
-)
+from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_cli
 from fides.core.config import FidesConfig, get_config
 from fides.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
@@ -130,10 +126,6 @@ def create_fides_app(
     if security_env == "dev":
         # This removes auth requirements for CLI-related endpoints
         # and is the default
-        fastapi_app.dependency_overrides[verify_oauth_client_cli] = get_root_client
-    elif security_env == "demo":
-        # This remove all auth requirements
-        fastapi_app.dependency_overrides[verify_oauth_client] = get_root_client
         fastapi_app.dependency_overrides[verify_oauth_client_cli] = get_root_client
     elif security_env == "prod":
         # This is the most secure, so all security deps are maintained
