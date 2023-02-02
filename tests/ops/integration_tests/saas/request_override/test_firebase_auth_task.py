@@ -103,6 +103,7 @@ async def test_firebase_auth_access_request_non_existent_users(
     firebase_auth_connection_config,
     firebase_auth_dataset_config,
     firebase_auth_user: auth.ImportUserRecord,
+    loguru_caplog,
 ) -> None:
     """Ensure that firebase access request task gracefully handles non-existent users"""
 
@@ -140,6 +141,9 @@ async def test_firebase_auth_access_request_non_existent_users(
         ],
     )
 
+    # and ensure we've correctly added a warning log
+    assert "Could not find user with email" in loguru_caplog.text
+
     # now do the same but with phone number
 
     privacy_request = PrivacyRequest(
@@ -175,6 +179,9 @@ async def test_firebase_auth_access_request_non_existent_users(
             "phone_number",
         ],
     )
+
+    # and ensure we've correctly added a warning log
+    assert "Could not find user with phone_number" in loguru_caplog.text
 
 
 @pytest.mark.integration_saas
