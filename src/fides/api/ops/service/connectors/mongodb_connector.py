@@ -67,7 +67,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
             client.server_info()
             if config.defaultauthdb:
                 db = client[config.defaultauthdb]
-                db.collection_names()
+                db.list_collection_names()
         except ServerSelectionTimeoutError:
             raise ConnectionException(
                 "Server Selection Timeout Error connecting to MongoDB."

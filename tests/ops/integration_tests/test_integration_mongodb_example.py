@@ -6,7 +6,7 @@ import pytest
 def test_mongo_example_data(integration_mongodb_connector):
     """Confirm that the example database is populated with simulated data"""
     db = integration_mongodb_connector["mongo_test"]
-    collection_names = set(db.collection_names())
+    collection_names = set(db.list_collection_names())
     assert {
         "payment_card",
         "orders",
