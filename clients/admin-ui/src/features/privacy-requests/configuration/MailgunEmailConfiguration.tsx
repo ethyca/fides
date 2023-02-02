@@ -38,7 +38,7 @@ const MailgunEmailConfiguration = () => {
       );
     } else {
       successAlert(`Configure storage type saved successfully.`);
-      setConfigurationStep("2");
+      setConfigurationStep("apiKey");
     }
   };
 
@@ -56,7 +56,7 @@ const MailgunEmailConfiguration = () => {
       );
     } else {
       successAlert(`Configure storage type saved successfully.`);
-      setConfigurationStep("3");
+      setConfigurationStep("testConnection");
     }
   };
 
@@ -120,7 +120,8 @@ const MailgunEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {configurationStep === "2" || configurationStep === "3" ? (
+      {configurationStep === "apiKey" ||
+      configurationStep === "testConnection" ? (
         <>
           <Divider />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
@@ -163,7 +164,7 @@ const MailgunEmailConfiguration = () => {
         </>
       ) : null}
       {/* This will be added in the next sprint
-      {configurationStep === "3" ? (
+      {configurationStep === "testConnection" ? (
         <>
           <Divider />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>

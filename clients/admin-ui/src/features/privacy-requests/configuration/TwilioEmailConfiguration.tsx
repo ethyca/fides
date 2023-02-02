@@ -37,7 +37,7 @@ const TwilioEmailConfiguration = () => {
       );
     } else {
       successAlert(`Configure messaging provider saved successfully.`);
-      setConfigurationStep("2");
+      setConfigurationStep("configureTwilioEmailSecrets");
     }
   };
 
@@ -108,7 +108,7 @@ const TwilioEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {configurationStep === "2" ? (
+      {configurationStep === "configureTwilioEmailSecrets" ? (
         <>
           <Divider />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
