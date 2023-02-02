@@ -7,6 +7,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
@@ -71,7 +72,11 @@ def create_user(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
         )
 
-    user = FidesUser.get_by(db, field="username", value=user_data.username)
+    user = (
+        FidesUser.query(db)
+        .filter(func.lower(FidesUser.username) == user_data.username.lower())
+        .first()
+    )
 
     if user:
         raise HTTPException(
