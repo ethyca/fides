@@ -1,6 +1,7 @@
 """Module for interaction with User endpoints/commands."""
 import json
 from os import getenv
+from os.path import isfile
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -69,6 +70,8 @@ def read_credentials_file(
     credentials_path: str = get_credentials_path(),
 ) -> Credentials:
     """Read and return the credentials file."""
+    if not isfile(credentials_path):
+        raise FileNotFoundError
     with open(credentials_path, "r", encoding="utf-8") as credentials_file:
         credentials = Credentials.parse_obj(toml.load(credentials_file))
     return credentials
@@ -143,8 +146,9 @@ def get_auth_header(verbose: bool = True) -> Dict[str, str]:
     """
     Executes all of the logic required to form a valid auth header.
     """
+    credentials_path = get_credentials_path()
     try:
-        credentials = read_credentials_file()
+        credentials = read_credentials_file(credentials_path=credentials_path)
     except FileNotFoundError:
         if verbose:
             echo_red("No credentials file found.")
