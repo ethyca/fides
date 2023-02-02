@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "0.1.0"
+    "version": "2.6.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -50,7 +50,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -116,7 +123,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -182,7 +196,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_category/{fides_key}": {
@@ -235,7 +256,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -298,7 +326,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_category/upsert": {
@@ -328,7 +363,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/DataCategory"
                 }
               }
             }
@@ -385,7 +420,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_qualifier": {
@@ -433,7 +476,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -499,7 +549,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -565,7 +622,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_qualifier/{fides_key}": {
@@ -618,7 +682,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -681,7 +752,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_qualifier/upsert": {
@@ -711,7 +789,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/DataQualifier"
                 }
               }
             }
@@ -768,7 +846,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_subject": {
@@ -816,7 +902,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -882,7 +975,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -948,7 +1048,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_subject/{fides_key}": {
@@ -1001,7 +1108,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -1064,7 +1178,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_subject/upsert": {
@@ -1094,7 +1215,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/DataSubject"
                 }
               }
             }
@@ -1151,7 +1272,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_use": {
@@ -1199,7 +1328,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -1265,7 +1401,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1331,7 +1474,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_use/{fides_key}": {
@@ -1384,7 +1534,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -1447,7 +1604,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_use/upsert": {
@@ -1477,7 +1641,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/DataUse"
                 }
               }
             }
@@ -1534,7 +1698,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/dataset": {
@@ -1582,7 +1754,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -1648,7 +1827,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1714,7 +1900,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/dataset/{fides_key}": {
@@ -1767,7 +1960,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -1830,7 +2030,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/dataset/upsert": {
@@ -1860,7 +2067,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Dataset"
                 }
               }
             }
@@ -1917,7 +2124,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/organization": {
@@ -1965,7 +2180,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -2031,7 +2253,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -2097,7 +2326,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/organization/{fides_key}": {
@@ -2150,7 +2386,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -2213,7 +2456,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/organization/upsert": {
@@ -2243,7 +2493,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Organization"
                 }
               }
             }
@@ -2300,7 +2550,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/policy": {
@@ -2348,7 +2606,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -2414,7 +2679,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -2480,7 +2752,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/policy/{fides_key}": {
@@ -2533,7 +2812,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -2596,7 +2882,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/policy/upsert": {
@@ -2626,7 +2919,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/fideslang__models__Policy"
                 }
               }
             }
@@ -2683,7 +2976,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/registry": {
@@ -2731,7 +3032,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -2797,7 +3105,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -2863,7 +3178,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/registry/{fides_key}": {
@@ -2916,7 +3238,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -2979,7 +3308,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/registry/upsert": {
@@ -3009,7 +3345,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Registry"
                 }
               }
             }
@@ -3066,7 +3402,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/system": {
@@ -3114,7 +3458,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -3180,7 +3531,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -3246,7 +3604,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/system/{fides_key}": {
@@ -3299,7 +3664,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -3362,7 +3734,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/system/upsert": {
@@ -3392,7 +3771,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/System"
                 }
               }
             }
@@ -3449,7 +3828,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/evaluation": {
@@ -3497,7 +3884,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -3563,7 +3957,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -3629,7 +4030,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/evaluation/{fides_key}": {
@@ -3682,7 +4090,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -3745,7 +4160,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/evaluation/upsert": {
@@ -3775,7 +4197,7 @@
                 "title": "Resources",
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Evaluation"
                 }
               }
             }
@@ -3832,7 +4254,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/admin/db/{action}": {
@@ -3873,7 +4303,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "database:reset"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/datamap/{organization_fides_key}": {
@@ -3999,7 +4436,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "datamap:read"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/generate": {
@@ -4051,7 +4495,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "generate:exec"
+            ]
+          }
+        ]
       }
     },
     "/health": {
@@ -4144,7 +4595,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "validate:exec"
+            ]
+          }
+        ]
       }
     },
     "/view/evaluations": {
@@ -4164,7 +4622,150 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/system/{fides_key}/connection": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Get System Connections",
+        "description": "Return all the connection configs related to a system.",
+        "operationId": "get_system_connections_api_v1_system__fides_key__connection_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ConnectionConfigurationResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:read"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Patch Connections",
+        "description": "Given a valid System fides key, a list of connection config data elements, optionally\ncontaining the secrets, create or update corresponding ConnectionConfig objects or report\nfailure.\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.",
+        "operationId": "patch_connections_api_v1_system__fides_key__connection_patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Configs",
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateConnectionConfigurationWithSecrets"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPutConnectionConfiguration"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:create_or_update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/user": {
@@ -4727,6 +5328,15 @@
           {
             "required": false,
             "schema": {
+              "title": "Orphaned From System",
+              "type": "boolean"
+            },
+            "name": "orphaned_from_system",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
               "title": "Connection Type",
               "type": "array",
               "items": {
@@ -4856,7 +5466,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -4905,7 +5515,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -4949,7 +5559,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -5061,7 +5671,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -5361,7 +5971,7 @@
     "/api/v1/connection/{connection_key}/validate_dataset": {
       "put": {
         "tags": [
-          "Datasets"
+          "Dataset Configs"
         ],
         "summary": "Validate Dataset",
         "description": "Run validations against a dataset without attempting to save it to the database.\n\nChecks that:\n- all required fields are present, all field values are valid types\n- all DataCategory values reference known keys\n- etc.\n\nAfter validating, also tests to see if the dataset is traversable. Note that\nit's possible for a dataset to be valid but not traversable; this happens\nwhen a dataset is dependent on references to other datasets.\n\nReturns a 200 OK for all valid datasets, and a traversal_details object with\ninformation about the traversal (or traversal errors).",
@@ -5371,7 +5981,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -5382,7 +5992,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FidesopsDataset"
+                "$ref": "#/components/schemas/Dataset"
               }
             }
           },
@@ -5419,20 +6029,20 @@
         ]
       }
     },
-    "/api/v1/connection/{connection_key}/dataset": {
+    "/api/v1/connection/{connection_key}/datasetconfig": {
       "get": {
         "tags": [
-          "Datasets"
+          "Dataset Configs"
         ],
-        "summary": "Get Datasets",
-        "description": "Returns all datasets in the database.",
-        "operationId": "get_datasets_api_v1_connection__connection_key__dataset_get",
+        "summary": "Get Dataset Configs",
+        "description": "Returns all Dataset Configs attached to current Connection Config.",
+        "operationId": "get_dataset_configs_api_v1_connection__connection_key__datasetconfig_get",
         "parameters": [
           {
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -5468,7 +6078,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_FidesopsDataset_"
+                  "$ref": "#/components/schemas/Page_DatasetConfigSchema_"
                 }
               }
             }
@@ -5494,17 +6104,155 @@
       },
       "patch": {
         "tags": [
-          "Datasets"
+          "Dataset Configs"
+        ],
+        "summary": "Patch Dataset Configs",
+        "description": "Endpoint to create or update DatasetConfigs by passing in pairs of:\n1) A DatasetConfig fides_key\n2) The corresponding CtlDataset fides_key which stores the bulk of the actual dataset\n\nThe CtlDataset contents are retrieved for extra validation before linking this\nto the DatasetConfig.",
+        "operationId": "patch_dataset_configs_api_v1_connection__connection_key__datasetconfig_patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "connection_key",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Dataset Pairs",
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DatasetConfigCtlDataset"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPutDataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/connection/{connection_key}/dataset": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Get Datasets",
+        "description": "Returns all CTL datasets attached to the ConnectionConfig via the Dataset Config.\n\nSoon to be deprecated.",
+        "operationId": "get_datasets_api_v1_connection__connection_key__dataset_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "connection_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_Dataset_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Dataset Configs"
         ],
         "summary": "Patch Datasets",
-        "description": "Given a list of dataset elements, create or update corresponding Dataset objects\nor report failure\n\nUse for bulk creating and/or updating datasets.\n\nIf the fides_key for a given dataset exists, it will be treated as an update.\nOtherwise, a new dataset will be created.",
+        "description": "Given a list of dataset elements, create or update corresponding Dataset objects\nor report failure\n\nThis endpoint upserts the DatasetConfig and associated CTL Dataset.  Will shortly be deprecated.\n\nIf the fides_key for a given DatasetConfig exists, it will be treated as an update.\nOtherwise, a new DatasetConfig will be created.",
         "operationId": "patch_datasets_api_v1_connection__connection_key__dataset_patch",
         "parameters": [
           {
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -5519,7 +6267,7 @@
                 "maxItems": 50,
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/FidesopsDataset"
+                  "$ref": "#/components/schemas/Dataset"
                 }
               }
             }
@@ -5560,17 +6308,17 @@
     "/api/v1/connection/{connection_key}/dataset/{fides_key}": {
       "get": {
         "tags": [
-          "Datasets"
+          "Dataset Configs"
         ],
         "summary": "Get Dataset",
-        "description": "Returns a single dataset based on the given key.",
+        "description": "Returns a single ctl dataset linked to the given DatasetConfig.\n\nSoon to be deprecated",
         "operationId": "get_dataset_api_v1_connection__connection_key__dataset__fides_key__get",
         "parameters": [
           {
             "required": true,
             "schema": {
               "title": "Fides Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "fides_key",
@@ -5580,7 +6328,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -5593,7 +6341,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FidesopsDataset"
+                  "$ref": "#/components/schemas/Dataset"
                 }
               }
             }
@@ -5619,17 +6367,17 @@
       },
       "delete": {
         "tags": [
-          "Datasets"
+          "Dataset Configs"
         ],
         "summary": "Delete Dataset",
-        "description": "Removes the dataset based on the given key.",
+        "description": "Removes the DatasetConfig based on the given key.",
         "operationId": "delete_dataset_api_v1_connection__connection_key__dataset__fides_key__delete",
         "parameters": [
           {
             "required": true,
             "schema": {
               "title": "Fides Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "fides_key",
@@ -5639,7 +6387,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -5665,6 +6413,67 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "dataset:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/connection/{connection_key}/datasetconfig/{fides_key}": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Get Dataset Config",
+        "description": "Returns the specific Dataset Config linked to the Connection Config.",
+        "operationId": "get_dataset_config_api_v1_connection__connection_key__datasetconfig__fides_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Fides Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "fides_key",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "connection_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetConfigSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
             ]
           }
         ]
@@ -6501,7 +7310,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -6552,7 +7361,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -6624,7 +7433,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -6690,7 +7499,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -6700,7 +7509,7 @@
             "required": true,
             "schema": {
               "title": "Rule Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "rule_key",
@@ -6749,7 +7558,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -6759,7 +7568,7 @@
             "required": true,
             "schema": {
               "title": "Rule Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "rule_key",
@@ -6803,7 +7612,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -6813,7 +7622,7 @@
             "required": true,
             "schema": {
               "title": "Rule Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "rule_key",
@@ -6885,7 +7694,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -6895,7 +7704,7 @@
             "required": true,
             "schema": {
               "title": "Rule Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "rule_key",
@@ -6961,7 +7770,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -6971,7 +7780,7 @@
             "required": true,
             "schema": {
               "title": "Rule Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "rule_key",
@@ -6981,7 +7790,7 @@
             "required": true,
             "schema": {
               "title": "Rule Target Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "rule_target_key",
@@ -7030,7 +7839,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7040,7 +7849,7 @@
             "required": true,
             "schema": {
               "title": "Rule Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "rule_key",
@@ -7050,7 +7859,7 @@
             "required": true,
             "schema": {
               "title": "Rule Target Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "rule_target_key",
@@ -7094,7 +7903,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7166,7 +7975,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7236,7 +8045,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7308,7 +8117,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7378,7 +8187,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7388,7 +8197,7 @@
             "required": true,
             "schema": {
               "title": "Pre Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "pre_webhook_key",
@@ -7437,7 +8246,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7447,7 +8256,7 @@
             "required": true,
             "schema": {
               "title": "Pre Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "pre_webhook_key",
@@ -7496,7 +8305,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7506,7 +8315,7 @@
             "required": true,
             "schema": {
               "title": "Pre Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "pre_webhook_key",
@@ -7567,7 +8376,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7577,7 +8386,7 @@
             "required": true,
             "schema": {
               "title": "Post Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "post_webhook_key",
@@ -7626,7 +8435,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7636,7 +8445,7 @@
             "required": true,
             "schema": {
               "title": "Post Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "post_webhook_key",
@@ -7685,7 +8494,7 @@
             "required": true,
             "schema": {
               "title": "Policy Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "policy_key",
@@ -7695,7 +8504,7 @@
             "required": true,
             "schema": {
               "title": "Post Webhook Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "post_webhook_key",
@@ -8742,7 +9551,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -8800,7 +9609,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -9174,7 +9983,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -9245,7 +10054,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -9294,7 +10103,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -9449,7 +10258,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -9498,7 +10307,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -9540,7 +10349,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -9601,7 +10410,7 @@
             "required": true,
             "schema": {
               "title": "Config Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "config_key",
@@ -9722,7 +10531,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -9771,7 +10580,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -9813,7 +10622,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -9874,7 +10683,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -10026,12 +10835,65 @@
         },
         "security": [
           {
-            "OAuth2ClientCredentialsBearer": [
-              "user:reset-password"
-            ]
-          },
-          {
             "OAuth2ClientCredentialsBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/{user_id}/force-reset-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Force Update Password",
+        "description": "Update any user's password given a `user_id` without needing to know the user's\nprevious password.",
+        "operationId": "force_update_password_api_v1_user__user_id__force_reset_password_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserForcePasswordReset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:password-reset"
+            ]
           }
         ]
       }
@@ -10230,7 +11092,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -10279,7 +11141,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -10338,7 +11200,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -10380,7 +11242,7 @@
             "required": true,
             "schema": {
               "title": "Connection Key",
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "name": "connection_key",
@@ -10827,7 +11689,7 @@
           },
           "storage_key": {
             "title": "Storage Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           }
         }
@@ -10894,7 +11756,7 @@
             "title": "Succeeded",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/FidesopsDataset"
+              "$ref": "#/components/schemas/Dataset"
             }
           },
           "failed": {
@@ -11131,6 +11993,20 @@
         },
         "description": "Schema for the representation of a collection in the graph"
       },
+      "CollectionMeta": {
+        "title": "CollectionMeta",
+        "type": "object",
+        "properties": {
+          "after": {
+            "title": "After",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Collection-level specific annotations used for query traversal"
+      },
       "ColumnSort": {
         "title": "ColumnSort",
         "enum": [
@@ -11157,7 +12033,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "description": {
@@ -11347,7 +12223,7 @@
             }
           }
         },
-        "description": "Schema for consent prefernces."
+        "description": "Schema for consent preferences."
       },
       "ConsentPreferencesWithVerificationCode": {
         "title": "ConsentPreferencesWithVerificationCode",
@@ -11366,9 +12242,61 @@
             "items": {
               "$ref": "#/components/schemas/Consent"
             }
+          },
+          "policy_key": {
+            "title": "Policy Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
+          "executable_options": {
+            "title": "Executable Options",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsentWithExecutableStatus"
+            }
+          },
+          "browser_identity": {
+            "$ref": "#/components/schemas/Identity"
           }
         },
         "description": "Schema for consent preferences including the verification code."
+      },
+      "ConsentRequestMap": {
+        "title": "ConsentRequestMap",
+        "type": "object",
+        "properties": {
+          "opt_in": {
+            "title": "Opt In",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaaSRequest"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SaaSRequest"
+                }
+              }
+            ],
+            "default": []
+          },
+          "opt_out": {
+            "title": "Opt Out",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaaSRequest"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SaaSRequest"
+                }
+              }
+            ],
+            "default": []
+          }
+        },
+        "description": "A map of actions to Consent requests"
       },
       "ConsentRequestResponse": {
         "title": "ConsentRequestResponse",
@@ -11383,6 +12311,25 @@
           }
         },
         "description": "Schema for consent request response."
+      },
+      "ConsentWithExecutableStatus": {
+        "title": "ConsentWithExecutableStatus",
+        "required": [
+          "data_use",
+          "executable"
+        ],
+        "type": "object",
+        "properties": {
+          "data_use": {
+            "title": "Data Use",
+            "type": "string"
+          },
+          "executable": {
+            "title": "Executable",
+            "type": "boolean"
+          }
+        },
+        "description": "Schema for executable consents"
       },
       "ContactDetails": {
         "title": "ContactDetails",
@@ -11482,7 +12429,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "connection_type": {
@@ -11558,6 +12505,7 @@
           "pre_webhooks",
           "access",
           "erasure",
+          "consent",
           "erasure_email_post_send",
           "post_webhooks"
         ],
@@ -11581,13 +12529,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -11611,7 +12559,7 @@
           },
           "parent_key": {
             "title": "Parent Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "is_default": {
@@ -11633,7 +12581,7 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Identifies the System or Dataset resource with which the communication occurs. May also be 'user', to represent communication with the user(s) of a System."
           },
@@ -11646,7 +12594,7 @@
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "An array of data categories describing the data in transit."
@@ -11689,13 +12637,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -11719,7 +12667,7 @@
           },
           "parent_key": {
             "title": "Parent Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "is_default": {
@@ -11750,13 +12698,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -11865,13 +12813,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -11895,7 +12843,7 @@
           },
           "parent_key": {
             "title": "Parent Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "legal_basis": {
@@ -11969,13 +12917,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -12009,20 +12957,20 @@
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
           },
-          "fidesctl_meta": {
-            "title": "Fidesctl Meta",
+          "fides_meta": {
+            "title": "Fides Meta",
             "allOf": [
               {
                 "$ref": "#/components/schemas/DatasetMetadata"
@@ -12086,14 +13034,14 @@
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all fields in the collection.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
@@ -12110,9 +13058,52 @@
               "$ref": "#/components/schemas/DatasetField"
             },
             "description": "An array of objects that describe the collection's fields."
+          },
+          "fides_meta": {
+            "$ref": "#/components/schemas/CollectionMeta"
           }
         },
-        "description": "The DatasetCollection resource model.\n\nThis resource is nested witin a Dataset."
+        "description": "The DatasetCollection resource model.\n\nThis resource is nested within a Dataset."
+      },
+      "DatasetConfigCtlDataset": {
+        "title": "DatasetConfigCtlDataset",
+        "required": [
+          "fides_key",
+          "ctl_dataset_fides_key"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
+          "ctl_dataset_fides_key": {
+            "title": "Ctl Dataset Fides Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          }
+        },
+        "description": "A base template for all other Fidesops Schemas to inherit from."
+      },
+      "DatasetConfigSchema": {
+        "title": "DatasetConfigSchema",
+        "required": [
+          "fides_key",
+          "ctl_dataset"
+        ],
+        "type": "object",
+        "properties": {
+          "fides_key": {
+            "title": "Fides Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
+          "ctl_dataset": {
+            "$ref": "#/components/schemas/Dataset"
+          }
+        },
+        "description": "Returns the DatasetConfig fides key and the linked Ctl Dataset"
       },
       "DatasetField": {
         "title": "DatasetField",
@@ -12135,14 +13126,14 @@
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "Arrays of Data Categories, identified by `fides_key`, that applies to this field."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
@@ -12151,6 +13142,9 @@
             "title": "Retention",
             "type": "string",
             "description": "An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset."
+          },
+          "fides_meta": {
+            "$ref": "#/components/schemas/FidesMeta"
           },
           "fields": {
             "title": "Fields",
@@ -12170,6 +13164,14 @@
           "resource_id": {
             "title": "Resource Id",
             "type": "string"
+          },
+          "after": {
+            "title": "After",
+            "type": "array",
+            "items": {
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            }
           }
         },
         "description": "The DatasetMetadata resource model.\n\nObject used to hold application specific metadata for a dataset"
@@ -12399,7 +13401,7 @@
             "default": []
           }
         },
-        "description": "A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"
+        "description": "A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"
       },
       "Evaluation": {
         "title": "Evaluation",
@@ -12411,7 +13413,7 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A uuid generated for each unique evaluation."
           },
@@ -12631,6 +13633,34 @@
         ],
         "description": "An enumeration."
       },
+      "FidesDatasetReference": {
+        "title": "FidesDatasetReference",
+        "required": [
+          "dataset",
+          "field"
+        ],
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "direction": {
+            "title": "Direction",
+            "enum": [
+              "from",
+              "to"
+            ],
+            "type": "string"
+          }
+        },
+        "description": "Reference to a field from another Collection"
+      },
       "FidesDocsSchema": {
         "title": "FidesDocsSchema",
         "required": [
@@ -12668,311 +13698,51 @@
         "additionalProperties": false,
         "description": "Fides Child Secrets Schema for API docs"
       },
-      "FidesopsCollectionMeta": {
-        "title": "FidesopsCollectionMeta",
-        "type": "object",
-        "properties": {
-          "after": {
-            "title": "After",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "description": "Collection-level fidesops-specific annotations used for query traversal"
-      },
-      "FidesopsDataset": {
-        "title": "FidesopsDataset",
-        "required": [
-          "fides_key",
-          "collections"
-        ],
-        "type": "object",
-        "properties": {
-          "fides_key": {
-            "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string",
-            "description": "A unique key used to identify this resource."
-          },
-          "organization_fides_key": {
-            "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string",
-            "description": "Defines the Organization that this resource belongs to.",
-            "default": "default_organization"
-          },
-          "tags": {
-            "title": "Tags",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Human-Readable name for this resource."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "A detailed description of what this resource is."
-          },
-          "meta": {
-            "title": "Meta",
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "An optional object that provides additional information about the Dataset. You can structure the object however you like. It can be a simple set of `key: value` properties or a deeply nested hierarchy of objects. How you use the object is up to you: Fides ignores it."
-          },
-          "data_categories": {
-            "title": "Data Categories",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
-              "type": "string"
-            },
-            "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
-          },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string",
-            "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all collections in the Dataset.",
-            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-          },
-          "fidesctl_meta": {
-            "title": "Fidesctl Meta",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DatasetMetadata"
-              }
-            ],
-            "description": "\n    The DatasetMetadata resource model.\n\n    Object used to hold application specific metadata for a dataset\n    "
-          },
-          "joint_controller": {
-            "title": "Joint Controller",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ContactDetails"
-              }
-            ],
-            "description": "\n    The contact details information model.\n\n    Used to capture contact information for controllers, used\n    as part of exporting a data map / ROPA.\n\n    This model is nested under an Organization and\n    potentially under a system/dataset.\n    "
-          },
-          "retention": {
-            "title": "Retention",
-            "type": "string",
-            "description": "An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.",
-            "default": "No retention or erasure policy"
-          },
-          "third_country_transfers": {
-            "title": "Third Country Transfers",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)."
-          },
-          "collections": {
-            "title": "Collections",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FidesopsDatasetCollection"
-            }
-          },
-          "fidesops_meta": {
-            "$ref": "#/components/schemas/FidesopsDatasetMeta"
-          }
-        },
-        "description": "Overrides fideslang Collection model with additional Fidesops annotations"
-      },
-      "FidesopsDatasetCollection": {
-        "title": "FidesopsDatasetCollection",
-        "required": [
-          "name",
-          "fields"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Human-Readable name for this resource."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "A detailed description of what this resource is."
-          },
-          "data_categories": {
-            "title": "Data Categories",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
-              "type": "string"
-            },
-            "description": "Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection."
-          },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string",
-            "description": "Array of Data Qualifier resources identified by `fides_key`, that apply to all fields in the collection.",
-            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-          },
-          "retention": {
-            "title": "Retention",
-            "type": "string",
-            "description": "An optional string to describe the retention policy for a Dataset collection. This field can also be applied more granularly at the field level of a Dataset."
-          },
-          "fields": {
-            "title": "Fields",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FidesopsDatasetField"
-            }
-          },
-          "fidesops_meta": {
-            "$ref": "#/components/schemas/FidesopsCollectionMeta"
-          }
-        },
-        "description": "Overrides fideslang DatasetCollection model with additional Fidesops annotations"
-      },
-      "FidesopsDatasetField": {
-        "title": "FidesopsDatasetField",
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string",
-            "description": "Human-Readable name for this resource."
-          },
-          "description": {
-            "title": "Description",
-            "type": "string",
-            "description": "A detailed description of what this resource is."
-          },
-          "data_categories": {
-            "title": "Data Categories",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
-              "type": "string"
-            },
-            "description": "Arrays of Data Categories, identified by `fides_key`, that applies to this field."
-          },
-          "data_qualifier": {
-            "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string",
-            "description": "A Data Qualifier that applies to this field. Note that this field holds a single value, therefore, the property name is singular.",
-            "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-          },
-          "retention": {
-            "title": "Retention",
-            "type": "string",
-            "description": "An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset."
-          },
-          "fidesops_meta": {
-            "$ref": "#/components/schemas/FidesopsMeta"
-          },
-          "fields": {
-            "title": "Fields",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FidesopsDatasetField"
-            },
-            "default": []
-          }
-        },
-        "description": "Extends fideslang DatasetField model with additional Fidesops annotations"
-      },
-      "FidesopsDatasetMeta": {
-        "title": "FidesopsDatasetMeta",
-        "type": "object",
-        "properties": {
-          "after": {
-            "title": "After",
-            "type": "array",
-            "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
-              "type": "string"
-            }
-          }
-        },
-        "description": "\"Dataset-level fidesops-specific annotations used for query traversal"
-      },
-      "FidesopsDatasetReference": {
-        "title": "FidesopsDatasetReference",
-        "required": [
-          "dataset",
-          "field"
-        ],
-        "type": "object",
-        "properties": {
-          "dataset": {
-            "title": "Dataset",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string"
-          },
-          "field": {
-            "title": "Field",
-            "type": "string"
-          },
-          "direction": {
-            "title": "Direction",
-            "enum": [
-              "from",
-              "to"
-            ],
-            "type": "string"
-          }
-        },
-        "description": "Reference to a field from another Collection"
-      },
-      "FidesopsMeta": {
-        "title": "FidesopsMeta",
+      "FidesMeta": {
+        "title": "FidesMeta",
         "type": "object",
         "properties": {
           "references": {
             "title": "References",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/FidesopsDatasetReference"
-            }
+              "$ref": "#/components/schemas/FidesDatasetReference"
+            },
+            "description": "Fields that current field references or is referenced by. Used for drawing the edges of a DSR graph."
           },
           "identity": {
             "title": "Identity",
-            "type": "string"
+            "type": "string",
+            "description": "The type of the identity data that should be used to query this collection for a DSR."
           },
           "primary_key": {
             "title": "Primary Key",
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Whether the current field can be considered a primary key of the current collection"
           },
           "data_type": {
             "title": "Data Type",
-            "type": "string"
+            "type": "string",
+            "description": "Optionally specify the data type. Fides will attempt to cast values to this type when querying."
           },
           "length": {
             "title": "Length",
-            "type": "integer"
+            "exclusiveMinimum": 0.0,
+            "type": "integer",
+            "description": "Optionally specify the allowable field length. Fides will not generate values that exceed this size."
           },
           "return_all_elements": {
             "title": "Return All Elements",
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Optionally specify to query for the entire array if the array is an entrypoint into the node. Default is False."
           },
           "read_only": {
             "title": "Read Only",
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Optionally specify if a field is read-only, meaning it can't be updated or deleted."
           }
         },
-        "description": "Fidesops-specific annotations used for query traversal"
+        "description": "Supplementary metadata used by the Fides application for additional features."
       },
       "FieldsAffectedResponse": {
         "title": "FieldsAffectedResponse",
@@ -13146,6 +13916,10 @@
           },
           "email": {
             "title": "Email",
+            "type": "string"
+          },
+          "ga_client_id": {
+            "title": "Ga Client Id",
             "type": "string"
           }
         },
@@ -13469,7 +14243,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "service_type": {
@@ -13504,7 +14278,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "service_type": {
@@ -13725,13 +14499,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -13888,8 +14662,8 @@
           }
         }
       },
-      "Page_ExecutionLogDetailResponse_": {
-        "title": "Page[ExecutionLogDetailResponse]",
+      "Page_DatasetConfigSchema_": {
+        "title": "Page[DatasetConfigSchema]",
         "required": [
           "items",
           "total",
@@ -13902,7 +14676,7 @@
             "title": "Items",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ExecutionLogDetailResponse"
+              "$ref": "#/components/schemas/DatasetConfigSchema"
             }
           },
           "total": {
@@ -13922,8 +14696,8 @@
           }
         }
       },
-      "Page_FidesopsDataset_": {
-        "title": "Page[FidesopsDataset]",
+      "Page_Dataset_": {
+        "title": "Page[Dataset]",
         "required": [
           "items",
           "total",
@@ -13936,7 +14710,41 @@
             "title": "Items",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/FidesopsDataset"
+              "$ref": "#/components/schemas/Dataset"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_ExecutionLogDetailResponse_": {
+        "title": "Page[ExecutionLogDetailResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExecutionLogDetailResponse"
             }
           },
           "total": {
@@ -14256,7 +15064,7 @@
             "items": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/FidesopsDatasetReference"
+                  "$ref": "#/components/schemas/FidesDatasetReference"
                 },
                 {
                   "type": "string"
@@ -14322,7 +15130,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "drp_action": {
@@ -14385,7 +15193,7 @@
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "The fides key of the data qualifier to be used in a privacy rule.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
@@ -14406,7 +15214,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "name": {
@@ -14415,7 +15223,7 @@
           },
           "connection_config_key": {
             "title": "Connection Config Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           }
         },
@@ -14451,7 +15259,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "name": {
@@ -14481,7 +15289,7 @@
           },
           "connection_config_key": {
             "title": "Connection Config Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "order": {
@@ -14552,7 +15360,6 @@
       "PrivacyDeclaration": {
         "title": "PrivacyDeclaration",
         "required": [
-          "name",
           "data_categories",
           "data_use",
           "data_subjects"
@@ -14568,20 +15375,20 @@
             "title": "Data Categories",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "An array of data categories describing a system in a privacy declaration."
           },
           "data_use": {
             "title": "Data Use",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "The Data Use describing a system in a privacy declaration."
           },
           "data_qualifier": {
             "title": "Data Qualifier",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "The fides key of the data qualifier describing a system in a privacy declaration.",
             "default": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
@@ -14590,7 +15397,7 @@
             "title": "Data Subjects",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "An array of data subjects describing a system in a privacy declaration."
@@ -14599,7 +15406,7 @@
             "title": "Dataset References",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "Referenced Dataset fides keys used by the system."
@@ -14608,7 +15415,7 @@
             "title": "Egress",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "The resources to which data is sent. Any `fides_key`s included in this list reference `DataFlow` entries in the `egress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
@@ -14617,7 +15424,7 @@
             "title": "Ingress",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied."
@@ -14657,12 +15464,19 @@
           },
           "policy_key": {
             "title": "Policy Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "encryption_key": {
             "title": "Encryption Key",
             "type": "string"
+          },
+          "consent_preferences": {
+            "title": "Consent Preferences",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Consent"
+            }
           }
         },
         "description": "Data required to create a PrivacyRequest"
@@ -14987,7 +15801,7 @@
             "title": "Values",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "A list of fides keys to be used with the matching type in a privacy rule."
@@ -15145,13 +15959,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -15251,7 +16065,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "action_type": {
@@ -15259,7 +16073,7 @@
           },
           "storage_destination_key": {
             "title": "Storage Destination Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "masking_strategy": {
@@ -15282,7 +16096,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "action_type": {
@@ -15311,7 +16125,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "action_type": {
@@ -15346,7 +16160,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "data_category": {
@@ -15380,7 +16194,7 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "name": {
@@ -15431,6 +16245,9 @@
           },
           "rate_limit_config": {
             "$ref": "#/components/schemas/RateLimitConfig"
+          },
+          "consent_requests": {
+            "$ref": "#/components/schemas/ConsentRequestMap"
           }
         },
         "description": "Used to store endpoint and param configurations for a SaaS connector.\nThis is done to separate the details of how to make the API calls\nfrom the data provided by a given API collection.\n\nThe required fields for the config are converted into a Dataset which is\nmerged with the standard Fidesops Dataset to provide a complete set of dependencies\nfor the graph traversal."
@@ -15446,7 +16263,7 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "name": {
@@ -15546,6 +16363,11 @@
           },
           "rate_limit_config": {
             "$ref": "#/components/schemas/RateLimitConfig"
+          },
+          "skip_missing_param_values": {
+            "title": "Skip Missing Param Values",
+            "type": "boolean",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -15598,7 +16420,7 @@
             "$ref": "#/components/schemas/ConnectionConfigurationResponse"
           },
           "dataset": {
-            "$ref": "#/components/schemas/FidesopsDataset"
+            "$ref": "#/components/schemas/Dataset"
           }
         }
       },
@@ -15617,7 +16439,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "description": {
@@ -15670,7 +16492,7 @@
           },
           "instance_key": {
             "title": "Instance Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           }
         },
@@ -15770,7 +16592,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "format": {
@@ -15808,7 +16630,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "format": {
@@ -15920,13 +16742,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
@@ -16012,7 +16834,7 @@
             "title": "System Dependencies",
             "type": "array",
             "items": {
-              "pattern": "^[a-zA-Z0-9_.-]+$",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
               "type": "string"
             },
             "description": "A list of fides keys to model dependencies."
@@ -16214,6 +17036,20 @@
         },
         "description": "Response after creating a FidesUser"
       },
+      "UserForcePasswordReset": {
+        "title": "UserForcePasswordReset",
+        "required": [
+          "new_password"
+        ],
+        "type": "object",
+        "properties": {
+          "new_password": {
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "description": "Only a new password, for the case where the user does not remember their password"
+      },
       "UserLogin": {
         "title": "UserLogin",
         "required": [
@@ -16403,7 +17239,7 @@
         "type": "object",
         "properties": {
           "dataset": {
-            "$ref": "#/components/schemas/FidesopsDataset"
+            "$ref": "#/components/schemas/Dataset"
           },
           "traversal_details": {
             "$ref": "#/components/schemas/DatasetTraversalDetails"
@@ -16625,7 +17461,7 @@
         "properties": {
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "order": {
@@ -16698,7 +17534,7 @@
           },
           "key": {
             "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
           },
           "drp_action": {
@@ -16771,13 +17607,13 @@
         "properties": {
           "fides_key": {
             "title": "Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "A unique key used to identify this resource."
           },
           "organization_fides_key": {
             "title": "Organization Fides Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
