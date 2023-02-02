@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from fides.core.user import Credentials, get_credentials_path, get_auth_header
+from fides.core.user import Credentials, get_auth_header, get_credentials_path
 
 
 @pytest.mark.unit
