@@ -40,8 +40,6 @@ jobs:
           working-directory: clients/cypress-e2e
           install: false
           wait-on: "http://localhost:8080, http://localhost:3001"
-          # wait 20 minutes for the test env to be ready
-          wait-on-timeout: 1200
           record: true
         env:
           # pass the Cypress Cloud record key as an environment variable
