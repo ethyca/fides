@@ -72,6 +72,7 @@ The types of changes are:
   * Phone inputs no longer request country SVGs from external domain. [#2378](https://github.com/ethyca/fides/pull/2378)
   * Input validation errors no longer change the height of modals. [#2379](https://github.com/ethyca/fides/pull/2379)
 * Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
+* Usernames are case insensitive now and prevent all duplicates [#2487](https://github.com/ethyca/fides/pull/2487)
 
 
 ## [2.5.1](https://github.com/ethyca/fides/compare/2.5.0...2.5.1)
