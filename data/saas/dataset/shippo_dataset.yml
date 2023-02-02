@@ -1,0 +1,287 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: shippo
+    description: A sample dataset representing the Shippo connector for Fides
+    collections:
+      - name: addresses
+        fields:
+          - name: object_created
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: object_updated
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: object_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+              primary_key: True
+          - name: is_complete
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: validation_results
+          - name: object_owner
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: company
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: street_no
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: street1
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: street2
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: street3
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: city
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: state
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: zip
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: country
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: longitude
+          - name: latitude
+          - name: phone
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: is_residential
+          - name: metadata
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: test
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+      - name: orders
+        fields:
+          - name: object_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+              primary_key: True
+          - name: order_number
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: order_status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: placed_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: object_owner
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: to_address
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: object_created
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: object_updated
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: object_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: is_complete
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: validation_results
+              - name: object_owner
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: name
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: company
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: street_no
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: street1
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: street2
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: street3
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: city
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: state
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: zip
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: country
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: longitude
+              - name: latitude
+              - name: phone
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: email
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: is_residential
+              - name: metadata
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: test
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+          - name: from_address
+          - name: shop_app
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: weight
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: weight_unit
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: transactions
+          - name: total_tax
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: total_price
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: subtotal_price
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: currency
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: shipping_method
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: shipping_cost
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: shipping_cost_currency
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: line_items
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: '0'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: object_id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: title
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: variant_title
+                  - name: sku
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: quantity
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: total_price
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: currency
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: weight
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: weight_unit
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: manufacture_country
+                  - name: max_ship_time
+                  - name: max_delivery_time
+                  - name: description
+          - name: notes
+          - name: test
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean

@@ -159,3 +159,9 @@ config = "data/saas/config/recharge_config.yml"
 dataset = "data/saas/dataset/recharge_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Recharge"
+
+[shippo]
+config = "data/saas/config/shippo_config.yml"
+dataset = "data/saas/dataset/shippo_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Shippo"
