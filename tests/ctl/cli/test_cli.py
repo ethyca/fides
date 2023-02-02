@@ -865,6 +865,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test logging in as a user with a provided username and password."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             [
@@ -887,6 +888,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test creating a user with the current credentials."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             [
@@ -909,6 +911,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test getting user permissions for the current user."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             ["-f", test_config_path, "user", "permissions"],

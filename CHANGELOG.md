@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 
+* Added the `env` option to the `security` configuration options to allow for users to completely secure the API endpoints [#2267](https://github.com/ethyca/fides/pull/2267)
 * Unified Fides Resources
   * Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
   * Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
@@ -56,7 +57,7 @@ The types of changes are:
 
 ### Developer Experience
 
-* `nox -s test_env` has been replaced with `nox -s fides_env(dev)` 
+* `nox -s test_env` has been replaced with `nox -s fides_env(dev)`
 * New command `nox -s fides_env(test)` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
 * Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
 
