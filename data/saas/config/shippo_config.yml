@@ -1,0 +1,58 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Shippo SaaS Config
+  type: shippo
+  description: A sample schema representing the Shippo connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: goshippo.com
+    - name: api_token
+
+  client_config:
+    protocol: https
+    host: <domain>
+    # authentication:
+    #   strategy: no_authentication
+    #   configuration: {}
+
+  test_request:
+    method: GET
+    path: /addresses/
+    headers:
+      - name: Authorization
+        value: ShippoToken <api_token>
+    param_values:
+      - name: api_token
+        connector_param: api_token
+
+  endpoints:
+    - name: address
+      requests:
+        read:
+          method: GET
+          path: /addresses/
+          headers:
+            - name: Authorization
+              value: ShippoToken <api_token>
+          data_path: results
+          param_values:
+            - name: placeholder
+              identity: email
+            - name: api_token
+              connector_param: api_token
+    - name: orders
+      requests:
+        read:
+          method: GET
+          path: /orders/
+          headers:
+            - name: Authorization
+              value: ShippoToken <api_token>
+          data_path: results
+          param_values:
+            - name: placeholder
+              identity: email
+            - name: api_token
+              connector_param: api_token
