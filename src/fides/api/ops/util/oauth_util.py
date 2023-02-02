@@ -135,7 +135,11 @@ def verify_callback_oauth(
 async def get_root_client(
     db: Session = Depends(get_db), client_id: str = CONFIG.security.oauth_root_client_id
 ) -> ClientDetail:
-    """Gets the root_client directly."""
+    """
+    Gets the root_client directly.
+
+    This function is primarily used to let users bypass endpoint authorization
+    """
     client = ClientDetail.get(
         db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
     )
@@ -153,7 +157,10 @@ async def verify_oauth_client(
     """
     Verifies that the access token provided in the authorization header contains
     the necessary scopes specified by the caller. Yields a 403 forbidden error
-    if not
+    if not.
+
+    NOTE: This function may be overwritten in `main.py` when changing
+    the security environment.
     """
     if authorization is None:
         logger.debug("No authorization supplied.")
