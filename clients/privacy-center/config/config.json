@@ -37,6 +37,7 @@
       "email": "required",
       "phone": "optional"
     },
+    "policy_key": "default_consent_policy",
     "consentOptions": [
       {
         "fidesDataUseKey": "advertising",
@@ -45,7 +46,8 @@
         "url": "https://example.com/privacy#data-sales",
         "default": true,
         "highlight": false,
-        "cookieKeys": ["data_sales"]
+        "cookieKeys": ["data_sales"],
+        "executable": false
       },
       {
         "fidesDataUseKey": "advertising.first_party",
@@ -54,7 +56,8 @@
         "url": "https://example.com/privacy#email-marketing",
         "default": true,
         "highlight": false,
-        "cookieKeys": ["tracking"]
+        "cookieKeys": ["tracking"],
+        "executable": false
       },
       {
         "fidesDataUseKey": "improve",
@@ -63,7 +66,8 @@
         "url": "https://example.com/privacy#analytics",
         "default": true,
         "highlight": false,
-        "cookieKeys": ["tracking"]
+        "cookieKeys": ["tracking"],
+        "executable": false
       }
     ]
   }
