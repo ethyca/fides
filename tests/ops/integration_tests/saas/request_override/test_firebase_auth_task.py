@@ -1,4 +1,3 @@
-import random
 from uuid import uuid4
 
 import pytest
@@ -93,39 +92,41 @@ async def test_firebase_auth_access_request(
     assert "photo_url" not in provider_data[1].keys()
 
 
-@pytest.mark.integration_saas
 @pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
+@pytest.mark.usefixtures("firebase_auth_user")
+@pytest.mark.parametrize(
+    "identity_info, message",
+    [
+        ({"email": "a_fake_email@ethyca.com"}, "Could not find user with email"),
+        ({"phone_number": "+10000000000"}, "Could not find user with phone_number"),
+    ],
+)
 async def test_firebase_auth_access_request_non_existent_users(
+    identity_info,
+    message,
     db,
     policy,
     firebase_auth_connection_config,
     firebase_auth_dataset_config,
-    firebase_auth_user: auth.ImportUserRecord,
     loguru_caplog,
 ) -> None:
     """Ensure that firebase access request task gracefully handles non-existent users"""
-
-    privacy_request = PrivacyRequest(
-        id=f"test_firebase_access_request_task_{random.randint(0, 1000)}"
-    )
-    identity = Identity(**{"email": "a_fake_email@ethyca.com"})
+    privacy_request = PrivacyRequest(id=f"test_firebase_access_request_task_{uuid4()}")
+    identity = Identity(**identity_info)
     privacy_request.cache_identity(identity)
-
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
     merged_graph = firebase_auth_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
-
     # just ensure we don't error out here
     v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
         [firebase_auth_connection_config],
-        {"email": "a_fake_email@ethyca.com"},
+        identity_info,
         db,
     )
-
     assert_rows_match(
         v[f"{dataset_name}:user"],
         min_size=0,
@@ -139,48 +140,8 @@ async def test_firebase_auth_access_request_non_existent_users(
             "phone_number",
         ],
     )
-
     # and ensure we've correctly added a warning log
-    assert "Could not find user with email" in loguru_caplog.text
-
-    # now do the same but with phone number
-
-    privacy_request = PrivacyRequest(
-        id=f"test_firebase_access_request_task_{random.randint(0, 1000)}"
-    )
-    identity = Identity(**{"phone_number": "+10000000000"})
-    privacy_request.cache_identity(identity)
-
-    dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
-    merged_graph = firebase_auth_dataset_config.get_graph()
-    graph = DatasetGraph(merged_graph)
-
-    # just ensure we don't error out here
-    v = await graph_task.run_access_request(
-        privacy_request,
-        policy,
-        graph,
-        [firebase_auth_connection_config],
-        {"phone_number": "+10000000000"},
-        db,
-    )
-
-    assert_rows_match(
-        v[f"{dataset_name}:user"],
-        min_size=0,
-        keys=[
-            "uid",
-            "email",
-            "display_name",
-            "photo_url",
-            "disabled",
-            "email_verified",
-            "phone_number",
-        ],
-    )
-
-    # and ensure we've correctly added a warning log
-    assert "Could not find user with phone_number" in loguru_caplog.text
+    assert message in loguru_caplog.text
 
 
 @pytest.mark.integration_saas
@@ -195,9 +156,7 @@ async def test_firebase_auth_access_request_phone_number_identity(
 ) -> None:
     """Full access request based on the Firebase Auth SaaS config using a phone number identity"""
 
-    privacy_request = PrivacyRequest(
-        id=f"test_firebase_access_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_firebase_access_request_task_{uuid4()}")
     identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
     privacy_request.cache_identity(identity)
 
@@ -275,9 +234,7 @@ async def test_firebase_auth_update_request(
 ) -> None:
     """Update request based on the Firebase Auth SaaS config"""
 
-    privacy_request = PrivacyRequest(
-        id=f"test_firebase_update_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_firebase_update_request_task_{uuid4()}")
     identity = Identity(**{"email": firebase_auth_user.email})
     privacy_request.cache_identity(identity)
 
@@ -364,9 +321,7 @@ async def test_firebase_auth_update_request_phone_number_identity(
 ) -> None:
     """Update request based on the Firebase Auth SaaS config"""
 
-    privacy_request = PrivacyRequest(
-        id=f"test_firebase_update_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_firebase_update_request_task_{uuid4()}")
     identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
     privacy_request.cache_identity(identity)
 
@@ -458,9 +413,7 @@ async def test_firebase_auth_delete_request(
     our delete function is not configured by default (the udpate function is).
     But this at least gives us some test coverage of the delete function directly.
     """
-    privacy_request = PrivacyRequest(
-        id=f"test_firebase_delete_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
     identity = Identity(**{"email": firebase_auth_user.email})
     privacy_request.cache_identity(identity)
 
@@ -504,9 +457,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
     our delete function is not configured by default (the udpate function is).
     But this at least gives us some test coverage of the delete function directly.
     """
-    privacy_request = PrivacyRequest(
-        id=f"test_firebase_delete_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
     identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
     privacy_request.cache_identity(identity)
 
