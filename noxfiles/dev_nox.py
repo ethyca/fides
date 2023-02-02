@@ -113,9 +113,11 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
 
     Posargs:
         test = instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
+        keep_alive = does not automatically call teardown after the session
     """
 
     shell_command = "fides" if "test" in session.posargs else "/bin/bash"
+    keep_alive = "keep_alive" in session.posargs
 
     # Temporarily override some ENV vars as needed. To set local secrets, see 'example.env'
     test_env_vars = {
@@ -131,7 +133,8 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         session.error(
             "Failed to cleanly teardown existing containers & volumes. Please exit out of all other and try again"
         )
-    session.notify("teardown", posargs=["volumes"])
+    if not keep_alive:
+        session.notify("teardown", posargs=["volumes"])
 
     session.log("Building images...")
     build(session, fides_image)

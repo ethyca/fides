@@ -27,7 +27,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Start test environment in the background
-        run: nox -s "fides_env(test)" &
+        run: nox -s "fides_env(test)" -- keep_alive
 
       - name: Install dependencies
         run: |
