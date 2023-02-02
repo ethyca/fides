@@ -16,6 +16,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.0...main)
 
+### Changed
+* Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
+
 ## [2.6.0](https://github.com/ethyca/fides/compare/2.5.1...2.6.0)
 
 ### Added
