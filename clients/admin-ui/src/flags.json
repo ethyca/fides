@@ -13,7 +13,8 @@
   "privacyRequestsConfiguration": {
     "development": true,
     "test": false,
-    "production": false
+    "production": false,
+    "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage."
     },
   "datasetClassificationUpdates": {
     "development": true,
