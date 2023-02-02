@@ -92,6 +92,7 @@ async def test_firebase_auth_access_request(
     assert "photo_url" not in provider_data[1].keys()
 
 
+@pytest.mark.integration_saas
 @pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("firebase_auth_user")
