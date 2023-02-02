@@ -1,4 +1,5 @@
 import random
+from uuid import uuid4
 
 import pytest
 from firebase_admin import auth
@@ -28,9 +29,7 @@ async def test_firebase_auth_access_request(
 ) -> None:
     """Full access request based on the Firebase Auth SaaS config"""
 
-    privacy_request = PrivacyRequest(
-        id=f"test_firebase_access_request_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_firebase_access_request_task_{uuid4()}")
     identity = Identity(**{"email": firebase_auth_user.email})
     privacy_request.cache_identity(identity)
 
