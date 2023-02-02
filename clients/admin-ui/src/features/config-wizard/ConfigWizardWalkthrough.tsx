@@ -9,7 +9,7 @@ import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
 import ReviewSystemStep from "~/features/system/ReviewSystemStep";
 import { System } from "~/types/api";
 
-import AddSystemForm from "./AddSystemForm";
+import AddSystem from "./AddSystem";
 import AuthenticateScanner from "./AuthenticateScanner";
 import {
   changeReviewStep,
@@ -82,7 +82,7 @@ const ConfigWizardWalkthrough = () => {
             </Box>
             <Box w={step === 4 ? "100%" : "40%"}>
               {step === 1 ? <OrganizationInfoForm /> : null}
-              {step === 2 ? <AddSystemForm /> : null}
+              {step === 2 ? <AddSystem /> : null}
               {step === 3 ? <AuthenticateScanner /> : null}
               {step === 4 ? (
                 <Box pr={10}>
