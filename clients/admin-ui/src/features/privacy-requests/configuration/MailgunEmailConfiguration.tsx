@@ -64,12 +64,6 @@ const MailgunEmailConfiguration = () => {
   //   setConfigurationStep("4");
   // };
 
-  const MAILGUN_MESSAGING_CONFIG_FORM_ID = "mailgun-messaging-config-form-id";
-  const MAILGUN_MESSAGING_CONFIG_API_KEY_FORM_ID =
-    "mailgun-messaging-config-api-key-form-id";
-  // const MAILGUN_MESSAGING_CONFIG_EMAIL_FORM_ID =
-  //   "mailgun-messaging-config-email-form-id";
-
   const initialValues = {
     // domain: messagingDetails.domain ?? "",
     domain: "",
@@ -95,7 +89,7 @@ const MailgunEmailConfiguration = () => {
           onSubmit={handleMailgunConfiguration}
         >
           {({ isSubmitting, resetForm }) => (
-            <Form id={MAILGUN_MESSAGING_CONFIG_FORM_ID}>
+            <Form>
               <Stack mt={5} spacing={5}>
                 <CustomTextInput
                   name="domain"
@@ -118,7 +112,6 @@ const MailgunEmailConfiguration = () => {
                   colorScheme="primary"
                   size="sm"
                   data-testid="save-btn"
-                  form={MAILGUN_MESSAGING_CONFIG_FORM_ID}
                   isLoading={false}
                 >
                   Save
@@ -140,7 +133,7 @@ const MailgunEmailConfiguration = () => {
               onSubmit={handleMailgunAPIKeyConfiguration}
             >
               {({ isSubmitting, resetForm }) => (
-                <Form id={MAILGUN_MESSAGING_CONFIG_API_KEY_FORM_ID}>
+                <Form>
                   <CustomTextInput
                     name="api_key"
                     label="API key"
@@ -161,7 +154,6 @@ const MailgunEmailConfiguration = () => {
                     colorScheme="primary"
                     size="sm"
                     data-testid="save-btn"
-                    form={MAILGUN_MESSAGING_CONFIG_API_KEY_FORM_ID}
                     isLoading={false}
                   >
                     Save
@@ -185,7 +177,7 @@ const MailgunEmailConfiguration = () => {
               onSubmit={handleTestConnection}
             >
               {({ isSubmitting, resetForm }) => (
-                <Form id={MAILGUN_MESSAGING_CONFIG_EMAIL_FORM_ID}>
+                <Form>
                   <CustomTextInput
                     name="email"
                     label="Email"
@@ -205,7 +197,6 @@ const MailgunEmailConfiguration = () => {
                     colorScheme="primary"
                     size="sm"
                     data-testid="save-btn"
-                    form={MAILGUN_MESSAGING_CONFIG_EMAIL_FORM_ID}
                     isLoading={false}
                   >
                     Save

@@ -58,9 +58,6 @@ const TwilioEmailConfiguration = () => {
     }
   };
 
-  const TWILIO_EMAIL_FORM_ID = "twilio-email-form-id";
-  const TWILIO_EMAIL_API_KEY_FORM_ID = "twilio-email-api-key-form-id";
-
   const initialValues = {
     email: messagingDetails.email ?? "",
   };
@@ -80,7 +77,7 @@ const TwilioEmailConfiguration = () => {
           onSubmit={handleTwilioEmailConfiguration}
         >
           {({ isSubmitting, resetForm }) => (
-            <Form id={TWILIO_EMAIL_FORM_ID}>
+            <Form>
               <Stack mt={5} spacing={5}>
                 <CustomTextInput
                   name="email"
@@ -103,7 +100,6 @@ const TwilioEmailConfiguration = () => {
                   colorScheme="primary"
                   size="sm"
                   data-testid="save-btn"
-                  form={TWILIO_EMAIL_FORM_ID}
                   isLoading={false}
                 >
                   Save
@@ -125,7 +121,7 @@ const TwilioEmailConfiguration = () => {
               onSubmit={handleTwilioEmailConfigurationSecrets}
             >
               {({ isSubmitting, resetForm }) => (
-                <Form id={TWILIO_EMAIL_API_KEY_FORM_ID}>
+                <Form>
                   <Stack mt={5} spacing={5}>
                     <CustomTextInput
                       name="api-key"
@@ -147,7 +143,6 @@ const TwilioEmailConfiguration = () => {
                     colorScheme="primary"
                     size="sm"
                     data-testid="save-btn"
-                    form={TWILIO_EMAIL_API_KEY_FORM_ID}
                     isLoading={false}
                   >
                     Save

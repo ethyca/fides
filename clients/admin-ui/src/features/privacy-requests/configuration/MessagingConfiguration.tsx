@@ -16,7 +16,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import {
-  useCreateActiveMessagingConfigurationMutation,
+  useCreateConfigurationSettingsMutation,
   useCreateMessagingConfigurationMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
@@ -29,8 +29,7 @@ const MessagingConfiguration = () => {
   const [messagingValue, setMessagingValue] = useState("");
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
-  const [saveActiveConfiguration] =
-    useCreateActiveMessagingConfigurationMutation();
+  const [saveActiveConfiguration] = useCreateConfigurationSettingsMutation();
 
   const handleChange = async (value: string) => {
     setMessagingValue(value);

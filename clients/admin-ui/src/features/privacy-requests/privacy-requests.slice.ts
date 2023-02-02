@@ -353,16 +353,21 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Notification"],
     }),
-    getStorageDetails: build.query<any, any>({
-      query: (params) => ({
-        url: `storage/default/${params.storage_type}`,
+    getConfigurationSettings: build.query<any, any>({
+      query: () => ({
+        url: `application/settings`,
       }),
     }),
-    createActiveStorage: build.mutation<any, any>({
+    createConfigurationSettings: build.mutation<any, any>({
       query: (params) => ({
         url: `application/settings`,
         method: "PUT",
         body: params,
+      }),
+    }),
+    getStorageDetails: build.query<any, any>({
+      query: (params) => ({
+        url: `storage/default/${params.storage_type}`,
       }),
     }),
     createStorage: build.mutation<any, any>({
@@ -375,13 +380,6 @@ export const privacyRequestApi = createApi({
     createStorageSecrets: build.mutation<any, any>({
       query: (params) => ({
         url: `storage/default/${params.storage_type}/secret`,
-        method: "PUT",
-        body: params,
-      }),
-    }),
-    createActiveMessagingConfiguration: build.mutation<any, any>({
-      query: (params) => ({
-        url: `application/settings`,
         method: "PUT",
         body: params,
       }),
@@ -403,11 +401,6 @@ export const privacyRequestApi = createApi({
         url: `messaging/default/${params.messaging_type}/secret`,
         method: "PUT",
         body: params,
-      }),
-    }),
-    getConfigurationSettings: build.query<any, any>({
-      query: () => ({
-        url: `application/settings`,
       }),
     }),
     uploadManualWebhookData: build.mutation<
@@ -437,8 +430,7 @@ export const {
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
-  useCreateActiveStorageMutation,
-  useCreateActiveMessagingConfigurationMutation,
+  useCreateConfigurationSettingsMutation,
   useGetMessagingConfigurationDetailsQuery,
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,

@@ -16,7 +16,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import {
-  useCreateActiveStorageMutation,
+  useCreateConfigurationSettingsMutation,
   useCreateStorageMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
@@ -26,7 +26,7 @@ const StorageConfiguration = () => {
   const { errorAlert, successAlert } = useAlert();
   const [storageValue, setStorageValue] = useState("");
   const [saveStorageType, { isLoading }] = useCreateStorageMutation();
-  const [saveActiveStorage] = useCreateActiveStorageMutation();
+  const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
 
   const handleChange = async (value: string) => {
     setStorageValue(value);

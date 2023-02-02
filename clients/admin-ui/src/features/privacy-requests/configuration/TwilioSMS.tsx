@@ -40,8 +40,6 @@ const TwilioSMSConfiguration = () => {
     }
   };
 
-  const TWILIO_TEXT_FORM_ID = "twilio-text-form-id";
-
   const initialValues = {
     account_sid: messagingDetails.account_sid ?? "",
     auth_token: messagingDetails.auth_token ?? "",
@@ -60,7 +58,7 @@ const TwilioSMSConfiguration = () => {
           onSubmit={handleTwilioTextConfigurationSecrets}
         >
           {({ isSubmitting, resetForm }) => (
-            <Form id={TWILIO_TEXT_FORM_ID}>
+            <Form>
               <Stack mt={5} spacing={5}>
                 <CustomTextInput
                   name="account_sid"
@@ -99,7 +97,6 @@ const TwilioSMSConfiguration = () => {
                   colorScheme="primary"
                   size="sm"
                   data-testid="save-btn"
-                  form={TWILIO_TEXT_FORM_ID}
                   isLoading={false}
                 >
                   Save

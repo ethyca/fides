@@ -31,9 +31,6 @@ const S3StorageConfiguration = () => {
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
   const { errorAlert, successAlert } = useAlert();
 
-  const CONFIG_FORM_ID = "s3-privacy-requests-storage-configuration-config";
-  const KEYS_FORM_ID = "s3-privacy-requests-storage-configuration-keys";
-
   const initialValues = {
     type: "s3",
     details: {
@@ -97,7 +94,7 @@ const S3StorageConfiguration = () => {
           onSubmit={handleSubmitStorageConfiguration}
         >
           {({ isSubmitting, resetForm }) => (
-            <Form id={CONFIG_FORM_ID}>
+            <Form>
               <Stack mt={5} spacing={5}>
                 <CustomSelect
                   name="format"
@@ -138,7 +135,6 @@ const S3StorageConfiguration = () => {
                 colorScheme="primary"
                 size="sm"
                 data-testid="save-btn"
-                form={CONFIG_FORM_ID}
                 isLoading={false}
               >
                 Save
@@ -161,7 +157,7 @@ const S3StorageConfiguration = () => {
               onSubmit={handleSubmitStorageSecrets}
             >
               {({ isSubmitting, resetForm }) => (
-                <Form id={KEYS_FORM_ID}>
+                <Form>
                   <Stack mt={5} spacing={5}>
                     <CustomTextInput
                       name="aws_access_key_ID"
@@ -189,7 +185,6 @@ const S3StorageConfiguration = () => {
                     colorScheme="primary"
                     size="sm"
                     data-testid="save-btn"
-                    form={KEYS_FORM_ID}
                     isLoading={false}
                   >
                     Save
