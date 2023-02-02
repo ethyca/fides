@@ -14,11 +14,13 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [Unreleased](https://github.com/ethyca/fides/compare/2.6.0...main)
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.5.1...main)
+## [2.6.0](https://github.com/ethyca/fides/compare/2.5.1...2.6.0)
 
 ### Added
 
+* Added the `env` option to the `security` configuration options to allow for users to completely secure the API endpoints [#2267](https://github.com/ethyca/fides/pull/2267)
 * Unified Fides Resources
   * Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
   * Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
@@ -30,12 +32,13 @@ The types of changes are:
   * Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
   * Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
   * Allow defining a list of opt-in and/or opt-out requests in consent connectors [#2315](https://github.com/ethyca/fides/pull/2315)
-  * Add a Google Analytics Consent Connector [#2302](https://github.com/ethyca/fides/pull/2302)
+  * Add a Google Analytics Consent Connector for GA4 properties [#2302](https://github.com/ethyca/fides/pull/2302)
   * Pass the GA Cookie from the Privacy Center [#2337](https://github.com/ethyca/fides/pull/2337)
   * Rename "user_id" to more specific "ga_client_id" [#2356](https://github.com/ethyca/fides/pull/2356)
   * Patch Google Analytics Consent Connector to delete by client_id [#2355](https://github.com/ethyca/fides/pull/2355)
   * Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
-
+  * Adds a new Universal Analytics Connector that works with the UA Tracking Id
+  
 ### Changed
 
 * Unified Fides Resources
@@ -56,7 +59,7 @@ The types of changes are:
 
 ### Developer Experience
 
-* `nox -s test_env` has been replaced with `nox -s fides_env(dev)` 
+* `nox -s test_env` has been replaced with `nox -s fides_env(dev)`
 * New command `nox -s fides_env(test)` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
 * Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
 
@@ -73,6 +76,8 @@ The types of changes are:
   * Input validation errors no longer change the height of modals. [#2379](https://github.com/ethyca/fides/pull/2379)
 * Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
 * Usernames are case insensitive now and prevent all duplicates [#2487](https://github.com/ethyca/fides/pull/2487)
+* Renamed prod pushes tag to be `latest` for privacy center and sample app [#2401](https://github.com/ethyca/fides/pull/2407)
+* Update firebase connector to better handle non-existent users [#2439](https://github.com/ethyca/fides/pull/2439)
 
 
 ## [2.5.1](https://github.com/ethyca/fides/compare/2.5.0...2.5.1)

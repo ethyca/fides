@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Google Analytics 4 (GA4) SaaS Config
-  type: google_analytics
-  description: A schema representing the Google Analytics 4 (GA4) connector for Fides
+  name: Universal Analytics (UA) SaaS Config
+  type: universal_analytics
+  description: A schema representing the Universal Analytics connector for Fides
   version: 0.0.1
 
   connector_params:
@@ -10,8 +10,8 @@ saas_config:
     - name: client_id
     - name: client_secret
     - name: redirect_uri
-    - name: property_id
-      description: Property ID of a GA4 Property
+    - name: web_property_id
+      description: Web property ID of the form UA-XXXXX-YY.
 
   client_config:
     protocol: https
@@ -85,7 +85,7 @@ saas_config:
           "type": "CLIENT_ID",
           "userId": "fides_test_ga_client_id"
         },
-        "propertyId": "<property_id>"
+        "webPropertyId": "<web_property_id>"
       }
 
   consent_requests:
@@ -96,8 +96,8 @@ saas_config:
       param_values:
         - name: ga_client_id
           identity: ga_client_id
-        - name: property_id
-          connector_param: property_id
+        - name: web_property_id
+          connector_param: web_property_id
       body: |
         {
           "kind": "analytics#userDeletionRequest",
@@ -105,7 +105,7 @@ saas_config:
             "type": "CLIENT_ID",
             "userId": "<ga_client_id>"
           },
-          "propertyId": "<property_id>"
+          "webPropertyId": "<web_property_id>"
         }
 
   endpoints: []
