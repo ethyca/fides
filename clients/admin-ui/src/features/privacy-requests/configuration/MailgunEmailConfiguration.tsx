@@ -112,7 +112,6 @@ const MailgunEmailConfiguration = () => {
                   colorScheme="primary"
                   size="sm"
                   data-testid="save-btn"
-                  isLoading={false}
                 >
                   Save
                 </Button>
@@ -154,7 +153,6 @@ const MailgunEmailConfiguration = () => {
                     colorScheme="primary"
                     size="sm"
                     data-testid="save-btn"
-                    isLoading={false}
                   >
                     Save
                   </Button>
@@ -197,7 +195,6 @@ const MailgunEmailConfiguration = () => {
                     colorScheme="primary"
                     size="sm"
                     data-testid="save-btn"
-                    isLoading={false}
                   >
                     Save
                   </Button>

@@ -100,7 +100,6 @@ const TwilioEmailConfiguration = () => {
                   colorScheme="primary"
                   size="sm"
                   data-testid="save-btn"
-                  isLoading={false}
                 >
                   Save
                 </Button>
@@ -143,7 +142,6 @@ const TwilioEmailConfiguration = () => {
                     colorScheme="primary"
                     size="sm"
                     data-testid="save-btn"
-                    isLoading={false}
                   >
                     Save
                   </Button>

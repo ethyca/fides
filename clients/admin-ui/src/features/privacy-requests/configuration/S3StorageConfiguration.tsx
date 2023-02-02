@@ -135,7 +135,6 @@ const S3StorageConfiguration = () => {
                 colorScheme="primary"
                 size="sm"
                 data-testid="save-btn"
-                isLoading={false}
               >
                 Save
               </Button>
@@ -185,7 +184,6 @@ const S3StorageConfiguration = () => {
                     colorScheme="primary"
                     size="sm"
                     data-testid="save-btn"
-                    isLoading={false}
                   >
                     Save
                   </Button>
