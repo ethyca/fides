@@ -195,6 +195,42 @@ class TestCreateUser:
         assert response_body == {"id": user.id}
         assert user.permissions is not None
 
+    def test_cannot_create_duplicate_user(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        response_body = response.json()
+        assert HTTP_201_CREATED == response.status_code
+        assert response_body == {"id": user.id}
+        assert user.permissions is not None
+
+        duplicate_body = {
+            "username": "TEST_USER",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body)
+        assert HTTP_400_BAD_REQUEST == response.status_code
+        assert response.json()["detail"] == "Username already exists."
+
+        duplicate_body_2 = {
+            "username": "TEST_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body_2)
+        assert HTTP_400_BAD_REQUEST == response.status_code
+        assert response.json()["detail"] == "Username already exists."
+
 
 class TestDeleteUser:
     @pytest.fixture(scope="function")
