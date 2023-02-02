@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "0.1.0"
+    "version": "2.5.1.post0.dev53"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -50,7 +50,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -116,7 +123,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -182,7 +196,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_category/{fides_key}": {
@@ -235,7 +256,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -298,7 +326,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_category/upsert": {
@@ -385,7 +420,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_qualifier": {
@@ -433,7 +476,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -499,7 +549,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -565,7 +622,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_qualifier/{fides_key}": {
@@ -618,7 +682,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -681,7 +752,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_qualifier/upsert": {
@@ -768,7 +846,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_subject": {
@@ -816,7 +902,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -882,7 +975,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -948,7 +1048,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_subject/{fides_key}": {
@@ -1001,7 +1108,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -1064,7 +1178,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_subject/upsert": {
@@ -1151,7 +1272,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_use": {
@@ -1199,7 +1328,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -1265,7 +1401,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1331,7 +1474,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_use/{fides_key}": {
@@ -1384,7 +1534,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -1447,7 +1604,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/data_use/upsert": {
@@ -1534,7 +1698,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/dataset": {
@@ -1582,7 +1754,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -1648,7 +1827,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1714,7 +1900,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/dataset/{fides_key}": {
@@ -1767,7 +1960,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -1830,7 +2030,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/dataset/upsert": {
@@ -1917,7 +2124,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/organization": {
@@ -1965,7 +2180,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -2031,7 +2253,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -2097,7 +2326,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/organization/{fides_key}": {
@@ -2150,7 +2386,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -2213,7 +2456,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/organization/upsert": {
@@ -2300,7 +2550,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/policy": {
@@ -2348,7 +2606,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -2414,7 +2679,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -2480,7 +2752,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/policy/{fides_key}": {
@@ -2533,7 +2812,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -2596,7 +2882,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/policy/upsert": {
@@ -2683,7 +2976,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/registry": {
@@ -2731,7 +3032,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -2797,7 +3105,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -2863,7 +3178,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/registry/{fides_key}": {
@@ -2916,7 +3238,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -2979,7 +3308,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/registry/upsert": {
@@ -3066,7 +3402,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/system": {
@@ -3114,7 +3458,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -3180,7 +3531,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -3246,7 +3604,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/system/{fides_key}": {
@@ -3299,7 +3664,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -3362,7 +3734,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/system/upsert": {
@@ -3449,7 +3828,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/evaluation": {
@@ -3497,7 +3884,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -3563,7 +3957,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:update"
+            ]
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -3629,7 +4030,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/evaluation/{fides_key}": {
@@ -3682,7 +4090,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -3745,7 +4160,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:delete"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/evaluation/upsert": {
@@ -3832,7 +4254,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:create",
+              "cli-objects:update"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/admin/db/{action}": {
@@ -3873,7 +4303,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "database:reset"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/datamap/{organization_fides_key}": {
@@ -3999,7 +4436,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "datamap:read"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/generate": {
@@ -4051,7 +4495,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "generate:exec"
+            ]
+          }
+        ]
       }
     },
     "/health": {
@@ -4144,7 +4595,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "validate:exec"
+            ]
+          }
+        ]
       }
     },
     "/view/evaluations": {
@@ -4164,7 +4622,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "cli-objects:read"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/system/{fides_key}/connection": {
