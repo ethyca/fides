@@ -1,4 +1,4 @@
-from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
+from typing import Any, ContextManager, Dict, List, Optional
 
 from celery import Celery, Task
 from loguru import logger
@@ -86,20 +86,3 @@ def get_worker_ids() -> List[Optional[str]]:
         logger.critical(exception)
         connected_workers = []
     return connected_workers
-
-
-def start_worker() -> None:
-    logger.info("Running Celery worker...")
-    default_queue_name = celery_app.conf.get("task_default_queue", "celery")
-    celery_app.worker_main(
-        argv=[
-            "worker",
-            "--loglevel=info",
-            "--concurrency=2",
-            f"--queues={default_queue_name},{MESSAGING_QUEUE_NAME}",
-        ]
-    )
-
-
-if __name__ == "__main__":  # pragma: no cover
-    start_worker()
