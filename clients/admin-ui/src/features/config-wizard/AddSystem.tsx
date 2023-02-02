@@ -103,7 +103,7 @@ const AddSystem = () => {
 
   return (
     <Stack spacing={10} data-testid="add-systems">
-      <Stack spacing={6}>
+      <Stack spacing={6} w={{ base: "100%", md: "50%" }}>
         <Heading as="h3" size="lg" fontWeight="semibold">
           Fides helps you map your systems to manage your privacy
         </Heading>
