@@ -75,6 +75,7 @@ The types of changes are:
   * Input validation errors no longer change the height of modals. [#2379](https://github.com/ethyca/fides/pull/2379)
 * Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
 * Renamed prod pushes tag to be `latest` for privacy center and sample app [#2401](https://github.com/ethyca/fides/pull/2407)
+* Update firebase connector to better handle non-existent users [#2439](https://github.com/ethyca/fides/pull/2439)
 
 
 ## [2.5.1](https://github.com/ethyca/fides/compare/2.5.0...2.5.1)
