@@ -211,8 +211,8 @@ def push(session: nox.Session, tag: str) -> None:
         #   - ethyca/fides-privacy-center:latest
         #   - ethyca/fides-sample-app:2.0.0
         #   - ethyca/fides-sample-app:latest
-        privacy_center_latest = f"{PRIVACY_CENTER_IMAGE}:dev"
-        sample_app_latest = f"{SAMPLE_APP_IMAGE}:dev"
+        privacy_center_latest = f"{PRIVACY_CENTER_IMAGE}:latest"
+        sample_app_latest = f"{SAMPLE_APP_IMAGE}:latest"
         session.run(
             "docker", "tag", privacy_center_prod, privacy_center_latest, external=True
         )
