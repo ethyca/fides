@@ -12,6 +12,7 @@ from loguru import logger
 
 FIDES_DIRECTORY = "src/fides"
 ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
+ADMIN_UI_TOP_LEVEL = "ui-build"
 
 
 def get_package_path() -> Optional[Path]:
@@ -133,16 +134,19 @@ def match_route(route_file_map: Dict[re.Pattern, Path], route: str) -> Optional[
 
 
 def path_is_in_ui_directory(path: Path) -> bool:
-    """Checks if the path exists within the UI directory"""
+    """
+    Checks if the path exists within the UI directory
+    Uses a known starting point of the built UI to
+    handle different installation locations
+    """
     ui_directory = get_path_to_admin_ui_file()
-    logger.info(path)
-    logger.info(ui_directory)
-    logger.info(Path(*ui_directory.parts[2:]))
-    logger.info(Path(*ui_directory.parts[2:]) in path.parents)
     if not ui_directory:
         logger.debug("Unable to locate UI directory")
         return False
-    return Path(*ui_directory.parts[2:]) in path.parents
+    return (
+        Path(*ui_directory.parts[ui_directory.parts.index(ADMIN_UI_TOP_LEVEL) - 1 :])
+        in Path(*path.parts[path.parts.index(ADMIN_UI_TOP_LEVEL) - 1 :]).parents
+    )
 
 
 def _is_dynamic_path(path: Path) -> bool:
