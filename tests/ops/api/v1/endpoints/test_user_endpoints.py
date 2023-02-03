@@ -887,6 +887,29 @@ class TestUserLogin:
         db.refresh(user)
         assert user.last_login_at is not None
 
+    def test_login_is_case_insensitive(
+        self, db, url, user, api_client, generate_auth_header
+    ):
+        body = {
+            "username": user.username.lower(),
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.post(V1_URL_PREFIX + LOGOUT, headers=auth_header, json={})
+        assert HTTP_204_NO_CONTENT == response.status_code
+
+        body = {
+            "username": user.username.upper(),
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
     def test_login_uses_existing_client(self, db, url, user, api_client):
         body = {
             "username": user.username,
