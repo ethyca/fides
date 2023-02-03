@@ -1,0 +1,99 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: klaviyo
+    description: A sample dataset representing the Klaviyo connector for Fides
+    collections:
+      - name: profile
+        fields:
+          - name: type
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: attributes
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: email
+                data_categories: [system.operations]
+                fidesops_meta:
+                  primary_key: True
+                  data_type: string
+              - name: phone_number
+              - name: external_id
+              - name: anonymous_id
+              - name: first_name
+              - name: last_name
+              - name: organization
+              - name: title
+              - name: image
+              - name: created
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: updated
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: last_event_date
+              - name: location
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: address1
+                  - name: address2
+                  - name: city
+                  - name: country
+                  - name: latitude
+                  - name: longitude
+                  - name: region
+                  - name: zip
+                  - name: timezone
+              - name: properties
+          - name: links
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: self
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: relationships
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: lists
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: links
+                    fidesops_meta:
+                      data_type: object
+                    fields:
+                      - name: self
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: related
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+              - name: segments
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: links
+                    fidesops_meta:
+                      data_type: object
+                    fields:
+                      - name: self
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string
+                      - name: related
+                        data_categories: [system.operations]
+                        fidesops_meta:
+                          data_type: string

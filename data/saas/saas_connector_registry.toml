@@ -165,3 +165,9 @@ config = "data/saas/config/universal_analytics_config.yml"
 dataset = "data/saas/dataset/universal_analytics_dataset.yml"
 icon = "data/saas/icon/google_analytics.svg"
 human_readable = "Universal Analytics"
+
+[klaviyo]
+config = "data/saas/config/klaviyo_config.yml"
+dataset = "data/saas/dataset/klaviyo_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Klaviyo"

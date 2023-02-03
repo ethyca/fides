@@ -1,0 +1,82 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Klaviyo SaaS Config
+  type: klaviyo
+  description: A sample schema representing the Klaviyo connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: klaviyo.com
+    - name: token
+
+  client_config:
+    protocol: https
+    host: <domain>
+    # authentication:
+    #   strategy: no_authentication
+    #   configuration: {}
+
+  test_request:
+    method: GET
+    path: /api/profiles
+    headers:
+      - name: Authorization
+        value: Klaviyo-API-Key <token>
+      - name: revision
+        value: '2023-02-03'
+    query_params:
+      - name: filter
+        value: 'equals(email,"<email>")'
+    data_path: data
+    param_values:
+      - name: token
+        connector_param: token
+      - name: email
+        identity: email
+
+  endpoints:
+    - name: profile
+      requests:
+        read:
+          method: GET
+          path: /api/profiles/
+          headers:
+            - name: Authorization
+              value: Klaviyo-API-Key <token>
+            - name: revision
+              value: '2023-02-03'
+          query_params:
+            - name: filter
+              value: 'equals(email,"<email>")'
+          data_path: data
+          param_values:
+            - name: token
+              connector_param: token
+            - name: email
+              identity: email
+        delete:
+          method: POST
+          path: /api/data-privacy-deletion-jobs/
+          headers:
+            - name: Authorization
+              value: Klaviyo-API-Key <token>
+            - name: revision
+              value: '2023-02-03'
+          body: |
+            {
+                 "data": {
+                      "type": "data-privacy-deletion-job",
+                      "attributes": {
+                           "email": "<profile_attributes_email>"
+                      }
+                 }
+            }
+          param_values:
+            - name: token
+              connector_param: token
+            - name: profile_attributes_email
+              references:
+                - dataset: <instance_fides_key>
+                  field: profile.attributes.email
+                  direction: from
