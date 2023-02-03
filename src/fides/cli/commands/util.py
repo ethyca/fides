@@ -94,7 +94,7 @@ def worker(ctx: click.Context) -> None:
     Starts a celery worker.
     """
     # This has to be here to avoid a circular dependency
-    from fides.api.ops.tasks import start_worker
+    from fides.api.ops.worker import start_worker
 
     start_worker()
 

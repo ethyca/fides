@@ -77,6 +77,8 @@ The types of changes are:
 * Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
 * Renamed prod pushes tag to be `latest` for privacy center and sample app [#2401](https://github.com/ethyca/fides/pull/2407)
 * Update firebase connector to better handle non-existent users [#2439](https://github.com/ethyca/fides/pull/2439)
+* Fix errors when privacy requests execute concurrently without workers [#2489](https://github.com/ethyca/fides/pull/2489)
+* Enable saas request overrides to run in worker runtime [#2489](https://github.com/ethyca/fides/pull/2489)
 
 
 ## [2.5.1](https://github.com/ethyca/fides/compare/2.5.0...2.5.1)
