@@ -58,6 +58,17 @@ def test_webserver() -> None:
 
 
 @pytest.mark.unit
+def test_worker() -> None:
+    """
+    This is specifically meant to catch when the worker command breaks,
+    without spinning up an additional instance.
+    """
+    from fides.api.ops.worker import start_worker  # pylint: disable=unused-import
+
+    assert True
+
+
+@pytest.mark.unit
 def test_parse(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "parse", "demo_resources/"]
