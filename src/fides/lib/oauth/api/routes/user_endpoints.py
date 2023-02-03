@@ -196,8 +196,10 @@ def user_login(
             created_at=datetime.utcnow(),
         )
     else:
-        user_check: Optional[FidesUser] = FidesUser.get_by(
-            db, field="username", value=user_data.username
+        user_check = (
+            FidesUser.query(db)
+            .filter(func.lower(FidesUser.username) == user_data.username.lower())
+            .first()
         )
 
         if not user_check:
