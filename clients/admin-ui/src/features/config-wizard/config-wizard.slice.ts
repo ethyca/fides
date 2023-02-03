@@ -4,30 +4,22 @@ import type { RootState } from "~/app/store";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { Organization, System } from "~/types/api";
 
-import { REVIEW_STEPS, STEPS } from "./constants";
+import { STEPS } from "./constants";
 import { AddSystemMethods, SystemMethods } from "./types";
 
 export interface State {
   step: number;
-  reviewStep: number;
   organization?: Organization;
   /**
    * The systems that were returned by a system scan, some of which the user will select for review.
    * These are persisted to the backend after the "Describe" step.
    */
   systemsForReview?: System[];
-  /**
-   * The system that is currently being put through the review steps. It is persisted
-   * on the "Describe" step and then updated with additional info. Once it's registered,
-   * the next `systemForReview` is swapped in, if any.
-   */
-  systemInReview?: System;
   addSystemsMethod: AddSystemMethods;
 }
 
 const initialState: State = {
   step: 0,
-  reviewStep: 1,
   addSystemsMethod: SystemMethods.MANUAL,
 };
 
@@ -55,84 +47,8 @@ export const slice = createSlice({
         draftState.step = STEPS.length - 1;
       }
     },
-    /**
-     * With no argument: increment to the next review step.
-     * With an argument: switch to that review step.
-     */
-    changeReviewStep: (
-      draftState,
-      action: PayloadAction<number | undefined>
-    ) => {
-      const reviewStep = action.payload;
-
-      if (reviewStep === undefined) {
-        draftState.reviewStep += 1;
-      } else {
-        draftState.reviewStep = reviewStep;
-      }
-
-      // Ensure the number stays in the valid range.
-      if (draftState.reviewStep < 1) {
-        draftState.reviewStep = 1;
-      } else if (REVIEW_STEPS <= draftState.reviewStep) {
-        draftState.reviewStep = REVIEW_STEPS - 1;
-      }
-    },
-    reviewManualSystem: (draftState) => {
-      draftState.systemInReview = undefined;
-      draftState.reviewStep = 1;
-    },
-    /**
-     * Move to the next system that needs review, if any.
-     */
-    continueReview: (draftState) => {
-      const { systemInReview, systemsForReview } = draftState;
-      if (!(systemInReview && systemsForReview)) {
-        throw new Error(
-          "Can't finish system review when there is no review in progress."
-        );
-      }
-
-      const reviewIndex = systemsForReview.findIndex(
-        (s) => s.fides_key === systemInReview.fides_key
-      );
-      if (reviewIndex < 0) {
-        throw new Error("The system in review couldn't be found by fides key.");
-      }
-
-      const nextIndex = reviewIndex + 1;
-      if (nextIndex < systemsForReview.length) {
-        // If there is another system to review, swap it in.
-        draftState.systemInReview = systemsForReview[nextIndex];
-      } else {
-        // Otherwise move to the next wizard step.
-        draftState.systemInReview = undefined;
-        draftState.step += 1;
-      }
-
-      // Always reset the review step
-      draftState.reviewStep = 1;
-    },
     setOrganization: (draftState, action: PayloadAction<Organization>) => {
       draftState.organization = action.payload;
-    },
-    setSystemInReview: (draftState, action: PayloadAction<System>) => {
-      const systemInReview = action.payload;
-      const { systemsForReview = [] } = draftState;
-
-      // Whenever the in-progress system is updated, ensure the object in the array
-      // is updated in tandem.
-      const reviewIndex = systemsForReview.findIndex(
-        (s) => s.fides_key === systemInReview.fides_key
-      );
-      if (reviewIndex < 0) {
-        systemsForReview.push(systemInReview);
-      } else {
-        systemsForReview[reviewIndex] = systemInReview;
-      }
-
-      draftState.systemInReview = systemInReview;
-      draftState.systemsForReview = systemsForReview;
     },
     setSystemsForReview: (draftState, action: PayloadAction<System[]>) => {
       draftState.systemsForReview = action.payload;
@@ -142,9 +58,6 @@ export const slice = createSlice({
       draftState.systemsForReview = (draftState.systemsForReview ?? []).filter(
         (system) => fidesKeySet.has(system.fides_key)
       );
-      // Start reviewing the first system. (ESLint false positive.)
-      // eslint-disable-next-line prefer-destructuring
-      draftState.systemInReview = draftState.systemsForReview[0];
     },
     setAddSystemsMethod: (
       draftState,
@@ -165,11 +78,7 @@ export const slice = createSlice({
 
 export const {
   changeStep,
-  changeReviewStep,
-  continueReview,
   reset,
-  reviewManualSystem,
-  setSystemInReview,
   setOrganization,
   setSystemsForReview,
   chooseSystemsForReview,
@@ -185,19 +94,9 @@ export const selectStep = createSelector(
   (state) => state.step
 );
 
-export const selectReviewStep = createSelector(
-  selectConfigWizard,
-  (state) => state.reviewStep
-);
-
 export const selectOrganizationFidesKey = createSelector(
   selectConfigWizard,
   (state) => state.organization?.fides_key ?? DEFAULT_ORGANIZATION_FIDES_KEY
-);
-
-export const selectSystemInReview = createSelector(
-  selectConfigWizard,
-  (state) => state.systemInReview
 );
 
 export const selectSystemsForReview = createSelector(
