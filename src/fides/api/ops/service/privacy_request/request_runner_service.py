@@ -512,7 +512,7 @@ def initiate_privacy_request_completion_email(
     """
     if not identity_data.get(ProvidedIdentityType.email.value or ProvidedIdentityType.phone_number.value):
         raise IdentityNotFoundException(
-            "Identity email was not found, so request completion email could not be sent."
+            "Identity email or phone number was not found, so request completion message could not be sent."
         )
     to_identity: Identity = Identity(
         email=identity_data.get(ProvidedIdentityType.email.value),
