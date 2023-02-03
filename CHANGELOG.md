@@ -76,6 +76,7 @@ The types of changes are:
   * Input validation errors no longer change the height of modals. [#2379](https://github.com/ethyca/fides/pull/2379)
 * Patch masking strategies to better handle null and non-string inputs [#2307](https://github.com/ethyca/fides/pull/2377)
 * Usernames are case insensitive now and prevent all duplicates [#2487](https://github.com/ethyca/fides/pull/2487)
+  * This PR contains a migration that deletes duplicate users and keeps the oldest original account.
 * Renamed prod pushes tag to be `latest` for privacy center and sample app [#2401](https://github.com/ethyca/fides/pull/2407)
 * Update firebase connector to better handle non-existent users [#2439](https://github.com/ethyca/fides/pull/2439)
 
