@@ -51,7 +51,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import FidesConnector
 from fides.api.ops.service.connectors.consent_email_connector import (
-    consent_email_connector_erasure_send,
+    consent_email_connector_send,
 )
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
@@ -447,8 +447,10 @@ async def run_privacy_request(
             from_checkpoint=resume_step,
         ):
             try:
-                consent_email_connector_erasure_send(
-                    db=session, privacy_request=privacy_request, identity=identity_data
+                consent_email_connector_send(
+                    db=session,
+                    privacy_request=privacy_request,
+                    user_identity=identity_data,
                 )
             except MessageDispatchException as exc:
                 privacy_request.cache_failed_checkpoint_details(

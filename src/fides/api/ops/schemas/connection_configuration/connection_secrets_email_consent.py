@@ -1,9 +1,28 @@
-from typing import List, Optional
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, root_validator
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     RequiredComponentsValidator,
 )
+
+SVORN_REQUIRED_IDENTITY: str = "ljt_readerID"
+
+
+class CookieIds(str, Enum):
+    ljt_readerID = SVORN_REQUIRED_IDENTITY
+
+
+class IdentityTypes(str, Enum):
+    email = "email"
+    phone_number = "phone_number"
+
+
+class AdvancedSettings(BaseModel):
+    identity_types: Optional[List[IdentityTypes]] = []
+    browser_identity_types: Optional[List[CookieIds]] = []
 
 
 class ConsentEmailSchema(RequiredComponentsValidator):
@@ -12,11 +31,26 @@ class ConsentEmailSchema(RequiredComponentsValidator):
     third_party_vendor_name: str
     recipient_email_address: str
     test_email_address: Optional[str]
+    advanced_settings: AdvancedSettings
 
     _required_components: List[str] = [
         "recipient_email_address",
         "third_party_vendor_name",
     ]
+
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """At least one identity or browser identity needs to be specified on setup"""
+        advanced_settings = values.get("advanced_settings")
+        if not advanced_settings:
+            raise ValueError("Must supply advanced settings.")
+        identities = advanced_settings.identity_types
+        cookies = advanced_settings.browser_identity_types
+        if not identities and not cookies:
+            raise ValueError(
+                "Must supply at least one identity_type or one browser_identity_type"
+            )
+        return values
 
 
 class ConsentEmailDocsSchema(ConsentEmailSchema, NoValidationSchema):

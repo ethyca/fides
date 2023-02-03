@@ -125,6 +125,7 @@ def dispatch_message(
             List[CheckpointActionRequired],
         ]
     ] = None,
+    subject_override: Optional[str] = None,
 ) -> None:
     """
     Sends a message to `to_identity` with content supplied in `message_body_params`
@@ -145,6 +146,7 @@ def dispatch_message(
     )
     messaging_method = get_messaging_method(service_type)
     message: Optional[Union[EmailForActionType, str]] = None
+
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
             action_type=action_type,
@@ -182,6 +184,10 @@ def dispatch_message(
         "Starting message dispatch for messaging service with action type: {}",
         action_type,
     )
+
+    if subject_override and isinstance(message, EmailForActionType):
+        message.subject = subject_override
+
     dispatcher(
         messaging_config,
         message,

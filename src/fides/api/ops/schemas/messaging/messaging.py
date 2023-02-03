@@ -86,13 +86,18 @@ class RequestReviewDenyBodyParams(BaseModel):
     rejection_reason: Optional[str]
 
 
+class ConsentPreferencesByUser(BaseModel):
+    identities: Dict[str, Any]
+    consent_preferences: List[Consent]  # Consent schema
+
+
 class ConsentEmailFulfillmentBodyParams(BaseModel):
     """Body params required for privacy request receipt template"""
 
-    processor: str
-    user_identity: str
+    controller: str
     third_party_vendor_name: str
-    consent_preferences: List[Consent]  # Consent schema
+    required_identities: List[str]
+    requested_changes: List[ConsentPreferencesByUser]
 
 
 class FidesopsMessage(

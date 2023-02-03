@@ -130,6 +130,7 @@ class PrivacyRequestStatus(str, EnumType):
     in_processing = "in_processing"
     complete = "complete"
     paused = "paused"
+    awaiting_consent_email_send = "awaiting_consent_email_send"
     canceled = "canceled"
     error = "error"
 
@@ -769,6 +770,7 @@ class ProvidedIdentityType(EnumType):
     email = "email"
     phone_number = "phone_number"
     ga_client_id = "ga_client_id"
+    ljt_readerID = "ljt_readerID"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904
