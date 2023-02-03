@@ -34,8 +34,8 @@ from fides.api.ctl.routes import (
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
-    get_package_file_map,
     get_path_to_admin_ui_file,
+    get_ui_file_map,
     match_route,
     path_is_in_ui_directory,
 )
@@ -321,7 +321,7 @@ def read_other_paths(request: Request) -> Response:
     path = request.path_params["catchall"]
 
     # search for matching route in package (i.e. /dataset)
-    ui_file = match_route(get_package_file_map(), path)
+    ui_file = match_route(get_ui_file_map(), path)
 
     # if not, check if the requested file is an asset (i.e. /_next/static/...)
     if not ui_file:
