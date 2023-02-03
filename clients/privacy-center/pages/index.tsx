@@ -110,6 +110,7 @@ const Home: NextPage = () => {
         >
           <Image
             src={config.logo_path}
+            id="privacyCenterLogo"
             margin="8px"
             height="68px"
             alt="Logo"
