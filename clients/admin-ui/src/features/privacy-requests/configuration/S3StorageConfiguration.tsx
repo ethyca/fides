@@ -130,7 +130,7 @@ const S3StorageConfiguration = () => {
               </Button>
               <Button
                 mt={5}
-                disabled={isSubmitting}
+                isDisabled={isSubmitting}
                 type="submit"
                 colorScheme="primary"
                 size="sm"
@@ -179,7 +179,7 @@ const S3StorageConfiguration = () => {
                   </Button>
                   <Button
                     mt={5}
-                    disabled={isSubmitting}
+                    isDisabled={isSubmitting}
                     type="submit"
                     colorScheme="primary"
                     size="sm"

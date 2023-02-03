@@ -92,7 +92,7 @@ const TwilioSMSConfiguration = () => {
                   Cancel
                 </Button>
                 <Button
-                  disabled={isSubmitting}
+                  isDisabled={isSubmitting}
                   type="submit"
                   colorScheme="primary"
                   size="sm"

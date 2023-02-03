@@ -107,7 +107,7 @@ const MailgunEmailConfiguration = () => {
                   Cancel
                 </Button>
                 <Button
-                  disabled={isSubmitting}
+                  isDisabled={isSubmitting}
                   type="submit"
                   colorScheme="primary"
                   size="sm"
@@ -149,7 +149,7 @@ const MailgunEmailConfiguration = () => {
                     Cancel
                   </Button>
                   <Button
-                    disabled={isSubmitting}
+                    isDisabled={isSubmitting}
                     type="submit"
                     colorScheme="primary"
                     size="sm"
@@ -191,7 +191,7 @@ const MailgunEmailConfiguration = () => {
                     Cancel
                   </Button>
                   <Button
-                    disabled={isSubmitting}
+                    isDisabled={isSubmitting}
                     type="submit"
                     colorScheme="primary"
                     size="sm"
