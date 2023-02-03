@@ -320,10 +320,10 @@ def read_other_paths(request: Request) -> Response:
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
 
-    # search for matching route in package
+    # search for matching route in package (i.e. /dataset)
     ui_file = match_route(get_package_file_map(), path)
 
-    # if not, try to find the exact path as a packaged file.
+    # if not, check if the requested file is an asset (i.e. /_next/static/...)
     if not ui_file:
         ui_file = get_path_to_admin_ui_file(path)
 
