@@ -16,6 +16,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.0...main)
 
+### Fixed
+
+* Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
+
 ## [2.6.0](https://github.com/ethyca/fides/compare/2.5.1...2.6.0)
 
 ### Added
