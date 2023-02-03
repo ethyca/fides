@@ -3,8 +3,8 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
@@ -13,7 +13,8 @@ import {
 
 const TwilioEmailConfiguration = () => {
   const [configurationStep, setConfigurationStep] = useState("");
-  const { errorAlert, successAlert } = useAlert();
+  const { successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
     type: "twilio_email",
   });
@@ -23,20 +24,19 @@ const TwilioEmailConfiguration = () => {
     useCreateMessagingConfigurationSecretsMutation();
 
   const handleTwilioEmailConfiguration = async (value: { email: string }) => {
-    const payload = await createMessagingConfiguration({
+    const result = await createMessagingConfiguration({
       type: "twilio_email",
       details: {
         twilio_email_from: value.email,
       },
     });
 
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Configuring messaging provider has failed to save due to the following:`
-      );
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
-      successAlert(`Configure messaging provider saved successfully.`);
+      successAlert(
+        `Twilio email successfully updated. You can now enter your security key.`
+      );
       setConfigurationStep("configureTwilioEmailSecrets");
     }
   };
@@ -44,17 +44,15 @@ const TwilioEmailConfiguration = () => {
   const handleTwilioEmailConfigurationSecrets = async (value: {
     api_key: string;
   }) => {
-    const payload = await createMessagingConfigurationSecrets({
+    const result = await createMessagingConfigurationSecrets({
       twilio_api_key: value.api_key,
     });
 
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Configuring messaging provider secrets has failed to save due to the following:`
-      );
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
-      successAlert(`Configure messaging provider secrets saved successfully.`);
+      successAlert(`Twilio email secrets successfully updated.`);
+      setConfigurationStep("configureTwilioEmailSecrets");
     }
   };
 

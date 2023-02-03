@@ -12,8 +12,8 @@ import {
 import NextLink from "next/link";
 import { useState } from "react";
 
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import {
   useCreateConfigurationSettingsMutation,
@@ -25,7 +25,8 @@ import TwilioEmailConfiguration from "./TwilioEmailConfiguration";
 import TwilioSMSConfiguration from "./TwilioSMS";
 
 const MessagingConfiguration = () => {
-  const { errorAlert, successAlert } = useAlert();
+  const { successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
   const [messagingValue, setMessagingValue] = useState("");
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
@@ -34,26 +35,20 @@ const MessagingConfiguration = () => {
   const handleChange = async (value: string) => {
     setMessagingValue(value);
 
-    const payload = await saveActiveConfiguration({ type: value });
+    const result = await saveActiveConfiguration({ type: value });
 
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Configuring storage type has failed to save due to the following:`
-      );
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
-      successAlert(`Configure storage type saved successfully.`);
+      successAlert(`Configured storage type successfully.`);
     }
 
     // twilio text doesn't save additional details, only secrets
     if (value === "twilio_text") {
-      const twilioTextPayload = await createMessagingConfiguration({});
+      const twilioTextResult = await createMessagingConfiguration({});
 
-      if ("error" in twilioTextPayload) {
-        errorAlert(
-          getErrorMessage(twilioTextPayload.error),
-          `Configuring messaging provider has failed to save due to the following:`
-        );
+      if (isErrorResult(twilioTextResult)) {
+        handleError(twilioTextResult.error);
       } else {
         successAlert(`Configure messaging provider saved successfully.`);
       }

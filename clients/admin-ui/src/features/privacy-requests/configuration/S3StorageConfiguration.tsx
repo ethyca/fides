@@ -3,8 +3,8 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import {
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
@@ -29,7 +29,9 @@ const S3StorageConfiguration = () => {
   const { data: storageDetails } = useGetStorageDetailsQuery("s3");
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
-  const { errorAlert, successAlert } = useAlert();
+
+  const { handleError } = useAPIHelper();
+  const { successAlert } = useAlert();
 
   const initialValues = {
     type: "s3",
@@ -48,7 +50,7 @@ const S3StorageConfiguration = () => {
   const handleSubmitStorageConfiguration = async (
     newValues: StorageDetails
   ) => {
-    const payload = await saveStorageDetails({
+    const result = await saveStorageDetails({
       type: "s3",
       details: {
         auth_method: newValues.details.auth_method,
@@ -57,11 +59,8 @@ const S3StorageConfiguration = () => {
       format: newValues.format,
     });
 
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Updating S3 storage details has failed due to the following:`
-      );
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
       setAuthMethod(newValues.details.auth_method);
       successAlert(`S3 storage credentials successfully updated.`);
@@ -69,15 +68,13 @@ const S3StorageConfiguration = () => {
   };
 
   const handleSubmitStorageSecrets = async (newValues: SecretsStorageData) => {
-    const payload = await setStorageSecrets({
+    const result = await setStorageSecrets({
       aws_access_key_id: newValues.aws_access_key_id,
       aws_secret_access_key: newValues.aws_secret_access_key,
     });
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Updating S3 storage secrets has failed due to the following:`
-      );
+
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
       successAlert(`S3 storage secrets successfully updated.`);
     }

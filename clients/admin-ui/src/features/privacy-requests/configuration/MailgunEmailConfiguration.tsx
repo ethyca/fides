@@ -3,8 +3,8 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
@@ -12,8 +12,9 @@ import {
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 const MailgunEmailConfiguration = () => {
-  const { errorAlert, successAlert } = useAlert();
+  const { successAlert } = useAlert();
   const [configurationStep, setConfigurationStep] = useState("");
+  const { handleError } = useAPIHelper();
   // const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
   //   type: "mailgun",
   // });
@@ -23,7 +24,7 @@ const MailgunEmailConfiguration = () => {
     useCreateMessagingConfigurationSecretsMutation();
 
   const handleMailgunConfiguration = async (value: { domain: string }) => {
-    const payload = await createMessagingConfiguration({
+    const result = await createMessagingConfiguration({
       type: "mailgun",
       details: {
         is_eu_domain: "false",
@@ -31,13 +32,12 @@ const MailgunEmailConfiguration = () => {
       },
     });
 
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Configuring storage type has failed to save due to the following:`
-      );
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
-      successAlert(`Configure storage type saved successfully.`);
+      successAlert(
+        `Mailgun email successfully updated. You can now enter your security key.`
+      );
       setConfigurationStep("apiKey");
     }
   };
@@ -45,18 +45,15 @@ const MailgunEmailConfiguration = () => {
   const handleMailgunAPIKeyConfiguration = async (value: {
     api_key: string;
   }) => {
-    const payload = await createMessagingConfigurationSecrets({
+    const result = await createMessagingConfigurationSecrets({
       mailgun_api_key: value.api_key,
     });
 
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Configuring storage type has failed to save due to the following:`
-      );
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
-      successAlert(`Configure storage type saved successfully.`);
-      setConfigurationStep("testConnection");
+      successAlert(`Mailgun security key successfully updated.`);
+      // setConfigurationStep("testConnection");
     }
   };
 

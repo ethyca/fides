@@ -2,15 +2,16 @@ import { Box, Button, Heading, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import {
   useCreateMessagingConfigurationSecretsMutation,
   useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 const TwilioSMSConfiguration = () => {
-  const { errorAlert, successAlert } = useAlert();
+  const { successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
     type: "twilio_text",
   });
@@ -23,20 +24,17 @@ const TwilioSMSConfiguration = () => {
     messaging_service_sid: string;
     phone: string;
   }) => {
-    const payload = await createMessagingConfigurationSecrets({
+    const result = await createMessagingConfigurationSecrets({
       twilio_account_sid: value.account_sid,
       twilio_auth_token: value.auth_token,
       twilio_messaging_service_sid: value.messaging_service_sid,
       twilio_sender_phone_number: value.phone,
     });
 
-    if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        `Configuring messaging provider secrets has failed to save due to the following:`
-      );
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
-      successAlert(`Configure messaging provider secrets saved successfully.`);
+      successAlert(`Twilio text secrets successfully updated.`);
     }
   };
 

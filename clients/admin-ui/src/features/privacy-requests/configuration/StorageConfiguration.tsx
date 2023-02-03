@@ -12,8 +12,8 @@ import {
 import NextLink from "next/link";
 import { useState } from "react";
 
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import {
   useCreateConfigurationSettingsMutation,
@@ -23,7 +23,8 @@ import {
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
-  const { errorAlert, successAlert } = useAlert();
+  const { successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
   const [storageValue, setStorageValue] = useState("");
   const [saveStorageType, { isLoading }] = useCreateStorageMutation();
   const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
@@ -33,22 +34,18 @@ const StorageConfiguration = () => {
 
     //  Local does not set any configuration details
     if (value === "local") {
-      const storageDetailsPayload = await saveStorageType({
+      const storageDetailsResult = await saveStorageType({
         type: value,
         format: "json",
       });
-
-      if ("error" in storageDetailsPayload) {
-        errorAlert(
-          getErrorMessage(storageDetailsPayload.error),
-          `Configuring storage type details has failed to save due to the following:`
-        );
+      if (isErrorResult(storageDetailsResult)) {
+        handleError(storageDetailsResult.error);
       } else {
         successAlert(`Configure storage type details saved successfully.`);
       }
     }
 
-    const activeStoragePayload = await saveActiveStorage({
+    const activeStorageResults = await saveActiveStorage({
       fides: {
         storage: {
           active_default_storage_type: value,
@@ -56,11 +53,8 @@ const StorageConfiguration = () => {
       },
     });
 
-    if ("error" in activeStoragePayload) {
-      errorAlert(
-        getErrorMessage(activeStoragePayload.error),
-        `Configuring active storage type has failed to save due to the following:`
-      );
+    if (isErrorResult(activeStorageResults)) {
+      handleError(activeStorageResults.error);
     } else {
       successAlert(`Configure active storage type saved successfully.`);
     }
