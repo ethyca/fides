@@ -21,7 +21,7 @@ The types of changes are:
 
 ### Fixed
 
-* Issue addressing missing field in dataset migration [#2509](https://github.com/ethyca/fides/pull/2510)
+* Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
