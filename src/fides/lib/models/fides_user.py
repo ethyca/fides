@@ -15,7 +15,7 @@ from fides.lib.models.audit_log import AuditLog
 class FidesUser(Base):
     """The DB ORM model for FidesUser."""
 
-    username = Column(CIText(), unique=True, index=True)
+    username = Column(String, unique=True, index=True)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
