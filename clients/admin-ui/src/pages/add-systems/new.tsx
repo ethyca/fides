@@ -1,31 +1,13 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  Heading,
-  Spinner,
-  Text,
-} from "@fidesui/react";
+import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import React from "react";
 
 import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
 import Layout from "~/features/common/Layout";
-import { useGetAllSystemsQuery } from "~/features/system";
 import SystemCatalog from "~/features/system/SystemCatalog";
 
-const useNewSystemData = () => {
-  const { data, isLoading } = useGetAllSystemsQuery();
-
-  return {
-    isLoading,
-    systems: data,
-  };
-};
-
 const NewSystem: NextPage = () => {
-  const { isLoading } = useNewSystemData();
   const { systemOrDatamapRoute } = useInterzoneNav();
 
   return (
@@ -42,7 +24,7 @@ const NewSystem: NextPage = () => {
             <BreadcrumbItem>
               <NextLink href="/add-systems">Add systems</NextLink>
             </BreadcrumbItem>
-            <BreadcrumbItem>
+            <BreadcrumbItem color="complimentary.500">
               <NextLink href="#">Choose your system</NextLink>
             </BreadcrumbItem>
           </Breadcrumb>
@@ -54,7 +36,7 @@ const NewSystem: NextPage = () => {
           get started.
         </Text>
       </Box>
-      {isLoading ? <Spinner /> : <SystemCatalog />}
+      <SystemCatalog />
     </Layout>
   );
 };
