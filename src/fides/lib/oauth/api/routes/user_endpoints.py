@@ -71,9 +71,7 @@ def create_user(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
         )
 
-    user: Optional[FidesUser] = FidesUser.get_by(
-        db, field="username", value=user_data.username
-    )
+    user = FidesUser.get_by(db, field="username", value=user_data.username)
 
     if user:
         raise HTTPException(
