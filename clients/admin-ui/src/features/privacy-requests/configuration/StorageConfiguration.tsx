@@ -30,8 +30,6 @@ const StorageConfiguration = () => {
   const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
 
   const handleChange = async (value: string) => {
-    setStorageValue(value);
-
     if (value === "local") {
       const storageDetailsResult = await saveStorageType({
         type: value,
@@ -41,6 +39,7 @@ const StorageConfiguration = () => {
         handleError(storageDetailsResult.error);
       } else {
         successAlert(`Configure storage type details saved successfully.`);
+        setStorageValue(value);
       }
     }
 
@@ -56,6 +55,7 @@ const StorageConfiguration = () => {
       handleError(activeStorageResults.error);
     } else {
       successAlert(`Configure active storage type saved successfully.`);
+      setStorageValue(value);
     }
   };
 
