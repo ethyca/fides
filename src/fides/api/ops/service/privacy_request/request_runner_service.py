@@ -291,7 +291,7 @@ async def run_privacy_request(
     if from_step:
         logger.info("Resuming privacy request from checkpoint: '{}'", from_step)
 
-    with self.session as session:
+    with self.get_new_session() as session:
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
 
         privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
