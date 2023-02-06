@@ -1,12 +1,19 @@
-import { Box, Heading, Spinner } from "@fidesui/react";
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  Heading,
+  Spinner,
+} from "@fidesui/react";
 import type { NextPage } from "next";
+import NextLink from "next/link";
 import React from "react";
 
 import Layout from "~/features/common/Layout";
 import { useGetAllSystemsQuery } from "~/features/system";
-import SystemsManagement from "~/features/system/SystemsManagement";
+import SystemOptions from "~/features/system/SystemOptions";
 
-const useSystemsData = () => {
+const useNewSystemData = () => {
   const { data, isLoading } = useGetAllSystemsQuery();
 
   return {
@@ -16,7 +23,7 @@ const useSystemsData = () => {
 };
 
 const NewSystem: NextPage = () => {
-  const { isLoading, systems } = useSystemsData();
+  const { isLoading } = useNewSystemData();
 
   return (
     <Layout title="Choose a system type">
@@ -24,8 +31,18 @@ const NewSystem: NextPage = () => {
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
           Choose a type of system
         </Heading>
+        <Box mb={8}>
+          <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
+            <BreadcrumbItem>
+              <NextLink href="/add-systems">Add systems</NextLink>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <NextLink href="#">Choose your system</NextLink>
+            </BreadcrumbItem>
+          </Breadcrumb>
+        </Box>
       </Box>
-      {isLoading ? <Spinner /> : <SystemsManagement systems={systems} />}
+      {isLoading ? <Spinner /> : <SystemOptions />}
     </Layout>
   );
 };
