@@ -7,7 +7,6 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import func
 from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
