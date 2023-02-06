@@ -33,23 +33,33 @@ const MessagingConfiguration = () => {
   const [saveActiveConfiguration] = useCreateConfigurationSettingsMutation();
 
   const handleChange = async (value: string) => {
-    setMessagingValue(value);
-
-    const result = await saveActiveConfiguration({ type: value });
+    const result = await saveActiveConfiguration({
+      fides: {
+        notifications: {
+          notification_service_type: value,
+          send_request_completion_notification: true,
+          send_request_receipt_notification: true,
+          send_request_review_notification: true,
+          subject_identity_verification_required: true,
+        },
+      },
+    });
 
     if (isErrorResult(result)) {
       handleError(result.error);
-    } else {
+    } else if (value !== "twilio_text") {
       successAlert(`Configured storage type successfully.`);
-    }
-
-    if (value === "twilio_text") {
-      const twilioTextResult = await createMessagingConfiguration({});
+      setMessagingValue(value);
+    } else {
+      const twilioTextResult = await createMessagingConfiguration({
+        type: "twilio_text",
+      });
 
       if (isErrorResult(twilioTextResult)) {
         handleError(twilioTextResult.error);
       } else {
         successAlert(`Configure messaging provider saved successfully.`);
+        setMessagingValue(value);
       }
     }
   };
@@ -123,9 +133,9 @@ const MessagingConfiguration = () => {
               Twilio email
             </Radio>
             <Radio
-              key="twilio-sms"
-              value="twilio-sms"
-              data-testid="option-twilio-sms"
+              key="twilio-text"
+              value="twilio-text"
+              data-testid="option-twilio-text"
             >
               Twilio sms
             </Radio>
@@ -137,7 +147,7 @@ const MessagingConfiguration = () => {
         {messagingValue === "twilio-email" ? (
           <TwilioEmailConfiguration />
         ) : null}
-        {messagingValue === "twilio-sms" ? <TwilioSMSConfiguration /> : null}
+        {messagingValue === "twilio-text" ? <TwilioSMSConfiguration /> : null}
       </Box>
     </Layout>
   );

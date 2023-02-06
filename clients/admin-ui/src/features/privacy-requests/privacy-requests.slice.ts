@@ -361,7 +361,7 @@ export const privacyRequestApi = createApi({
     createConfigurationSettings: build.mutation<any, any>({
       query: (params) => ({
         url: `application/settings`,
-        method: "PUT",
+        method: "PATCH",
         body: params,
       }),
     }),
@@ -386,19 +386,19 @@ export const privacyRequestApi = createApi({
     }),
     getMessagingConfigurationDetails: build.query<any, any>({
       query: (params) => ({
-        url: `messaging/default/${params.messaging_type}`,
+        url: `messaging/default/${params.type}`,
       }),
     }),
     createMessagingConfiguration: build.mutation<any, any>({
       query: (params) => ({
-        url: `messaging/default/${params.messaging_type}`,
+        url: `messaging/default/${params.type}`,
         method: "PUT",
         body: params,
       }),
     }),
     createMessagingConfigurationSecrets: build.mutation<any, any>({
       query: (params) => ({
-        url: `messaging/default/${params.messaging_type}/secret`,
+        url: `messaging/default/${params.type}/secret`,
         method: "PUT",
         body: params,
       }),
