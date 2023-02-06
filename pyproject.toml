@@ -60,6 +60,7 @@ module = [
   "twilio.*",
   "uvicorn.*",
   "validators.*",
+  "citext.*",
 ]
 ignore_missing_imports = true
 
