@@ -46,6 +46,9 @@ describe("Smoke test", () => {
         .contains("Approve")
         .click();
 
+      // Go past the confirmation modal
+      cy.getByTestId("continue-btn").click();
+
       cy.wait("@patchRequest");
       cy.wait("@getRequests");
 

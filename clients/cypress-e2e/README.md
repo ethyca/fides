@@ -7,7 +7,7 @@ This folder is meant to contain true end to end tests for Fides applications. Un
 First, start up the test environment. This will spin up all relevant servers and frontend services. From the root directory of this repo:
 
 ```
-nox -s fides_env(test)
+nox -s "fides_env(test)"
 ```
 
 Admin UI will be found at `localhost:3000` and Privacy Center at `localhost:3001`.
