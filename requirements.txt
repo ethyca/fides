@@ -36,7 +36,7 @@ python-jose[cryptography]==3.3.0
 pyyaml>=5,<6
 redis==3.5.3
 sendgrid==6.9.7
-slowapi==0.1.5
+slowapi==0.1.7
 snowflake-sqlalchemy==1.4.3
 sqlalchemy[asyncio]==1.4.27
 sqlalchemy-bigquery==1.4.4
