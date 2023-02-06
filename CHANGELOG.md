@@ -19,6 +19,7 @@ The types of changes are:
 ### Fixed
 
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523) 
+* Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 
 
 ## [2.6.2](https://github.com/ethyca/fides/compare/2.6.1...2.6.2)
