@@ -7,38 +7,44 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import produce from "immer";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 
-import { setConsentCookie } from "fides-consent";
-import { useAppSelector } from "~/app/hooks";
+import { getConsentContext, setConsentCookie } from "fides-consent";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import ConsentItemCard from "~/components/ConsentItemCard";
 import { config } from "~/constants";
-import { selectConfigConsentOptions } from "~/features/common/config.slice";
 import {
+  selectConfigConsentOptions,
+  updateConsentOptionsFromApi,
+} from "~/features/common/config.slice";
+import {
+  selectFidesKeyToConsent,
+  selectPersistedFidesKeyToConsent,
+  updateConsentFromApi,
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
   useUpdateConsentRequestPreferencesMutation,
 } from "~/features/consent/consent.slice";
-import {
-  makeConsentItems,
-  makeCookieKeyConsent,
-} from "~/features/consent/helpers";
-import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
+import { makeCookieKeyConsent } from "~/features/consent/helpers";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+import { ConsentPreferences } from "~/types/api";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
   const router = useRouter();
   const toast = useToast();
-  const [consentItems, setConsentItems] = useState<ConsentItem[]>([]);
+  const dispatch = useAppDispatch();
+  const fidesKeyToConsent = useAppSelector(selectFidesKeyToConsent);
+  const persistedFidesKeyToConsent = useAppSelector(
+    selectPersistedFidesKeyToConsent
+  );
   const consentOptions = useAppSelector(selectConfigConsentOptions);
 
   const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
@@ -77,39 +83,34 @@ const Consent: NextPage = () => {
     router.push("/");
   }, [router]);
 
-  const updateConsentItems = useCallback(
-    (data: ApiUserConsents) => {
-      const updatedConsentItems = makeConsentItems(data, consentOptions);
-      setConsentItems(updatedConsentItems);
-      setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
+  /**
+   * Populate the store with the consent preferences returned by the API.
+   */
+  const storeConsentPreferences = useCallback(
+    (data: ConsentPreferences) => {
+      dispatch(updateConsentOptionsFromApi(data));
+      dispatch(updateConsentFromApi(data));
     },
-    [consentOptions]
+    [dispatch]
   );
 
   /**
-   * Set the consent value for an option in the `consentItems` array. We're storing a whole array in
-   * the state, so we need to use `produce` to modify a single property but still get a new object
-   * that works with React rendering.
+   * The consent cookie is updated only when the "persisted" consent preferences are updated. This
+   * ensures the browser's behavior matches what the server expects.
    */
-  const setConsentValue = useCallback(
-    (item: ConsentItem, value: boolean) => {
-      const updatedConsentItems = produce(consentItems, (draftItems) => {
-        const itemToUpdate = draftItems.find(
-          (candidate) => candidate.fidesDataUseKey === item.fidesDataUseKey
-        );
-        if (!itemToUpdate) {
-          return;
-        }
-        itemToUpdate.consentValue = value;
-      });
-      setConsentItems(updatedConsentItems);
-    },
-    [consentItems]
-  );
+  useEffect(() => {
+    setConsentCookie(
+      makeCookieKeyConsent({
+        consentOptions,
+        fidesKeyToConsent: persistedFidesKeyToConsent,
+        consentContext: getConsentContext(),
+      })
+    );
+  }, [consentOptions, persistedFidesKeyToConsent]);
 
   /**
    * When the Id verification method is known, trigger the request that will
-   * return the consent choices saved on the backend.
+   * return the consent choices saved on the server.
    */
   useEffect(() => {
     if (!consentRequestId) {
@@ -170,11 +171,13 @@ const Consent: NextPage = () => {
     }
 
     if (postConsentRequestVerificationMutationResult.isSuccess) {
-      updateConsentItems(postConsentRequestVerificationMutationResult.data);
+      storeConsentPreferences(
+        postConsentRequestVerificationMutationResult.data
+      );
     }
   }, [
     postConsentRequestVerificationMutationResult,
-    updateConsentItems,
+    storeConsentPreferences,
     toastError,
     redirectToIndex,
   ]);
@@ -192,11 +195,11 @@ const Consent: NextPage = () => {
     }
 
     if (getConsentRequestPreferencesQueryResult.isSuccess) {
-      updateConsentItems(getConsentRequestPreferencesQueryResult.data);
+      storeConsentPreferences(getConsentRequestPreferencesQueryResult.data);
     }
   }, [
     getConsentRequestPreferencesQueryResult,
-    updateConsentItems,
+    storeConsentPreferences,
     toastError,
     redirectToIndex,
   ]);
@@ -205,15 +208,15 @@ const Consent: NextPage = () => {
    * Update the consent choices on the backend.
    */
   const saveUserConsentOptions = useCallback(() => {
-    const consent = consentItems.map((d) => ({
-      data_use: d.fidesDataUseKey,
-      data_use_description: d.description,
-      opt_in: Boolean(d.consentValue),
+    const consent = consentOptions.map((option) => ({
+      data_use: option.fidesDataUseKey,
+      data_use_description: option.description,
+      opt_in: fidesKeyToConsent[option.fidesDataUseKey] ?? false,
     }));
 
-    const executableOptions = consentItems.map((d) => ({
-      data_use: d.fidesDataUseKey,
-      executable: d.executable ?? false,
+    const executableOptions = consentOptions.map((option) => ({
+      data_use: option.fidesDataUseKey,
+      executable: option.executable ?? false,
     }));
 
     const browserIdentity = inspectForBrowserIdentities();
@@ -229,7 +232,8 @@ const Consent: NextPage = () => {
       },
     });
   }, [
-    consentItems,
+    consentOptions,
+    fidesKeyToConsent,
     consentRequestId,
     verificationCode,
     updateConsentRequestPreferencesMutationTrigger,
@@ -248,7 +252,9 @@ const Consent: NextPage = () => {
     }
 
     if (updateConsentRequestPreferencesMutationResult.isSuccess) {
-      updateConsentItems(updateConsentRequestPreferencesMutationResult.data);
+      storeConsentPreferences(
+        updateConsentRequestPreferencesMutationResult.data
+      );
       toast({
         title: "Your consent preferences have been saved",
         ...SuccessToastOptions,
@@ -257,7 +263,7 @@ const Consent: NextPage = () => {
     }
   }, [
     updateConsentRequestPreferencesMutationResult,
-    updateConsentItems,
+    storeConsentPreferences,
     toastError,
     toast,
     redirectToIndex,
@@ -314,14 +320,8 @@ const Consent: NextPage = () => {
           </Stack>
 
           <Flex m={-2} flexDirection="column">
-            {consentItems.map((item) => (
-              <ConsentItemCard
-                key={item.fidesDataUseKey}
-                item={item}
-                setConsentValue={(value) => {
-                  setConsentValue(item, value);
-                }}
-              />
+            {consentOptions.map((option) => (
+              <ConsentItemCard key={option.fidesDataUseKey} option={option} />
             ))}
           </Flex>
 

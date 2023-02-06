@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import {
   Flex,
   Box,
@@ -10,37 +10,41 @@ import {
   HStack,
 } from "@fidesui/react";
 import { ExternalLinkIcon } from "@chakra-ui/icons";
-import { ConsentItem } from "~/features/consent/types";
+import { getConsentContext, resolveConsentValue } from "fides-consent";
+
+import { ConfigConsentOption } from "~/types/config";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  changeConsent,
+  selectFidesKeyToConsent,
+} from "~/features/consent/consent.slice";
 
 type ConsentItemProps = {
-  item: ConsentItem;
-  setConsentValue: (value: boolean) => void;
+  option: ConfigConsentOption;
 };
 
-const ConsentItemCard = ({ item, setConsentValue }: ConsentItemProps) => {
-  const {
-    name,
-    description,
-    highlight,
-    defaultValue,
-    consentValue,
-    url,
-    fidesDataUseKey,
-  } = item;
-  const [value, setValue] = useState(consentValue ?? defaultValue);
-  const backgroundColor = highlight ? "gray.100" : "";
+const ConsentItemCard = ({ option }: ConsentItemProps) => {
+  const { name, description, highlight, url, fidesDataUseKey } = option;
 
-  useEffect(() => {
-    if (consentValue !== value) {
-      setConsentValue(value);
-    }
-  }, [value, consentValue, setConsentValue]);
+  const defaultValue = useMemo(
+    () => resolveConsentValue(option.default, getConsentContext()),
+    [option]
+  );
+
+  const dispatch = useAppDispatch();
+  const fidesKeyToConsent = useAppSelector(selectFidesKeyToConsent);
+
+  const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
+
+  const handleRadioChange = (radioValue: string) => {
+    dispatch(changeConsent({ option, value: radioValue === "true" }));
+  };
 
   return (
     <Flex
       flexDirection="row"
       width="720px"
-      backgroundColor={backgroundColor}
+      backgroundColor={highlight ? "gray.100" : undefined}
       justifyContent="center"
       data-testid={`consent-item-card-${fidesDataUseKey}`}
     >
@@ -81,9 +85,7 @@ const ConsentItemCard = ({ item, setConsentValue }: ConsentItemProps) => {
         </Box>
         <RadioGroup
           value={value ? "true" : "false"}
-          onChange={(e) => {
-            setValue(e === "true");
-          }}
+          onChange={handleRadioChange}
         >
           <Stack direction="row">
             <Radio value="true" colorScheme="whatsapp">
