@@ -16,6 +16,7 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.3...main)
 
+* Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
 
