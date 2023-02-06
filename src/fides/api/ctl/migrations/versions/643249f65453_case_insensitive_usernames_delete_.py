@@ -21,17 +21,12 @@ depends_on = None
 
 def upgrade():
 
-    # Found here in the 24.2.2.4. Nondeterministic Collations section:
-    # https://www.postgresql.org/docs/current/collation.html
-    op.execute(
-        "CREATE COLLATION IF NOT EXISTS case_insensitive (provider = icu, locale = 'und-u-ks-level2', deterministic = false);"
-    )
     session = Session(bind=op.get_bind())
     conn = session.connection()
     statement = text(
-        """SELECT DISTINCT ON (username) username collate case_insensitive, created_at, id
+        """SELECT DISTINCT ON (LOWER(username)) username, created_at, id
 FROM fidesuser
-ORDER BY username, created_at ASC"""
+ORDER BY LOWER(username), created_at ASC"""
     )
 
     result = conn.execute(statement)
@@ -41,7 +36,8 @@ ORDER BY username, created_at ASC"""
     ).delete()
     session.query(FidesUser).filter(FidesUser.id.not_in(original_user_ids)).delete()
 
-    op.execute("DROP COLLATION IF EXISTS case_insensitive")
+    op.execute("CREATE EXTENSION IF NOT EXISTS citext;")
+    op.execute("ALTER TABLE fidesuser ALTER COLUMN username TYPE citext;")
 
 
 def downgrade():

@@ -72,10 +72,8 @@ def create_user(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
         )
 
-    user = (
-        FidesUser.query(db)
-        .filter(func.lower(FidesUser.username) == user_data.username.lower())
-        .first()
+    user: Optional[FidesUser] = FidesUser.get_by(
+        db, field="username", value=user_data.username
     )
 
     if user:
@@ -196,10 +194,8 @@ def user_login(
             created_at=datetime.utcnow(),
         )
     else:
-        user_check = (
-            FidesUser.query(db)
-            .filter(func.lower(FidesUser.username) == user_data.username.lower())
-            .first()
+        user_check: Optional[FidesUser] = FidesUser.get_by(
+            db, field="username", value=user_data.username
         )
 
         if not user_check:
