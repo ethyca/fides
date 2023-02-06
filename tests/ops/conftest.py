@@ -72,6 +72,8 @@ def db(api_client) -> Generator:
     SessionLocal = get_db_session(CONFIG, engine=engine)
     the_session = SessionLocal()
     # Setup above...
+
+    the_session.execute("CREATE EXTENSION IF NOT EXISTS citext;")
     yield the_session
     # Teardown below...
     the_session.close()

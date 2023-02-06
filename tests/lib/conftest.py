@@ -52,6 +52,7 @@ def db(config):
 
     SessionLocal = get_db_session(config, engine=engine)
     session = SessionLocal()
+    session.execute("CREATE EXTENSION IF NOT EXISTS citext;")
     yield session
 
     session.close()

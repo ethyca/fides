@@ -327,6 +327,8 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
 @pytest.fixture
 def db() -> Generator:
     session = sync_session()
+
+    session.execute("CREATE EXTENSION IF NOT EXISTS citext;")
     yield session
     session.close()
 
@@ -346,6 +348,7 @@ async def async_session(test_client) -> AsyncSession:
     )
 
     async with session_maker() as session:
+        session.execute("CREATE EXTENSION IF NOT EXISTS citext;")
         yield session
         session.close()
         async_engine.dispose()
