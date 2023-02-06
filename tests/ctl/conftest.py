@@ -21,7 +21,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
 
 from fides.api import main
-from fides.api.ctl.database.session import engine, sync_session
+from fides.api.ctl.database.session import engine, sync_session, sync_engine
 from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
 from fides.core import api
 from fides.core.config import FidesConfig, get_config
@@ -326,9 +326,13 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
 
 @pytest.fixture
 def db() -> Generator:
+
+    with sync_engine.connect() as con:
+        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
+
+
     session = sync_session()
 
-    session.execute("CREATE EXTENSION IF NOT EXISTS citext;")
     yield session
     session.close()
 
@@ -343,12 +347,14 @@ async def async_session(test_client) -> AsyncSession:
         echo=False,
     )
 
+    with async_engine as con:
+        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
+
     session_maker = sessionmaker(
         async_engine, class_=AsyncSession, expire_on_commit=False
     )
 
     async with session_maker() as session:
-        session.execute("CREATE EXTENSION IF NOT EXISTS citext;")
         yield session
         session.close()
         async_engine.dispose()

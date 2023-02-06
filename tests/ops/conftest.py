@@ -67,13 +67,15 @@ def db(api_client) -> Generator:
         database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )
 
+    with engine.connect() as con:
+        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
+
     if not scheduler.running:
         scheduler.start()
     SessionLocal = get_db_session(CONFIG, engine=engine)
     the_session = SessionLocal()
     # Setup above...
 
-    the_session.execute("CREATE EXTENSION IF NOT EXISTS citext;")
     yield the_session
     # Teardown below...
     the_session.close()
