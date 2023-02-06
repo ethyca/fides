@@ -1,38 +1,37 @@
-import React, { useEffect, useState, useCallback } from "react";
-import type { NextPage } from "next";
-import Head from "next/head";
 import {
+  Button,
   Flex,
   Heading,
-  Text,
-  Stack,
   Image,
-  Button,
+  Stack,
+  Text,
   useToast,
 } from "@fidesui/react";
-import { useRouter } from "next/router";
-import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import produce from "immer";
+import type { NextPage } from "next";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import React, { useCallback, useEffect, useState } from "react";
 
-import {
-  makeConsentItems,
-  makeCookieKeyConsent,
-} from "~/features/consent/helpers";
 import { setConsentCookie } from "fides-consent";
-import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
-
-import { config } from "~/constants";
-import { useLocalStorage } from "~/common/hooks";
 import { useAppSelector } from "~/app/hooks";
-import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-import { selectConfigConsentOptions } from "~/features/common/config.slice";
-import ConsentItemCard from "~/components/ConsentItemCard";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
+import { useLocalStorage } from "~/common/hooks";
+import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import ConsentItemCard from "~/components/ConsentItemCard";
+import { config } from "~/constants";
+import { selectConfigConsentOptions } from "~/features/common/config.slice";
 import {
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
   useUpdateConsentRequestPreferencesMutation,
 } from "~/features/consent/consent.slice";
+import {
+  makeConsentItems,
+  makeCookieKeyConsent,
+} from "~/features/consent/helpers";
+import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
+import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
