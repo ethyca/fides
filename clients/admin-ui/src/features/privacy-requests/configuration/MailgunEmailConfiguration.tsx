@@ -8,16 +8,16 @@ import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
-  // useGetMessagingConfigurationDetailsQuery,
+  useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 const MailgunEmailConfiguration = () => {
   const { successAlert } = useAlert();
   const [configurationStep, setConfigurationStep] = useState("");
   const { handleError } = useAPIHelper();
-  // const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-  //   type: "mailgun",
-  // });
+  const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
+    type: "mailgun",
+  });
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
   const [createMessagingConfigurationSecrets] =
@@ -53,27 +53,16 @@ const MailgunEmailConfiguration = () => {
       handleError(result.error);
     } else {
       successAlert(`Mailgun security key successfully updated.`);
-      // setConfigurationStep("testConnection");
     }
   };
 
-  // const handleTestConnection = () => {
-  //   setConfigurationStep("4");
-  // };
-
   const initialValues = {
-    // domain: messagingDetails.domain ?? "",
-    domain: "",
+    domain: messagingDetails.domain ?? "",
   };
 
   const initialAPIKeyValue = {
-    // api_key: messagingDetails.api_key ?? "",
-    api_key: "",
+    api_key: messagingDetails.api_key ?? "",
   };
-
-  // const initialEmailValue = {
-  //   email: email ?? "",
-  // };
 
   return (
     <Box>
@@ -160,48 +149,6 @@ const MailgunEmailConfiguration = () => {
           </Stack>
         </>
       ) : null}
-      {/* This will be added in the next sprint
-      {configurationStep === "testConnection" ? (
-        <>
-          <Divider />
-          <Heading fontSize="md" fontWeight="semibold" mt={10}>
-            Test connection
-          </Heading>
-          <Stack>
-            <Formik
-              initialValues={initialEmailValue}
-              onSubmit={handleTestConnection}
-            >
-              {({ isSubmitting, resetForm }) => (
-                <Form>
-                  <CustomTextInput
-                    name="email"
-                    label="Email"
-                    placeholder="youremail@domain.com"
-                  />
-                  <Button
-                    onClick={() => resetForm()}
-                    mr={2}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    isDisabled={isSubmitting}
-                    type="submit"
-                    colorScheme="primary"
-                    size="sm"
-                    data-testid="save-btn"
-                  >
-                    Save
-                  </Button>
-                </Form>
-              )}
-            </Formik>
-      </Stack>
-        </>
-      ) : null} */}
     </Box>
   );
 };

@@ -43,7 +43,6 @@ const MessagingConfiguration = () => {
       successAlert(`Configured storage type successfully.`);
     }
 
-    // twilio text doesn't save additional details, only secrets
     if (value === "twilio_text") {
       const twilioTextResult = await createMessagingConfiguration({});
 

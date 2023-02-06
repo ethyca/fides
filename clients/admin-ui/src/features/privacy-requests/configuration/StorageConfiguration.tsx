@@ -32,7 +32,6 @@ const StorageConfiguration = () => {
   const handleChange = async (value: string) => {
     setStorageValue(value);
 
-    //  Local does not set any configuration details
     if (value === "local") {
       const storageDetailsResult = await saveStorageType({
         type: value,
