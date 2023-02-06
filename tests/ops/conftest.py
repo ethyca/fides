@@ -17,7 +17,6 @@ from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from tests.conftest import create_citext_extension
 from fides.core.api import db_action
 from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
@@ -28,6 +27,7 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.db.session import Session, get_db_engine, get_db_session
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
+from tests.conftest import create_citext_extension
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *

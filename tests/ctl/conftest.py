@@ -21,7 +21,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
 
 from fides.api import main
-from fides.api.ctl.database.session import engine, sync_session, sync_engine
+from fides.api.ctl.database.session import engine, sync_engine, sync_session
 from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
 from fides.core import api
 from fides.core.config import FidesConfig, get_config
@@ -323,9 +323,6 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
         with open(f"{nested_manifest_dir}/{manifest}.yml", "w") as manifest_file:
             yaml.dump(test_manifests[manifest], manifest_file)
     return manifest_dir
-
-
-
 
 
 @pytest.fixture

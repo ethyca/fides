@@ -1,8 +1,8 @@
 import pytest
 from loguru import logger
+from sqlalchemy.engine.base import Engine
 
 from fides.core.config import get_config
-from sqlalchemy.engine.base import Engine
 
 
 @pytest.fixture(scope="session")
