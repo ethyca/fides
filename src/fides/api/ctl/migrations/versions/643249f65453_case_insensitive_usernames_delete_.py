@@ -31,10 +31,15 @@ ORDER BY LOWER(username), created_at ASC"""
 
     result = conn.execute(statement)
     original_user_ids = [row[2] for row in result]
-    session.query(FidesUserPermissions).filter(
-        FidesUserPermissions.user_id.not_in(original_user_ids)
-    ).delete()
-    session.query(FidesUser).filter(FidesUser.id.not_in(original_user_ids)).delete()
+    op.execute(
+        f"""DELETE FROM fidesuserpermissions
+    WHERE NOT(user_id=ANY(ARRAY[{original_user_ids}]))"""
+    )
+
+    op.execute(
+        f"""DELETE FROM fidesuser 
+    WHERE NOT(id=ANY(ARRAY[{original_user_ids}]))"""
+    )
 
     op.execute("CREATE EXTENSION IF NOT EXISTS citext;")
     op.execute("ALTER TABLE fidesuser ALTER COLUMN username TYPE citext;")
