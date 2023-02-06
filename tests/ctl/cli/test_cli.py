@@ -58,6 +58,17 @@ def test_webserver() -> None:
 
 
 @pytest.mark.unit
+def test_worker() -> None:
+    """
+    This is specifically meant to catch when the worker command breaks,
+    without spinning up an additional instance.
+    """
+    from fides.api.ops.worker import start_worker  # pylint: disable=unused-import
+
+    assert True
+
+
+@pytest.mark.unit
 def test_parse(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "parse", "demo_resources/"]
@@ -865,6 +876,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test logging in as a user with a provided username and password."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             [
@@ -887,6 +899,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test creating a user with the current credentials."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             [
@@ -909,6 +922,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test getting user permissions for the current user."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             ["-f", test_config_path, "user", "permissions"],

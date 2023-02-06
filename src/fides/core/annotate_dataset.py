@@ -109,7 +109,8 @@ def annotate_dataset(
     resources = api_helpers.list_server_resources(
         url=str(config.cli.server_url),
         resource_type=resource_type,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header
+        or {"Authorization": "Bearer fakekey"},  # Alternate header required for mypy
         exclude_keys=[],
     )
 

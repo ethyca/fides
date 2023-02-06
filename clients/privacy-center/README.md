@@ -25,7 +25,8 @@ You may configure the appearance of this web application at build time by modify
     - Descriptive information for the type of consent
     - The default consent state (opt in/out)
     - The cookie keys that will be available to
-      [fides-consent.js](./packages/fides-consent/README.md), which can be used to access a user's consent choices outside of the Privacy Center.
+      [fides-consent.js](./packages/fides-consent/README.md), which can be used to access a user's consent choices on outside of the Privacy Center.
+    - Whether the user's consent choice should be propagated to any configured third party services (executable). Note that currently, only one option may be marked `executable` at a time.
 
 You can also add any CSS you'd like to the page by adding it to the `config.css` file inside the `config` directory.
 
