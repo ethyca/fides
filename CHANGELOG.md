@@ -16,6 +16,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.1...main)
 
+### Added
+* Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
+
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
 ## [2.6.0](https://github.com/ethyca/fides/compare/2.5.1...2.6.0)
