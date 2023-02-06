@@ -54,6 +54,9 @@ The types of changes are:
 ### Added
 * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
 
+### Developer Experience
+* Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
+
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
 ### Fixed
@@ -108,7 +111,6 @@ The types of changes are:
 * `nox -s test_env` has been replaced with `nox -s fides_env(dev)`
 * New command `nox -s fides_env(test)` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
 * Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
-* Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
 
 ### Fixed
 
