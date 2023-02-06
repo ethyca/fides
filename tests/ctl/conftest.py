@@ -33,6 +33,7 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
+from tests.conftest import create_citext_extension
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
@@ -324,12 +325,12 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
     return manifest_dir
 
 
+
+
+
 @pytest.fixture
 def db() -> Generator:
-
-    with sync_engine.connect() as con:
-        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
-
+    create_citext_extension(sync_engine)
 
     session = sync_session()
 
@@ -342,13 +343,13 @@ def db() -> Generator:
 async def async_session(test_client) -> AsyncSession:
     assert CONFIG.test_mode
     assert requests.post == test_client.post
+
+    create_citext_extension(sync_engine)
+
     async_engine = create_async_engine(
         CONFIG.database.async_database_uri,
         echo=False,
     )
-
-    with async_engine as con:
-        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
 
     session_maker = sessionmaker(
         async_engine, class_=AsyncSession, expire_on_commit=False

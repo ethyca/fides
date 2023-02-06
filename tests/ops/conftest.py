@@ -17,6 +17,7 @@ from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
+from tests.conftest import create_citext_extension
 from fides.core.api import db_action
 from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
@@ -67,8 +68,7 @@ def db(api_client) -> Generator:
         database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )
 
-    with engine.connect() as con:
-        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
+    create_citext_extension(engine)
 
     if not scheduler.running:
         scheduler.start()

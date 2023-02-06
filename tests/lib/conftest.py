@@ -25,6 +25,7 @@ from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api.routes.user_endpoints import router
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
+from tests.conftest import create_citext_extension
 
 ROOT_PATH = Path().absolute()
 
@@ -43,8 +44,8 @@ def db(config):
     engine = get_db_engine(
         database_uri=config.database.sqlalchemy_database_uri,
     )
-    with engine.connect() as con:
-        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
+
+    create_citext_extension(engine)
 
     if not database_exists(engine.url):
         create_database(engine.url)
