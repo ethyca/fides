@@ -15,6 +15,7 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.0...main)
+* Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 
 ## [2.6.0](https://github.com/ethyca/fides/compare/2.5.1...2.6.0)
 
