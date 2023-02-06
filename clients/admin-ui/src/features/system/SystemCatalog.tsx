@@ -1,4 +1,5 @@
-import { Box, Spinner, Text } from "@fidesui/react";
+import { Box, Button, Spinner, Text } from "@fidesui/react";
+import NextLink from "next/link";
 import { useMemo, useState } from "react";
 
 import SearchBar from "~/features/common/SearchBar";
@@ -35,14 +36,27 @@ const SystemCatalog = () => {
 
   return (
     <Box>
-      <Box maxWidth="30vw" mb={4}>
-        <SearchBar
-          search={searchFilter}
-          onChange={setSearchFilter}
-          placeholder="Search for a system"
-          data-testid="system-catalog-search"
-          withClear
-        />
+      <Box mb={4} display="flex" justifyContent="space-between">
+        <Box>
+          <SearchBar
+            search={searchFilter}
+            onChange={setSearchFilter}
+            placeholder="Search for a system"
+            data-testid="system-catalog-search"
+            withClear
+          />
+        </Box>
+        <NextLink
+          href={{
+            pathname: window.location.pathname,
+            query: { step: 2 },
+          }}
+          passHref
+        >
+          <Button variant="outline" size="sm">
+            Create system
+          </Button>
+        </NextLink>
       </Box>
       <ConnectionTypeList items={filteredConnections} />
     </Box>
