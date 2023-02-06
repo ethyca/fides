@@ -1,9 +1,12 @@
 name: Cypress E2E Tests
 
 on:
-  push:
+  pull_request:
     paths-ignore:
       - "**.md"
+  push:
+    branches:
+      - "main"
 
 env:
   CI: true
