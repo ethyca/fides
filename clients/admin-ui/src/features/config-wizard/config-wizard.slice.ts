@@ -43,7 +43,7 @@ export const slice = createSlice({
       // Ensure the step number stays in the valid range.
       if (draftState.step < 1) {
         draftState.step = 1;
-      } else if (STEPS.length <= draftState.step) {
+      } else if (STEPS.length < draftState.step) {
         draftState.step = STEPS.length - 1;
       }
     },
