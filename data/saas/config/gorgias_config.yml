@@ -41,12 +41,14 @@ saas_config:
           method: PUT
           path: /api/customers/<customer_data_id>/
           body: |
-            <all_object_fields>
+            {
+               <all_object_fields> 
+            }
           param_values:
             - name: customer_data_id
               references:
                 - dataset: <instance_fides_key>
-                  field: customer.data.id
+                  field: customer.id
                   direction: from
     - name: search_for_resources
       requests:
@@ -61,6 +63,7 @@ saas_config:
               "type": "customer",
               "query": "<email>"
             }
+          data_path: data
           param_values:
             - name: email
               identity: email
@@ -85,7 +88,9 @@ saas_config:
           method: PUT
           path: /api/tickets/<tickets_id>/
           body: |
-            <all_object_fields>
+            {
+               <all_object_fields> 
+            }
           param_values:
             - name: tickets_id
               references:
@@ -96,7 +101,11 @@ saas_config:
       requests:
         read:
           method: GET
-          path: /api/tickets/<tickets_id>/messages/445729692/
+          path: /api/messages
+          query_params:
+            - name: ticket_id
+              value: <tickets_id>
+          data_path: data
           param_values:
             - name: tickets_id
               references:
@@ -105,15 +114,16 @@ saas_config:
                   direction: from
         update:
           method: PUT
-          path: >-
-            https://ethyca-test.gorgias.com/api/tickets/<tickets_id>/messages/<ticket_messages_id>/
+          path: /api/tickets/<tickets_id>/messages/<ticket_messages_id>/
           body: |
-            <all_object_fields>
+            {
+               <all_object_fields> 
+            }
           param_values:
             - name: tickets_id
               references:
                 - dataset: <instance_fides_key>
-                  field: tickets.id
+                  field: ticket_messages.ticket_id
                   direction: from
             - name: ticket_messages_id
               references:

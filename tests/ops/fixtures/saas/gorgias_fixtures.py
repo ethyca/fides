@@ -19,9 +19,10 @@ from fides.api.ops.util.saas_util import (
 )
 from fides.lib.cryptography import cryptographic_util
 from tests.ops.test_helpers.vault_client import get_secrets
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
+
 
 secrets = get_secrets("gorgias")
-
 
 
 @pytest.fixture(scope="session")
@@ -33,11 +34,11 @@ def gorgias_secrets(saas_config):
     }
 
 
-
 @pytest.fixture(scope="session")
 def gorgias_identity_email(saas_config):
     return (
-        pydash.get(saas_config, "gorgias.identity_email") or secrets["identity_email"]
+        pydash.get(
+            saas_config, "gorgias.identity_email") or secrets["identity_email"]
     )
 
 
@@ -108,3 +109,97 @@ def gorgias_dataset_config(
     yield dataset
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def gorgias_create_erasure_data(
+    gorgias_connection_config: ConnectionConfig, gorgias_erasure_identity_email: str
+) -> None:
+
+    sleep(60)
+
+    gorgias_secrets = gorgias_connection_config.secrets
+    auth = gorgias_secrets["user_name"], gorgias_secrets["api_key"]
+    base_url = f"https://{gorgias_secrets['domain']}"
+
+    # customer
+    body = {
+        "email": gorgias_erasure_identity_email
+    }
+
+    customers_response = requests.post(
+        
+    url=f"{base_url}/api/customers", auth=auth, json=body)
+    
+    customer = customers_response.json()
+   
+    customer_id = customer["id"]
+
+    # tickets
+
+    # ticket_body = {
+    #  "channel": "email",
+    #  "created_datetime": "2019-07-05T14:42:00.384938",
+    #  "customer": {
+    #       "id": customer_id,
+    #       "email": gorgias_erasure_identity_email
+    #  },
+    #  "external_id": "RETURN#4213",
+    #  "from_agent": True,
+    #  "language": "fr",
+    #  "last_message_datetime": "2020-02-01T19:12:32.432197",
+    #  "last_received_message_datetime": "2020-01-27T10:42:21.468912",
+    #  "messages": [
+    #       {
+    #            "sender": {
+    #                "id": customer_id,
+    #                "email": gorgias_erasure_identity_email
+    #             },
+    #            "channel": "email",
+    #            "from_agent": False,
+    #            "via": "email"
+    #       }
+    #  ],
+    #  "opened_datetime": "2019-07-05T15:22:46.472436",
+    #  "spam": False,
+    #  "status": "open",
+    #  "subject": "Can I get a refund?",
+    #  "tags": [
+    #       {
+    #            "name": "urgent"
+    #       }
+    #  ],
+    #  "updated_datetime": "2020-01-27T10:42:21.932637",
+    #  "via": "email"
+    # }
+    
+    ticket_body ={
+        "customer": {
+            "id": customer_id,
+            "email": gorgias_erasure_identity_email
+            },
+        "messages": [
+            {
+                "sender": {
+                    "id": customer_id,
+                    "email": gorgias_erasure_identity_email
+                    },
+                "channel": "twitter-direct-message",
+                "from_agent": "true",
+                "via": "instagram-ad-comment"
+            }
+        ],
+        "channel": "api",
+        "status": "open",
+        "subject": "Tested"
+
+    } 
+    
+    ticket_response = requests.post(
+        url=f"{base_url}/api/tickets", auth=auth, json=ticket_body)
+
+    ticket = ticket_response.json()
+    
+    yield customer
+    
+
