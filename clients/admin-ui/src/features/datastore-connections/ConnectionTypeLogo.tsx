@@ -1,4 +1,4 @@
-import { Image } from "@fidesui/react";
+import { Image, ImageProps } from "@fidesui/react";
 import React from "react";
 
 import { ConnectionType } from "~/types/api";
@@ -14,7 +14,10 @@ type ConnectionTypeLogoProps = {
   data: string | DatastoreConnection;
 };
 
-const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps> = ({ data }) => {
+const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
+  data,
+  ...props
+}) => {
   const getImageSrc = (): string => {
     let item;
     if (isDatastoreConnection(data)) {
@@ -41,6 +44,7 @@ const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps> = ({ data }) => {
       src={getImageSrc()}
       fallbackSrc={FALLBACK_CONNECTOR_LOGOS_PATH}
       alt={isDatastoreConnection(data) ? data.name : data}
+      {...props}
     />
   );
 };
