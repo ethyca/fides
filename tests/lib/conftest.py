@@ -43,16 +43,16 @@ def db(config):
     engine = get_db_engine(
         database_uri=config.database.sqlalchemy_database_uri,
     )
+    with engine.connect() as con:
+        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
 
     if not database_exists(engine.url):
         create_database(engine.url)
-
     # Create the database tables
     Base.metadata.create_all(engine)
 
     SessionLocal = get_db_session(config, engine=engine)
     session = SessionLocal()
-    session.execute("CREATE EXTENSION IF NOT EXISTS citext;")
     yield session
 
     session.close()
