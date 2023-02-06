@@ -12,8 +12,8 @@
       "description": "We will provide you a report of all your personal data.",
       "identity_inputs": {
         "name": "optional",
-        "email": "required",
-        "phone": "optional"
+        "email": "optional",
+        "phone": "required"
       }
     },
     {
@@ -23,8 +23,8 @@
       "description": "We will erase all of your personal data. This action cannot be undone.",
       "identity_inputs": {
         "name": "optional",
-        "email": "required",
-        "phone": "optional"
+        "email": "optional",
+        "phone": "required"
       }
     }
   ],
@@ -34,8 +34,8 @@
     "title": "Manage your consent",
     "description": "Manage your consent preferences, including the option to select 'Do Not Sell My Personal Information'.",
     "identity_inputs": {
-      "email": "required",
-      "phone": "optional"
+      "email": "optional",
+      "phone": "required"
     },
     "policy_key": "default_consent_policy",
     "consentOptions": [
