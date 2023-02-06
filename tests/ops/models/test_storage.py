@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from fides.api.ops.models.application_settings import ApplicationSettings
 from fides.api.ops.models.storage import (
     StorageConfig,
-    default_storage_config_by_type,
     default_storage_config_name,
     get_active_default_storage_config,
+    get_default_storage_config_by_type,
 )
 from fides.api.ops.schemas.application_settings import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.storage.storage import (
@@ -182,7 +182,7 @@ class TestStorageConfigModel:
         """
         # `storage_config_default` fixture creates the default config
         # in the db, so we should be able to retrieve it successfully here
-        retrieved_config = default_storage_config_by_type(
+        retrieved_config = get_default_storage_config_by_type(
             db, storage_config_default.type
         )
         assert storage_config_default == retrieved_config
@@ -190,20 +190,20 @@ class TestStorageConfigModel:
         # delete the default storage config in the db
         # and we should no longer get a populated object now
         storage_config_default.delete(db)
-        retrieved_config = default_storage_config_by_type(
+        retrieved_config = get_default_storage_config_by_type(
             db, storage_config_default.type
         )
         assert not retrieved_config
 
         # assert unconfigured default storage is not returned since we only have a default
         # s3 storage with this fixture
-        retrieved_config = default_storage_config_by_type(db, StorageType.gcs)
+        retrieved_config = get_default_storage_config_by_type(db, StorageType.gcs)
         assert not retrieved_config
 
         # assert passing a nonexisting storage type doesn't work
         # s3 storage with this fixture
         with pytest.raises(ValueError) as e:
-            retrieved_config = default_storage_config_by_type(
+            retrieved_config = get_default_storage_config_by_type(
                 db, "some-madeup-storage-type"
             )
 
@@ -224,7 +224,7 @@ class TestStorageConfigModel:
             StorageType.local.value
         )
         assert retrieved_config.is_default
-        assert retrieved_config == default_storage_config_by_type(
+        assert retrieved_config == get_default_storage_config_by_type(
             db, StorageType.local.value
         )
 
@@ -257,4 +257,6 @@ class TestStorageConfigModel:
             StorageType.local.value
         )
         assert retrieved_config.is_default
-        assert retrieved_config == default_storage_config_by_type(db, StorageType.local)
+        assert retrieved_config == get_default_storage_config_by_type(
+            db, StorageType.local
+        )

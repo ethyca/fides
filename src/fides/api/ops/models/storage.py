@@ -94,14 +94,14 @@ class StorageConfig(Base):
 
 def default_storage_config_name(storage_type: str) -> str:
     """
-    Utility method for consistency in generating default storage config names.
+    Utility function for consistency in generating default storage config names.
 
     Returns a name to be used in a default storage config for the given type.
     """
     return f"Default Storage Config [{storage_type}]"
 
 
-def default_storage_config_by_type(
+def get_default_storage_config_by_type(
     db: Session, storage_type: StorageType
 ) -> Optional[StorageConfig]:
     """
@@ -153,7 +153,7 @@ def _create_local_default_storage(db: Session) -> StorageConfig:
 
 def get_active_default_storage_config(db: Session) -> Optional[StorageConfig]:
     """
-    Utility method to return the active default storage configuration.
+    Utility function to return the active default storage configuration.
 
     As of now, we look at the application property `ACTIVE_DEFAULT_STORAGE_PROPERTY`
     that's been set through the application settings API to determine the active default
@@ -169,8 +169,6 @@ def get_active_default_storage_config(db: Session) -> Optional[StorageConfig]:
     """
     api_app_settings = ApplicationSettings.get_api_set_settings(db)
     active_default_storage_type = (
-        api_app_settings[ACTIVE_DEFAULT_STORAGE_PROPERTY]
-        if ACTIVE_DEFAULT_STORAGE_PROPERTY in api_app_settings
-        else StorageType.local
+        api_app_settings.get(ACTIVE_DEFAULT_STORAGE_PROPERTY) or StorageType.local
     )
-    return default_storage_config_by_type(db, active_default_storage_type)
+    return get_default_storage_config_by_type(db, active_default_storage_type)

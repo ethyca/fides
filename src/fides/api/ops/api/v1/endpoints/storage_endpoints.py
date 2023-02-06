@@ -42,9 +42,9 @@ from fides.api.ops.models.connectionconfig import ConnectionTestStatus
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import (
     StorageConfig,
-    default_storage_config_by_type,
     default_storage_config_name,
     get_active_default_storage_config,
+    get_default_storage_config_by_type,
 )
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
@@ -327,7 +327,9 @@ def put_default_config(
     )
 
     incoming_data = incoming_storage_config.dict()
-    existing_default = default_storage_config_by_type(db, incoming_storage_config.type)
+    existing_default = get_default_storage_config_by_type(
+        db, incoming_storage_config.type
+    )
     if existing_default:
         # take the key of the existing default and add that to the incoming data, to ensure we overwrite the same record
         incoming_data["key"] = existing_default.key
@@ -379,7 +381,7 @@ def put_default_config_secrets(
     Add or update secrets for the default storage config of the given type
     """
     logger.info("Finding default config of storage type '{}'", storage_type.value)
-    storage_config = default_storage_config_by_type(db, storage_type)
+    storage_config = get_default_storage_config_by_type(db, storage_type)
     if not storage_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -471,7 +473,7 @@ def get_default_config_by_type(
     Retrieves default config for given storage type.
     """
     logger.info("Finding default config for storage type '{}'", storage_type.value)
-    storage_config = default_storage_config_by_type(db, storage_type)
+    storage_config = get_default_storage_config_by_type(db, storage_type)
     if not storage_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

@@ -7,9 +7,9 @@ from pydantic import Extra, root_validator
 from fides.lib.schemas.base_class import BaseSchema
 
 ACTIVE_DEFAULT_STORAGE_PROPERTY = "fides.storage.active_default_storage_type"
-ACTIVE_DEFAULT_STORAGE_ALLOWED_VALUES = ["local", "s3"]
+ACTIVE_DEFAULT_STORAGE_ALLOWED_VALUES = ("local", "s3")
 
-ALLOWED_SETTINGS_KEYS = [ACTIVE_DEFAULT_STORAGE_PROPERTY]
+ALLOWED_SETTINGS_KEYS = ACTIVE_DEFAULT_STORAGE_PROPERTY
 
 
 class ApplicationSettings(BaseSchema):
