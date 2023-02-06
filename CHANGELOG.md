@@ -16,6 +16,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.2...main)
 
+### Fixed
+
+* Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523) 
+
 
 ## [2.6.2](https://github.com/ethyca/fides/compare/2.6.1...2.6.2)
 
