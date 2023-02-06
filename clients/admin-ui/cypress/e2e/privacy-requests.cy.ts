@@ -128,7 +128,6 @@ describe("Privacy Requests", () => {
         .should("have.length", 1);
     });
   });
-
   describe("Messaging Provider Configuration", () => {
     beforeEach(() => {
       cy.visit("/privacy-requests/configure/messaging");

@@ -2,7 +2,8 @@ from typing import Any, Dict, List
 
 import firebase_admin
 from firebase_admin import App, auth, credentials
-from firebase_admin.auth import UserRecord
+from firebase_admin.auth import UserNotFoundError, UserRecord
+from loguru import logger
 
 from fides.api.ops.common_exceptions import FidesopsException
 from fides.api.ops.graph.traversal import TraversalNode
@@ -16,6 +17,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import get_identity
 
 
@@ -40,13 +42,23 @@ def firebase_auth_user_access(  # pylint: disable=R0914
     if identity == "email":
         emails = input_data.get("email", [])
         for email in emails:
-            user = auth.get_user_by_email(email, app=app)
-            processed_data.append(_user_record_to_row(user))
+            try:
+                user = auth.get_user_by_email(email, app=app)
+                processed_data.append(_user_record_to_row(user))
+            except UserNotFoundError:
+                logger.warning(
+                    f"Could not find user with email {Pii(email)} in firebase"
+                )
     elif identity == "phone_number":
         phone_numbers = input_data.get("phone_number", [])
         for phone_number in phone_numbers:
-            user = auth.get_user_by_phone_number(phone_number, app=app)
-            processed_data.append(_user_record_to_row(user))
+            try:
+                user = auth.get_user_by_phone_number(phone_number, app=app)
+                processed_data.append(_user_record_to_row(user))
+            except UserNotFoundError:
+                logger.warning(
+                    f"Could not find user with phone_number {Pii(phone_number)} in firebase"
+                )
     else:
         raise FidesopsException(
             "Unsupported identity type for Firebase connector. Currently only `email` and `phone_number` are supported"

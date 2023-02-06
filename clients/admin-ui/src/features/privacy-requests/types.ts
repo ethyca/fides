@@ -13,6 +13,8 @@ export type PrivacyRequestStatus =
 export enum ActionType {
   ACCESS = "access",
   ERASURE = "erasure",
+  CONSENT = "consent",
+  UPDATE = "update",
 }
 
 export interface DenyPrivacyRequest {

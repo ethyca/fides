@@ -12,7 +12,6 @@ env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.7"
 
-# Send coverage reports to code climate
 jobs:
   ###############
   ## Prechecks ##
@@ -51,7 +50,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build container
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -177,17 +176,11 @@ jobs:
       - name: Run test suite
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
-      - name: Format Test Coverage File
-        run: |
-          export GIT_COMMIT_SHA=${GITHUB_SHA}
-          export GIT_BRANCH=${GITHUB_HEAD_REF}
-          nox -s "format_coverage(${{ matrix.test_selection }})"
-
-      - name: Upload Coverage Artifacts
-        uses: actions/upload-artifact@v3
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
         with:
-          name: ${{ matrix.test_selection }}
-          path: coverage/${{ matrix.test_selection }}/codeclimate.json
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
 
   ##################
   ## Unsafe Tests ##
@@ -309,40 +302,3 @@ jobs:
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
         run: nox -s "pytest(ops-saas)"
-
-  Coverage-Upload:
-    needs:
-      - Safe-Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Download container
-        uses: actions/download-artifact@v3
-        with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
-
-      - name: Download Coverage Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: ${{ github.workspace }}/coverage/
-
-      - name: Display Downloaded Artifacts
-        run: ls -R coverage/
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Sum Coverage
-        run: nox -s sum_coverage
-
-      - name: Upload Coverage to Code Climate
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CODE_CLIMATE_TEST_REPORTER_ID }}
-        run: nox -s upload_coverage

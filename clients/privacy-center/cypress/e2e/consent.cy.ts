@@ -127,12 +127,30 @@ describe("Consent settings", () => {
           (c: any) => c.data_use === "advertising"
         );
         expect(consent?.opt_in).to.eq(true);
+
+        // there should be no browser identity
+        expect(interception.request.body.browser_identity).to.eql(undefined);
       });
 
       // The cookie should also have been updated.
       cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
         const cookieKeyConsent = JSON.parse(decodeURIComponent(cookie!.value));
         expect(cookieKeyConsent.data_sales).to.eq(true);
+      });
+    });
+
+    it("can grab the GA cookie and send to a consent request", () => {
+      const clientId = "999999999.8888888888";
+      const cookieValue = `GA1.1.${clientId}`;
+      cy.setCookie("_ga", cookieValue);
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@patchConsentPreferences").then((interception) => {
+        const { body } = interception.request;
+        expect(body.browser_identity.ga_client_id).to.eq(clientId);
       });
     });
 

@@ -11,6 +11,7 @@ export type Config = {
     title: string;
     description: string;
     identity_inputs?: Record<string, string>;
+    policy_key?: string;
     consentOptions: ConfigConsentOption[];
   };
 };
@@ -31,4 +32,5 @@ export type ConfigConsentOption = {
   highlight?: boolean;
   name: string;
   url: string;
+  executable?: boolean;
 };
