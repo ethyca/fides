@@ -14,7 +14,14 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.6.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.6.3...main)
+
+
+## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
+
+### Fixed
+
+* Handle case where legacy dataset has meta: null [#2524](https://github.com/ethyca/fides/pull/2524)
 
 
 ## [2.6.2](https://github.com/ethyca/fides/compare/2.6.1...2.6.2)
