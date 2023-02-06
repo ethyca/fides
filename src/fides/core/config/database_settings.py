@@ -23,6 +23,11 @@ class DatabaseSettings(FidesSettings):
     db: str = "default_db"
     test_db: str = "default_test_db"
 
+    api_engine_pool_size: int = 5
+    api_engine_max_overflow: int = 10
+    task_engine_pool_size: int = 5
+    task_engine_max_overflow: int = 10
+
     sqlalchemy_database_uri: Optional[str] = None
     sqlalchemy_test_database_uri: Optional[str] = None
 
