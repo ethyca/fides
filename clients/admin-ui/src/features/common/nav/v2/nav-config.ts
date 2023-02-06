@@ -80,11 +80,13 @@ export const configureNavGroups = ({
   hasPlus = false,
   hasSystems = false,
   hasConnections = false,
+  hasAccessToPrivacyRequestConfigurations = false,
 }: {
   config: NavConfigGroup[];
   hasPlus?: boolean;
   hasSystems?: boolean;
   hasConnections?: boolean;
+  hasAccessToPrivacyRequestConfigurations?: boolean;
 }): NavGroup[] => {
   const navGroups: NavGroup[] = [];
 
@@ -107,6 +109,13 @@ export const configureNavGroups = ({
       // If the target route would require plus in a non-plus environment,
       // exclude it from the group.
       if (route.requiresPlus && !hasPlus) {
+        return;
+      }
+
+      if (
+        route.path === "/privacy-requests/configure" &&
+        !hasAccessToPrivacyRequestConfigurations
+      ) {
         return;
       }
 
