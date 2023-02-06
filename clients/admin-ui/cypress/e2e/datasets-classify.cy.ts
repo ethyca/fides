@@ -89,7 +89,6 @@ describe("Datasets with Fides Classify", () => {
 
       cy.url().should("match", /dataset$/);
 
-
       // The combination of Next routing and a toast message makes Cypress get weird
       // when re-running this test case. Introducing a delay fixes it.
       // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -142,8 +141,7 @@ describe("Datasets with Fides Classify", () => {
     }) => {
       cy.getByTestId(`field-row-${name}`).within(() => {
         taxonomyEntities.forEach((te) => {
-          // Right now this displays the whole taxonomy path, but this might be abbreviated later.
-          cy.get(`[data-testid^=taxonomy-entity-]`).contains(te);
+          cy.getByTestIdPrefix("taxonomy-entity").contains(te);
         });
       });
     };
