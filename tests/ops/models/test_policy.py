@@ -135,24 +135,6 @@ def test_create_rule_no_action_is_invalid(
     assert exc.value.args[0] == "action_type is required."
 
 
-def test_consent_action_is_unsupported(
-    db: Session,
-    policy: Policy,
-) -> None:
-    with pytest.raises(RuleValidationError) as exc:
-        Rule.create(
-            db=db,
-            data={
-                "action_type": ActionType.consent.value,
-                "client_id": policy.client_id,
-                "name": "Invalid Rule",
-                "policy_id": policy.id,
-                "storage_destination_id": policy.rules[0]._storage_destination.id,
-            },
-        )
-    assert exc.value.args[0] == "consent Rules are not supported at this time."
-
-
 def test_update_action_is_unsupported(
     db: Session,
     policy: Policy,

@@ -164,6 +164,24 @@ class DatasetConfig(Base):
                 "Connection config with key {} is not a saas config, skipping merge dataset",
                 self.connection_config.key,
             )
+
+        return dataset_graph
+
+    def get_dataset_with_stubbed_collection(self) -> Dataset:
+        """
+        Return a Dataset with a single mock Collection for use in building a graph
+        where we only want one node per dataset, instead of one node per collection.  Note that
+        the expectation is that there would be no dependencies between nodes on the eventual graph, and the graph
+        doesn't require information stored at the collection-level.
+
+        The single Collection will be the resource that gets practically added to the graph, but the intent
+        is that this single node represents the overall Dataset, and will execute Dataset-level requests,
+        not Collection-level requests.
+        """
+        dataset_graph: Dataset = self.get_graph()
+        stubbed_collection = Collection(name=dataset_graph.name, fields=[], after=set())
+
+        dataset_graph.collections = [stubbed_collection]
         return dataset_graph
 
 

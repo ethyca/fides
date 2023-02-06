@@ -35,6 +35,9 @@ DEFAULT_ERASURE_POLICY = "default_erasure_policy"
 DEFAULT_ERASURE_POLICY_RULE = "default_erasure_policy_rule"
 DEFAULT_ERASURE_MASKING_STRATEGY = "hmac"
 
+DEFAULT_CONSENT_POLICY: str = "default_consent_policy"
+DEFAULT_CONSENT_RULE = "default_consent_rule"
+
 
 def create_or_update_parent_user() -> None:
     with sync_session() as db_session:
@@ -269,6 +272,29 @@ def load_default_erasure_policy(
         log.info(
             f"Skipping {DEFAULT_ERASURE_POLICY_RULE} creation as it already exists in the database"
         )
+
+    log.info("Creating: Default Consent Policy")
+    consent_policy = Policy.create_or_update(
+        db=db_session,
+        data={
+            "name": "Default Consent Policy",
+            "key": DEFAULT_CONSENT_POLICY,
+            "execution_timeframe": 45,
+            "client_id": client_id,
+        },
+    )
+
+    log.info("Creating: Default Consent Rule")
+    Rule.create_or_update(
+        db=db_session,
+        data={
+            "action_type": ActionType.consent.value,
+            "name": "Default Consent Rule",
+            "key": DEFAULT_CONSENT_RULE,
+            "policy_id": consent_policy.id,
+            "client_id": client_id,
+        },
+    )
 
 
 def load_default_dsr_policies() -> None:

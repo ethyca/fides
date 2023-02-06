@@ -12,7 +12,6 @@ on:
     branches:
       - "main"
 
-
 env:
   DEFAULT_PYTHON_VERSION: "3.10.7"
 
@@ -28,7 +27,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Initialize the test environment
-        run: nox -s test_env -- test
+        run: nox -s "fides_env(test)" -- test
 
   Fides-Deploy:
     runs-on: ubuntu-latest
@@ -53,6 +52,6 @@ jobs:
 
       - name: Start the sample application
         run: fides deploy up --no-pull --no-init
-      
+
       - name: Stop the sample application
         run: fides deploy down

@@ -77,7 +77,7 @@ def scan_dataset_db(
         manifest_dir=manifests_dir,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
     )
 
 
@@ -129,7 +129,7 @@ def scan_system_okta(
         organization_key=org_key,
         manifest_dir=manifests_dir,
         url=config.cli.server_url,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
     )
 
 
@@ -177,5 +177,5 @@ def scan_system_aws(
         aws_config=aws_config,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
     )

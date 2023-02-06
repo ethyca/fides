@@ -9,9 +9,14 @@ from fides.api.ops.common_exceptions import FidesopsException, PostProcessingExc
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
-from fides.api.ops.schemas.saas.saas_config import ClientConfig, ParamValue, SaaSRequest
+from fides.api.ops.schemas.saas.saas_config import (
+    ClientConfig,
+    ConsentRequestMap,
+    ParamValue,
+    SaaSRequest,
+)
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.saas.authenticated_client import (
@@ -394,17 +399,85 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
         )
 
-        prepared_requests = [
-            query_config.generate_update_stmt(row, policy, privacy_request)
-            for row in rows
-        ]
         rows_updated = 0
         client = self.create_client()
-        for prepared_request in prepared_requests:
+        for row in rows:
+            try:
+                prepared_request = query_config.generate_update_stmt(
+                    row, policy, privacy_request
+                )
+            except ValueError as exc:
+                if masking_request.skip_missing_param_values:
+                    logger.info(
+                        "Skipping optional masking request on node {}: {}",
+                        node.address.value,
+                        exc,
+                    )
+                    continue
+                raise exc
             client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
+
         self.unset_connector_state()
         return rows_updated
+
+    def run_consent_request(
+        self,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        identity_data: Dict[str, Any],
+        consent_preferences: List[Consent],
+    ) -> bool:
+        """Execute a consent request. Return whether the consent request to the third party succeeded.
+        Return True if 200 OK
+        """
+        logger.info(
+            "Starting consent request for node: '{}'",
+            node.address.value,
+        )
+        self.set_privacy_request_state(privacy_request, node)
+        query_config = self.query_config(node)
+
+        for consent_options in consent_preferences:
+            query_config.action = (
+                "opt_in" if consent_options.opt_in else "opt_out"
+            )  # For logging purposes
+
+            consent_requests: List[
+                SaaSRequest
+            ] = self._get_consent_requests_by_preference(consent_options.opt_in)
+
+            if not consent_requests:
+                logger.info(
+                    "Skipping consent requests on node {}: No '{}' requests defined",
+                    node.address.value,
+                    query_config.action,
+                )
+                continue
+
+            for consent_request in consent_requests:
+                self.set_saas_request_state(consent_request)
+
+                try:
+                    prepared_request: SaaSRequestParams = (
+                        query_config.generate_consent_stmt(
+                            policy, privacy_request, consent_request
+                        )
+                    )
+                except ValueError as exc:
+                    if consent_request.skip_missing_param_values:
+                        logger.info(
+                            "Skipping optional consent request on node {}: {}",
+                            node.address.value,
+                            exc,
+                        )
+                        continue
+                    raise exc
+                client: AuthenticatedClient = self.create_client()
+                client.send(prepared_request)
+        self.unset_connector_state()
+        return True
 
     def close(self) -> None:
         """Not required for this type"""
@@ -528,3 +601,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             raise FidesopsException(
                 f"Error executing override mask function '{override_function_name}'"
             )
+
+    def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
+        """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
+        consent_requests: Optional[
+            ConsentRequestMap
+        ] = self.saas_config.consent_requests
+
+        if not consent_requests:
+            return []
+
+        return consent_requests.opt_in if opt_in else consent_requests.opt_out  # type: ignore

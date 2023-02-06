@@ -1,8 +1,14 @@
-import { useObscuredPII } from "privacy-requests/helpers";
-import React from "react";
+type PIIProps = {
+  data: string;
+  revealPII: boolean;
+};
 
-const PII: React.FC<{ data: string }> = ({ data }) => (
-  <>{useObscuredPII(data)}</>
-);
+const PII = ({ data, revealPII }: PIIProps) => {
+  const pii = revealPII ? data : data.replace(/./g, "*");
+  return (
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    <>{pii}</>
+  );
+};
 
 export default PII;

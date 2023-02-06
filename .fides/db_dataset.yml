@@ -1045,6 +1045,10 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_request_id
+      description: 'An optional link to the privacy request if one was created to propagate request preferences'
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: datasetconfig
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1305,6 +1309,9 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: updated_at
       data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: consent_preferences
+      data_categories: [ system.operations ]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: privacyrequesterror
     data_categories: []

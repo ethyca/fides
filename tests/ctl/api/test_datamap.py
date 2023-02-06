@@ -23,6 +23,6 @@ def test_datamap(
     print(test_config)
     response = test_client.get(
         test_config.cli.server_url + API_PREFIX + "/datamap/" + organization_fides_key,
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
     )
     assert response.status_code == expected_status_code

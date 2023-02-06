@@ -46,6 +46,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     S3AuthMethod,
@@ -712,6 +713,43 @@ def policy(
         pass
     try:
         access_request_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def consent_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    """Consent policies only need a ConsentRule attached - no RuleTargets necessary"""
+    consent_request_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example consent request policy",
+            "key": "example_consent_request_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    consent_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.consent.value,
+            "client_id": oauth_client.id,
+            "name": "Consent Request Rule",
+            "policy_id": consent_request_policy.id,
+        },
+    )
+
+    yield consent_request_policy
+    try:
+        consent_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        consent_request_policy.delete(db)
     except ObjectDeletedError:
         pass
 
