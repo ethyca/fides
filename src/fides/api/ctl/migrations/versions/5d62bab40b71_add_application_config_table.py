@@ -39,7 +39,8 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("single_row", sa.Boolean(), nullable=False),
-        sa.PrimaryKeyConstraint("id", "single_row"),
+        sa.PrimaryKeyConstraint("id"),
+        sa.CheckConstraint("single_row", name="single_row_check"),
     )
     op.create_index(
         op.f("ix_applicationconfig_id"), "applicationconfig", ["id"], unique=False

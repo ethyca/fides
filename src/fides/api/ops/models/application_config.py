@@ -37,7 +37,7 @@ class ApplicationConfig(Base):
         default={},
     )  # store as encrypted JSON blob since config settings may have sensitive data
     single_row = Column(
-        Boolean, primary_key=True, default=True
+        Boolean, default=True, nullable=False
     )  # used to constrain table to one row
 
     CheckConstraint("single_row", name="single_row_check")
