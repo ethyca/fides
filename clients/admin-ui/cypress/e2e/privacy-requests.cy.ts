@@ -128,22 +128,6 @@ describe("Privacy Requests", () => {
         .should("have.length", 1);
     });
   });
-  describe("Messaging Provider Configuration", () => {
-    beforeEach(() => {
-      cy.visit("/privacy-requests/configure/messaging");
-    });
-
-    // it("Can configure a messaging provider", () => {
-    //   cy.getByTestId("option-mailgun-email").click();
-    //   //   createConfigurationSettings
-    //   //   getMessagingConfigurationDetails
-    //   cy.wait("@createMessagingConfiguration").then((interception) => {
-    //     const { body } = interception.request;
-    //     console.log("body", body);
-    //   });
-    //   //   createMessagingConfigurationSecrets
-    // });
-  });
 
   describe("Storage Configuration", () => {
     beforeEach(() => {
@@ -152,22 +136,35 @@ describe("Privacy Requests", () => {
 
     it("Can configure local storage", () => {
       cy.getByTestId("option-local").click();
-      //   createConfigurationSettings
+      cy.wait("@createConfigurationSettings").then((interception) => {
+        const { body } = interception.request;
+        expect(body.fides.storage.active_default_storage_type).to.eql("local");
+      });
+
       cy.wait("@createStorage").then((interception) => {
         const { body } = interception.request;
-        console.log("body", body);
+        expect(body.type).to.eql("local");
+        expect(body.format).to.eql("json");
       });
+
+      cy.contains("Configure active storage type saved successfully");
+      cy.contains("Configure storage type details saved successfully");
     });
 
     it("Can configure S3 storage", () => {
       cy.getByTestId("option-s3").click();
-      //   createConfigurationSettings
-      //   getStorageDetails
+      cy.wait("@createConfigurationSettings").then((interception) => {
+        const { body } = interception.request;
+        expect(body.fides.storage.active_default_storage_type).to.eql("s3");
+      });
+      cy.wait("@getStorageDetails");
+      cy.getByTestId("save-btn").click();
       cy.wait("@createStorage").then((interception) => {
         const { body } = interception.request;
-        console.log("body", body);
+        expect(body.type).to.eql("s3");
       });
-      //   createStorageSecrets
+      cy.contains("S3 storage credentials successfully updated.");
+      cy.contains("Configure active storage type saved successfully.");
     });
   });
 });

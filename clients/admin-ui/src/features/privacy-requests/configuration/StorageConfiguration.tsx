@@ -18,6 +18,7 @@ import Layout from "~/features/common/Layout";
 import {
   useCreateConfigurationSettingsMutation,
   useCreateStorageMutation,
+  useGetStorageDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import S3StorageConfiguration from "./S3StorageConfiguration";
@@ -28,6 +29,9 @@ const StorageConfiguration = () => {
   const [storageValue, setStorageValue] = useState("");
   const [saveStorageType, { isLoading }] = useCreateStorageMutation();
   const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
+  const { data: storageDetails } = useGetStorageDetailsQuery({
+    type: storageValue,
+  });
 
   const handleChange = async (value: string) => {
     if (value === "local") {
@@ -39,7 +43,6 @@ const StorageConfiguration = () => {
         handleError(storageDetailsResult.error);
       } else {
         successAlert(`Configure storage type details saved successfully.`);
-        setStorageValue(value);
       }
     }
 
@@ -55,8 +58,9 @@ const StorageConfiguration = () => {
       handleError(activeStorageResults.error);
     } else {
       successAlert(`Configure active storage type saved successfully.`);
-      setStorageValue(value);
     }
+
+    setStorageValue(value);
   };
 
   return (
@@ -129,7 +133,9 @@ const StorageConfiguration = () => {
             </Radio>
           </Stack>
         </RadioGroup>
-        {storageValue === "s3" ? <S3StorageConfiguration /> : null}
+        {storageValue === "s3" ? (
+          <S3StorageConfiguration storageDetails={storageDetails} />
+        ) : null}
       </Box>
     </Layout>
   );

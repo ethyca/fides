@@ -356,7 +356,7 @@ export const privacyRequestApi = createApi({
     }),
     getStorageDetails: build.query<any, any>({
       query: (params) => ({
-        url: `storage/default/${params.storage_type}`,
+        url: `storage/default/${params.type}`,
       }),
     }),
     createStorage: build.mutation<any, any>({
@@ -368,7 +368,7 @@ export const privacyRequestApi = createApi({
     }),
     createStorageSecrets: build.mutation<any, any>({
       query: (params) => ({
-        url: `storage/default/${params.storage_type}/secret`,
+        url: `storage/default/${params.type}/secret`,
         method: "PUT",
         body: params,
       }),
