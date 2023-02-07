@@ -1,9 +1,8 @@
-from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
+from typing import Any, ContextManager, Dict, List, Optional
 
 from celery import Celery, Task
 from loguru import logger
 from sqlalchemy.orm import Session
-from toml import load as load_toml
 
 from fides.core.config import FidesConfig, get_config
 from fides.lib.db.session import get_db_session
@@ -54,8 +53,17 @@ def _create_celery(config: FidesConfig = get_config()) -> Celery:
             "fides.api.ops.tasks.scheduled",
             "fides.api.ops.service.privacy_request",
             "fides.api.ops.service.privacy_request.request_runner_service",
+            "fides.api.ops.service.privacy_request.consent_email_batch_send",
         ]
     )
+
+    app.conf.beat_schedule = {
+        "send_weekly_consent_emails": {
+            "task": "fides.api.ops.service.privacy_request.consent_email_batch_send.send_consent_email_batch",
+            "schedule": 60.0,
+            "args": (),
+        },
+    }
     return app
 
 
@@ -85,6 +93,7 @@ def start_worker() -> None:
             "--loglevel=info",
             "--concurrency=2",
             f"--queues={default_queue_name},{MESSAGING_QUEUE_NAME}",
+            "--beat",
         ]
     )
 

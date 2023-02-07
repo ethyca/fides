@@ -51,7 +51,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import FidesConnector
 from fides.api.ops.service.connectors.consent_email_connector import (
-    consent_email_connector_send,
+    needs_consent_email_send,
 )
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
@@ -439,39 +439,37 @@ async def run_privacy_request(
                 _log_exception(exc, CONFIG.dev_mode)
                 return
 
-        # Send erasure requests via email to third parties where applicable
-        if policy.get_rules_for_action(
-            action_type=ActionType.consent
-        ) and can_run_checkpoint(
-            request_checkpoint=CurrentStep.consent_email_post_send,
-            from_checkpoint=resume_step,
+        # Check if privacy request needs to wait on weekly consent email send to
+        # third parties
+        # TODO REMOVE THIS - FOR TESTING ONLY
+        identity_data["ljt_readerID"] = "12345"
+        if (
+            policy.get_rules_for_action(action_type=ActionType.consent)
+            and can_run_checkpoint(
+                request_checkpoint=CurrentStep.consent_email_post_send,
+                from_checkpoint=resume_step,
+            )
+            and needs_consent_email_send(session, identity_data)
         ):
-            try:
-                consent_email_connector_send(
-                    db=session,
-                    privacy_request=privacy_request,
-                    user_identity=identity_data,
-                )
-            except MessageDispatchException as exc:
-                privacy_request.cache_failed_checkpoint_details(
-                    step=CurrentStep.consent_email_post_send, collection=None
-                )
-                privacy_request.error_processing(db=session)
-                await fideslog_graph_failure(
-                    failed_graph_analytics_event(privacy_request, exc)
-                )
-                # If dev mode, log traceback
-                _log_exception(exc, CONFIG.dev_mode)
-                return
+            privacy_request.pause_processing_for_consent_email_send(session)
+            logger.info(
+                "Privacy request '{}' exiting: awaiting consent email send.",
+                privacy_request.id,
+            )
+            return
 
         # Run post-execution webhooks
-        proceed = run_webhooks_and_report_status(
-            db=session,
-            privacy_request=privacy_request,
-            webhook_cls=PolicyPostWebhook,  # type: ignore
-        )
-        if not proceed:
-            return
+        if can_run_checkpoint(
+            request_checkpoint=CurrentStep.post_webhooks,
+            from_checkpoint=resume_step,
+        ):
+            proceed = run_webhooks_and_report_status(
+                db=session,
+                privacy_request=privacy_request,
+                webhook_cls=PolicyPostWebhook,  # type: ignore
+            )
+            if not proceed:
+                return
 
         if CONFIG.notifications.send_request_completion_notification:
             try:

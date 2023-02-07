@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from fides.api.ctl.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import MessageDispatchException
@@ -10,10 +10,10 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     SVORN_REQUIRED_IDENTITY,
+    AdvancedSettings,
 )
 from fides.api.ops.schemas.messaging.messaging import (
     ConsentEmailFulfillmentBodyParams,
@@ -25,23 +25,10 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_connector import LimitedConnector
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.core.config import get_config
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 CONFIG = get_config()
 
-
-def get_required_identities(email_secrets: ConsentEmailSchema) -> List[str]:
-    """Return a list of identity types we need to email to the third party vendor.
-
-    Combines identities from browser-retrieved identities and supplied identities.
-    """
-    advanced_settings = email_secrets.advanced_settings
-    return [
-        identifier.value for identifier in advanced_settings.identity_types or []
-    ] + [
-        identifier.value
-        for identifier in advanced_settings.browser_identity_types or []
-    ]
+CONSENT_EMAIL_CONNECTOR_TYPES = [ConnectionType.sovrn]
 
 
 class EmailConsentConnector(LimitedConnector[None]):
@@ -56,7 +43,7 @@ class EmailConsentConnector(LimitedConnector[None]):
     def required_identities(self) -> List[str]:
         """Returns the identity types we need to supply to the third party for this connector"""
         config = ConsentEmailSchema(**self.configuration.secrets or {})
-        return get_required_identities(config)
+        return get_identity_types_for_connector(config)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
@@ -73,7 +60,7 @@ class EmailConsentConnector(LimitedConnector[None]):
             logger.info("Starting test connection to {}", self.configuration.key)
 
             # synchronous for now since failure to send is considered a connection test failure
-            send_consent_email(
+            send_single_consent_email(
                 db=Session.object_session(self.configuration),
                 subject_email=config.test_email_address,
                 subject_name=config.third_party_vendor_name,
@@ -97,69 +84,66 @@ class EmailConsentConnector(LimitedConnector[None]):
 
 
 class SovrnConsentConnector(EmailConsentConnector):
+    """SovrnConsentConnector - only need to override the details for the test email."""
+
     @property
     def user_test_identities(self) -> Dict[str, Any]:
         return {SVORN_REQUIRED_IDENTITY: "test_ljt_reader_id"}
 
 
-def consent_email_connector_send(
-    db: Session, privacy_request: PrivacyRequest, user_identity: Dict
-) -> None:
-    """
-    Send emails to configured processors with user consent preferences for when we can't
-    update via API directly.
-
-    """
-    email_consent_connection_configs = db.query(ConnectionConfig).filter(
-        ConnectionConfig.connection_type == ConnectionType.sovrn,
+def get_consent_email_connection_configs(db: Session) -> Query:
+    """Return enabled consent-type email connection configs."""
+    return db.query(ConnectionConfig).filter(
+        ConnectionConfig.connection_type.in_(CONSENT_EMAIL_CONNECTOR_TYPES),
         ConnectionConfig.disabled.is_(False),
     )
 
+
+def get_identity_types_for_connector(email_secrets: ConsentEmailSchema) -> List[str]:
+    """Return a list of identity types we need to email to the third party vendor.
+
+    Combines identities from browser-retrieved identity types and supplied identity types.
+    """
+    advanced_settings: AdvancedSettings = email_secrets.advanced_settings
+    return [
+        identifier.value for identifier in advanced_settings.identity_types or []
+    ] + [
+        identifier.value
+        for identifier in advanced_settings.browser_identity_types or []
+    ]
+
+
+def get_user_identities_for_connector(
+    secrets: ConsentEmailSchema, user_identities: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Filter identities to just those specified for a given connector"""
+    filtered_user_identities: Dict[str, Any] = {}
+    required_identities: List[str] = get_identity_types_for_connector(secrets)
+    for identity_type in required_identities:
+        if user_identities.get(identity_type):
+            filtered_user_identities[identity_type] = user_identities.get(identity_type)
+
+    return filtered_user_identities
+
+
+def needs_consent_email_send(db: Session, user_identity: Dict[str, Any]) -> bool:
+    """Returns True if there are email consent connectors configured
+    at least one necessary identity for that email connector has been obtained."""
+    email_consent_connection_configs: Query = get_consent_email_connection_configs(db)
+
     for connection_config in email_consent_connection_configs:
-        secrets = ConsentEmailSchema(**connection_config.secrets or {})
-
-        user_identities: Dict[str, Any] = {}
-        required_identities: List[str] = get_required_identities(secrets)
-        for identity_type in required_identities:
-            if user_identity.get(identity_type):
-                user_identities[identity_type] = user_identity.get(identity_type)
-
-        if user_identities:
-            logger.info(
-                "Email dispatched for consent request '{}' for : '{}'",
-                privacy_request.id,
-                connection_config.name,
-            )
-            send_consent_email(
-                db=db,
-                subject_email=secrets.recipient_email_address,
-                subject_name=secrets.third_party_vendor_name,
-                required_identities=required_identities,
-                user_consent_preferences=[
-                    ConsentPreferencesByUser(
-                        identities=user_identities,
-                        consent_preferences=privacy_request.consent_preferences,
-                    )
-                ],
-            )
-
-            AuditLog.create(
-                db=db,
-                data={
-                    "user_id": "system",
-                    "privacy_request_id": privacy_request.id,
-                    "action": AuditLogAction.email_sent,
-                    "message": f"Consent email instructions dispatched for '{connection_config.name}'",
-                },
-            )
-        else:
-            logger.info(
-                "Skipping email send for '{}': no user identities detected.",
-                connection_config.name,
-            )
+        secrets: ConsentEmailSchema = ConsentEmailSchema(
+            **connection_config.secrets or {}
+        )
+        filtered_user_identities = get_user_identities_for_connector(
+            secrets, user_identity
+        )
+        if filtered_user_identities:
+            return True
+    return False
 
 
-def send_consent_email(
+def send_single_consent_email(
     db: Session,
     subject_email: str,
     subject_name: str,
@@ -167,7 +151,7 @@ def send_consent_email(
     user_consent_preferences: List[ConsentPreferencesByUser],
     test_mode: bool = False,
 ) -> None:
-    """Sends a consent email"""
+    """Sends a single consent email"""
     org: Optional[Organization] = db.query(Organization).first()
 
     if not org:
