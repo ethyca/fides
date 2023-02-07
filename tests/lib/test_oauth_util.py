@@ -45,17 +45,16 @@ def test_is_token_expired(issued_at, token_duration_min, expected):
     assert is_token_expired(issued_at, token_duration_min) is expected
 
 
-def test_verify_oauth_malformed_oauth_client(db, config):
+async def test_verify_oauth_malformed_oauth_client(db, config):
     with pytest.raises(AuthorizationError):
-        verify_oauth_client(
+        await verify_oauth_client(
             SecurityScopes([USER_READ]),
             authorization="invalid",
             db=db,
-            config=config,
         )
 
 
-def test_verify_oauth_client_no_issued_at(db, config, user):
+async def test_verify_oauth_client_no_issued_at(db, config, user):
     payload = {
         JWE_PAYLOAD_SCOPES: [USER_READ],
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
@@ -67,15 +66,14 @@ def test_verify_oauth_client_no_issued_at(db, config, user):
         config.security.app_encryption_key,
     )
     with pytest.raises(AuthorizationError):
-        verify_oauth_client(
+        await verify_oauth_client(
             SecurityScopes([USER_READ]),
             token,
             db=db,
-            config=config,
         )
 
 
-def test_verify_oauth_client_expired(db, config, user):
+async def test_verify_oauth_client_expired(db, config, user):
     scope = [USER_READ]
     payload = {
         JWE_PAYLOAD_SCOPES: scope,
@@ -88,15 +86,14 @@ def test_verify_oauth_client_expired(db, config, user):
         config.security.app_encryption_key,
     )
     with pytest.raises(AuthorizationError):
-        verify_oauth_client(
+        await verify_oauth_client(
             SecurityScopes(scope),
             token,
             db=db,
-            config=config,
         )
 
 
-def test_verify_oauth_client_no_client_id(db, config):
+async def test_verify_oauth_client_no_client_id(db, config):
     scope = [USER_READ]
     payload = {
         JWE_PAYLOAD_SCOPES: scope,
@@ -109,15 +106,14 @@ def test_verify_oauth_client_no_client_id(db, config):
         config.security.app_encryption_key,
     )
     with pytest.raises(AuthorizationError):
-        verify_oauth_client(
+        await verify_oauth_client(
             SecurityScopes(scope),
             token,
             db=db,
-            config=config,
         )
 
 
-def test_verify_oauth_client_no_client(db, config, user):
+async def test_verify_oauth_client_no_client(db, config, user):
     scopes = [USER_READ]
     payload = {
         JWE_PAYLOAD_SCOPES: scopes,
@@ -132,10 +128,14 @@ def test_verify_oauth_client_no_client(db, config, user):
     user.client.delete(db)
     assert user.client is None
     with pytest.raises(AuthorizationError):
-        verify_oauth_client(SecurityScopes(scopes), token, db=db, config=config)
+        await verify_oauth_client(
+            SecurityScopes(scopes),
+            token,
+            db=db,
+        )
 
 
-def test_verify_oauth_client_wrong_security_scope(db, config, user):
+async def test_verify_oauth_client_wrong_security_scope(db, config, user):
     payload = {
         JWE_PAYLOAD_SCOPES: [USER_DELETE],
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
@@ -147,10 +147,14 @@ def test_verify_oauth_client_wrong_security_scope(db, config, user):
         config.security.app_encryption_key,
     )
     with pytest.raises(AuthorizationError):
-        verify_oauth_client(SecurityScopes([USER_READ]), token, db=db, config=config)
+        await verify_oauth_client(
+            SecurityScopes([USER_READ]),
+            token,
+            db=db,
+        )
 
 
-def test_verify_oauth_client_wrong_client_scope(db, config, user):
+async def test_verify_oauth_client_wrong_client_scope(db, config, user):
     scopes = [USER_READ]
     payload = {
         JWE_PAYLOAD_SCOPES: scopes,
@@ -164,9 +168,8 @@ def test_verify_oauth_client_wrong_client_scope(db, config, user):
     )
     user.client.scopes = [USER_DELETE]
     with pytest.raises(AuthorizationError):
-        verify_oauth_client(
+        await verify_oauth_client(
             SecurityScopes(scopes),
             token,
             db=db,
-            config=config,
         )
