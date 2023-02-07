@@ -105,7 +105,6 @@ async def get_resource_with_custom_field(
                     )
                     .where(sql_model.fides_key == fides_key)
                 )
-                # print(f"{str(query)=}")
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
@@ -115,9 +114,8 @@ async def get_resource_with_custom_field(
                 raise sa_error
 
             sql_resource = result.mappings().all()
-            # print(f"{sql_resource=}")
 
-            if sql_resource is None:
+            if not sql_resource:
                 not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
                 log.bind(error=not_found_error.detail["error"]).error("Resource not found")  # type: ignore[index]
                 raise not_found_error
