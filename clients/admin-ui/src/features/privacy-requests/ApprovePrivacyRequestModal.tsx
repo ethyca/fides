@@ -3,26 +3,26 @@ import React, { useCallback } from "react";
 
 type ApproveModalProps = {
   isOpen: boolean;
-  handleMenuClose: () => void;
-  handleApproveRequest: () => Promise<any>;
+  onClose: () => void;
+  onApproveRequest: () => Promise<any>;
   isLoading: boolean;
 };
 
 const ApprovePrivacyRequestModal = ({
   isOpen,
-  handleMenuClose,
-  handleApproveRequest,
+  onClose,
+  onApproveRequest,
   isLoading,
 }: ApproveModalProps) => {
   const handleSubmit = useCallback(() => {
-    handleApproveRequest().then(() => {
-      handleMenuClose();
+    onApproveRequest().then(() => {
+      onClose();
     });
-  }, [handleApproveRequest, handleMenuClose]);
+  }, [onApproveRequest, onClose]);
   return (
     <ConfirmationModal
       isOpen={isOpen}
-      onClose={handleMenuClose}
+      onClose={onClose}
       onConfirm={handleSubmit}
       message="Are you sure you want to approve this privacy request?"
       continueButtonText="Confirm"
