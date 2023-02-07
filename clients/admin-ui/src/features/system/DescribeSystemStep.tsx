@@ -5,14 +5,13 @@ import { Form, Formik } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { changeStep } from "~/features/config-wizard/config-wizard.slice";
 import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormExtension";
 import {
   defaultInitialValues,
@@ -47,12 +46,14 @@ const SystemHeading = ({ system }: { system?: System }) => {
 
 interface Props {
   onSuccess: (system: System) => void;
+  onCancel: () => void;
   abridged?: boolean;
   system?: System;
 }
 
 const DescribeSystemStep = ({
   onSuccess,
+  onCancel,
   abridged,
   system: passedInSystem,
 }: Props) => {
@@ -66,7 +67,6 @@ const DescribeSystemStep = ({
   const [createSystem] = useCreateSystemMutation();
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
-  const dispatch = useAppDispatch();
   const systems = useAppSelector(selectAllSystems);
   const systemOptions = systems
     ? systems.map((s) => ({ label: s.name ?? s.fides_key, value: s.fides_key }))
@@ -81,10 +81,6 @@ const DescribeSystemStep = ({
   );
 
   const toast = useToast();
-
-  const handleBack = () => {
-    dispatch(changeStep(2));
-  };
 
   const handleSubmit = async (values: FormValues) => {
     const systemBody = transformFormValuesToSystem(values);
@@ -192,13 +188,13 @@ const DescribeSystemStep = ({
             </Stack>
             <Box>
               <Button
-                onClick={handleBack}
+                onClick={onCancel}
                 mr={2}
                 size="sm"
                 variant="outline"
                 data-testid="back-btn"
               >
-                Back
+                Cancel
               </Button>
               <Button
                 type="submit"

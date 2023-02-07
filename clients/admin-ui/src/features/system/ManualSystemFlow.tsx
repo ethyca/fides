@@ -66,11 +66,19 @@ const ManualSystemFlow = () => {
     [currentStepIndex, dispatch]
   );
 
+  const decrementStep = () => {
+    setCurrentStepIndex(currentStepIndex - 1);
+  };
+
   const TABS: TabData[] = [
     {
       label: STEPS[0],
       content: (
-        <DescribeSystemStep onSuccess={handleSuccess} system={activeSystem} />
+        <DescribeSystemStep
+          onSuccess={handleSuccess}
+          onCancel={goBack}
+          system={activeSystem}
+        />
       ),
     },
     {
@@ -78,6 +86,7 @@ const ManualSystemFlow = () => {
       content: activeSystem ? (
         <PrivacyDeclarationStep
           system={activeSystem as System}
+          onCancel={goBack}
           onSuccess={handleSuccess}
         />
       ) : null,
@@ -88,17 +97,8 @@ const ManualSystemFlow = () => {
       content: activeSystem ? (
         <ReviewSystemStep
           system={activeSystem as System}
-          onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
-        />
-      ) : null,
-      isDisabled: !activeSystem,
-    },
-    {
-      label: STEPS[3],
-      content: activeSystem ? (
-        <SystemRegisterSuccess
-          system={activeSystem as System}
-          onAddNextSystem={goBack}
+          onCancel={goBack}
+          onSuccess={goBack}
         />
       ) : null,
       isDisabled: !activeSystem,
@@ -135,18 +135,21 @@ const ManualSystemFlow = () => {
             {currentStepIndex === 0 ? (
               <DescribeSystemStep
                 onSuccess={handleSuccess}
+                onCancel={goBack}
                 system={activeSystem}
               />
             ) : null}
             {currentStepIndex === 1 && activeSystem ? (
               <PrivacyDeclarationStep
                 system={activeSystem}
+                onCancel={decrementStep}
                 onSuccess={handleSuccess}
               />
             ) : null}
             {currentStepIndex === 2 && activeSystem ? (
               <ReviewSystemStep
                 system={activeSystem}
+                onCancel={decrementStep}
                 onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
               />
             ) : null}

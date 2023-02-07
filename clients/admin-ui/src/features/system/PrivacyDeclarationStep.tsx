@@ -4,9 +4,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery"
 import { FormikHelpers } from "formik";
 import { Fragment, useState } from "react";
 
-import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { changeReviewStep } from "~/features/config-wizard/config-wizard.slice";
 import { PrivacyDeclaration, System } from "~/types/api";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
@@ -26,21 +24,22 @@ const transformFormValuesToDeclaration = (
 interface Props {
   system: System;
   onSuccess: (system: System) => void;
+  onCancel: () => void;
   abridged?: boolean;
 }
 
-const PrivacyDeclarationStep = ({ system, onSuccess, abridged }: Props) => {
+const PrivacyDeclarationStep = ({
+  system,
+  onSuccess,
+  onCancel,
+  abridged,
+}: Props) => {
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<
     PrivacyDeclaration[]
   >(system?.privacy_declarations ? [...system.privacy_declarations] : []);
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
-  const dispatch = useAppDispatch();
-
-  const handleBack = () => {
-    dispatch(changeReviewStep(1));
-  };
 
   const handleSubmit = async () => {
     const systemBodyWithDeclaration = {
@@ -146,13 +145,13 @@ const PrivacyDeclarationStep = ({ system, onSuccess, abridged }: Props) => {
       <PrivacyDeclarationForm onSubmit={addDeclaration} abridged={abridged} />
       <Box>
         <Button
-          onClick={handleBack}
+          onClick={onCancel}
           mr={2}
           size="sm"
           variant="outline"
           data-testid="back-btn"
         >
-          Back
+          Cancel
         </Button>
         <Button
           colorScheme="primary"

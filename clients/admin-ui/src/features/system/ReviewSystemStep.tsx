@@ -10,11 +10,9 @@ import {
 import { Form, Formik } from "formik";
 import { Fragment } from "react";
 
-import { useAppDispatch } from "~/app/hooks";
 import ReviewSystemFormExtension from "~/features/system/ReviewSystemFormExtension";
 import { System } from "~/types/api";
 
-import { changeReviewStep } from "../config-wizard/config-wizard.slice";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import { ReviewItem } from "./form-layout";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
@@ -22,16 +20,11 @@ import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 interface Props {
   system: System;
   onSuccess: () => void;
+  onCancel: () => void;
   abridged?: boolean;
 }
 
-const ReviewSystemStep = ({ system, onSuccess, abridged }: Props) => {
-  const dispatch = useAppDispatch();
-
-  const handleBack = () => {
-    dispatch(changeReviewStep(2));
-  };
-
+const ReviewSystemStep = ({ system, onSuccess, onCancel, abridged }: Props) => {
   const handleSubmit = () => {
     onSuccess();
   };
@@ -85,13 +78,13 @@ const ReviewSystemStep = ({ system, onSuccess, abridged }: Props) => {
           </Stack>
           <Box>
             <Button
-              onClick={handleBack}
+              onClick={onCancel}
               mr={2}
               size="sm"
               variant="outline"
               data-testid="back-btn"
             >
-              Back
+              Cancel
             </Button>
             {/* TODO FUTURE: This button doesn't do any registering yet until data maps are added */}
             <Button
