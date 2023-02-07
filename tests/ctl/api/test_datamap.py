@@ -20,7 +20,6 @@ def test_datamap(
     expected_status_code: int,
     test_client: TestClient,
 ) -> None:
-    print(test_config)
     response = test_client.get(
         test_config.cli.server_url + API_PREFIX + "/datamap/" + organization_fides_key,
         headers=test_config.user.request_headers,

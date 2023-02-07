@@ -1,11 +1,13 @@
 from json import dumps
 from typing import Generator, List
+from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl import sql_models
 from fides.api.ctl.database.crud import (
+    create_resource,
     delete_resource,
     get_resource_with_custom_field,
     list_resource,
@@ -68,13 +70,14 @@ async def test_cascade_delete_taxonomy_children(
     assert len(set(keys).intersection(remaining_keys)) == 0
 
 
-async def test_get_resouce_with_custom_field(db, async_session):
+async def test_get_resource_with_custom_field(db, async_session):
     system_data = {
-        "registry_id": 1,
+        "registry_id": "1",
         "system_type": "test",
-        "fides_key": "system_test",
+        "fides_key": str(uuid4()),
     }
-    system = sql_models.System.create(db=db, data=system_data)
+
+    system = await create_resource(sql_models.System, system_data, async_session)
 
     custom_definition_data = {
         "name": "test1",
@@ -92,16 +95,19 @@ async def test_get_resouce_with_custom_field(db, async_session):
         db=db,
         data={
             "resource_type": custom_field_definition.resource_type,
-            "resource_id": system.id,
+            "resource_id": system.fides_key,
             "custom_field_definition_id": custom_field_definition.id,
             "value": "Test value 1",
         },
     )
 
     result = await get_resource_with_custom_field(
-        sql_models.System, system.id, async_session
+        sql_models.System, system.fides_key, async_session
     )
     print("here")
-    print(result.__dict__)
+    print(f"{result.fides_key=}")
+    # print(f"{result.plus_custom_field.value=}")
+    for k in result.__dict__:
+        print(k)
 
     assert 0
