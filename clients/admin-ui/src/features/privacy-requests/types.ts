@@ -130,10 +130,6 @@ export interface ConfigDetailsResponse {
 
 export interface MessagingRequest {
   type: string;
-  details: {
-    is_eu_domain: boolean;
-    domain: string;
-  };
 }
 
 export interface MessagingResponse {

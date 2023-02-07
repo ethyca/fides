@@ -379,16 +379,16 @@ export const privacyRequestApi = createApi({
       }),
     }),
     getMessagingConfigurationDetails: build.query<
-      MessagingRequest,
-      MessagingResponse
+      MessagingResponse,
+      MessagingRequest
     >({
       query: (params) => ({
         url: `messaging/default/${params.type}`,
       }),
     }),
     createMessagingConfiguration: build.mutation<
-      MessagingRequest,
-      MessagingResponse
+      MessagingResponse,
+      MessagingRequest
     >({
       query: (params) => ({
         url: `messaging/default/${params.type}`,
@@ -397,8 +397,8 @@ export const privacyRequestApi = createApi({
       }),
     }),
     createMessagingConfigurationSecrets: build.mutation<
-      MessagingRequest,
-      MessagingResponse
+      MessagingResponse,
+      MessagingRequest
     >({
       query: (params) => ({
         url: `messaging/default/${params.type}/secret`,
