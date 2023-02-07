@@ -22,6 +22,9 @@ The types of changes are:
 
 ### Changed
 * Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
+### Fixed
+
+* Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
 
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
 
