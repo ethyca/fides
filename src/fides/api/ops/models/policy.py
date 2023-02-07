@@ -252,7 +252,7 @@ class Rule(Base):
         ForeignKey(StorageConfig.id_field_path),
         nullable=True,
     )
-    _storage_destination = relationship(
+    storage_destination = relationship(
         StorageConfig,
         backref="rules",
     )
@@ -324,8 +324,8 @@ class Rule(Base):
         If the Rule does not have an explicit `storage_destination` set, then the
         application's default storage config will be returned
         """
-        if self._storage_destination:
-            return self._storage_destination
+        if self.storage_destination:
+            return self.storage_destination
         storage_destination = get_active_default_storage_config(db)
         if storage_destination is None:
             raise StorageConfigNotFoundException(

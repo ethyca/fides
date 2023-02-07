@@ -354,11 +354,11 @@ def test_rule_get_storage_destination_local(
     rule_storage_config = rule.get_storage_destination(db)
     assert rule_storage_config == storage_config
 
-    rule._storage_destination = None
+    rule.storage_destination = None
     rule_storage_config = rule.get_storage_destination(db)
     assert rule_storage_config == storage_config_default_local
 
-    rule._storage_destination = storage_config
+    rule.storage_destination = storage_config
     rule_storage_config = rule.get_storage_destination(db)
     assert rule_storage_config == storage_config
 
@@ -372,7 +372,7 @@ def test_rule_get_storage_destination_non_local(
     works as expected to retrieve a non-local storage config
     """
     rule: Rule = policy.rules[0]
-    rule._storage_destination = None
+    rule.storage_destination = None
     rule_storage_config = rule.get_storage_destination(db)
 
     assert rule_storage_config == storage_config_default
@@ -388,7 +388,7 @@ def test_rule_get_storage_destination_not_found(
     throws an error if the active default storage hasn't been configured
     """
     rule: Rule = policy.rules[0]
-    rule._storage_destination = None
+    rule.storage_destination = None
 
     with pytest.raises(StorageConfigNotFoundException):
         rule_storage_config = rule.get_storage_destination(db)
