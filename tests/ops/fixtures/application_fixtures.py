@@ -15,7 +15,7 @@ from toml import load as load_toml
 from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ctl.sql_models import System
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fides.api.ops.models.application_settings import ApplicationSettings
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -39,7 +39,7 @@ from fides.api.ops.models.storage import (
     _create_local_default_storage,
     default_storage_config_name,
 )
-from fides.api.ops.schemas.application_settings import ACTIVE_DEFAULT_STORAGE_PROPERTY
+from fides.api.ops.schemas.application_config import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
@@ -221,7 +221,7 @@ def storage_config_default_local(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def set_active_storage_s3(db) -> None:
-    ApplicationSettings.create_or_update(
+    ApplicationConfig.create_or_update(
         db,
         data={"api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.s3.value}},
     )

@@ -22,6 +22,7 @@ CLIENT_READ = "client:read"
 CLIENT_DELETE = "client:delete"
 
 CONFIG_READ = "config:read"
+CONFIG_UPDATE = "config:update"
 
 CONNECTION_TYPE_READ = "connection_type:read"
 
@@ -92,9 +93,6 @@ USER_PERMISSION_CREATE = "user-permission:create"
 USER_PERMISSION_UPDATE = "user-permission:update"
 USER_PERMISSION_READ = "user-permission:read"
 
-SETTINGS_READ = "settings:read"
-SETTINGS_UPDATE = "settings:update"
-
 VALIDATE_EXEC = "validate:exec"
 
 WEBHOOK_CREATE_OR_UPDATE = "webhook:create_or_update"
@@ -112,6 +110,7 @@ SCOPE_REGISTRY = [
     CLIENT_READ,
     CLIENT_DELETE,
     CONFIG_READ,
+    CONFIG_UPDATE,
     CONNECTION_READ,
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -163,7 +162,5 @@ SCOPE_REGISTRY = [
     USER_PERMISSION_CREATE,
     USER_PERMISSION_UPDATE,
     USER_PERMISSION_READ,
-    SETTINGS_READ,
-    SETTINGS_UPDATE,
     VALIDATE_EXEC,
 ]

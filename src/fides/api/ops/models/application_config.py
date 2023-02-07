@@ -17,11 +17,11 @@ from fides.lib.db.base_class import Base
 CONFIG = get_config()
 
 
-class ApplicationSettings(Base):
+class ApplicationConfig(Base):
     """
-    Stores application settings, set through different mechanisms, as JSON blobs in the DB.
+    Stores application config settings, set through different mechanisms, as JSON blobs in the DB.
 
-    This is a single-row table. The single record describes global application settings.
+    This is a single-row table. The single record describes global application config settings.
     """
 
     api_set = Column(
@@ -35,7 +35,7 @@ class ApplicationSettings(Base):
         ),
         nullable=False,
         default={},
-    )  # store as encrypted JSON blob since settings may have sensitive data
+    )  # store as encrypted JSON blob since config settings may have sensitive data
     single_row = Column(
         Boolean, primary_key=True, default=True
     )  # used to constrain table to one row
@@ -45,9 +45,9 @@ class ApplicationSettings(Base):
     @classmethod
     def create_or_update(  # type: ignore[override]
         cls, db: Session, *, data: Dict[str, Any]
-    ) -> ApplicationSettings:
+    ) -> ApplicationConfig:
         """
-        Creates the settings record if none exists, or updates the existing record.
+        Creates the config record if none exists, or updates the existing record.
 
         Here we effectively prevent more than a single record in the table.
         """
@@ -58,27 +58,27 @@ class ApplicationSettings(Base):
 
         return cls.create(db=db, data=data)
 
-    def update(self, db: Session, data: Dict[str, Any]) -> ApplicationSettings:  # type: ignore[override]
+    def update(self, db: Session, data: Dict[str, Any]) -> ApplicationConfig:  # type: ignore[override]
         """
-        Updates the settings record, merging contents of the JSON column
+        Updates the config record, merging contents of the JSON column
         """
-        incoming_settings = data["api_set"]
-        if not isinstance(incoming_settings, dict):
+        incoming_config = data["api_set"]
+        if not isinstance(incoming_config, dict):
             raise ValueError("`api_set` column must be a dictionary")
 
         # update, i.e. merge, the `api_set` dict
-        self.api_set.update(incoming_settings)
+        self.api_set.update(incoming_config)
         self.save(db=db)
         return self
 
     @classmethod
-    def get_api_set_settings(cls, db: Session) -> Dict[str, Any]:
+    def get_api_set_config(cls, db: Session) -> Dict[str, Any]:
         """
-        Utility method to get the api_set settings dict
+        Utility method to get the api_set config settings dict
 
-        An empty `dict` will be returned if no settings have been set through the API
+        An empty `dict` will be returned if no config settings have been set through the API
         """
-        settings_record = db.query(cls).first()
-        if settings_record:
-            return settings_record.api_set
+        config_record = db.query(cls).first()
+        if config_record:
+            return config_record.api_set
         return {}

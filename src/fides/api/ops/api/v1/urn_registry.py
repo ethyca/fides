@@ -152,6 +152,3 @@ DRP_REVOKE = "/drp/revoke"
 
 # Registration
 REGISTRATION = "/registration"
-
-# Application Settings
-APPLICATION_SETTINGS = "/application/settings"

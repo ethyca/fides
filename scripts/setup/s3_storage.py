@@ -52,7 +52,7 @@ def create_s3_storage(
             f"fides storage secrets failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
 
-    url = f"{constants.BASE_URL}{urls.APPLICATION_SETTINGS}"
+    url = f"{constants.BASE_URL}{urls.CONFIG}"
     response = requests.patch(
         url,
         headers=auth_header,

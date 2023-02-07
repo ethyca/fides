@@ -24,9 +24,7 @@ from fides.api.ops.api.v1.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.application_settings import ApplicationSettings
 from fides.api.ops.models.storage import StorageConfig, default_storage_config_name
-from fides.api.ops.schemas.application_settings import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,

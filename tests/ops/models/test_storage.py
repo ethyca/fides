@@ -4,14 +4,14 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.application_settings import ApplicationSettings
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.storage import (
     StorageConfig,
     default_storage_config_name,
     get_active_default_storage_config,
     get_default_storage_config_by_type,
 )
-from fides.api.ops.schemas.application_settings import ACTIVE_DEFAULT_STORAGE_PROPERTY
+from fides.api.ops.schemas.application_config import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
@@ -230,7 +230,7 @@ class TestStorageConfigModel:
 
         # now we mimic setting the active default storage type in the API
         # and we should get back the default s3 storage config created in the fixture
-        ApplicationSettings.create_or_update(
+        ApplicationConfig.create_or_update(
             db,
             data={"api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.s3.value}},
         )
@@ -245,7 +245,7 @@ class TestStorageConfigModel:
 
         # mimic setting active default back to `local` via API
         # and we should get back the local default config
-        ApplicationSettings.create_or_update(
+        ApplicationConfig.create_or_update(
             db,
             data={
                 "api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.local.value}
