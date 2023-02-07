@@ -82,6 +82,9 @@ async def test_kustomer_erasure_request_task(
 ) -> None:
     """Full erasure request based on the kustomer SaaS config"""
 
+    masking_strict = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False  # Allow Delete
+
     privacy_request = PrivacyRequest(
         id=f"test_kustomer_erasure_request_task_{random.randint(0, 1000)}"
     )
@@ -138,4 +141,7 @@ async def test_kustomer_erasure_request_task(
         headers=headers,
     )
     customer = response.json()
-    assert customer["data"]["attributes"]["emails"][0]["email"] == "MASKED"
+
+    assert response.status_code == 404
+
+    CONFIG.execution.masking_strict = masking_strict

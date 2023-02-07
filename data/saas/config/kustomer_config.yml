@@ -32,13 +32,9 @@ saas_config:
           param_values:
             - name: email
               identity: email
-        update:
-          method: PUT
+        delete:
+          method: DELETE
           path: /v1/customers/<customer_id>
-          body: |
-            {
-              <masked_object_fields>
-            }
           param_values:
             - name: customer_id
               references:

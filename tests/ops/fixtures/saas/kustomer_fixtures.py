@@ -129,6 +129,4 @@ def kustomer_create_erasure_data(
 
     customer_response = requests.post(url=f"{base_url}/v1/customers", headers=headers, json=body)
     customer = customer_response.json()
-    print("KEL")
-    print(customer)
     yield customer
