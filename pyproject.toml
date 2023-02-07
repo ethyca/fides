@@ -156,11 +156,11 @@ log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
 log_level = "INFO"
-addopts = ["--cov=fides",
-            "--cov-branch",
-            "-ra",
-            "-vv",
-            "--disable-pytest-warnings"]
+addopts = [
+    "-ra",
+    "-vv",
+    "--disable-pytest-warnings"
+]
 markers = [
     "unit: only runs tests that don't require non-python dependencies (i.e. a database)",
     "integration: only runs tests that require application dependencies (i.e. a database)",
