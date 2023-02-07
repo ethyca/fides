@@ -88,7 +88,7 @@ def test_create_erasure_rule_with_destination_is_invalid(
                 "client_id": policy.client_id,
                 "name": "Invalid Rule",
                 "policy_id": policy.id,
-                "storage_destination_id": policy.rules[0]._storage_destination.id,
+                "storage_destination_id": policy.rules[0].storage_destination.id,
                 "masking_strategy": {
                     "strategy": HashMaskingStrategy.name,
                     "configuration": {
@@ -129,7 +129,7 @@ def test_create_rule_no_action_is_invalid(
                 "client_id": policy.client_id,
                 "name": "Invalid Rule",
                 "policy_id": policy.id,
-                "storage_destination_id": policy.rules[0]._storage_destination.id,
+                "storage_destination_id": policy.rules[0].storage_destination.id,
             },
         )
     assert exc.value.args[0] == "action_type is required."
@@ -147,7 +147,7 @@ def test_update_action_is_unsupported(
                 "client_id": policy.client_id,
                 "name": "Invalid Rule",
                 "policy_id": policy.id,
-                "storage_destination_id": policy.rules[0]._storage_destination.id,
+                "storage_destination_id": policy.rules[0].storage_destination.id,
             },
         )
     assert exc.value.args[0] == "update Rules are not supported at this time."
@@ -164,7 +164,7 @@ def test_create_access_rule(
             "client_id": policy.client_id,
             "name": "Valid Access Rule",
             "policy_id": policy.id,
-            "storage_destination_id": policy.rules[0]._storage_destination.id,
+            "storage_destination_id": policy.rules[0].storage_destination.id,
         },
     )
     assert Rule.get(db=db, object_id=rule.id) is not None
