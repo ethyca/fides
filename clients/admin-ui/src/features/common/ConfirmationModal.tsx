@@ -44,7 +44,7 @@ const ConfirmationModal = ({
     isOpen={isOpen}
     onClose={onClose}
     size="lg"
-    returnFocusOnClose={returnFocusOnClose || true}
+    returnFocusOnClose={returnFocusOnClose ?? true}
     isCentered={isCentered}
   >
     <ModalOverlay />
