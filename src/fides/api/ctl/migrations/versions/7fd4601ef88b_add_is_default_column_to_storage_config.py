@@ -41,7 +41,7 @@ def upgrade():
     )
     for row in existing_storageconfigs:
         update_storage_config_query: TextClause = text(
-            "UPDATE storageconfig SET is_default = true WHERE id= :storageconfig_id"
+            "UPDATE storageconfig SET is_default = false WHERE id= :storageconfig_id"
         )
         bind.execute(update_storage_config_query, {"storageconfig_id": row["id"]})
 
