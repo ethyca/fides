@@ -249,9 +249,18 @@ async def test_vend_erasure_request_task(
     response = requests.get(
         url=f"{base_url}/api/2.0/search",
         headers=headers,
-        params={"type": "customer", "email": vend_erasure_identity_email},
+        params={"type": "customers", "email": vend_erasure_identity_email},
     )
-    # Since user is masked, we should see masked strings returns 
-    # assert ??/
+    customer_id = response.json()['data'][0]['id']
+    response.json()['data'][0]['email'] == vend_erasure_identity_email
+    
+    #sales
+    sales_response = requests.get(
+        url=f"{base_url}/api/2.0/search",
+        headers=headers,
+        params={"type": "sales", "customer_id": customer_id},
+    ) 
+   
+    assert sales_response.status_code == 200
 
     CONFIG.execution.masking_strict = masking_strict
