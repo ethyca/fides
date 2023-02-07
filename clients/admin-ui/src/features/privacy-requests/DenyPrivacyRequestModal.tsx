@@ -14,36 +14,40 @@ import * as Yup from "yup";
 
 type DenyModalProps = {
   isOpen: boolean;
-  handleMenuClose: () => void;
-  handleDenyRequest: (reason: string) => Promise<any>;
+  onClose: () => void;
+  onDenyRequest: (reason: string) => Promise<any>;
 };
 
 const initialValues = { denialReason: "" };
 type FormValues = typeof initialValues;
 const DenyPrivacyRequestModal = ({
   isOpen,
-  handleMenuClose,
-  handleDenyRequest,
+  onClose,
+  onDenyRequest,
 }: DenyModalProps) => {
   const handleSubmit = useCallback(
     (values: FormValues, formikHelpers: FormikHelpers<FormValues>) => {
       const { setSubmitting } = formikHelpers;
-      handleDenyRequest(values.denialReason).then(() => {
+      onDenyRequest(values.denialReason).then(() => {
         setSubmitting(false);
-        handleMenuClose();
+        onClose();
       });
     },
-    [handleDenyRequest, handleMenuClose]
+    [onDenyRequest, onClose]
   );
   return (
     <Modal
       isOpen={isOpen}
-      onClose={handleMenuClose}
+      onClose={onClose}
       isCentered
       returnFocusOnClose={false}
     >
       <ModalOverlay />
-      <ModalContent width="100%" maxWidth="456px">
+      <ModalContent
+        width="100%"
+        maxWidth="456px"
+        data-testid="deny-privacy-request-modal"
+      >
         <Formik
           initialValues={initialValues}
           validationSchema={Yup.object({
@@ -75,7 +79,7 @@ const DenyPrivacyRequestModal = ({
                   colorScheme="gray.200"
                   mr={3}
                   disabled={isSubmitting}
-                  onClick={handleMenuClose}
+                  onClick={onClose}
                 >
                   Close
                 </Button>
@@ -88,6 +92,7 @@ const DenyPrivacyRequestModal = ({
                   variant="solid"
                   disabled={!dirty || !isValid}
                   isLoading={isSubmitting}
+                  data-testid="deny-privacy-request-modal-btn"
                 >
                   Confirm
                 </Button>
