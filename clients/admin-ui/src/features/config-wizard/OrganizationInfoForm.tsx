@@ -134,7 +134,7 @@ const OrganizationInfoForm = () => {
   return (
     <chakra.form
       onSubmit={handleSubmit}
-      w="100%"
+      w="40%"
       data-testid="organization-info-form"
     >
       <Stack spacing={10}>
