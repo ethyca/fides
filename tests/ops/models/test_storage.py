@@ -11,7 +11,6 @@ from fides.api.ops.models.storage import (
     get_active_default_storage_config,
     get_default_storage_config_by_type,
 )
-from fides.api.ops.schemas.application_config import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
@@ -232,7 +231,11 @@ class TestStorageConfigModel:
         # and we should get back the default s3 storage config created in the fixture
         ApplicationConfig.create_or_update(
             db,
-            data={"api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.s3.value}},
+            data={
+                "api_set": {
+                    "storage": {"active_default_storage_type": StorageType.s3.value}
+                }
+            },
         )
         retrieved_config = get_active_default_storage_config(db)
         assert retrieved_config == storage_config_default
@@ -248,7 +251,9 @@ class TestStorageConfigModel:
         ApplicationConfig.create_or_update(
             db,
             data={
-                "api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.local.value}
+                "api_set": {
+                    "storage": {"active_default_storage_type": StorageType.local.value}
+                }
             },
         )
         retrieved_config = get_active_default_storage_config(db)

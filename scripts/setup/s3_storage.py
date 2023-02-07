@@ -56,7 +56,7 @@ def create_s3_storage(
     response = requests.patch(
         url,
         headers=auth_header,
-        json={"fides.storage.active_default_storage_type": "s3"},
+        json={"storage": {"active_default_storage_type": "s3"}},
     )
     if not response.ok:
         raise RuntimeError(

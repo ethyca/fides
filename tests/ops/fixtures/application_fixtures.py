@@ -39,7 +39,6 @@ from fides.api.ops.models.storage import (
     _create_local_default_storage,
     default_storage_config_name,
 )
-from fides.api.ops.schemas.application_config import ACTIVE_DEFAULT_STORAGE_PROPERTY
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
@@ -223,7 +222,11 @@ def storage_config_default_local(db: Session) -> Generator:
 def set_active_storage_s3(db) -> None:
     ApplicationConfig.create_or_update(
         db,
-        data={"api_set": {ACTIVE_DEFAULT_STORAGE_PROPERTY: StorageType.s3.value}},
+        data={
+            "api_set": {
+                "storage": {"active_default_storage_type": StorageType.s3.value}
+            }
+        },
     )
 
 

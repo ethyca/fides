@@ -13,9 +13,6 @@ from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.application_config import (
     ApplicationConfig as ApplicationConfigSchema,
 )
-from fides.api.ops.schemas.application_config import (
-    ApplicationConfigUpdate as ApplicationConfigUpdateSchema,
-)
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import censor_config
@@ -50,7 +47,7 @@ def get_config(
 def update_settings(
     *,
     db: Session = Depends(deps.get_db),
-    data: ApplicationConfigUpdateSchema,
+    data: ApplicationConfigSchema,
 ) -> ApplicationConfigSchema:
     """
     Updates the global application settings record.

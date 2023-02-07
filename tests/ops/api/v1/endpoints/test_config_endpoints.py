@@ -5,8 +5,7 @@ from starlette.testclient import TestClient
 from fides.api.ops.api.v1 import scope_registry as scopes
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.application_config import ApplicationConfig
-
-ACTIVE_DEFAULT_STORAGE_KEY = "fides.storage.active_default_storage_type"
+from fides.api.ops.schemas.storage.storage import StorageType
 
 
 class TestPatchApplicationConfig:
@@ -16,7 +15,7 @@ class TestPatchApplicationConfig:
 
     @pytest.fixture(scope="function")
     def payload(self):
-        return {ACTIVE_DEFAULT_STORAGE_KEY: "s3"}
+        return {"storage": {"active_default_storage_type": StorageType.s3.value}}
 
     def test_patch_application_config_unauthenticated(
         self, api_client: TestClient, payload, url
@@ -39,17 +38,22 @@ class TestPatchApplicationConfig:
         payload,
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
-        response = api_client.patch(url, headers=auth_header, json={"bad_key": "12345"})
+        response = api_client.patch(
+            url, headers=auth_header, json={"storage": {"bad_key": "s3"}}
+        )
         assert response.status_code == 422
-        assert "Prohibited config key" in response.text
-        assert "bad_key" in response.text
+
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json={"bad_key": {"active_default_storage_type": "s3"}},
+        )
+        assert response.status_code == 422
 
         # now test payload with both a good key and a bad key - should be rejected
         payload["bad_key"] = "12345"
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 422
-        assert "Prohibited config key" in response.text
-        assert "bad_key" in response.text
 
     def test_patch_application_config_with_invalid_value(
         self, api_client: TestClient, generate_auth_header, url
@@ -58,18 +62,25 @@ class TestPatchApplicationConfig:
         response = api_client.patch(
             url,
             headers=auth_header,
-            json={ACTIVE_DEFAULT_STORAGE_KEY: 33},
+            json={"storage": {"active_default_storage_type": 33}},
         )
         assert response.status_code == 422
-        assert "must be a string" in response.text
 
         response = api_client.patch(
             url,
             headers=auth_header,
-            json={ACTIVE_DEFAULT_STORAGE_KEY: "fake_storage_type"},
+            json={"storage": {"active_default_storage_type": "fake_storage_type"}},
         )
         assert response.status_code == 422
-        assert "must be one of the allowed values" in response.text
+
+        # gcs is valid storage type but not allowed currently
+        # as an `active_default_storage_type``
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json={"storage": {"active_default_storage_type": StorageType.gcs.value}},
+        )
+        assert response.status_code == 422
 
     def test_patch_application_config_empty_body(
         self,
@@ -84,7 +95,6 @@ class TestPatchApplicationConfig:
             json={},
         )
         assert response.status_code == 422
-        assert "A config settings object must be provided" in response.text
 
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.patch(
@@ -109,11 +119,11 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 200
         response_settings = response.json()
-        assert response_settings[ACTIVE_DEFAULT_STORAGE_KEY] == "s3"
+        assert response_settings["storage"]["active_default_storage_type"] == "s3"
         db_settings = db.query(ApplicationConfig).first()
-        assert db_settings.api_set[ACTIVE_DEFAULT_STORAGE_KEY] == "s3"
+        assert db_settings.api_set["storage"]["active_default_storage_type"] == "s3"
 
-        payload[ACTIVE_DEFAULT_STORAGE_KEY] = "local"
+        payload["storage"]["active_default_storage_type"] = "local"
         response = api_client.patch(
             url,
             headers=auth_header,
@@ -121,9 +131,9 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 200
         response_settings = response.json()
-        assert response_settings[ACTIVE_DEFAULT_STORAGE_KEY] == "local"
+        assert response_settings["storage"]["active_default_storage_type"] == "local"
         db.refresh(db_settings)
-        assert db_settings.api_set[ACTIVE_DEFAULT_STORAGE_KEY] == "local"
+        assert db_settings.api_set["storage"]["active_default_storage_type"] == "local"
 
     # TODO: once our schema allows for more than just a single settings field,
     # we need to test that the PATCH can specify one or many settings fields
@@ -137,19 +147,17 @@ class TestGetApplicationConfigApiSet:
 
     @pytest.fixture(scope="function")
     def payload(self):
-        return {ACTIVE_DEFAULT_STORAGE_KEY: "s3"}
+        return {"storage": {"active_default_storage_type": StorageType.s3.value}}
 
-    def test_get_application_config_unauthenticated(
-        self, api_client: TestClient, payload, url
-    ):
-        response = api_client.get(url, headers={}, json=payload)
+    def test_get_application_config_unauthenticated(self, api_client: TestClient, url):
+        response = api_client.get(url, headers={})
         assert 401 == response.status_code
 
     def test_get_application_config_wrong_scope(
-        self, api_client: TestClient, payload, url, generate_auth_header
+        self, api_client: TestClient, url, generate_auth_header
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
-        response = api_client.get(url, headers=auth_header, json=payload)
+        response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
     def test_get_application_config_empty_settings(
@@ -195,8 +203,8 @@ class TestGetApplicationConfigApiSet:
         assert response.status_code == 200
         response_settings = response.json()
         assert (
-            response_settings[ACTIVE_DEFAULT_STORAGE_KEY]
-            == payload[ACTIVE_DEFAULT_STORAGE_KEY]
+            response_settings["storage"]["active_default_storage_type"]
+            == payload["storage"]["active_default_storage_type"]
         )
 
 
