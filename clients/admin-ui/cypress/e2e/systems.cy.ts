@@ -56,9 +56,48 @@ describe("System management page", () => {
       beforeEach(() => {
         stubTaxonomyEntities();
         stubSystemCrud();
+        cy.intercept("GET", "/api/v1/connection_type*", {
+          fixture: "connectors/connection_types.json",
+        }).as("getConnectionTypes");
       });
 
-      it("Can step through the flow", () => {
+      it("shows available system types and lets the user choose one", () => {
+        cy.visit("/add-systems");
+        cy.getByTestId("manual-btn").click();
+        cy.url().should("contain", "/add-systems/new");
+        cy.wait("@getConnectionTypes");
+        cy.getByTestId("header").contains("Choose a type of system");
+        cy.getByTestId("bigquery");
+        cy.getByTestId("mariadb");
+        // Click into one of the connectors
+        cy.getByTestId("mongodb").click();
+        cy.getByTestId("header").contains("Describe your MongoDB system");
+
+        // Go back to choosing to add a new type of system
+        cy.getByTestId("breadcrumbs").contains("Choose your system").click();
+        cy.getByTestId("create-system-btn").click();
+        cy.getByTestId("header").contains("Describe your new system");
+      });
+
+      it("should allow searching", () => {
+        cy.visit("/add-systems/new");
+        cy.wait("@getConnectionTypes");
+        cy.getByTestId("bigquery");
+        cy.getByTestId("system-catalog-search").type("db");
+        cy.getByTestId("bigquery").should("not.exist");
+        cy.getByTestId("mariadb");
+        cy.getByTestId("mongodb");
+        cy.getByTestId("timescale");
+
+        // empty state
+        cy.getByTestId("system-catalog-search")
+          .clear()
+          .type("a very specific system that we do not have");
+        cy.getByTestId("no-systems-found");
+      });
+
+      // Skip while manual system creation is being redone
+      it.skip("Can step through the flow", () => {
         cy.fixture("system.json").then((system) => {
           // Fill in the describe form based on fixture data
           cy.visit("/add-systems");

@@ -29,6 +29,7 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
             boxShadow: "lg",
             cursor: "pointer",
           }}
+          data-testid={i.identifier}
         >
           <Flex
             alignItems="center"

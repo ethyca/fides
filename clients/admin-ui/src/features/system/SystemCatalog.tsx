@@ -1,4 +1,11 @@
-import { Box, Button, Spinner, Text } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  SearchLineIcon,
+  Spinner,
+  Text,
+} from "@fidesui/react";
 import NextLink from "next/link";
 import { useMemo, useState } from "react";
 
@@ -23,7 +30,7 @@ const SystemCatalog = () => {
       return [];
     }
 
-    return data.items.filter((s) => SEARCH_FILTER(s, searchFilter));
+    return data.items.filter((i) => SEARCH_FILTER(i, searchFilter));
   }, [data, searchFilter]);
 
   if (isLoading) {
@@ -33,6 +40,11 @@ const SystemCatalog = () => {
   if (!data) {
     return <Text>Could not find system types, please try again.</Text>;
   }
+
+  const noSearchResults =
+    data.items.length > 0 &&
+    searchFilter.length > 0 &&
+    filteredConnections.length === 0;
 
   return (
     <Box>
@@ -46,17 +58,37 @@ const SystemCatalog = () => {
             withClear
           />
         </Box>
-        <NextLink
-          href={{
-            pathname: window.location.pathname,
-            query: { step: 2 },
-          }}
-          passHref
-        >
-          <Button variant="outline" size="sm">
-            Create system
-          </Button>
-        </NextLink>
+        <Flex alignItems="center">
+          {noSearchResults ? (
+            <>
+              <SearchLineIcon mr={1} color="gray.400" />
+              <Text
+                fontSize="sm"
+                color="gray.700"
+                mr={2}
+                data-testid="no-systems-found"
+              >
+                No systems found
+              </Text>
+            </>
+          ) : null}
+          <NextLink
+            href={{
+              pathname: window.location.pathname,
+              query: { step: 2 },
+            }}
+            passHref
+          >
+            <Button
+              variant={noSearchResults ? "solid" : "outline"}
+              colorScheme={noSearchResults ? "primary" : undefined}
+              size="sm"
+              data-testid="create-system-btn"
+            >
+              Create system
+            </Button>
+          </NextLink>
+        </Flex>
       </Box>
       <ConnectionTypeList items={filteredConnections} />
     </Box>

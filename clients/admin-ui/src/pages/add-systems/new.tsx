@@ -27,14 +27,14 @@ const Header = ({
 }) => {
   if (step === "choose-system") {
     return (
-      <Heading fontSize="2xl" fontWeight="semibold" mb={2}>
+      <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">
         Choose a type of system
       </Heading>
     );
   }
 
   return (
-    <Box display="flex" mb={2} alignItems="center">
+    <Box display="flex" mb={2} alignItems="center" data-testid="header">
       <ConnectionTypeLogo
         data={connector ? connector.identifier : "ethyca"}
         mr={2}
@@ -68,7 +68,12 @@ const NewSystem: NextPage = () => {
       <Box mb={4}>
         <Header step={currentStep} connector={connector} />
         <Box mb={8}>
-          <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
+          <Breadcrumb
+            fontWeight="medium"
+            fontSize="sm"
+            color="gray.600"
+            data-testid="breadcrumbs"
+          >
             <BreadcrumbItem>
               <NextLink href={systemOrDatamapRoute}>Data map</NextLink>
             </BreadcrumbItem>
