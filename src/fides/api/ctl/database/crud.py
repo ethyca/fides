@@ -97,14 +97,20 @@ async def get_resource_with_custom_field(
             try:
                 log.debug("Fetching resource including custom fields")
                 query = (
-                    select(sql_model, CustomField.value)
+                    select(sql_model, CustomFieldDefinition.name, CustomField.value)
                     .join(
                         sql_model,
                         CustomField.resource_id == sql_model.fides_key,
                         isouter=True,
                     )
+                    .join(
+                        CustomField,
+                        CustomField.custom_field_definition_id
+                        == CustomFieldDefinition.id,
+                    )
                     .where(sql_model.fides_key == fides_key)
                 )
+                print(str(query))
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()

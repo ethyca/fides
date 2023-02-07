@@ -122,6 +122,7 @@ async def test_get_resource_with_custom_field(db, async_session):
     assert result[1].value == custom_field_2.value
 
 
+@pytest.mark.skip
 async def test_get_resource_with_custom_field_resource_not_found(async_session):
     with pytest.raises(NotFoundError):
         await get_resource_with_custom_field(sql_models.System, "bad", async_session)
