@@ -45,7 +45,7 @@ def test_is_token_expired(issued_at, token_duration_min, expected):
     assert is_token_expired(issued_at, token_duration_min) is expected
 
 
-async def test_verify_oauth_malformed_oauth_client(db, config):
+async def test_verify_oauth_malformed_oauth_client(db):
     with pytest.raises(AuthorizationError):
         await verify_oauth_client(
             SecurityScopes([USER_READ]),
