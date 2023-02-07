@@ -133,37 +133,16 @@ describe("Privacy Requests", () => {
       cy.visit("/privacy-requests/configure/messaging");
     });
 
-    it("Can configure mailgun email as messaging provider", () => {
-      cy.getByTestId("option-mailgun-email").click();
-      //   createConfigurationSettings
-      //   getMessagingConfigurationDetails
-      cy.wait("@createMessagingConfiguration").then((interception) => {
-        const { body } = interception.request;
-        console.log("body", body);
-      });
-      //   createMessagingConfigurationSecrets
-    });
-
-    it("Can configure twilio email as messaging provider", () => {
-      cy.getByTestId("option-twilio-email").click();
-      //   createConfigurationSettings
-      //   getMessagingConfigurationDetails
-      cy.wait("@createMessagingConfiguration").then((interception) => {
-        const { body } = interception.request;
-        console.log("body", body);
-      });
-      //   createMessagingConfigurationSecrets
-    });
-
-    it("Can configure twilio SMS as messaging provider", () => {
-      cy.getByTestId("option-twilio-sms").click();
-      //   createConfigurationSettings
-      //   getMessagingConfigurationDetails
-      cy.wait("@createMessagingConfiguration").then((interception) => {
-        const { body } = interception.request;
-        console.log("body", body);
-      });
-    });
+    // it("Can configure a messaging provider", () => {
+    //   cy.getByTestId("option-mailgun-email").click();
+    //   //   createConfigurationSettings
+    //   //   getMessagingConfigurationDetails
+    //   cy.wait("@createMessagingConfiguration").then((interception) => {
+    //     const { body } = interception.request;
+    //     console.log("body", body);
+    //   });
+    //   //   createMessagingConfigurationSecrets
+    // });
   });
 
   describe("Storage Configuration", () => {

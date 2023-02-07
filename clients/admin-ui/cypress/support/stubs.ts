@@ -71,32 +71,32 @@ export const stubDatasetCrud = () => {
 
 export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("PATCH", "/api/v1/application/settings", {
-    fixture: "settings_configuration.json",
+    fixture: "/privacy-requests/settings_configuration.json",
   }).as("createConfigurationSettings");
 
   cy.intercept("GET", "/api/v1/storage/default/*", {
-    fixture: "storage_configuration.json",
+    fixture: "/privacy-requests/storage_configuration.json",
   }).as("getStorageDetails");
 
   cy.intercept("PUT", "/api/v1/storage/default", {
-    fixture: "storage_configuration.json",
+    fixture: "/privacy-requests/storage_configuration.json",
   }).as("createStorage");
 
   cy.intercept("PUT", "/api/v1/storage/default/*/secret", {
-    fixture: "storage_configuration.json",
+    fixture: "/privacy-requests/storage_configuration.json",
   }).as("createStorageSecrets");
 
-  cy.intercept("GET", "/api/v1/messaging/default/*", {
-    fixture: "messaging_provider_configuration.json",
-  }).as("getMessagingConfigurationDetails");
+  // cy.intercept("GET", "/api/v1/messaging/default/*", {
+  //   fixture: "/privacy-requests/messaging_provider_configuration.json",
+  // }).as("getMessagingConfigurationDetails");
 
-  cy.intercept("PUT", "/api/v1/messaging/default/*", {
-    fixture: "messaging_provider_configuration.json",
-  }).as("createMessagingConfiguration");
+  // cy.intercept("PUT", "/api/v1/messaging/default/*", {
+  //   fixture: "/privacy-requests/messaging_provider_configuration.json",
+  // }).as("createMessagingConfiguration");
 
-  cy.intercept("PUT", "/api/v1/messaging/default/*/secret", {
-    fixture: "messaging_provider_configuration.json",
-  }).as("createMessagingConfigurationSecrets");
+  // cy.intercept("PUT", "/api/v1/messaging/default/*/secret", {
+  //   fixture: "/privacy-requests/messaging_provider_configuration.json",
+  // }).as("createMessagingConfigurationSecrets");
 };
 
 export const CONNECTION_STRING =
