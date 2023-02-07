@@ -14,7 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from fides.api.ctl.sql_models import CustomField, CustomFieldDefinition
+from fides.api.ctl.sql_models import CustomField, CustomFieldDefinition, SystemModel
 from fides.api.ctl.utils import errors
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
@@ -87,7 +87,7 @@ async def get_resource(
 
 async def get_resource_with_custom_field(
     sql_model: Base, fides_key: str, async_session: AsyncSession
-) -> Base:
+) -> List[SystemModel]:
     """Get a resource from the databse by its FidesKey including it's custom fields.
 
     Returns a SQLAlchemy model of that resource.
@@ -105,7 +105,7 @@ async def get_resource_with_custom_field(
                     )
                     .where(sql_model.fides_key == fides_key)
                 )
-                print(f"{str(query)=}")
+                # print(f"{str(query)=}")
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
@@ -114,14 +114,21 @@ async def get_resource_with_custom_field(
                 )
                 raise sa_error
 
-            sql_resource = result.scalars().first()
+            sql_resource = result.mappings().all()
+            # print(f"{sql_resource=}")
 
             if sql_resource is None:
                 not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
                 log.bind(error=not_found_error.detail["error"]).error("Resource not found")  # type: ignore[index]
                 raise not_found_error
 
-            return sql_resource
+            processed = []
+            for resource in sql_resource:
+                combined = resource["System"].__dict__
+                combined["value"] = resource["value"]
+                processed.append(SystemModel(**combined))
+
+            return processed
 
 
 async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Base]:

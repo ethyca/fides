@@ -97,7 +97,17 @@ async def test_get_resource_with_custom_field(db, async_session):
             "resource_type": custom_field_definition.resource_type,
             "resource_id": system.fides_key,
             "custom_field_definition_id": custom_field_definition.id,
-            "value": "Test value 1",
+            "value": ["Test value 1"],
+        },
+    )
+
+    custom_field_2 = sql_models.CustomField.create(
+        db=db,
+        data={
+            "resource_type": custom_field_definition.resource_type,
+            "resource_id": system.fides_key,
+            "custom_field_definition_id": custom_field_definition.id,
+            "value": ["Test value 2"],
         },
     )
 
@@ -105,9 +115,7 @@ async def test_get_resource_with_custom_field(db, async_session):
         sql_models.System, system.fides_key, async_session
     )
     print("here")
-    print(f"{result.fides_key=}")
-    # print(f"{result.plus_custom_field.value=}")
-    for k in result.__dict__:
-        print(k)
+    for r in result:
+        print(r)
 
     assert 0
