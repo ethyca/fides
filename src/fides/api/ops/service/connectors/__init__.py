@@ -12,7 +12,7 @@ from fides.api.ops.service.connectors.base_connector import (
     BaseConnector as BaseConnector,
 )
 from fides.api.ops.service.connectors.consent_email_connector import (
-    EmailConsentConnector as EmailConsentConnector,
+    GenericEmailConsentConnector as EmailConsentConnector,
 )
 from fides.api.ops.service.connectors.consent_email_connector import (
     SovrnConsentConnector as SovrnConsentConnector,

@@ -18,8 +18,8 @@ class IdentityTypes(str, Enum):
 
 
 class AdvancedSettings(BaseModel):
-    identity_types: Optional[List[IdentityTypes]] = []
-    browser_identity_types: Optional[List[CookieIds]] = []
+    identity_types: List[IdentityTypes] = []
+    browser_identity_types: List[CookieIds] = []
 
 
 class ConsentEmailSchema(BaseModel):

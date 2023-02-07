@@ -31,12 +31,13 @@ CONFIG = get_config()
 CONSENT_EMAIL_CONNECTOR_TYPES = [ConnectionType.sovrn]
 
 
-class EmailConsentConnector(LimitedConnector[None]):
-    """Base Email Connector that should be shared between generic and
-    vendor-specific email consent connectors"""
+class GenericEmailConsentConnector(LimitedConnector[None]):
+    """Generic Email Consent Connector that can be overridden for specific vendors"""
 
     @property
-    def user_test_identities(self) -> Dict[str, Any]:
+    def identities_for_test_email(self) -> Dict[str, Any]:
+        """The mock user identities that are sent in the test
+        email to ensure the connector is working"""
         return {"email": "test_email@example.com"}
 
     @property
@@ -67,7 +68,7 @@ class EmailConsentConnector(LimitedConnector[None]):
                 required_identities=self.required_identities,
                 user_consent_preferences=[
                     ConsentPreferencesByUser(
-                        identities=self.user_test_identities,
+                        identities=self.identities_for_test_email,
                         consent_preferences=[
                             Consent(data_use="Email Marketing", opt_in=False),
                             Consent(data_use="Product Analytics", opt_in=True),
@@ -83,11 +84,11 @@ class EmailConsentConnector(LimitedConnector[None]):
         return ConnectionTestStatus.succeeded
 
 
-class SovrnConsentConnector(EmailConsentConnector):
+class SovrnConsentConnector(GenericEmailConsentConnector):
     """SovrnConsentConnector - only need to override the details for the test email."""
 
     @property
-    def user_test_identities(self) -> Dict[str, Any]:
+    def identities_for_test_email(self) -> Dict[str, Any]:
         return {SVORN_REQUIRED_IDENTITY: "test_ljt_reader_id"}
 
 
@@ -105,11 +106,8 @@ def get_identity_types_for_connector(email_secrets: ConsentEmailSchema) -> List[
     Combines identities from browser-retrieved identity types and supplied identity types.
     """
     advanced_settings: AdvancedSettings = email_secrets.advanced_settings
-    return [
-        identifier.value for identifier in advanced_settings.identity_types or []
-    ] + [
-        identifier.value
-        for identifier in advanced_settings.browser_identity_types or []
+    return [identifier.value for identifier in advanced_settings.identity_types] + [
+        identifier.value for identifier in advanced_settings.browser_identity_types
     ]
 
 
@@ -126,23 +124,6 @@ def get_user_identities_for_connector(
     return filtered_user_identities
 
 
-def needs_consent_email_send(db: Session, user_identity: Dict[str, Any]) -> bool:
-    """Returns True if there are email consent connectors configured
-    at least one necessary identity for that email connector has been obtained."""
-    email_consent_connection_configs: Query = get_consent_email_connection_configs(db)
-
-    for connection_config in email_consent_connection_configs:
-        secrets: ConsentEmailSchema = ConsentEmailSchema(
-            **connection_config.secrets or {}
-        )
-        filtered_user_identities = get_user_identities_for_connector(
-            secrets, user_identity
-        )
-        if filtered_user_identities:
-            return True
-    return False
-
-
 def send_single_consent_email(
     db: Session,
     subject_email: str,
@@ -152,15 +133,17 @@ def send_single_consent_email(
     test_mode: bool = False,
 ) -> None:
     """Sends a single consent email"""
-    org: Optional[Organization] = db.query(Organization).first()
+    org: Optional[Organization] = (
+        db.query(Organization).order_by(Organization.created_at.desc()).first()
+    )
 
-    if not org:
+    if not org or not org.name:
         raise MessageDispatchException(
-            "Cannot send an email requesting consent preference changes to third-party vendor. No organization defined."
+            "Cannot send an email requesting consent preference changes to third-party vendor. No organization name found."
         )
 
     dispatch_message(
-        db,
+        db=db,
         action_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT,
         to_identity=Identity(email=subject_email),
         service_type=CONFIG.notifications.notification_service_type,

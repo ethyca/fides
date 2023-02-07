@@ -6,7 +6,7 @@ import requests
 from loguru import logger
 from pydantic import ValidationError
 from redis.exceptions import DataError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.api.v1.urn_registry import (
@@ -44,6 +44,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
@@ -51,7 +52,8 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import FidesConnector
 from fides.api.ops.service.connectors.consent_email_connector import (
-    needs_consent_email_send,
+    get_consent_email_connection_configs,
+    get_user_identities_for_connector,
 )
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
@@ -674,3 +676,20 @@ def _retrieve_child_results(  # pylint: disable=R0911
         return None
 
     return results
+
+
+def needs_consent_email_send(db: Session, user_identity: Dict[str, Any]) -> bool:
+    """Returns True if there are email consent connectors configured
+    at least one necessary identity for that email connector has been obtained."""
+    email_consent_connection_configs: Query = get_consent_email_connection_configs(db)
+
+    for connection_config in email_consent_connection_configs:
+        secrets: ConsentEmailSchema = ConsentEmailSchema(
+            **connection_config.secrets or {}
+        )
+        filtered_user_identities = get_user_identities_for_connector(
+            secrets, user_identity
+        )
+        if filtered_user_identities:
+            return True
+    return False

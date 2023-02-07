@@ -87,6 +87,8 @@ class RequestReviewDenyBodyParams(BaseModel):
 
 
 class ConsentPreferencesByUser(BaseModel):
+    """Used alongside collecting a list of multiple users' consent preferences"""
+
     identities: Dict[str, Any]
     consent_preferences: List[Consent]  # Consent schema
 
