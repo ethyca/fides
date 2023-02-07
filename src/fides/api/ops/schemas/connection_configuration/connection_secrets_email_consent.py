@@ -1,12 +1,9 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
-from fides.api.ops.schemas.connection_configuration.connection_secrets import (
-    RequiredComponentsValidator,
-)
 
 SVORN_REQUIRED_IDENTITY: str = "ljt_readerID"
 
@@ -25,18 +22,23 @@ class AdvancedSettings(BaseModel):
     browser_identity_types: Optional[List[CookieIds]] = []
 
 
-class ConsentEmailSchema(RequiredComponentsValidator):
-    """Schema to validate the secrets needed for the ConsentEmailConnector"""
+class ConsentEmailSchema(BaseModel):
+    """Schema to validate the secrets needed for the generic ConsentEmailConnector
+
+    Does not inherit from ConnectionConfigSecretsSchema as there is no url
+    required here.
+    """
 
     third_party_vendor_name: str
     recipient_email_address: str
     test_email_address: Optional[str]
     advanced_settings: AdvancedSettings
 
-    _required_components: List[str] = [
-        "recipient_email_address",
-        "third_party_vendor_name",
-    ]
+    class Config:
+        """Only permit selected secret fields to be stored."""
+
+        extra = Extra.forbid
+        orm_mode = True
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:

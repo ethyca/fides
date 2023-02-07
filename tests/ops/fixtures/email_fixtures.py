@@ -55,3 +55,19 @@ def email_dataset_config(
     yield dataset
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def sovrn_email_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_email_connection_config",
+            "connection_type": ConnectionType.sovrn,
+            "access": AccessLevel.write,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)

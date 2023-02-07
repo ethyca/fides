@@ -9,7 +9,11 @@ from fides.api.ops.models.connectionconfig import ConnectionTestStatus
 from fides.api.ops.schemas import Msg
 
 
-class RequiredComponentsValidator(BaseModel, abc.ABC):
+class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
+    """Abstract Base Schema for updating Connection Configuration Secrets"""
+
+    url: Optional[str] = None  # User can always specify the URL directly
+
     _required_components: List[str]
 
     def __init_subclass__(cls: BaseModel, **kwargs: Any):  # type: ignore
@@ -23,7 +27,6 @@ class RequiredComponentsValidator(BaseModel, abc.ABC):
         cls: ConnectionConfigSecretsSchema, values: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate that the minimum required components have been supplied.
-
         Connection configurations either 1) need the entire URL
         *OR* 2) all of the required components to *build* that URL."""
         min_fields_present = values.get("url") or all(
@@ -41,14 +44,6 @@ class RequiredComponentsValidator(BaseModel, abc.ABC):
 
         extra = Extra.forbid
         orm_mode = True
-
-
-class ConnectionConfigSecretsSchema(RequiredComponentsValidator):
-    """Abstract Base Schema for updating Connection Configuration Secrets"""
-
-    url: Optional[str] = None  # User can always specify the URL directly
-
-    _required_components = ["url"]
 
 
 class TestStatusMessage(Msg):

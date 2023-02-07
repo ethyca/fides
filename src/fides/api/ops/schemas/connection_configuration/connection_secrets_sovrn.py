@@ -11,17 +11,21 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email_con
 
 
 class SovrnEmailSchema(ConsentEmailSchema):
-    """Schema to validate the secrets needed for the SovrnEmailConnector"""
+    """Schema to validate the secrets needed for the SovrnEmailConnector
+
+    Overrides the ConsentEmailConnector to set the third_party_vendor_name
+    and advanced settings.
+    """
 
     # Overrides ConsentEmailSchema.third_party_vendor_name and recipient_email_address to set defaults
     third_party_vendor_name: str = "Sovrn"
-    recipient_email_address: str
+    recipient_email_address: str  # TODO Add Sovrn recipient email address as a default
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         For now, UI is disabled, so user cannot update advanced settings.
-        Hardcode the Sovrn advanced settings.
+        Hardcode the Sovrn advanced settings, regardless of what is passed into the API.
         """
         values["advanced_settings"] = AdvancedSettings(
             identity_types=[], browser_identity_types=[CookieIds.ljt_readerID]
