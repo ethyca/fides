@@ -14,7 +14,11 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.6.3...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.6.4...main)
+
+## [2.6.4](https://github.com/ethyca/fides/compare/2.6.3...2.6.4)
+
+### Fixed
 
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 
