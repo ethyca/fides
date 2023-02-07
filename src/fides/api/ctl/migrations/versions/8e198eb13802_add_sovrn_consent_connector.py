@@ -12,6 +12,7 @@ revision = "8e198eb13802"
 down_revision = "392992c7733a"
 branch_labels = None
 depends_on = None
+import sqlalchemy as sa
 
 
 def upgrade():
@@ -27,6 +28,14 @@ def upgrade():
         )
     )
     op.execute("drop type connectiontype_old")
+
+    # Add new PrivacyRequest.awaiting_consent_email_send_at colum
+    op.add_column(
+        "privacyrequest",
+        sa.Column(
+            "awaiting_consent_email_send_at", sa.DateTime(timezone=True), nullable=True
+        ),
+    )
 
     # Add ljt_reader_id for sovrn
     op.execute("ALTER TYPE providedidentitytype ADD VALUE 'ljt_readerID'")
@@ -50,6 +59,9 @@ def downgrade():
         )
     )
     op.execute("drop type connectiontype_old")
+
+    # # Drop PrivacyRequest.awaiting_consent_email_send_at column
+    op.drop_column("privacyrequest", "awaiting_consent_email_send_at")
 
     # Remove ljt_reader_id from the providedidentitytype enum
     op.execute("ALTER TYPE providedidentitytype RENAME TO providedidentitytype_old")
