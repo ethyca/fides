@@ -109,3 +109,51 @@ export type RetryRequests = {
   checkAll: boolean;
   errorRequests: string[];
 };
+
+export interface ConfigResponse {
+  storage: {
+    active_default_storage_type: string;
+  };
+}
+
+export interface ConfigDetailsResponse {
+  name: string;
+  type: string;
+  details: {
+    auth_method: string;
+    bucket: string;
+  };
+  key: string;
+  format: string;
+  is_default: boolean;
+}
+
+export interface MessagingRequest {
+  type: string;
+  details: {
+    is_eu_domain: boolean;
+    domain: string;
+  };
+}
+
+export interface MessagingResponse {
+  name: string;
+  type: string;
+  key: string;
+  service_type: string;
+  details: {
+    domain: string;
+    api_version: string;
+    is_eu_domain: boolean;
+  };
+}
+
+export interface StorageDetailsRequest {
+  type: string;
+  details: {
+    auth_method: string;
+    bucket: string;
+  };
+  key: string;
+  format: string;
+}

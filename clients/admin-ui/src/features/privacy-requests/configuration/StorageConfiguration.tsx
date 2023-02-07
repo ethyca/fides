@@ -58,9 +58,8 @@ const StorageConfiguration = () => {
       handleError(activeStorageResults.error);
     } else {
       successAlert(`Configure active storage type saved successfully.`);
+      setStorageValue(value);
     }
-
-    setStorageValue(value);
   };
 
   return (

@@ -70,7 +70,7 @@ export const stubDatasetCrud = () => {
 };
 
 export const stubPrivacyRequestsConfigurationCrud = () => {
-  cy.intercept("PATCH", "/api/v1/application/settings", {
+  cy.intercept("PATCH", "/api/v1/config", {
     fixture: "/privacy-requests/settings_configuration.json",
   }).as("createConfigurationSettings");
 

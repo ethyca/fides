@@ -11,14 +11,19 @@ import type { RootState } from "../../app/store";
 import { BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
 import {
+  ConfigDetailsResponse,
+  ConfigResponse,
   DenyPrivacyRequest,
   GetUpdloadedManualWebhookDataRequest,
+  MessagingRequest,
+  MessagingResponse,
   PatchUploadManualWebhookDataRequest,
   PrivacyRequestEntity,
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
   RetryRequests,
+  StorageDetailsRequest,
 } from "./types";
 
 // Helpers
@@ -342,50 +347,59 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Notification"],
     }),
-    getConfigurationSettings: build.query<any, any>({
-      query: () => ({
-        url: `application/settings`,
-      }),
-    }),
-    createConfigurationSettings: build.mutation<any, any>({
+    createConfigurationSettings: build.mutation<any, ConfigResponse>({
       query: (params) => ({
-        url: `application/settings`,
+        url: `/config`,
         method: "PATCH",
         body: params,
       }),
     }),
-    getStorageDetails: build.query<any, any>({
+    getStorageDetails: build.query<string, ConfigDetailsResponse>({
       query: (params) => ({
         url: `storage/default/${params.type}`,
       }),
     }),
-    createStorage: build.mutation<any, any>({
-      query: (params) => ({
-        url: `storage/default`,
-        method: "PUT",
-        body: params,
-      }),
-    }),
-    createStorageSecrets: build.mutation<any, any>({
+    createStorage: build.mutation<StorageDetailsRequest, ConfigDetailsResponse>(
+      {
+        query: (params) => ({
+          url: `storage/default`,
+          method: "PUT",
+          body: params,
+        }),
+      }
+    ),
+    createStorageSecrets: build.mutation<
+      StorageDetailsRequest,
+      ConfigDetailsResponse
+    >({
       query: (params) => ({
         url: `storage/default/${params.type}/secret`,
         method: "PUT",
         body: params,
       }),
     }),
-    getMessagingConfigurationDetails: build.query<any, any>({
+    getMessagingConfigurationDetails: build.query<
+      MessagingRequest,
+      MessagingResponse
+    >({
       query: (params) => ({
         url: `messaging/default/${params.type}`,
       }),
     }),
-    createMessagingConfiguration: build.mutation<any, any>({
+    createMessagingConfiguration: build.mutation<
+      MessagingRequest,
+      MessagingResponse
+    >({
       query: (params) => ({
         url: `messaging/default/${params.type}`,
         method: "PUT",
         body: params,
       }),
     }),
-    createMessagingConfigurationSecrets: build.mutation<any, any>({
+    createMessagingConfigurationSecrets: build.mutation<
+      MessagingRequest,
+      MessagingResponse
+    >({
       query: (params) => ({
         url: `messaging/default/${params.type}/secret`,
         method: "PUT",
@@ -423,5 +437,4 @@ export const {
   useGetMessagingConfigurationDetailsQuery,
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
-  useGetConfigurationSettingsQuery,
 } = privacyRequestApi;
