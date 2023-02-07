@@ -14,7 +14,8 @@ class StorageApplicationConfig(BaseSchema):
         extra = Extra.forbid
 
     @validator("active_default_storage_type")
-    def validate_storage_type(cls, storage_type: StorageType):
+    @classmethod
+    def validate_storage_type(cls, storage_type: StorageType) -> StorageType:
         """
         For now, only `local` and `s3` storage types are supported
         as an `active_default_storage_type`
