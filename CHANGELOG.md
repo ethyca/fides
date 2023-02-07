@@ -20,6 +20,9 @@ The types of changes are:
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523) 
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 
+### Changed
+* Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
+
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
 
 ### Fixed
@@ -38,9 +41,6 @@ The types of changes are:
 
 * Fix errors when privacy requests execute concurrently without workers [#2489](https://github.com/ethyca/fides/pull/2489)
 * Enable saas request overrides to run in worker runtime [#2489](https://github.com/ethyca/fides/pull/2489)
-
-### Changed
-* Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
 
 ## [2.6.0](https://github.com/ethyca/fides/compare/2.5.1...2.6.0)
 
