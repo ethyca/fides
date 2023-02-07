@@ -39,10 +39,10 @@ const TwilioSMSConfiguration = () => {
   };
 
   const initialValues = {
-    account_sid: messagingDetails.account_sid ?? "",
-    auth_token: messagingDetails.auth_token ?? "",
-    messaging_service_sid: messagingDetails.messaging_service_sid ?? "",
-    phone: messagingDetails.phone ?? "",
+    account_sid: messagingDetails?.twilio_account_sid ?? "",
+    auth_token: messagingDetails?.twilio_auth_token ?? "",
+    messaging_service_sid: messagingDetails?.twilio_messaging_service_sid ?? "",
+    phone: messagingDetails?.twilio_sender_phone_number ?? "",
   };
 
   return (

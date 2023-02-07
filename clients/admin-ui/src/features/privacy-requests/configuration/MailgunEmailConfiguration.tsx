@@ -57,11 +57,11 @@ const MailgunEmailConfiguration = () => {
   };
 
   const initialValues = {
-    domain: messagingDetails.domain ?? "",
+    domain: messagingDetails?.details.domain ?? "",
   };
 
   const initialAPIKeyValue = {
-    api_key: messagingDetails.api_key ?? "",
+    api_key: messagingDetails?.key ?? "",
   };
 
   return (

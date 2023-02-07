@@ -57,11 +57,11 @@ const TwilioEmailConfiguration = () => {
   };
 
   const initialValues = {
-    email: messagingDetails.email ?? "",
+    email: messagingDetails?.email ?? "",
   };
 
   const initialAPIKeyValues = {
-    api_key: messagingDetails.api_key ?? "",
+    api_key: messagingDetails?.key ?? "",
   };
 
   return (

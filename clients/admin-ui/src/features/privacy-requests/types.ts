@@ -111,26 +111,47 @@ export type RetryRequests = {
 };
 
 export interface ConfigResponse {
-  storage: {
-    active_default_storage_type: string;
+  fides?: {
+    notifications?: {
+      notification_service_type?: string;
+      send_request_completion_notification?: boolean;
+      send_request_receipt_notification?: boolean;
+      send_request_review_notification?: boolean;
+      subject_identity_verification_required?: boolean;
+    };
+    storage?: {
+      active_default_storage_type?: string;
+    };
   };
 }
 
 export interface ConfigDetailsResponse {
-  name: string;
-  type: string;
-  details: {
-    auth_method: string;
-    bucket: string;
+  name?: string;
+  type?: string;
+  details?: {
+    auth_method?: string;
+    bucket?: string;
   };
-  key: string;
-  format: string;
-  is_default: boolean;
+  key?: string;
+  format?: string;
+  is_default?: boolean;
+  aws_access_key_id?: string;
+  aws_secret_access_key?: string;
 }
 
 export interface MessagingRequest {
-  type: string;
-  details?: { is_eu_domain?: string; domain?: string };
+  type?: string;
+  details?: {
+    is_eu_domain?: string;
+    domain?: string;
+    twilio_email_from?: string;
+  };
+  mailgun_api_key?: string;
+  twilio_api_key?: string;
+  twilio_account_sid?: string;
+  twilio_auth_token?: string;
+  twilio_messaging_service_sid?: string;
+  twilio_sender_phone_number?: string;
 }
 
 export interface MessagingResponse {
@@ -143,6 +164,11 @@ export interface MessagingResponse {
     api_version: string;
     is_eu_domain: boolean;
   };
+  email: string;
+  twilio_account_sid?: string;
+  twilio_auth_token?: string;
+  twilio_messaging_service_sid?: string;
+  twilio_sender_phone_number?: string;
 }
 
 export interface StorageDetailsRequest {
