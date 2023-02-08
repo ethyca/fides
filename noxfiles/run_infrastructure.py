@@ -235,9 +235,9 @@ def _run_tests(
     _run_cmd_or_err(
         f'echo "running pytest for conditions: {pytest_path} with environment variables: {environment_variables}"'
     )
-    coverage_arg = "--cov-report=lcov:coverage/ops-integration.lcov"
+    coverage_arg = "--cov-report=xml"
     _run_cmd_or_err(
-        f"docker compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} pytest {coverage_arg} {pytest_path}"
+        f"docker compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} pytest --cov=fides {coverage_arg} {pytest_path}"
     )
 
     # Now tear down the infrastructure
