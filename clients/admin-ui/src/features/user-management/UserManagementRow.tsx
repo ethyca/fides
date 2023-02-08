@@ -33,7 +33,12 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
 
   return (
     <>
-      <Tr key={user.id} _hover={{ bg: "gray.50" }} height="36px">
+      <Tr
+        key={user.id}
+        _hover={{ bg: "gray.50" }}
+        height="36px"
+        data-testid={`row-${user.id}`}
+      >
         <Td pl={0} py={1}>
           {user.username}
         </Td>
@@ -49,20 +54,27 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         <Td pr={0} py={1} textAlign="end" position="relative">
           <ButtonGroup>
             <Menu>
-              <MenuButton as={Button} size="xs" bg="white">
+              <MenuButton
+                as={Button}
+                size="xs"
+                bg="white"
+                data-testid="menu-btn"
+              >
                 <MoreIcon color="gray.700" w={18} h={18} />
               </MenuButton>
               <Portal>
-                <MenuList shadow="xl">
+                <MenuList shadow="xl" data-testid={`menu-${user.id}`}>
                   <MenuItem
                     _focus={{ color: "complimentary.500", bg: "gray.100" }}
                     onClick={handleEditUser}
+                    data-testid="edit-btn"
                   >
                     <Text fontSize="sm">Edit</Text>
                   </MenuItem>
                   <MenuItem
                     _focus={{ color: "complimentary.500", bg: "gray.100" }}
                     onClick={modal.onOpen}
+                    data-testid="delete-btn"
                   >
                     <Text fontSize="sm">Delete</Text>
                   </MenuItem>

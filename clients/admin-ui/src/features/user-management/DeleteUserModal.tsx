@@ -74,7 +74,7 @@ const DeleteUserModal = ({
   return (
     <Modal isCentered isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent data-testid="delete-user-modal">
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
