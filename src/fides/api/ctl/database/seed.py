@@ -200,7 +200,7 @@ def load_default_access_policy(
                     db=db_session,
                     data=data,
                 )
-            except KeyOrNameAlreadyExists:
+            except KeyOrNameAlreadyExists:  # pragma: no cover
                 # This rule target already exists against the Policy
                 pass
     else:
@@ -265,7 +265,7 @@ def load_default_erasure_policy(
                     db=db_session,
                     data=data,
                 )
-            except KeyOrNameAlreadyExists:
+            except KeyOrNameAlreadyExists:  # pragma: no cover
                 # This rule target already exists against the Policy
                 pass
     else:
@@ -384,7 +384,7 @@ async def load_default_taxonomy(async_session: AsyncSession) -> None:
                 await create_resource(
                     sql_model_map[resource_type], resource, async_session
                 )
-        except QueryError:
+        except QueryError:  # pragma: no cover
             pass  # The create_resource function will log the error
         else:
             log.info(f"INSERTED {len(resources)} {resource_type} resource(s)")

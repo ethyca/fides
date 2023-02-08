@@ -1,7 +1,7 @@
 from typing import Generator
 
 import pytest
-from fideslang import DEFAULT_TAXONOMY, DataCategory
+from fideslang import DEFAULT_TAXONOMY, DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database import seed
@@ -424,3 +424,17 @@ async def test_load_default_dsr_policies(
     assert access_rule.action_type == ActionType.access.value
 
     assert len(access_rule.targets) == num_rule_targets - 1
+
+
+async def test_load_orginizations(loguru_caplog, async_session, monkeypatch):
+    updated_default_taxonomy = DEFAULT_TAXONOMY.copy()
+    current_orgs = len(updated_default_taxonomy.organization)
+    updated_default_taxonomy.organization.append(
+        Organization(fides_key="new_organization")
+    )
+
+    monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
+    await seed.load_default_organization(async_session)
+
+    assert "INSERTED 1" in loguru_caplog.text
+    assert f"SKIPPED {current_orgs}" in loguru_caplog.text
