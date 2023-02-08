@@ -30,11 +30,13 @@ import { useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
+type Variant = "inline" | "stacked";
+
 interface CustomInputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
-  variant?: "inline" | "stacked";
+  variant?: Variant;
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -490,10 +492,14 @@ export const CustomCreatableMultiSelect = ({
 interface CustomTextAreaProps {
   textAreaProps?: TextareaProps;
   label?: string;
+  tooltip?: string;
+  variant?: Variant;
 }
 export const CustomTextArea = ({
   textAreaProps,
   label,
+  tooltip,
+  variant = "inline",
   ...props
 }: CustomTextAreaProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -509,21 +515,62 @@ export const CustomTextArea = ({
     />
   );
 
-  return (
-    <FormControl isInvalid={isInvalid}>
-      {label ? (
+  // When there is no label, it doesn't matter if stacked or inline
+  // since we only render the text field
+  if (!label) {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Flex>
+          {InnerTextArea}
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
+
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid}>
         <Grid templateColumns="1fr 3fr">
           {label ? <FormLabel>{label}</FormLabel> : null}
-          {InnerTextArea}
+          <Flex>
+            {InnerTextArea}
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Flex>
         </Grid>
-      ) : (
-        InnerTextArea
-      )}
-      <ErrorMessage
-        isInvalid={isInvalid}
-        message={meta.error}
-        fieldName={field.name}
-      />
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
+  return (
+    <FormControl isInvalid={isInvalid}>
+      <VStack alignItems="start">
+        <Flex alignItems="center">
+          <Label
+            title={label}
+            htmlFor={props.id || props.name}
+            fontSize="sm"
+            my={0}
+            mr={1}
+          />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
+        {InnerTextArea}
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </VStack>
     </FormControl>
   );
 };
