@@ -22,6 +22,7 @@ CLIENT_READ = "client:read"
 CLIENT_DELETE = "client:delete"
 
 CONFIG_READ = "config:read"
+CONFIG_UPDATE = "config:update"
 
 CONNECTION_TYPE_READ = "connection_type:read"
 
@@ -109,6 +110,7 @@ SCOPE_REGISTRY = [
     CLIENT_READ,
     CLIENT_DELETE,
     CONFIG_READ,
+    CONFIG_UPDATE,
     CONNECTION_READ,
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
