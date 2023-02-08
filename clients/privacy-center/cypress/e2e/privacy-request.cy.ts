@@ -75,7 +75,7 @@ describe("Privacy request", () => {
         cy.root().get("button").contains("Continue").should("be.enabled");
         cy.root().get("input#email").clear().blur();
 
-        //test valid phone
+        // test valid phone
         cy.root().get("input#phone").type("123 456 7890").blur();
         cy.root().get("button").contains("Continue").should("be.enabled");
         cy.root().get("input#phone").clear().blur();
