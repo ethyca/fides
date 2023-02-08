@@ -24,7 +24,13 @@ import {
   TextareaProps,
   VStack,
 } from "@fidesui/react";
-import { CreatableSelect, Select, Size } from "chakra-react-select";
+import {
+  CreatableSelect,
+  MultiValue,
+  Select,
+  SingleValue,
+  Size,
+} from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 import { useState } from "react";
 
@@ -112,6 +118,80 @@ const ErrorMessage = ({
   );
 };
 
+const SelectInput = ({
+  options,
+  fieldName,
+  size,
+  isSearchable,
+  isClearable,
+  isMulti = false,
+}: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
+  const [initialField] = useField(fieldName);
+  const field = { ...initialField, value: initialField.value ?? [] };
+  const selected = isMulti
+    ? options.filter((o) => field.value.indexOf(o.value) >= 0)
+    : options.find((o) => o.value === field.value) || null;
+
+  // note: for Multiselect we have to do setFieldValue instead of field.onChange
+  // because field.onChange only accepts strings or events right now, not string[]
+  // https://github.com/jaredpalmer/formik/issues/1667
+  const { setFieldValue, touched, setTouched } = useFormikContext();
+
+  const handleChangeMulti = (newValue: MultiValue<Option>) => {
+    setFieldValue(
+      field.name,
+      newValue.map((v) => v.value)
+    );
+  };
+  const handleChangeSingle = (newValue: SingleValue<Option>) => {
+    if (newValue) {
+      field.onChange(fieldName)(newValue.value);
+    } else if (isClearable) {
+      field.onChange(fieldName)("");
+    }
+  };
+
+  return (
+    <Select
+      options={options}
+      onBlur={(e) => {
+        setTouched({ ...touched, [field.name]: true });
+        field.onBlur(e);
+      }}
+      // @ts-ignore dynamic isMulti makes typing this complicated
+      onChange={isMulti ? handleChangeMulti : handleChangeSingle}
+      name={fieldName}
+      value={selected}
+      size={size}
+      chakraStyles={{
+        container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+        dropdownIndicator: (provided) => ({
+          ...provided,
+          bg: "transparent",
+          px: 2,
+          cursor: "inherit",
+        }),
+        indicatorSeparator: (provided) => ({
+          ...provided,
+          display: "none",
+        }),
+        multiValue: (provided) => ({
+          ...provided,
+          background: "primary.400",
+          color: "white",
+        }),
+      }}
+      components={{
+        ClearIndicator: () => null,
+      }}
+      isSearchable={isSearchable}
+      isClearable={isClearable}
+      instanceId={`select-${field.name}`}
+      isMulti={isMulti}
+    />
+  );
+};
+
 export const CustomTextInput = ({
   label,
   tooltip,
@@ -191,7 +271,7 @@ interface SelectProps {
   isSearchable?: boolean;
   isClearable?: boolean;
   size?: Size;
-  "data-testid"?: string;
+  isMulti?: boolean;
 }
 export const CustomSelect = ({
   label,
@@ -200,14 +280,11 @@ export const CustomSelect = ({
   isSearchable,
   isClearable,
   size = "sm",
+  isMulti,
   ...props
 }: SelectProps & StringField) => {
-  const [initialField, meta] = useField(props);
-  const field = { ...initialField, value: initialField.value ?? "" };
+  const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
-
-  const selected = options.find((o) => o.value === field.value) || null;
-  const { touched, setTouched } = useFormikContext();
 
   return (
     <FormControl isInvalid={isInvalid}>
@@ -218,127 +295,13 @@ export const CustomSelect = ({
           alignItems="center"
           data-testid={`input-${field.name}`}
         >
-          <Select
+          <SelectInput
             options={options}
-            onBlur={(e) => {
-              setTouched({ ...touched, [field.name]: true });
-              field.onBlur(e);
-            }}
-            onChange={(newValue) => {
-              if (newValue) {
-                field.onChange(props.name)(newValue.value);
-              } else if (isClearable) {
-                field.onChange(props.name)("");
-              }
-            }}
-            name={props.name}
-            value={selected}
+            fieldName={field.name}
             size={size}
-            chakraStyles={{
-              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
-              dropdownIndicator: (provided) => ({
-                ...provided,
-                bg: "transparent",
-                px: 2,
-                cursor: "inherit",
-              }),
-              indicatorSeparator: (provided) => ({
-                ...provided,
-                display: "none",
-              }),
-              multiValue: (provided) => ({
-                ...provided,
-                background: "primary.400",
-                color: "white",
-              }),
-            }}
-            isSearchable={isSearchable ?? false}
+            isSearchable={isSearchable === undefined ? isMulti : isSearchable}
             isClearable={isClearable}
-            instanceId={`select-${field.name}`}
-          />
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Box>
-      </Grid>
-      <ErrorMessage
-        isInvalid={isInvalid}
-        message={meta.error}
-        fieldName={field.name}
-      />
-    </FormControl>
-  );
-};
-
-// mostly the same as CustomSelect except can handle multiple values
-// the types are easier when this is a separate component as opposed to
-// extending CustomSelect
-export const CustomMultiSelect = ({
-  label,
-  tooltip,
-  options,
-  isSearchable,
-  isClearable,
-  size = "sm",
-  ...props
-}: SelectProps & StringArrayField) => {
-  const [initialField, meta] = useField(props);
-  const isInvalid = !!(meta.touched && meta.error);
-  const field = { ...initialField, value: initialField.value ?? [] };
-  const selected = options.filter((o) => field.value.indexOf(o.value) >= 0);
-
-  // note: for Multiselect we have to do setFieldValue instead of field.onChange
-  // because field.onChange only accepts strings or events right now, not string[]
-  // https://github.com/jaredpalmer/formik/issues/1667
-  const { setFieldValue, touched, setTouched } = useFormikContext();
-
-  return (
-    <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr">
-        <Label title={label} htmlFor={props.id || props.name} />
-        <Box
-          display="flex"
-          alignItems="center"
-          data-testid={`input-${field.name}`}
-        >
-          <Select
-            options={options}
-            onBlur={(e) => {
-              setTouched({ ...touched, [field.name]: true });
-              field.onBlur(e);
-            }}
-            onChange={(newValue) => {
-              setFieldValue(
-                field.name,
-                newValue.map((v) => v.value)
-              );
-            }}
-            name={props.name}
-            value={selected}
-            size={size}
-            chakraStyles={{
-              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
-              dropdownIndicator: (provided) => ({
-                ...provided,
-                bg: "transparent",
-                px: 2,
-                cursor: "inherit",
-              }),
-              indicatorSeparator: (provided) => ({
-                ...provided,
-                display: "none",
-              }),
-              multiValue: (provided) => ({
-                ...provided,
-                background: "primary.400",
-                color: "white",
-              }),
-            }}
-            components={{
-              ClearIndicator: () => null,
-            }}
-            isSearchable={isSearchable}
-            isClearable={isClearable}
-            isMulti
-            instanceId={`select-${field.name}`}
+            isMulti={isMulti}
           />
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>

@@ -8,7 +8,8 @@ import * as Yup from "yup";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
-  CustomMultiSelect,
+  CustomSelect,
+  CustomTextArea,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -148,6 +149,34 @@ const DescribeSystemStep = ({
                 tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
               />
               <CustomTextInput
+                id="name"
+                name="name"
+                label="System name"
+                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                variant="stacked"
+              />
+
+              <CustomTextArea
+                id="name"
+                name="name"
+                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                variant="inline"
+              />
+              <CustomTextArea
+                id="name"
+                name="name"
+                label="System name"
+                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                variant="inline"
+              />
+              <CustomTextArea
+                id="name"
+                name="name"
+                label="System name"
+                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                variant="stacked"
+              />
+              <CustomTextInput
                 id="fides_key"
                 name="fides_key"
                 label="System key"
@@ -180,11 +209,12 @@ const DescribeSystemStep = ({
                 }
                 tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
               />
-              <CustomMultiSelect
+              <CustomSelect
                 label="System dependencies"
                 name="system_dependencies"
                 tooltip="A list of fides keys to model dependencies."
                 options={systemOptions}
+                isMulti
               />
               {!abridged ? (
                 <DescribeSystemsFormExtension values={values} />
