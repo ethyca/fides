@@ -16,7 +16,7 @@ const ReactPhoneNumberInput = dynamic(
  * Wraps the PhoneInput component from react-phone-number-input in a Chakra Input
  * with common default props.
  */
-export const PhoneInput = (props: InputProps) => (
+export const PhoneInput = (props: (InputProps | {disabled?: boolean})) => (
   <Input
     as={ReactPhoneNumberInput}
     flags={FLAG_ICONS}

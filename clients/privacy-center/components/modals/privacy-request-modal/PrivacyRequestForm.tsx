@@ -237,6 +237,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.email}
+                  disabled={Boolean(typeof values.phone !== 'undefined' && values.phone)}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
@@ -256,6 +257,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   }}
                   onBlur={handleBlur}
                   value={values.phone}
+                  disabled={Boolean(typeof values.email !== 'undefined' && values.email)}
                 />
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
