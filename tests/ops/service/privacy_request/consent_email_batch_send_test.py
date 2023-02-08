@@ -5,8 +5,12 @@ from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.models.policy import CurrentStep, Policy
+from fides.api.ops.models.privacy_request import (
+    CheckpointActionRequired,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+)
 from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     AdvancedSettings,
@@ -305,6 +309,38 @@ class TestConsentEmailBatchSendHelperFunctions:
         }
 
     @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_restart_privacy_requests_from_post_webhook_send_temporary_paused_status(
+        self,
+        run_privacy_request,
+        db,
+        privacy_request_awaiting_consent_email_send,
+    ):
+        """Assert privacy request is temporarily put into a paused status and checkpoint is cached."""
+        assert (
+            privacy_request_awaiting_consent_email_send.status
+            == PrivacyRequestStatus.awaiting_consent_email_send
+        )
+
+        restart_privacy_requests_from_post_webhook_send(
+            [privacy_request_awaiting_consent_email_send], db
+        )
+
+        db.refresh(privacy_request_awaiting_consent_email_send)
+        assert (
+            privacy_request_awaiting_consent_email_send.status
+            == PrivacyRequestStatus.paused
+        )
+        assert (
+            privacy_request_awaiting_consent_email_send.get_paused_collection_details()
+            == CheckpointActionRequired(
+                step=CurrentStep.post_webhooks, collection=None, action_needed=None
+            )
+        )
+        assert run_privacy_request.called
+
+    @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.needs_consent_email_send",
     )
     def test_restart_privacy_requests_from_post_webhook_send(
@@ -319,7 +355,7 @@ class TestConsentEmailBatchSendHelperFunctions:
         )
 
         restart_privacy_requests_from_post_webhook_send(
-            [privacy_request_awaiting_consent_email_send]
+            [privacy_request_awaiting_consent_email_send], db
         )
 
         db.refresh(privacy_request_awaiting_consent_email_send)

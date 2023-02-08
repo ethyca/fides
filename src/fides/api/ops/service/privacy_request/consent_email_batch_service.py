@@ -164,7 +164,7 @@ def send_consent_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
 
         conn_configs: Query = get_consent_email_connection_configs(session)
         if not conn_configs.first():
-            restart_privacy_requests_from_post_webhook_send(privacy_requests)
+            restart_privacy_requests_from_post_webhook_send(privacy_requests, session)
             logger.info(
                 "Skipping batch consent email send with status: {}",
                 ConsentEmailExitState.no_applicable_connectors.value,
@@ -180,7 +180,7 @@ def send_consent_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
             pending_email.batched_user_consent_preferences
             for pending_email in batched_user_data
         ):
-            restart_privacy_requests_from_post_webhook_send(privacy_requests)
+            restart_privacy_requests_from_post_webhook_send(privacy_requests, session)
             logger.info(
                 "Skipping batch consent email send with status: {}",
                 ConsentEmailExitState.missing_required_data.value,
@@ -196,16 +196,29 @@ def send_consent_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
             )
             return ConsentEmailExitState.email_send_failed
 
-    restart_privacy_requests_from_post_webhook_send(privacy_requests)
+    restart_privacy_requests_from_post_webhook_send(privacy_requests, session)
     return ConsentEmailExitState.complete
 
 
-def restart_privacy_requests_from_post_webhook_send(privacy_requests: Query) -> None:
+def restart_privacy_requests_from_post_webhook_send(
+    privacy_requests: Query, db: Session
+) -> None:
     """After batch consent email send, requeue privacy requests from the post webhooks step
     to wrap up processing and transition to a "complete" state.
+
+    Also cache on the privacy request itself that it is paused at the post-webhooks state,
+    in case something happens in re-queueing.
     """
     logger.info("Queuing privacy requests from post webhooks step.")
     for privacy_request in privacy_requests:
+        privacy_request.cache_paused_collection_details(
+            step=CurrentStep.post_webhooks,
+            collection=None,
+            action_needed=None,
+        )
+        privacy_request.status = PrivacyRequestStatus.paused
+        privacy_request.save(db=db)
+
         queue_privacy_request(
             privacy_request_id=privacy_request.id,
             from_step=CurrentStep.post_webhooks.value,
