@@ -15,6 +15,7 @@ from toml import load as load_toml
 from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ctl.sql_models import System
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -32,7 +33,12 @@ from fides.api.ops.models.policy import (
 )
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.models.registration import UserRegistration
-from fides.api.ops.models.storage import ResponseFormat, StorageConfig
+from fides.api.ops.models.storage import (
+    ResponseFormat,
+    StorageConfig,
+    _create_local_default_storage,
+    default_storage_config_name,
+)
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
@@ -178,6 +184,50 @@ def storage_config_local(db: Session) -> Generator:
     )
     yield storage_config
     storage_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def storage_config_default(db: Session) -> Generator:
+    """
+    Create and yield a default storage config, as defined by its
+    `is_default` flag being set to `True`. This is an s3 storage config.
+    """
+    sc = StorageConfig.create(
+        db=db,
+        data={
+            "name": default_storage_config_name(StorageType.s3.value),
+            "type": StorageType.s3,
+            "is_default": True,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
+                StorageDetails.BUCKET.value: "test_bucket",
+            },
+            "format": ResponseFormat.json,
+        },
+    )
+    yield sc
+
+
+@pytest.fixture(scope="function")
+def storage_config_default_local(db: Session) -> Generator:
+    """
+    Create and yield the default local storage config.
+    """
+    sc = _create_local_default_storage(db)
+    yield sc
+
+
+@pytest.fixture(scope="function")
+def set_active_storage_s3(db) -> None:
+    ApplicationConfig.create_or_update(
+        db,
+        data={
+            "api_set": {
+                "storage": {"active_default_storage_type": StorageType.s3.value}
+            }
+        },
+    )
 
 
 @pytest.fixture(scope="function")
