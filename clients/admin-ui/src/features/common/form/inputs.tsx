@@ -5,6 +5,7 @@
 import {
   Box,
   EyeIcon,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -21,6 +22,7 @@ import {
   Switch,
   Textarea,
   TextareaProps,
+  VStack,
 } from "@fidesui/react";
 import { CreatableSelect, Select, Size } from "chakra-react-select";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
@@ -32,6 +34,7 @@ interface CustomInputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
+  variant?: "inline" | "stacked";
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -111,6 +114,7 @@ export const CustomTextInput = ({
   label,
   tooltip,
   disabled,
+  variant = "inline",
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -120,26 +124,56 @@ export const CustomTextInput = ({
 
   const isPassword = initialType === "password";
 
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Grid templateColumns="1fr 3fr">
+          <Label title={label} htmlFor={props.id || props.name} />
+          <Box display="flex" alignItems="center">
+            <TextInput
+              {...field}
+              isDisabled={disabled}
+              data-testid={`input-${field.name}`}
+              placeholder={placeholder}
+              isPassword={isPassword}
+            />
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Box>
+        </Grid>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
   return (
     <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr">
-        <Label title={label} htmlFor={props.id || props.name} />
-        <Box display="flex" alignItems="center">
-          <TextInput
-            {...field}
-            isDisabled={disabled}
-            data-testid={`input-${field.name}`}
-            placeholder={placeholder}
-            isPassword={isPassword}
+      <VStack alignItems="start">
+        <Flex alignItems="center">
+          <Label
+            title={label}
+            htmlFor={props.id || props.name}
+            fontSize="sm"
+            my={0}
+            mr={1}
           />
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Box>
-      </Grid>
-      <ErrorMessage
-        isInvalid={isInvalid}
-        message={meta.error}
-        fieldName={field.name}
-      />
+        </Flex>
+        <TextInput
+          {...field}
+          isDisabled={disabled}
+          data-testid={`input-${field.name}`}
+          placeholder={placeholder}
+          isPassword={isPassword}
+        />
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </VStack>
     </FormControl>
   );
 };
