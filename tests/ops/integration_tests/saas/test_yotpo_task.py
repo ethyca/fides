@@ -86,37 +86,31 @@ async def test_yotpo_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:reviews_-_merchant_(ugc)"],
-        min_size=1,
-        keys=[
-            "status",            
-            "response",
-        ],
-    )
-
-    assert_rows_match(
-        v[f"{dataset_name}:email_analytics_(ugc)"],
-        min_size=1,
-        keys=[
-            "records",            
-        ],
-    )
-
-    assert_rows_match(
-        v[f"{dataset_name}:visual_ugc_(ugc)"],
-        min_size=1,
-        keys=[
-            "status",
-            "response"            
-        ],
-    )
-
-    assert_rows_match(
         v[f"{dataset_name}:customers_(loyalty)"],
         min_size=1,
         keys=[
             "total_spend_cents",
-            "total_purchases"            
+            "total_purchases",
+            "perks_redeemed",
+            "last_purchase_at",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "email",
+            "points_balance",
+            "points_earned",
+            "last_seen_at",
+            "thirty_party_id",
+            "third_party_id",
+            "pos_account_id",
+            "has_store_account",
+            "credit_balance",
+            "credit_balance_in_customer_currency",
+            "opt_in",
+            "opted_in_at",
+            "points_expire_at",
+            "vip_tier_actions_completed",
+            "vip_tier_upgrade_requirements"
         ],
     )
 
@@ -194,37 +188,31 @@ async def test_yotpo_erasure_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:reviews_-_merchant_(ugc)"],
-        min_size=1,
-        keys=[
-            "status",            
-            "response",
-        ],
-    )
-
-    assert_rows_match(
-        v[f"{dataset_name}:email_analytics_(ugc)"],
-        min_size=1,
-        keys=[
-            "records",            
-        ],
-    )
-
-    assert_rows_match(
-        v[f"{dataset_name}:visual_ugc_(ugc)"],
-        min_size=1,
-        keys=[
-            "status",
-            "response"            
-        ],
-    )
-
-    assert_rows_match(
         v[f"{dataset_name}:customers_(loyalty)"],
         min_size=1,
         keys=[
             "total_spend_cents",
-            "total_purchases"            
+            "total_purchases",
+            "perks_redeemed",
+            "last_purchase_at",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "email",
+            "points_balance",
+            "points_earned",
+            "last_seen_at",
+            "thirty_party_id",
+            "third_party_id",
+            "pos_account_id",
+            "has_store_account",
+            "credit_balance",
+            "credit_balance_in_customer_currency",
+            "opt_in",
+            "opted_in_at",
+            "points_expire_at",
+            "vip_tier_actions_completed",
+            "vip_tier_upgrade_requirements"
         ],
     )
 
@@ -241,9 +229,6 @@ async def test_yotpo_erasure_request_task(
     assert x == {
         f"{dataset_name}:get_utoken_(core)": 0,
         f"{dataset_name}:customer_(core)": 1,
-        f"{dataset_name}:reviews_-_merchant_(ugc)": 0,
-        f"{dataset_name}:email_analytics_(ugc)": 0,
-        f"{dataset_name}:visual_ugc_(ugc)": 0,
         f"{dataset_name}:customers_(loyalty)": 1,
     }
 
@@ -278,7 +263,7 @@ async def test_yotpo_erasure_request_task(
         headers=headers,
         params={"customer_email": yotpo_erasure_identity_email},
     )
-    print(loyalty_response)
+    print(loyalty_response.json())
     # Check user is updated or not
     assert loyalty_response.status_code == 200
 

@@ -16,7 +16,7 @@ saas_config:
 
   client_config:
     protocol: https
-    host: api.yotpo.com
+    host: <domain>
     # authentication:
     #   strategy: no_authentication
     #   configuration: {}
@@ -49,7 +49,7 @@ saas_config:
               connector_param: app_key
             - name: secret_key
               connector_param: secret_key
-            - name: email
+            - name: placeholder
               identity: email
     - name: customer_(core)
       requests:
@@ -85,60 +85,6 @@ saas_config:
                  <all_object_fields>
                }
             }
-          param_values:
-            - name: app_key
-              connector_param: app_key
-            - name: get_utoken_(core)_access_token
-              references:
-                - dataset: <instance_fides_key>
-                  field: get_utoken_(core).access_token
-                  direction: from
-    - name: reviews_-_merchant_(ugc)
-      requests:
-        read:
-          method: GET
-          path: /products/<app_key>/yotpo_global_reviews/reviews.json
-          query_params:
-            - name: count
-              value: '10'
-            - name: page
-              value: '1'
-            - name: user_reference
-              value: <customer_(core)_external_id>
-          param_values:
-            - name: app_key
-              connector_param: app_key
-            - name: customer_(core)_external_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: customer_(core).external_id
-                  direction: from
-    - name: email_analytics_(ugc)
-      requests:
-        read:
-          method: GET
-          path: /analytics/v1/emails/<app_key>/export/raw_data
-          query_params:
-            - name: token
-              value: <get_utoken_(core)_access_token>
-          param_values:
-            - name: app_key
-              connector_param: app_key
-            - name: get_utoken_(core)_access_token
-              references:
-                - dataset: <instance_fides_key>
-                  field: get_utoken_(core).access_token
-                  direction: from
-    - name: visual_ugc_(ugc)
-      requests:
-        read:
-          method: GET
-          path: /v1/apps/<app_key>/images/export
-          query_params:
-            - name: utoken
-              value: <get_utoken_(core)_access_token>
-            - name: source
-              value: review
           param_values:
             - name: app_key
               connector_param: app_key
@@ -189,12 +135,10 @@ saas_config:
               value: <x_api_key>
           body: |
             {
-                 <all_object_fields>               
+               <all_object_fields>  
             }
           param_values:
             - name: x_guid
               connector_param: x_guid
             - name: x_api_key
               connector_param: x_api_key
-            - name: email
-              identity: email

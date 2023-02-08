@@ -201,7 +201,16 @@ def yotpo_create_loyalty_data(
 
     users_response = requests.post(url=f"{base_url}/api/v2/customers", headers=headers, json=body)
 
-    sleep(60)
+    error_message = f"customer with email {yotpo_erasure_identity_email} could not be added to Yotpo"
+    user_loyalty_data = poll_for_existence(
+        customer_loyalty_exists,
+        (yotpo_erasure_identity_email, yotpo_secrets),
+        retries=20,
+        interval=8,
+        error_message=error_message,
+    )
+
+    # sleep(60)
 
     yield users_response.ok
 
@@ -256,3 +265,30 @@ def customer_exists(yotpo_random_external_id: str, yotpo_secrets , yotpo_create_
     datas = customer_response.json()['customers'][0]['first_name']    
 
     return customer_response.json()
+
+def customer_loyalty_exists(yotpo_erasure_identity_email: str, yotpo_secrets):
+    """
+    Confirm whether customer exists by calling customer search by email api and comparing resulting firstname str.
+    Returns customer ID if it exists, returns None if it does not.
+    """       
+
+    base_url = f"https://{yotpo_secrets['another_domain']}"
+    headers = {        
+        "x-guid": f"{yotpo_secrets['x_guid']}",
+        "x-api-key": f"{yotpo_secrets['x_api_key']}",        
+    }
+
+    # customer loyalty update checking
+    loyalty_response = requests.get(
+        url=f"{base_url}/api/v2/customers",
+        headers=headers,
+        params={"customer_email": yotpo_erasure_identity_email},
+    )   
+
+    # Check the status of the api
+    if 200 != loyalty_response.status_code:
+        return None
+    if len(loyalty_response.json()) == 0:
+        return None   
+
+    return loyalty_response.json()
