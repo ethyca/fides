@@ -7,10 +7,10 @@ import DataTabs, { TabData } from "~/features/common/DataTabs";
 import { System } from "~/types/api";
 
 import { useFeatures } from "../common/features";
-import DescribeSystemStep from "./DescribeSystemStep";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import ReviewSystemStep from "./ReviewSystemStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
+import SystemInformationForm from "./SystemInformationForm";
 import SystemRegisterSuccess from "./SystemRegisterSuccess";
 
 const STEPS = ["Describe", "Declare", "Review"];
@@ -74,7 +74,7 @@ const ManualSystemFlow = () => {
     {
       label: STEPS[0],
       content: (
-        <DescribeSystemStep
+        <SystemInformationForm
           onSuccess={handleSuccess}
           onCancel={goBack}
           system={activeSystem}
@@ -133,7 +133,7 @@ const ManualSystemFlow = () => {
           </GridItem>
           <GridItem w="75%">
             {currentStepIndex === 0 ? (
-              <DescribeSystemStep
+              <SystemInformationForm
                 onSuccess={handleSuccess}
                 onCancel={goBack}
                 system={activeSystem}

@@ -12,7 +12,6 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormExtension";
 import {
   defaultInitialValues,
   FormValues,
@@ -24,6 +23,7 @@ import {
   useCreateSystemMutation,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
+import SystemInformationFormExtension from "~/features/system/SystemInformationFormExtension";
 import { System } from "~/types/api";
 
 const ValidationSchema = Yup.object().shape({
@@ -183,7 +183,7 @@ const DescribeSystemStep = ({
                 options={systemOptions}
               />
               {!abridged ? (
-                <DescribeSystemsFormExtension values={values} />
+                <SystemInformationFormExtension values={values} />
               ) : null}
             </Stack>
             <Box>
