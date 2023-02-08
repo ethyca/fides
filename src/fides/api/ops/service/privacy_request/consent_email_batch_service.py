@@ -159,7 +159,7 @@ def send_consent_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
     applicable user details batched together."""
 
     logger.info("Starting batched consent email send...")
-    with self.session as session:
+    with self.get_new_session() as session:
 
         privacy_requests: Query = session.query(PrivacyRequest).filter(
             PrivacyRequest.status == PrivacyRequestStatus.awaiting_consent_email_send

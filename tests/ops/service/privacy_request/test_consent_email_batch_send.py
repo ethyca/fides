@@ -62,7 +62,7 @@ class TestConsentEmailBatchSend:
         "fides.api.ops.service.privacy_request.consent_email_batch_service.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.consent_email_batch_service.restart_privacy_requests_from_post_webhook_send",
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.requeue_privacy_requests_after_consent_email_send",
     )
     def test_send_consent_email_batch_no_applicable_privacy_requests(
         self,
@@ -79,7 +79,7 @@ class TestConsentEmailBatchSend:
         "fides.api.ops.service.privacy_request.consent_email_batch_service.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.consent_email_batch_service.restart_privacy_requests_from_post_webhook_send",
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.requeue_privacy_requests_after_consent_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     def test_send_consent_email_batch_no_applicable_connectors(
@@ -97,7 +97,7 @@ class TestConsentEmailBatchSend:
         "fides.api.ops.service.privacy_request.consent_email_batch_service.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.consent_email_batch_service.restart_privacy_requests_from_post_webhook_send",
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.requeue_privacy_requests_after_consent_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
     @pytest.mark.usefixtures("sovrn_email_connection_config")
@@ -116,7 +116,7 @@ class TestConsentEmailBatchSend:
         "fides.api.ops.service.privacy_request.consent_email_batch_service.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.consent_email_batch_service.restart_privacy_requests_from_post_webhook_send",
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.requeue_privacy_requests_after_consent_email_send",
     )
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_send_consent_email_no_consent_preferences_saved(
@@ -135,7 +135,7 @@ class TestConsentEmailBatchSend:
         assert requeue_privacy_requests.called
 
     @mock.patch(
-        "fides.api.ops.service.privacy_request.consent_email_batch_service.restart_privacy_requests_from_post_webhook_send",
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.requeue_privacy_requests_after_consent_email_send",
     )
     @pytest.mark.usefixtures("sovrn_email_connection_config", "test_fides_org")
     def test_send_consent_email_failure(
@@ -176,7 +176,7 @@ class TestConsentEmailBatchSend:
         "fides.api.ops.service.privacy_request.consent_email_batch_service.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.consent_email_batch_service.restart_privacy_requests_from_post_webhook_send",
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.requeue_privacy_requests_after_consent_email_send",
     )
     def test_send_consent_email(
         self,
@@ -245,7 +245,7 @@ class TestConsentEmailBatchSend:
         "fides.api.ops.service.privacy_request.consent_email_batch_service.send_single_consent_email",
     )
     @mock.patch(
-        "fides.api.ops.service.privacy_request.consent_email_batch_service.restart_privacy_requests_from_post_webhook_send",
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.requeue_privacy_requests_after_consent_email_send",
     )
     def test_send_consent_email_multiple_users(
         self,
@@ -390,7 +390,7 @@ class TestConsentEmailBatchSendHelperFunctions:
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_restart_privacy_requests_from_post_webhook_send_temporary_paused_status(
+    def test_requeue_privacy_requests_after_consent_email_send_temporary_paused_status(
         self,
         run_privacy_request,
         db,
@@ -422,7 +422,7 @@ class TestConsentEmailBatchSendHelperFunctions:
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.needs_consent_email_send",
     )
-    def test_restart_privacy_requests_from_post_webhook_send(
+    def test_requeue_privacy_requests_after_consent_email_send(
         self,
         needs_consent_email_send_check,
         db,
