@@ -34,6 +34,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
+from fides.lib.exceptions import KeyOrNameAlreadyExists, KeyValidationError
 from fides.lib.models.client import ClientDetail
 
 PAGE_SIZE = Params().size
@@ -1004,6 +1005,61 @@ class TestPutDefaultStorageConfig:
         assert "field required" in response.text
         assert "bucket" in response.text
 
+    @mock.patch("fides.api.ops.models.storage.StorageConfig.create_or_update")
+    def test_put_default_config_key_or_name_exists(
+        self,
+        mock_create_or_update: Mock,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        payload,
+    ):
+        mock_create_or_update.side_effect = KeyOrNameAlreadyExists("Key already exists")
+        payload["type"] = StorageType.local.value
+        payload[
+            "format"
+        ] = (
+            ResponseFormat.json.value
+        )  # change to JSON because that's what local expects
+        payload["details"] = {
+            "naming": FileNaming.request_id.value
+        }  # currently this is the only thing that can be set for local storage
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+
+        assert 400 == response.status_code
+
+    @mock.patch("fides.api.ops.models.storage.StorageConfig.create_or_update")
+    def test_put_default_config_key_error(
+        self,
+        mock_create_or_update: Mock,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        payload,
+        loguru_caplog,
+    ):
+        mock_create_or_update.side_effect = KeyValidationError()
+        payload["type"] = StorageType.local.value
+        payload[
+            "format"
+        ] = (
+            ResponseFormat.json.value
+        )  # change to JSON because that's what local expects
+        payload["details"] = {
+            "naming": FileNaming.request_id.value
+        }  # currently this is the only thing that can be set for local storage
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+
+        assert 500 == response.status_code
+        assert (
+            "Create/update failed for default config update for storage type"
+            in loguru_caplog.text
+        )
+
 
 class TestPutDefaultStorageConfigSecretsS3:
     @pytest.fixture(scope="function")
@@ -1057,6 +1113,24 @@ class TestPutDefaultStorageConfigSecretsS3:
                 "extra fields not permitted ('bad_key',)",
             ]
         }
+
+    @mock.patch("fides.api.ops.models.storage.StorageConfig.set_secrets")
+    def test_update_default_set_secrets_error(
+        self,
+        set_secrets_mock: Mock,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        payload,
+    ):
+        set_secrets_mock.side_effect = ValueError(
+            "This object must have a `type` to validate secrets."
+        )
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(
+            url + "?verify=False", headers=auth_header, json=payload
+        )
+        assert response.status_code == 400
 
     def test_put_default_config_secrets_without_verifying(
         self,
