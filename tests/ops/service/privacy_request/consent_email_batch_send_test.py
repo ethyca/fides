@@ -22,7 +22,7 @@ from fides.api.ops.service.privacy_request.consent_email_batch_service import (
     BatchedUserConsentData,
     ConsentEmailExitState,
     add_batched_user_preferences_to_emails,
-    restart_privacy_requests_from_post_webhook_send,
+    requeue_privacy_requests_after_consent_email_send,
     send_consent_email_batch,
     stage_resource_per_connector,
 )
@@ -402,7 +402,7 @@ class TestConsentEmailBatchSendHelperFunctions:
             == PrivacyRequestStatus.awaiting_consent_email_send
         )
 
-        restart_privacy_requests_from_post_webhook_send(
+        requeue_privacy_requests_after_consent_email_send(
             [privacy_request_awaiting_consent_email_send], db
         )
 
@@ -433,7 +433,7 @@ class TestConsentEmailBatchSendHelperFunctions:
             == PrivacyRequestStatus.awaiting_consent_email_send
         )
 
-        restart_privacy_requests_from_post_webhook_send(
+        requeue_privacy_requests_after_consent_email_send(
             [privacy_request_awaiting_consent_email_send], db
         )
 

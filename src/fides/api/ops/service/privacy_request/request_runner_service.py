@@ -441,10 +441,7 @@ async def run_privacy_request(
                 _log_exception(exc, CONFIG.dev_mode)
                 return
 
-        # Check if privacy request needs to wait on weekly consent email send to
-        # third parties
-        # TODO REMOVE THIS - FOR TESTING ONLY
-        identity_data["ljt_readerID"] = "12345"
+        # Check if privacy request needs consent emails sent
         if (
             policy.get_rules_for_action(action_type=ActionType.consent)
             and can_run_checkpoint(
