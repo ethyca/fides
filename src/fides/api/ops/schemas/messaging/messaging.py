@@ -98,7 +98,7 @@ class ConsentPreferencesByUser(BaseModel):
 
 
 class ConsentEmailFulfillmentBodyParams(BaseModel):
-    """Body params required for privacy request receipt template"""
+    """Body params required to send batched user consent preferences by email"""
 
     controller: str
     third_party_vendor_name: str

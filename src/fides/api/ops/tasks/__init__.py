@@ -66,7 +66,6 @@ def _create_celery(config: FidesConfig = get_config()) -> Celery:
             "fides.api.ops.tasks.scheduled",
             "fides.api.ops.service.privacy_request",
             "fides.api.ops.service.privacy_request.request_runner_service",
-            "fides.api.ops.service.privacy_request.consent_email_batch_service",
         ]
     )
 

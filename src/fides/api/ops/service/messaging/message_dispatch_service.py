@@ -280,7 +280,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
     if action_type == MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT:
         base_template = get_email_template(action_type)
         return EmailForActionType(
-            subject="Notification of user's consent preference changes from < Processors name >",
+            subject="Notification of users' consent preference changes",
             body=base_template.render({"body": body_params}),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:

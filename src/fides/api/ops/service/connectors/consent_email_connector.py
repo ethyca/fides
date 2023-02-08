@@ -60,7 +60,7 @@ class GenericEmailConsentConnector(LimitedConnector[None]):
 
             logger.info("Starting test connection to {}", self.configuration.key)
 
-            # synchronous for now since failure to send is considered a connection test failure
+            # synchronous since failure to send is considered a connection test failure
             send_single_consent_email(
                 db=Session.object_session(self.configuration),
                 subject_email=config.test_email_address,
@@ -111,17 +111,16 @@ def get_identity_types_for_connector(email_secrets: ConsentEmailSchema) -> List[
     ]
 
 
-def get_user_identities_for_connector(
+def filter_user_identities_for_connector(
     secrets: ConsentEmailSchema, user_identities: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Filter identities to just those specified for a given connector"""
-    filtered_user_identities: Dict[str, Any] = {}
     required_identities: List[str] = get_identity_types_for_connector(secrets)
-    for identity_type in required_identities:
-        if user_identities.get(identity_type):
-            filtered_user_identities[identity_type] = user_identities.get(identity_type)
-
-    return filtered_user_identities
+    return {
+        identity_type: user_identities.get(identity_type)
+        for identity_type in required_identities
+        if user_identities.get(identity_type)
+    }
 
 
 def send_single_consent_email(

@@ -11,9 +11,9 @@ from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestS
 from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
 from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
 from fides.api.ops.service.connectors.consent_email_connector import (
+    filter_user_identities_for_connector,
     get_consent_email_connection_configs,
     get_identity_types_for_connector,
-    get_user_identities_for_connector,
     send_single_consent_email,
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
@@ -86,7 +86,7 @@ def add_batched_user_preferences_to_emails(
         for pending_email in batched_user_data:
             filtered_user_identities: Dict[
                 str, Any
-            ] = get_user_identities_for_connector(
+            ] = filter_user_identities_for_connector(
                 pending_email.connection_secrets, user_identities
             )
 

@@ -14,9 +14,9 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.service.connectors.consent_email_connector import (
+    filter_user_identities_for_connector,
     get_consent_email_connection_configs,
     get_identity_types_for_connector,
-    get_user_identities_for_connector,
     send_single_consent_email,
 )
 
@@ -118,7 +118,7 @@ class TestEmailConsentConnectorMethods:
         self, email_schema, user_identities, filtered_identities
     ):
         assert (
-            get_user_identities_for_connector(email_schema, user_identities)
+            filter_user_identities_for_connector(email_schema, user_identities)
             == filtered_identities
         )
 

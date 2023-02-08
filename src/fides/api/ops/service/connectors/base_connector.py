@@ -43,7 +43,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
 
     @abstractmethod
     def test_connection(self) -> Optional[ConnectionTestStatus]:
-        """Used to make a trivial query with the client to ensure secrets are correct.
+        """Used to make a trivial query or request to ensure secrets are correct.
 
         If no issues are encountered, this should run without error, otherwise a ConnectionException
         will be raised.

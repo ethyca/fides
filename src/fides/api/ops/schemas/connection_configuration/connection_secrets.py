@@ -27,6 +27,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
         cls: ConnectionConfigSecretsSchema, values: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate that the minimum required components have been supplied.
+
         Connection configurations either 1) need the entire URL
         *OR* 2) all of the required components to *build* that URL."""
         min_fields_present = values.get("url") or all(

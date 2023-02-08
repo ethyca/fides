@@ -52,8 +52,8 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import FidesConnector
 from fides.api.ops.service.connectors.consent_email_connector import (
+    filter_user_identities_for_connector,
     get_consent_email_connection_configs,
-    get_user_identities_for_connector,
 )
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
@@ -695,7 +695,7 @@ def needs_consent_email_send(
         secrets: ConsentEmailSchema = ConsentEmailSchema(
             **connection_config.secrets or {}
         )
-        filtered_user_identities = get_user_identities_for_connector(
+        filtered_user_identities = filter_user_identities_for_connector(
             secrets, user_identity
         )
         if filtered_user_identities:
