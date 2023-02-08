@@ -87,7 +87,11 @@ class RequestReviewDenyBodyParams(BaseModel):
 
 
 class ConsentPreferencesByUser(BaseModel):
-    """Used alongside collecting a list of multiple users' consent preferences"""
+    """Used for capturing the preferences of a single user.
+
+    Used for ConsentEmailFulfillmentBodyParams where we potentially send a list
+    of batched user preferences to a third party vendor all at once.
+    """
 
     identities: Dict[str, Any]
     consent_preferences: List[Consent]  # Consent schema

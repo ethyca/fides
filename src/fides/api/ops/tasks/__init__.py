@@ -53,13 +53,13 @@ def _create_celery(config: FidesConfig = get_config()) -> Celery:
             "fides.api.ops.tasks.scheduled",
             "fides.api.ops.service.privacy_request",
             "fides.api.ops.service.privacy_request.request_runner_service",
-            "fides.api.ops.service.privacy_request.consent_email_batch_send",
+            "fides.api.ops.service.privacy_request.consent_email_batch_service",
         ]
     )
 
     app.conf.beat_schedule = {
         "send_weekly_consent_emails": {
-            "task": "fides.api.ops.service.privacy_request.consent_email_batch_send.send_consent_email_batch",
+            "task": "fides.api.ops.service.privacy_request.consent_email_batch_service.send_consent_email_batch",
             "schedule": 60.0,
             "args": (),
         },
