@@ -26,6 +26,7 @@ The types of changes are:
 
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523) 
 * Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
+* Various form components now take a `stacked` or `inline` variant [#2542](https://github.com/ethyca/fides/pull/2542)
 
 ### Fixed
 
