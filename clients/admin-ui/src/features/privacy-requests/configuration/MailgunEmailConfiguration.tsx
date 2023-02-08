@@ -11,9 +11,12 @@ import {
   useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
+type ConnectionStep = "" | "apiKey" | "testConnection";
+
 const MailgunEmailConfiguration = () => {
   const { successAlert } = useAlert();
-  const [configurationStep, setConfigurationStep] = useState("");
+  const [configurationStep, setConfigurationStep] =
+    useState<ConnectionStep>("");
   const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
     type: "mailgun",
@@ -106,8 +109,8 @@ const MailgunEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {configurationStep === "apiKey" ||
-      configurationStep === "testConnection" ? (
+      {configurationStep === "apiKey" ? (
+        // TODO: configurationStep === "testConnection" will be set after https://github.com/ethyca/fides/issues/2237
         <>
           <Divider />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>

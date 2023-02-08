@@ -4,6 +4,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Heading,
+  LinkBox,
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
@@ -35,13 +36,13 @@ const ConfigurePrivacyRequests: NextPage = () => (
     </Heading>
     <Box display="flex" alignItems="center" mb={5}>
       <NextLink href="/privacy-requests/configure/messaging" passHref>
-        <Box
-          border="1px solid"
+        <LinkBox
+          p="5"
+          borderWidth="1px"
+          rounded="md"
           borderColor="gray.300"
-          borderRadius="md"
-          _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
+          _hover={{ borderColor: "complimentary.500" }}
           mr={5}
-          p={6}
         >
           <Heading mb={2} size="sm">
             Configure messaging provider
@@ -50,15 +51,15 @@ const ConfigurePrivacyRequests: NextPage = () => (
           configurations for sending processing notices to privacy request
           subjects. You&apos;ll need to set up config variables to send out
           messages from Fides. Configure your settings here.
-        </Box>
+        </LinkBox>
       </NextLink>
       <NextLink href="/privacy-requests/configure/storage" passHref>
-        <Box
-          border="1px solid"
+        <LinkBox
+          p="5"
+          borderWidth="1px"
+          rounded="md"
           borderColor="gray.300"
-          borderRadius="md"
-          _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
-          p={6}
+          _hover={{ borderColor: "complimentary.500" }}
         >
           <Heading mb={2} size="sm">
             Configure storage
@@ -67,7 +68,7 @@ const ConfigurePrivacyRequests: NextPage = () => (
           storage destination (e.g. an S3 bucket) in order to be returned to the
           user. At least one storage destination must be configured to process
           access requests. Configure your settings here.
-        </Box>
+        </LinkBox>
       </NextLink>
     </Box>
   </Layout>
