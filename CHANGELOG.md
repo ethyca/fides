@@ -35,6 +35,8 @@ The types of changes are:
 
 - Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
 - Restored `nav-config` back to the admin-ui [#2990](https://github.com/ethyca/fides/pull/2990)
+* Modified privacy center and sample app to accept either phone or email but not both. Modified default config. [#2539](https://github.com/ethyca/fides/pull/2539)
+
 
 ### Removed
 
