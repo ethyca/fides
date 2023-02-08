@@ -78,6 +78,7 @@ const ManualSystemFlow = () => {
           onSuccess={handleSuccess}
           onCancel={goBack}
           system={activeSystem}
+          withHeader
         />
       ),
     },

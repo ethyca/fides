@@ -3,6 +3,8 @@ import { useState } from "react";
 
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
 
+import SystemInformationForm from "./SystemInformationForm";
+
 /**
  * This is named very similarly to DescribeSystemStep because both components
  * do very similar things. In the future, these two flows may be consolidated,
@@ -13,7 +15,17 @@ const DescribeSystem = () => {
   const tabData: TabData[] = [
     {
       label: "System information",
-      content: <Box>system info</Box>,
+      content: (
+        <SystemInformationForm
+          onSuccess={() => {
+            console.log("success");
+          }}
+          onCancel={() => {
+            console.log("cancel");
+          }}
+          abridged
+        />
+      ),
     },
     {
       label: "Privacy declarations",

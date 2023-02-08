@@ -1,4 +1,4 @@
-import { Box, Button, Heading, Stack, useToast } from "@fidesui/react";
+import { Box, Button, Heading, Stack, Text, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
@@ -49,6 +49,7 @@ interface Props {
   onCancel: () => void;
   abridged?: boolean;
   system?: System;
+  withHeader?: boolean;
 }
 
 const DescribeSystemStep = ({
@@ -56,6 +57,7 @@ const DescribeSystemStep = ({
   onCancel,
   abridged,
   system: passedInSystem,
+  withHeader,
 }: Props) => {
   const initialValues = useMemo(
     () =>
@@ -128,14 +130,14 @@ const DescribeSystemStep = ({
       {({ dirty, values }) => (
         <Form>
           <Stack spacing={10}>
-            <SystemHeading system={passedInSystem} />
+            {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
-            <div>
+            <Text fontSize="sm">
               By providing a small amount of additional context for each system
               we can make reporting and understanding our tech stack much easier
               for everyone from engineering to legal teams. So let’s do this
               now.
-            </div>
+            </Text>
             <Stack spacing={4}>
               <CustomTextInput
                 id="name"

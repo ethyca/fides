@@ -67,7 +67,7 @@ const NewSystem: NextPage = () => {
     <Layout title="Choose a system type">
       <Box mb={4}>
         <Header step={currentStep} connector={connector} />
-        <Box mb={8}>
+        <Box>
           <Breadcrumb
             fontWeight="medium"
             fontSize="sm"
@@ -96,13 +96,19 @@ const NewSystem: NextPage = () => {
             ) : null}
           </Breadcrumb>
         </Box>
-        <Text fontSize="sm" w={{ base: "100%", md: "50%" }}>
+      </Box>
+      <Box w={{ base: "100%", md: "75%" }}>
+        <Text fontSize="sm" mb={8}>
           {currentStep === "choose-system"
             ? CHOOSE_SYSTEM_COPY
             : DESCRIBE_SYSTEM_COPY}
         </Text>
+        {currentStep === "choose-system" ? (
+          <SystemCatalog />
+        ) : (
+          <DescribeSystem />
+        )}
       </Box>
-      {currentStep === "choose-system" ? <SystemCatalog /> : <DescribeSystem />}
     </Layout>
   );
 };
