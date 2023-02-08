@@ -332,3 +332,53 @@ class TestMessageDispatchService:
         assert "No notification service type configured" in exc.value.args[0]
 
         mock_mailgun_dispatcher.assert_not_called()
+
+    @mock.patch(
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_subject_override_for_email(
+        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.MAILGUN.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            subject_override="Testing subject override",
+        )
+        body = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>ID Code</title>\n</head>\n<body>\n<main>\n    <p>\n        Your privacy request verification code is 2348.\n        Please return to the Privacy Center and enter the code to\n        continue. This code will expire in 10 minutes\n    </p>\n</main>\n</body>\n</html>'
+        mock_mailgun_dispatcher.assert_called_with(
+            messaging_config,
+            EmailForActionType(
+                subject="Testing subject override",
+                body=body,
+            ),
+            "test@email.com",
+        )
+
+    @mock.patch(
+        "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+    )
+    def test_sms_subject_override_ignored(
+        self, mock_twilio_dispatcher: Mock, db: Session, messaging_config_twilio_sms
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"phone_number": "+12312341231"}),
+            service_type=MessagingServiceType.TWILIO_TEXT.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            subject_override="override subject",
+        )
+        mock_twilio_dispatcher.assert_called_with(
+            messaging_config_twilio_sms,
+            f"Your privacy request verification code is 2348. "
+            + f"Please return to the Privacy Center and enter the code to continue. "
+            + f"This code will expire in 10 minutes",
+            "+12312341231",
+        )

@@ -451,7 +451,7 @@ async def run_privacy_request(
                 request_checkpoint=CurrentStep.consent_email_post_send,
                 from_checkpoint=resume_step,
             )
-            and needs_consent_email_send(session, identity_data)
+            and needs_consent_email_send(session, identity_data, privacy_request)
         ):
             privacy_request.pause_processing_for_consent_email_send(session)
             logger.info(
@@ -678,9 +678,19 @@ def _retrieve_child_results(  # pylint: disable=R0911
     return results
 
 
-def needs_consent_email_send(db: Session, user_identity: Dict[str, Any]) -> bool:
-    """Returns True if there are email consent connectors configured
-    at least one necessary identity for that email connector has been obtained."""
+def needs_consent_email_send(
+    db: Session, user_identity: Dict[str, Any], privacy_request: PrivacyRequest
+) -> bool:
+    """
+    Returns True if the privacy request fulfills the requirements for consent email send:
+
+    1) Privacy request must have consent preferences saved
+    2) There must be consent email connections configured
+    3) The user must have identity data matching at least one of these connectors
+    """
+    if not privacy_request.consent_preferences:
+        return False
+
     email_consent_connection_configs: Query = get_consent_email_connection_configs(db)
 
     for connection_config in email_consent_connection_configs:

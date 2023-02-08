@@ -33,8 +33,8 @@ from tests.ops.fixtures.application_fixtures import _create_privacy_request_for_
 CONFIG = get_config()
 
 
-def cache_identity_and_consent_preferences(privacy_request, db):
-    identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
+def cache_identity_and_consent_preferences(privacy_request, db, reader_id):
+    identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
     privacy_request.cache_identity(identity)
     privacy_request.consent_preferences = [
         Consent(data_use="advertising", opt_in=False).dict()
@@ -188,7 +188,7 @@ class TestConsentEmailBatchSend:
         sovrn_email_connection_config,
     ) -> None:
         cache_identity_and_consent_preferences(
-            privacy_request_awaiting_consent_email_send, db
+            privacy_request_awaiting_consent_email_send, db, "12345"
         )
         exit_state = send_consent_email_batch.delay().get()
         assert exit_state == ConsentEmailExitState.complete
@@ -241,6 +241,85 @@ class TestConsentEmailBatchSend:
         ).first()
         assert logs_for_privacy_request_without_identity is None
 
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.send_single_consent_email",
+    )
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.restart_privacy_requests_from_post_webhook_send",
+    )
+    def test_send_consent_email_multiple_users(
+        self,
+        requeue_privacy_requests,
+        send_single_consent_email,
+        db,
+        privacy_request_awaiting_consent_email_send,
+        second_privacy_request_awaiting_consent_email_send,
+        sovrn_email_connection_config,
+    ) -> None:
+        cache_identity_and_consent_preferences(
+            privacy_request_awaiting_consent_email_send, db, "12345"
+        )
+        cache_identity_and_consent_preferences(
+            second_privacy_request_awaiting_consent_email_send, db, "abcde"
+        )
+        exit_state = send_consent_email_batch.delay().get()
+        assert exit_state == ConsentEmailExitState.complete
+
+        assert send_single_consent_email.called
+        assert requeue_privacy_requests.called
+
+        call_kwargs = send_single_consent_email.call_args.kwargs
+
+        assert call_kwargs["user_consent_preferences"] == [
+            ConsentPreferencesByUser(
+                identities={"ljt_readerID": "12345"},
+                consent_preferences=[
+                    Consent(
+                        data_use="advertising", data_use_description=None, opt_in=False
+                    )
+                ],
+            ),
+            ConsentPreferencesByUser(
+                identities={"ljt_readerID": "abcde"},
+                consent_preferences=[
+                    Consent(
+                        data_use="advertising", data_use_description=None, opt_in=False
+                    )
+                ],
+            ),
+        ]
+        assert not call_kwargs["test_mode"]
+
+        email_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (
+                    AuditLog.privacy_request_id
+                    == privacy_request_awaiting_consent_email_send.id
+                )
+                & (AuditLog.action == AuditLogAction.email_sent)
+            ),
+        ).first()
+        assert (
+            email_audit_log.message
+            == f"Consent email instructions dispatched for '{sovrn_email_connection_config.name}'"
+        )
+
+        second_privacy_request_log = AuditLog.filter(
+            db=db,
+            conditions=(
+                (
+                    AuditLog.privacy_request_id
+                    == second_privacy_request_awaiting_consent_email_send.id
+                )
+                & (AuditLog.action == AuditLogAction.email_sent)
+            ),
+        ).first()
+        assert (
+            second_privacy_request_log.message
+            == f"Consent email instructions dispatched for '{sovrn_email_connection_config.name}'"
+        )
+
 
 class TestConsentEmailBatchSendHelperFunctions:
     def test_stage_resource_per_connector(self, sovrn_email_connection_config):
@@ -279,7 +358,7 @@ class TestConsentEmailBatchSendHelperFunctions:
         queued up.
         """
         cache_identity_and_consent_preferences(
-            privacy_request_awaiting_consent_email_send, db
+            privacy_request_awaiting_consent_email_send, db, "12345"
         )
 
         starting_resources = stage_resource_per_connector(
