@@ -12,6 +12,7 @@ import {
   IconButton,
   Input,
   InputGroup,
+  InputProps,
   InputRightElement,
   Radio,
   RadioGroup,
@@ -26,7 +27,7 @@ import { useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
-interface InputProps {
+interface CustomInputProps {
   disabled?: boolean;
   label: string;
   tooltip?: string;
@@ -41,18 +42,10 @@ interface InputProps {
 type StringField = FieldHookConfig<string | undefined>;
 type StringArrayField = FieldHookConfig<string[] | undefined>;
 
-export const CustomTextInput = ({
-  label,
-  tooltip,
-  disabled,
+const TextInput = ({
+  isPassword,
   ...props
-}: InputProps & StringField) => {
-  const [initialField, meta] = useField(props);
-  const { type: initialType, placeholder } = props;
-  const isInvalid = !!(meta.touched && meta.error);
-  const field = { ...initialField, value: initialField.value ?? "" };
-
-  const isPassword = initialType === "password";
+}: InputProps & { isPassword: boolean }) => {
   const [type, setType] = useState<"text" | "password">(
     isPassword ? "password" : "text"
   );
@@ -61,48 +54,89 @@ export const CustomTextInput = ({
     setType(type === "password" ? "text" : "password");
 
   return (
-    <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr">
-        <FormLabel htmlFor={props.id || props.name} size="sm">
-          {label}
-        </FormLabel>
-        <Box display="flex" alignItems="center">
-          <InputGroup size="sm" mr="2">
-            <Input
-              {...field}
-              disabled={disabled}
-              data-testid={`input-${field.name}`}
-              type={type}
-              placeholder={placeholder}
-              pr={isPassword ? "10" : "3"}
-            />
-            {isPassword ? (
-              <InputRightElement pr="2">
-                <IconButton
-                  size="xs"
-                  variant="unstyled"
-                  aria-label="Reveal/Hide Secret"
-                  icon={
-                    <EyeIcon
-                      boxSize="full"
-                      color={type === "password" ? "gray.400" : "gray.700"}
-                    />
-                  }
-                  onClick={handleClickReveal}
-                />
-              </InputRightElement>
-            ) : null}
-          </InputGroup>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Box>
-      </Grid>
-      {isInvalid ? (
-        <FormErrorMessage data-testid={`error-${field.name}`}>
-          {meta.error}
-        </FormErrorMessage>
+    <InputGroup size="sm" mr="2">
+      <Input {...props} type={type} pr={isPassword ? "10" : "3"} />
+      {isPassword ? (
+        <InputRightElement pr="2">
+          <IconButton
+            size="xs"
+            variant="unstyled"
+            aria-label="Reveal/Hide Secret"
+            icon={
+              <EyeIcon
+                boxSize="full"
+                color={type === "password" ? "gray.400" : "gray.700"}
+              />
+            }
+            onClick={handleClickReveal}
+          />
+        </InputRightElement>
       ) : null}
-    </FormControl>
+    </InputGroup>
   );
+};
+
+const ErrorMessage = ({
+  isInvalid,
+  message,
+  fieldName,
+}: {
+  isInvalid: boolean;
+  fieldName: string;
+  message?: string;
+}) => {
+  if (!isInvalid) {
+    return null;
+  }
+  return (
+    <FormErrorMessage data-testid={`error-${fieldName}`}>
+      {message}
+    </FormErrorMessage>
+  );
+};
+
+const Label = ({ title, ...props }: { title: string } & StringField) => (
+  <FormLabel htmlFor={props.id || props.name} size="sm">
+    {title}
+  </FormLabel>
+);
+
+export const CustomTextInput = ({
+  label,
+  tooltip,
+  disabled,
+  ...props
+}: CustomInputProps & StringField) => {
+  const [initialField, meta] = useField(props);
+  const { type: initialType, placeholder } = props;
+  const isInvalid = !!(meta.touched && meta.error);
+  const field = { ...initialField, value: initialField.value ?? "" };
+
+  const isPassword = initialType === "password";
+
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Grid templateColumns="1fr 3fr">
+          <Label title={label} {...props} />
+          <Box display="flex" alignItems="center">
+            <TextInput
+              {...field}
+              isDisabled={disabled}
+              data-testid={`input-${field.name}`}
+              placeholder={placeholder}
+              isPassword={isPassword}
+            />
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Box>
+        </Grid>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
 };
 
 export interface Option {
