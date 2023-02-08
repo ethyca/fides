@@ -132,7 +132,7 @@ const StorageConfiguration = () => {
             </Radio>
           </Stack>
         </RadioGroup>
-        {storageValue === "s3" ? (
+        {storageValue === "s3" && storageDetails ? (
           <S3StorageConfiguration storageDetails={storageDetails} />
         ) : null}
       </Box>
