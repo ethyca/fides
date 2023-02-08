@@ -1,41 +1,39 @@
-import React, { useEffect, useState, useCallback } from "react";
-import type { NextPage } from "next";
-import Head from "next/head";
 import {
+  Button,
   Flex,
   Heading,
-  Text,
-  Stack,
   Image,
-  Button,
+  Stack,
+  Text,
   useToast,
 } from "@fidesui/react";
+import produce from "immer";
+import type { NextPage } from "next";
+import Head from "next/head";
 import { useRouter } from "next/router";
-import {
-  ConfigErrorToastOptions,
-  ErrorToastOptions,
-  SuccessToastOptions,
-} from "~/common/toast-options";
+import React, { useCallback, useEffect, useState } from "react";
 
-import { Headers } from "headers-polyfill";
+import { setConsentCookie } from "fides-consent";
+import { useAppSelector } from "~/app/hooks";
+import { inspectForBrowserIdentities } from "~/common/browser-identities";
+import { useLocalStorage } from "~/common/hooks";
+import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import ConsentItemCard from "~/components/ConsentItemCard";
+import { config } from "~/constants";
+import { selectConfigConsentOptions } from "~/features/common/config.slice";
+import {
+  useLazyGetConsentRequestPreferencesQuery,
+  usePostConsentRequestVerificationMutation,
+  useUpdateConsentRequestPreferencesMutation,
+} from "~/features/consent/consent.slice";
 import {
   makeConsentItems,
   makeCookieKeyConsent,
 } from "~/features/consent/helpers";
-import { setConsentCookie } from "fides-consent";
 import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
-
-import { hostUrl, config } from "~/constants";
-import { addCommonHeaders } from "~/common/CommonHeaders";
-import { VerificationType } from "~/components/modals/types";
-import { useLocalStorage } from "~/common/hooks";
-import { useAppSelector } from "~/app/hooks";
-import { selectConfigConsentOptions } from "~/features/common/config.slice";
-import ConsentItemCard from "~/components/ConsentItemCard";
-import { inspectForBrowserIdentities } from "~/common/browser-identities";
+import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
 const Consent: NextPage = () => {
-  const content: any = [];
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
   const router = useRouter();
@@ -43,147 +41,229 @@ const Consent: NextPage = () => {
   const [consentItems, setConsentItems] = useState<ConsentItem[]>([]);
   const consentOptions = useAppSelector(selectConfigConsentOptions);
 
-  useEffect(() => {
-    const getUserConsents = async () => {
-      if (!consentRequestId) {
-        router.push("/");
-        return;
-      }
+  const getIdVerificationConfigQueryResult = useGetIdVerificationConfigQuery();
+  const [
+    postConsentRequestVerificationMutationTrigger,
+    postConsentRequestVerificationMutationResult,
+  ] = usePostConsentRequestVerificationMutation();
+  const [
+    getConsentRequestPreferencesQueryTrigger,
+    getConsentRequestPreferencesQueryResult,
+  ] = useLazyGetConsentRequestPreferencesQuery();
+  const [
+    updateConsentRequestPreferencesMutationTrigger,
+    updateConsentRequestPreferencesMutationResult,
+  ] = useUpdateConsentRequestPreferencesMutation();
 
-      const headers: Headers = new Headers();
-      addCommonHeaders(headers, null);
-
-      const configResponse = await fetch(`${hostUrl}/id-verification/config`, {
-        headers,
+  // TODO(#2299): Use error utils from shared package.
+  const toastError = useCallback(
+    ({
+      title = "An error occurred while retrieving user consent preferences.",
+      error,
+    }: {
+      title?: string;
+      error?: any;
+    }) => {
+      toast({
+        title,
+        description: error?.data?.detail,
+        ...ErrorToastOptions,
       });
-      const privacyCenterConfig = await configResponse.json();
-      if (!configResponse.ok) {
-        toast({
-          description: privacyCenterConfig.detail,
-          ...ConfigErrorToastOptions,
-        });
-        return;
-      }
+    },
+    [toast]
+  );
 
-      if (
-        privacyCenterConfig.identity_verification_required &&
-        !verificationCode
-      ) {
-        router.push("/");
-        return;
-      }
+  const redirectToIndex = useCallback(() => {
+    router.push("/");
+  }, [router]);
 
-      const verifyUrl = privacyCenterConfig.identity_verification_required
-        ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
-        : `${VerificationType.ConsentRequest}/${consentRequestId}/preferences`;
-
-      const requestOptions: RequestInit = {
-        method: privacyCenterConfig.identity_verification_required
-          ? "POST"
-          : "GET",
-        headers,
-      };
-      if (privacyCenterConfig.identity_verification_required) {
-        requestOptions.body = JSON.stringify({ code: verificationCode });
-      }
-
-      const response = await fetch(`${hostUrl}/${verifyUrl}`, requestOptions);
-      const data = (await response.json()) as ApiUserConsents;
-      if (!response.ok) {
-        toast({
-          title: "An error occurred while retrieving user consent preferences",
-          description: (data as any).detail,
-          ...ErrorToastOptions,
-        });
-
-        router.push("/");
-        return;
-      }
-
+  const updateConsentItems = useCallback(
+    (data: ApiUserConsents) => {
       const updatedConsentItems = makeConsentItems(data, consentOptions);
       setConsentItems(updatedConsentItems);
       setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
-    };
-    getUserConsents();
-  }, [router, consentRequestId, verificationCode, toast, consentOptions]);
+    },
+    [consentOptions]
+  );
 
-  consentItems.forEach((option) => {
-    content.push(
-      <ConsentItemCard
-        key={option.fidesDataUseKey}
-        fidesDataUseKey={option.fidesDataUseKey}
-        name={option.name}
-        description={option.description}
-        highlight={option.highlight}
-        url={option.url}
-        defaultValue={option.defaultValue}
-        consentValue={option.consentValue}
-        setConsentValue={(value) => {
-          /* eslint-disable-next-line no-param-reassign */
-          option.consentValue = value;
-        }}
-      />
-    );
-  });
-
-  const saveUserConsentOptions = useCallback(async () => {
-    const headers: Headers = new Headers();
-    addCommonHeaders(headers, null);
-    const browserIdentity = inspectForBrowserIdentities();
-
-    const body = {
-      code: verificationCode,
-      policy_key: config.consent?.policy_key,
-      consent: consentItems.map((d) => ({
-        data_use: d.fidesDataUseKey,
-        data_use_description: d.description,
-        opt_in: d.consentValue,
-      })),
-      executable_options: consentItems.map((d) => ({
-        data_use: d.fidesDataUseKey,
-        executable: d.executable ?? false,
-      })),
-      browser_identity: browserIdentity
-        ? { ga_client_id: browserIdentity.gaClientId }
-        : undefined,
-    };
-
-    const response = await fetch(
-      `${hostUrl}/${VerificationType.ConsentRequest}/${consentRequestId}/preferences/`,
-      {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify(body),
-        credentials: "include",
-      }
-    );
-
-    const data = (await response.json()) as ApiUserConsents;
-    if (!response.ok) {
-      toast({
-        title: "An error occurred while saving user consent preferences",
-        description: (data as any).detail,
-        ...ErrorToastOptions,
+  /**
+   * Set the consent value for an option in the `consentItems` array. We're storing a whole array in
+   * the state, so we need to use `produce` to modify a single property but still get a new object
+   * that works with React rendering.
+   */
+  const setConsentValue = useCallback(
+    (item: ConsentItem, value: boolean) => {
+      const updatedConsentItems = produce(consentItems, (draftItems) => {
+        const itemToUpdate = draftItems.find(
+          (candidate) => candidate.fidesDataUseKey === item.fidesDataUseKey
+        );
+        if (!itemToUpdate) {
+          return;
+        }
+        itemToUpdate.consentValue = value;
       });
-      router.push("/");
-    }
-    const updatedConsentItems = makeConsentItems(data, consentOptions);
-    setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
-    toast({
-      title: "Your consent preferences have been saved",
-      ...SuccessToastOptions,
-    });
+      setConsentItems(updatedConsentItems);
+    },
+    [consentItems]
+  );
 
-    router.push("/");
-    // TODO: display alert on successful patch
-    // TODO: display error alert on failed patch
+  /**
+   * When the Id verification method is known, trigger the request that will
+   * return the consent choices saved on the backend.
+   */
+  useEffect(() => {
+    if (!consentRequestId) {
+      toastError({ title: "No consent request in progress." });
+      redirectToIndex();
+      return;
+    }
+
+    if (getIdVerificationConfigQueryResult.isError) {
+      toastError({ error: getIdVerificationConfigQueryResult.error });
+      return;
+    }
+
+    if (!getIdVerificationConfigQueryResult.isSuccess) {
+      return;
+    }
+
+    const privacyCenterConfig = getIdVerificationConfigQueryResult.data;
+    if (
+      privacyCenterConfig.identity_verification_required &&
+      !verificationCode
+    ) {
+      toastError({ title: "Identity verification is required." });
+      redirectToIndex();
+      return;
+    }
+
+    if (privacyCenterConfig.identity_verification_required) {
+      postConsentRequestVerificationMutationTrigger({
+        id: consentRequestId,
+        code: verificationCode,
+      });
+    } else {
+      getConsentRequestPreferencesQueryTrigger({
+        id: consentRequestId,
+      });
+    }
   }, [
+    consentRequestId,
     verificationCode,
+    getIdVerificationConfigQueryResult,
+    postConsentRequestVerificationMutationTrigger,
+    getConsentRequestPreferencesQueryTrigger,
+    toastError,
+    redirectToIndex,
+  ]);
+
+  /**
+   * Initialize consent items from the request verification response.
+   */
+  useEffect(() => {
+    if (postConsentRequestVerificationMutationResult.isError) {
+      toastError({
+        error: postConsentRequestVerificationMutationResult.error,
+      });
+      redirectToIndex();
+      return;
+    }
+
+    if (postConsentRequestVerificationMutationResult.isSuccess) {
+      updateConsentItems(postConsentRequestVerificationMutationResult.data);
+    }
+  }, [
+    postConsentRequestVerificationMutationResult,
+    updateConsentItems,
+    toastError,
+    redirectToIndex,
+  ]);
+
+  /**
+   * Initialize consent items from the unverified preferences response.
+   */
+  useEffect(() => {
+    if (getConsentRequestPreferencesQueryResult.isError) {
+      toastError({
+        error: getConsentRequestPreferencesQueryResult.error,
+      });
+      redirectToIndex();
+      return;
+    }
+
+    if (getConsentRequestPreferencesQueryResult.isSuccess) {
+      updateConsentItems(getConsentRequestPreferencesQueryResult.data);
+    }
+  }, [
+    getConsentRequestPreferencesQueryResult,
+    updateConsentItems,
+    toastError,
+    redirectToIndex,
+  ]);
+
+  /**
+   * Update the consent choices on the backend.
+   */
+  const saveUserConsentOptions = useCallback(() => {
+    const consent = consentItems.map((d) => ({
+      data_use: d.fidesDataUseKey,
+      data_use_description: d.description,
+      opt_in: Boolean(d.consentValue),
+    }));
+
+    const executableOptions = consentItems.map((d) => ({
+      data_use: d.fidesDataUseKey,
+      executable: d.executable ?? false,
+    }));
+
+    const browserIdentity = inspectForBrowserIdentities();
+    const browserIdentityBody = browserIdentity
+      ? { ga_client_id: browserIdentity.gaClientId }
+      : undefined;
+
+    updateConsentRequestPreferencesMutationTrigger({
+      id: consentRequestId,
+      body: {
+        code: verificationCode,
+        policy_key: config.consent?.policy_key,
+        consent,
+        executable_options: executableOptions,
+        browser_identity: browserIdentityBody,
+      },
+    });
+  }, [
     consentItems,
     consentRequestId,
+    verificationCode,
+    updateConsentRequestPreferencesMutationTrigger,
+  ]);
+
+  /**
+   * Handle consent update result.
+   */
+  useEffect(() => {
+    if (updateConsentRequestPreferencesMutationResult.isError) {
+      toastError({
+        title: "An error occurred while saving user consent preferences",
+        error: updateConsentRequestPreferencesMutationResult.error,
+      });
+      return;
+    }
+
+    if (updateConsentRequestPreferencesMutationResult.isSuccess) {
+      updateConsentItems(updateConsentRequestPreferencesMutationResult.data);
+      toast({
+        title: "Your consent preferences have been saved",
+        ...SuccessToastOptions,
+      });
+      redirectToIndex();
+    }
+  }, [
+    updateConsentRequestPreferencesMutationResult,
+    updateConsentItems,
+    toastError,
     toast,
-    router,
-    consentOptions,
+    redirectToIndex,
   ]);
 
   return (
@@ -235,9 +315,19 @@ const Consent: NextPage = () => {
               hard to protect your information and put you in control.
             </Text>
           </Stack>
+
           <Flex m={-2} flexDirection="column">
-            {content}
+            {consentItems.map((item) => (
+              <ConsentItemCard
+                key={item.fidesDataUseKey}
+                item={item}
+                setConsentValue={(value) => {
+                  setConsentValue(item, value);
+                }}
+              />
+            ))}
           </Flex>
+
           <Stack direction="row" justifyContent="flex-start" width="720px">
             <Button
               size="sm"
