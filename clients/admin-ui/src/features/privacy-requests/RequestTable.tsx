@@ -72,7 +72,7 @@ const RequestTable = ({ revealPII }: RequestTableProps) => {
 
   return (
     <>
-      <Table size="sm">
+      <Table size="sm" data-testid="privacy-request-table">
         <Thead>
           <Tr>
             <Th px={0}>

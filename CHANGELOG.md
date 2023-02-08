@@ -14,7 +14,45 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.6.0...main)
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.6.3...main)
+
+### Added
+
+* Privacy Center
+  * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
+
+### Changed
+
+* Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523) 
+* Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
+
+### Fixed
+
+* Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
+* Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
+
+## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
+
+### Fixed
+
+* Handle case where legacy dataset has meta: null [#2524](https://github.com/ethyca/fides/pull/2524)
+
+## [2.6.2](https://github.com/ethyca/fides/compare/2.6.1...2.6.2)
+
+### Fixed
+
+* Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
+
+### Added
+* Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
+
+## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
+
+### Fixed
+
+* Fix errors when privacy requests execute concurrently without workers [#2489](https://github.com/ethyca/fides/pull/2489)
+* Enable saas request overrides to run in worker runtime [#2489](https://github.com/ethyca/fides/pull/2489)
 
 ## [2.6.0](https://github.com/ethyca/fides/compare/2.5.1...2.6.0)
 
@@ -28,6 +66,7 @@ The types of changes are:
 * Add new select/deselect all permissions buttons [#2437](https://github.com/ethyca/fides/pull/2437)
 * Endpoints to allow a user with the `user:password-reset` scope to reset users' passwords. In addition, users no longer require a scope to edit their own passwords. [#2373](https://github.com/ethyca/fides/pull/2373)
 * New form to reset a user's password without knowing an old password [#2390](https://github.com/ethyca/fides/pull/2390)
+* Approve & deny buttons on the "Request details" page. [#2473](https://github.com/ethyca/fides/pull/2473)
 * Consent Propagation
   * Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
   * Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)

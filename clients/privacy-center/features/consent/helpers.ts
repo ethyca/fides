@@ -1,4 +1,8 @@
-import { CookieKeyConsent } from "fides-consent";
+import {
+  CookieKeyConsent,
+  getConsentContext,
+  resolveConsentValue,
+} from "fides-consent";
 import { ConfigConsentOption } from "~/types/config";
 
 import { ConsentItem, ApiUserConsents, ApiUserConsent } from "./types";
@@ -7,6 +11,8 @@ export const makeConsentItems = (
   data: ApiUserConsents,
   consentOptions: ConfigConsentOption[]
 ): ConsentItem[] => {
+  const consentContext = getConsentContext();
+
   if (data.consent) {
     const newConsentItems: ConsentItem[] = [];
     const userConsentMap: { [key: string]: ApiUserConsent } = {};
@@ -15,12 +21,14 @@ export const makeConsentItems = (
       userConsentMap[key] = option;
     });
     consentOptions.forEach((d) => {
+      const defaultValue = resolveConsentValue(d.default, consentContext);
+
       if (d.fidesDataUseKey in userConsentMap) {
         const currentConsent = userConsentMap[d.fidesDataUseKey];
 
         newConsentItems.push({
+          defaultValue,
           consentValue: currentConsent.opt_in,
-          defaultValue: d.default ? d.default : false,
           description: currentConsent.data_use_description
             ? currentConsent.data_use_description
             : d.description,
@@ -33,12 +41,12 @@ export const makeConsentItems = (
         });
       } else {
         newConsentItems.push({
+          defaultValue,
           fidesDataUseKey: d.fidesDataUseKey,
           name: d.name,
           description: d.description,
           highlight: d.highlight ?? false,
           url: d.url,
-          defaultValue: d.default ? d.default : false,
           cookieKeys: d.cookieKeys ?? [],
           executable: d.executable ?? false,
         });
@@ -54,7 +62,7 @@ export const makeConsentItems = (
     description: option.description,
     highlight: option.highlight ?? false,
     url: option.url,
-    defaultValue: option.default ? option.default : false,
+    defaultValue: resolveConsentValue(option.default, consentContext),
     cookieKeys: option.cookieKeys ?? [],
     executable: option.executable ?? false,
   }));

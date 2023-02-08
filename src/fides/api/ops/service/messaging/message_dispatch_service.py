@@ -100,7 +100,7 @@ def dispatch_message_task(
     A wrapper function to dispatch a message task into the Celery queues
     """
     schema = FidesopsMessage.parse_obj(message_meta)
-    with self.session as db:
+    with self.get_new_session() as db:
         dispatch_message(
             db,
             schema.action_type,

@@ -16,10 +16,16 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops import common_exceptions
-from fides.api.ops.common_exceptions import WebhookOrderException
+from fides.api.ops.common_exceptions import (
+    StorageConfigNotFoundException,
+    WebhookOrderException,
+)
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.models.storage import (
+    StorageConfig,
+    get_active_default_storage_config,
+)
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.core.config import get_config
 from fides.lib.db.base_class import Base, FidesBase
@@ -94,11 +100,6 @@ def _validate_rule(
         if masking_strategy is None:
             raise common_exceptions.RuleValidationError(
                 "Erasure Rules must have masking strategies."
-            )
-    if action_type == ActionType.access.value:
-        if storage_destination_id is None:
-            raise common_exceptions.RuleValidationError(
-                "Access Rules must have a storage destination."
             )
     if action_type in [ActionType.update.value]:
         raise common_exceptions.RuleValidationError(
@@ -317,6 +318,21 @@ class Rule(Base):
         that this Rule is configured to apply to.
         """
         return [target.data_category for target in self.targets]  # type: ignore[attr-defined]
+
+    def get_storage_destination(self, db: Session) -> StorageConfig:
+        """
+        Utility to return the appropriate proper storage destination for the Rule.
+        If the Rule does not have an explicit `storage_destination` set, then the
+        application's default storage config will be returned
+        """
+        if self.storage_destination:
+            return self.storage_destination
+        storage_destination = get_active_default_storage_config(db)
+        if storage_destination is None:
+            raise StorageConfigNotFoundException(
+                f"The given rule `{self.key}` has no `storage_destination` configured, and there is no active default storage configuration defined"
+            )
+        return storage_destination
 
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
