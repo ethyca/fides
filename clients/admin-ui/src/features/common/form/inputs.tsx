@@ -8,6 +8,7 @@ import {
   FormControl,
   FormErrorMessage,
   FormLabel,
+  FormLabelProps,
   Grid,
   IconButton,
   Input,
@@ -41,6 +42,17 @@ interface CustomInputProps {
 // if the value they receive is undefined.
 type StringField = FieldHookConfig<string | undefined>;
 type StringArrayField = FieldHookConfig<string[] | undefined>;
+
+const Label = ({
+  title,
+  ...labelProps
+}: {
+  title: string;
+} & FormLabelProps) => (
+  <FormLabel size="sm" {...labelProps}>
+    {title}
+  </FormLabel>
+);
 
 const TextInput = ({
   isPassword,
@@ -95,12 +107,6 @@ const ErrorMessage = ({
   );
 };
 
-const Label = ({ title, ...props }: { title: string } & StringField) => (
-  <FormLabel htmlFor={props.id || props.name} size="sm">
-    {title}
-  </FormLabel>
-);
-
 export const CustomTextInput = ({
   label,
   tooltip,
@@ -114,29 +120,28 @@ export const CustomTextInput = ({
 
   const isPassword = initialType === "password";
 
-    return (
-      <FormControl isInvalid={isInvalid}>
-        <Grid templateColumns="1fr 3fr">
-          <Label title={label} {...props} />
-          <Box display="flex" alignItems="center">
-            <TextInput
-              {...field}
-              isDisabled={disabled}
-              data-testid={`input-${field.name}`}
-              placeholder={placeholder}
-              isPassword={isPassword}
-            />
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-          </Box>
-        </Grid>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName={field.name}
-        />
-      </FormControl>
-    );
-  }
+  return (
+    <FormControl isInvalid={isInvalid}>
+      <Grid templateColumns="1fr 3fr">
+        <Label title={label} htmlFor={props.id || props.name} />
+        <Box display="flex" alignItems="center">
+          <TextInput
+            {...field}
+            isDisabled={disabled}
+            data-testid={`input-${field.name}`}
+            placeholder={placeholder}
+            isPassword={isPassword}
+          />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Box>
+      </Grid>
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={meta.error}
+        fieldName={field.name}
+      />
+    </FormControl>
+  );
 };
 
 export interface Option {
@@ -171,9 +176,7 @@ export const CustomSelect = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
-        <FormLabel htmlFor={props.id || props.name} size="sm">
-          {label}
-        </FormLabel>
+        <Label title={label} htmlFor={props.id || props.name} />
         <Box
           display="flex"
           alignItems="center"
@@ -220,7 +223,11 @@ export const CustomSelect = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
-      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={meta.error}
+        fieldName={field.name}
+      />
     </FormControl>
   );
 };
@@ -250,9 +257,7 @@ export const CustomMultiSelect = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
-        <FormLabel htmlFor={props.id || props.name} size="sm">
-          {label}
-        </FormLabel>
+        <Label title={label} htmlFor={props.id || props.name} />
         <Box
           display="flex"
           alignItems="center"
@@ -302,7 +307,11 @@ export const CustomMultiSelect = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
-      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={meta.error}
+        fieldName={field.name}
+      />
     </FormControl>
   );
 };
@@ -323,7 +332,7 @@ export const CustomCreatableSingleSelect = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
-        <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
+        <Label title={label} htmlFor={props.id || props.name} />
         <Box data-testid={`input-${field.name}`}>
           <CreatableSelect
             options={options}
@@ -359,7 +368,11 @@ export const CustomCreatableSingleSelect = ({
           />
         </Box>
       </Grid>
-      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={meta.error}
+        fieldName={field.name}
+      />
     </FormControl>
   );
 };
@@ -382,7 +395,7 @@ export const CustomCreatableMultiSelect = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
-        <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
+        <Label title={label} htmlFor={props.id || props.name} />
         <Box
           display="flex"
           alignItems="center"
@@ -431,7 +444,11 @@ export const CustomCreatableMultiSelect = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
-      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={meta.error}
+        fieldName={field.name}
+      />
     </FormControl>
   );
 };
@@ -468,11 +485,11 @@ export const CustomTextArea = ({
       ) : (
         InnerTextArea
       )}
-      {isInvalid ? (
-        <FormErrorMessage data-testid={`error-${field.name}`}>
-          {meta.error}
-        </FormErrorMessage>
-      ) : null}
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={meta.error}
+        fieldName={field.name}
+      />
     </FormControl>
   );
 };
@@ -498,9 +515,7 @@ export const CustomRadioGroup = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
-        <FormLabel htmlFor={props.id || props.name} size="sm">
-          {label}
-        </FormLabel>
+        <Label title={label} htmlFor={props.id || props.name} />
         <RadioGroup
           onChange={handleChange}
           value={selected.value}
@@ -520,11 +535,11 @@ export const CustomRadioGroup = ({
           </Stack>
         </RadioGroup>
       </Grid>
-      {isInvalid ? (
-        <FormErrorMessage data-testid={`error-${field.name}`}>
-          {meta.error}
-        </FormErrorMessage>
-      ) : null}
+      <ErrorMessage
+        isInvalid={isInvalid}
+        message={meta.error}
+        fieldName={field.name}
+      />
     </FormControl>
   );
 };
@@ -544,9 +559,7 @@ export const CustomSwitch = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr" justifyContent="center">
-        <FormLabel htmlFor={props.id || props.name} my={0}>
-          {label}
-        </FormLabel>
+        <Label title={label} htmlFor={props.id || props.name} my={0} />
         <Box display="flex" alignItems="center">
           <Switch
             name={field.name}
