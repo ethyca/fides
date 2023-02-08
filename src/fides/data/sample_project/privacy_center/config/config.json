@@ -23,7 +23,7 @@
       "description": "We will erase all of your personal data. This action cannot be undone.",
       "identity_inputs": {
         "name": "optional",
-        "email": "required",
+        "email": "optional",
         "phone": "optional"
       }
     }
