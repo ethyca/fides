@@ -151,6 +151,8 @@ const SelectInput = ({
     }
   };
 
+  const components = isClearable ? undefined : { ClearIndicator: () => null };
+
   return (
     <Select
       options={options}
@@ -181,9 +183,7 @@ const SelectInput = ({
           color: "white",
         }),
       }}
-      components={{
-        ClearIndicator: () => null,
-      }}
+      components={components}
       isSearchable={isSearchable}
       isClearable={isClearable}
       instanceId={`select-${field.name}`}
