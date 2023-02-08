@@ -281,20 +281,48 @@ export const CustomSelect = ({
   isClearable,
   size = "sm",
   isMulti,
+  variant = "inline",
   ...props
-}: SelectProps & StringField) => {
+}: SelectProps & StringField & { variant?: Variant }) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
-
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Grid templateColumns="1fr 3fr">
+          <Label title={label} htmlFor={props.id || props.name} />
+          <Box
+            display="flex"
+            alignItems="center"
+            data-testid={`input-${field.name}`}
+          >
+            <SelectInput
+              options={options}
+              fieldName={field.name}
+              size={size}
+              isSearchable={isSearchable === undefined ? isMulti : isSearchable}
+              isClearable={isClearable}
+              isMulti={isMulti}
+            />
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Box>
+        </Grid>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
   return (
     <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr">
-        <Label title={label} htmlFor={props.id || props.name} />
-        <Box
-          display="flex"
-          alignItems="center"
-          data-testid={`input-${field.name}`}
-        >
+      <VStack alignItems="start">
+        <Flex alignItems="center">
+          <Label title={label} htmlFor={props.id || props.name} my={0} />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
+        <Box width="100%">
           <SelectInput
             options={options}
             fieldName={field.name}
@@ -303,14 +331,13 @@ export const CustomSelect = ({
             isClearable={isClearable}
             isMulti={isMulti}
           />
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
-      </Grid>
-      <ErrorMessage
-        isInvalid={isInvalid}
-        message={meta.error}
-        fieldName={field.name}
-      />
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </VStack>
     </FormControl>
   );
 };

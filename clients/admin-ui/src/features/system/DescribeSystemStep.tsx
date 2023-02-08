@@ -9,7 +9,6 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
   CustomSelect,
-  CustomTextArea,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -147,34 +146,6 @@ const DescribeSystemStep = ({
                 name="name"
                 label="System name"
                 tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-              />
-              <CustomTextInput
-                id="name"
-                name="name"
-                label="System name"
-                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                variant="stacked"
-              />
-
-              <CustomTextArea
-                id="name"
-                name="name"
-                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                variant="inline"
-              />
-              <CustomTextArea
-                id="name"
-                name="name"
-                label="System name"
-                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                variant="inline"
-              />
-              <CustomTextArea
-                id="name"
-                name="name"
-                label="System name"
-                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                variant="stacked"
               />
               <CustomTextInput
                 id="fides_key"
