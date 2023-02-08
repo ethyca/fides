@@ -51,20 +51,34 @@ describe("Privacy request", () => {
       cy.getByTestId("privacy-request-form").within(() => {
         // This block uses `.root()` to keep queries within the form. This is necessary because of
         // `.blur()` which triggers input validation.
-        cy.root().get("input#email").type("invalid email");
-        cy.root().get("input#phone").type("123 456 7890 1234567").blur();
 
+        // test email being typed, phone becoming disabled, continue becoming disabled due to invalid email
+        cy.root().get("input#email").type("invalid email").blur();
         cy.root().should("contain", "Email is invalid");
-        cy.root().should("contain", "Phone is invalid");
+        cy.root().get("input#phone").should("be.disabled");
         cy.root().get("button").contains("Continue").should("be.disabled");
+        cy.root().get("input#email").clear().blur();
+        cy.root().get("input#phone").should('not.be.disabled');
+        cy.root().get("button").contains("Continue").should("not.be.disabled");
 
-        cy.root().get("input#email").type("valid@example.com");
-        cy.root().get("input#phone").clear().type("123 456 7890").blur();
-        cy.root().get("button").contains("Continue").should("be.enabled");
-
-        // The phone input is optional (in the default config) so it can be left blank.
+        // test phone being typed, email becoming disabled, continue becoming disabled due to invalid phone
+        cy.root().get("input#phone").type("123 456 7890 1234567").blur();
+        cy.root().should("contain", "Phone is invalid");
+        cy.root().get("input#email").should("be.disabled");
+        cy.root().get("button").contains("Continue").should("be.disabled");
         cy.root().get("input#phone").clear().blur();
+        cy.root().get("input#phone").should('not.be.disabled')
+        cy.root().get("button").contains("Continue").should("not.be.disabled");
+
+        // test valid email
+        cy.root().get("input#email").type("valid@example.com").blur();
         cy.root().get("button").contains("Continue").should("be.enabled");
+        cy.root().get("input#email").clear().blur();
+
+        //test valid phone
+        cy.root().get("input#phone").type("123 456 7890").blur();
+        cy.root().get("button").contains("Continue").should("be.enabled");
+        cy.root().get("input#phone").clear().blur();
       });
     });
   });
