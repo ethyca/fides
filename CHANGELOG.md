@@ -31,6 +31,7 @@ The types of changes are:
 
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
+* UX fixes for user management [#2537](https://github.com/ethyca/fides/pull/2537)
 
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
 
