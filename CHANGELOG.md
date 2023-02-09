@@ -17,7 +17,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.3...main)
 
-* Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523) 
+### Changed
+
+* Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523)
+* Removes legacy `verify_oauth_client` function [#2527](https://github.com/ethyca/fides/pull/2527)
+
+### Fixed
+
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
