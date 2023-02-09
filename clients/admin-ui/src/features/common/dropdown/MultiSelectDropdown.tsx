@@ -92,6 +92,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdwonProps> = ({
         isLazy
         onClose={handleClose}
         onOpen={handleOpen}
+        strategy="fixed"
       >
         <Tooltip
           fontSize=".75rem"

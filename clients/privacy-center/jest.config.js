@@ -21,6 +21,10 @@ module.exports = {
     // Handle module aliases
     "^@/components/(.*)$": "<rootDir>/components/$1",
     "^~/(.*)$": "<rootDir>/$1",
+
+    // Handle symlink installed package.
+    "^fides-consent$":
+      "<rootDir>/packages/fides-consent/dist/fides-consent.mjs",
   },
   // Add more setup options before each test is run
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],
@@ -33,7 +37,7 @@ module.exports = {
   transform: {
     // Use babel-jest to transpile tests with the next/babel preset
     // https://jestjs.io/docs/configuration#transform-objectstring-pathtotransformer--pathtotransformer-object
-    "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }],
+    "^.+\\.(js|mjs|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }],
   },
   transformIgnorePatterns: [
     "/node_modules/",

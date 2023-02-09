@@ -38,13 +38,13 @@ describe("Config Wizard", () => {
         expect(body.fides_key).to.eq("default_organization");
         expect(body.description).to.eq("Updated description");
       });
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
     });
 
     it("Can skip the org flow if an organization already exists", () => {
       cy.visit("/add-systems");
       cy.getByTestId("guided-setup-btn").click();
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
     });
   });
 
@@ -55,7 +55,7 @@ describe("Config Wizard", () => {
 
       cy.visit("/add-systems");
       // Select AWS to move to form step.
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("aws-btn").click();
       // Fill form
       cy.getByTestId("authenticate-aws-form");
@@ -136,7 +136,7 @@ describe("Config Wizard", () => {
           cy.getByTestId("close-scan-in-progress").click();
           cy.contains("Cancel Scan!");
           cy.contains("Yes, Cancel").click();
-          cy.contains("Add Systems");
+          cy.getByTestId("add-systems");
         });
     });
   });
@@ -147,7 +147,7 @@ describe("Config Wizard", () => {
 
       cy.visit("/add-systems");
       // Select Okta to move to form step.
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("okta-btn").click();
       // Fill form
       cy.getByTestId("authenticate-okta-form");

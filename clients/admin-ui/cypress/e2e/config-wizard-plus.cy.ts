@@ -11,7 +11,7 @@ const goToDataFlowScanner = () => {
   cy.visit("/add-systems");
 
   // Select Runtime scanner to move to scan step.
-  cy.getByTestId("add-system-form");
+  cy.getByTestId("add-systems");
   cy.getByTestId("data-flow-scan-btn").click();
 };
 
@@ -43,10 +43,10 @@ describe("Config wizard with plus settings", () => {
         },
       });
       cy.visit("/add-systems");
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
 
       cy.wait("@getPlusHealth");
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("data-flow-scan-btn").should("be.disabled");
       cy.getByTestId("cluster-health-indicator").should("not.exist");
     });
@@ -62,10 +62,10 @@ describe("Config wizard with plus settings", () => {
         },
       });
       cy.visit("/add-systems");
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
 
       cy.wait("@getPlusHealth");
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("data-flow-scan-btn").should("be.disabled");
       cy.getByTestId("cluster-health-indicator")
         .invoke("attr", "title")
@@ -75,10 +75,10 @@ describe("Config wizard with plus settings", () => {
     it("Can show the scanner as enabled and healthy", () => {
       stubPlus(true);
       cy.visit("/add-systems");
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
 
       cy.wait("@getPlusHealth");
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("data-flow-scan-btn").should("be.enabled");
       cy.getByTestId("cluster-health-indicator")
         .invoke("attr", "title")
@@ -230,7 +230,7 @@ describe("Config wizard with plus settings", () => {
       // No results message
       cy.getByTestId("no-results");
       cy.getByTestId("back-btn").click();
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
     });
 
     // TODO: Update Cypress test to reflect the nav bar 2.0
@@ -257,7 +257,7 @@ describe("Config wizard with plus settings", () => {
       cy.getByTestId("generic-msg");
       //   Canceling should bring us back to the add system form
       cy.getByTestId("cancel-btn").click();
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
     });
   });
 });
