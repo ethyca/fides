@@ -72,7 +72,7 @@ def privacy_request_complete_email_notification_enabled(db):
     """Enable request completion email"""
     original_value = CONFIG.notifications.send_request_completion_notification
     CONFIG.notifications.send_request_completion_notification = True
-    ApplicationConfig.set_config_set_config(db, CONFIG)
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_completion_notification = original_value
 
@@ -1856,7 +1856,7 @@ class TestPrivacyRequestsEmailNotifications:
         """Enable request completion email"""
         original_value = CONFIG.notifications.send_request_completion_notification
         CONFIG.notifications.send_request_completion_notification = True
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_completion_notification = original_value
 

@@ -1795,7 +1795,7 @@ class TestApprovePrivacyRequest:
         """Enable request review notification"""
         original_value = CONFIG.notifications.send_request_review_notification
         CONFIG.notifications.send_request_review_notification = True
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_review_notification = original_value
 
@@ -2013,7 +2013,7 @@ class TestDenyPrivacyRequest:
         """Enable request review notification"""
         original_value = CONFIG.notifications.send_request_review_notification
         CONFIG.notifications.send_request_review_notification = True
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_review_notification = original_value
 
@@ -2963,7 +2963,7 @@ class TestVerifyIdentity:
         """Enable request receipt"""
         original_value = CONFIG.notifications.send_request_receipt_notification
         CONFIG.notifications.send_request_receipt_notification = True
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_receipt_notification = original_value
 
@@ -3247,7 +3247,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         """Override autouse fixture to enable identity verification for tests"""
         original_value = CONFIG.execution.subject_identity_verification_required
         CONFIG.execution.subject_identity_verification_required = True
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.execution.subject_identity_verification_required = original_value
 
@@ -3802,7 +3802,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         """Enable request receipt notification"""
         original_value = CONFIG.notifications.send_request_receipt_notification
         CONFIG.notifications.send_request_receipt_notification = True
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_receipt_notification = original_value
 
@@ -3918,7 +3918,7 @@ class TestCreatePrivacyRequestAuthenticated:
     def verification_config(self, db):
         original = CONFIG.execution.subject_identity_verification_required
         CONFIG.execution.subject_identity_verification_required = True
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.execution.subject_identity_verification_required = original
 

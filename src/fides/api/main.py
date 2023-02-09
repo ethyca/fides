@@ -245,7 +245,7 @@ async def setup_server() -> None:
     logger.info("Loading config settings into database...")
     try:
         db = get_api_session()
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
     except Exception as e:
         logger.error("Error occurred writing config settings to database: {}", str(e))
         return

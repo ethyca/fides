@@ -102,7 +102,7 @@ class ApplicationConfig(Base):
         return self
 
     @classmethod
-    def get_api_set_config(cls, db: Session) -> Dict[str, Any]:
+    def get_api_set(cls, db: Session) -> Dict[str, Any]:
         """
         Utility method to get the api_set config settings dict
 
@@ -114,7 +114,7 @@ class ApplicationConfig(Base):
         return {}
 
     @classmethod
-    def get_config_set_config(cls, db: Session) -> Dict[str, Any]:
+    def get_config_set(cls, db: Session) -> Dict[str, Any]:
         """
         Utility method to get the config_set config dict
 
@@ -126,7 +126,7 @@ class ApplicationConfig(Base):
         return {}
 
     @classmethod
-    def set_api_set_config(
+    def update_api_set(
         cls, db: Session, api_set_dict: Dict[str, Any]
     ) -> ApplicationConfig:
         """
@@ -138,9 +138,7 @@ class ApplicationConfig(Base):
         return cls.create_or_update(db, data={"api_set": api_set_dict})
 
     @classmethod
-    def set_config_set_config(
-        cls, db: Session, config: FidesConfig
-    ) -> ApplicationConfig:
+    def update_config_set(cls, db: Session, config: FidesConfig) -> ApplicationConfig:
         """
         Utility method to set the `config_set` column on the `applicationconfig`
         db record by serializing the given `FidesConfig` to a JSON blob.
@@ -177,7 +175,7 @@ class ApplicationConfig(Base):
 
 
 def _get_property(
-    properties: Any, property_path: str = None, default_value: Any = None
+    properties: Any, property_path: str | None = None, default_value: Any = None
 ) -> Any:
     """
     Internal helper to recursively traverse a property dict/value with a
@@ -185,7 +183,7 @@ def _get_property(
     """
     if property_path:
         if not isinstance(properties, dict):
-            raise ValueError("Invalid path specified")
+            raise ValueError("Invalid property lookup")
         path_split = property_path.split(".", maxsplit=1)
         index = path_split.pop(0)
         try:

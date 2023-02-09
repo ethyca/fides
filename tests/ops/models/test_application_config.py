@@ -203,32 +203,16 @@ class TestApplicationConfigModel:
         self,
         db: Session,
     ):
-        assert ApplicationConfig.get_api_set_config(db) == {}
+        assert ApplicationConfig.get_api_set(db) == {}
 
     def test_get_api_config(self, db: Session, example_config_record: Dict[str, Any]):
         ApplicationConfig.create_or_update(db, data=example_config_record)
-        assert (
-            ApplicationConfig.get_api_set_config(db) == example_config_record["api_set"]
-        )
+        assert ApplicationConfig.get_api_set(db) == example_config_record["api_set"]
 
-    def test_set_config_set_config(self, db):
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+    def test_update_config_set(self, db):
+        ApplicationConfig.update_config_set(db, CONFIG)
         # check a few specific config properties of different types on the database record
-        db_config = ApplicationConfig.get_config_set_config(db)
-        assert (
-            db_config["notifications"]["notification_service_type"]
-            == CONFIG.notifications.notification_service_type
-        )
-        assert (
-            db_config["notifications"]["send_request_completion_notification"]
-            == CONFIG.notifications.send_request_completion_notification
-        )
-        assert (
-            db_config["execution"]["masking_strict"] == CONFIG.execution.masking_strict
-        )
-        assert db_config["redis"]["port"] == CONFIG.redis.port
-        assert db_config["security"]["cors_origins"] == CONFIG.security.cors_origins
-        # and perform a general check on the config objects
+        db_config = ApplicationConfig.get_config_set(db)
         assert dumps(db_config) == CONFIG.json()
 
         # change a few config values, set the db record, ensure it's updated
@@ -250,21 +234,8 @@ class TestApplicationConfigModel:
             db_config["execution"]["masking_strict"] != CONFIG.execution.masking_strict
         )
         # now we update the db record and all values should align again
-        ApplicationConfig.set_config_set_config(db, CONFIG)
-        db_config = ApplicationConfig.get_config_set_config(db)
-        assert (
-            db_config["notifications"]["notification_service_type"]
-            == CONFIG.notifications.notification_service_type
-        )
-        assert (
-            db_config["notifications"]["send_request_completion_notification"]
-            == CONFIG.notifications.send_request_completion_notification
-        )
-        assert (
-            db_config["execution"]["masking_strict"] == CONFIG.execution.masking_strict
-        )
-        assert db_config["redis"]["port"] == CONFIG.redis.port
-        assert db_config["security"]["cors_origins"] == CONFIG.security.cors_origins
+        ApplicationConfig.update_config_set(db, CONFIG)
+        db_config = ApplicationConfig.get_config_set(db)
         assert dumps(db_config) == CONFIG.json()
 
         # reset config values to initial values to ensure we don't mess up any state
@@ -366,7 +337,7 @@ class TestApplicationConfigResolution:
 
     @pytest.fixture
     def insert_app_config(self, db):
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.mark.usefixtures("insert_app_config")
     def test_get_resolved_config_property(self, db, insert_example_config_record):
@@ -423,13 +394,13 @@ class TestConfigProxy:
 
     @pytest.fixture
     def insert_app_config(self, db):
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.fixture
     def insert_app_config_set_notification_service_type_none(self, db):
         service_type = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = None
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         # set back to original value
         CONFIG.notifications.notification_service_type = service_type
@@ -438,7 +409,7 @@ class TestConfigProxy:
     def insert_app_config_set_notifications_none(self, db):
         notifications = CONFIG.notifications
         CONFIG.notifications = None
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         # set back to original value
         CONFIG.notifications = notifications
@@ -501,7 +472,7 @@ class TestConfigProxy:
         )
 
         # unset the API-set notification service type property
-        ApplicationConfig.set_api_set_config(
+        ApplicationConfig.update_api_set_config(
             db, api_set_dict={"notifications": {"notification_service_type": None}}
         )
         notification_service_type = config_proxy.notifications.notification_service_type

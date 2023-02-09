@@ -286,7 +286,7 @@ def subject_identity_verification_required(db):
     """Enable identity verification."""
     original_value = CONFIG.execution.subject_identity_verification_required
     CONFIG.execution.subject_identity_verification_required = True
-    ApplicationConfig.set_config_set_config(db, CONFIG)
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.execution.subject_identity_verification_required = original_value
 
@@ -296,7 +296,7 @@ def subject_identity_verification_not_required(db):
     """Disable identity verification for most tests unless overridden"""
     original_value = CONFIG.execution.subject_identity_verification_required
     CONFIG.execution.subject_identity_verification_required = False
-    ApplicationConfig.set_config_set_config(db, CONFIG)
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.execution.subject_identity_verification_required = original_value
 
@@ -306,7 +306,7 @@ def privacy_request_complete_email_notification_disabled(db):
     """Disable request completion email for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_completion_notification
     CONFIG.notifications.send_request_completion_notification = False
-    ApplicationConfig.set_config_set_config(db, CONFIG)
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_completion_notification = original_value
 
@@ -316,7 +316,7 @@ def privacy_request_receipt_notification_disabled(db):
     """Disable request receipt notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_receipt_notification
     CONFIG.notifications.send_request_receipt_notification = False
-    ApplicationConfig.set_config_set_config(db, CONFIG)
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_receipt_notification = original_value
 
@@ -326,7 +326,7 @@ def privacy_request_review_notification_disabled(db):
     """Disable request review notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_review_notification
     CONFIG.notifications.send_request_review_notification = False
-    ApplicationConfig.set_config_set_config(db, CONFIG)
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_review_notification = original_value
 
@@ -336,6 +336,6 @@ def set_notification_service_type_mailgun(db):
     """Set default notification service type"""
     original_value = CONFIG.notifications.notification_service_type
     CONFIG.notifications.notification_service_type = MessagingServiceType.MAILGUN.value
-    ApplicationConfig.set_config_set_config(db, CONFIG)
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.notification_service_type = original_value

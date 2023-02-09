@@ -17,7 +17,7 @@ class TestGetIdentityVerificationConfig:
         config = get_config()
         original_value = config.execution.subject_identity_verification_required
         config.execution.subject_identity_verification_required = True
-        ApplicationConfig.set_config_set_config(db, config)
+        ApplicationConfig.update_config_set(db, config)
         yield
         config.execution.subject_identity_verification_required = original_value
 
@@ -27,7 +27,7 @@ class TestGetIdentityVerificationConfig:
         config = get_config()
         original_value = config.execution.subject_identity_verification_required
         config.execution.subject_identity_verification_required = False
-        ApplicationConfig.set_config_set_config(db, config)
+        ApplicationConfig.update_config_set(db, config)
         yield
         config.execution.subject_identity_verification_required = original_value
 

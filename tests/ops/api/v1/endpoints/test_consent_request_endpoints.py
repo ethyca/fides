@@ -66,7 +66,7 @@ class TestConsentRequest:
         """Overrides autouse fixture to remove default notification service type"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = None
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
 
@@ -77,7 +77,7 @@ class TestConsentRequest:
         CONFIG.notifications.notification_service_type = (
             MessagingServiceType.TWILIO_TEXT.value
         )
-        ApplicationConfig.set_config_set_config(db, CONFIG)
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
 

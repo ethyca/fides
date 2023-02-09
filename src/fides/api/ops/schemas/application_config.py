@@ -52,7 +52,7 @@ class NotificationApplicationConfig(BaseSchema):
     def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
         if value:
-            valid_values = ["MAILGUN", "TWILIO_TEXT", "TWILIO_EMAIL"]
+            valid_values = ("MAILGUN", "TWILIO_TEXT", "TWILIO_EMAIL")
             value = value.upper()  # force uppercase for safety
 
             if value not in valid_values:
