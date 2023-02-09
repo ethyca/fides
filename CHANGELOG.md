@@ -18,6 +18,9 @@ The types of changes are:
 
 ### Added
 
+* Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
+* Increased default pool_size and max_overflow to 50 [#2560](https://github.com/ethyca/fides/pull/2560)
+
 * Admin UI
   * Create custom fields from a resource screen - Button to Trigger modal [#524](https://github.com/ethyca/fides/pull/2536)
   * Create Custom Lists [#525](https://github.com/ethyca/fides/pull/2536)
@@ -58,8 +61,6 @@ The types of changes are:
 ### Added
 * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
 
-### Added
-* Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
