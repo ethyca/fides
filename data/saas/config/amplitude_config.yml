@@ -1,0 +1,86 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Amplitude SaaS Config
+  type: amplitude
+  description: A sample schema representing the Amplitude connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: amplitude.com
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: Authorization
+            value: Basic <api_key>
+
+  test_request:
+    method: GET
+    path: /api/2/usersearch
+    query_params:
+      - name: user
+        value: vivek@testmail.com
+    data_path: matches
+    param_values:
+      - name: email
+        identity: email
+
+  endpoints:
+    - name: search_user
+      requests:
+        read:
+          method: GET
+          path: /api/2/usersearch
+          query_params:
+            - name: user
+              value: <email>
+          data_path: matches
+          param_values:
+            - name: email
+              identity: email
+    - name: user_activity
+      requests:
+        read:
+          method: GET
+          path: /api/2/useractivity
+          query_params:
+            - name: user
+              value: <search_user_amplitude_id>
+          param_values:
+            - name: search_user_amplitude_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: search_user.amplitude_id
+                  direction: from
+        delete:
+          method: POST
+          path: /api/2/deletions/users
+          body: |
+            {
+              "amplitude_ids": [
+                <search_user_amplitude_id>
+              ],
+              "user_ids": [
+                <search_user_user_id>
+              ],
+              "ignore_invalid_id": "true",
+              "delete_from_org": "false",
+              "requester": "employee@test.com"
+            }
+          param_values:
+            - name: search_user_amplitude_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: search_user.amplitude_id
+                  direction: from
+            - name: search_user_user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: search_user.user_id
+                  direction: from

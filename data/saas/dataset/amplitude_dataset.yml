@@ -1,0 +1,196 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: amplitude
+    description: A sample dataset representing the Amplitude connector for Fides
+    collections:
+      - name: search_user
+        fields:
+          - name: user_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: amplitude_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: last_device_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: country
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: last_seen
+      - name: user_activity
+        fields:
+          - name: events
+          - name: userData
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: revenue
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: purchases
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: usageTime
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: firstSeen
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: lastSeen
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: lastLocationLat
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: lastLocationLong
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: deviceIds
+              - name: user_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: last_device_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: canonical_amplitude_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: merged_amplitude_ids
+              - name: merge_times
+              - name: version
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: country
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: language
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: library
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: ip_address
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: platform
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: os
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: device
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: device_type
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: carrier
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: start_version
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: paying
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: city
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: region
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: dma
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: properties
+              - name: aliasing_user_ids
+              - name: aliased_user_id
+              - name: aliasing_profiles
+              - name: num_events
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: num_sessions
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: usage_time
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: device_ids
+              - name: last_location
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: lng
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: lat
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+          - name: metadata
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: missingData
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: queryIds
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: 'string[]'
+              - name: cached
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: timeComputed
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: kronosRuntime
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: kronosRequestDuration
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: subCluster
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
