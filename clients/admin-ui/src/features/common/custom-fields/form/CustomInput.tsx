@@ -37,6 +37,8 @@ const CustomInput = ({
 }: CustomInputProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
 
+  const testId = `custom-input-${field.name}`;
+
   return (
     <FormControl
       display="flex"
@@ -67,6 +69,7 @@ const CustomInput = ({
               {...field}
               autoComplete="off"
               autoFocus={props.autoFocus}
+              data-testid={testId}
             />
             <NumberInputStepper>
               <NumberIncrementStepper />
@@ -83,6 +86,7 @@ const CustomInput = ({
             isDisabled={disabled}
             placeholder={props.placeholder}
             size="sm"
+            data-testid={testId}
           />
         )}
         {type === "textarea" && (
@@ -95,6 +99,7 @@ const CustomInput = ({
             resize="none"
             size="sm"
             value={field.value || ""}
+            data-testid={testId}
           />
         )}
         <FormErrorMessage>{meta.error}</FormErrorMessage>
