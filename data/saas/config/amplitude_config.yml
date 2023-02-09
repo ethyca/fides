@@ -1,0 +1,71 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Amplitude SaaS Config
+  type: amplitude
+  description: A sample schema representing the Amplitude connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: api_token
+    - name: requester_email
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: Authorization
+            value: Basic <api_token>
+
+  test_request:
+    method: GET
+    path: /api/2/usersearch
+    query_params:
+      - name: user
+        value: test@gmail.com
+
+  endpoints:
+    - name: user_search
+      requests:
+        read:
+          method: GET
+          path: /api/2/usersearch
+          query_params:
+            - name: user
+              value: <email>
+          data_path: matches
+          param_values:
+            - name: email
+              identity: email
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: /api/2/useractivity
+          query_params:
+            - name: user
+              value: <user_search_amplitude_id>
+          param_values:
+            - name: user_search_amplitude_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user_search.amplitude_id
+                  direction: from
+        delete:
+          method: POST
+          path: /api/2/deletions/users
+          body: |
+            {
+                "user_ids": [
+                   "<email>"
+                ],
+                "requester": "<requester_email>"
+            }
+          param_values:
+            - name: requester_email
+              connector_param: requester_email
+            - name: email
+              identity: email
