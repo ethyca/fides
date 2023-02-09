@@ -39,6 +39,10 @@ The types of changes are:
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 
+### Developer Experience
+* Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
+* Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
+
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
 
 ### Fixed
@@ -55,8 +59,6 @@ The types of changes are:
 * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
 
 ### Developer Experience
-* Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
-* Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
 * New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
