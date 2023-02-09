@@ -14,8 +14,7 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-
-## [Unreleased](https://github.com/ethyca/fides/compare/2.6.3...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.6.4...main)
 
 ### Added
 
@@ -28,7 +27,6 @@ The types of changes are:
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
 
-
 ### Changed
 
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523) 
@@ -37,6 +35,11 @@ The types of changes are:
 ### Fixed
 
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
+
+## [2.6.4](https://github.com/ethyca/fides/compare/2.6.3...2.6.4)
+
+### Fixed
+
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
