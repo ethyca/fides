@@ -2276,6 +2276,10 @@ class TestConsentEmailStep:
             privacy_request_with_consent_policy.status
             == PrivacyRequestStatus.awaiting_consent_email_send
         )
+        assert (
+            privacy_request_with_consent_policy.awaiting_consent_email_send_at
+            is not None
+        )
 
     def test_needs_consent_email_send_no_consent_preferences(
         self, db, privacy_request_with_consent_policy
