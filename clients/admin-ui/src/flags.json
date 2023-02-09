@@ -1,9 +1,4 @@
 {
-  "configWizardStepper": {
-    "development": true,
-    "production": false,
-    "test": false
-  },
   "privacyRequestsConfiguration": {
     "development": true,
     "test": false,
