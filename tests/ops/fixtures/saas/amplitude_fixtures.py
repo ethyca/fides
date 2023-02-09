@@ -31,6 +31,7 @@ def amplitude_secrets(saas_config):
         "api_token": pydash.get(saas_config, "amplitude.api_token") or secrets["api_token"],
         "requester_email": pydash.get(saas_config, "amplitude.requester_email") or secrets["requester_email"],
         "create_domain_url": pydash.get(saas_config, "amplitude.create_domain_url") or secrets["create_domain_url"],
+        "api_key": pydash.get(saas_config, "amplitude.api_key") or secrets["api_key"],
     }
 
 
@@ -115,27 +116,15 @@ def amplitude_create_erasure_data(
     amplitude_connection_config: ConnectionConfig, amplitude_erasure_identity_email: str
 ) -> None:
 
-    # sleep(60)
-
     amplitude_secrets = amplitude_connection_config.secrets
     base_url = f"https://{amplitude_secrets['create_domain_url']}"
-    # headers = {
-    #     "Content-Type": "application/x-www-form-urlencoded",        
-    # }
 
     # user
-    # get_param_value ={"api_key" : "c92f6b0222117d44766aba11f346e7a6",
-    #     "identification" : {'user_id':amplitude_erasure_identity_email,'country':'ind'}
-    #     }
-    url_val = '/identify?api_key=c92f6b0222117d44766aba11f346e7a6&identification={"user_id":"'+amplitude_erasure_identity_email+'","country":"ind"}'
-
-    # users_response = requests.get(
-    #     url=f"{base_url}/identify", 
-    #     params=get_param_value,
-    #     )
+    url_val = '/identify?api_key='+f"{amplitude_secrets['api_key']}"+'&identification={"user_id":"'+amplitude_erasure_identity_email+'","country":"ind"}'
     users_response = requests.get(
         url=f"{base_url}"+url_val
         )
+
     sleep(30)
 
     yield users_response.ok
