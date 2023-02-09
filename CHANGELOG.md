@@ -16,11 +16,17 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.4...main)
 
+### Added
+
+* Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
+* Increased default pool_size and max_overflow to 50 [#2560](https://github.com/ethyca/fides/pull/2560)
+
 ## [2.6.4](https://github.com/ethyca/fides/compare/2.6.3...2.6.4)
 
 ### Fixed
 
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
+* Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
 
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
 
@@ -36,7 +42,8 @@ The types of changes are:
 * Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
 
 ### Added
-* Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
+
+* Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
