@@ -20,6 +20,7 @@ def pytest_lib(session: Session, coverage_arg: str) -> None:
     run_command = (
         *RUN_NO_DEPS,
         "pytest",
+        "--cov=fides",
         coverage_arg,
         "tests/lib/",
     )
