@@ -8,9 +8,19 @@ import AuthenticateOktaForm from "./AuthenticateOktaForm";
 import { selectAddSystemsMethod } from "./config-wizard.slice";
 import LoadDataFlowScanner from "./LoadDataFlowScanner";
 import { SystemMethods } from "./types";
+import LoadWebScanner from "~/features/config-wizard/LoadWebScanner";
 
 const AuthenticateScanner = () => {
   const infrastructure = useAppSelector(selectAddSystemsMethod);
+
+  if(infrastructure === ValidTargets.WEB_SCANNER){
+    return (
+      <Box width="100%">
+        <LoadWebScanner />
+      </Box>
+    )
+  }
+
   return (
     <Box w="40%">
       {infrastructure === ValidTargets.AWS ? <AuthenticateAwsForm /> : null}

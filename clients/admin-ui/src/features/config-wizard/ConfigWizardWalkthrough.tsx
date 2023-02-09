@@ -68,13 +68,6 @@ const ConfigWizardWalkthrough = () => {
         height="100vh"
         width="100%"
       >
-        <Box flexShrink={0}>
-          <Stepper
-            activeStep={step}
-            setActiveStep={(s) => dispatch(changeStep(s))}
-            steps={STEPS}
-          />
-        </Box>
         <Box
           display="flex"
           justifyContent={

@@ -86,6 +86,16 @@ const AddSystem = () => {
             }}
             data-testid="okta-btn"
           />
+          <SystemOption
+            label="Web Scanner"
+            description="Run the web scanner"
+            icon={<OktaLogoIcon boxSize={8} />}
+            onClick={() => {
+              dispatch(setAddSystemsMethod(ValidTargets.WEB_SCANNER));
+              dispatch(changeStep());
+            }}
+            data-testid="okta-btn"
+          />
           <DataFlowScannerOption
             onClick={() => {
               dispatch(changeStep());
