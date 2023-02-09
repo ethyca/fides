@@ -6,6 +6,7 @@ from sqlalchemy.orm import Query, Session
 from fides.api.ctl.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.connectionconfig import (
+    AccessLevel,
     ConnectionConfig,
     ConnectionTestStatus,
     ConnectionType,
@@ -97,6 +98,7 @@ def get_consent_email_connection_configs(db: Session) -> Query:
     return db.query(ConnectionConfig).filter(
         ConnectionConfig.connection_type.in_(CONSENT_EMAIL_CONNECTOR_TYPES),
         ConnectionConfig.disabled.is_(False),
+        ConnectionConfig.access == AccessLevel.write,
     )
 
 

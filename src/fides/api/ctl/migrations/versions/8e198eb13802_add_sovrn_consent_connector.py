@@ -29,7 +29,7 @@ def upgrade():
     )
     op.execute("drop type connectiontype_old")
 
-    # Add new PrivacyRequest.awaiting_consent_email_send_at colum
+    # Add new PrivacyRequest.awaiting_consent_email_send_at column
     op.add_column(
         "privacyrequest",
         sa.Column(

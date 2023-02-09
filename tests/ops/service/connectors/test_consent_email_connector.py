@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 
 from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.connectionconfig import ConnectionTestStatus
+from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionTestStatus
 from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     AdvancedSettings,
@@ -60,6 +60,13 @@ class TestEmailConsentConnectorMethods:
         )
 
         sovrn_email_connection_config.disabled = True
+        sovrn_email_connection_config.save(db=db)
+        assert not get_consent_email_connection_configs(db).first()
+
+    def test_get_consent_email_connection_configs_read_only(
+        self, db, sovrn_email_connection_config
+    ):
+        sovrn_email_connection_config.access = AccessLevel.read
         sovrn_email_connection_config.save(db=db)
         assert not get_consent_email_connection_configs(db).first()
 
