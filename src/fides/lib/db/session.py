@@ -14,8 +14,8 @@ def get_db_engine(
     *,
     config: FidesConfig | None = None,
     database_uri: str | URL | None = None,
-    pool_size: int = 5,
-    max_overflow: int = 10,
+    pool_size: int = 50,
+    max_overflow: int = 50,
 ) -> Engine:
     """Return a database engine.
 
