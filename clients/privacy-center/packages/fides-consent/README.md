@@ -82,6 +82,53 @@ for the cookie key to be true. For example, with the default configuration:
 By default, `Fides.consent.tracking` will be set to `true`. If the user removes their consent for 
 `advertising.first_party`, `improve`, or both, then `Fides.consent.tracking` will be set to `false`.
 
+### Consent Context
+
+The `default` specified in a consent option is applied when a user has not made any consent choices
+(for example, if they have not visited the Privacy Center). This default value can be:
+
+- `true`: Behave as if the user has granted consent.
+- `false`: Behave as if the user has revoked their consent.
+
+However, this choice may need to be different based on information provided by the user's browser:
+their _Consent Context_.
+
+Currently, the only context that can be used is whether the user has enabled [Global Privacy Control](https://globalprivacycontrol.org/#about). To configure a default value which depends on this context, pass an object with
+the following properties: 
+
+- `value`: The consent boolean that applies when there is no relevant consent context.
+- `globalPrivacyControl`. The consent boolean that applies the user has enabled GPC.
+
+For example, with this configuration:
+
+```json
+{
+  "consent": {
+    "consentOptions": [
+      {
+        "fidesDataUseKey": "advertising.first_party",
+        "name": "Email Marketing",
+        "default": {
+          "value": true,
+          "globalPrivacyControl": false
+        },
+        "cookieKeys": ["data_sales"]
+      },
+      {
+        "fidesDataUseKey": "provide.service",
+        "name": "Core functionality",
+        "default": true,
+        "cookieKeys": ["functional"]
+      }
+    ]
+  }
+}
+```
+
+The `data_sales` cookie key will default to `true` (grant consent) **unless the user has enabled GPC** in which case consent will be revoked without the user having to go through the Privacy Center.
+
+On the other hand, the `functional` cookie key will always default to `true` and the user must go through the Privacy Center to revoke consent.
+
 ## Integrations
 
 ### Google Tag Manager
