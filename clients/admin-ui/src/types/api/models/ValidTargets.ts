@@ -10,5 +10,5 @@ export enum ValidTargets {
   DB = "db",
   OKTA = "okta",
   BIGQUERY = "bigquery",
-  WEB_SCANNER = "web_scanner"
+  WEB_SCANNER = "web_scanner",
 }

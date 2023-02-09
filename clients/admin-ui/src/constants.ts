@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_FIDESOPS_API
   ? process.env.NEXT_PUBLIC_FIDESOPS_API
   : "";
 // export const BASE_URL = API_URL + BASE_API_URN;
-export const BASE_URL = process.env.NEXT_PUBLIC_FIDESCTL_API
+export const BASE_URL = process.env.NEXT_PUBLIC_FIDESCTL_API;
 
 /**
  * Redux-persist storage root key

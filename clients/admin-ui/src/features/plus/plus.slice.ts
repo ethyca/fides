@@ -42,10 +42,10 @@ interface ClassifyInstancesParams {
   resource_type: GenerateTypes;
 }
 
-export  type WebsiteScan = {
+export type WebsiteScan = {
   url: string;
   name: string;
-}
+};
 
 export const plusApi = createApi({
   reducerPath: "plusApi",
@@ -65,7 +65,7 @@ export const plusApi = createApi({
     "CustomFields",
     "LatestScan",
     "Plus",
-    "Webscan"
+    "Webscan",
   ],
   endpoints: (build) => ({
     getHealth: build.query<HealthCheck, void>({
@@ -224,7 +224,7 @@ export const plusApi = createApi({
     }),
 
     getWebScan: build.query<[], WebsiteScan>({
-      query: ({url, name}) => ({
+      query: ({ url, name }) => ({
         url: `web-scan/latest?website=${url}&websiteName=${name}`,
         method: "GET",
       }),
@@ -249,7 +249,7 @@ export const {
   useGetAllAllowListQuery,
   useCreateClassifyInstanceMutation,
   useAddCustomFieldDefinitionMutation,
-  useGetWebScanQuery
+  useGetWebScanQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

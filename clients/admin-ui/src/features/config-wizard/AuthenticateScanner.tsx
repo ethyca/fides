@@ -13,12 +13,12 @@ import LoadWebScanner from "~/features/config-wizard/LoadWebScanner";
 const AuthenticateScanner = () => {
   const infrastructure = useAppSelector(selectAddSystemsMethod);
 
-  if(infrastructure === ValidTargets.WEB_SCANNER){
+  if (infrastructure === ValidTargets.WEB_SCANNER) {
     return (
       <Box width="100%">
         <LoadWebScanner />
       </Box>
-    )
+    );
   }
 
   return (
