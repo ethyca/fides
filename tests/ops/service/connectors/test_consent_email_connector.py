@@ -215,6 +215,15 @@ class TestEmailConsentConnectorMethods:
         assert message_body_params.requested_changes == consent_preferences
 
         assert (
+            consent_preferences[0].consent_preferences[0].data_use
+            == "Advertising, Marketing or Promotion"
+        )
+        assert (
+            consent_preferences[0].consent_preferences[1].data_use
+            == "First Party Advertising"
+        )
+
+        assert (
             call_kwargs["subject_override"]
             == "Test notification of users' consent preference changes from Test Org"
         )
@@ -277,12 +286,12 @@ class TestSovrnEmailConsentConnector:
                 "identities": {"ljt_readerID": "test_ljt_reader_id"},
                 "consent_preferences": [
                     {
-                        "data_use": "Email Marketing",
+                        "data_use": "Advertising, Marketing or Promotion",
                         "data_use_description": None,
                         "opt_in": False,
                     },
                     {
-                        "data_use": "Product Analytics",
+                        "data_use": "Improve the capability",
                         "data_use_description": None,
                         "opt_in": True,
                     },

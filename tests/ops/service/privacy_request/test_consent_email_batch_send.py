@@ -381,7 +381,7 @@ class TestConsentEmailBatchSendHelperFunctions:
             "identities": {"ljt_readerID": "12345"},
             "consent_preferences": [
                 {
-                    "data_use": "advertising",
+                    "data_use": "Advertising, Marketing or Promotion",
                     "data_use_description": None,
                     "opt_in": False,
                 },

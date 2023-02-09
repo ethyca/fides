@@ -71,8 +71,8 @@ class GenericEmailConsentConnector(LimitedConnector[None]):
                     ConsentPreferencesByUser(
                         identities=self.identities_for_test_email,
                         consent_preferences=[
-                            Consent(data_use="Email Marketing", opt_in=False),
-                            Consent(data_use="Product Analytics", opt_in=True),
+                            Consent(data_use="advertising", opt_in=False),
+                            Consent(data_use="improve", opt_in=True),
                         ],
                     )
                 ],

@@ -2,6 +2,7 @@ from enum import Enum
 from re import compile as regex
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
+from fideslang import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
@@ -95,6 +96,22 @@ class ConsentPreferencesByUser(BaseModel):
 
     identities: Dict[str, Any]
     consent_preferences: List[Consent]  # Consent schema
+
+    @root_validator
+    def transform_data_use_format(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Transform a data use fides_key to a corresponding name if possible"""
+        consent_preferences = values.get("consent_preferences") or []
+        for preference in consent_preferences:
+            preference.data_use = next(
+                (
+                    data_use.name
+                    for data_use in DEFAULT_TAXONOMY.data_use
+                    if data_use.fides_key == preference.data_use
+                ),
+                preference.data_use,
+            )
+        values["consent_preferences"] = consent_preferences
+        return values
 
 
 class ConsentEmailFulfillmentBodyParams(BaseModel):
