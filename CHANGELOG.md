@@ -37,6 +37,10 @@ The types of changes are:
 
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
 
+### Removed
+
+* Remove feature flagged config wizard stepper from Admin UI [#2553](https://github.com/ethyca/fides/pull/2553)
+
 ## [2.6.4](https://github.com/ethyca/fides/compare/2.6.3...2.6.4)
 
 ### Fixed
