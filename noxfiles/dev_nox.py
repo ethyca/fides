@@ -165,10 +165,10 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     )
     if fides_image == "test":
         session.log(
-            "Fides Admin UI (production build) running at http://localhost:8080 (user: 'fidestest', pass: 'Apassword1!')"
+            "Fides Admin UI (production build) running at http://localhost:8080 (user: 'root_user', pass: 'Testpassword1!')"
         )
     session.log(
-        "Fides Admin UI (dev) running at http://localhost:3000 (user: 'fidestest', pass: 'Apassword1!')"
+        "Fides Admin UI (dev) running at http://localhost:3000 (user: 'root_user', pass: 'Testpassword1!')"
     )
     session.log(
         "Fides Privacy Center (production build) running at http://localhost:3001 (user: 'jane@example.com')"
