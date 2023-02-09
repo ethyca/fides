@@ -216,12 +216,12 @@ async def prepare_and_log_request(
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
     logger.info(f"Starting Fides - {VERSION}")
-    logger.warning(
+    logger.info(
         "Startup configuration: reloading = {}, dev_mode = {}",
         CONFIG.hot_reloading,
         CONFIG.dev_mode,
     )
-    logger.warning("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
+    logger.info("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
 
     if CONFIG.logging.level == DEBUG:
         logger.warning(
