@@ -296,7 +296,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
     logger.bind(
         method=request.method,
         status_code=response.status_code,
-        handler_time=f"{handler_time.microseconds * 0.001}ms",
+        handler_time=f"{round(handler_time.microseconds * 0.001,3)}ms",
         path=request.url.path,
     ).info("Request received")
     return response
