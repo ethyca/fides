@@ -105,11 +105,12 @@ def send_prepared_emails(
     db: Session,
     batched_user_data: List[BatchedUserConsentData],
     privacy_requests: Query,
-) -> None:
+) -> int:
     """Send a single consent email for each connector using the prepared data in batched_user_data
 
     Also add audit logs to each relevant privacy request.
     """
+    emails_sent: int = 0
     for pending_email in batched_user_data:
         if not pending_email.batched_user_consent_preferences:
             logger.info(
@@ -151,6 +152,9 @@ def send_prepared_emails(
                 pending_email.skipped_privacy_requests,
                 pending_email.connection_name,
             )
+
+        emails_sent += 1
+    return emails_sent
 
 
 @celery_app.task(base=DatabaseTask, bind=True)

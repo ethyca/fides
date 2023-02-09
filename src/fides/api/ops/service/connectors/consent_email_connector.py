@@ -138,7 +138,8 @@ def send_single_consent_email(
 
     if not org or not org.name:
         raise MessageDispatchException(
-            "Cannot send an email requesting consent preference changes to third-party vendor. No organization name found."
+            "Cannot send an email requesting consent preference changes to third-party vendor. "
+            "No organization name found."
         )
 
     dispatch_message(
@@ -152,5 +153,6 @@ def send_single_consent_email(
             required_identities=required_identities,
             requested_changes=user_consent_preferences,
         ),
-        subject_override=f"{'Test notification' if test_mode else 'Notification'} of users' consent preference changes from {org.name}",
+        subject_override=f"{'Test notification' if test_mode else 'Notification'} "
+        f"of users' consent preference changes from {org.name}",
     )

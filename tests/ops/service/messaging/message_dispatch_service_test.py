@@ -9,8 +9,14 @@ from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep
-from fides.api.ops.models.privacy_request import CheckpointActionRequired, ManualAction
+from fides.api.ops.models.privacy_request import (
+    CheckpointActionRequired,
+    Consent,
+    ManualAction,
+)
 from fides.api.ops.schemas.messaging.messaging import (
+    ConsentEmailFulfillmentBodyParams,
+    ConsentPreferencesByUser,
     EmailForActionType,
     FidesopsMessage,
     MessagingActionType,
@@ -381,4 +387,42 @@ class TestMessageDispatchService:
             + f"Please return to the Privacy Center and enter the code to continue. "
             + f"This code will expire in 10 minutes",
             "+12312341231",
+        )
+
+    @mock.patch(
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_consent_request_email_fulfillment_for_sovrn(
+        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT,
+            to_identity=Identity(**{"email": "sovrn_test@example.com"}),
+            service_type=MessagingServiceType.MAILGUN.value,
+            message_body_params=ConsentEmailFulfillmentBodyParams(
+                controller="Test Organization",
+                third_party_vendor_name="Sovrn",
+                required_identities=["ljt_readerID"],
+                requested_changes=[
+                    ConsentPreferencesByUser(
+                        identities={"ljt_readerID": "test_user_id"},
+                        consent_preferences=[
+                            Consent(data_use="Email Marketing", opt_in=False),
+                            Consent(data_use="Product Analytics", opt_in=True),
+                        ],
+                    )
+                ],
+            ),
+        )
+
+        body = '<!DOCTYPE html>\n<html lang="en">\n   <head>\n      <meta charset="UTF-8">\n      <title>Notification of users\' consent preference changes from Test Organization</title>\n      <style>\n         .consent_preferences {\n           padding: 5px;\n           border-bottom: 1px solid #121439;\n           text-align: left;\n         }\n         .identity_column {\n           padding-right: 15px;\n         }\n      </style>\n   </head>\n   <body>\n      <main>\n         <p> The following users of Test Organization have made changes to their consent preferences. You are notified of the changes because\n            Sovrn has been identified as a third-party processor to Test Organization that processes user information. </p>\n\n         <p> Please find below the updated list of users and their consent preferences:\n            <table>\n               <tr>\n                 <th class="identity_column"> ljt_readerID</th>\n                 <th>Preferences</th>\n               </tr>\n               <tr class="consent_preferences">\n                     <td class="identity_column"> test_user_id</td>\n                     <td>\n                        Email Marketing: Opt-out, Product Analytics: Opt-in\n                     </td>\n                  </tr>\n            </table>\n         </p>\n\n         <p> You are legally obligated to honor the user\'s consent preferences. </p>\n\n      </main>\n   </body>\n</html>'
+
+        mock_mailgun_dispatcher.assert_called_with(
+            messaging_config,
+            EmailForActionType(
+                subject="Notification of users' consent preference changes",
+                body=body,
+            ),
+            "sovrn_test@example.com",
         )

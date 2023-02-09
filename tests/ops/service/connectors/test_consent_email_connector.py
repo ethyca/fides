@@ -14,6 +14,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.service.connectors.consent_email_connector import (
+    GenericEmailConsentConnector,
     filter_user_identities_for_connector,
     get_consent_email_connection_configs,
     get_identity_types_for_connector,
@@ -213,7 +214,15 @@ class TestEmailConsentConnectorMethods:
 
 
 class TestSovrnEmailConsentConnector:
-    def test_identities_for_test_email_property(
+    def test_generic_identities_for_test_email_property(
+        self, sovrn_email_connection_config
+    ):
+        generic_connector = GenericEmailConsentConnector(sovrn_email_connection_config)
+        assert generic_connector.identities_for_test_email == {
+            "email": "test_email@example.com"
+        }
+
+    def test_sovrn_identities_for_test_email_property(
         self, test_sovrn_consent_email_connector
     ):
         assert test_sovrn_consent_email_connector.identities_for_test_email == {

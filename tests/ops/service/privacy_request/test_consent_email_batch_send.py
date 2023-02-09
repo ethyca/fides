@@ -24,6 +24,7 @@ from fides.api.ops.service.privacy_request.consent_email_batch_service import (
     add_batched_user_preferences_to_emails,
     requeue_privacy_requests_after_consent_email_send,
     send_consent_email_batch,
+    send_prepared_emails,
     stage_resource_per_connector,
 )
 from fides.core.config import get_config
@@ -390,7 +391,7 @@ class TestConsentEmailBatchSendHelperFunctions:
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_requeue_privacy_requests_after_consent_email_send_temporary_paused_status(
+    def test_requeue_privacy_requests_after_consent_email_send_yields_temporary_paused_status(
         self,
         run_privacy_request,
         db,
@@ -446,3 +447,64 @@ class TestConsentEmailBatchSendHelperFunctions:
         assert (
             not needs_consent_email_send_check.called
         ), "Privacy request is resumed after this point"
+
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.consent_email_batch_service.send_single_consent_email",
+    )
+    def test_send_prepared_emails_some_connectors_skipped(
+        self,
+        consent_email_send,
+        db,
+        sovrn_email_connection_config,
+        privacy_request_awaiting_consent_email_send,
+    ):
+        """Test that connectors that have no relevant data to be sent are skipped"""
+        batched_user_data = [
+            BatchedUserConsentData(
+                connection_secrets=ConsentEmailSchema(
+                    third_party_vendor_name="Sovrn",
+                    recipient_email_address=sovrn_email_connection_config.secrets[
+                        "recipient_email_address"
+                    ],
+                    test_email_address=sovrn_email_connection_config.secrets[
+                        "test_email_address"
+                    ],
+                    advanced_settings=AdvancedSettings(
+                        browser_identity_types=["ljt_readerID"], identity_types=[]
+                    ),
+                ),
+                connection_name=sovrn_email_connection_config.name,
+                required_identities=["ljt_readerID"],
+                batched_user_consent_preferences=[
+                    ConsentPreferencesByUser(
+                        identities={"ljt_readerID": "12345"},
+                        consent_preferences=[
+                            Consent(
+                                data_use="advertising",
+                                data_use_description=None,
+                                opt_in=False,
+                            )
+                        ],
+                    )
+                ],
+            ),
+            BatchedUserConsentData(
+                connection_secrets=ConsentEmailSchema(
+                    third_party_vendor_name="Dawn's Bakery",
+                    recipient_email_address="dawnsbakery@example.com",
+                    test_email_address="company@example.com",
+                    advanced_settings=AdvancedSettings(
+                        identity_types=["email"], browser_identity_types=[]
+                    ),
+                ),
+                connection_name="Bakery Connector",
+                required_identities=["email"],
+            ),
+        ]
+
+        emails_sent = send_prepared_emails(
+            db, batched_user_data, [privacy_request_awaiting_consent_email_send]
+        )
+        assert emails_sent == 1
+        assert consent_email_send.called
+        assert consent_email_send.call_count == 1
