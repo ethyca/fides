@@ -43,10 +43,6 @@ The types of changes are:
 
 * Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
 
-### Added
-
-* Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
-
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
 ### Fixed
