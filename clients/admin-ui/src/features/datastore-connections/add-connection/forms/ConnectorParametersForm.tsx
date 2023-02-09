@@ -118,6 +118,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     return undefined;
   };
 
+  const getAdvancedSettings = () => {
+    console.log({ data });
+    return <div>hi</div>;
+  };
+
   const getFormField = (
     key: string,
     item: ConnectionTypeSecretSchemaProperty
@@ -188,6 +193,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   );
 
   const getInitialValues = () => {
+    console.log({ connection });
     if (connection?.key) {
       defaultValues.name = connection.name;
       defaultValues.description = connection.description as string;
@@ -205,14 +211,25 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       });
     } else {
       Object.entries(data.properties).forEach((key) => {
-        // eslint-disable-next-line no-nested-ternary
-        defaultValues[key[0]] = key[1].default
-          ? key[1].default
-          : key[1].type === "integer"
-          ? 0
-          : "";
+        const [name, schema] = key;
+        console.log({ key });
+
+        if (schema.default) {
+          defaultValues[name] = schema.default;
+        } else if (schema.type === "integer") {
+          defaultValues[name] = 0;
+        } else {
+          defaultValues[name] = "";
+        }
       });
+      if (data.properties.advanced_settings) {
+        const { definitions } = data;
+        console.log({ definitions });
+        const advancedProperties = data.definitions.AdvancedSettings.properties;
+        console.log({ advancedProperties });
+      }
     }
+    console.log({ defaultValues });
     return defaultValues;
   };
 
@@ -365,9 +382,12 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               )}
             </Field>
             {/* Dynamic connector secret fields */}
-            {Object.entries(data.properties).map(([key, item]) =>
-              getFormField(key, item)
-            )}
+            {Object.entries(data.properties).map(([key, item]) => {
+              if (key === "advanced_settings") {
+                return getAdvancedSettings();
+              }
+              return getFormField(key, item);
+            })}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
                 colorScheme="gray.700"
