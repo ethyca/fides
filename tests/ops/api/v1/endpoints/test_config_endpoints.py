@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
@@ -15,7 +17,16 @@ class TestPatchApplicationConfig:
 
     @pytest.fixture(scope="function")
     def payload(self):
-        return {"storage": {"active_default_storage_type": StorageType.s3.value}}
+        return {
+            "storage": {"active_default_storage_type": StorageType.s3.value},
+            "notifications": {
+                "notification_service_type": "TWILIO_TEXT",
+                "send_request_completion_notification": True,
+                "send_request_receipt_notification": True,
+                "send_request_review_notification": True,
+            },
+            "execution": {"subject_identity_verification_required": True},
+        }
 
     def test_patch_application_config_unauthenticated(
         self, api_client: TestClient, payload, url
@@ -35,7 +46,7 @@ class TestPatchApplicationConfig:
         api_client: TestClient,
         generate_auth_header,
         url,
-        payload,
+        payload: dict[str, Any],
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.patch(
@@ -52,6 +63,12 @@ class TestPatchApplicationConfig:
 
         # now test payload with both a good key and a bad key - should be rejected
         payload["bad_key"] = "12345"
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert response.status_code == 422
+
+        # and a nested bad key
+        payload.pop("bad_key")
+        payload["storage"]["bad_key"] = "12345"
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 422
 
@@ -119,11 +136,99 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 200
         response_settings = response.json()
-        assert response_settings["storage"]["active_default_storage_type"] == "s3"
+        assert response_settings["storage"] == payload["storage"]
+        assert response_settings["execution"] == payload["execution"]
+        assert response_settings["notifications"] == payload["notifications"]
         db_settings = db.query(ApplicationConfig).first()
-        assert db_settings.api_set["storage"]["active_default_storage_type"] == "s3"
+        assert db_settings.api_set["storage"] == payload["storage"]
+        assert db_settings.api_set["execution"] == payload["execution"]
+        assert db_settings.api_set["notifications"] == payload["notifications"]
 
-        payload["storage"]["active_default_storage_type"] = "local"
+        # try PATCHing a single property
+        updated_payload = {"storage": {"active_default_storage_type": "local"}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["storage"]["active_default_storage_type"] == "local"
+        # ensure other properties were not impacted
+        assert response_settings["execution"] == payload["execution"]
+        assert response_settings["notifications"] == payload["notifications"]
+        db.refresh(db_settings)
+        # ensure property was updated on backend
+        assert db_settings.api_set["storage"]["active_default_storage_type"] == "local"
+        # but other properties were not impacted
+        assert db_settings.api_set["execution"] == payload["execution"]
+        assert db_settings.api_set["notifications"] == payload["notifications"]
+
+        # try PATCHing multiple properties in the same nested object
+        updated_payload = {
+            "execution": {"subject_identity_verification_required": False},
+            "notifications": {
+                "notification_service_type": "MAILGUN",
+                "send_request_completion_notification": False,
+            },
+        }
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["storage"]["active_default_storage_type"] == "local"
+        assert (
+            response_settings["execution"]["subject_identity_verification_required"]
+            is False
+        )
+        assert (
+            response_settings["notifications"]["notification_service_type"] == "MAILGUN"
+        )
+        assert (
+            response_settings["notifications"]["send_request_completion_notification"]
+            is False
+        )
+        # ensure other properties were not impacted
+        assert (
+            response_settings["notifications"]["send_request_receipt_notification"]
+            is True
+        )
+
+        db.refresh(db_settings)
+        # ensure property was updated on backend
+        assert db_settings.api_set["storage"]["active_default_storage_type"] == "local"
+        assert (
+            db_settings.api_set["execution"]["subject_identity_verification_required"]
+            is False
+        )
+        assert (
+            db_settings.api_set["notifications"]["notification_service_type"]
+            == "MAILGUN"
+        )
+        assert (
+            db_settings.api_set["notifications"]["send_request_completion_notification"]
+            is False
+        )
+        # ensure other properties were not impacted
+        assert (
+            db_settings.api_set["notifications"]["send_request_receipt_notification"]
+            is True
+        )
+
+    def test_patch_application_config_notifications_properties(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        payload,
+        db: Session,
+    ):
+
+        payload = {"notifications": {"send_request_completion_notification": False}}
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.patch(
             url,
             headers=auth_header,
@@ -131,13 +236,13 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 200
         response_settings = response.json()
-        assert response_settings["storage"]["active_default_storage_type"] == "local"
-        db.refresh(db_settings)
-        assert db_settings.api_set["storage"]["active_default_storage_type"] == "local"
-
-    # TODO: once our schema allows for more than just a single settings field,
-    # we need to test that the PATCH can specify one or many settings fields
-    # and only update the fields that are passed
+        # this should look exactly like the payload - no additional properties
+        assert response_settings["notifications"] == payload["notifications"]
+        assert "execution" not in response_settings
+        db_settings = db.query(ApplicationConfig).first()
+        # this should look exactly like the payload - no additional properties
+        assert db_settings.api_set["notifications"] == payload["notifications"]
+        assert "execution" not in db_settings.api_set
 
 
 class TestGetApplicationConfigApiSet:

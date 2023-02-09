@@ -15,6 +15,7 @@ from fides.api.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import AccessLevel
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
@@ -67,10 +68,11 @@ PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
 @pytest.fixture(scope="function")
-def privacy_request_complete_email_notification_enabled():
+def privacy_request_complete_email_notification_enabled(db):
     """Enable request completion email"""
     original_value = CONFIG.notifications.send_request_completion_notification
     CONFIG.notifications.send_request_completion_notification = True
+    ApplicationConfig.set_config_set_config(db, CONFIG)
     yield
     CONFIG.notifications.send_request_completion_notification = original_value
 
@@ -1850,10 +1852,11 @@ class TestPrivacyRequestsEmailConnector:
 
 class TestPrivacyRequestsEmailNotifications:
     @pytest.fixture(scope="function")
-    def privacy_request_complete_email_notification_enabled(self):
+    def privacy_request_complete_email_notification_enabled(self, db):
         """Enable request completion email"""
         original_value = CONFIG.notifications.send_request_completion_notification
         CONFIG.notifications.send_request_completion_notification = True
+        ApplicationConfig.set_config_set_config(db, CONFIG)
         yield
         CONFIG.notifications.send_request_completion_notification = original_value
 

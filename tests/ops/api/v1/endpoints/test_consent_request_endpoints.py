@@ -16,6 +16,7 @@ from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -61,20 +62,22 @@ class TestConsentRequest:
         return f"{V1_URL_PREFIX}{CONSENT_REQUEST}"
 
     @pytest.fixture(scope="function")
-    def set_notification_service_type_to_none(self):
+    def set_notification_service_type_to_none(self, db):
         """Overrides autouse fixture to remove default notification service type"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = None
+        ApplicationConfig.set_config_set_config(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
 
     @pytest.fixture(scope="function")
-    def set_notification_service_type_to_twilio_sms(self):
+    def set_notification_service_type_to_twilio_sms(self, db):
         """Overrides autouse fixture to set notification service type to twilio sms"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = (
             MessagingServiceType.TWILIO_TEXT.value
         )
+        ApplicationConfig.set_config_set_config(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
 

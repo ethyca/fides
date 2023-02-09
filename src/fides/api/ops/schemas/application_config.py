@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from pydantic import Extra, validator
+from typing import Dict, Optional
+
+from pydantic import Extra, root_validator, validator
 
 from fides.api.ops.schemas.storage.storage import StorageType
 from fides.lib.schemas.base_class import BaseSchema
@@ -28,6 +30,46 @@ class StorageApplicationConfig(BaseSchema):
         return storage_type
 
 
+# TODO: the below models classes are "duplicates" of the pydantic
+# models that drive the application config. this is to allow every field
+# to be optional on the API model, since we want PATCH functionality.
+# ideally, we'd not need to duplicate the config modelclasses, and instead
+# just make all fields optional by default for the API models.
+
+
+class NotificationApplicationConfig(BaseSchema):
+    """
+    API model - configuration settings for data subject and/or data processor notifications
+    """
+
+    send_request_completion_notification: Optional[bool]
+    send_request_receipt_notification: Optional[bool]
+    send_request_review_notification: Optional[bool]
+    notification_service_type: Optional[str]
+
+    @validator("notification_service_type", pre=True)
+    @classmethod
+    def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
+        """Ensure the provided type is a valid value."""
+        if value:
+            valid_values = ["MAILGUN", "TWILIO_TEXT", "TWILIO_EMAIL"]
+            value = value.upper()  # force uppercase for safety
+
+            if value not in valid_values:
+                raise ValueError(
+                    f"Invalid NOTIFICATION_SERVICE_TYPE provided '{value}', must be one of: {', '.join([level for level in valid_values])}"
+                )
+
+        return value
+
+
+class ExecutionApplicationConfig(BaseSchema):
+    subject_identity_verification_required: bool
+
+    class Config:
+        extra = Extra.forbid
+
+
 class ApplicationConfig(BaseSchema):
     """
     Application config settings update body is an arbitrary dict (JSON object)
@@ -37,7 +79,15 @@ class ApplicationConfig(BaseSchema):
     the application config that is properly hooked up to the global pydantic config module.
     """
 
-    storage: StorageApplicationConfig
+    storage: Optional[StorageApplicationConfig]
+    notifications: Optional[NotificationApplicationConfig]
+    execution: Optional[ExecutionApplicationConfig]
+
+    @root_validator(pre=True)
+    def validate_not_empty(cls, values: Dict) -> Dict:
+        if not values:
+            raise ValueError("Config body cannot be empty!")
+        return values
 
     class Config:
         extra = Extra.forbid

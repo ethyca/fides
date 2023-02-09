@@ -43,6 +43,7 @@ def get_config(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE])],
     response_model=ApplicationConfigSchema,
+    response_model_exclude_unset=True,
 )
 def update_settings(
     *,
@@ -56,8 +57,8 @@ def update_settings(
     i.e. true PATCH behavior.
     """
     logger.info("Updating application settings")
-
     updated_settings: ApplicationConfig = ApplicationConfig.create_or_update(
-        db, data={"api_set": data.dict()}
+        db, data={"api_set": data.dict(exclude_none=True)}
     )
+    print(updated_settings.api_set)
     return updated_settings.api_set
