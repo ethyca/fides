@@ -3,12 +3,13 @@ import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { SystemType } from "~/types/api";
 
 import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
+import { ConnectorParameters as EmailConnectorParameters } from "./email/ConnectorParameters";
 import { ConnectorParameters as ManualConnectorParameters } from "./manual/ConnectorParameters";
 import { ConnectorParameters as SassConnectorParameters } from "./sass/ConnectorParameters";
 import TestConnection from "./TestConnection";
@@ -20,10 +21,8 @@ type ConnectorParametersProp = {
 export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
   onConnectionCreated,
 }) => {
-  const mounted = useRef(false);
-  const [skip, setSkip] = useState(true);
   const { connectionOption } = useAppSelector(selectConnectionTypeState);
-
+  const skip = connectionOption && connectionOption.type === SystemType.MANUAL;
   const { data, isFetching, isLoading, isSuccess } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption!.identifier, {
       skip,
@@ -55,7 +54,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
             onConnectionCreated={onConnectionCreated}
           />
         );
-        break;
       case SystemType.SAAS:
         if (isSuccess && data) {
           return (
@@ -67,18 +65,18 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
           );
         }
         break;
+      case SystemType.EMAIL:
+        if (isSuccess && data) {
+          return (
+            <EmailConnectorParameters
+              data={data}
+              onConnectionCreated={onConnectionCreated}
+              onTestConnectionClick={handleTestConnectionClick}
+            />
+          );
+        }
     }
   }, [connectionOption?.type, data, isSuccess, onConnectionCreated]);
-
-  useEffect(() => {
-    mounted.current = true;
-    if (connectionOption?.type !== SystemType.MANUAL) {
-      setSkip(false);
-    }
-    return () => {
-      mounted.current = false;
-    };
-  }, [connectionOption?.type]);
 
   return (
     <Flex gap="97px">
