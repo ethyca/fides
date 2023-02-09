@@ -215,7 +215,7 @@ async def prepare_and_log_request(
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
-
+    logger.info(f"Starting Fides - {VERSION}")
     logger.warning(
         "Startup configuration: reloading = {}, dev_mode = {}",
         CONFIG.hot_reloading,
