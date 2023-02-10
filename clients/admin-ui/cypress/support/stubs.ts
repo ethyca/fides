@@ -69,6 +69,24 @@ export const stubDatasetCrud = () => {
   });
 };
 
+export const stubPrivacyRequestsConfigurationCrud = () => {
+  cy.intercept("PATCH", "/api/v1/config", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("createConfigurationSettings");
+
+  cy.intercept("GET", "/api/v1/storage/default/*", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("getStorageDetails");
+
+  cy.intercept("PUT", "/api/v1/storage/default", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("createStorage");
+
+  cy.intercept("PUT", "/api/v1/storage/default/*/secret", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("createStorageSecrets");
+};
+
 export const CONNECTION_STRING =
   "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
 

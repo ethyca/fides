@@ -14,22 +14,36 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-
-## [Unreleased](https://github.com/ethyca/fides/compare/2.6.3...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.6.4...main)
 
 ### Added
+
+* Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
+* Increased default pool_size and max_overflow to 50 [#2560](https://github.com/ethyca/fides/pull/2560)
+
+* Admin UI
+  * Create custom fields from a resource screen - Button to Trigger modal [#524](https://github.com/ethyca/fides/pull/2536)
+  * Create Custom Lists [#525](https://github.com/ethyca/fides/pull/2536)
+  * Create Custom Field Definition [#526](https://github.com/ethyca/fides/pull/2536)
+  * Provide a custom field value in a resource [#528](https://github.com/ethyca/fides/pull/2536)
 
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
 
 ### Changed
 
-* Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523) 
+* Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523)
+* Removes legacy `verify_oauth_client` function [#2527](https://github.com/ethyca/fides/pull/2527)
 * Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
 
 ### Fixed
 
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
+
+## [2.6.4](https://github.com/ethyca/fides/compare/2.6.3...2.6.4)
+
+### Fixed
+
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 * UX fixes for user management [#2537](https://github.com/ethyca/fides/pull/2537)
 
@@ -44,6 +58,10 @@ The types of changes are:
 ### Fixed
 
 * Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
+
+### Added
+* Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
+
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 

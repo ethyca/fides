@@ -1,3 +1,4 @@
+import { Box } from "@fidesui/react";
 import SelectDropdown from "common/dropdown/SelectDropdown";
 import {
   selectConnectionTypeFilters,
@@ -37,15 +38,17 @@ const ConnectionTypeFilter: React.FC<ConnectionTypeFilterProps> = ({
   }, [dispatch]);
 
   return (
-    <SelectDropdown
-      enableSorting={false}
-      hasClear={false}
-      label="Show all connectors"
-      list={CONNECTION_TYPE_FILTER_MAP}
-      onChange={handleChange}
-      selectedValue={filters.system_type || DEFAULT_CONNECTION_TYPE_FILTER}
-      width={width}
-    />
+    <Box>
+      <SelectDropdown
+        enableSorting={false}
+        hasClear={false}
+        label="Show all connectors"
+        list={CONNECTION_TYPE_FILTER_MAP}
+        menuButtonProps={{ width }}
+        onChange={handleChange}
+        selectedValue={filters.system_type || DEFAULT_CONNECTION_TYPE_FILTER}
+      />
+    </Box>
   );
 };
 
