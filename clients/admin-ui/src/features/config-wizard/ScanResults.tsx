@@ -11,9 +11,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import {
-  ColumnMetadata,
-} from "~/features/common/ColumnDropdown";
+import { ColumnMetadata } from "~/features/common/ColumnDropdown";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
 import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
@@ -57,8 +55,7 @@ const ScanResults = () => {
   } = useDisclosure();
   const [upsertSystems] = useUpsertSystemsMutation();
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
-  const [selectedColumns] =
-    useState<ColumnMetadata[]>(ALL_COLUMNS);
+  const [selectedColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
   const method = useAppSelector(selectAddSystemsMethod);
   const { handleError } = useAPIHelper();
 
