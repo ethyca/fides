@@ -3,17 +3,17 @@ import { HealthCheck } from "~/types/api";
 
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
-    fixture: "data_categories.json",
-  }).as("getDataCategory");
+    fixture: "taxonomy/data_categories.json",
+  }).as("getDataCategories");
   cy.intercept("GET", "/api/v1/data_qualifier", {
-    fixture: "data_qualifiers.json",
-  }).as("getDataQualifier");
+    fixture: "taxonomy/data_qualifiers.json",
+  }).as("getDataQualifiers");
   cy.intercept("GET", "/api/v1/data_subject", {
-    fixture: "data_subjects.json",
-  }).as("getDataSubject");
+    fixture: "taxonomy/data_subjects.json",
+  }).as("getDataSubjects");
   cy.intercept("GET", "/api/v1/data_use", {
-    fixture: "data_uses.json",
-  }).as("getDataUse");
+    fixture: "taxonomy/data_uses.json",
+  }).as("getDataUses");
 };
 
 export const stubSystemCrud = () => {
