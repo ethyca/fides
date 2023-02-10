@@ -7,7 +7,7 @@ import {
   ButtonGroup,
   Heading,
 } from "@fidesui/react";
-import React, { useEffect, useState } from "react";
+import React, {useCallback, useEffect, useState} from "react";
 
 import { CustomTextInput } from "common/form/inputs";
 import { useAppDispatch } from "~/app/hooks";
@@ -17,7 +17,7 @@ import {
   parseError,
 } from "~/features/common/helpers";
 import { successToastParams } from "~/features/common/toast";
-import { useGetWebScanQuery, WebsiteScan } from "~/features/plus/plus.slice";
+import { useGetWebScanMutation, WebsiteScan } from "~/features/plus/plus.slice";
 import { isAPIError, RTKErrorResult } from "~/types/errors";
 
 import { changeStep, setSystemsForReview } from "./config-wizard.slice";
@@ -25,6 +25,7 @@ import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
 import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
+import {System} from "~/types/api";
 
 const initialValues: WebsiteScan = {
   url: "",
@@ -41,16 +42,8 @@ const validationSchema = Yup.object().shape({
 const LoadWebScanner = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  // const [webScanQuery, results] = useGetWebScanQuery();
-  // webScanQuery()
+  const [getWebScan, getWebScanResults] = useGetWebScanMutation();
 
-  const skip = true;
-  const { isSuccess, isLoading, isError, error, data } = useGetWebScanQuery(
-    initialValues,
-    {
-      skip,
-    }
-  );
 
   const [scannerError, setScannerError] = useState<ParsedError>();
 
@@ -67,10 +60,10 @@ const LoadWebScanner = () => {
   };
 
   useEffect(() => {
-    if (isError) {
-      handleError(error as RTKErrorResult["error"]);
+    if (getWebScanResults.isError) {
+      handleError(getWebScanResults.error as RTKErrorResult["error"]);
     }
-  }, [isError, error, handleError]);
+  }, [getWebScanResults, handleError]);
 
   /**
   //  * When the scan is finished, handle the resultV
@@ -78,17 +71,30 @@ const LoadWebScanner = () => {
   //  */
   useEffect(() => {
     const handleResults = async () => {
-      if (data) {
+      if (getWebScanResults.data) {
         const toastMsg = `Your scan was successfully completed, with ##### systems detected!`;
         // const toastMsg = `Your scan was successfully completed, with ${data.added_egress.l} systems detected!`
         toast(successToastParams(toastMsg));
         dispatch(changeStep());
       }
     };
-    if (isSuccess) {
+    if (getWebScanResults.isSuccess) {
       handleResults();
     }
-  }, [data, toast, dispatch, isSuccess]);
+  }, [toast, dispatch, getWebScanResults]);
+
+
+  const handleSubmit = useCallback((values: FormValues, formikHelpers: FormikHelpers<FormValues>)=>{
+    const { setSubmitting } = formikHelpers;
+    getWebScan(values).then((response)=>{
+      // @ts-ignore
+      const systems = response.data as System[];
+      dispatch(setSystemsForReview(systems));
+      setSubmitting(false);
+
+    })
+
+  },[getWebScan])
 
   if (scannerError) {
     return (
@@ -116,7 +122,7 @@ const LoadWebScanner = () => {
     >
       <Formik
         initialValues={initialValues}
-        onSubmit={() => {}}
+        onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
         {({ isSubmitting, dirty, isValid }) => (

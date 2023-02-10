@@ -27,7 +27,7 @@ import {
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
-  ResourceTypes,
+  ResourceTypes, System,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
@@ -47,10 +47,11 @@ export type WebsiteScan = {
   name: string;
 };
 
+const plusBaseUrl =`${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`
 export const plusApi = createApi({
   reducerPath: "plusApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
+    baseUrl: plusBaseUrl,
     prepareHeaders: (headers, { getState }) => {
       const token: string | null = selectToken(getState() as RootState);
       addCommonHeaders(headers, token);
@@ -223,12 +224,12 @@ export const plusApi = createApi({
       providesTags: ["CustomFieldDefinition"],
     }),
 
-    getWebScan: build.query<[], WebsiteScan>({
+    getWebScan: build.mutation<System[], WebsiteScan>({
       query: ({ url, name }) => ({
-        url: `web-scan/latest?website=${url}&websiteName=${name}`,
+        url: `${plusBaseUrl}/web-scan/latest/ui-test?url=${url}&name=${name}`,
         method: "GET",
       }),
-      providesTags: ["Webscan"],
+      invalidatesTags: ["Webscan"],
     }),
   }),
 });
@@ -249,7 +250,7 @@ export const {
   useGetAllAllowListQuery,
   useCreateClassifyInstanceMutation,
   useAddCustomFieldDefinitionMutation,
-  useGetWebScanQuery,
+  useGetWebScanMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

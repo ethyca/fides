@@ -34,10 +34,17 @@ import {
 } from "./config-wizard.slice";
 import { SystemMethods } from "./types";
 
+
+
+/*
+The columns being used for the table were
+switched this way to work quickly for the POC.
+In an actual impl the columns would switch
+depending on the preceding scan
+ */
 const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Name", attribute: "name" },
-  { name: "System type", attribute: "system_type" },
-  { name: "Resource ID", attribute: "fidesctl_meta.resource_id" },
+  { name: "Domains", attribute: "tags" },
 ];
 
 const ScanResults = () => {
