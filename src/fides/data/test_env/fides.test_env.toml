@@ -1,4 +1,4 @@
-# Configuration values used for test environment (see `nox -s test_env`)
+# Configuration values used for test environment (see `nox -s fides_env(test)`)
 [database]
 server = "fides-db"
 user = "postgres"

@@ -55,7 +55,7 @@ const Modal = ({
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onSubmit={handleSubmit(onSubmit)}
       >
-       <h2>{product?.name ?? 'Error'}</h2>
+       <h2>Submit Your Order</h2>
        <p>All fields required</p>
        <div>
         <input type="text" placeholder='Name*' {...register('name', { required: true })} />

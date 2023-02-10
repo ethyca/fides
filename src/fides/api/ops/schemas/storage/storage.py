@@ -1,11 +1,11 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
+from fideslang.validation import FidesKey
 from pydantic import Extra, ValidationError, root_validator, validator
 from pydantic.main import BaseModel
 
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class ResponseFormat(Enum):
@@ -106,21 +106,20 @@ class StorageType(Enum):
     local = "local"  # local should be used for testing only, not for processing real-world privacy requests
 
 
-class StorageDestination(BaseModel):
-    """Storage Destination Schema"""
+class StorageDestinationBase(BaseModel):
+    """Storage Destination Schema -- used for setting defaults"""
 
-    name: str
     type: StorageType
     details: Union[
         StorageDetailsS3,
         StorageDetailsLocal,
     ]
-    key: Optional[FidesOpsKey]
     format: Optional[ResponseFormat] = ResponseFormat.json.value  # type: ignore
 
     class Config:
         use_enum_values = True
         orm_mode = True
+        extra = Extra.forbid
 
     @validator("details", pre=True, always=True)
     def validate_details(
@@ -176,14 +175,26 @@ class StorageDestination(BaseModel):
         return values
 
 
+class StorageDestination(StorageDestinationBase):
+    """Storage Destination Schema"""
+
+    name: str
+    key: Optional[FidesKey]
+
+    class Config:
+        use_enum_values = True
+        orm_mode = True
+
+
 class StorageDestinationResponse(BaseModel):
     """Storage Destination Response Schema"""
 
     name: str
     type: StorageType
     details: Dict[StorageDetails, Any]
-    key: FidesOpsKey
+    key: FidesKey
     format: ResponseFormat
+    is_default: bool = False
 
     class Config:
         orm_mode = True

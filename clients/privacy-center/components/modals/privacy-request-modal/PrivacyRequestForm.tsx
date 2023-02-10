@@ -2,7 +2,6 @@ import {
   Button,
   chakra,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Input,
   ModalBody,
@@ -12,27 +11,24 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import React, { useEffect, useState } from "react";
-
+import React, { useEffect } from "react";
 import { useFormik } from "formik";
-
+import * as Yup from "yup";
 import { Headers } from "headers-polyfill";
+
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
-
 import { PrivacyRequestOption } from "~/types/config";
-import { hostUrl, config } from "~/constants";
-
-import dynamic from "next/dynamic";
-import * as Yup from "yup";
-import { ModalViews } from "../types";
-
-import "react-phone-number-input/style.css";
-
-const PhoneInput = dynamic(() => import("react-phone-number-input"), {
-  ssr: false,
-});
+import { hostUrl, config, defaultIdentityInput } from "~/constants";
+import { PhoneInput } from "~/components/phone-input";
+import { ModalViews } from "~/components/modals/types";
+import { FormErrorMessage } from "~/components/FormErrorMessage";
+import {
+  emailValidation,
+  nameValidation,
+  phoneValidation,
+} from "~/components/modals/validation";
 
 const usePrivacyRequestForm = ({
   onClose,
@@ -47,7 +43,7 @@ const usePrivacyRequestForm = ({
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
@@ -60,8 +56,6 @@ const usePrivacyRequestForm = ({
         // somehow we've reached a broken state, return
         return;
       }
-
-      setIsLoading(true);
 
       const body = [
         {
@@ -140,36 +134,13 @@ const usePrivacyRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
-      name: (() => {
-        let validation = Yup.string();
-        if (action?.identity_inputs?.name === "required") {
-          validation = validation.required("Name is required");
-        }
-        return validation;
-      })(),
-      email: (() => {
-        let validation = Yup.string();
-        if (action?.identity_inputs?.email === "required") {
-          validation = validation
-            .email("Email is invalid")
-            .required("Email is required");
-        }
-        return validation;
-      })(),
-      phone: (() => {
-        let validation = Yup.string();
-        if (action?.identity_inputs?.phone === "required") {
-          validation = validation
-            .required("Phone is required")
-            // E.164 international standard format
-            .matches(/^\+[1-9]\d{1,14}$/, "Phone is invalid");
-        }
-        return validation;
-      })(),
+      name: nameValidation(identityInputs?.name),
+      email: emailValidation(identityInputs?.email),
+      phone: phoneValidation(identityInputs?.phone),
     }),
   });
 
-  return { ...formik, isLoading };
+  return { ...formik, identityInputs };
 };
 
 type PrivacyRequestFormProps = {
@@ -202,8 +173,10 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
     touched,
     values,
     isValid,
+    isSubmitting,
     dirty,
     resetForm,
+    identityInputs,
   } = usePrivacyRequestForm({
     onClose,
     action,
@@ -228,17 +201,14 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
           <Text fontSize="sm" color="gray.500" mb={4}>
             {action.description}
           </Text>
-          <Stack spacing={3}>
-            {action.identity_inputs.name ? (
+          <Stack>
+            {identityInputs.name ? (
               <FormControl
                 id="name"
                 isInvalid={touched.name && Boolean(errors.name)}
+                isRequired={identityInputs.name === "required"}
               >
-                <FormLabel>
-                  {action.identity_inputs.name === "required"
-                    ? "Name*"
-                    : "Name"}
-                </FormLabel>
+                <FormLabel>Name</FormLabel>
                 <Input
                   id="name"
                   name="name"
@@ -251,16 +221,13 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.name}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {action.identity_inputs.email ? (
+            {identityInputs.email ? (
               <FormControl
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
+                isRequired={identityInputs.email === "required"}
               >
-                <FormLabel>
-                  {action.identity_inputs.email === "required"
-                    ? "Email*"
-                    : "Email"}
-                </FormLabel>
+                <FormLabel>Email</FormLabel>
                 <Input
                   id="email"
                   name="email"
@@ -274,24 +241,16 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
             ) : null}
-            {action.identity_inputs.phone ? (
+            {identityInputs.phone ? (
               <FormControl
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
+                isRequired={identityInputs.phone === "required"}
               >
-                <FormLabel>
-                  {action.identity_inputs.phone === "required"
-                    ? "Phone*"
-                    : "Phone"}
-                </FormLabel>
-                <Input
-                  as={PhoneInput}
+                <FormLabel>Phone</FormLabel>
+                <PhoneInput
                   id="phone"
                   name="phone"
-                  type="tel"
-                  focusBorderColor="primary.500"
-                  placeholder="000 000 0000"
-                  defaultCountry="US"
                   onChange={(value) => {
                     setFieldValue("phone", value, true);
                   }}
@@ -315,7 +274,8 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
             _hover={{ bg: "primary.400" }}
             _active={{ bg: "primary.500" }}
             colorScheme="primary"
-            disabled={!(isValid && dirty)}
+            isLoading={isSubmitting}
+            isDisabled={isSubmitting || !(isValid && dirty)}
             size="sm"
           >
             Continue

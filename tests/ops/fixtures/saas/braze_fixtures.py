@@ -7,6 +7,7 @@ import pytest
 import requests
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -98,16 +99,20 @@ def braze_dataset_config(
     braze_connection_config.name = fides_key
     braze_connection_config.key = fides_key
     braze_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, braze_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": braze_connection_config.id,
             "fides_key": fides_key,
-            "dataset": braze_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")

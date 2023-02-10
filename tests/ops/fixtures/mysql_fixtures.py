@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -24,40 +25,44 @@ def dataset_config_mysql(
     connection_config: ConnectionConfig,
     db: Session,
 ) -> Generator:
+    dataset = {
+        "fides_key": "mysql_example_subscriptions_dataset",
+        "name": "Mysql Example Subscribers Dataset",
+        "description": "Example Mysql dataset created in test fixtures",
+        "dataset_type": "MySQL",
+        "location": "mysql_example.test",
+        "collections": [
+            {
+                "name": "subscriptions",
+                "fields": [
+                    {
+                        "name": "id",
+                        "data_categories": ["system.operations"],
+                    },
+                    {
+                        "name": "email",
+                        "data_categories": ["user.contact.email"],
+                        "fidesops_meta": {
+                            "identity": "email",
+                        },
+                    },
+                ],
+            },
+        ],
+    }
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
+
     dataset_config = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config.id,
             "fides_key": "mysql_example_subscriptions_dataset",
-            "dataset": {
-                "fides_key": "mysql_example_subscriptions_dataset",
-                "name": "Mysql Example Subscribers Dataset",
-                "description": "Example Mysql dataset created in test fixtures",
-                "dataset_type": "MySQL",
-                "location": "mysql_example.test",
-                "collections": [
-                    {
-                        "name": "subscriptions",
-                        "fields": [
-                            {
-                                "name": "id",
-                                "data_categories": ["system.operations"],
-                            },
-                            {
-                                "name": "email",
-                                "data_categories": ["user.contact.email"],
-                                "fidesops_meta": {
-                                    "identity": "email",
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset_config
     dataset_config.delete(db)
+    ctl_dataset.delete(db)
 
 
 # TODO: Consolidate these
@@ -72,16 +77,20 @@ def mysql_example_test_dataset_config(
     connection_config_mysql.name = fides_key
     connection_config_mysql.key = fides_key
     connection_config_mysql.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, mysql_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config_mysql.id,
             "fides_key": fides_key,
-            "dataset": mysql_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")

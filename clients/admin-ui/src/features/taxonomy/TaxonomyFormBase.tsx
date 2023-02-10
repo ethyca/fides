@@ -14,6 +14,10 @@ import { Form, Formik } from "formik";
 import { ReactNode, useState } from "react";
 import * as Yup from "yup";
 
+import {
+  CustomFieldsList,
+  getResourceType,
+} from "~/features/common/custom-fields";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult, parseError } from "~/features/common/helpers";
 import { successToastParams } from "~/features/common/toast";
@@ -142,6 +146,14 @@ const TaxonomyFormBase = ({
                   />
                 ))}
               {renderExtraFormFields ? renderExtraFormFields(values) : null}
+              {["data category", "data use", "data subject"].includes(
+                labels.fides_key.toLowerCase()
+              ) && (
+                <CustomFieldsList
+                  resourceId={initialValues.fides_key}
+                  resourceType={getResourceType(labels.fides_key)}
+                />
+              )}
             </Stack>
 
             {formError ? (

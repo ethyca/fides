@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 from starlette.status import HTTP_204_NO_CONTENT
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -108,16 +109,20 @@ def twilio_conversations_dataset_config(
     twilio_conversations_connection_config.name = fides_key
     twilio_conversations_connection_config.key = fides_key
     twilio_conversations_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, twilio_conversations_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": twilio_conversations_connection_config.id,
             "fides_key": fides_key,
-            "dataset": twilio_conversations_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture()
@@ -155,15 +160,19 @@ def twilio_postgres_dataset_config(
     connection_config.name = fides_key
     connection_config.key = fides_key
     connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, twilio_postgres_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config.id,
             "fides_key": fides_key,
-            "dataset": twilio_postgres_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
+    dataset.delete(db=db)
     dataset.delete(db=db)
 
 

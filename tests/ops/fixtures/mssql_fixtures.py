@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -30,12 +31,15 @@ def mssql_example_test_dataset_config(
     connection_config_mssql.name = fides_key
     connection_config_mssql.key = fides_key
     connection_config_mssql.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, mssql_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config_mssql.id,
             "fides_key": fides_key,
-            "dataset": mssql_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset

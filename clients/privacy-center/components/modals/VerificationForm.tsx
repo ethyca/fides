@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Button,
   chakra,
   FormControl,
-  FormErrorMessage,
   HStack,
   Input,
   ModalBody,
@@ -21,6 +20,7 @@ import { ErrorToastOptions } from "~/common/toast-options";
 import { Headers } from "headers-polyfill";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { useLocalStorage } from "~/common/hooks";
+import { FormErrorMessage } from "~/components/FormErrorMessage";
 
 import { hostUrl } from "~/constants";
 import { ModalViews, VerificationType } from "./types";
@@ -40,7 +40,6 @@ const useVerificationForm = ({
   verificationType: VerificationType;
   successHandler: () => void;
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verificationCode, setVerificationCode] = useLocalStorage(
@@ -56,8 +55,6 @@ const useVerificationForm = ({
       code: "",
     },
     onSubmit: async (values) => {
-      setIsLoading(true);
-
       const body = {
         code: values.code,
       };
@@ -123,7 +120,7 @@ const useVerificationForm = ({
     },
   });
 
-  return { ...formik, isLoading, resetVerificationProcess };
+  return { ...formik, resetVerificationProcess };
 };
 
 type VerificationFormProps = {
@@ -153,6 +150,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
     touched,
     values,
     isValid,
+    isSubmitting,
     dirty,
     resetForm,
     resetVerificationProcess,
@@ -178,7 +176,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
             A verification code has been sent. Return to this window and enter
             the code below.
           </Text>
-          <Stack spacing={3}>
+          <Stack>
             <FormControl
               id="code"
               isInvalid={touched.code && Boolean(errors.code)}
@@ -209,7 +207,8 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
                 _hover={{ bg: "primary.400" }}
                 _active={{ bg: "primary.500" }}
                 colorScheme="primary"
-                disabled={!(isValid && dirty)}
+                isLoading={isSubmitting}
+                isDisabled={isSubmitting || !(isValid && dirty)}
                 size="sm"
               >
                 Submit code

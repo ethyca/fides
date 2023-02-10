@@ -2,7 +2,7 @@ import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/700.css";
 
-import { ChakraProvider } from "@chakra-ui/react";
+import { FidesProvider } from "@fidesui/react";
 import type { AppProps } from "next/app";
 import React from "react";
 import { Provider } from "react-redux";
@@ -30,7 +30,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
   <SafeHydrate>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <ChakraProvider theme={theme}>
+        <FidesProvider theme={theme}>
           {Component === Login ? (
             // Only the login page is accessible while logged out. If there is
             // a use case for more unprotected routes, Next has a guide for
@@ -43,7 +43,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
               <Component {...pageProps} />
             </ProtectedRoute>
           )}
-        </ChakraProvider>
+        </FidesProvider>
       </PersistGate>
     </Provider>
   </SafeHydrate>

@@ -6,6 +6,7 @@ from typing import Dict, List, Set, Tuple
 
 import pandas as pd
 from fideslang.models import DataSubject, DataSubjectRightsEnum, DataUse
+from fideslang.validation import FidesKey
 
 DATAMAP_TEMPLATE = join(
     dirname(__file__),
@@ -137,7 +138,7 @@ def export_datamap_to_excel(
     return filename
 
 
-def format_data_uses(data_uses: List[DataUse]) -> Dict[str, Dict[str, str]]:
+def format_data_uses(data_uses: List[DataUse]) -> Dict[FidesKey, Dict[str, str]]:
     """
     This function formats data uses for use when exporting,
     returning the necessary values as a dict. Formatting
@@ -174,7 +175,9 @@ def format_data_uses(data_uses: List[DataUse]) -> Dict[str, Dict[str, str]]:
     return formatted_data_uses
 
 
-def format_data_subjects(data_subjects: List[DataSubject]) -> Dict[str, Dict[str, str]]:
+def format_data_subjects(
+    data_subjects: List[DataSubject],
+) -> Dict[FidesKey, Dict[str, str]]:
     """
     This function formats data subjects from the server, returning the necessary values
     as a list of dicts.
@@ -190,7 +193,7 @@ def format_data_subjects(data_subjects: List[DataSubject]) -> Dict[str, Dict[str
         "automated_decisions_or_profiling",
     ]
 
-    formatted_data_subjects = {}
+    formatted_data_subjects: Dict[FidesKey, Dict[str, str]] = {}
 
     for data_subject in data_subjects:
         data_subject_dict = data_subject.dict()

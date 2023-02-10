@@ -8,6 +8,7 @@ import {
   FormControl,
   FormErrorMessage,
   FormLabel,
+  FormLabelProps,
   Grid,
   IconButton,
   Input,
@@ -111,8 +112,10 @@ export interface Option {
 }
 interface SelectProps {
   label: string;
+  labelProps?: FormLabelProps;
   tooltip?: string;
   options: Option[];
+  isDisabled?: boolean;
   isSearchable?: boolean;
   isClearable?: boolean;
   size?: Size;
@@ -120,8 +123,10 @@ interface SelectProps {
 }
 export const CustomSelect = ({
   label,
+  labelProps,
   tooltip,
   options,
+  isDisabled,
   isSearchable,
   isClearable,
   size = "sm",
@@ -135,9 +140,9 @@ export const CustomSelect = ({
   const { touched, setTouched } = useFormikContext();
 
   return (
-    <FormControl isInvalid={isInvalid}>
+    <FormControl isInvalid={isInvalid} isDisabled={isDisabled}>
       <Grid templateColumns="1fr 3fr">
-        <FormLabel htmlFor={props.id || props.name} size="sm">
+        <FormLabel htmlFor={props.id || props.name} size="sm" {...labelProps}>
           {label}
         </FormLabel>
         <Box
@@ -418,7 +423,6 @@ export const CustomTextArea = ({
     <Textarea
       {...field}
       size="sm"
-      width="auto"
       mr={2}
       {...textAreaProps}
       data-testid={`input-${field.name}`}

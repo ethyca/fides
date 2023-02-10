@@ -1,11 +1,14 @@
 """Contains the nox sessions for running development environments."""
-from nox import Session
+from typing import Literal
+
+from nox import Session, param, parametrize
 from nox import session as nox_session
 from nox.command import CommandFailed
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
     RUN,
+    RUN_CYPRESS_TESTS,
     RUN_NO_DEPS,
     START_APP,
     START_APP_REMOTE_DEBUG,
@@ -73,15 +76,48 @@ def dev(session: Session) -> None:
 
 
 @nox_session()
-def test_env(session: Session) -> None:
+def cypress_tests(session: Session) -> None:
     """
-    Spins up a comprehensive test environment seeded with data.
+    End-to-end Cypress tests designed to be run as part of the 'e2e_test' session.
+    """
+    session.log("Running Cypress tests...")
+    session.run(*RUN_CYPRESS_TESTS, external=True)
+
+
+@nox_session()
+def e2e_test(session: Session) -> None:
+    """
+    Spins up the test_env session and runs Cypress E2E tests against it.
+    """
+    session.log("Running end-to-end tests...")
+    session.notify("fides_env(test)", posargs=["test"])
+    session.notify("cypress_tests")
+    session.notify("teardown")
+
+
+@nox_session()
+@parametrize(
+    "fides_image",
+    [
+        param("dev", id="dev"),
+        param("test", id="test"),
+    ],
+)
+def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") -> None:
+    """
+    Spins up a full fides environment seeded with data.
+
+    Params:
+        dev = Spins up a full fides application with a dev-style docker container. This includes hot-reloading and no pre-baked UI.
+        test = Spins up a full fides application with a production-style docker container. This includes the UI being pre-built as static files.
 
     Posargs:
-    test: instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
+        test = instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
+        keep_alive = does not automatically call teardown after the session
     """
 
     shell_command = "fides" if "test" in session.posargs else "/bin/bash"
+    keep_alive = "keep_alive" in session.posargs
 
     # Temporarily override some ENV vars as needed. To set local secrets, see 'example.env'
     test_env_vars = {
@@ -97,10 +133,11 @@ def test_env(session: Session) -> None:
         session.error(
             "Failed to cleanly teardown existing containers & volumes. Please exit out of all other and try again"
         )
-    session.notify("teardown", posargs=["volumes"])
+    if not keep_alive:
+        session.notify("teardown", posargs=["volumes"])
 
     session.log("Building images...")
-    build(session, "dev")
+    build(session, fides_image)
     build(session, "admin_ui")
     build(session, "privacy_center")
 
@@ -134,9 +171,14 @@ def test_env(session: Session) -> None:
         env=test_env_vars,
     )
 
+    # Make spaces in the info message line up
+    title = (
+        "FIDES TEST ENVIRONMENT" if fides_image == "test" else "FIDES DEV ENVIRONMENT "
+    )
+
     session.log("****************************************")
     session.log("*                                      *")
-    session.log("*        FIDES TEST ENVIRONMENT        *")
+    session.log(f"*        {title}        *")
     session.log("*                                      *")
     session.log("****************************************")
     session.log("")
@@ -145,11 +187,15 @@ def test_env(session: Session) -> None:
     session.log(
         "Using secrets set in '.env' for example setup scripts (see 'example.env' for options)"
     )
+    if fides_image == "test":
+        session.log(
+            "Fides Admin UI (production build) running at http://localhost:8080 (user: 'fidestest', pass: 'Apassword1!')"
+        )
     session.log(
-        "Fides Admin UI running at http://localhost:3000 (user: 'fidestest', pass: 'Apassword1!')"
+        "Fides Admin UI (dev) running at http://localhost:3000 (user: 'fidestest', pass: 'Apassword1!')"
     )
     session.log(
-        "Fides Privacy Center running at http://localhost:3001 (user: 'jane@example.com')"
+        "Fides Privacy Center (production build) running at http://localhost:3001 (user: 'jane@example.com')"
     )
     session.log(
         "Example Postgres Database running at localhost:6432 (user: 'postgres', pass: 'postgres', db: 'postgres_example')"

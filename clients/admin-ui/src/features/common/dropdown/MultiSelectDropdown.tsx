@@ -1,4 +1,3 @@
-import { PlacementWithLogical } from "@chakra-ui/react";
 import {
   ArrowDownLineIcon,
   Box,
@@ -6,6 +5,7 @@ import {
   HStack,
   Menu,
   MenuButton,
+  PlacementWithLogical,
   Text,
   Tooltip,
 } from "@fidesui/react";
@@ -92,6 +92,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdwonProps> = ({
         isLazy
         onClose={handleClose}
         onOpen={handleOpen}
+        strategy="fixed"
       >
         <Tooltip
           fontSize=".75rem"

@@ -38,7 +38,7 @@ const About: NextPage = () => {
 
         <Divider />
 
-        <Grid gridTemplateColumns="1fr 2fr">
+        <Grid gridTemplateColumns="1fr 1fr 3fr">
           <Heading as="h2" fontSize="xl">
             Beta Features
           </Heading>
@@ -48,6 +48,8 @@ const About: NextPage = () => {
               Reset
             </Button>
           </Box>
+
+          <Box />
 
           {FLAG_NAMES.map((flag) => (
             <FlagControl

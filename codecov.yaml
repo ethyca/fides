@@ -1,0 +1,18 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 85%
+    patch:
+      default:
+        target: 100%
+
+codecov:
+  notify:
+    after_n_builds: 10
+
+comment:
+  after_n_builds: 10
+
+ignore:
+  - "**/migrations"
