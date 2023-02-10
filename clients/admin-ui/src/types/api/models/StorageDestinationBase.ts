@@ -8,12 +8,10 @@ import type { StorageDetailsS3 } from "./StorageDetailsS3";
 import type { StorageType } from "./StorageType";
 
 /**
- * Storage Destination Schema
+ * Storage Destination Schema -- used for setting defaults
  */
-export type StorageDestination = {
+export type StorageDestinationBase = {
   type: StorageType;
   details: StorageDetailsS3 | StorageDetailsLocal;
   format?: ResponseFormat;
-  name: string;
-  key?: string;
 };

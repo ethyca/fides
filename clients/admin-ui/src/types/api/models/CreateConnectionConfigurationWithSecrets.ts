@@ -5,6 +5,7 @@
 import type { AccessLevel } from "./AccessLevel";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
+import type { ConsentEmailDocsSchema } from "./ConsentEmailDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
@@ -41,6 +42,7 @@ export type CreateConnectionConfigurationWithSecrets = {
     | EmailDocsSchema
     | ManualWebhookSchemaforDocs
     | TimescaleDocsSchema
-    | FidesDocsSchema;
+    | FidesDocsSchema
+    | ConsentEmailDocsSchema;
   saas_connector_type?: string;
 };

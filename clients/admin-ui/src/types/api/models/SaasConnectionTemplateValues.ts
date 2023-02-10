@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
+import type { ConsentEmailDocsSchema } from "./ConsentEmailDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
@@ -36,6 +37,7 @@ export type SaasConnectionTemplateValues = {
     | EmailDocsSchema
     | ManualWebhookSchemaforDocs
     | TimescaleDocsSchema
-    | FidesDocsSchema;
+    | FidesDocsSchema
+    | ConsentEmailDocsSchema;
   instance_key: string;
 };
