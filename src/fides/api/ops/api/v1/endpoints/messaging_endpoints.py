@@ -24,16 +24,27 @@ from fides.api.ops.api.v1.scope_registry import (
     MESSAGING_READ,
 )
 from fides.api.ops.api.v1.urn_registry import (
+    MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
     MESSAGING_CONFIG,
+    MESSAGING_DEFAULT,
+    MESSAGING_DEFAULT_BY_TYPE,
+    MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     V1_URL_PREFIX,
 )
 from fides.api.ops.common_exceptions import MessagingConfigNotFoundException
-from fides.api.ops.models.messaging import MessagingConfig, get_schema_for_secrets
+from fides.api.ops.models.messaging import (
+    MessagingConfig,
+    default_messaging_config_key,
+    default_messaging_config_name,
+    get_schema_for_secrets,
+)
 from fides.api.ops.schemas.messaging.messaging import (
+    MessagingConfigBase,
     MessagingConfigRequest,
     MessagingConfigResponse,
+    MessagingServiceType,
     TestMessagingStatusMessage,
 )
 from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
@@ -126,6 +137,63 @@ def patch_config_by_key(
 
 
 @router.put(
+    MESSAGING_DEFAULT,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_CREATE_OR_UPDATE])],
+    response_model=MessagingConfigResponse,
+)
+def put_default_config(
+    *,
+    db: Session = Depends(deps.get_db),
+    messaging_config: MessagingConfigBase,
+) -> Optional[MessagingConfigResponse]:
+    """
+    Updates default messaging config for given service type.
+    """
+    logger.info(
+        "Starting upsert for default messaging config of type '{}'",
+        messaging_config.service_type,
+    )
+    incoming_data = messaging_config.dict()
+    existing_default = MessagingConfig.get_by_type(db, messaging_config.service_type)
+    if existing_default:
+        # take the key of the existing default and add that to the incoming data, to ensure we overwrite the same record
+        incoming_data["key"] = existing_default.key
+        incoming_data["name"] = existing_default.name
+    else:
+        # set a key and name for our config if we're creating a new default
+        incoming_data["name"] = default_messaging_config_name(
+            messaging_config.service_type.value
+        )
+        incoming_data["key"] = default_messaging_config_key(
+            messaging_config.service_type.value
+        )
+    return create_or_update_messaging_config(
+        db, MessagingConfigRequest(**incoming_data)
+    )
+
+
+@router.put(
+    MESSAGING_DEFAULT_SECRETS,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_CREATE_OR_UPDATE])],
+    response_model=TestMessagingStatusMessage,
+)
+def put_default_config_secrets(
+    service_type: MessagingServiceType,
+    *,
+    db: Session = Depends(deps.get_db),
+    unvalidated_messaging_secrets: possible_messaging_secrets,
+) -> TestMessagingStatusMessage:
+    messaging_config = MessagingConfig.get_by_type(db, service_type=service_type)
+    if not messaging_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No default messaging config found of type '{service_type}'",
+        )
+    return update_config_secrets(db, messaging_config, unvalidated_messaging_secrets)
+
+
+@router.put(
     MESSAGING_SECRETS,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_CREATE_OR_UPDATE])],
@@ -147,6 +215,14 @@ def put_config_secrets(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No messaging configuration with key {config_key}.",
         )
+    return update_config_secrets(db, messaging_config, unvalidated_messaging_secrets)
+
+
+def update_config_secrets(
+    db: Session,
+    messaging_config: MessagingConfig,
+    unvalidated_messaging_secrets: possible_messaging_secrets,
+) -> TestMessagingStatusMessage:
 
     try:
         secrets_schema = get_schema_for_secrets(
@@ -165,7 +241,8 @@ def put_config_secrets(
         )
 
     logger.info(
-        "Updating messaging config secrets for config with key '{}'", config_key
+        "Updating messaging config secrets for config with key '{}'",
+        messaging_config.key,
     )
     try:
         messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.dict())
@@ -174,7 +251,7 @@ def put_config_secrets(
             status_code=HTTP_400_BAD_REQUEST,
             detail=exc.args[0],
         )
-    msg = f"Secrets updated for MessagingConfig with key: {config_key}."
+    msg = f"Secrets updated for MessagingConfig with key: {messaging_config.key}."
     # todo- implement test status for messaging service
     return TestMessagingStatusMessage(msg=msg, test_status=None)
 
@@ -219,6 +296,47 @@ def get_config_by_key(
             status_code=HTTP_404_NOT_FOUND,
             detail=e.message,
         )
+
+
+@router.get(
+    MESSAGING_DEFAULT_BY_TYPE,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_READ])],
+    response_model=MessagingConfigResponse,
+)
+def get_default_config_by_type(
+    service_type: MessagingServiceType, *, db: Session = Depends(deps.get_db)
+) -> MessagingConfig:
+    """
+    Retrieves default config for messaging service by type.
+    """
+    logger.info("Finding default messaging config of type '{}'", service_type)
+
+    messaging_config = MessagingConfig.get_by_type(db, service_type)
+    if not messaging_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No default messaging config found of type '{service_type}'",
+        )
+    return messaging_config
+
+
+@router.get(
+    MESSAGING_ACTIVE_DEFAULT,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_READ])],
+    response_model=MessagingConfigResponse,
+)
+def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> MessagingConfig:
+    """
+    Retrieves the active default messaging config.
+    """
+    logger.info("Finding active default messaging config")
+    messaging_config = MessagingConfig.get_active_default(db)
+    if not messaging_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No active default messaging config found.",
+        )
+    return messaging_config
 
 
 @router.delete(

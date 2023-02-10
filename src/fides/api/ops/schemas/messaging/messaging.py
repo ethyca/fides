@@ -213,11 +213,9 @@ class MessagingServiceSecretsTwilioEmail(BaseModel):
         extra = Extra.forbid
 
 
-class MessagingConfigRequest(BaseModel):
-    """Messaging Config Request Schema"""
+class MessagingConfigBase(BaseModel):
+    """Base model shared by messaging config related models"""
 
-    name: str
-    key: Optional[FidesKey]
     service_type: MessagingServiceType
     details: Optional[
         Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
@@ -257,13 +255,18 @@ class MessagingConfigRequest(BaseModel):
         schema.validate(values.get("details"))
 
 
-class MessagingConfigResponse(BaseModel):
+class MessagingConfigRequest(MessagingConfigBase):
+    """Messaging Config Request Schema"""
+
+    name: str
+    key: Optional[FidesKey]
+
+
+class MessagingConfigResponse(MessagingConfigBase):
     """Messaging Config Response Schema"""
 
     name: str
     key: FidesKey
-    service_type: MessagingServiceType
-    details: Optional[Dict[MessagingServiceDetails, Any]]
 
     class Config:
         orm_mode = True

@@ -1,4 +1,6 @@
 import json
+from unittest import mock
+from unittest.mock import Mock
 
 import pytest
 from fastapi_pagination import Params
@@ -11,19 +13,26 @@ from fides.api.ops.api.v1.scope_registry import (
     MESSAGING_READ,
 )
 from fides.api.ops.api.v1.urn_registry import (
+    MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
     MESSAGING_CONFIG,
+    MESSAGING_DEFAULT,
+    MESSAGING_DEFAULT_BY_TYPE,
+    MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     V1_URL_PREFIX,
 )
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
 )
+from fides.core.config import get_config
 
 PAGE_SIZE = Params().size
+CONFIG = get_config()
 
 
 class TestPostMessagingConfig:
@@ -757,3 +766,449 @@ class TestDeleteConfig:
         db.expunge_all()
         config = db.query(MessagingConfig).filter_by(key=twilio_sms_config.key).first()
         assert config is None
+
+
+class TestGetDefaultMessagingConfig:
+    @pytest.fixture(scope="function")
+    def url(self, messaging_config: MessagingConfig) -> str:
+        return (V1_URL_PREFIX + MESSAGING_DEFAULT_BY_TYPE).format(
+            service_type=messaging_config.service_type.value
+        )
+
+    def test_get_default_config_not_authenticated(self, url, api_client: TestClient):
+        response = api_client.get(url)
+        assert 401 == response.status_code
+
+    def test_get_default_config_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header([MESSAGING_DELETE])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_default_config_invalid(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            (V1_URL_PREFIX + MESSAGING_DEFAULT_BY_TYPE).format(service_type="invalid"),
+            headers=auth_header,
+        )
+        assert 422 == response.status_code
+
+    def test_get_default_config_not_exist(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            (V1_URL_PREFIX + MESSAGING_DEFAULT_BY_TYPE).format(
+                storage_type=MessagingServiceType.MAILGUN.value
+            ),
+            headers=auth_header,
+        )
+        assert 404 == response.status_code
+
+    def test_get_default_config(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        messaging_config: MessagingConfig,
+    ):
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+
+        response_body = response.json()
+
+        assert response_body == {
+            "key": "my_mailgun_messaging_config",
+            "name": messaging_config.name,
+            "service_type": MessagingServiceType.MAILGUN.value,
+            "details": {
+                MessagingServiceDetails.API_VERSION.value: "v3",
+                MessagingServiceDetails.DOMAIN.value: "some.domain",
+                MessagingServiceDetails.IS_EU_DOMAIN.value: False,
+            },
+        }
+
+
+class TestPutDefaultMessagingConfig:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + MESSAGING_DEFAULT
+
+    @pytest.fixture(scope="function")
+    def payload(self):
+        return {
+            "service_type": MessagingServiceType.MAILGUN.value,
+            "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
+        }
+
+    def test_put_default_messaging_config_not_authenticated(
+        self,
+        api_client: TestClient,
+        payload,
+        url,
+    ):
+        response = api_client.put(url, headers={}, json=payload)
+        assert 401 == response.status_code
+
+    def test_put_default_messaging_config_incorrect_scope(
+        self,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_put_default_messaging(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+
+        assert response_body["key"] is not None
+        assert response_body["service_type"] == payload["service_type"]
+        assert response_body["details"] == payload["details"]
+        messaging_configs = (
+            db.query(MessagingConfig)
+            .filter_by(service_type=payload["service_type"])
+            .all()
+        )
+        assert len(messaging_configs) == 1
+        assert messaging_configs[0].key == response_body["key"]
+        assert messaging_configs[0].type.value == payload["service_type"]
+        assert messaging_configs[0].details == payload["details"]
+
+        messaging_configs[0].delete(db)
+
+    def test_put_messaging_default_config_with_key_rejected(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        payload["key"] = "my_messaging_config_key"
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+
+    def test_put_messaging_default_config_with_name_rejected(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        payload["name"] = "my_messaging_config_name"
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+
+    @pytest.mark.parametrize(
+        "service_type",
+        [
+            MessagingServiceType.TWILIO_EMAIL,
+            MessagingServiceType.TWILIO_TEXT,
+        ],
+    )
+    def test_put_default_messaging_config_with_different_service_types(
+        self,
+        db: Session,
+        api_client: TestClient,
+        service_type,
+        url,
+        generate_auth_header,
+    ):
+        payload = {"service_type": service_type}
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        config_key = response_body["key"]
+        messaging_config = MessagingConfig.get_by(db, field="key", value=config_key)
+        assert service_type == response_body["service_type"]
+        assert service_type == messaging_config.service_type
+        messaging_config.delete(db)
+
+    def test_put_default_messaging_config_twice_only_one_record(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        # try an initial put, assert it works well
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        config_key = response_body["key"]
+        messaging_configs = (
+            db.query(MessagingConfig)
+            .filter_by(service_typetype=payload["service_type"])
+            .all()
+        )
+        assert len(messaging_configs) == 1
+        messaging_config = messaging_configs[0]
+        assert messaging_config.key == config_key
+        assert messaging_config.details == payload["details"]
+
+        # try a follow-up put after changing a detail assert it made the update to existing record
+        payload["details"][MessagingServiceDetails.DOMAIN.value] = "a.new.domain"
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        assert config_key == response_body["key"]
+        messaging_configs = (
+            db.query(MessagingConfig)
+            .filter_by(service_type=payload["service_type"])
+            .all()
+        )
+        assert len(messaging_configs) == 1
+        messaging_config = messaging_configs[0]
+        db.refresh(messaging_config)
+        assert messaging_config.key == config_key
+        assert (
+            messaging_config.details[MessagingServiceDetails.DOMAIN.value]
+            == "a.new.domain"
+        )
+
+        messaging_config.delete(db)
+
+    def test_put_default_config_twilio_email_rejects_mailgun_details(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
+    ):
+        payload["service_type"] = MessagingServiceType.TWILIO_EMAIL
+
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert response.status_code == 422
+
+
+class TestPutDefaultMessagingConfigSecretsS3:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return (V1_URL_PREFIX + MESSAGING_DEFAULT_SECRETS).format(
+            service_type=MessagingServiceType.MAILGUN.value
+        )
+
+    @pytest.fixture(scope="function")
+    def payload(self):
+        return {
+            MessagingServiceSecrets.MAILGUN_API_KEY.value: "1345234524",
+        }
+
+    def test_put_default_messaging_secrets_unauthenticated(
+        self, api_client: TestClient, payload, url
+    ):
+        response = api_client.put(url, headers={}, json=payload)
+        assert 401 == response.status_code
+
+    def test_put_default_messaging_secrets_wrong_scope(
+        self, api_client: TestClient, payload, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_put_default_messaging_secret_invalid_config(
+        self, api_client: TestClient, payload, generate_auth_header
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        url = (V1_URL_PREFIX + MESSAGING_DEFAULT_SECRETS).format(
+            service_type="invalid_type"
+        )
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+
+    def test_update_default_with_invalid_secrets_key(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
+        assert response.status_code == 400
+        assert "field required" in response.text
+        assert "extra fields not permitted" in response.text
+
+    @mock.patch("fides.api.ops.models.messaging.MessagingConfig.set_secrets")
+    def test_update_default_set_secrets_error(
+        self,
+        set_secrets_mock: Mock,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        payload,
+    ):
+        set_secrets_mock.side_effect = ValueError(
+            "This object must have a `type` to validate secrets."
+        )
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert response.status_code == 400
+
+    def test_put_default_config_secrets(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        messaging_config,
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(
+            url , headers=auth_header, json=payload
+        )
+        assert 200 == response.status_code
+
+        db.refresh(messaging_config)
+
+        assert json.loads(response.text) == {
+            "msg": f"Secrets updated for MessagingConfig with key: {messaging_config.key}."
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert (
+            messaging_config.secrets == payload
+        )
+
+
+
+class TestGetActiveDefaultMessagingConfig:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + MESSAGING_ACTIVE_DEFAULT
+
+    def test_get_active_default_config_not_authenticated(
+        self, url, api_client: TestClient
+    ):
+        response = api_client.get(url)
+        assert 401 == response.status_code
+
+    def test_get_active_default_config_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header([MESSAGING_DELETE])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_active_default_none_set(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 404 == response.status_code
+        
+    def test_get_active_default_app_setting_not_set(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        messaging_config,
+    ):
+        """
+        Even with `messaing_config` fixture creating a default messaging config,
+        we should still not get an active default config if the
+        `notifications.notification_service_type` config property has not been set
+        
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 404 == response.status_code
+
+    @pytest.fixture(scope="function")
+    def notification_service_type_mailgun(self, db):
+        """Set mailgun as the `notification_service_type` property"""
+        original_value = CONFIG.notifications.notification_service_type
+        CONFIG.notifications.notification_service_type = "MAILGUN"
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.notification_service_type = original_value
+    
+    @pytest.mark.usefixtures("notification_service_type_mailgun")
+    def test_get_active_default_app_setting_but_not_configured(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        Without `messaging_config` fixture creating a default messaging config,
+        but by setting the application setting for "notification_service_type" to mailgun,
+        we should get a 404, since we have no mailgun default configured.
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 404 == response.status_code
+
+    @pytest.mark.usefixtures("notification_service_type_mailgun")
+    def test_get_active_default_config(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        messaging_config: MessagingConfig,
+    ):
+        """
+        We should get back our mailgun config default now that
+        we set mailgun as the notification_service_type via app setting
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+
+        response_body = response.json()
+
+        assert response_body == {
+            "key": "my_mailgun_messaging_config",
+            "name": messaging_config.name,
+            "service_type": MessagingServiceType.MAILGUN.value,
+            "details": {
+                MessagingServiceDetails.API_VERSION.value: "v3",
+                MessagingServiceDetails.DOMAIN.value: "some.domain",
+                MessagingServiceDetails.IS_EU_DOMAIN.value: False,
+            },
+        }
