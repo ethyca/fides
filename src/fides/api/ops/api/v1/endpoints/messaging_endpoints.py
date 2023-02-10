@@ -226,7 +226,7 @@ def update_config_secrets(
 
     try:
         secrets_schema = get_schema_for_secrets(
-            service_type=messaging_config.service_type,
+            service_type=messaging_config.service_type,  # type: ignore
             secrets=unvalidated_messaging_secrets,
         )
     except KeyError as exc:
@@ -245,7 +245,7 @@ def update_config_secrets(
         messaging_config.key,
     )
     try:
-        messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.dict())
+        messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.dict())  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

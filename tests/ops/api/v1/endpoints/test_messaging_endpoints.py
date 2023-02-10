@@ -1087,22 +1087,17 @@ class TestPutDefaultMessagingConfigSecretsS3:
         messaging_config,
     ):
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
-        response = api_client.put(
-            url , headers=auth_header, json=payload
-        )
+        response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
         db.refresh(messaging_config)
 
         assert json.loads(response.text) == {
-            "msg": f"Secrets updated for MessagingConfig with key: {messaging_config.key}."
+            "msg": f"Secrets updated for MessagingConfig with key: {messaging_config.key}.",
             "test_status": None,
             "failure_reason": None,
         }
-        assert (
-            messaging_config.secrets == payload
-        )
-
+        assert messaging_config.secrets == payload
 
 
 class TestGetActiveDefaultMessagingConfig:
@@ -1135,7 +1130,7 @@ class TestGetActiveDefaultMessagingConfig:
             headers=auth_header,
         )
         assert 404 == response.status_code
-        
+
     def test_get_active_default_app_setting_not_set(
         self,
         url,
@@ -1147,7 +1142,7 @@ class TestGetActiveDefaultMessagingConfig:
         Even with `messaing_config` fixture creating a default messaging config,
         we should still not get an active default config if the
         `notifications.notification_service_type` config property has not been set
-        
+
         """
         auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(
@@ -1164,7 +1159,7 @@ class TestGetActiveDefaultMessagingConfig:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
-    
+
     @pytest.mark.usefixtures("notification_service_type_mailgun")
     def test_get_active_default_app_setting_but_not_configured(
         self,
