@@ -27,6 +27,9 @@ saas_config:
   test_request:
     method: POST
     path: /graphql
+    headers:
+      - name: Braintree-Version
+        value: "2019-12-17"
     body: |
       {
         "query": "query { ping }"
@@ -38,13 +41,13 @@ saas_config:
         read:
           method: POST
           path: /graphql
+          headers:
+            - name: Braintree-Version
+              value: "2019-12-17"
           param_values:
             - name: customer_id
               references:
                 - braintree_customer_id
-          headers:
-            - name: Braintree-Version
-              value: "2019-12-17"
           body: |
             {
               "query": "query Search($criteria: CustomerSearchInput!) {
@@ -79,15 +82,15 @@ saas_config:
         update:
           method: POST
           path: /graphql
+          headers:
+            - name: Braintree-Version
+              value: "2019-12-17"
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-          headers:
-            - name: Braintree-Version
-              value: "2019-12-17"
           body: |
             {
               "query": "mutation UpdateCustomer($input: UpdateCustomerInput!) {
@@ -115,13 +118,13 @@ saas_config:
         read:
           method: POST
           path: /graphql
+          headers:
+            - name: Braintree-Version
+              value: "2019-12-17"
           param_values:
             - name: customer_id
               references:
                 - braintree_customer_id
-          headers:
-            - name: Braintree-Version
-              value: "2019-12-17"
           body: |
             {
               "query": "query Search($criteria: TransactionSearchInput!) {
