@@ -88,7 +88,7 @@ const AddSystem = () => {
           />
           <SystemOption
             label="Web Scanner"
-            description="Run the web scanner"
+            description="Automatically discover new systems in your website infrastructure"
             icon={<OktaLogoIcon boxSize={8} />}
             onClick={() => {
               dispatch(setAddSystemsMethod(ValidTargets.WEB_SCANNER));
