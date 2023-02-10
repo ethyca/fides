@@ -6,5 +6,6 @@ export * from "./CustomFieldsButton";
 export * from "./CustomFieldsList";
 export * from "./CustomFieldsModal";
 export * from "./helpers";
+export * from "./hooks";
 export * from "./Layout";
 export * from "./types";

@@ -169,6 +169,7 @@ const SelectInput = ({
       name={fieldName}
       value={selected}
       size={size}
+      classNamePrefix="custom-select"
       chakraStyles={{
         container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
         dropdownIndicator: (provided) => ({

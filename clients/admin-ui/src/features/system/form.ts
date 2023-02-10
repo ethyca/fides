@@ -1,8 +1,10 @@
+import { CustomFieldsFormValues } from "~/features/common/custom-fields";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
 
 export interface FormValues
-  extends Omit<System, "data_protection_impact_assessment"> {
+  extends Omit<System, "data_protection_impact_assessment">,
+    CustomFieldsFormValues {
   data_protection_impact_assessment?: {
     is_required: "true" | "false";
     progress?: DataProtectionImpactAssessment["progress"];
@@ -58,9 +60,23 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
   const jointController = hasJointController
     ? formValues.joint_controller
     : undefined;
+
   return {
-    ...formValues,
-    organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
+    // Fields that are preserved by the form:
+    data_responsibility_title: formValues.data_responsibility_title,
+    description: formValues.description,
+    egress: formValues.egress,
+    fides_key: formValues.fides_key,
+    ingress: formValues.ingress,
+    name: formValues.name,
+    organization_fides_key: formValues.organization_fides_key,
+    privacy_declarations: formValues.privacy_declarations,
+    system_dependencies: formValues.system_dependencies,
+    system_type: formValues.system_type,
+    tags: formValues.tags,
+    third_country_transfers: formValues.third_country_transfers,
+
+    // Fields that need transformation:
     data_protection_impact_assessment: impactAssessment,
     joint_controller: jointController,
     administrating_department:
