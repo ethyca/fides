@@ -195,7 +195,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const getInitialValues = () => {
     if (connection?.key) {
-      console.log({ connection, data });
       defaultValues.name = connection.name;
       defaultValues.description = connection.description as string;
       defaultValues.instance_key =
