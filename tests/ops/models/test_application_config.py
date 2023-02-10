@@ -472,7 +472,7 @@ class TestConfigProxy:
         )
 
         # unset the API-set notification service type property
-        ApplicationConfig.update_api_set_config(
+        ApplicationConfig.update_api_set(
             db, api_set_dict={"notifications": {"notification_service_type": None}}
         )
         notification_service_type = config_proxy.notifications.notification_service_type
