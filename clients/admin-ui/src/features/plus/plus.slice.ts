@@ -227,7 +227,7 @@ export const plusApi = createApi({
 
     getWebScan: build.mutation<System[], WebsiteScan>({
       query: ({ url, name }) => ({
-        url: `${plusBaseUrl}/web-scan/latest?url=${url}&name=${name}?diff=True`,
+        url: `${plusBaseUrl}/web-scan/latest?url=${url}&name=${name}&diff=True`,
         method: "GET",
       }),
       invalidatesTags: ["Webscan"],
