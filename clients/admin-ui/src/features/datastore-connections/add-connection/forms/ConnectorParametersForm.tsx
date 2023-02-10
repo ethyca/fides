@@ -53,6 +53,10 @@ type ConnectorParametersFormProps = {
    * Parent callback when Test Connection is clicked
    */
   onTestConnectionClick: (value: any) => void;
+  /**
+   * Text for the test button. Defaults to "Test connection"
+   */
+  testButtonLabel?: string;
 };
 
 const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
@@ -61,6 +65,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
+  testButtonLabel = "Test connection",
 }) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
@@ -117,11 +122,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       return "Enter dataset.collection.field";
     }
     return undefined;
-  };
-
-  const getAdvancedSettings = () => {
-    console.log({ data });
-    return <div>hi</div>;
   };
 
   const getFormField = (
@@ -195,6 +195,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const getInitialValues = () => {
     if (connection?.key) {
+      console.log({ connection, data });
       defaultValues.name = connection.name;
       defaultValues.description = connection.description as string;
       defaultValues.instance_key =
@@ -203,28 +204,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           : connection.key;
     }
     return fillInDefaults(defaultValues, data);
-
-    //   Object.entries(data.properties).forEach((key) => {
-    //     const [name, schema] = key;
-    //     console.log({ key });
-
-    //     if (schema.default) {
-    //       defaultValues[name] = schema.default;
-    //     } else if (schema.type === "integer") {
-    //       defaultValues[name] = 0;
-    //     } else {
-    //       defaultValues[name] = "";
-    //     }
-    //   });
-    //   if (data.properties.advanced_settings) {
-    //     const { definitions } = data;
-    //     console.log({ definitions });
-    //     const advancedProperties = data.definitions.AdvancedSettings.properties;
-    //     console.log({ advancedProperties });
-    //   }
-
-    // console.log({ defaultValues });
-    // return defaultValues;
   };
 
   const handleSubmit = (values: any, actions: any) => {
@@ -378,7 +357,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             {/* Dynamic connector secret fields */}
             {Object.entries(data.properties).map(([key, item]) => {
               if (key === "advanced_settings") {
-                return getAdvancedSettings();
+                // TODO: advanced settings
+                return null;
               }
               return getFormField(key, item);
             })}
@@ -391,7 +371,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 onClick={handleTestConnectionClick}
                 variant="outline"
               >
-                Test connection
+                {testButtonLabel}
               </Button>
               <Button
                 bg="primary.800"

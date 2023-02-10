@@ -71,7 +71,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
             <EmailConnectorParameters
               data={data}
               onConnectionCreated={onConnectionCreated}
-              onTestConnectionClick={handleTestConnectionClick}
+              onTestEmail={handleTestConnectionClick}
             />
           );
         }
