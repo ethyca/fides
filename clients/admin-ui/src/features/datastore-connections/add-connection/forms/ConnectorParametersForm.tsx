@@ -35,6 +35,7 @@ import {
   DatabaseConnectorParametersFormFields,
   SaasConnectorParametersFormFields,
 } from "../types";
+import { fillInDefaults } from "./helpers";
 
 const FIDESOPS_DATASET_REFERENCE = "#/definitions/FidesopsDatasetReference";
 
@@ -193,7 +194,6 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   );
 
   const getInitialValues = () => {
-    console.log({ connection });
     if (connection?.key) {
       defaultValues.name = connection.name;
       defaultValues.description = connection.description as string;
@@ -201,36 +201,30 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         connection.connection_type === ConnectionType.SAAS
           ? (connection.saas_config?.fides_key as string)
           : connection.key;
-      Object.entries(data.properties).forEach((key) => {
-        // eslint-disable-next-line no-nested-ternary
-        defaultValues[key[0]] = key[1].default
-          ? key[1].default
-          : key[1].type === "integer"
-          ? 0
-          : "";
-      });
-    } else {
-      Object.entries(data.properties).forEach((key) => {
-        const [name, schema] = key;
-        console.log({ key });
-
-        if (schema.default) {
-          defaultValues[name] = schema.default;
-        } else if (schema.type === "integer") {
-          defaultValues[name] = 0;
-        } else {
-          defaultValues[name] = "";
-        }
-      });
-      if (data.properties.advanced_settings) {
-        const { definitions } = data;
-        console.log({ definitions });
-        const advancedProperties = data.definitions.AdvancedSettings.properties;
-        console.log({ advancedProperties });
-      }
     }
-    console.log({ defaultValues });
-    return defaultValues;
+    return fillInDefaults(defaultValues, data);
+
+    //   Object.entries(data.properties).forEach((key) => {
+    //     const [name, schema] = key;
+    //     console.log({ key });
+
+    //     if (schema.default) {
+    //       defaultValues[name] = schema.default;
+    //     } else if (schema.type === "integer") {
+    //       defaultValues[name] = 0;
+    //     } else {
+    //       defaultValues[name] = "";
+    //     }
+    //   });
+    //   if (data.properties.advanced_settings) {
+    //     const { definitions } = data;
+    //     console.log({ definitions });
+    //     const advancedProperties = data.definitions.AdvancedSettings.properties;
+    //     console.log({ advancedProperties });
+    //   }
+
+    // console.log({ defaultValues });
+    // return defaultValues;
   };
 
   const handleSubmit = (values: any, actions: any) => {
