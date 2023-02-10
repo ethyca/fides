@@ -1,0 +1,80 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Amplitude SaaS Config
+  type: amplitude
+  description: A sample schema representing the Amplitude connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: authorization_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    # authentication:
+    #   strategy: no_authentication
+    #   configuration: {}
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: Authorization
+            value: Basic <authorization_key>
+
+  test_request:
+    method: GET
+    path: /api/2/usersearch
+    query_params:
+      - name: user
+        value: 12345@gmail.com
+    param_values:
+      - name: authorization_key
+        connector_param: authorization_key
+      - name: email
+        identity: email
+
+  endpoints:
+    - name: user_activity
+      requests:
+        read:
+          method: GET
+          path: /api/2/useractivity
+          query_params:
+            - name: user
+              value: <user_search_matches_amplitude_id>
+          param_values:
+            - name: authorization_key
+              connector_param: authorization_key
+            - name: user_search_matches_amplitude_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user_search.matches.amplitude_id
+                  direction: from
+        delete:
+          method: POST
+          path: /api/2/deletions/users
+          body: |
+            {
+             "user_ids": [
+               "<email>"
+             ]
+            }
+          param_values:
+            - name: authorization_key
+              connector_param: authorization_key
+            - name: email
+              identity: email
+    - name: user_search
+      requests:
+        read:
+          method: GET
+          path: /api/2/usersearch
+          query_params:
+            - name: user
+              value: 12345@gmail.com
+          param_values:
+            - name: authorization_key
+              connector_param: authorization_key
+            - name: email
+              identity: email
