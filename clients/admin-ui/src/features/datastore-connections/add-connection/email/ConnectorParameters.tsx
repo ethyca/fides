@@ -83,7 +83,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         Object.entries(data.properties).forEach((key) => {
           params2.secrets[key[0]] = values[key[0]];
         });
-        console.log({ params2 });
         const payload2 = await updateDatastoreConnectionSecrets(
           params2
         ).unwrap();

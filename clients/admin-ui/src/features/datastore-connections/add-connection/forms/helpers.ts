@@ -1,20 +1,22 @@
 import { ConnectionTypeSecretSchemaReponse } from "~/features/connection-type/types";
-import { BaseConnectorParametersFields } from "~/features/datastore-connections/add-connection/types";
 
+/**
+ * Fill in default values based off of a schema
+ */
 export const fillInDefaults = (
-  defaultValues: BaseConnectorParametersFields,
-  connectionSchema: ConnectionTypeSecretSchemaReponse
-): BaseConnectorParametersFields => {
+  defaultValues: Record<string, any>,
+  connectionSchema: {
+    properties: ConnectionTypeSecretSchemaReponse["properties"];
+  }
+) => {
   const filledInValues = { ...defaultValues };
   Object.entries(connectionSchema.properties).forEach((key) => {
     const [name, schema] = key;
 
-    if (schema.default) {
-      filledInValues[name] = schema.default;
-    } else if (schema.type === "integer") {
-      filledInValues[name] = 0;
+    if (schema.type === "integer") {
+      filledInValues[name] = schema.default ? Number(schema.default) : 0;
     } else {
-      filledInValues[name] = "";
+      filledInValues[name] = schema.default ?? "";
     }
   });
   return filledInValues;
