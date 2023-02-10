@@ -72,8 +72,7 @@ const LoadWebScanner = () => {
   useEffect(() => {
     const handleResults = async () => {
       if (getWebScanResults.data) {
-        const toastMsg = `Your scan was successfully completed, with ##### systems detected!`;
-        // const toastMsg = `Your scan was successfully completed, with ${data.added_egress.l} systems detected!`
+        const toastMsg = `Your scan was successfully completed, with ${getWebScanResults.data.length} systems detected!`
         toast(successToastParams(toastMsg));
         dispatch(changeStep());
       }
@@ -130,18 +129,16 @@ const LoadWebScanner = () => {
             {!isSubmitting ? (
               <Form>
                 <Heading as="h3" size="lg" fontWeight="semibold" mb={10}>
-                  Website Scan
+                  Configure scanner
                 </Heading>
                 <Text mb={7}>
-                  Provide a target website(e.g. "https://ethyca.com"), and Fides
-                  will automatically scanand generate a list of systems based on
-                  the web requests detected in the browser.
+                  The scanner can be connected to your website to automatically scan and create a list of all systems that may transmit personal data to other systems..
                 </Text>
                 <Box mb={5}>
-                  <CustomTextInput label="Website Url" name="url" />
+                  <CustomTextInput label="Website Url" name="url" placeholder="https://www.ethyca.com" />
                 </Box>
                 <Box mb={5}>
-                  <CustomTextInput label="Website Name" name="name" />
+                  <CustomTextInput label="Website Name" name="name" placeholder="Ethyca, inc" />
                 </Box>
                 <ButtonGroup size="sm" spacing={3} width="300px">
                   <Button

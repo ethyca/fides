@@ -142,17 +142,8 @@ const ScanResults = () => {
           <>
             <Box>
               <Text>
-                Below are the results of your infrastructure scan. To continue,
-                select the systems you would like registered in your data map
-                and reports.
+                Below are the results of your website scan. To continue, select the systems you would like to register for your data map and reports.
               </Text>
-              <Box display="flex" justifyContent="end">
-                <ColumnDropdown
-                  allColumns={ALL_COLUMNS}
-                  selectedColumns={selectedColumns}
-                  onChange={setSelectedColumns}
-                />
-              </Box>
             </Box>
             <SystemsCheckboxTable
               allSystems={systems}
