@@ -13,4 +13,5 @@ export type ClassifyParams = {
   remove_stop_words?: boolean;
   pii_threshold?: number;
   num_samples?: number;
+  num_threads?: number;
 };
