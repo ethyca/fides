@@ -29,6 +29,7 @@ def amplitude_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "amplitude.domain") or secrets["domain"],
         "user_domain": pydash.get(saas_config, "amplitude.user_domain") or secrets["user_domain"],
+        "requester_email": pydash.get(saas_config, "amplitude.requester_email") or secrets["requester_email"],
         "api_key": pydash.get(saas_config, "amplitude.api_key") or secrets["api_key"],
         "app_key": pydash.get(saas_config, "amplitude.app_key") or secrets["app_key"],
     }
@@ -115,24 +116,14 @@ def amplitude_create_erasure_data(
     amplitude_connection_config: ConnectionConfig, amplitude_erasure_identity_email: str
 ) -> None:
 
-    sleep(60)
-
     amplitude_secrets = amplitude_connection_config.secrets
     base_url = f"https://{amplitude_secrets['user_domain']}"
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": f"Basic {amplitude_secrets['api_key']}",
-    }
 
-    # user_privacy
+    url_val = '/identify?api_key='+f"{amplitude_secrets['app_key']}"+'&identification={"user_id":"'+amplitude_erasure_identity_email+'","country":"ind"}'
+    users_response = requests.get(
+    url=f"{base_url}"+url_val
+    )
 
-    payload = {
-        'api_key': amplitude_secrets['app_key'],
-        'identification': '[{"user_id":"{amplitude_erasure_identity_email}", "device_id":"123456765", "country":"india","region":"tamil nadu", "city":"karaikudi"}]'
-        }
+    sleep(30)
 
-    users_response = requests.post(url=f"{base_url}/identify", headers=headers, data=payload)
-
-    user = users_response
-
-    yield user
+    yield users_response.ok

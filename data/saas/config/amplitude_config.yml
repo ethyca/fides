@@ -26,10 +26,6 @@ saas_config:
     query_params:
       - name: user
         value: vivek@testmail.com
-    data_path: matches
-    param_values:
-      - name: email
-        identity: email
 
   endpoints:
     - name: search_user
@@ -63,24 +59,13 @@ saas_config:
           path: /api/2/deletions/users
           body: |
             {
-              "amplitude_ids": [
-                <search_user_amplitude_id>
-              ],
               "user_ids": [
-                <search_user_user_id>
+                <email>
               ],
               "ignore_invalid_id": "true",
               "delete_from_org": "false",
-              "requester": "employee@test.com"
+              "requester": "<requester_email>"
             }
           param_values:
-            - name: search_user_amplitude_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: search_user.amplitude_id
-                  direction: from
-            - name: search_user_user_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: search_user.user_id
-                  direction: from
+            - name: email
+              identity: email

@@ -62,6 +62,7 @@ dataset:
               - name: user_id
                 data_categories: [system.operations]
                 fidesops_meta:
+                  primary_key: True
                   data_type: string
               - name: last_device_id
                 data_categories: [system.operations]
@@ -134,6 +135,17 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: properties
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: cohort
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: startDate
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
               - name: aliasing_user_ids
               - name: aliased_user_id
               - name: aliasing_profiles
