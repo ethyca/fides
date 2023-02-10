@@ -25,7 +25,7 @@ interface UserManagementRowProps {
 
 const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const router = useRouter();
-  const modal = useDisclosure();
+  const deleteModal = useDisclosure();
 
   const handleEditUser = () => {
     router.push(`${USER_MANAGEMENT_ROUTE}/profile/${user.id}`);
@@ -73,7 +73,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
                   </MenuItem>
                   <MenuItem
                     _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                    onClick={modal.onOpen}
+                    onClick={deleteModal.onOpen}
                     data-testid="delete-btn"
                   >
                     <Text fontSize="sm">Delete</Text>
@@ -84,7 +84,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
           </ButtonGroup>
         </Td>
       </Tr>
-      <DeleteUserModal user={user} {...modal} />
+      <DeleteUserModal user={user} {...deleteModal} />
     </>
   );
 };
