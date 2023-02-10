@@ -9,7 +9,7 @@ import type { PolicyRule } from "./PolicyRule";
  *
  * An object used to organize a list of PolicyRules.
  */
-export type Policy = {
+export type fideslang__models__Policy = {
   /**
    * A unique key used to identify this resource.
    */

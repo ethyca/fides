@@ -5,7 +5,7 @@
 /**
  * An enumeration.
  */
-export enum SystemScanDestinations {
-  DATABASE = "database",
-  MANIFEST = "manifest",
+export enum ColumnSort {
+  DESC = "desc",
+  ASC = "asc",
 }
