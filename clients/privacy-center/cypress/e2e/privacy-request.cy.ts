@@ -64,13 +64,13 @@ describe("Privacy request", () => {
         cy.root().get("button").contains("Continue").should("be.disabled");
         cy.root().get("input#phone").clear().blur();
 
-        // test valid email, phone becoming disabled, continue becoming enabled due to invalid email
+        // test valid email, phone becoming disabled, continue becoming enabled due to valid email
         cy.root().get("input#email").type("valid@example.com").blur();
         cy.root().get("button").contains("Continue").should("be.enabled");
         cy.root().get("input#phone").should("be.disabled");
         cy.root().get("input#email").clear().blur();
 
-        // test valid phone, email becoming disabled, continue becoming enabled due to invalid email
+        // test valid phone, email becoming disabled, continue becoming enabled due to valid phone
         cy.root().get("input#phone").type("123 456 7890").blur();
         cy.root().get("button").contains("Continue").should("be.enabled");
         cy.root().get("input#email").should("be.disabled");
