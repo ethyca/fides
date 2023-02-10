@@ -9,10 +9,9 @@ from fides.api.ctl import sql_models
 from fides.api.ctl.database.crud import (
     create_resource,
     delete_resource,
-    get_resource_with_custom_field,
+    get_resource_with_custom_fields,
     list_resource,
 )
-from fides.api.ctl.utils.errors import NotFoundError
 from fides.core import api as _api
 from fides.core.config import FidesConfig
 from tests.ctl.types import FixtureRequest
@@ -73,6 +72,7 @@ async def test_cascade_delete_taxonomy_children(
 
 async def test_get_resource_with_custom_field(db, async_session):
     system_data = {
+        "name": "my system",
         "registry_id": "1",
         "system_type": "test",
         "fides_key": str(uuid4()),
@@ -92,7 +92,7 @@ async def test_get_resource_with_custom_field(db, async_session):
         db=db, data=custom_definition_data
     )
 
-    custom_field_1 = sql_models.CustomField.create(
+    sql_models.CustomField.create(
         db=db,
         data={
             "resource_type": custom_field_definition.resource_type,
@@ -102,7 +102,7 @@ async def test_get_resource_with_custom_field(db, async_session):
         },
     )
 
-    custom_field_2 = sql_models.CustomField.create(
+    sql_models.CustomField.create(
         db=db,
         data={
             "resource_type": custom_field_definition.resource_type,
@@ -112,17 +112,26 @@ async def test_get_resource_with_custom_field(db, async_session):
         },
     )
 
-    result = await get_resource_with_custom_field(
+    result = await get_resource_with_custom_fields(
         sql_models.System, system.fides_key, async_session
     )
 
-    assert len(result) == 2
-    assert result[0].fides_key == system.fides_key
-    assert result[0].value == custom_field_1.value
-    assert result[1].value == custom_field_2.value
+    assert result["name"] == system.name
+    assert custom_field_definition.name in result
+    assert result[custom_field_definition.name] == "Test value 1, Test value 2"
 
 
-@pytest.mark.skip
-async def test_get_resource_with_custom_field_resource_not_found(async_session):
-    with pytest.raises(NotFoundError):
-        await get_resource_with_custom_field(sql_models.System, "bad", async_session)
+async def test_get_resource_with_custom_field_no_custom_field(async_session):
+    system_data = {
+        "name": "my system",
+        "registry_id": "1",
+        "system_type": "test",
+        "fides_key": str(uuid4()),
+    }
+
+    system = await create_resource(sql_models.System, system_data, async_session)
+    result = await get_resource_with_custom_fields(
+        sql_models.System, system.fides_key, async_session
+    )
+
+    assert result["name"] == system.name
