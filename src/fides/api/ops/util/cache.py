@@ -1,5 +1,5 @@
 import base64
-import pickle
+import json
 from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
@@ -86,7 +86,7 @@ class FidesopsRedis(Redis):
     @staticmethod
     def encode_obj(obj: Any) -> bytes:
         """Encode an object to a base64 string that can be stored in Redis"""
-        return base64.b64encode(pickle.dumps(obj))
+        return base64.b64encode(json.dumps(obj))
 
     @staticmethod
     def decode_obj(bs: Optional[bytes]) -> Any:
@@ -95,7 +95,7 @@ class FidesopsRedis(Redis):
         Since Redis may not contain a value
         for a given key it's possible we may try to decode an empty object."""
         if bs:
-            return pickle.loads(base64.b64decode(bs))
+            return json.loads(base64.b64decode(bs))
         return None
 
 
