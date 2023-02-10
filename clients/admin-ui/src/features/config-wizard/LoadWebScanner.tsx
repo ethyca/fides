@@ -132,7 +132,7 @@ const LoadWebScanner = () => {
                   Configure scanner
                 </Heading>
                 <Text mb={7}>
-                  The scanner can be connected to your website to automatically scan and create a list of all systems that may transmit personal data to other systems..
+                  The scanner can be connected to your website to automatically scan and create a list of all systems that may transmit personal data to other systems.
                 </Text>
                 <Box mb={5}>
                   <CustomTextInput label="Website Url" name="url" placeholder="https://www.ethyca.com" />

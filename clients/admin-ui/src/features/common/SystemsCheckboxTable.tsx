@@ -60,6 +60,11 @@ export const SystemTableCell = ({
       </Box>
     );
   }
+  if(attribute === "tags"){
+    const domains = system.tags?.join(", ")
+    return <>{domains}</>
+  }
+
   return <>{resolvePath(system, attribute)}</>;
 };
 
