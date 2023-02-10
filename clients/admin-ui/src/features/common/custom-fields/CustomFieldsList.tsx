@@ -82,13 +82,12 @@ const CustomFieldsList = ({
         allow_list_id: item.allow_list_id,
         custom_field_definition_id: item.id as string,
         resource_id: resourceId,
-        resource_type: resourceType,
         value: item.field_type === AllowedTypes.STRING ? "" : [],
       });
     });
 
     return [...withIds, ...withNoIds];
-  }, [customFieldDefinitions, customFields, resourceId, resourceType]);
+  }, [customFieldDefinitions, customFields, resourceId]);
 
   const getCustomFieldDefinition = useCallback(
     (item: CustomFieldWithIdExtended) =>
