@@ -1,31 +1,30 @@
 import {
   Box,
   Button,
-  Stack,
-  useToast,
-  Text,
   ButtonGroup,
   Heading,
+  Stack,
+  Text,
+  useToast,
 } from "@fidesui/react";
-import React, {useCallback, useEffect, useState} from "react";
-
 import { CustomTextInput } from "common/form/inputs";
+import { Form, Formik, FormikHelpers } from "formik";
+import React, { useCallback, useEffect, useState } from "react";
+import * as Yup from "yup";
+
 import { useAppDispatch } from "~/app/hooks";
 import {
-  isErrorResult,
   ParsedError,
   parseError,
 } from "~/features/common/helpers";
 import { successToastParams } from "~/features/common/toast";
 import { useGetWebScanMutation, WebsiteScan } from "~/features/plus/plus.slice";
-import { isAPIError, RTKErrorResult } from "~/types/errors";
+import { System } from "~/types/api";
+import { RTKErrorResult } from "~/types/errors";
 
 import { changeStep, setSystemsForReview } from "./config-wizard.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
-import { Form, Formik, FormikHelpers } from "formik";
-import * as Yup from "yup";
-import {System} from "~/types/api";
 
 const initialValues: WebsiteScan = {
   url: "",
@@ -44,16 +43,15 @@ const LoadWebScanner = () => {
   const toast = useToast();
   const [getWebScan, getWebScanResults] = useGetWebScanMutation();
 
-
   const [scannerError, setScannerError] = useState<ParsedError>();
 
-  const handleError = (requestError: RTKErrorResult["error"]) => {
+  const handleError =useCallback( (requestError: RTKErrorResult["error"]) => {
     const parsedError = parseError(requestError, {
       status: 500,
       message: "Our system encountered a problem while scanning your website.",
     });
     setScannerError(parsedError);
-  };
+  },[]);
 
   const handleCancel = () => {
     dispatch(changeStep(2));
@@ -72,7 +70,7 @@ const LoadWebScanner = () => {
   useEffect(() => {
     const handleResults = async () => {
       if (getWebScanResults.data) {
-        const toastMsg = `Your scan was successfully completed, with ${getWebScanResults.data.length} systems detected!`
+        const toastMsg = `Your scan was successfully completed, with ${getWebScanResults.data.length} systems detected!`;
         toast(successToastParams(toastMsg));
         dispatch(changeStep());
       }
@@ -82,18 +80,18 @@ const LoadWebScanner = () => {
     }
   }, [toast, dispatch, getWebScanResults]);
 
-
-  const handleSubmit = useCallback((values: FormValues, formikHelpers: FormikHelpers<FormValues>)=>{
-    const { setSubmitting } = formikHelpers;
-    getWebScan(values).then((response)=>{
-      // @ts-ignore
-      const systems = response.data as System[];
-      dispatch(setSystemsForReview(systems));
-      setSubmitting(false);
-
-    })
-
-  },[getWebScan])
+  const handleSubmit = useCallback(
+    (values: FormValues, formikHelpers: FormikHelpers<FormValues>) => {
+      const { setSubmitting } = formikHelpers;
+      getWebScan(values).then((response) => {
+        // @ts-ignore
+        const systems = response.data as System[];
+        dispatch(setSystemsForReview(systems));
+        setSubmitting(false);
+      });
+    },
+    [getWebScan, dispatch]
+  );
 
   if (scannerError) {
     return (
@@ -132,13 +130,23 @@ const LoadWebScanner = () => {
                   Configure scanner
                 </Heading>
                 <Text mb={7}>
-                  The scanner can be connected to your website to automatically scan and create a list of all systems that may transmit personal data to other systems.
+                  The scanner can be connected to your website to automatically
+                  scan and create a list of all systems that may transmit
+                  personal data to other systems.
                 </Text>
                 <Box mb={5}>
-                  <CustomTextInput label="Website Url" name="url" placeholder="https://www.ethyca.com" />
+                  <CustomTextInput
+                    label="Website Url"
+                    name="url"
+                    placeholder="https://www.ethyca.com"
+                  />
                 </Box>
                 <Box mb={5}>
-                  <CustomTextInput label="Website Name" name="name" placeholder="Ethyca, inc" />
+                  <CustomTextInput
+                    label="Website Name"
+                    name="name"
+                    placeholder="Ethyca, inc"
+                  />
                 </Box>
                 <ButtonGroup size="sm" spacing={3} width="300px">
                   <Button

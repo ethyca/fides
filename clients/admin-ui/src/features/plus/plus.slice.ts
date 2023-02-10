@@ -27,7 +27,8 @@ import {
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
-  ResourceTypes, System,
+  ResourceTypes,
+  System,
   SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
@@ -47,7 +48,7 @@ export type WebsiteScan = {
   name: string;
 };
 
-const plusBaseUrl =`${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`
+const plusBaseUrl = `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`;
 export const plusApi = createApi({
   reducerPath: "plusApi",
   baseQuery: fetchBaseQuery({

@@ -1,6 +1,7 @@
 import { Box } from "@fidesui/react";
 
 import { useAppSelector } from "~/app/hooks";
+import LoadWebScanner from "~/features/config-wizard/LoadWebScanner";
 import { ValidTargets } from "~/types/api";
 
 import AuthenticateAwsForm from "./AuthenticateAwsForm";
@@ -8,7 +9,6 @@ import AuthenticateOktaForm from "./AuthenticateOktaForm";
 import { selectAddSystemsMethod } from "./config-wizard.slice";
 import LoadDataFlowScanner from "./LoadDataFlowScanner";
 import { SystemMethods } from "./types";
-import LoadWebScanner from "~/features/config-wizard/LoadWebScanner";
 
 const AuthenticateScanner = () => {
   const infrastructure = useAppSelector(selectAddSystemsMethod);

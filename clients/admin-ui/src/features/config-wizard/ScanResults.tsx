@@ -12,7 +12,6 @@ import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
-  ColumnDropdown,
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { isErrorResult } from "~/features/common/helpers";
@@ -33,8 +32,6 @@ import {
   selectSystemsForReview,
 } from "./config-wizard.slice";
 import { SystemMethods } from "./types";
-
-
 
 /*
 The columns being used for the table were
@@ -60,7 +57,7 @@ const ScanResults = () => {
   } = useDisclosure();
   const [upsertSystems] = useUpsertSystemsMutation();
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
-  const [selectedColumns, setSelectedColumns] =
+  const [selectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
   const method = useAppSelector(selectAddSystemsMethod);
   const { handleError } = useAPIHelper();
@@ -142,7 +139,9 @@ const ScanResults = () => {
           <>
             <Box>
               <Text>
-                Below are the results of your website scan. To continue, select the systems you would like to register for your data map and reports.
+                Below are the results of your website scan. To continue, select
+                the systems you would like to register for your data map and
+                reports.
               </Text>
             </Box>
             <SystemsCheckboxTable
