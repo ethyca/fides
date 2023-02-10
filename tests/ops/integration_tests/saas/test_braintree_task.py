@@ -60,28 +60,26 @@ async def test_braintree_access_request_task(
         db,
     )
 
-    for node in v[f"{dataset_name}:customer"]:
-        assert_rows_match(
-            [node["node"]],
-            min_size=1,
-            keys=["id", "legacyId", "firstName", "lastName", "company", "createdAt"],
-        )
+    assert_rows_match(
+        v[f"{dataset_name}:customer"],
+        min_size=1,
+        keys=["id", "legacyId", "firstName", "lastName", "company", "createdAt"],
+    )
 
-    for node in v[f"{dataset_name}:transactions"]:
-        assert_rows_match(
-            [node["node"]],
-            min_size=1,
-            keys=[
-                "id",
-                "legacyId",
-                "amount",
-                "paymentMethodSnapshot",
-                "orderId",
-                "status",
-                "source",
-                "createdAt",
-            ],
-        )
+    assert_rows_match(
+        v[f"{dataset_name}:transactions"],
+        min_size=1,
+        keys=[
+            "id",
+            "legacyId",
+            "amount",
+            "paymentMethodSnapshot",
+            "orderId",
+            "status",
+            "source",
+            "createdAt",
+        ],
+    )
 
 
 @pytest.mark.integration_saas
@@ -123,12 +121,11 @@ async def test_braintree_erasure_request_task(
         db,
     )
 
-    for node in v[f"{dataset_name}:customer"]:
-        assert_rows_match(
-            [node["node"]],
-            min_size=1,
-            keys=["id", "legacyId", "firstName", "lastName", "company", "createdAt"],
-        )
+    assert_rows_match(
+        v[f"{dataset_name}:customer"],
+        min_size=1,
+        keys=["id", "legacyId", "firstName", "lastName", "company", "createdAt"],
+    )
 
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True

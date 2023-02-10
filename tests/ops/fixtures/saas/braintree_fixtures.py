@@ -30,10 +30,10 @@ faker = Faker()
 def braintree_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "braintree.domain") or secrets["domain"],
-        "username": pydash.get(saas_config, "braintree.username")
-        or secrets["username"],
-        "password": pydash.get(saas_config, "braintree.password")
-        or secrets["password"],
+        "public_key": pydash.get(saas_config, "braintree.public_key")
+        or secrets["public_key"],
+        "private_key": pydash.get(saas_config, "braintree.private_key")
+        or secrets["private_key"],
         "braintree_customer_id": {
             "dataset": "braintree_postgres",
             "field": "braintree_customers.braintree_customer_id",
@@ -228,87 +228,16 @@ def braintree_erasure_data(
                 customers(input: $criteria) {
                     edges {
                         node {
-                            ...customerFields
-                            paymentMethods {
-                                edges {
-                                    node {
-                                        ...paymentMethodFields
-                                    }
-                                }
-                            }
-                            transactions(first: 5) {
-                                edges {
-                                    node {
-                                        ...transactionFields
-                                    }
-                                }
-                            }
+                            id
+                            legacyId
+                            firstName
+                            lastName
+                            company
+                            createdAt
                         }
                     }
                 }
             }
-        }
-
-        fragment customerFields on Customer {
-            id
-            legacyId
-            firstName
-            lastName
-            company
-            createdAt
-        }
-
-        fragment paymentMethodFields on PaymentMethod {
-            id
-            legacyId
-            usage
-            createdAt
-            # Union
-                details {
-                __typename
-                ... on CreditCardDetails {
-                    brandCode
-                    last4
-                }
-                ... on PayPalAccountDetails {
-                    billingAgreementId
-                    email
-                    payerId
-                    firstName
-                    lastName
-                }
-                ... on VenmoAccountDetails {
-                    username
-                    venmoUserId
-                }
-            }
-        }
-
-        fragment transactionFields on Transaction {
-            id
-            legacyId
-            createdAt
-            paymentMethod {
-                id,
-                legacyId
-            }
-            amount {
-                value
-                currencyIsoCode
-            }
-            merchantAccountId
-            orderId
-            purchaseOrderNumber
-            status
-            statusHistory {
-                status
-                timestamp
-                amount {
-                    value
-                    currencyIsoCode
-                }
-            }
-            source
         }
     """
 
@@ -320,7 +249,7 @@ def braintree_erasure_data(
         json=body,
         headers=headers,
         auth=HTTPBasicAuth(
-            f"{braintree_secrets['username']}", f"{braintree_secrets['password']}"
+            f"{braintree_secrets['public_key']}", f"{braintree_secrets['private_key']}"
         ),
     )
     assert customers_response.ok
@@ -336,18 +265,14 @@ def braintree_erasure_data(
     mutation UpdateCustomer($input: UpdateCustomerInput!) {
         updateCustomer(input: $input) {
             customer {
-                ...customerFields
+                firstName
+                lastName
+                company
             }
         }
     }
-
-    fragment customerFields on Customer {
-        firstName
-        lastName
-        company
-    }
-
     """
+
     update_customer_variables = {
         "input": {
             "customerId": "Y3VzdG9tZXJfNTEzOTc3OTIw",
@@ -365,7 +290,7 @@ def braintree_erasure_data(
         json=body,
         headers=headers,
         auth=HTTPBasicAuth(
-            f"{braintree_secrets['username']}", f"{braintree_secrets['password']}"
+            f"{braintree_secrets['public_key']}", f"{braintree_secrets['private_key']}"
         ),
     )
 

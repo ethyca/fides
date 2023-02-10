@@ -6,7 +6,7 @@ dataset:
       - name: customer
         fields:
           - name: id
-            data_categories: [user.unique_id]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
               primary_key: True
@@ -19,127 +19,17 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: lastName
-            data_categories: [user.contact.email]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: company
-            data_categories: 
+            data_categories: [user.workplace]
             fidesops_meta:
               data_type: string
           - name: createdAt
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: paymentMethods
-            fields:
-            - name: edges
-              fields:
-              - name: node
-                fields:
-                - name: id
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: legacyId
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: usage
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: createdAt
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: node
-                  fields:
-                  - name: __typename
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: brandCode
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: last4
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-          - name: transactions
-            fields:
-            - name: edges
-              fields:
-              - name: node
-                fields:
-                - name: id
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: legacyId
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: createdAt
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: paymentMethod
-                  fields:
-                  - name: id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: legacyId
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                - name: amount
-                  fields:
-                  - name: value
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: currencyIsoCode
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                - name: merchantAccountId
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: orderId
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: purchaseOrderNumber
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: status
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: statusHistory
-                  fields:
-                  - name: status
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: timestamp
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: amount
-                    fields:
-                    - name: value
-                      data_categories: [system.operations]
-                      fidesops_meta:
-                        data_type: string
-                    - name: currencyIsoCode
-                      data_categories: [system.operations]
-                      fidesops_meta:
-                        data_type: string
       - name: transactions
         fields:
           - name: id
@@ -152,38 +42,26 @@ dataset:
               data_type: string
           - name: amount
             fields:
-            - name: value
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
-            - name: currencyIsoCode
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
+              - name: value
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: currencyIsoCode
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
           - name: paymentMethodSnapshot
-            fields:
-            - name: __typename
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
-            - name: brandCode
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
-            - name: last4
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
+            data_type: object
           - name: orderId
-            data_categories: 
+            data_categories:
             fidesops_meta:
               data_type: string
           - name: status
-            data_categories: 
+            data_categories:
             fidesops_meta:
               data_type: string
           - name: source
-            data_categories: 
+            data_categories:
             fidesops_meta:
               data_type: string
           - name: createdAt
