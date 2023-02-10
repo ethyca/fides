@@ -41,6 +41,12 @@ The types of changes are:
 
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
 
+### Developer Experience
+
+* Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
+* New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
+* Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
+
 ### Removed
 
 * Remove feature flagged config wizard stepper from Admin UI [#2553](https://github.com/ethyca/fides/pull/2553)
@@ -65,7 +71,6 @@ The types of changes are:
 
 ### Added
 * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
-
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
@@ -118,8 +123,8 @@ The types of changes are:
 
 ### Developer Experience
 
-* `nox -s test_env` has been replaced with `nox -s fides_env(dev)`
-* New command `nox -s fides_env(test)` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
+* `nox -s test_env` has been replaced with `nox -s "fides_env(dev)"` 
+* New command `nox -s "fides_env(test)"` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
 * Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
 
 ### Fixed
