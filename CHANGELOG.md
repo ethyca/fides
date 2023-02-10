@@ -47,6 +47,10 @@ The types of changes are:
 * New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
 * Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
 
+### Removed
+
+* Remove feature flagged config wizard stepper from Admin UI [#2553](https://github.com/ethyca/fides/pull/2553)
+
 ## [2.6.4](https://github.com/ethyca/fides/compare/2.6.3...2.6.4)
 
 ### Fixed
