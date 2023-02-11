@@ -193,6 +193,7 @@ markers = [
     "integration_segment",
     "integration_sendgrid",
     "integration_friendbuy",
+    "integration_braintree",
     "integration_auth0",
     "integration_shopify",
     "integration_square",
