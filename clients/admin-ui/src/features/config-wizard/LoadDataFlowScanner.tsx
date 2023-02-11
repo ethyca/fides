@@ -106,10 +106,18 @@ const LoadDataFlowScanner = () => {
   }
 
   return (
+
+    <Box
+      id="web-scanner-form"
+      display="flex"
+      justifyContent="center"
+      width="100%"
+    >
     <ScannerLoading
       title="Infrastructure scanning in progress"
       onClose={handleCancel}
     />
+    </Box>
   );
 };
 
