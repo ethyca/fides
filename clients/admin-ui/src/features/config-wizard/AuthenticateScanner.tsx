@@ -21,17 +21,15 @@ const AuthenticateScanner = () => {
     );
   }
 
-
-
   if (infrastructure === SystemMethods.DATA_FLOW) {
     /*
-       * Data flow scanner currently authenticates via fidesctl.toml, so there is not
-       * an authentication step. However, to fit into the onboarding flow, it makes sense to
-       * load this at the same time as authentication since the other authenticate forms also
-       * show a loading screen. At least until each path has its own custom steps it goes through
-       * (fides#1514)
-   */
-  return (
+     * Data flow scanner currently authenticates via fidesctl.toml, so there is not
+     * an authentication step. However, to fit into the onboarding flow, it makes sense to
+     * load this at the same time as authentication since the other authenticate forms also
+     * show a loading screen. At least until each path has its own custom steps it goes through
+     * (fides#1514)
+     */
+    return (
       <Box width="100%">
         <LoadDataFlowScanner />
       </Box>
