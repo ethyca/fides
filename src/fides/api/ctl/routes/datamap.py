@@ -9,7 +9,11 @@ from loguru import logger as log
 from pandas import DataFrame
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fides.api.ctl.database.crud import get_resource, list_resource
+from fides.api.ctl.database.crud import (
+    get_resource,
+    get_resource_with_custom_fields,
+    list_resource,
+)
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
@@ -108,7 +112,7 @@ async def export_datamap(
     # load resources from server, filtered by organization
     try:
         try:
-            organization = await get_resource(
+            organization = await get_resource_with_custom_fields(
                 sql_model_map["organization"], organization_fides_key, db
             )
         except NotFoundError:
