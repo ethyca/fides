@@ -32,6 +32,12 @@ ORDER BY LOWER(username), created_at ASC"""
     result = conn.execute(statement)
     original_user_ids = [row[2] for row in result]
     op.execute(
+        f"UPDATE client SET user_id = NULL WHERE NOT(user_id=ANY(ARRAY[{original_user_ids}]::varchar[]))"
+    )
+    op.execute(
+        f"UPDATE auditlog SET user_id = NULL WHERE NOT(user_id=ANY(ARRAY[{original_user_ids}]::varchar[]))"
+    )
+    op.execute(
         f"""DELETE FROM fidesuserpermissions
     WHERE NOT(user_id=ANY(ARRAY[{original_user_ids}]::varchar[]))"""
     )
@@ -46,4 +52,4 @@ ORDER BY LOWER(username), created_at ASC"""
 
 
 def downgrade():
-    pass
+    op.execute("DROP EXTENSION IF EXISTS citext;")
