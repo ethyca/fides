@@ -51,15 +51,8 @@ export const inspectForBrowserIdentities = ():
       .filter((c) => c.startsWith(`${cookieConfig.cookieKey}=`))[0];
 
     if (thisCookie) {
-      // if (cookieConfig.regex) {
       const match = thisCookie.match(cookieConfig.regex ?? DEFAULT_REGEX);
       browserIdentities[cookieConfig.key] = match ? match[1] : undefined;
-      // } else {
-      //   // eslint-disable-next-line prefer-destructuring
-      //   browserIdentities[cookieConfig.key] = thisCookie.split(
-      //     `${cookieConfig.cookieKey}=`
-      //   )[1];
-      // }
     }
   });
 

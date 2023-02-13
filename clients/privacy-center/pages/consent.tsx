@@ -217,9 +217,6 @@ const Consent: NextPage = () => {
     }));
 
     const browserIdentity = inspectForBrowserIdentities();
-    // const browserIdentityBody = browserIdentity
-    //   ? { ga_client_id: browserIdentity.gaClientId }
-    //   : undefined;
 
     updateConsentRequestPreferencesMutationTrigger({
       id: consentRequestId,
