@@ -1,0 +1,237 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: aircall
+    description: A sample dataset representing the Aircall connector for Fides
+    collections:
+      - name: contact
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              primary_key: True
+              data_type: integer
+          - name: first_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: last_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: company_name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: information
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: is_shared
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: direct_link
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: phone_numbers
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: '0'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+              - name: '1'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+              - name: '2'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+              - name: '3'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+              - name: '4'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+              - name: '5'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+              - name: '6'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+          - name: emails
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: '0'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+              - name: '1'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+              - name: '2'
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+      - name: calls
+        fields:
+          - name: calls
+          - name: meta
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: count
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: total
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: current_page
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: per_page
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: next_page_link
+              - name: previous_page_link
