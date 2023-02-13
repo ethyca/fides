@@ -21,7 +21,6 @@ CONFIG = get_config()
 def test_amplitude_connection_test(amplitude_connection_config) -> None:
     get_connector(amplitude_connection_config).test_connection()
 
-
 @pytest.mark.integration_saas
 @pytest.mark.integration_amplitude
 @pytest.mark.asyncio
@@ -76,9 +75,7 @@ async def test_amplitude_access_request_task(
     )
 
     # verify we only returned data for our identity email
-    assert v[f"{dataset_name}:search_user"][0]["user_id"] == amplitude_identity_email
-    amplitude_id = v[f"{dataset_name}:search_user"][0]["amplitude_id"]
-
+    assert v[f"{dataset_name}:user_activity"][0]['userData']["user_id"] == amplitude_identity_email
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_amplitude
@@ -154,4 +151,3 @@ async def test_amplitude_erasure_request_task(
     }
 
     CONFIG.execution.masking_strict = masking_strict
-

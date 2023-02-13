@@ -9,6 +9,7 @@ saas_config:
     - name: domain
       default_value: amplitude.com
     - name: api_key
+    - name: requester_email
 
   client_config:
     protocol: https
@@ -60,12 +61,12 @@ saas_config:
           body: |
             {
               "user_ids": [
-                <email>
+                "<email>"
               ],
-              "ignore_invalid_id": "true",
-              "delete_from_org": "false",
               "requester": "<requester_email>"
             }
           param_values:
+            - name: requester_email
+              connector_param: requester_email
             - name: email
               identity: email
