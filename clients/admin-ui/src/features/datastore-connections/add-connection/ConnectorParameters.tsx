@@ -3,9 +3,11 @@ import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
+import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { DATASTORE_CONNECTION_ROUTE } from "~/constants";
 import { SystemType } from "~/types/api";
 
 import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
@@ -21,6 +23,7 @@ type ConnectorParametersProp = {
 export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
   onConnectionCreated,
 }) => {
+  const router = useRouter();
   const { connectionOption } = useAppSelector(selectConnectionTypeState);
   const skip = connectionOption && connectionOption.type === SystemType.MANUAL;
   const { data, isFetching, isLoading, isSuccess } =
@@ -32,6 +35,10 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
   const handleTestConnectionClick = (value: any) => {
     setResponse(value);
   };
+
+  const handleRouteToDatastore = useCallback(() => {
+    router.push(DATASTORE_CONNECTION_ROUTE);
+  }, [router]);
 
   // eslint-disable-next-line consistent-return
   const getComponent = useCallback(() => {
@@ -70,13 +77,19 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
           return (
             <EmailConnectorParameters
               data={data}
-              onConnectionCreated={onConnectionCreated}
+              onConnectionCreated={handleRouteToDatastore}
               onTestEmail={handleTestConnectionClick}
             />
           );
         }
     }
-  }, [connectionOption?.type, data, isSuccess, onConnectionCreated]);
+  }, [
+    connectionOption?.type,
+    data,
+    isSuccess,
+    onConnectionCreated,
+    handleRouteToDatastore,
+  ]);
 
   return (
     <Flex gap="97px">
