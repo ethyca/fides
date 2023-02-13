@@ -59,7 +59,7 @@ const RequestStatusBadge: React.FC<RequestBadgeProps> = ({ status }) => (
   <Badge
     color="white"
     bg={statusPropMap[status].bg}
-    width={107}
+    width="100%"
     lineHeight="18px"
     textAlign="center"
     data-testid="request-status-badge"
