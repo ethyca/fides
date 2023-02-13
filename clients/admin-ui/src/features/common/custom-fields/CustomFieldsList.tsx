@@ -3,7 +3,7 @@ import { Center, Divider, Flex, Spinner, Text } from "@fidesui/react";
 import { FieldArray, useFormikContext } from "formik";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { CustomMultiSelect, CustomSelect } from "~/features/common/form/inputs";
+import { CustomSelect } from "~/features/common/form/inputs";
 import { useAlert } from "~/features/common/hooks";
 import {
   useGetAllAllowListQuery,
@@ -192,12 +192,13 @@ const CustomFieldsList = ({
                 <Flex flexDirection="column" gap="12px" paddingBottom="24px">
                   {list?.map((item: CustomFieldWithIdExtended, index: number) =>
                     Array.isArray(item.value) ? (
-                      <CustomMultiSelect
+                      <CustomSelect
                         label={getCustomFieldDefinition(item)!.name}
                         key={JSON.stringify(item)}
                         name={`customFields[${index}].value`}
                         options={getListOptions(item.allow_list_id!) || []}
                         tooltip={getCustomFieldDefinition(item)!.description}
+                        isMulti
                       />
                     ) : (
                       <CustomSelect
