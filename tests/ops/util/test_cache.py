@@ -48,11 +48,15 @@ class CacheTestObject:
 
 
 def test_encode_decode() -> None:
-    for i in range(10):
+    for _ in range(10):
         test_obj = CacheTestObject(
             random.random(), random.randint(0, 1000), faker.name()
         )
-        assert FidesopsRedis.decode_obj(FidesopsRedis.encode_obj(test_obj)) == test_obj
+        result = FidesopsRedis.decode_obj(FidesopsRedis.encode_obj(test_obj))
+        assert CacheTestObject(*result["values"]) == test_obj
+
+
+def test_decode_none():
     assert FidesopsRedis.decode_obj(None) is None
 
 

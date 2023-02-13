@@ -1,5 +1,5 @@
-import base64
 import json
+from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
@@ -18,6 +18,24 @@ CONFIG = get_config()
 RedisValue = Union[bytes, float, int, str]
 
 _connection = None
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, o: Any) -> Any:
+        if isinstance(o, Enum):
+            if isinstance(o.value, str):
+                return o.value
+            self.default(o.value)
+        if isinstance(o, object):
+            if isinstance(o, bytes):
+                return str(o)
+            return o.__dict__
+        if isinstance(o, dict):
+            for _, v in o.items():
+                if not isinstance(v, str) and not isinstance(v, bytes):
+                    self.default(v)
+            return o
+        return super().default(o)
 
 
 class FidesopsRedis(Redis):
@@ -85,17 +103,20 @@ class FidesopsRedis(Redis):
 
     @staticmethod
     def encode_obj(obj: Any) -> bytes:
-        """Encode an object to a base64 string that can be stored in Redis"""
-        return base64.b64encode(json.dumps(obj))
+        """Encode an object to a JSON string that can be stored in Redis"""
+        return json.dumps(obj, cls=CustomJSONEncoder)  # type: ignore
 
     @staticmethod
-    def decode_obj(bs: Optional[bytes]) -> Any:
-        """Decode an object from its base64 representation.
+    def decode_obj(bs: Optional[str]) -> Any:
+        """Decode an object from its JSON.
 
         Since Redis may not contain a value
         for a given key it's possible we may try to decode an empty object."""
         if bs:
-            return json.loads(base64.b64decode(bs))
+            print("BYTES!!!!")
+            print(bs)
+            print(json.loads(bs))
+            return json.loads(bs)
         return None
 
 
