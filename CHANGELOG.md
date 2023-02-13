@@ -36,6 +36,7 @@ The types of changes are:
 * Removes legacy `verify_oauth_client` function [#2527](https://github.com/ethyca/fides/pull/2527)
 * Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
 * UX fixes for user management [#2537](https://github.com/ethyca/fides/pull/2537)
+* Replaced pickle with json for storing cache [#2577](https://github.com/ethyca/fides/pull/2577)
 
 ### Fixed
 
