@@ -237,7 +237,7 @@ def _run_tests(
     )
     coverage_arg = "--cov-report=xml"
     _run_cmd_or_err(
-        f"docker compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} pytest --cov=fides {coverage_arg} {pytest_path}"
+        f"docker compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} pytest {coverage_arg} {pytest_path}"
     )
 
     # Now tear down the infrastructure

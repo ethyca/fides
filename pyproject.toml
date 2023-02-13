@@ -157,6 +157,9 @@ filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
 log_level = "INFO"
 addopts = [
+    "--cov=fides",
+    "--cov-branch",
+    "--no-cov-on-fail",
     "-ra",
     "-vv",
     "--disable-pytest-warnings"

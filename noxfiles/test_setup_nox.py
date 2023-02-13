@@ -20,7 +20,6 @@ def pytest_lib(session: Session, coverage_arg: str) -> None:
     run_command = (
         *RUN_NO_DEPS,
         "pytest",
-        "--cov=fides",
         coverage_arg,
         "tests/lib/",
     )
@@ -65,7 +64,6 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             CI_ARGS,
             IMAGE_NAME,
             "pytest",
-            "--cov=fides",
             coverage_arg,
             "-m",
             "external",
@@ -77,7 +75,6 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
         run_command = (
             *RUN_NO_DEPS,
             "pytest",
-            "--cov=fides",
             coverage_arg,
             "tests/ctl/",
             "-m",
@@ -94,7 +91,6 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
         run_command = (
             *RUN_NO_DEPS,
             "pytest",
-            "--cov=fides",
             coverage_arg,
             OPS_TEST_DIR,
             "-m",
@@ -131,7 +127,6 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             CI_ARGS,
             COMPOSE_SERVICE_NAME,
             "pytest",
-            "--cov=fides",
             coverage_arg,
             OPS_TEST_DIR,
             "-m",
@@ -164,7 +159,6 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             CI_ARGS,
             COMPOSE_SERVICE_NAME,
             "pytest",
-            "--cov=fides",
             coverage_arg,
             OPS_TEST_DIR,
             "-m",
