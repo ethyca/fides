@@ -15,6 +15,7 @@ describe("makeConsentItems", () => {
       highlight: true,
       name: "Third Party Sharing",
       url: "https://example.com/privacy#data-sales",
+      executable: true,
     },
     {
       cookieKeys: ["custom_key"],
@@ -24,6 +25,7 @@ describe("makeConsentItems", () => {
       highlight: true,
       name: "Custom",
       url: "https://example.com/privacy#custom",
+      executable: false,
     },
     {
       cookieKeys: [],
@@ -32,6 +34,7 @@ describe("makeConsentItems", () => {
       fidesDataUseKey: "provide.service",
       name: "Provide a service",
       url: "https://example.com/privacy#provide-service",
+      executable: false,
     },
   ];
 
@@ -62,6 +65,7 @@ describe("makeConsentItems", () => {
         highlight: true,
         name: "Third Party Sharing",
         url: "https://example.com/privacy#data-sales",
+        executable: true,
       },
       {
         cookieKeys: ["custom_key"],
@@ -72,6 +76,7 @@ describe("makeConsentItems", () => {
         highlight: true,
         name: "Custom",
         url: "https://example.com/privacy#custom",
+        executable: false,
       },
       {
         cookieKeys: [],
@@ -81,6 +86,7 @@ describe("makeConsentItems", () => {
         highlight: false,
         name: "Provide a service",
         url: "https://example.com/privacy#provide-service",
+        executable: false,
       },
     ]);
   });
@@ -97,6 +103,7 @@ describe("makeConsentItems", () => {
         highlight: true,
         name: "Third Party Sharing",
         url: "https://example.com/privacy#data-sales",
+        executable: true,
       },
       {
         cookieKeys: ["custom_key"],
@@ -106,6 +113,7 @@ describe("makeConsentItems", () => {
         highlight: true,
         name: "Custom",
         url: "https://example.com/privacy#custom",
+        executable: false,
       },
       {
         cookieKeys: [],
@@ -115,6 +123,7 @@ describe("makeConsentItems", () => {
         highlight: false,
         name: "Provide a service",
         url: "https://example.com/privacy#provide-service",
+        executable: false,
       },
     ]);
   });

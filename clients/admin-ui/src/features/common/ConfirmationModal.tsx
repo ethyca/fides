@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { ThemingProps } from "@chakra-ui/system";
 import {
   Button,
   Modal,
@@ -14,8 +16,15 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  title: string;
-  message: ReactNode;
+  title?: string;
+  message?: ReactNode;
+  cancelButtonText?: string;
+  cancelButtonThemingProps?: ThemingProps<"Button">;
+  continueButtonText?: string;
+  continueButtonThemingProps?: ThemingProps<"Button">;
+  isLoading?: boolean;
+  returnFocusOnClose?: boolean;
+  isCentered?: boolean;
 }
 const ConfirmationModal = ({
   isOpen,
@@ -23,12 +32,25 @@ const ConfirmationModal = ({
   onConfirm,
   title,
   message,
+  cancelButtonText,
+  cancelButtonThemingProps,
+  continueButtonText,
+  continueButtonThemingProps,
+  isLoading,
+  returnFocusOnClose,
+  isCentered,
 }: Props) => (
-  <Modal isOpen={isOpen} onClose={onClose} size="lg">
+  <Modal
+    isOpen={isOpen}
+    onClose={onClose}
+    size="lg"
+    returnFocusOnClose={returnFocusOnClose ?? true}
+    isCentered={isCentered}
+  >
     <ModalOverlay />
     <ModalContent textAlign="center" p={2} data-testid="confirmation-modal">
-      <ModalHeader fontWeight="medium">{title}</ModalHeader>
-      <ModalBody>{message}</ModalBody>
+      {title ? <ModalHeader fontWeight="medium">{title}</ModalHeader> : null}
+      {message ? <ModalBody>{message}</ModalBody> : null}
       <ModalFooter>
         <SimpleGrid columns={2} width="100%">
           <Button
@@ -36,15 +58,19 @@ const ConfirmationModal = ({
             mr={3}
             onClick={onClose}
             data-testid="cancel-btn"
+            isDisabled={isLoading}
+            {...cancelButtonThemingProps}
           >
-            Cancel
+            {cancelButtonText || "Cancel"}
           </Button>
           <Button
             colorScheme="primary"
             onClick={onConfirm}
             data-testid="continue-btn"
+            isLoading={isLoading}
+            {...continueButtonThemingProps}
           >
-            Continue
+            {continueButtonText || "Continue"}
           </Button>
         </SimpleGrid>
       </ModalFooter>

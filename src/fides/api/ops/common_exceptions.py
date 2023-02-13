@@ -57,6 +57,10 @@ class RuleValidationError(ValueError):
     """The Rule you are trying to create has invalid data"""
 
 
+class StorageConfigValidationError(ValueError):
+    """The Storage Config you are trying to create has invalid data"""
+
+
 class InvalidDataTypeValidationError(ValueError):
     """The specified data type is invalid."""
 
@@ -99,6 +103,10 @@ class PostProcessingException(BaseException):
 
 class CollectionDisabled(BaseException):
     """Collection is attached to disabled ConnectionConfig"""
+
+
+class NotSupportedForCollection(BaseException):
+    """The given action is not supported for this type of collection"""
 
 
 class PrivacyRequestPaused(BaseException):

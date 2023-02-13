@@ -97,15 +97,17 @@ class ApiKeyAuthenticationConfiguration(StrategyConfiguration):
 
     headers: Optional[List[Header]]
     query_params: Optional[List[QueryParam]]
+    body: Optional[str]
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         headers = values.get("headers")
         query_params = values.get("query_params")
+        body = values.get("body")
 
-        if not headers and not query_params:
+        if not headers and not query_params and not body:
             raise ValueError(
-                "At least one 'header' or 'query_param' object must be defined in an 'api_key' auth configuration"
+                "At least one 'header', 'query_param', or 'body' object must be defined in an 'api_key' auth configuration"
             )
 
         return values

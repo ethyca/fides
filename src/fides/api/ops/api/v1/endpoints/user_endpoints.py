@@ -34,7 +34,12 @@ from fides.lib.exceptions import AuthenticationError
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload
-from fides.lib.oauth.schemas.user import UserPasswordReset, UserResponse, UserUpdate
+from fides.lib.oauth.schemas.user import (
+    UserForcePasswordReset,
+    UserPasswordReset,
+    UserResponse,
+    UserUpdate,
+)
 
 CONFIG = get_config()
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
@@ -83,7 +88,7 @@ def update_user(
 
 @router.post(
     urls.USER_PASSWORD_RESET,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_PASSWORD_RESET])],
+    dependencies=[Security(verify_oauth_client)],
     status_code=HTTP_200_OK,
     response_model=UserResponse,
 )
@@ -111,6 +116,33 @@ def update_user_password(
 
     logger.info("Updated user with id: '{}'.", current_user.id)
     return current_user
+
+
+@router.post(
+    urls.USER_FORCE_PASSWORD_RESET,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_PASSWORD_RESET])],
+    status_code=HTTP_200_OK,
+)
+def force_update_password(
+    *,
+    db: Session = Depends(deps.get_db),
+    user_id: str,
+    data: UserForcePasswordReset,
+) -> FidesUser:
+    """
+    Update any user's password given a `user_id` without needing to know the user's
+    previous password.
+    """
+    user: Optional[FidesUser] = FidesUser.get(db=db, object_id=user_id)
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"User with ID {user_id} does not exist.",
+        )
+
+    user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
+    logger.info("Updated user with id: '{}'.", user.id)
+    return user
 
 
 def logout_oauth_client(
