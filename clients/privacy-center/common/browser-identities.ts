@@ -62,7 +62,6 @@ export const inspectForBrowserIdentities = ():
       // }
     }
   });
-  console.log({ browserIdentities });
 
   return Object.keys(browserIdentities).length > 0
     ? browserIdentities
