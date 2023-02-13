@@ -1,18 +1,9 @@
+import { stubTaxonomyEntities } from "cypress/support/stubs";
+
 describe("Taxonomy management page", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/data_category", {
-      fixture: "data_categories.json",
-    }).as("getDataCategories");
-    cy.intercept("GET", "/api/v1/data_use", { fixture: "data_uses.json" }).as(
-      "getDataUses"
-    );
-    cy.intercept("GET", "/api/v1/data_subject", {
-      fixture: "data_subjects.json",
-    }).as("getDataSubjects");
-    cy.intercept("GET", "/api/v1/data_qualifier", {
-      fixture: "data_qualifiers.json",
-    }).as("getDataQualifiers");
+    stubTaxonomyEntities();
   });
 
   // TODO: Update Cypress test to reflect the nav bar 2.0

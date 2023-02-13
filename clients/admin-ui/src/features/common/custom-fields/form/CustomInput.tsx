@@ -4,6 +4,7 @@ import {
   FormControl,
   FormErrorMessage,
   FormLabel,
+  FormLabelProps,
   Input,
   NumberDecrementStepper,
   NumberIncrementStepper,
@@ -16,6 +17,21 @@ import {
 import { FieldHookConfig, useField } from "formik";
 
 import { InputType } from "./types";
+
+/**
+ * This isn't the cleanest way to style these forms, but it's a quick hack. Ideally our form inputs
+ * (like CustomSelect) would all use the same styles, or at least have a limited set of variants:
+ * https://chakra-ui.com/docs/styled-system/component-style#styling-multipart-components
+ *
+ * Unfortunately the designs for these forms call for styles that are inconsistent with the other
+ * forms in the app.
+ */
+export const CUSTOM_LABEL_STYLES: FormLabelProps = {
+  color: "gray.600",
+  fontSize: "14px",
+  fontWeight: "semibold",
+  minWidth: "150px",
+};
 
 type CustomInputProps = {
   disabled?: boolean;
@@ -37,6 +53,8 @@ const CustomInput = ({
 }: CustomInputProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
 
+  const testId = `custom-input-${field.name}`;
+
   return (
     <FormControl
       display="flex"
@@ -44,13 +62,7 @@ const CustomInput = ({
       isInvalid={!!(meta.error && meta.touched)}
     >
       {label && (
-        <FormLabel
-          color="gray.600"
-          fontSize="14px"
-          fontWeight="semibold"
-          htmlFor={props.id || props.name}
-          minWidth="150px"
-        >
+        <FormLabel htmlFor={props.id || props.name} {...CUSTOM_LABEL_STYLES}>
           {label}
         </FormLabel>
       )}
@@ -67,6 +79,7 @@ const CustomInput = ({
               {...field}
               autoComplete="off"
               autoFocus={props.autoFocus}
+              data-testid={testId}
             />
             <NumberInputStepper>
               <NumberIncrementStepper />
@@ -83,6 +96,7 @@ const CustomInput = ({
             isDisabled={disabled}
             placeholder={props.placeholder}
             size="sm"
+            data-testid={testId}
           />
         )}
         {type === "textarea" && (
@@ -95,6 +109,7 @@ const CustomInput = ({
             resize="none"
             size="sm"
             value={field.value || ""}
+            data-testid={testId}
           />
         )}
         <FormErrorMessage>{meta.error}</FormErrorMessage>
