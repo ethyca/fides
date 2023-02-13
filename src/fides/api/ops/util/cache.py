@@ -30,7 +30,10 @@ class CustomJSONEncoder(json.JSONEncoder):
         if isinstance(o, bytes):
             return f"quoteencoded{quote(o)}"
         if isinstance(o, object):
-            return o.__dict__
+            if hasattr(o, "__dict__"):
+                return o.__dict__
+
+            return str(o)
         if isinstance(o, dict):
             for _, v in o.items():
                 if not isinstance(v, str) and not isinstance(v, bytes):
