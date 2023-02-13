@@ -18,9 +18,9 @@ def test_mongo_example_data(integration_mongodb_connector):
         "composite_pk_test",
     }.difference(collection_names) == set()
 
-    assert db.customer.count_documents() == 3
-    assert db.payment_card.count_documents() == 2
-    assert db.orders.count_documents() == 4
-    assert db.employee.count_documents() == 2
-    assert db.product.count_documents() == 3
-    assert db.reports.count_documents() == 4
+    assert db.customer.count_documents(filter={}) == 3
+    assert db.payment_card.count_documents(filter={}) == 2
+    assert db.orders.count_documents(filter={}) == 4
+    assert db.employee.count_documents(filter={}) == 2
+    assert db.product.count_documents(filter={}) == 3
+    assert db.reports.count_documents(filter={}) == 4

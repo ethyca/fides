@@ -170,10 +170,11 @@ def integration_mongodb_connector(integration_mongodb_config) -> MongoClient:
 
 def mongo_insert(
     client: MongoClient, db_name: str, collection_name: str, record: Dict[str, Any]
-) -> None:
+) -> str:
     db = client[db_name]
     collection = db[collection_name]
-    return collection.insert_one(record).inserted_id
+    result = collection.insert_one(record)
+    return result.inserted_id
 
 
 def mongo_delete(
