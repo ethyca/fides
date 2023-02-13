@@ -1,6 +1,7 @@
 import json
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
+from urllib.parse import quote, unquote_to_bytes
 
 from loguru import logger
 from redis import Redis
@@ -26,9 +27,9 @@ class CustomJSONEncoder(json.JSONEncoder):
             if isinstance(o.value, str):
                 return o.value
             self.default(o.value)
+        if isinstance(o, bytes):
+            return f"quoteencoded{quote(o)}"
         if isinstance(o, object):
-            if isinstance(o, bytes):
-                return str(o)
             return o.__dict__
         if isinstance(o, dict):
             for _, v in o.items():
@@ -113,10 +114,15 @@ class FidesopsRedis(Redis):
         Since Redis may not contain a value
         for a given key it's possible we may try to decode an empty object."""
         if bs:
-            print("BYTES!!!!")
-            print(bs)
-            print(json.loads(bs))
-            return json.loads(bs)
+            result = json.loads(bs)
+            # The bytes from secrets couldn't be directly json encoded so I had to
+            # url encode them. I needed a way to know if this was done, or is the string
+            # was a "regular" string so I appended quoteencoded to the beginning of
+            # the encoded string. Here it is decoding the string back to bytes and
+            # stripping off the quoteencoded marker.
+            if isinstance(result, str) and result.startswith("quoteencoded"):
+                result = unquote_to_bytes(result)[12:]
+            return result
         return None
 
 
