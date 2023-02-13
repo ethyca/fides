@@ -1,18 +1,25 @@
 {
-  "navV2": {
-    "development": true,
-    "test": true,
-    "production": true,
-    "description": "The updated navigation experience with links to related features in the sidebar."
-  },
-  "configWizardStepper": {
+  "privacyRequestsConfiguration": {
     "development": true,
     "test": false,
-    "production": false
+    "production": false,
+    "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage."
   },
   "datasetClassificationUpdates": {
     "development": true,
-    "test": false,
+    "production": false,
+    "test": false
+  },
+  "customFields": {
+    "description": "Custom fields can be added to many forms throughout Fides. You can create, show, and hide custom fields that you add to Fides at any time.",
+    "development": true,
+    "test": true,
     "production": false
+  },
+  "navV2": {
+    "description": "The updated navigation experience with links to related features in the sidebar.",
+    "development": true,
+    "production": true,
+    "test": true
   }
 }

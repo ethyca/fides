@@ -1,3 +1,5 @@
+import { Box } from "@fidesui/react";
+
 import { useAppSelector } from "~/app/hooks";
 import { ValidTargets } from "~/types/api";
 
@@ -10,7 +12,7 @@ import { SystemMethods } from "./types";
 const AuthenticateScanner = () => {
   const infrastructure = useAppSelector(selectAddSystemsMethod);
   return (
-    <>
+    <Box w="40%">
       {infrastructure === ValidTargets.AWS ? <AuthenticateAwsForm /> : null}
       {infrastructure === ValidTargets.OKTA ? <AuthenticateOktaForm /> : null}
       {/*
@@ -23,7 +25,7 @@ const AuthenticateScanner = () => {
       {infrastructure === SystemMethods.DATA_FLOW ? (
         <LoadDataFlowScanner />
       ) : null}
-    </>
+    </Box>
   );
 };
 

@@ -57,6 +57,10 @@ class RuleValidationError(ValueError):
     """The Rule you are trying to create has invalid data"""
 
 
+class StorageConfigValidationError(ValueError):
+    """The Storage Config you are trying to create has invalid data"""
+
+
 class InvalidDataTypeValidationError(ValueError):
     """The specified data type is invalid."""
 

@@ -9,13 +9,24 @@ import consentConfig from "./consent-config.json";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { getConsentCookie } from "./lib/cookie";
+import { ConsentConfig } from "./lib/consent-config";
+import { getConsentContext } from "./lib/consent-context";
+import { getConsentCookie, makeDefaults } from "./lib/cookie";
+
+const config: ConsentConfig = consentConfig;
+const context = getConsentContext();
+const defaults = makeDefaults({
+  config,
+  context,
+});
+
+/**
+ * Immediately load the stored consent settings from the browser cookie.
+ */
+const consent = getConsentCookie(defaults);
 
 const Fides = {
-  /**
-   * Immediately load the stored consent settings from the browser cookie.
-   */
-  consent: getConsentCookie(consentConfig.defaults),
+  consent,
 
   gtm,
   meta,

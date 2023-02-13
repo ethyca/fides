@@ -23,40 +23,26 @@ const generateConsentConfig = () => {
    * @type {import('../../types/config').Config}
    */
   const privacyCenterConfig = require("../../config/config.json");
-  const consentOptions = privacyCenterConfig.consent?.consentOptions ?? [];
+  const privacyCenterOptions =
+    privacyCenterConfig.consent?.consentOptions ?? [];
 
-  if (consentOptions.length === 0) {
+  if (privacyCenterOptions.length === 0) {
     console.warn(
       "Privacy Center config.json has no consent options configured."
     );
   }
 
+  const options = privacyCenterOptions.map((pcOption) => ({
+    fidesDataUseKey: pcOption.fidesDataUseKey,
+    default: pcOption.default,
+    cookieKeys: pcOption.cookieKeys,
+  }));
+
   /**
-   * @type {import('./src/lib/cookie').CookieKeyConsent}
+   * @type {import('./src/lib/consent-config').ConsentConfig}
    */
-  const defaults = {};
-  consentOptions.forEach(({ cookieKeys, default: current }) => {
-    if (current === undefined) {
-      return;
-    }
-
-    cookieKeys.forEach((cookieKey) => {
-      const previous = defaults[cookieKey];
-      if (previous === undefined) {
-        defaults[cookieKey] = current;
-        return;
-      }
-
-      if (current !== previous) {
-        console.warn(`Conflicting configuration for cookieKey "${cookieKey}".`);
-      }
-
-      defaults[cookieKey] = previous && current;
-    });
-  });
-
   const consentConfig = {
-    defaults: defaults,
+    options,
   };
 
   fs.writeFileSync(

@@ -1,18 +1,19 @@
+import { PrivacyRequestResponse } from "~/features/privacy-requests/types";
 import { HealthCheck } from "~/types/api";
 
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
-    fixture: "data_categories.json",
-  }).as("getDataCategory");
+    fixture: "taxonomy/data_categories.json",
+  }).as("getDataCategories");
   cy.intercept("GET", "/api/v1/data_qualifier", {
-    fixture: "data_qualifiers.json",
-  }).as("getDataQualifier");
+    fixture: "taxonomy/data_qualifiers.json",
+  }).as("getDataQualifiers");
   cy.intercept("GET", "/api/v1/data_subject", {
-    fixture: "data_subjects.json",
-  }).as("getDataSubject");
+    fixture: "taxonomy/data_subjects.json",
+  }).as("getDataSubjects");
   cy.intercept("GET", "/api/v1/data_use", {
-    fixture: "data_uses.json",
-  }).as("getDataUse");
+    fixture: "taxonomy/data_uses.json",
+  }).as("getDataUses");
 };
 
 export const stubSystemCrud = () => {
@@ -68,6 +69,24 @@ export const stubDatasetCrud = () => {
   });
 };
 
+export const stubPrivacyRequestsConfigurationCrud = () => {
+  cy.intercept("PATCH", "/api/v1/config", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("createConfigurationSettings");
+
+  cy.intercept("GET", "/api/v1/storage/default/*", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("getStorageDetails");
+
+  cy.intercept("PUT", "/api/v1/storage/default", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("createStorage");
+
+  cy.intercept("PUT", "/api/v1/storage/default/*/secret", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("createStorageSecrets");
+};
+
 export const CONNECTION_STRING =
   "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
 
@@ -91,5 +110,71 @@ export const stubHomePage = () => {
   cy.intercept("GET", "/api/v1/privacy-request*", {
     statusCode: 200,
     body: { items: [], total: 0, page: 1, size: 25 },
-  }).as("getPrivacyRequests");
+  }).as("getHomePagePrivacyRequests");
+};
+
+export const stubPrivacyRequests = () => {
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/privacy-request",
+      /**
+       * Query parameters could also match fixtures more specifically:
+       * https://docs.cypress.io/api/commands/intercept#Icon-nameangle-right--routeMatcher-RouteMatcher
+       */
+      query: {
+        include_identities: "true",
+        page: "*",
+        size: "*",
+      },
+    },
+    { fixture: "privacy-requests/list.json" }
+  ).as("getPrivacyRequests");
+
+  cy.fixture("privacy-requests/list.json").then(
+    (privacyRequests: PrivacyRequestResponse) => {
+      const privacyRequest = privacyRequests.items[0];
+
+      // This lets us use `cy.get("@privacyRequest")` as a shorthand for getting the singular
+      // privacy request object.
+      cy.wrap(privacyRequest).as("privacyRequest");
+
+      cy.intercept(
+        {
+          method: "GET",
+          pathname: "/api/v1/privacy-request",
+          query: {
+            include_identities: "true",
+            request_id: privacyRequest.id,
+          },
+        },
+        {
+          body: {
+            items: [privacyRequest],
+            total: 1,
+          },
+        }
+      ).as("getPrivacyRequest");
+    }
+  );
+
+  cy.intercept(
+    {
+      method: "PATCH",
+      pathname: "/api/v1/privacy-request/administrate/approve",
+    },
+    {
+      fixture: "privacy-requests/approve.json",
+    }
+  ).as("approvePrivacyRequest");
+
+  cy.intercept(
+    {
+      method: "PATCH",
+      pathname: "/api/v1/privacy-request/administrate/deny",
+    },
+    {
+      fixture: "privacy-requests/deny.json",
+    }
+  ).as("denyPrivacyRequest");
 };
