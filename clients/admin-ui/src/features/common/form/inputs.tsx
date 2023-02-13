@@ -266,8 +266,10 @@ export interface Option {
 }
 interface SelectProps {
   label: string;
+  labelProps?: FormLabelProps;
   tooltip?: string;
   options: Option[];
+  isDisabled?: boolean;
   isSearchable?: boolean;
   isClearable?: boolean;
   size?: Size;
@@ -275,8 +277,10 @@ interface SelectProps {
 }
 export const CustomSelect = ({
   label,
+  labelProps,
   tooltip,
   options,
+  isDisabled,
   isSearchable,
   isClearable,
   size = "sm",
@@ -290,7 +294,9 @@ export const CustomSelect = ({
     return (
       <FormControl isInvalid={isInvalid}>
         <Grid templateColumns="1fr 3fr">
-          <Label htmlFor={props.id || props.name}>{label}</Label>
+          <Label htmlFor={props.id || props.name} {...labelProps}>
+            {label}
+          </Label>
           <Box
             display="flex"
             alignItems="center"
@@ -316,10 +322,10 @@ export const CustomSelect = ({
     );
   }
   return (
-    <FormControl isInvalid={isInvalid}>
+    <FormControl isInvalid={isInvalid} isDisabled={isDisabled}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} my={0}>
+          <Label htmlFor={props.id || props.name} my={0} {...labelProps}>
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
@@ -553,7 +559,7 @@ export const CustomTextArea = ({
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        {InnerTextArea}
+        {innerTextArea}
         <ErrorMessage
           isInvalid={isInvalid}
           message={meta.error}

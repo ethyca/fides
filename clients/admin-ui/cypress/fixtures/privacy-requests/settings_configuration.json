@@ -1,0 +1,11 @@
+{
+    "name": "Default Storage Config [s3]",
+    "type": "s3",
+    "details": {
+      "auth_method": "secret_keys",
+        "bucket": "my_bucket"
+    },
+    "key": "some_random_key",
+    "format": "json",
+    "is_default": true
+  }

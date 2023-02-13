@@ -30,7 +30,11 @@ def get_api_session() -> Session:
     """Gets the shared database session to use for API functionality"""
     global _engine  # pylint: disable=W0603
     if not _engine:
-        _engine = get_db_engine(config=CONFIG)
+        _engine = get_db_engine(
+            config=CONFIG,
+            pool_size=CONFIG.database.api_engine_pool_size,
+            max_overflow=CONFIG.database.api_engine_max_overflow,
+        )
     SessionLocal = get_db_session(CONFIG, engine=_engine)
     db = SessionLocal()
     return db
