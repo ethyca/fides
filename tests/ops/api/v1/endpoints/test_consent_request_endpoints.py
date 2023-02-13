@@ -862,6 +862,4 @@ class TestGetConsentPreferences:
         )
 
         assert response.status_code == 200
-        print(response.json())
-        print(consent_data)
         assert response.json()["consent"] == consent_data
