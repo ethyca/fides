@@ -55,13 +55,13 @@ type StringField = FieldHookConfig<string | undefined>;
 type StringArrayField = FieldHookConfig<string[] | undefined>;
 
 const Label = ({
-  title,
+  children,
   ...labelProps
 }: {
-  title: string;
+  children: React.ReactNode;
 } & FormLabelProps) => (
   <FormLabel size="sm" {...labelProps}>
-    {title}
+    {children}
   </FormLabel>
 );
 
@@ -151,6 +151,11 @@ const SelectInput = ({
     }
   };
 
+  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) =>
+    isMulti
+      ? handleChangeMulti(newValue as MultiValue<Option>)
+      : handleChangeSingle(newValue as SingleValue<Option>);
+
   const components = isClearable ? undefined : { ClearIndicator: () => null };
 
   return (
@@ -160,8 +165,7 @@ const SelectInput = ({
         setTouched({ ...touched, [field.name]: true });
         field.onBlur(e);
       }}
-      // @ts-ignore dynamic isMulti makes typing this complicated
-      onChange={isMulti ? handleChangeMulti : handleChangeSingle}
+      onChange={handleChange}
       name={fieldName}
       value={selected}
       size={size}
@@ -210,7 +214,7 @@ export const CustomTextInput = ({
     return (
       <FormControl isInvalid={isInvalid}>
         <Grid templateColumns="1fr 3fr">
-          <Label title={label} htmlFor={props.id || props.name} />
+          <Label htmlFor={props.id || props.name}>{label}</Label>
           <Box display="flex" alignItems="center">
             <TextInput
               {...field}
@@ -234,13 +238,9 @@ export const CustomTextInput = ({
     <FormControl isInvalid={isInvalid}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label
-            title={label}
-            htmlFor={props.id || props.name}
-            fontSize="sm"
-            my={0}
-            mr={1}
-          />
+          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+            {label}
+          </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         <TextInput
@@ -290,7 +290,7 @@ export const CustomSelect = ({
     return (
       <FormControl isInvalid={isInvalid}>
         <Grid templateColumns="1fr 3fr">
-          <Label title={label} htmlFor={props.id || props.name} />
+          <Label htmlFor={props.id || props.name}>{label}</Label>
           <Box
             display="flex"
             alignItems="center"
@@ -319,7 +319,9 @@ export const CustomSelect = ({
     <FormControl isInvalid={isInvalid}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label title={label} htmlFor={props.id || props.name} my={0} />
+          <Label htmlFor={props.id || props.name} my={0}>
+            {label}
+          </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         <Box width="100%">
@@ -358,7 +360,8 @@ export const CustomCreatableSingleSelect = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
-        <Label title={label} htmlFor={props.id || props.name} />
+        <Label htmlFor={props.id || props.name}>{label}</Label>
+
         <Box data-testid={`input-${field.name}`}>
           <CreatableSelect
             options={options}
@@ -421,7 +424,7 @@ export const CustomCreatableMultiSelect = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
-        <Label title={label} htmlFor={props.id || props.name} />
+        <Label htmlFor={props.id || props.name}>{label}</Label>
         <Box
           display="flex"
           alignItems="center"
@@ -495,7 +498,7 @@ export const CustomTextArea = ({
   const [initialField, meta] = useField(props);
   const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
-  const InnerTextArea = (
+  const innerTextArea = (
     <Textarea
       {...field}
       size="sm"
@@ -511,7 +514,7 @@ export const CustomTextArea = ({
     return (
       <FormControl isInvalid={isInvalid}>
         <Flex>
-          {InnerTextArea}
+          {innerTextArea}
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         <ErrorMessage
@@ -529,7 +532,7 @@ export const CustomTextArea = ({
         <Grid templateColumns="1fr 3fr">
           {label ? <FormLabel>{label}</FormLabel> : null}
           <Flex>
-            {InnerTextArea}
+            {innerTextArea}
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Flex>
         </Grid>
@@ -545,13 +548,9 @@ export const CustomTextArea = ({
     <FormControl isInvalid={isInvalid}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label
-            title={label}
-            htmlFor={props.id || props.name}
-            fontSize="sm"
-            my={0}
-            mr={1}
-          />
+          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+            {label}
+          </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         {InnerTextArea}
@@ -586,7 +585,7 @@ export const CustomRadioGroup = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
-        <Label title={label} htmlFor={props.id || props.name} />
+        <Label htmlFor={props.id || props.name}>{label}</Label>
         <RadioGroup
           onChange={handleChange}
           value={selected.value}
@@ -630,7 +629,9 @@ export const CustomSwitch = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr" justifyContent="center">
-        <Label title={label} htmlFor={props.id || props.name} my={0} />
+        <Label htmlFor={props.id || props.name} my={0}>
+          {label}
+        </Label>
         <Box display="flex" alignItems="center">
           <Switch
             name={field.name}
