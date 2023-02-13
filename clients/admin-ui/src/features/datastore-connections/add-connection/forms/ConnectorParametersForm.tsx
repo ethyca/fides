@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import {
   Button,
   ButtonGroup,
@@ -194,15 +193,16 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   );
 
   const getInitialValues = () => {
+    const initialValues = { ...defaultValues };
     if (connection?.key) {
-      defaultValues.name = connection.name;
-      defaultValues.description = connection.description as string;
-      defaultValues.instance_key =
+      initialValues.name = connection.name;
+      initialValues.description = connection.description as string;
+      initialValues.instance_key =
         connection.connection_type === ConnectionType.SAAS
           ? (connection.saas_config?.fides_key as string)
           : connection.key;
     }
-    return fillInDefaults(defaultValues, data);
+    return fillInDefaults(initialValues, data);
   };
 
   const handleSubmit = (values: any, actions: any) => {
