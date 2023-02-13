@@ -1,4 +1,5 @@
 import json
+from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import quote, unquote_to_bytes
@@ -29,6 +30,8 @@ class CustomJSONEncoder(json.JSONEncoder):
             self.default(o.value)
         if isinstance(o, bytes):
             return f"quoteencoded{quote(o)}"
+        if isinstance(o, (datetime, date)):
+            return o.isoformat()
         if isinstance(o, dict):
             for _, v in o.items():
                 if not isinstance(v, str) and not isinstance(v, bytes):
@@ -37,9 +40,19 @@ class CustomJSONEncoder(json.JSONEncoder):
         if isinstance(o, object):
             if hasattr(o, "__dict__"):
                 return o.__dict__
-
-            return str(o)
+            if not isinstance(o, int) and not isinstance(o, float):
+                return str(o)
         return super().default(o)
+
+
+def _decode_date_time(json_dict: dict[str, Any]) -> dict[str, Any]:
+    for k, v in json_dict.items():
+        try:
+            json_dict[k] = datetime.fromisoformat(v)
+        except (TypeError, ValueError):
+            pass
+
+    return json_dict
 
 
 class FidesopsRedis(Redis):
@@ -117,7 +130,7 @@ class FidesopsRedis(Redis):
         Since Redis may not contain a value
         for a given key it's possible we may try to decode an empty object."""
         if bs:
-            result = json.loads(bs)
+            result = json.loads(bs, object_hook=_decode_date_time)
             # The bytes from secrets couldn't be directly json encoded so I had to
             # url encode them. I needed a way to know if this was done, or is the string
             # was a "regular" string so I appended quoteencoded to the beginning of
