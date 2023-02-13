@@ -36,6 +36,7 @@ The types of changes are:
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523)
 * Removes legacy `verify_oauth_client` function [#2527](https://github.com/ethyca/fides/pull/2527)
 * Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
+* Various form components now take a `stacked` or `inline` variant [#2542](https://github.com/ethyca/fides/pull/2542)
 * UX fixes for user management [#2537](https://github.com/ethyca/fides/pull/2537)
 
 ### Fixed
