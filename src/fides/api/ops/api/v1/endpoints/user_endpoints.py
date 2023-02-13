@@ -122,6 +122,7 @@ def update_user_password(
     urls.USER_FORCE_PASSWORD_RESET,
     dependencies=[Security(verify_oauth_client, scopes=[USER_PASSWORD_RESET])],
     status_code=HTTP_200_OK,
+    response_model=UserResponse,
 )
 def force_update_password(
     *,
