@@ -1,7 +1,7 @@
 """case_insensitive_usernames_delete_duplicates
 
 Revision ID: 643249f65453
-Revises: 392992c7733a
+Revises: 5d62bab40b71
 Create Date: 2023-02-01 22:22:38.055862
 
 """
@@ -14,7 +14,7 @@ from fides.lib.models.fides_user_permissions import FidesUserPermissions
 
 # revision identifiers, used by Alembic.
 revision = "643249f65453"
-down_revision = "392992c7733a"
+down_revision = "5d62bab40b71"
 branch_labels = None
 depends_on = None
 
