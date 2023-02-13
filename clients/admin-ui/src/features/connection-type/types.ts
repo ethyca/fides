@@ -2,7 +2,6 @@ import { AddConnectionStep } from "datastore-connections/add-connection/types";
 import { DatastoreConnection } from "datastore-connections/types";
 
 import {
-  AdvancedSettings,
   ConnectionSystemTypeMap,
   CookieIds,
   IdentityTypes,
