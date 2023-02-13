@@ -23,7 +23,7 @@ _connection = None
 
 
 class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:
+    def default(self, o: Any) -> Any:  # pylint: disable=too-many-return-statements
         if isinstance(o, Enum):
             if isinstance(o.value, str):
                 return o.value
