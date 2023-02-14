@@ -15,6 +15,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     FidesopsMessage,
     MessagingActionType,
     MessagingServiceDetails,
+    MessagingServiceSecrets,
     MessagingServiceType,
     SubjectIdentityVerificationBodyParams,
     TestMessage,
@@ -22,6 +23,8 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.messaging.message_dispatch_service import (
     _get_dispatcher_from_config_type,
+    _twilio_email_dispatcher,
+    _twilio_sms_dispatcher,
     dispatch_message,
 )
 from fides.core.config import get_config
@@ -406,3 +409,49 @@ class TestMessageDispatchService:
 
     def test_dispatcher_from_config_type_unknown(self):
         assert _get_dispatcher_from_config_type("bad") is None
+
+
+class TestTwilioEmailDispatcher:
+    def test_dispatch_no_to(self, messaging_config_twilio_email):
+        with pytest.raises(MessageDispatchException) as exc:
+            _twilio_email_dispatcher(messaging_config_twilio_email, "test", None)
+
+        assert "No email identity" in str(exc.value)
+
+    def test_dispatch_no_secrets(self, messaging_config_twilio_email):
+        messaging_config_twilio_email.secrets = None
+        with pytest.raises(MessageDispatchException) as exc:
+            _twilio_email_dispatcher(
+                messaging_config_twilio_email,
+                EmailForActionType(subject="test", body="test body"),
+                "test@email.com",
+            )
+
+        assert "No twilio email config details or secrets" in str(exc.value)
+
+
+class TestTwilioSmsDispatcher:
+    def test_dispatch_no_to(self, messaging_config_twilio_sms):
+        with pytest.raises(MessageDispatchException) as exc:
+            _twilio_sms_dispatcher(messaging_config_twilio_sms, "test", None)
+
+        assert "No phone identity" in str(exc.value)
+
+    def test_dispatch_no_secrets(self, messaging_config_twilio_sms):
+        messaging_config_twilio_sms.secrets = None
+        with pytest.raises(MessageDispatchException) as exc:
+            _twilio_sms_dispatcher(messaging_config_twilio_sms, "test", "+9198675309")
+
+        assert "No config secrets" in str(exc.value)
+
+    def test_dispatch_no_sender(self, messaging_config_twilio_sms):
+        messaging_config_twilio_sms.secrets[
+            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
+        ] = None
+        messaging_config_twilio_sms.secrets[
+            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
+        ] = None
+        with pytest.raises(MessageDispatchException) as exc:
+            _twilio_sms_dispatcher(messaging_config_twilio_sms, "test", "+9198675309")
+
+        assert "must be provided" in str(exc.value)

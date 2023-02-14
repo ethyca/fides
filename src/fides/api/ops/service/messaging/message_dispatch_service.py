@@ -488,12 +488,12 @@ def _twilio_sms_dispatcher(
     auth_token = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value
     ]
-    messaging_service_id = messaging_config.secrets[
+    messaging_service_id = messaging_config.secrets.get(
         MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
-    ]
-    sender_phone_number = messaging_config.secrets[
+    )
+    sender_phone_number = messaging_config.secrets.get(
         MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
-    ]
+    )
 
     client = Client(account_sid, auth_token)
     try:
