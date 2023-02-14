@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import quote, unquote_to_bytes
 
+from bson.objectid import ObjectId
 from loguru import logger
 from redis import Redis
 from redis.client import Script  # type: ignore
@@ -29,7 +30,7 @@ class CustomJSONEncoder(json.JSONEncoder):
                 return o.value
             self.default(o.value)
         if isinstance(o, bytes):
-            return f"quoteencoded{quote(o)}"
+            return f"quote_encoded{quote(o)}"
         if isinstance(o, (datetime, date)):
             return o.isoformat()
         if isinstance(o, dict):
@@ -37,6 +38,8 @@ class CustomJSONEncoder(json.JSONEncoder):
                 if not isinstance(v, str) and not isinstance(v, bytes):
                     self.default(v)
             return o
+        if isinstance(o, ObjectId):
+            return f"encoded_object_id{str(o)}"
         if isinstance(o, object):
             if hasattr(o, "__dict__"):
                 return o.__dict__
@@ -45,12 +48,23 @@ class CustomJSONEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-def _decode_date_time(json_dict: dict[str, Any]) -> dict[str, Any]:
+def _custom_decoder(json_dict: dict[str, Any]) -> dict[str, Any]:
     for k, v in json_dict.items():
         try:
             json_dict[k] = datetime.fromisoformat(v)
+            continue
         except (TypeError, ValueError):
             pass
+
+        if isinstance(v, str):
+            # The mongodb objectids couldn't be directly json encoded so they are converted
+            # to strings and prefixed with encoded_object_id in order to find during decodeint.
+            if v.startswith("encoded_object_id"):
+                json_dict[k] = ObjectId(v[17:])
+            # The bytes from secrets couldn't be directly json encoded so it is url
+            # encode and prefixed with quite_encoded in order to find during decodeint.
+            elif v.startswith("quote_encoded"):
+                json_dict[k] = unquote_to_bytes(v)[13:]
 
     return json_dict
 
@@ -130,14 +144,10 @@ class FidesopsRedis(Redis):
         Since Redis may not contain a value
         for a given key it's possible we may try to decode an empty object."""
         if bs:
-            result = json.loads(bs, object_hook=_decode_date_time)
-            # The bytes from secrets couldn't be directly json encoded so I had to
-            # url encode them. I needed a way to know if this was done, or is the string
-            # was a "regular" string so I appended quoteencoded to the beginning of
-            # the encoded string. Here it is decoding the string back to bytes and
-            # stripping off the quoteencoded marker.
-            if isinstance(result, str) and result.startswith("quoteencoded"):
-                result = unquote_to_bytes(result)[12:]
+            result = json.loads(bs, object_hook=_custom_decoder)
+            # Secrets are just a string and not dict so decode here.
+            if isinstance(result, str) and result.startswith("quote_encoded"):
+                result = unquote_to_bytes(result)[13:]
             return result
         return None
 
