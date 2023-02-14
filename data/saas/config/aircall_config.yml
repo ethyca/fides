@@ -1,0 +1,106 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Aircall SaaS Config
+  type: aircall
+  description: A sample schema representing the Aircall connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: api_token
+
+  client_config:
+    protocol: https
+    host: <domain>
+    # authentication:
+    #   strategy: no_authentication
+    #   configuration: {}
+
+  test_request:
+    method: GET
+    path: /v1/contacts/
+    headers:
+      - name: Authorization
+        value: Basic <api_token>
+    param_values:
+      - name: api_token
+        connector_param: api_token
+
+  endpoints:
+    - name: contact
+      requests:
+        read:
+          method: GET
+          path: /v1/contacts/search
+          headers:
+            - name: Authorization
+              value: Basic <api_token>
+          query_params:
+            - name: phone_number
+              value: <phoneNumber>
+            - name: email
+              value: <email>
+          data_path: contacts
+          param_values:
+            - name: api_token
+              connector_param: api_token
+            - name: phoneNumber
+              identity: phone_number
+            - name: email
+              identity: email
+        # update:
+        #   method: POST
+        #   path: /v1/contacts/<contact_id>
+        #   headers:
+        #     - name: Authorization
+        #       value: Basic <api_token>
+        #   body: |
+        #     {
+        #        <masked_object_fields> 
+        #     }
+        #   param_values:
+        #     - name: contact_id
+        #       references:
+        #         - dataset: <instance_fides_key>
+        #           field: contact.id
+        #           direction: from
+        #     - name: api_token
+        #       connector_param: api_token
+        delete:
+          method: DELETE
+          path: /v1/contacts/<contact_id>
+          headers:
+            - name: Authorization
+              value: Basic <api_token>
+          param_values:
+            - name: contact_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: contact.id
+                  direction: from
+            - name: api_token
+              connector_param: api_token
+    - name: calls
+      requests:
+        read:
+          method: GET
+          path: /v1/calls/search
+          headers:
+            - name: Authorization
+              value: Basic <api_token>
+          param_values:
+            - name: api_token
+              connector_param: api_token
+            - name: email
+              identity: email
+            - name: placeholder
+              identity: phone_number
+        delete:
+          method: DELETE
+          path: '/v1/calls/:id/recording'
+          headers:
+            - name: Authorization
+              value: Basic <api_token>
+          param_values:
+            - name: api_token
+              connector_param: api_token
