@@ -18,6 +18,7 @@ from fides.api.ops.api.v1.urn_registry import (
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
+from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceDetails,
@@ -798,3 +799,17 @@ class TestTestMesage:
             headers=auth_header,
         )
         assert response.status_code == 422
+
+    @patch(
+        "fides.api.ops.api.v1.endpoints.messaging_endpoints.dispatch_message",
+        side_effect=MessageDispatchException("No service"),
+    )
+    def test_test_message_dispatch_error(
+        self, mock_dispatch_message, generate_auth_header, url, api_client
+    ):
+        auth_header = generate_auth_header(scopes=[MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.post(
+            url, json={"phone_number": "+19198675309"}, headers=auth_header
+        )
+        assert response.status_code == 400
+        assert mock_dispatch_message.called

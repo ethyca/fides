@@ -17,6 +17,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceType,
     SubjectIdentityVerificationBodyParams,
+    TestMessage,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
@@ -143,6 +144,69 @@ class TestMessageDispatchService:
                 exc.value.args[0]
                 == "Email failed to send due to: Email failed to send with status code 403"
             )
+
+    @mock.patch(
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_mailgun_test_message(
+        self, mock_mailgun_dispatcher, db, messaging_config
+    ):
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.TEST_MESSAGE,
+            to_identity=TestMessage(email="test@email.com"),
+            service_type=MessagingServiceType.MAILGUN.value,
+        )
+        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
+        mock_mailgun_dispatcher.assert_called_with(
+            messaging_config,
+            EmailForActionType(
+                subject="Test message from fides",
+                body=body,
+            ),
+            "test@email.com",
+        )
+
+    @mock.patch(
+        "fides.api.ops.service.messaging.message_dispatch_service._twilio_email_dispatcher"
+    )
+    def test_email_dispatch_twilio_email_test_message(
+        self, mock_twilio_dispatcher, db, messaging_config_twilio_email
+    ):
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.TEST_MESSAGE,
+            to_identity=TestMessage(email="test@email.com"),
+            service_type=MessagingServiceType.TWILIO_EMAIL.value,
+        )
+        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
+        mock_twilio_dispatcher.assert_called_with(
+            messaging_config_twilio_email,
+            EmailForActionType(
+                subject="Test message from fides",
+                body=body,
+            ),
+            "test@email.com",
+        )
+
+    @mock.patch(
+        "fides.api.ops.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+    )
+    def test_email_dispatch_twilio_sms_test_message(
+        self, mock_twilio_dispatcher, db, messaging_config_twilio_sms
+    ):
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.TEST_MESSAGE,
+            to_identity=TestMessage(phone_number="+19198675309"),
+            service_type=MessagingServiceType.TWILIO_TEXT.value,
+        )
+        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
+        mock_twilio_dispatcher.assert_called_with(
+            messaging_config_twilio_sms,
+            "Test message from Fides.",
+            "+19198675309",
+        )
 
     def test_fidesops_email_parse_object(self):
         body = [
