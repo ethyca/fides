@@ -1,11 +1,13 @@
 import { Box, Button, Stack, Text } from "@fidesui/react";
 import { useRouter } from "next/router";
 
+import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/constants";
+
 const ConfigurationNotificationBanner = () => {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push("/privacy-requests/configure");
+    router.push(PRIVACY_REQUESTS_CONFIGURATION_ROUTE);
   };
 
   return (
