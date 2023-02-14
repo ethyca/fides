@@ -14,7 +14,13 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.6.5...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.6.6...main)
+
+## [2.6.6](https://github.com/ethyca/fides/compare/2.6.5...2.6.6)
+
+### Changed
+
+* Improve Readability for Custom Masking Override Exceptions [#2593](https://github.com/ethyca/fides/pull/2593)
 
 ## [2.6.5](https://github.com/ethyca/fides/compare/2.6.4...2.6.5)
 
