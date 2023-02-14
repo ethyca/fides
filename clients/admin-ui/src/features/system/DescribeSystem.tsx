@@ -12,6 +12,7 @@ import SystemInformationForm from "./SystemInformationForm";
  */
 const DescribeSystem = () => {
   const [tabIndex, setTabIndex] = useState(0);
+
   const tabData: TabData[] = [
     {
       label: "System information",

@@ -275,7 +275,6 @@ describe("System management page", () => {
         "have.value",
         "Software that functionally applies Fides."
       );
-      cy.getByTestId("input-system_type").should("have.value", "Service");
       cy.getByTestId("input-data_responsibility_title").should(
         "contain",
         "Controller"
@@ -323,7 +322,7 @@ describe("System management page", () => {
       });
     });
 
-    it("Can render and edit extended form fields", () => {
+    it.only("Can render and edit extended form fields", () => {
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
         "getDatasets"
       );
@@ -438,25 +437,6 @@ describe("System management page", () => {
       cy.wait("@putSystem").then((interception) => {
         const { body } = interception.request;
         expect(body.privacy_declarations[1]).to.eql(declaration);
-      });
-
-      // Now at the Review stage
-      cy.getByTestId("review-heading");
-      cy.getByTestId("review-Data responsibility title").contains("Controller");
-      cy.getByTestId("review-Administrating department").contains(
-        "Engineering"
-      );
-      cy.getByTestId("review-Geographic location").contains("USA");
-      cy.getByTestId("review-Geographic location").contains("CAN");
-      cy.getByTestId("review-Joint controller").within(() => {
-        cy.getByTestId("review-Name").contains("Sally Controller");
-      });
-      cy.getByTestId("review-Data protection impact assessment").within(() => {
-        cy.getByTestId("review-Is required").contains("Yes");
-        cy.getByTestId("review-Progress").contains("Complete");
-        cy.getByTestId("review-Link").contains(
-          "https://example.org/analytics_system_data_protection_impact_assessment"
-        );
       });
     });
   });

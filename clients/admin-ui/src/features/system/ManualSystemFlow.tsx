@@ -8,12 +8,11 @@ import DataTabs, { TabData } from "~/features/common/DataTabs";
 import { System } from "~/types/api";
 
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
-import ReviewSystemStep from "./ReviewSystemStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
 import SystemRegisterSuccess from "./SystemRegisterSuccess";
 
-const STEPS = ["Describe", "Declare", "Review"];
+const STEPS = ["Describe", "Declare"];
 
 interface ConfigureStepsProps {
   steps: string[];
@@ -88,17 +87,6 @@ const ManualSystemFlow = () => {
         <PrivacyDeclarationStep
           system={activeSystem as System}
           onCancel={goBack}
-          onSuccess={handleSuccess}
-        />
-      ) : null,
-      isDisabled: !activeSystem,
-    },
-    {
-      label: STEPS[2],
-      content: activeSystem ? (
-        <ReviewSystemStep
-          system={activeSystem as System}
-          onCancel={goBack}
           onSuccess={goBack}
         />
       ) : null,
@@ -138,6 +126,7 @@ const ManualSystemFlow = () => {
                 onSuccess={handleSuccess}
                 onCancel={goBack}
                 system={activeSystem}
+                withHeader
               />
             ) : null}
             {currentStepIndex === 1 && activeSystem ? (
@@ -148,13 +137,6 @@ const ManualSystemFlow = () => {
               />
             ) : null}
             {currentStepIndex === 2 && activeSystem ? (
-              <ReviewSystemStep
-                system={activeSystem}
-                onCancel={decrementStep}
-                onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
-              />
-            ) : null}
-            {currentStepIndex === 3 && activeSystem ? (
               <SystemRegisterSuccess
                 system={activeSystem}
                 onAddNextSystem={goBack}

@@ -139,11 +139,12 @@ const DescribeSystemStep = ({
               now.
             </Text>
             <Stack spacing={4}>
-              {/* While we support both designs, change the width when in edit mode. When
-              we move to only supporting one design, the parent container should control the width */}
+              {/* While we support both designs of extra form items existing, change the width only 
+              when there are extra form items. When we move to only supporting one design, 
+              the parent container should control the width */}
               <Stack
                 spacing={4}
-                maxWidth={isEditing ? { base: "100%", lg: "50%" } : undefined}
+                maxWidth={!abridged ? { base: "100%", lg: "50%" } : undefined}
               >
                 <CustomTextInput
                   id="name"
