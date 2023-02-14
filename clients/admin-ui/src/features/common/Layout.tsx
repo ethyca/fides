@@ -8,12 +8,12 @@ import Header from "~/features/common/Header";
 import NavBar from "~/features/common/nav/NavBar";
 import { NavSideBar } from "~/features/common/nav/v2/NavSideBar";
 import { NavTopBar } from "~/features/common/nav/v2/NavTopBar";
+import {
+  useGetActiveMessagingProviderQuery,
+  useGetActiveStorageQuery,
+} from "~/features/privacy-requests/privacy-requests.slice";
 
 import ConfigurationNotificationBanner from "../privacy-requests/configuration/ConfigurationNotificationBanner";
-// import {
-//   useGetActiveMessagingProviderQuery,
-//   useGetActiveStorageQuery,
-// } from "~/features/privacy-requests/privacy-requests.slice";
 
 const Layout = ({
   children,
@@ -24,11 +24,11 @@ const Layout = ({
 }) => {
   const features = useFeatures();
   const router = useRouter();
-  //   const { data: activeMessagingProvider } =
-  //     useGetActiveMessagingProviderQuery();
-  //   const { data: activeStorage } = useGetActiveStorageQuery();
+  const { data: activeMessagingProvider } =
+    useGetActiveMessagingProviderQuery();
+  const { data: activeStorage } = useGetActiveStorageQuery();
   const showConfigurationNotificationBanner =
-    // if the above returns empty in either GET &&
+    (!activeStorage || !activeMessagingProvider) &&
     features.flags.privacyRequestsConfiguration &&
     (router.pathname === "/privacy-requests" ||
       router.pathname === "/datastore-connection");
