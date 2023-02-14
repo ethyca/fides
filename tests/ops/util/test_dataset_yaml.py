@@ -2,18 +2,17 @@ from typing import Any, Dict
 
 import pytest
 import yaml
+from fideslang.models import Dataset
 from pydantic import ValidationError
 
 from fides.api.ops.graph.config import (
     CollectionAddress,
     FieldAddress,
-    FieldPath,
     ObjectField,
     ScalarField,
 )
 from fides.api.ops.graph.graph import DatasetGraph, Edge
 from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
-from fides.api.ops.schemas.dataset import FidesopsDataset
 
 from ..graph.graph_test_util import field
 
@@ -128,7 +127,7 @@ def __to_dataset__(yamlstr: str) -> Dict[str, Any]:
 def test_dataset_yaml_format():
     """Test that 'after' parameters are properly read"""
     dataset = __to_dataset__(example_dataset_yaml)
-    d: FidesopsDataset = FidesopsDataset.parse_obj(dataset)
+    d: Dataset = Dataset.parse_obj(dataset)
     config = convert_dataset_to_graph(d, "ignore")
     assert config.after == {"db1", "db2", "db3"}
     assert config.collections[0].after == {
@@ -143,7 +142,7 @@ def test_dataset_yaml_format_invalid_format():
     dataset = __to_dataset__(example_dataset_yaml)
     dataset.get("collections")[0].get("fidesops_meta").get("after")[0] = "invalid"
     with pytest.raises(ValueError) as exc:
-        d: FidesopsDataset = FidesopsDataset.parse_obj(dataset)
+        d: Dataset = Dataset.parse_obj(dataset)
         convert_dataset_to_graph(d, "ignore")
     assert "FidesCollection must be specified in the form 'FidesKey.FidesKey'" in str(
         exc.value
@@ -157,17 +156,17 @@ def test_dataset_yaml_format_invalid_fides_keys():
         0
     ] = "invalid*dataset*name.invalid*collection*name"
     with pytest.raises(ValueError) as exc:
-        d: FidesopsDataset = FidesopsDataset.parse_obj(dataset)
+        d: Dataset = Dataset.parse_obj(dataset)
         convert_dataset_to_graph(d, "ignore")
     assert (
-        "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
+        "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'."
         in str(exc.value)
     )
 
 
 def test_nested_dataset_format():
     dataset = __to_dataset__(example_dataset_nested_yaml)
-    ds = FidesopsDataset.parse_obj(dataset)
+    ds = Dataset.parse_obj(dataset)
     graph = convert_dataset_to_graph(ds, "ignore")
 
     comments_field = field([graph], "mongo_nested_test", "photos", "comments")
@@ -194,7 +193,7 @@ def test_nested_dataset_format():
 
 def test_nested_dataset_validation():
     with pytest.raises(ValidationError):
-        FidesopsDataset.parse_obj(__to_dataset__(example_bad_dataset_nested_yaml))
+        Dataset.parse_obj(__to_dataset__(example_bad_dataset_nested_yaml))
 
 
 def test_invalid_datatype():
@@ -210,7 +209,7 @@ def test_invalid_datatype():
                 data_type: this_is_bad"""
     dataset = __to_dataset__(bad_data_declaration)
     with pytest.raises(ValidationError):
-        FidesopsDataset.parse_obj(dataset)
+        Dataset.parse_obj(dataset)
 
 
 example_postgres_yaml = """dataset:
@@ -255,11 +254,11 @@ example_postgres_yaml = """dataset:
 def test_dataset_graph_connected_by_nested_fields():
     """Two of the fields in the postgres dataset references a nested field in the mongo dataset"""
     dataset = __to_dataset__(example_dataset_nested_yaml)
-    ds = FidesopsDataset.parse_obj(dataset)
+    ds = Dataset.parse_obj(dataset)
     mongo_dataset = convert_dataset_to_graph(ds, "ignore")
 
     postgres_dataset = __to_dataset__(example_postgres_yaml)
-    ds_postgres = FidesopsDataset.parse_obj(postgres_dataset)
+    ds_postgres = Dataset.parse_obj(postgres_dataset)
     postgres_dataset = convert_dataset_to_graph(ds_postgres, "ignore")
     dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -314,7 +313,7 @@ example_object_with_data_categories_nested_yaml = """dataset:
 def test_object_data_category_validation():
     """Test trying to validate object with data category specified"""
     with pytest.raises(ValidationError):
-        FidesopsDataset.parse_obj(
+        Dataset.parse_obj(
             __to_dataset__(example_object_with_data_categories_nested_yaml)
         )
 
@@ -341,4 +340,4 @@ non_array_field_with_invalid_flag = """dataset:
 def test_return_all_elements_specified_on_non_array_field():
     """Test return_all_elements can only be specified on array fields"""
     with pytest.raises(ValidationError):
-        FidesopsDataset.parse_obj(__to_dataset__(non_array_field_with_invalid_flag))
+        Dataset.parse_obj(__to_dataset__(non_array_field_with_invalid_flag))

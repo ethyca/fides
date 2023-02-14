@@ -21,19 +21,17 @@ system:
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        dataset_references:
-          - demo_users_dataset
 
   - fides_key: cookie_house_postgres
     name: Cookie House PostgreSQL Database
-    description: Store data about our users for orders.
-    system_type: Application
+    description: Primary database for Cookie House orders.
+    system_type: Database
     administrating_department: Engineering
     data_responsibility_title: Processor
     system_dependencies:
     - cookie_house
     privacy_declarations:
-      - name: Collect data for marketing
+      - name: Store data about customer orders
         data_categories:
           - user.contact
           - user.financial
@@ -46,8 +44,8 @@ system:
 
   - fides_key: cookie_house_mongo
     name: Cookie House Customer Database
-    description: Store detailed data about our users for additional customer marketing.
-    system_type: Application
+    description: Additional database to store detailed data about users.
+    system_type: Database
     administrating_department: Engineering
     data_responsibility_title: Processor
     system_dependencies:
@@ -56,7 +54,7 @@ system:
       - name: Collect detailed data for marketing
         data_categories:
           - user.contact
-        data_use: advertising
+        data_use: advertising.first_party
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -65,7 +63,7 @@ system:
 
   - fides_key: cookie_house_marketing
     name: Cookie House Marketing System
-    description: Collect data about our users for marketing.
+    description: Marketing application for audience analysis.
     system_type: Application
     administrating_department: Marketing
     data_responsibility_title: Processor
@@ -75,7 +73,7 @@ system:
       - name: Collect data for marketing
         data_categories:
           - user.device.cookie_id
-        data_use: advertising
+        data_use: advertising.first_party
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

@@ -6,6 +6,7 @@ import requests
 from requests import post
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -100,16 +101,20 @@ def friendbuy_nextgen_dataset_config(
     friendbuy_nextgen_connection_config.name = fides_key
     friendbuy_nextgen_connection_config.key = fides_key
     friendbuy_nextgen_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, friendbuy_nextgen_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": friendbuy_nextgen_connection_config.id,
             "fides_key": fides_key,
-            "dataset": friendbuy_nextgen_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")

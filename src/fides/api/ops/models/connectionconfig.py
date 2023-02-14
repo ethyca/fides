@@ -4,7 +4,7 @@ import enum
 from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
@@ -13,6 +13,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.core.config import get_config
@@ -123,6 +124,9 @@ class ConnectionConfig(Base):
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )
+    system_id = Column(
+        String, ForeignKey(System.id_field_path), nullable=True, index=True
     )
 
     access_manual_webhook = relationship(  # type: ignore[misc]

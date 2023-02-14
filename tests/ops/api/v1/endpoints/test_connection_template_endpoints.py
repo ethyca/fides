@@ -625,8 +625,8 @@ class TestInstantiateConnectionFromTemplate:
         )
         assert resp.json()["detail"][0] == {
             "loc": ["body", "instance_key"],
-            "msg": "FidesKey must only contain alphanumeric characters, '.', '_' or '-'.",
-            "type": "value_error",
+            "msg": "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >",
+            "type": "value_error.fidesvalidation",
         }
 
     @mock.patch(
@@ -735,7 +735,8 @@ class TestInstantiateConnectionFromTemplate:
         assert connection_config.last_test_succeeded is None
 
         assert dataset_config.connection_config_id == connection_config.id
-        assert dataset_config.dataset is not None
+        assert dataset_config.ctl_dataset_id is not None
 
         dataset_config.delete(db)
         connection_config.delete(db)
+        dataset_config.ctl_dataset.delete(db=db)

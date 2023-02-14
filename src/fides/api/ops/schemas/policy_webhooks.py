@@ -1,25 +1,26 @@
 from typing import List, Optional
 
+from fideslang.validation import FidesKey
+
 from fides.api.ops.models.policy import WebhookDirection
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class WebhookBase(BaseSchema):
     """Base schema for Webhooks"""
 
     direction: WebhookDirection
-    key: Optional[FidesOpsKey]
+    key: Optional[FidesKey]
     name: Optional[str]
 
 
 class PolicyWebhookCreate(WebhookBase):
     """Request schema for creating/updating a Policy Webhook"""
 
-    connection_config_key: FidesOpsKey
+    connection_config_key: FidesKey
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -44,7 +45,7 @@ class PolicyWebhookUpdate(BaseSchema):
 
     direction: Optional[WebhookDirection]
     name: Optional[str]
-    connection_config_key: Optional[FidesOpsKey]
+    connection_config_key: Optional[FidesKey]
     order: Optional[int]
 
     class Config:
@@ -58,7 +59,7 @@ class PolicyWebhookUpdate(BaseSchema):
 class WebhookOrder(BaseSchema):
     """Schema for displaying a minimal amount of information about the webhook and its order"""
 
-    key: FidesOpsKey
+    key: FidesKey
     order: int
 
     class Config:

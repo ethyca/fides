@@ -1,23 +1,17 @@
 """Contains the nox sessions used during CI checks."""
+from functools import partial
+from typing import Callable, Dict
+
 import nox
 
-from constants_nox import (
-    CI_ARGS,
-    COMPOSE_FILE,
-    COMPOSE_SERVICE_NAME,
-    IMAGE_NAME,
-    INTEGRATION_COMPOSE_FILE,
-    RUN,
-    RUN_NO_DEPS,
-    START_APP,
-    START_APP_WITH_EXTERNAL_POSTGRES,
-    WITH_TEST_CONFIG,
-)
-from run_infrastructure import OPS_TEST_DIR, run_infrastructure
+from constants_nox import IMAGE_NAME, RUN, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG
+from test_setup_nox import pytest_ctl, pytest_lib, pytest_ops
 from utils_nox import install_requirements
 
 
-# Static Checks
+###################
+## Static Checks ##
+###################
 @nox.session()
 def static_checks(session: nox.Session) -> None:
     """Run the static checks only."""
@@ -32,8 +26,8 @@ def static_checks(session: nox.Session) -> None:
 @nox.parametrize(
     "mode",
     [
-        nox.param("check", id="check"),
         nox.param("fix", id="fix"),
+        nox.param("check", id="check"),
     ],
 )
 def black(session: nox.Session, mode: str) -> None:
@@ -49,8 +43,8 @@ def black(session: nox.Session, mode: str) -> None:
 @nox.parametrize(
     "mode",
     [
-        nox.param("check", id="check"),
         nox.param("fix", id="fix"),
+        nox.param("check", id="check"),
     ],
 )
 def isort(session: nox.Session, mode: str) -> None:
@@ -97,7 +91,9 @@ def xenon(session: nox.Session) -> None:
     session.run(*command)
 
 
-# Fides Checks
+##################
+## Fides Checks ##
+##################
 @nox.session()
 def check_install(session: nox.Session) -> None:
     """Check that fides installs works correctly."""
@@ -162,10 +158,50 @@ def minimal_config_startup(session: nox.Session) -> None:
     session.run(*start_command, external=True)
 
 
-# Pytest
+############
+## Pytest ##
+############
+TEST_GROUPS = [
+    nox.param("ctl-unit", id="ctl-unit"),
+    nox.param("ctl-not-external", id="ctl-not-external"),
+    nox.param("ctl-integration", id="ctl-integration"),
+    nox.param("ctl-external", id="ctl-external"),
+    nox.param("ops-unit", id="ops-unit"),
+    nox.param("ops-integration", id="ops-integration"),
+    nox.param("ops-external-datastores", id="ops-external-datastores"),
+    nox.param("ops-saas", id="ops-saas"),
+    nox.param("lib", id="lib"),
+]
+
+TEST_MATRIX: Dict[str, Callable] = {
+    "ctl-unit": partial(pytest_ctl, mark="unit"),
+    "ctl-not-external": partial(pytest_ctl, mark="not external"),
+    "ctl-integration": partial(pytest_ctl, mark="integration"),
+    "ctl-external": partial(pytest_ctl, mark="external"),
+    "ops-unit": partial(pytest_ops, mark="unit"),
+    "ops-integration": partial(pytest_ops, mark="integration"),
+    "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
+    "ops-saas": partial(pytest_ops, mark="saas"),
+    "lib": pytest_lib,
+}
+
+
+def validate_test_matrix(session: nox.Session) -> None:
+    """
+    Validates that all test groups are represented in the test matrix.
+    """
+    test_group_ids = sorted([str(param) for param in TEST_GROUPS])
+    test_matrix_keys = sorted(TEST_MATRIX.keys())
+
+    if not test_group_ids == test_matrix_keys:
+        session.error("TEST_GROUPS and TEST_MATRIX do not match")
+
+
 @nox.session()
 def collect_tests(session: nox.Session) -> None:
-    """Run the 'pylint' code linter."""
+    """
+    Collect all pytests as a validity check.
+    """
     session.install(".")
     install_requirements(session)
     command = ("pytest", "tests/", "--collect-only")
@@ -173,171 +209,21 @@ def collect_tests(session: nox.Session) -> None:
 
 
 @nox.session()
-def pytest_lib(session: nox.Session) -> None:
-    """Runs ctl tests."""
-    session.notify("teardown")
-    session.run(*START_APP, external=True)
-    run_command = (
-        *RUN_NO_DEPS,
-        "pytest",
-        "tests/lib/",
-    )
-    session.run(*run_command, external=True)
-
-
-@nox.session()
 @nox.parametrize(
-    "mark",
-    [
-        nox.param("unit", id="unit"),
-        nox.param("integration", id="integration"),
-        nox.param("not external", id="not-external"),
-        nox.param("external", id="external"),
-    ],
+    "test_group",
+    TEST_GROUPS,
 )
-def pytest_ctl(session: nox.Session, mark: str) -> None:
-    """Runs ctl tests."""
-    session.notify("teardown")
-    if mark == "external":
-        start_command = (
-            "docker",
-            "compose",
-            "-f",
-            COMPOSE_FILE,
-            "-f",
-            INTEGRATION_COMPOSE_FILE,
-            "up",
-            "-d",
-            IMAGE_NAME,
-        )
-        session.run(*start_command, external=True)
-        run_command = (
-            "docker",
-            "compose",
-            "run",
-            "-e",
-            "SNOWFLAKE_FIDESCTL_PASSWORD",
-            "-e",
-            "REDSHIFT_FIDESCTL_PASSWORD",
-            "-e",
-            "AWS_ACCESS_KEY_ID",
-            "-e",
-            "AWS_SECRET_ACCESS_KEY",
-            "-e",
-            "AWS_DEFAULT_REGION",
-            "-e",
-            "OKTA_CLIENT_TOKEN",
-            "-e",
-            "BIGQUERY_CONFIG",
-            "--rm",
-            CI_ARGS,
-            IMAGE_NAME,
-            "pytest",
-            "-m",
-            "external",
-            "tests/ctl",
-        )
-        session.run(*run_command, external=True)
-    else:
-        session.run(*START_APP, external=True)
-        run_command = (
-            *RUN_NO_DEPS,
-            "pytest",
-            "tests/ctl/",
-            "-m",
-            mark,
-        )
-        session.run(*run_command, external=True)
+def pytest(session: nox.Session, test_group: str) -> None:
+    """
+    Runs Pytests.
 
-
-@nox.session()
-@nox.parametrize(
-    "mark",
-    [
-        nox.param("unit", id="unit"),
-        nox.param("integration", id="integration"),
-        nox.param("external_datastores", id="external-datastores"),
-        nox.param("saas", id="saas"),
-    ],
-)
-def pytest_ops(session: nox.Session, mark: str) -> None:
-    """Runs fidesops tests."""
+    As new TEST_GROUPS are added, the TEST_MATRIX must also be updated.
+    """
     session.notify("teardown")
-    if mark == "unit":
-        session.run(*START_APP, external=True)
-        run_command = (
-            *RUN_NO_DEPS,
-            "pytest",
-            OPS_TEST_DIR,
-            "-m",
-            "not integration and not integration_external and not integration_saas",
-        )
-        session.run(*run_command, external=True)
-    elif mark == "integration":
-        run_infrastructure(
-            run_tests=True,
-            analytics_opt_out=True,
-            datastores=[],
-            pytest_path=OPS_TEST_DIR,
-        )
-    elif mark == "external_datastores":
-        session.run(*START_APP, external=True)
-        run_command = (
-            "docker",
-            "compose",
-            "run",
-            "-e",
-            "ANALYTICS_OPT_OUT",
-            "-e",
-            "REDSHIFT_TEST_URI",
-            "-e",
-            "SNOWFLAKE_TEST_URI",
-            "-e",
-            "REDSHIFT_TEST_DB_SCHEMA",
-            "-e",
-            "BIGQUERY_KEYFILE_CREDS",
-            "-e",
-            "BIGQUERY_DATASET",
-            "--rm",
-            CI_ARGS,
-            COMPOSE_SERVICE_NAME,
-            "pytest",
-            OPS_TEST_DIR,
-            "-m",
-            "integration_external",
-        )
-        session.run(*run_command, external=True)
-    elif mark == "saas":
-        # This test runs an additional integration Postgres database.
-        # Some connectors cannot be traversed with the standard email
-        # identity and require another dataset to provide a starting value.
-        #
-        #         ┌────────┐                 ┌────────┐
-        # email──►│postgres├──►delivery_id──►│doordash│
-        #         └────────┘                 └────────┘
-        #
-        session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
-        run_command = (
-            "docker",
-            "compose",
-            "run",
-            "-e",
-            "ANALYTICS_OPT_OUT",
-            "-e",
-            "VAULT_ADDR",
-            "-e",
-            "VAULT_NAMESPACE",
-            "-e",
-            "VAULT_TOKEN",
-            "--rm",
-            CI_ARGS,
-            COMPOSE_SERVICE_NAME,
-            "pytest",
-            OPS_TEST_DIR,
-            "-m",
-            "integration_saas",
-        )
-        session.run(*run_command, external=True)
+
+    validate_test_matrix(session)
+    coverage_arg = "--cov-report=xml"
+    TEST_MATRIX[test_group](session=session, coverage_arg=coverage_arg)
 
 
 @nox.session()

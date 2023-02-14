@@ -4,6 +4,7 @@ from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import conlist
 from sqlalchemy.orm import Session
@@ -26,7 +27,6 @@ from fides.api.ops.models.policy import (
 )
 from fides.api.ops.schemas import policy_webhooks as schemas
 from fides.api.ops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.lib.db.base_class import get_key_from_data
@@ -44,7 +44,7 @@ router = APIRouter(tags=["DSR Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
 def get_policy_pre_execution_webhooks(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
+    policy_key: FidesKey,
     params: Params = Depends(),
 ) -> AbstractPage[PolicyPreWebhook]:
     """
@@ -70,7 +70,7 @@ def get_policy_pre_execution_webhooks(
 def get_policy_post_execution_webhooks(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
+    policy_key: FidesKey,
     params: Params = Depends(),
 ) -> AbstractPage[PolicyPostWebhook]:
     """
@@ -89,7 +89,7 @@ def get_policy_post_execution_webhooks(
 
 def put_webhooks(
     webhook_cls: WebhookTypes,
-    policy_key: FidesOpsKey,
+    policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
     webhooks: List[schemas.PolicyWebhookCreate] = Body(...),
 ) -> List[WebhookTypes]:
@@ -175,7 +175,7 @@ def put_webhooks(
 )
 def create_or_update_pre_execution_webhooks(
     *,
-    policy_key: FidesOpsKey,
+    policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
     webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
 ) -> List[PolicyPreWebhook]:
@@ -198,7 +198,7 @@ def create_or_update_pre_execution_webhooks(
 )
 def create_or_update_post_execution_webhooks(
     *,
-    policy_key: FidesOpsKey,
+    policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
     webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
 ) -> List[PolicyPostWebhook]:
@@ -214,7 +214,7 @@ def create_or_update_post_execution_webhooks(
 def get_policy_webhook_or_error(
     db: Session,
     policy: Policy,
-    webhook_key: FidesOpsKey,
+    webhook_key: FidesKey,
     webhook_cls: WebhookTypes,
 ) -> WebhookTypes:
     """Helper method to load a Pre-Execution or Post-Execution Policy Webhook or 404
@@ -250,8 +250,8 @@ def get_policy_webhook_or_error(
 def get_policy_pre_execution_webhook(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
-    pre_webhook_key: FidesOpsKey,
+    policy_key: FidesKey,
+    pre_webhook_key: FidesKey,
 ) -> PolicyPreWebhook:
     """
     Loads the given Pre-Execution Webhook on the Policy
@@ -269,8 +269,8 @@ def get_policy_pre_execution_webhook(
 def get_policy_post_execution_webhook(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
-    post_webhook_key: FidesOpsKey,
+    policy_key: FidesKey,
+    post_webhook_key: FidesKey,
 ) -> PolicyPostWebhook:
     """
     Loads the given Post-Execution Webhook on the Policy
@@ -282,8 +282,8 @@ def get_policy_post_execution_webhook(
 def _patch_webhook(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
-    webhook_key: FidesOpsKey,
+    policy_key: FidesKey,
+    webhook_key: FidesKey,
     webhook_body: schemas.PolicyWebhookUpdate = Body(...),
     webhook_cls: WebhookTypes,
 ) -> schemas.PolicyWebhookUpdateResponse:
@@ -358,8 +358,8 @@ def _patch_webhook(
 def update_pre_execution_webhook(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
-    pre_webhook_key: FidesOpsKey,
+    policy_key: FidesKey,
+    pre_webhook_key: FidesKey,
     webhook_body: schemas.PolicyWebhookUpdate = Body(...),
 ) -> schemas.PolicyWebhookUpdateResponse:
     """PATCH a single Policy Pre-Execution Webhook that runs **prior** to executing the Privacy Request.
@@ -386,8 +386,8 @@ def update_pre_execution_webhook(
 def update_post_execution_webhook(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
-    post_webhook_key: FidesOpsKey,
+    policy_key: FidesKey,
+    post_webhook_key: FidesKey,
     webhook_body: schemas.PolicyWebhookUpdate = Body(...),
 ) -> schemas.PolicyWebhookUpdateResponse:
     """PATCH a single Policy Post-Execution Webhook that runs **after** executing the Privacy Request.
@@ -406,8 +406,8 @@ def update_post_execution_webhook(
 def delete_webhook(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
-    webhook_key: FidesOpsKey,
+    policy_key: FidesKey,
+    webhook_key: FidesKey,
     webhook_cls: WebhookTypes,
 ) -> PolicyWebhookDeleteResponse:
     """Handles deleting Pre- or Post-Execution Policy Webhooks. Related webhooks are reordered as necessary"""
@@ -455,8 +455,8 @@ def delete_webhook(
 def delete_pre_execution_webhook(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
-    pre_webhook_key: FidesOpsKey,
+    policy_key: FidesKey,
+    pre_webhook_key: FidesKey,
 ) -> schemas.PolicyWebhookDeleteResponse:
     """Delete the Pre-Execution Webhook from the Policy and reorder remaining webhooks as necessary."""
     return delete_webhook(
@@ -476,8 +476,8 @@ def delete_pre_execution_webhook(
 def delete_post_execution_webhook(
     *,
     db: Session = Depends(deps.get_db),
-    policy_key: FidesOpsKey,
-    post_webhook_key: FidesOpsKey,
+    policy_key: FidesKey,
+    post_webhook_key: FidesKey,
 ) -> schemas.PolicyWebhookDeleteResponse:
     """Delete the Post-Execution Webhook from the Policy and reorder remaining webhooks as necessary."""
     return delete_webhook(

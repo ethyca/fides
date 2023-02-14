@@ -15,7 +15,6 @@ import {
 import { YesNoOptions } from "../common/constants";
 import {
   CustomCreatableMultiSelect,
-  CustomMultiSelect,
   CustomRadioGroup,
   CustomSelect,
   CustomTextInput,
@@ -264,10 +263,11 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
 
   const renderExtraFormFields = (entity: DataSubject) => (
     <>
-      <CustomMultiSelect
+      <CustomSelect
         name="rights"
         label={labels.rights}
         options={enumToOptions(DataSubjectRightsEnum)}
+        isMulti
       />
       {/* @ts-ignore because of discrepancy between form and entity type, again */}
       {entity.rights && entity.rights.length ? (

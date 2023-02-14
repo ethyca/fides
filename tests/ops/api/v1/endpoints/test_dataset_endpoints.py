@@ -1,4 +1,5 @@
 import json
+import uuid
 from typing import Dict, List, Optional
 from unittest import mock
 from unittest.mock import Mock
@@ -7,8 +8,10 @@ import pydash
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
+from fideslang import Dataset
 from pydash import filter_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, make_transient
+from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
@@ -18,7 +21,9 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.api.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
+    DATASET_CONFIGS,
     DATASET_VALIDATE,
+    DATASETCONFIG_BY_KEY,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
@@ -178,7 +183,7 @@ class TestValidateDataset:
         assert response.status_code == 200
         assert (
             json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
-                "fidesops_meta"
+                "fides_meta"
             ]["length"]
             == 123
         )
@@ -192,7 +197,7 @@ class TestValidateDataset:
         assert response.status_code == 422
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "Illegal length (-1). Only positive non-zero values are allowed."
+            == "ensure this value is greater than 0"
         )
 
     def test_put_validate_dataset_invalid_data_type(
@@ -215,7 +220,7 @@ class TestValidateDataset:
         assert response.status_code == 200
         assert (
             json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
-                "fidesops_meta"
+                "fides_meta"
             ]["data_type"]
             == "string"
         )
@@ -265,7 +270,7 @@ class TestValidateDataset:
             0,
             "fields",
             0,
-            "fidesops_meta",
+            "fides_meta",
             "references",
             0,
             "direction",
@@ -288,7 +293,7 @@ class TestValidateDataset:
         )
         assert response.status_code == 422
         details = json.loads(response.text)["detail"]
-        assert ["body", "collections", 0, "fields", 0, "data_categories"] in [
+        assert ["collections", 0, "fields", 0, "data_categories"] in [
             e["loc"] for e in details
         ]
 
@@ -318,8 +323,8 @@ class TestValidateDataset:
         # Remove all the "reference" annotations; this will make traversal impossible
         for collection in invalid_dataset["collections"]:
             for field in collection["fields"]:
-                if field.get("fidesops_meta"):
-                    field["fidesops_meta"]["references"] = None
+                if field.get("fides_meta"):
+                    field["fides_meta"]["references"] = None
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
@@ -412,6 +417,469 @@ class TestValidateDataset:
         assert response_body["traversal_details"]["msg"] is None
 
 
+@pytest.mark.asyncio
+class TestPutDatasetConfigs:
+    @pytest.fixture
+    def datasets_url(self, connection_config) -> str:
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": connection_config.key}
+        return path.format(**path_params)
+
+    @pytest.fixture
+    def request_body(self, ctl_dataset):
+        return [
+            {
+                "fides_key": "test_fides_key",
+                "ctl_dataset_fides_key": ctl_dataset.fides_key,
+            }
+        ]
+
+    def test_patch_dataset_configs_not_authenticated(
+        self, datasets_url, api_client, request_body
+    ) -> None:
+        response = api_client.patch(datasets_url, headers={}, json=request_body)
+        assert response.status_code == 401
+
+    def test_patch_dataset_configs_wrong_scope(
+        self,
+        request_body,
+        datasets_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=request_body
+        )
+        assert response.status_code == 403
+
+    def test_create_dataset_configs_by_ctl_dataset_key(
+        self,
+        ctl_dataset,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        db,
+        request_body,
+    ):
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=request_body,
+        )
+        assert response.status_code == 200
+        dataset_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="test_fides_key"
+        )
+        assert dataset_config.ctl_dataset_id == ctl_dataset.id
+        assert (
+            dataset_config.ctl_dataset.fides_key == ctl_dataset.fides_key
+        ), "Differs from datasetconfig.fides_key in this case"
+
+        succeeded = response.json()["succeeded"][0]
+        assert (
+            succeeded["fides_key"] == "postgres_example_subscriptions_dataset"
+        ), "Returns the fides_key of the ctl_dataset not the DatasetConfig"
+        assert succeeded["collections"] == Dataset.from_orm(ctl_dataset).collections
+
+        dataset_config.delete(db)
+
+    def test_create_datasetconfigs_bad_data_category(
+        self,
+        ctl_dataset,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        db,
+        request_body,
+    ):
+        ctl_dataset.collections[0]["fields"][0]["data_categories"] = ["bad_category"]
+        flag_modified(ctl_dataset, "collections")
+        db.add(ctl_dataset)
+        db.commit()
+        db.refresh(ctl_dataset)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=request_body,
+        )
+        assert response.status_code == 422
+        dataset_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="test_fides_key"
+        )
+        assert dataset_config is None
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "The data category bad_category is not supported."
+        )
+
+    def test_create_datasets_configs_invalid_connection_key(
+        self, request_body, api_client: TestClient, generate_auth_header
+    ) -> None:
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": "nonexistent_key"}
+        datasets_url = path.format(**path_params)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=request_body
+        )
+        assert response.status_code == 404
+
+    def test_patch_dataset_configs_ctl_dataset_id_does_not_exist(
+        self, request_body, api_client: TestClient, generate_auth_header, datasets_url
+    ) -> None:
+        request_body.append(
+            {
+                "fides_key": "second_dataset_config",
+                "ctl_dataset_fides_key": "bad_ctl_dataset_key",
+            }
+        )
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=request_body
+        )
+        assert response.status_code == 404
+
+    def test_patch_dataset_configs_bulk_create_limit_exceeded(
+        self, api_client: TestClient, request_body, generate_auth_header, datasets_url
+    ):
+        payload = []
+        for i in range(0, 51):
+            payload.append(request_body[0])
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(datasets_url, headers=auth_header, json=payload)
+
+        assert 422 == response.status_code
+        assert (
+            json.loads(response.text)["detail"][0]["msg"]
+            == "ensure this value has at most 50 items"
+        )
+
+    def test_patch_create_dataset_configs_bulk_create(
+        self,
+        ctl_dataset,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        db,
+        request_body,
+    ):
+        request_body.append(
+            {
+                "fides_key": "second_dataset_config",
+                "ctl_dataset_fides_key": ctl_dataset.fides_key,
+            }
+        )
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=request_body,
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 2
+        assert len(response_body["failed"]) == 0
+
+        first_dataset_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="test_fides_key"
+        )
+        assert first_dataset_config.ctl_dataset == ctl_dataset
+        assert (
+            response_body["succeeded"][0]["collections"]
+            == Dataset.from_orm(first_dataset_config.ctl_dataset).collections
+        )
+        assert response_body["succeeded"][0]["fides_key"] == ctl_dataset.fides_key
+        assert len(first_dataset_config.ctl_dataset.collections) == 1
+
+        second_dataset_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="second_dataset_config"
+        )
+        assert (
+            response_body["succeeded"][1]["collections"]
+            == Dataset.from_orm(second_dataset_config.ctl_dataset).collections
+        )
+        assert response_body["succeeded"][1]["fides_key"] == ctl_dataset.fides_key
+        assert second_dataset_config.ctl_dataset == ctl_dataset
+
+        first_dataset_config.delete(db)
+        second_dataset_config.delete(db)
+
+    def test_patch_update_dataset_configs(
+        self,
+        ctl_dataset,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        db,
+        request_body,
+        dataset_config,
+    ):
+
+        old_ctl_dataset_id = dataset_config.ctl_dataset.id
+        assert dataset_config.ctl_dataset == ctl_dataset
+        updated = dataset_config.updated_at
+
+        db.expunge(ctl_dataset)
+        make_transient(ctl_dataset)
+
+        ctl_dataset.id = str(uuid.uuid4())
+        ctl_dataset.fides_key = "new_ctl_dataset"
+        ctl_dataset.description = "updated description"
+        db.add(ctl_dataset)
+        db.commit()
+        db.refresh(ctl_dataset)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": dataset_config.fides_key,
+                    "ctl_dataset_fides_key": "new_ctl_dataset",
+                }
+            ],
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+
+        db.refresh(dataset_config)
+        assert dataset_config.ctl_dataset_id != old_ctl_dataset_id
+        assert dataset_config.updated_at != updated
+        assert response_body["succeeded"][0]["fides_key"] == "new_ctl_dataset"
+        assert response_body["succeeded"][0]["description"] == "updated description"
+        assert dataset_config.ctl_dataset.description == "updated description"
+        assert len(dataset_config.ctl_dataset.collections) == 1
+
+    @pytest.mark.unit_saas
+    def test_patch_dataset_configs_missing_saas_config(
+        self,
+        saas_example_connection_config_without_saas_config,
+        saas_ctl_dataset,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {
+            "connection_key": saas_example_connection_config_without_saas_config.key
+        }
+        datasets_url = path.format(**path_params)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": saas_ctl_dataset.fides_key,
+                    "ctl_dataset_fides_key": saas_ctl_dataset.fides_key,
+                }
+            ],
+        )
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == f"Connection config '{saas_example_connection_config_without_saas_config.key}' "
+            "must have a SaaS config before validating or adding a dataset"
+        )
+
+    @pytest.mark.unit_saas
+    def test_patch_dataset_configs_extra_reference(
+        self,
+        saas_example_connection_config,
+        saas_ctl_dataset,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ):
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": saas_example_connection_config.key}
+        datasets_url = path.format(**path_params)
+
+        saas_ctl_dataset.collections[0]["fields"][0]["fides_meta"]["references"] = [
+            {
+                "dataset": "postgres_example_test_dataset",
+                "field": "another.field",
+                "direction": "from",
+            },
+        ]
+        flag_modified(saas_ctl_dataset, "collections")
+        db.add(saas_ctl_dataset)
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": saas_example_connection_config.saas_config[
+                        "fides_key"
+                    ],
+                    "ctl_dataset_fides_key": saas_ctl_dataset.fides_key,
+                }
+            ],
+        )
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "A dataset for a ConnectionConfig type of 'saas' is not allowed to have "
+            "references or identities. Please add them to the SaaS config."
+        )
+
+    @pytest.mark.unit_saas
+    def test_patch_dataset_configs_extra_identity(
+        self,
+        saas_example_connection_config,
+        saas_ctl_dataset,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ):
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": saas_example_connection_config.key}
+        datasets_url = path.format(**path_params)
+
+        saas_ctl_dataset.collections[0]["fields"][0]["fides_meta"]["identity"] = "email"
+        flag_modified(saas_ctl_dataset, "collections")
+        db.add(saas_ctl_dataset)
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": saas_example_connection_config.saas_config[
+                        "fides_key"
+                    ],
+                    "ctl_dataset_fides_key": saas_ctl_dataset.fides_key,
+                }
+            ],
+        )
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "A dataset for a ConnectionConfig type of 'saas' is not allowed to have "
+            "references or identities. Please add them to the SaaS config."
+        ), "Validation is done when attaching dataset to Saas Config"
+
+    @pytest.mark.unit_saas
+    def test_patch_dataset_configs_fides_key_mismatch(
+        self,
+        saas_example_connection_config,
+        saas_ctl_dataset,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ):
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": saas_example_connection_config.key}
+        datasets_url = path.format(**path_params)
+
+        saas_ctl_dataset.fides_key = "different_key"
+        db.add(saas_ctl_dataset)
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": saas_example_connection_config.saas_config[
+                        "fides_key"
+                    ],
+                    "ctl_dataset_fides_key": saas_ctl_dataset.fides_key,
+                }
+            ],
+        )
+
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "The fides_key 'different_key' of the dataset does not match the fides_key "
+            "'saas_connector_example' of the connection config"
+        )
+
+    @mock.patch("fides.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
+    def test_patch_dataset_configs_failed_response(
+        self,
+        mock_create: Mock,
+        request_body,
+        datasets_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=request_body
+        )
+        assert response.status_code == 200  # Returns 200 regardless
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+
+        for failed_response in response_body["failed"]:
+            assert "Dataset create/update failed" in failed_response["message"]
+            assert set(failed_response.keys()) == {"message", "data"}
+
+        for index, failed in enumerate(response_body["failed"]):
+            assert failed["data"]["fides_key"] == request_body[0]["fides_key"]
+
+    def test_patch_dataset_configs_failed_ctl_dataset_validation(
+        self,
+        ctl_dataset,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        db,
+        request_body,
+    ):
+        ctl_dataset.organization_fides_key = None
+        db.add(ctl_dataset)
+        db.commit()
+        db.refresh(ctl_dataset)
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=request_body,
+        )
+        assert response.status_code == 422
+
+
 class TestPutDatasets:
     @pytest.fixture
     def datasets_url(self, connection_config) -> str:
@@ -480,7 +948,6 @@ class TestPutDatasets:
         response = api_client.patch(
             datasets_url, headers=auth_header, json=example_datasets
         )
-
         assert response.status_code == 200
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 11
@@ -492,10 +959,13 @@ class TestPutDatasets:
             db=db, field="fides_key", value="postgres_example_test_dataset"
         )
         assert postgres_config is not None
+        postgres_ctl_dataset = postgres_config.ctl_dataset
+        assert postgres_ctl_dataset is not None
         assert postgres_dataset["fides_key"] == "postgres_example_test_dataset"
         assert postgres_dataset["name"] == "Postgres Example Test Dataset"
         assert "Example of a Postgres dataset" in postgres_dataset["description"]
         assert len(postgres_dataset["collections"]) == 11
+        assert len(postgres_ctl_dataset.collections) == 11
 
         # Check the mongo dataset was created as well
         mongo_dataset = response_body["succeeded"][1]
@@ -503,10 +973,13 @@ class TestPutDatasets:
             db=db, field="fides_key", value="mongo_test"
         )
         assert mongo_config is not None
+        mongo_ctl_dataset = mongo_config.ctl_dataset
+        assert mongo_ctl_dataset is not None
         assert mongo_dataset["fides_key"] == "mongo_test"
         assert mongo_dataset["name"] == "Mongo Example Test Dataset"
         assert "Example of a Mongo dataset" in mongo_dataset["description"]
         assert len(mongo_dataset["collections"]) == 9
+        assert len(mongo_ctl_dataset.collections) == 9
 
         # Check the mssql dataset
         mssql_dataset = response_body["succeeded"][4]
@@ -514,12 +987,15 @@ class TestPutDatasets:
             db=db, field="fides_key", value="mssql_example_test_dataset"
         )
         assert mssql_config is not None
+        mssql_ctl_dataset = mssql_config.ctl_dataset
+        assert mssql_ctl_dataset is not None
         assert mssql_dataset["fides_key"] == "mssql_example_test_dataset"
         assert mssql_dataset["name"] == "Microsoft SQLServer Example Test Dataset"
         assert (
             "Example of a Microsoft SQLServer dataset" in mssql_dataset["description"]
         )
         assert len(mssql_dataset["collections"]) == 11
+        assert len(mssql_ctl_dataset.collections) == 11
 
         # check the mysql dataset
         mysql_dataset = response_body["succeeded"][5]
@@ -527,10 +1003,13 @@ class TestPutDatasets:
             db=db, field="fides_key", value="mysql_example_test_dataset"
         )
         assert mysql_config is not None
+        mysql_ctl_dataset = mysql_config.ctl_dataset
+        assert mysql_ctl_dataset is not None
         assert mysql_dataset["fides_key"] == "mysql_example_test_dataset"
         assert mysql_dataset["name"] == "MySQL Example Test Dataset"
         assert "Example of a MySQL dataset" in mysql_dataset["description"]
         assert len(mysql_dataset["collections"]) == 11
+        assert len(mssql_ctl_dataset.collections) == 11
 
         # check the mariadb dataset
         mariadb_dataset = response_body["succeeded"][6]
@@ -538,16 +1017,28 @@ class TestPutDatasets:
             db=db, field="fides_key", value="mariadb_example_test_dataset"
         )
         assert mariadb_config is not None
+        mariadb_ctl_dataset = mariadb_config.ctl_dataset
+        assert mariadb_ctl_dataset is not None
         assert mariadb_dataset["fides_key"] == "mariadb_example_test_dataset"
         assert mariadb_dataset["name"] == "MariaDB Example Test Dataset"
         assert "Example of a MariaDB dataset" in mariadb_dataset["description"]
         assert len(mariadb_dataset["collections"]) == 11
+        assert len(mssql_ctl_dataset.collections) == 11
 
         postgres_config.delete(db)
+        postgres_ctl_dataset.delete(db)
+
         mongo_config.delete(db)
+        mongo_ctl_dataset.delete(db)
+
         mssql_config.delete(db)
+        mssql_ctl_dataset.delete(db)
+
         mysql_config.delete(db)
+        mysql_ctl_dataset.delete(db)
+
         mariadb_config.delete(db)
+        mariadb_ctl_dataset.delete(db)
 
     def test_patch_datasets_bulk_update(
         self,
@@ -616,6 +1107,9 @@ class TestPutDatasets:
         )
         assert postgres_config is not None
         assert postgres_config.updated_at is not None
+        postgres_ctl_dataset = postgres_config.ctl_dataset
+        assert postgres_ctl_dataset is not None
+        assert len(postgres_ctl_dataset.collections) == 1
 
         # test mongo
         mongo_dataset = response_body["succeeded"][1]
@@ -628,6 +1122,11 @@ class TestPutDatasets:
         )
         assert mongo_config is not None
         assert mongo_config.updated_at is not None
+        mongo_ctl_dataset = mongo_config.ctl_dataset
+        assert mongo_ctl_dataset is not None
+        assert "birthday" not in [
+            f["name"] for f in mongo_ctl_dataset.collections[0]["fields"]
+        ]  # "birthday field should be removed
 
         # test snowflake
         snowflake_dataset = response_body["succeeded"][2]
@@ -640,6 +1139,10 @@ class TestPutDatasets:
         )
         assert snowflake_config is not None
         assert snowflake_config.updated_at is not None
+        snowflake_ctl_dataset = snowflake_config.ctl_dataset
+        assert "city" not in [
+            f["name"] for f in snowflake_ctl_dataset.collections[0]["fields"]
+        ]
 
         # test mssql
         mssql_dataset = response_body["succeeded"][4]
@@ -652,6 +1155,11 @@ class TestPutDatasets:
         )
         assert mssql_config is not None
         assert mssql_config.updated_at is not None
+        mssql_ctl_dataset = mssql_config.ctl_dataset
+        assert mssql_ctl_dataset is not None
+        assert "city" not in [
+            f["name"] for f in mssql_ctl_dataset.collections[0]["fields"]
+        ]
 
         # test bigquery
         bigquery_dataset = response_body["succeeded"][7]
@@ -664,12 +1172,25 @@ class TestPutDatasets:
         )
         assert bigquery_config is not None
         assert bigquery_config.updated_at is not None
+        bigquery_ctl_dataset = bigquery_config.ctl_dataset
+        assert "city" not in [
+            f["name"] for f in bigquery_ctl_dataset.collections[0]["fields"]
+        ]
 
         postgres_config.delete(db)
+        postgres_ctl_dataset.delete(db)
+
         mongo_config.delete(db)
+        mongo_ctl_dataset.delete(db)
+
         snowflake_config.delete(db)
+        snowflake_ctl_dataset.delete(db)
+
         mssql_config.delete(db)
+        mssql_ctl_dataset.delete(db)
+
         bigquery_config.delete(db)
+        bigquery_ctl_dataset.delete(db)
 
     @pytest.mark.unit_saas
     def test_patch_datasets_missing_saas_config(
@@ -804,7 +1325,9 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fides.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch(
+        "fides.api.ops.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset"
+    )
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -898,7 +1421,9 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
-    @mock.patch("fides.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch(
+        "fides.api.ops.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset"
+    )
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -1019,6 +1544,53 @@ class TestGetDatasets:
         assert response_body["size"] == Params().size
 
 
+class TestGetDatasetConfigs:
+    @pytest.fixture
+    def datasets_url(self, connection_config) -> str:
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": connection_config.key}
+        return path.format(**path_params)
+
+    def test_get_dataset_configs_not_authenticated(
+        self, datasets_url, api_client: TestClient
+    ) -> None:
+        response = api_client.get(datasets_url, headers={})
+        assert response.status_code == 401
+
+    def test_get_dataset_configs_invalid_connection_key(
+        self, datasets_url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": "nonexistent_key"}
+        datasets_url = path.format(**path_params)
+
+        response = api_client.get(datasets_url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_get_dataset_configs(
+        self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(datasets_url, headers=auth_header)
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert len(response_body["items"]) == 1
+        dataset_response = response_body["items"][0]
+        assert dataset_response["fides_key"] == "postgres_example_subscriptions_dataset"
+
+        assert (
+            dataset_response["ctl_dataset"]["fides_key"]
+            == "postgres_example_subscriptions_dataset"
+        )
+        assert len(dataset_response["ctl_dataset"]["collections"]) == 1
+
+        assert response_body["total"] == 1
+        assert response_body["page"] == 1
+        assert response_body["size"] == Params().size
+
+
 def get_dataset_url(
     connection_config: Optional[ConnectionConfig] = None,
     dataset_config: Optional[DatasetConfig] = None,
@@ -1097,6 +1669,88 @@ class TestGetDataset:
         assert len(response_body["collections"]) == 1
 
 
+def get_dataset_config_url(
+    connection_config: Optional[ConnectionConfig] = None,
+    dataset_config: Optional[DatasetConfig] = None,
+) -> str:
+    """Helper to construct the DATASETCONFIG_BY_KEY URL, substituting valid/invalid keys in the path"""
+    path = V1_URL_PREFIX + DATASETCONFIG_BY_KEY
+    connection_key = "nonexistent_key"
+    if connection_config:
+        connection_key = connection_config.key
+    fides_key = "nonexistent_key"
+    if dataset_config:
+        fides_key = dataset_config.fides_key
+    path_params = {"connection_key": connection_key, "fides_key": fides_key}
+    return path.format(**path_params)
+
+
+class TestGetDatasetConfig:
+    def test_get_dataset_config_not_authenticated(
+        self, dataset_config, connection_config, api_client
+    ) -> None:
+        dataset_url = get_dataset_config_url(connection_config, dataset_config)
+        response = api_client.get(dataset_url, headers={})
+        assert response.status_code == 401
+
+    def test_get_dataset_config_wrong_scope(
+        self,
+        dataset_config,
+        connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_dataset_config_url(connection_config, dataset_config)
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.get(dataset_url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_dataset_config_does_not_exist(
+        self,
+        dataset_config,
+        connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_dataset_config_url(connection_config, None)
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(dataset_url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_get_dataset_config_invalid_connection_key(
+        self,
+        dataset_config,
+        connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_dataset_config_url(None, dataset_config)
+        dataset_url.replace(connection_config.key, "nonexistent_key")
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(dataset_url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_get_dataset_config(
+        self,
+        dataset_config,
+        connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        dataset_url = get_dataset_config_url(connection_config, dataset_config)
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(dataset_url, headers=auth_header)
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert response_body["fides_key"] == dataset_config.fides_key
+        assert (
+            response_body["ctl_dataset"]["fides_key"]
+            == dataset_config.ctl_dataset.fides_key
+        )
+        assert len(response_body["ctl_dataset"]["collections"]) == 1
+
+
 class TestDeleteDataset:
     def test_delete_dataset_not_authenticated(
         self, dataset_config, connection_config, api_client
@@ -1147,6 +1801,7 @@ class TestDeleteDataset:
         connection_config,
         api_client: TestClient,
         generate_auth_header,
+        ctl_dataset,
     ) -> None:
         # Create a new dataset config so we don't run into issues trying to clean up an
         # already deleted fixture
@@ -1155,24 +1810,7 @@ class TestDeleteDataset:
             data={
                 "connection_config_id": connection_config.id,
                 "fides_key": "postgres_example_subscriptions",
-                "dataset": {
-                    "fides_key": "postgres_example_subscriptions",
-                    "name": "Postgres Example Subscribers Dataset",
-                    "description": "Example Postgres dataset created in test fixtures",
-                    "dataset_type": "PostgreSQL",
-                    "location": "postgres_example.test",
-                    "collections": [
-                        {
-                            "name": "subscriptions",
-                            "fields": [
-                                {
-                                    "name": "id",
-                                    "data_categories": ["system.operations"],
-                                },
-                            ],
-                        },
-                    ],
-                },
+                "ctl_dataset_id": ctl_dataset.id,
             },
         )
 

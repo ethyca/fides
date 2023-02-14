@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fides.api.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
@@ -122,5 +124,51 @@ def test_mask_arguments_null():
     cache_secret(secret_salt, request_id)
 
     masked = masker.mask(None, request_id)
+    assert expected == masked
+    clear_cache_secrets(request_id)
+
+
+def test_mask_arguments_null_list():
+    configuration = HmacMaskingConfiguration()
+    masker = HmacMaskingStrategy(configuration)
+    expected = [None]
+
+    secret_key = MaskingSecretCache[str](
+        secret="test_key",
+        masking_strategy=HmacMaskingStrategy.name,
+        secret_type=SecretType.key,
+    )
+    cache_secret(secret_key, request_id)
+    secret_salt = MaskingSecretCache[str](
+        secret="test_salt",
+        masking_strategy=HmacMaskingStrategy.name,
+        secret_type=SecretType.salt,
+    )
+    cache_secret(secret_salt, request_id)
+
+    masked = masker.mask([None], request_id)
+    assert expected == masked
+    clear_cache_secrets(request_id)
+
+
+def test_mask_arguments_date():
+    configuration = HmacMaskingConfiguration()
+    masker = HmacMaskingStrategy(configuration)
+    expected = ["68cecd9f5bf6c4788da1513d64867b83eca1f7a260be104cb7a437dc863fc917"]
+
+    secret_key = MaskingSecretCache[str](
+        secret="test_key",
+        masking_strategy=HmacMaskingStrategy.name,
+        secret_type=SecretType.key,
+    )
+    cache_secret(secret_key, request_id)
+    secret_salt = MaskingSecretCache[str](
+        secret="test_salt",
+        masking_strategy=HmacMaskingStrategy.name,
+        secret_type=SecretType.salt,
+    )
+    cache_secret(secret_salt, request_id)
+
+    masked = masker.mask([datetime(2000, 1, 1)], request_id)
     assert expected == masked
     clear_cache_secrets(request_id)

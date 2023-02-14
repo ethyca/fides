@@ -3,8 +3,8 @@ import pytest
 from fides.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     Collection,
-    Dataset,
     FieldAddress,
+    GraphDataset,
     ScalarField,
 )
 from fides.api.ops.graph.graph import Edge, Node
@@ -24,7 +24,7 @@ def generate_node_with_data_category(
             ScalarField(name=s, data_categories=[data_category]) for s in field_names
         ],
     )
-    dr = Dataset(
+    dr = GraphDataset(
         name=dr_name,
         collections=[ds],
         connection_key=f"mock_connection_config_key_{dr_name}",

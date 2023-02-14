@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import drop_database
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -102,16 +103,19 @@ def doordash_dataset_config(
     doordash_connection_config.name = fides_key
     doordash_connection_config.key = fides_key
     doordash_connection_config.save(db=db)
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, doordash_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": doordash_connection_config.id,
             "fides_key": fides_key,
-            "dataset": doordash_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture()
@@ -149,16 +153,20 @@ def doordash_postgres_dataset_config(
     connection_config.name = fides_key
     connection_config.key = fides_key
     connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, doordash_postgres_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config.id,
             "fides_key": fides_key,
-            "dataset": doordash_postgres_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db)
 
 
 @pytest.fixture(scope="function")

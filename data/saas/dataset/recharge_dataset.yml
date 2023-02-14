@@ -91,7 +91,6 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: shopify_customer_id
-            data_categories: [system.operations]
             fidesops_meta:
               data_type: object
           - name: status

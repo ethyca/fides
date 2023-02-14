@@ -1,21 +1,21 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
+from fideslang.models import FidesCollectionKey, FidesDatasetReference
+from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator, validator
 
 from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
-    Dataset,
     Field,
     FieldAddress,
+    GraphDataset,
     ScalarField,
 )
 from fides.api.ops.schemas.base_class import BaseSchema
-from fides.api.ops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class ParamValue(BaseModel):
@@ -26,17 +26,17 @@ class ParamValue(BaseModel):
 
     name: str
     identity: Optional[str]
-    references: Optional[List[Union[FidesopsDatasetReference, str]]]
+    references: Optional[List[Union[FidesDatasetReference, str]]]
     connector_param: Optional[str]
     unpack: Optional[bool] = False
 
     @validator("references")
     def check_reference_direction(
-        cls, references: Optional[List[Union[FidesopsDatasetReference, str]]]
-    ) -> Optional[List[Union[FidesopsDatasetReference, str]]]:
+        cls, references: Optional[List[Union[FidesDatasetReference, str]]]
+    ) -> Optional[List[Union[FidesDatasetReference, str]]]:
         """Validates the request_param only contains inbound references"""
         for reference in references or {}:
-            if isinstance(reference, FidesopsDatasetReference):
+            if isinstance(reference, FidesDatasetReference):
                 if reference.direction == "to":
                     raise ValueError(
                         "References can only have a direction of 'from', found 'to'"
@@ -104,6 +104,9 @@ class SaaSRequest(BaseModel):
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[bool] = False
     rate_limit_config: Optional[RateLimitConfig]
+    skip_missing_param_values: Optional[
+        bool
+    ] = False  # Skip instead of raising an exception if placeholders can't be populated in body
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -158,8 +161,8 @@ class SaaSRequest(BaseModel):
                         # reference may be a str, in which case it's an external reference.
                         # since external references are parameterized via secrets,
                         # they cannot be resolved and checked at this point in the validation.
-                        # so here we only perform the check if the reference is a FidesopsDatasetReference
-                        if isinstance(param.references[0], FidesopsDatasetReference):
+                        # so here we only perform the check if the reference is a FidesDatasetReference
+                        if isinstance(param.references[0], FidesDatasetReference):
                             collect = param.references[0].field.split(".")[0]
                             referenced_collections.append(collect)
                         else:
@@ -211,8 +214,29 @@ class SaaSRequestMap(BaseModel):
     delete: Optional[SaaSRequest]
 
 
+class ConsentRequestMap(BaseModel):
+    """A map of actions to Consent requests"""
+
+    opt_in: Union[SaaSRequest, List[SaaSRequest]] = []
+    opt_out: Union[SaaSRequest, List[SaaSRequest]] = []
+
+    @validator("opt_in", "opt_out")
+    def validate_list_field(
+        cls,
+        field_value: Union[SaaSRequest, List[SaaSRequest]],
+    ) -> List[SaaSRequest]:
+        """Convert all opt_in/opt_out request formats to a list of requests.
+
+        We allow either a single request or a list of requests to be defined, but this makes
+        sure that everything is a list once that data has been read in.
+        """
+        if isinstance(field_value, SaaSRequest):
+            return [field_value]
+        return field_value
+
+
 class Endpoint(BaseModel):
-    """A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
+    """A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"""
 
     name: str
     requests: SaaSRequestMap
@@ -294,12 +318,12 @@ class SaaSConfigBase(BaseModel):
     Used to store base info for a saas config
     """
 
-    fides_key: FidesOpsKey
+    fides_key: FidesKey
     name: str
     type: str
 
     @property
-    def fides_key_prop(self) -> FidesOpsKey:
+    def fides_key_prop(self) -> FidesKey:
         return self.fides_key
 
     @property
@@ -337,13 +361,14 @@ class SaaSConfig(SaaSConfigBase):
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
     rate_limit_config: Optional[RateLimitConfig]
+    consent_requests: Optional[ConsentRequestMap]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
         """Returns a map of endpoint names mapped to Endpoints"""
         return {endpoint.name: endpoint for endpoint in self.endpoints}
 
-    def get_graph(self, secrets: Dict[str, Any]) -> Dataset:
+    def get_graph(self, secrets: Dict[str, Any]) -> GraphDataset:
         """Converts endpoints to a Dataset with collections and field references"""
         collections = []
         for endpoint in self.endpoints:
@@ -388,7 +413,7 @@ class SaaSConfig(SaaSConfigBase):
                     )
                 )
 
-        return Dataset(
+        return GraphDataset(
             name=super().name_prop,
             collections=collections,
             connection_key=super().fides_key_prop,
@@ -423,24 +448,24 @@ class SaaSConfig(SaaSConfigBase):
 
     @staticmethod
     def resolve_param_reference(
-        reference: Union[str, FidesopsDatasetReference], secrets: Dict[str, Any]
-    ) -> FidesopsDatasetReference:
+        reference: Union[str, FidesDatasetReference], secrets: Dict[str, Any]
+    ) -> FidesDatasetReference:
         """
         If needed, resolves the given `reference` using the provided `secrets` `dict`.
-        For ease of use, the given `reference` can either be a `str` or `FidesopsDatasetReference`,
+        For ease of use, the given `reference` can either be a `str` or `FidesDatasetReference`,
         since a `ParamValue`'s `reference` may be of either type.
 
         If the `reference` is a `str`, then it's used as a key look up a value in the provided secrets dict,
-        and a `FidesopsDatasetReference` is created and returned from the retrieved secrets object.
+        and a `FidesDatasetReference` is created and returned from the retrieved secrets object.
 
-        If the `reference` is a `FidesopsDatasetReference`, then it's just returned as-is.
+        If the `reference` is a `FidesDatasetReference`, then it's just returned as-is.
         """
         if isinstance(reference, str):
             if reference not in secrets.keys():
                 raise ValidationError(
                     f"External dataset reference with provided name {reference} not found in connector's secrets."
                 )
-            reference = FidesopsDatasetReference.parse_obj(secrets[reference])
+            reference = FidesDatasetReference.parse_obj(secrets[reference])
         return reference
 
 

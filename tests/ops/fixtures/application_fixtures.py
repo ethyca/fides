@@ -12,7 +12,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
+from fides.api.ctl.sql_models import System
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -30,13 +33,19 @@ from fides.api.ops.models.policy import (
 )
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.models.registration import UserRegistration
-from fides.api.ops.models.storage import ResponseFormat, StorageConfig
+from fides.api.ops.models.storage import (
+    ResponseFormat,
+    StorageConfig,
+    _create_local_default_storage,
+    default_storage_config_name,
+)
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     S3AuthMethod,
@@ -175,6 +184,50 @@ def storage_config_local(db: Session) -> Generator:
     )
     yield storage_config
     storage_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def storage_config_default(db: Session) -> Generator:
+    """
+    Create and yield a default storage config, as defined by its
+    `is_default` flag being set to `True`. This is an s3 storage config.
+    """
+    sc = StorageConfig.create(
+        db=db,
+        data={
+            "name": default_storage_config_name(StorageType.s3.value),
+            "type": StorageType.s3,
+            "is_default": True,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
+                StorageDetails.BUCKET.value: "test_bucket",
+            },
+            "format": ResponseFormat.json,
+        },
+    )
+    yield sc
+
+
+@pytest.fixture(scope="function")
+def storage_config_default_local(db: Session) -> Generator:
+    """
+    Create and yield the default local storage config.
+    """
+    sc = _create_local_default_storage(db)
+    yield sc
+
+
+@pytest.fixture(scope="function")
+def set_active_storage_s3(db) -> None:
+    ApplicationConfig.create_or_update(
+        db,
+        data={
+            "api_set": {
+                "storage": {"active_default_storage_type": StorageType.s3.value}
+            }
+        },
+    )
 
 
 @pytest.fixture(scope="function")
@@ -663,6 +716,43 @@ def policy(
         pass
     try:
         access_request_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def consent_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    """Consent policies only need a ConsentRule attached - no RuleTargets necessary"""
+    consent_request_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example consent request policy",
+            "key": "example_consent_request_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    consent_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.consent.value,
+            "client_id": oauth_client.id,
+            "name": "Consent Request Rule",
+            "policy_id": consent_request_policy.id,
+        },
+    )
+
+    yield consent_request_policy
+    try:
+        consent_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        consent_request_policy.delete(db)
     except ObjectDeletedError:
         pass
 
@@ -1214,8 +1304,43 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
+def ctl_dataset(db: Session, example_datasets):
+    dataset = CtlDataset(
+        fides_key="postgres_example_subscriptions_dataset",
+        organization_fides_key="default_organization",
+        name="Postgres Example Subscribers Dataset",
+        description="Example Postgres dataset created in test fixtures",
+        data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        retention="No retention or erasure policy",
+        collections=[
+            {
+                "name": "subscriptions",
+                "fields": [
+                    {
+                        "name": "id",
+                        "data_categories": ["system.operations"],
+                    },
+                    {
+                        "name": "email",
+                        "data_categories": ["user.contact.email"],
+                        "fidesops_meta": {
+                            "identity": "email",
+                        },
+                    },
+                ],
+            },
+        ],
+    )
+    db.add(dataset)
+    db.commit()
+    yield dataset
+    dataset.delete(db)
+
+
+@pytest.fixture(scope="function")
 def dataset_config(
     connection_config: ConnectionConfig,
+    ctl_dataset,
     db: Session,
 ) -> Generator:
     dataset_config = DatasetConfig.create(
@@ -1223,31 +1348,7 @@ def dataset_config(
         data={
             "connection_config_id": connection_config.id,
             "fides_key": "postgres_example_subscriptions_dataset",
-            "dataset": {
-                "fides_key": "postgres_example_subscriptions_dataset",
-                "name": "Postgres Example Subscribers Dataset",
-                "description": "Example Postgres dataset created in test fixtures",
-                "dataset_type": "PostgreSQL",
-                "location": "postgres_example.test",
-                "collections": [
-                    {
-                        "name": "subscriptions",
-                        "fields": [
-                            {
-                                "name": "id",
-                                "data_categories": ["system.operations"],
-                            },
-                            {
-                                "name": "email",
-                                "data_categories": ["user.contact.email"],
-                                "fidesops_meta": {
-                                    "identity": "email",
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset_config
@@ -1256,38 +1357,17 @@ def dataset_config(
 
 @pytest.fixture(scope="function")
 def dataset_config_preview(
-    connection_config: ConnectionConfig, db: Session
+    connection_config: ConnectionConfig, db: Session, ctl_dataset
 ) -> Generator:
+    ctl_dataset.fides_key = "postgres"
+    db.add(ctl_dataset)
+    db.commit()
     dataset_config = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config.id,
             "fides_key": "postgres",
-            "dataset": {
-                "fides_key": "postgres",
-                "name": "Postgres Example Subscribers Dataset",
-                "description": "Example Postgres dataset created in test fixtures",
-                "dataset_type": "PostgreSQL",
-                "location": "postgres_example.test",
-                "collections": [
-                    {
-                        "name": "subscriptions",
-                        "fields": [
-                            {
-                                "name": "id",
-                                "data_categories": ["system.operations"],
-                            },
-                            {
-                                "name": "email",
-                                "data_categories": ["user.contact.email"],
-                                "fidesops_meta": {
-                                    "identity": "email",
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset_config
@@ -1481,3 +1561,17 @@ def authenticated_fides_client(
 ) -> FidesClient:
     test_fides_client.login()
     return test_fides_client
+
+
+@pytest.fixture(scope="function")
+def system(db: Session) -> System:
+
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+        },
+    )
+    return system

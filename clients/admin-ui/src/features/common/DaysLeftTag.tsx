@@ -1,13 +1,22 @@
 import { Tag } from "@fidesui/react";
 import React from "react";
 
+import { PrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
+
 type DaysLeftTagProps = {
   daysLeft?: number;
   includeText: boolean;
+  status: PrivacyRequestStatus;
 };
 
-const DaysLeftTag = ({ daysLeft, includeText }: DaysLeftTagProps) => {
-  if (!daysLeft) {
+const DaysLeftTag = ({ daysLeft, includeText, status }: DaysLeftTagProps) => {
+  if (
+    !daysLeft ||
+    status === PrivacyRequestStatus.COMPLETE ||
+    status === PrivacyRequestStatus.CANCELED ||
+    status === PrivacyRequestStatus.DENIED ||
+    status === PrivacyRequestStatus.IDENTITY_UNVERIFIED
+  ) {
     return null;
   }
 

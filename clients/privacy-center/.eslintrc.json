@@ -19,6 +19,13 @@
       {
         "namedComponents": "arrow-function"
       }
+    ],
+    "no-param-reassign": [
+      "error",
+      {
+        "props": true,
+        "ignorePropertyModificationsForRegex": ["^draft"]
+      }
     ]
   }
 }

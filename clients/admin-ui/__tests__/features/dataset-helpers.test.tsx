@@ -135,7 +135,8 @@ describe("dataset helpers", () => {
 
       const updatedDataset = getUpdatedDatasetFromClassifyDataset(
         originalDataset,
-        classifyDataset
+        classifyDataset,
+        classifyDataset.collections[0].name
       );
 
       // It should return a new object.

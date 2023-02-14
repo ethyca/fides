@@ -12,3 +12,5 @@ export const hostUrl =
   process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
     ? config.server_url_development || (config as any).fidesops_host_development
     : config.server_url_production || (config as any).fidesops_host_production;
+
+export const defaultIdentityInput = { email: "optional" };

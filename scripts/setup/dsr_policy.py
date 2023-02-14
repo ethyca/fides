@@ -43,12 +43,10 @@ def create_rule(
     auth_header: Dict[str, str],
     policy_key: str = constants.DEFAULT_ACCESS_POLICY,
     rule_key: str = constants.DEFAULT_ACCESS_POLICY_RULE,
-    storage_key: str = constants.DEFAULT_STORAGE_KEY,
     action_type: str = "access",
 ):
     rules = [
         {
-            "storage_destination_key": storage_key,
             "name": f"Example {action_type} Rule",
             "action_type": action_type,
             "key": rule_key,

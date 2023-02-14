@@ -20,7 +20,7 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
     </Head>
     <Header />
     <NavTopBar />
-    <Flex flexDirection="column" gap="40px" py={10} width="100vw">
+    <Flex flexDirection="column" gap="40px" width="100vw">
       {children}
     </Flex>
   </div>

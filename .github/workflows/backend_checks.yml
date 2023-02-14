@@ -50,7 +50,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build container
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -94,43 +94,59 @@ jobs:
         run: nox -s ${{ matrix.session_name }}
 
   #################
-  ## Safe Checks ##
+  ## Misc Checks ##
   #################
+  Misc-Tests:
+    needs: Build
+    strategy:
+      matrix:
+        test_selection:
+          - "check_fides_annotations"
+          - "fides_db_scan"
+          - "docs_check"
+          - "minimal_config_startup"
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run test suite
+        run: nox -s "${{ matrix.test_selection }}"
+
+  ################
+  ## Safe Tests ##
+  ################
   Safe-Tests:
     needs: Build
     strategy:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
         test_selection:
-          - "pytest_ctl(not-external)"
-          - "pytest_ops(unit)"
-          - "pytest_ops(integration)"
-          - "pytest_lib"
-          - "check_fides_annotations"
-          - "fides_db_scan"
-          - "docs_check"
-          - "minimal_config_startup"
-        exclude:
-          # Not all jobs need to run against the Python matrix
-          - python_version: "3.8.14"
-            test_selection: "check_fides_annotations"
-          - python_version: "3.9.14"
-            test_selection: "check_fides_annotations"
-
-          - python_version: "3.8.14"
-            test_selection: "fides_db_scan"
-          - python_version: "3.9.14"
-            test_selection: "fides_db_scan"
-
-          - python_version: "3.8.14"
-            test_selection: "docs_check"
-          - python_version: "3.9.14"
-            test_selection: "docs_check"
-
-          - python_version: "3.8.14"
-            test_selection: "minimal_config_startup"
-          - python_version: "3.9.14"
-            test_selection: "minimal_config_startup"
+          - "ctl-not-external"
+          - "ops-unit"
+          - "ops-integration"
+          - "lib"
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -158,7 +174,13 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run test suite
-        run: nox -s "${{ matrix.test_selection }}"
+        run: nox -s "pytest(${{ matrix.test_selection }})"
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
 
   ##################
   ## Unsafe Tests ##
@@ -175,7 +197,6 @@ jobs:
     timeout-minutes: 15
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -193,7 +214,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run external test suite
-        run: nox -s "pytest_ctl(external)"
+        run: nox -s "pytest(ctl-external)"
         env:
           SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
           REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}
@@ -213,7 +234,6 @@ jobs:
     timeout-minutes: 15
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -237,13 +257,12 @@ jobs:
           BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
           BIGQUERY_DATASET: fidesopstest
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
-        run: nox -s "pytest_ops(external-datastores)"
+        run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
     needs: Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    continue-on-error: true
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     permissions:
@@ -282,4 +301,4 @@ jobs:
         env:
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
-        run: nox -s "pytest_ops(saas)"
+        run: nox -s "pytest(ops-saas)"

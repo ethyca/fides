@@ -5,6 +5,7 @@ import pytest
 import requests
 from sqlalchemy.orm import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -99,16 +100,20 @@ def outreach_dataset_config(
     outreach_connection_config.name = fides_key
     outreach_connection_config.key = fides_key
     outreach_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, outreach_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": outreach_connection_config.id,
             "fides_key": fides_key,
-            "dataset": outreach_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")
