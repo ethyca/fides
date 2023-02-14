@@ -27,6 +27,7 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.db.session import Session, get_db_engine, get_db_session
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
+from tests.conftest import create_citext_extension
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
@@ -67,11 +68,14 @@ def db(api_client) -> Generator:
         database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )
 
+    create_citext_extension(engine)
+
     if not scheduler.running:
         scheduler.start()
     SessionLocal = get_db_session(CONFIG, engine=engine)
     the_session = SessionLocal()
     # Setup above...
+
     yield the_session
     # Teardown below...
     the_session.close()

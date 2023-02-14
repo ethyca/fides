@@ -203,6 +203,7 @@ const Login: NextPage = () => {
                             onBlur={handleBlur}
                             value={values.email}
                             isInvalid={touched.email && Boolean(errors.email)}
+                            data-testid="input-username"
                           />
                           <FormErrorMessage>{errors.email}</FormErrorMessage>
                         </FormControl>
@@ -228,6 +229,7 @@ const Login: NextPage = () => {
                             isInvalid={
                               touched.password && Boolean(errors.password)
                             }
+                            data-testid="input-password"
                           />
                           <FormErrorMessage>{errors.password}</FormErrorMessage>
                         </FormControl>
@@ -240,6 +242,7 @@ const Login: NextPage = () => {
                           disabled={!values.email || !values.password}
                           isLoading={isLoading}
                           colorScheme="primary"
+                          data-testid="sign-in-btn"
                         >
                           Sign in
                         </Button>

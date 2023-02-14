@@ -7,11 +7,7 @@ import { COUNTRY_OPTIONS } from "~/features/common/countries";
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { Dataset } from "~/types/api";
 
-import {
-  CustomMultiSelect,
-  CustomSelect,
-  CustomTextInput,
-} from "../common/form/inputs";
+import { CustomSelect, CustomTextInput } from "../common/form/inputs";
 import { DATA_QUALIFIERS, DATASET } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 
@@ -82,13 +78,14 @@ const EditDatasetForm = ({ values, onSubmit }: Props) => {
             tooltip={DATASET.data_qualifiers.tooltip}
             data-testid="identifiability-input"
           />
-          <CustomMultiSelect
+          <CustomSelect
             name="third_country_transfers"
             label="Geographic location"
             tooltip={DATASET.third_country_transfers.tooltip}
             isSearchable
             options={COUNTRY_OPTIONS}
             data-testid="geography-input"
+            isMulti
           />
           <DataCategoryInput
             dataCategories={allDataCategories}

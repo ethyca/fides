@@ -8,7 +8,7 @@ import * as Yup from "yup";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
-  CustomMultiSelect,
+  CustomSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -180,11 +180,12 @@ const DescribeSystemStep = ({
                 }
                 tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
               />
-              <CustomMultiSelect
+              <CustomSelect
                 label="System dependencies"
                 name="system_dependencies"
                 tooltip="A list of fides keys to model dependencies."
                 options={systemOptions}
+                isMulti
               />
               {!abridged ? (
                 <DescribeSystemsFormExtension values={values} />

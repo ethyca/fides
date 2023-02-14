@@ -60,6 +60,7 @@ module = [
   "twilio.*",
   "uvicorn.*",
   "validators.*",
+  "citext.*",
 ]
 ignore_missing_imports = true
 
@@ -156,11 +157,14 @@ log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
 log_level = "INFO"
-addopts = ["--cov=fides",
-            "--cov-branch",
-            "-ra",
-            "-vv",
-            "--disable-pytest-warnings"]
+addopts = [
+    "--cov=fides",
+    "--cov-branch",
+    "--no-cov-on-fail",
+    "-ra",
+    "-vv",
+    "--disable-pytest-warnings"
+]
 markers = [
     "unit: only runs tests that don't require non-python dependencies (i.e. a database)",
     "integration: only runs tests that require application dependencies (i.e. a database)",
@@ -193,6 +197,7 @@ markers = [
     "integration_segment",
     "integration_sendgrid",
     "integration_friendbuy",
+    "integration_braintree",
     "integration_auth0",
     "integration_shopify",
     "integration_square",
