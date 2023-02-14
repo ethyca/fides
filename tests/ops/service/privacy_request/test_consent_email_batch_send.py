@@ -11,9 +11,10 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
-    AdvancedSettings,
+    AdvancedSettingsWithExtendedIdentityTypes,
+    ExtendedConsentEmailSchema,
+    ExtendedIdentityTypes,
 )
 from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
 from fides.api.ops.schemas.privacy_request import Consent
@@ -330,7 +331,7 @@ class TestConsentEmailBatchSendHelperFunctions:
 
         assert starting_resources == [
             BatchedUserConsentData(
-                connection_secrets=ConsentEmailSchema(
+                connection_secrets=ExtendedConsentEmailSchema(
                     third_party_vendor_name="Sovrn",
                     recipient_email_address=sovrn_email_connection_config.secrets[
                         "recipient_email_address"
@@ -338,8 +339,10 @@ class TestConsentEmailBatchSendHelperFunctions:
                     test_email_address=sovrn_email_connection_config.secrets[
                         "test_email_address"
                     ],
-                    advanced_settings=AdvancedSettings(
-                        browser_identity_types=["ljt_readerID"], identity_types=[]
+                    advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
+                        identity_types=ExtendedIdentityTypes(
+                            email=False, phone_number=False, cookie_ids=["ljt_readerID"]
+                        )
                     ),
                 ),
                 connection_name=sovrn_email_connection_config.name,
@@ -461,7 +464,7 @@ class TestConsentEmailBatchSendHelperFunctions:
         """Test that connectors that have no relevant data to be sent are skipped"""
         batched_user_data = [
             BatchedUserConsentData(
-                connection_secrets=ConsentEmailSchema(
+                connection_secrets=ExtendedConsentEmailSchema(
                     third_party_vendor_name="Sovrn",
                     recipient_email_address=sovrn_email_connection_config.secrets[
                         "recipient_email_address"
@@ -469,8 +472,10 @@ class TestConsentEmailBatchSendHelperFunctions:
                     test_email_address=sovrn_email_connection_config.secrets[
                         "test_email_address"
                     ],
-                    advanced_settings=AdvancedSettings(
-                        browser_identity_types=["ljt_readerID"], identity_types=[]
+                    advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
+                        identity_types=ExtendedIdentityTypes(
+                            email=False, phone_number=False, cookie_ids=["ljt_readerID"]
+                        )
                     ),
                 ),
                 connection_name=sovrn_email_connection_config.name,
@@ -489,12 +494,14 @@ class TestConsentEmailBatchSendHelperFunctions:
                 ],
             ),
             BatchedUserConsentData(
-                connection_secrets=ConsentEmailSchema(
+                connection_secrets=ExtendedConsentEmailSchema(
                     third_party_vendor_name="Dawn's Bakery",
                     recipient_email_address="dawnsbakery@example.com",
                     test_email_address="company@example.com",
-                    advanced_settings=AdvancedSettings(
-                        identity_types=["email"], browser_identity_types=[]
+                    advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
+                        identity_types=ExtendedIdentityTypes(
+                            email=False, phone_number=False, cookie_ids=["ljt_readerID"]
+                        )
                     ),
                 ),
                 connection_name="Bakery Connector",

@@ -1350,8 +1350,11 @@ class TestPutConnectionConfigSecrets:
             "test_email_address": "processor_address@example.com",
             "recipient_email_address": "sovrn@example.com",
             "advanced_settings": {
-                "identity_types": [],
-                "browser_identity_types": ["ljt_readerID"],
+                "identity_types": {
+                    "email": False,
+                    "phone_number": False,
+                    "cookie_ids": ["ljt_readerID"],
+                }
             },
         }
         resp = api_client.put(
@@ -1370,8 +1373,11 @@ class TestPutConnectionConfigSecrets:
             "test_email_address": "processor_address@example.com",
             "recipient_email_address": "sovrn@example.com",
             "advanced_settings": {
-                "identity_types": [],
-                "browser_identity_types": ["ljt_readerID"],
+                "identity_types": {
+                    "email": False,
+                    "phone_number": False,
+                    "cookie_ids": ["ljt_readerID"],
+                },
             },
             "third_party_vendor_name": "Sovrn",
         }

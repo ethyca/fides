@@ -8,7 +8,9 @@ from sqlalchemy.orm import Query, Session
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.policy import CurrentStep
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+    ExtendedConsentEmailSchema,
+)
 from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
 from fides.api.ops.service.connectors.consent_email_connector import (
     filter_user_identities_for_connector,
@@ -33,7 +35,7 @@ class BatchedUserConsentData(BaseModel):
 
     connection_name: str
     required_identities: List[str]
-    connection_secrets: ConsentEmailSchema
+    connection_secrets: ExtendedConsentEmailSchema
     batched_user_consent_preferences: List[ConsentPreferencesByUser] = []
     skipped_privacy_requests: List[str] = []
 
@@ -59,7 +61,7 @@ def stage_resource_per_connector(
     batched_email_data: List[BatchedUserConsentData] = []
 
     for connection_config in consent_email_connection_configs:
-        secrets: ConsentEmailSchema = ConsentEmailSchema(
+        secrets: ExtendedConsentEmailSchema = ExtendedConsentEmailSchema(
             **connection_config.secrets or {}
         )
         batched_email_data.append(

@@ -4,20 +4,23 @@ from pydantic import root_validator
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
-    AdvancedSettings,
-    ConsentEmailSchema,
-    CookieIds,
+    AdvancedSettingsWithExtendedIdentityTypes,
+    ExtendedConsentEmailSchema,
+    ExtendedIdentityTypes,
 )
 
+SOVRN_REQUIRED_IDENTITY: str = "ljt_readerID"
 
-class SovrnEmailSchema(ConsentEmailSchema):
+
+class SovrnEmailSchema(ExtendedConsentEmailSchema):
     """Schema to validate the secrets needed for the SovrnEmailConnector
 
-    Overrides the ConsentEmailConnector to set the third_party_vendor_name
-    and advanced settings.
+    Overrides the ExtendedConsentEmailSchema to set the third_party_vendor_name
+    and recipient_email_address.
+
+    Also hardcodes the cookie_id for now.
     """
 
-    # Overrides ConsentEmailSchema.third_party_vendor_name and recipient_email_address to set defaults
     third_party_vendor_name: str = "Sovrn"
     recipient_email_address: str  # TODO Add Sovrn recipient email address as a default
 
@@ -27,12 +30,13 @@ class SovrnEmailSchema(ConsentEmailSchema):
         For now, UI is disabled, so user cannot update advanced settings.
         Hardcode the Sovrn advanced settings, regardless of what is passed into the API.
         """
-        values["advanced_settings"] = AdvancedSettings(
-            identity_types=[], browser_identity_types=[CookieIds.ljt_readerID]
+        values["advanced_settings"] = AdvancedSettingsWithExtendedIdentityTypes(
+            identity_types=ExtendedIdentityTypes(
+                email=False, phone_number=False, cookie_ids=[SOVRN_REQUIRED_IDENTITY]
+            )
         )
-
         return values
 
 
-class ConsentEmailDocsSchema(SovrnEmailSchema, NoValidationSchema):
+class SovrnEmailDocsSchema(SovrnEmailSchema, NoValidationSchema):
     """SovrnDocsSchema Secrets Schema for API Docs"""

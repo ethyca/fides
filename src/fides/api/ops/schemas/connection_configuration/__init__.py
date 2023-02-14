@@ -23,12 +23,6 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email imp
     EmailSchema as EmailSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
-    SVORN_REQUIRED_IDENTITY as SVORN_REQUIRED_IDENTITY,
-)
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
-    ConsentEmailDocsSchema as ConsentEmailDocsSchema,
-)
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     ConsentEmailSchema as ConsentEmailSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_fides import (
@@ -90,7 +84,13 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_snowflake
     SnowflakeSchema as SnowflakeSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
-    SovrnEmailSchema,
+    SOVRN_REQUIRED_IDENTITY as SVORN_REQUIRED_IDENTITY,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
+    SovrnEmailDocsSchema as SovrnEmailDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
+    SovrnEmailSchema as SovrnEmailSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_timescale import (
     TimescaleDocsSchema as TimescaleDocsSchema,
@@ -162,5 +162,5 @@ connection_secrets_schemas = Union[
     ManualWebhookSchemaforDocs,
     TimescaleDocsSchema,
     FidesDocsSchema,
-    ConsentEmailDocsSchema,
+    SovrnEmailDocsSchema,
 ]

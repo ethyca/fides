@@ -1,25 +1,17 @@
-from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
 
-SVORN_REQUIRED_IDENTITY: str = "ljt_readerID"
 
-
-class CookieIds(str, Enum):
-    ljt_readerID = SVORN_REQUIRED_IDENTITY
-
-
-class IdentityTypes(str, Enum):
-    email = "email"
-    phone_number = "phone_number"
+class IdentityTypes(BaseModel):
+    email: bool
+    phone_number: bool
 
 
 class AdvancedSettings(BaseModel):
-    identity_types: List[IdentityTypes] = []
-    browser_identity_types: List[CookieIds] = []
+    identity_types: IdentityTypes
 
 
 class ConsentEmailSchema(BaseModel):
@@ -46,14 +38,46 @@ class ConsentEmailSchema(BaseModel):
         advanced_settings = values.get("advanced_settings")
         if not advanced_settings:
             raise ValueError("Must supply advanced settings.")
+
         identities = advanced_settings.identity_types
-        cookies = advanced_settings.browser_identity_types
-        if not identities and not cookies:
-            raise ValueError(
-                "Must supply at least one identity_type or one browser_identity_type"
-            )
+        if not identities.email and not identities.phone_number:
+            raise ValueError("Must supply at least one identity_type")
         return values
 
 
 class ConsentEmailDocsSchema(ConsentEmailSchema, NoValidationSchema):
     """ConsentEmailDocsSchema Secrets Schema for API Docs"""
+
+
+class ExtendedIdentityTypes(IdentityTypes):
+    """Overrides basic IdentityTypes to add cookie_ids"""
+
+    cookie_ids: List[str] = []
+
+
+class AdvancedSettingsWithExtendedIdentityTypes(AdvancedSettings):
+    """Overrides base AdvancedSettings to have extended IdentityTypes"""
+
+    identity_types: ExtendedIdentityTypes
+
+
+class ExtendedConsentEmailSchema(ConsentEmailSchema):
+    """Email schema used to unpack secrets for all Consent Email Types (Both Generic, Sovrn, etc)"""
+
+    advanced_settings: AdvancedSettingsWithExtendedIdentityTypes
+
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """At least one identity or browser identity needs to be specified on setup"""
+        advanced_settings = values.get("advanced_settings")
+        if not advanced_settings:
+            raise ValueError("Must supply advanced settings.")
+
+        identities = advanced_settings.identity_types
+        if (
+            not identities.email
+            and not identities.phone_number
+            and not identities.cookie_ids
+        ):
+            raise ValueError("Must supply at least one identity_type")
+        return values

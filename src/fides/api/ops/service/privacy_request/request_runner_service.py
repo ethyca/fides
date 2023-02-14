@@ -44,7 +44,9 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
-from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+    ExtendedConsentEmailSchema,
+)
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
@@ -692,7 +694,7 @@ def needs_consent_email_send(
     email_consent_connection_configs: Query = get_consent_email_connection_configs(db)
 
     for connection_config in email_consent_connection_configs:
-        secrets: ConsentEmailSchema = ConsentEmailSchema(
+        secrets: ExtendedConsentEmailSchema = ExtendedConsentEmailSchema(
             **connection_config.secrets or {}
         )
         filtered_user_identities = filter_user_identities_for_connector(
