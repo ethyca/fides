@@ -21,6 +21,7 @@ The types of changes are:
 * Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
 * Increased default pool_size and max_overflow to 50 [#2560](https://github.com/ethyca/fides/pull/2560)
 * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
+* Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
 
 * Admin UI
   * Create custom fields from a resource screen - Button to Trigger modal [#524](https://github.com/ethyca/fides/pull/2536)
