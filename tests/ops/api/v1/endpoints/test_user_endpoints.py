@@ -195,6 +195,42 @@ class TestCreateUser:
         assert response_body == {"id": user.id}
         assert user.permissions is not None
 
+    def test_cannot_create_duplicate_user(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        response_body = response.json()
+        assert HTTP_201_CREATED == response.status_code
+        assert response_body == {"id": user.id}
+        assert user.permissions is not None
+
+        duplicate_body = {
+            "username": "TEST_USER",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body)
+        assert HTTP_400_BAD_REQUEST == response.status_code
+        assert response.json()["detail"] == "Username already exists."
+
+        duplicate_body_2 = {
+            "username": "TEST_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body_2)
+        assert HTTP_400_BAD_REQUEST == response.status_code
+        assert response.json()["detail"] == "Username already exists."
+
 
 class TestDeleteUser:
     @pytest.fixture(scope="function")
@@ -850,6 +886,29 @@ class TestUserLogin:
 
         db.refresh(user)
         assert user.last_login_at is not None
+
+    def test_login_is_case_insensitive(
+        self, db, url, user, api_client, generate_auth_header
+    ):
+        body = {
+            "username": user.username.lower(),
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.post(V1_URL_PREFIX + LOGOUT, headers=auth_header, json={})
+        assert HTTP_204_NO_CONTENT == response.status_code
+
+        body = {
+            "username": user.username.upper(),
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
 
     def test_login_uses_existing_client(self, db, url, user, api_client):
         body = {
