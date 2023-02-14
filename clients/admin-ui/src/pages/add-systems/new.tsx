@@ -7,8 +7,8 @@ import React, { useMemo } from "react";
 import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
 import Layout from "~/features/common/Layout";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
-import DescribeSystem from "~/features/system/DescribeSystem";
 import SystemCatalog from "~/features/system/SystemCatalog";
+import SystemFormTabs from "~/features/system/SystemFormTabs";
 import { ConnectionSystemTypeMap } from "~/types/api";
 
 const CHOOSE_SYSTEM_COPY =
@@ -106,7 +106,7 @@ const NewSystem: NextPage = () => {
         {currentStep === "choose-system" ? (
           <SystemCatalog />
         ) : (
-          <DescribeSystem />
+          <SystemFormTabs isCreate />
         )}
       </Box>
     </Layout>

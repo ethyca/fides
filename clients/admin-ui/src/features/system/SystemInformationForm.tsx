@@ -50,15 +50,13 @@ const SystemHeading = ({ system }: { system?: System }) => {
 
 interface Props {
   onSuccess: (system: System) => void;
-  onCancel: () => void;
   abridged?: boolean;
   system?: System;
   withHeader?: boolean;
 }
 
-const DescribeSystemStep = ({
+const SystemInformationForm = ({
   onSuccess,
-  onCancel,
   abridged,
   system: passedInSystem,
   withHeader,
@@ -129,7 +127,7 @@ const DescribeSystemStep = ({
     >
       {({ dirty, values, isValid }) => (
         <Form>
-          <Stack spacing={10}>
+          <Stack spacing={6}>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
             <Text fontSize="sm">
@@ -138,6 +136,9 @@ const DescribeSystemStep = ({
               for everyone from engineering to legal teams. So let’s do this
               now.
             </Text>
+            <Heading as="h4" size="sm">
+              System details
+            </Heading>
             <Stack spacing={4}>
               {/* While we support both designs of extra form items existing, change the width only 
               when there are extra form items. When we move to only supporting one design, 
@@ -186,15 +187,6 @@ const DescribeSystemStep = ({
             </Stack>
             <Box>
               <Button
-                onClick={onCancel}
-                mr={2}
-                size="sm"
-                variant="outline"
-                data-testid="back-btn"
-              >
-                Cancel
-              </Button>
-              <Button
                 type="submit"
                 variant="primary"
                 size="sm"
@@ -204,9 +196,9 @@ const DescribeSystemStep = ({
                   (!passedInSystem && (!dirty || !isValid))
                 }
                 isLoading={isLoading}
-                data-testid="confirm-btn"
+                data-testid="save-btn"
               >
-                Confirm and Continue
+                Save
               </Button>
             </Box>
           </Stack>
@@ -215,4 +207,4 @@ const DescribeSystemStep = ({
     </Formik>
   );
 };
-export default DescribeSystemStep;
+export default SystemInformationForm;

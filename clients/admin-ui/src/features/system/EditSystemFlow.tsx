@@ -4,11 +4,11 @@ import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import DataTabs, { TabData } from "~/features/common/DataTabs";
 import { System } from "~/types/api";
 
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
+import SystemFormTabs from "./SystemFormTabs";
 import SystemInformationForm from "./SystemInformationForm";
 import SystemRegisterSuccess from "./SystemRegisterSuccess";
 
@@ -43,7 +43,7 @@ const ConfigureSteps = ({
   </Stack>
 );
 
-const ManualSystemFlow = () => {
+const EditSystemFlow = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -69,43 +69,11 @@ const ManualSystemFlow = () => {
     setCurrentStepIndex(currentStepIndex - 1);
   };
 
-  const TABS: TabData[] = [
-    {
-      label: STEPS[0],
-      content: (
-        <SystemInformationForm
-          onSuccess={handleSuccess}
-          onCancel={goBack}
-          system={activeSystem}
-          withHeader
-        />
-      ),
-    },
-    {
-      label: STEPS[1],
-      content: activeSystem ? (
-        <PrivacyDeclarationStep
-          system={activeSystem as System}
-          onCancel={goBack}
-          onSuccess={goBack}
-        />
-      ) : null,
-      isDisabled: !activeSystem,
-    },
-  ];
-
   return (
     <>
       {navV2 && (
         <VStack alignItems="stretch" flex="1" gap="18px" maxWidth="70vw">
-          <DataTabs
-            data={TABS}
-            data-testid="settings"
-            flexGrow={1}
-            index={currentStepIndex}
-            isLazy
-            onChange={setCurrentStepIndex}
-          />
+          <SystemFormTabs />
         </VStack>
       )}
       {!navV2 && (
@@ -124,7 +92,6 @@ const ManualSystemFlow = () => {
             {currentStepIndex === 0 ? (
               <SystemInformationForm
                 onSuccess={handleSuccess}
-                onCancel={goBack}
                 system={activeSystem}
                 withHeader
               />
@@ -149,4 +116,4 @@ const ManualSystemFlow = () => {
   );
 };
 
-export default ManualSystemFlow;
+export default EditSystemFlow;
