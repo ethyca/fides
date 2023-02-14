@@ -154,7 +154,9 @@ def dispatch_message(
             action_type=action_type,
             body_params=message_body_params,
         )
-    else:
+    else:  # pragma: no cover
+        # This is here as a fail safe, but it should be impossible to reach because
+        # is controlled by a datbase enum field.
         logger.error(
             "Notification service type is not valid: {}",
             CONFIG.notifications.notification_service_type,

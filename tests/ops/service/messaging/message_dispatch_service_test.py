@@ -20,7 +20,10 @@ from fides.api.ops.schemas.messaging.messaging import (
     TestMessage,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.ops.service.messaging.message_dispatch_service import (
+    _get_dispatcher_from_config_type,
+    dispatch_message,
+)
 from fides.core.config import get_config
 
 CONFIG = get_config()
@@ -396,3 +399,10 @@ class TestMessageDispatchService:
         assert "No notification service type configured" in exc.value.args[0]
 
         mock_mailgun_dispatcher.assert_not_called()
+
+    def test_dispatch_invalid_action_type(self, db):
+        with pytest.raises(MessageDispatchException):
+            dispatch_message(db, "bad", None, None)
+
+    def test_dispatcher_from_config_type_unknown(self):
+        assert _get_dispatcher_from_config_type("bad") is None
