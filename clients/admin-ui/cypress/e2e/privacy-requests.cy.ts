@@ -1,4 +1,7 @@
-import { stubPrivacyRequests } from "cypress/support/stubs";
+import {
+  stubPrivacyRequests,
+  stubPrivacyRequestsConfigurationCrud,
+} from "cypress/support/stubs";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
@@ -6,6 +9,7 @@ describe("Privacy Requests", () => {
   beforeEach(() => {
     cy.login();
     stubPrivacyRequests();
+    stubPrivacyRequestsConfigurationCrud();
   });
 
   describe("The requests table", () => {
@@ -122,6 +126,45 @@ describe("Privacy Requests", () => {
       cy.wait("@denyPrivacyRequest")
         .its("request.body.request_ids")
         .should("have.length", 1);
+    });
+  });
+
+  describe("Storage Configuration", () => {
+    beforeEach(() => {
+      cy.visit("/privacy-requests/configure/storage");
+    });
+
+    it("Can configure local storage", () => {
+      cy.getByTestId("option-local").click();
+      cy.wait("@createConfigurationSettings").then((interception) => {
+        const { body } = interception.request;
+        expect(body.fides.storage.active_default_storage_type).to.eql("local");
+      });
+
+      cy.wait("@createStorage").then((interception) => {
+        const { body } = interception.request;
+        expect(body.type).to.eql("local");
+        expect(body.format).to.eql("json");
+      });
+
+      cy.contains("Configure active storage type saved successfully");
+      cy.contains("Configure storage type details saved successfully");
+    });
+
+    it("Can configure S3 storage", () => {
+      cy.getByTestId("option-s3").click();
+      cy.wait("@createConfigurationSettings").then((interception) => {
+        const { body } = interception.request;
+        expect(body.fides.storage.active_default_storage_type).to.eql("s3");
+      });
+      cy.wait("@getStorageDetails");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@createStorage").then((interception) => {
+        const { body } = interception.request;
+        expect(body.type).to.eql("s3");
+      });
+      cy.contains("S3 storage credentials successfully updated.");
+      cy.contains("Configure active storage type saved successfully.");
     });
   });
 });

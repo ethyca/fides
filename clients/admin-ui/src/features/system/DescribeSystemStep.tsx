@@ -8,7 +8,7 @@ import * as Yup from "yup";
 import { useAppSelector } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
-  CustomMultiSelect,
+  CustomSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -24,7 +24,9 @@ import {
   useCreateSystemMutation,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
-import { System } from "~/types/api";
+import { ResourceTypes, System } from "~/types/api";
+
+import { CustomFieldsList } from "../common/custom-fields";
 
 const ValidationSchema = Yup.object().shape({
   fides_key: Yup.string().required().label("System key"),
@@ -94,7 +96,6 @@ const DescribeSystemStep = ({
           result.error,
           `An unexpected error occurred while ${attemptedAction} the system. Please try again.`
         );
-
         toast({
           status: "error",
           description: errorMsg,
@@ -129,7 +130,6 @@ const DescribeSystemStep = ({
         <Form>
           <Stack spacing={10}>
             <SystemHeading system={passedInSystem} />
-
             <div>
               By providing a small amount of additional context for each system
               we can make reporting and understanding our tech stack much easier
@@ -176,15 +176,22 @@ const DescribeSystemStep = ({
                 }
                 tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
               />
-              <CustomMultiSelect
+              <CustomSelect
                 label="System dependencies"
                 name="system_dependencies"
                 tooltip="A list of fides keys to model dependencies."
                 options={systemOptions}
+                isMulti
               />
               {!abridged ? (
                 <DescribeSystemsFormExtension values={values} />
               ) : null}
+              {isEditing && (
+                <CustomFieldsList
+                  resourceId={passedInSystem!.fides_key}
+                  resourceType={ResourceTypes.SYSTEM}
+                />
+              )}
             </Stack>
             <Box>
               <Button

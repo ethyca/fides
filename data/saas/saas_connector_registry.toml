@@ -10,6 +10,12 @@ dataset = "data/saas/dataset/auth0_dataset.yml"
 icon = "data/saas/icon/auth0.svg"
 human_readable = "Auth0"
 
+[braintree]
+config = "data/saas/config/braintree_config.yml"
+dataset = "data/saas/dataset/braintree_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Braintree"
+
 [datadog]
 config = "data/saas/config/datadog_config.yml"
 dataset = "data/saas/dataset/datadog_dataset.yml"
