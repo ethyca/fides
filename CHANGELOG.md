@@ -42,6 +42,7 @@ The types of changes are:
 ### Fixed
 
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
+* Update Logos for shipped connectors [#2464](https://github.com/ethyca/fides/pull/2587)
 
 ### Developer Experience
 
