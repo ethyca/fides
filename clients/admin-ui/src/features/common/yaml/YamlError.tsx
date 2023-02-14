@@ -1,7 +1,7 @@
-import { WarningIcon } from "@chakra-ui/icons";
 import {
   Box,
   Divider,
+  ErrorWarningIcon,
   Heading,
   HStack,
   SlideFade,
@@ -40,7 +40,7 @@ const YamlError: React.FC<YamlErrorProps> = ({ isEmptyState, yamlError }) => (
           alignItems="flex-start"
           margin={["14px", "17px", "14px", "17px"]}
         >
-          <WarningIcon color="red.500" />
+          <ErrorWarningIcon />
           {isEmptyState && (
             <Box>
               <Heading as="h5" color="red.500" fontWeight="semibold" size="xs">
