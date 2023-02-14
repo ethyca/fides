@@ -592,15 +592,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 privacy_request,
                 secrets,
             )  # type: ignore
-        except Exception:
+        except Exception as exc:
             logger.error(
                 "Encountered error executing override mask function '{}",
                 override_function_name,
                 exc_info=True,
             )
-            raise FidesopsException(
-                f"Error executing override mask function '{override_function_name}'"
-            )
+            raise FidesopsException(str(exc))
 
     def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
         """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
