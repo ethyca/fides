@@ -35,7 +35,7 @@ ORDER BY LOWER(username), created_at ASC"""
         f"UPDATE client SET user_id = NULL WHERE NOT(user_id=ANY(ARRAY[{original_user_ids}]::varchar[]))"
     )
     op.execute(
-        f"UPDATE auditlog SET user_id = NULL WHERE NOT(user_id=ANY(ARRAY[{original_user_ids}]::varchar[]))"
+        f"UPDATE auditlog SET user_id = 'user_deleted' WHERE NOT(user_id=ANY(ARRAY[{original_user_ids}]::varchar[]))"
     )
     op.execute(
         f"""DELETE FROM fidesuserpermissions
