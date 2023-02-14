@@ -1,8 +1,8 @@
 import copy
-import random
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pytest
 from bson import ObjectId
@@ -53,9 +53,7 @@ async def test_combined_erasure_task(
     """Includes examples of mongo nested and array erasures"""
     policy = erasure_policy("A", "B")
     seed_email = postgres_inserts["customer"][0]["email"]
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
     )
@@ -146,9 +144,7 @@ async def test_combined_erasure_task(
         "mongo_test:rewards": 0,
     }
 
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
     rerun_access = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -261,9 +257,7 @@ async def test_combined_erasure_task(
 async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     policy = erasure_policy("A", "B")
     seed_email = mongo_inserts["customer"][0]["email"]
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
 
     dataset, graph = integration_db_mongo_graph(
         "mongo_test", integration_mongodb_config.key
@@ -304,7 +298,7 @@ async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config)
 async def test_dask_mongo_task(
     db, integration_mongodb_config: ConnectionConfig
 ) -> None:
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
 
     v = await graph_task.run_access_request(
         privacy_request,
@@ -343,7 +337,7 @@ async def test_composite_key_erasure(
     integration_mongodb_config: ConnectionConfig,
 ) -> None:
 
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     policy = erasure_policy("A")
     customer = Collection(
         name="customer",
@@ -419,7 +413,7 @@ async def test_composite_key_erasure(
 
     # re-run access request. Description has been
     # nullified here.
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -442,7 +436,7 @@ async def test_access_erasure_type_conversion(
     """Retrieve data from the type_link table. This requires retrieving data from
     the employee foreign_id field, which is an object_id stored as a string, and
     converting it into an object_id to query against the type_link_test._id field."""
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     policy = erasure_policy("A")
     employee = Collection(
         name="employee",
@@ -483,6 +477,9 @@ async def test_access_erasure_type_conversion(
         collections=[employee, type_link],
         connection_key=integration_mongodb_config.key,
     )
+
+    print("HERE!!!!!")
+    print(dataset)
 
     access_request_data = await graph_task.run_access_request(
         privacy_request,
@@ -615,7 +612,7 @@ async def test_object_querying_mongo(
 async def test_get_cached_data_for_erasures(
     integration_postgres_config, integration_mongodb_config, policy, db
 ) -> None:
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
 
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
@@ -720,9 +717,7 @@ async def test_return_all_elements_config_erasure(
     """Includes examples of mongo nested and array erasures"""
     policy = erasure_policy("A", "B")
 
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
     )
@@ -1051,7 +1046,7 @@ async def test_array_querying_mongo(
     ]
 
     # Run again with different email
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     access_request_results = await graph_task.run_access_request(
         privacy_request,
         policy,
