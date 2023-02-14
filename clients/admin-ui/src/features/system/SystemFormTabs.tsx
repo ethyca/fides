@@ -10,6 +10,7 @@ import { successToastParams } from "../common/toast";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
+import UnmountWarning from "./UnmountWarning";
 
 const SystemFormTabs = ({
   isCreate,
@@ -18,6 +19,7 @@ const SystemFormTabs = ({
   isCreate?: boolean;
 }) => {
   const [tabIndex, setTabIndex] = useState(0);
+  const [queuedIndex, setQueuedIndex] = useState<number | undefined>(undefined);
   const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -49,6 +51,23 @@ const SystemFormTabs = ({
     };
   }, [dispatch, isCreate]);
 
+  const checkTabChange = (index: number) => {
+    // While privacy declarations aren't updated yet, only apply the "unsaved changes" modal logic
+    // to the system information tab
+    if (index === 0) {
+      setTabIndex(index);
+    } else {
+      setQueuedIndex(index);
+    }
+  };
+
+  const continueTabChange = () => {
+    if (queuedIndex) {
+      setTabIndex(queuedIndex);
+      setQueuedIndex(undefined);
+    }
+  };
+
   const tabData: TabData[] = [
     {
       label: "System information",
@@ -58,7 +77,13 @@ const SystemFormTabs = ({
             onSuccess={handleSuccess}
             system={activeSystem}
             abridged={isCreate}
-          />
+          >
+            <UnmountWarning
+              isUnmounting={queuedIndex !== undefined}
+              onContinue={continueTabChange}
+              onCancel={() => setQueuedIndex(undefined)}
+            />
+          </SystemInformationForm>
         </Box>
       ),
     },
@@ -83,7 +108,8 @@ const SystemFormTabs = ({
       data-testid="system-tabs"
       index={tabIndex}
       isLazy
-      onChange={setTabIndex}
+      isManual
+      onChange={checkTabChange}
     />
   );
 };

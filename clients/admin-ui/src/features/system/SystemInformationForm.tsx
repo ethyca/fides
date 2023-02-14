@@ -53,6 +53,7 @@ interface Props {
   abridged?: boolean;
   system?: System;
   withHeader?: boolean;
+  children?: React.ReactNode;
 }
 
 const SystemInformationForm = ({
@@ -60,6 +61,7 @@ const SystemInformationForm = ({
   abridged,
   system: passedInSystem,
   withHeader,
+  children,
 }: Props) => {
   const initialValues = useMemo(
     () =>
@@ -202,6 +204,7 @@ const SystemInformationForm = ({
                 Save
               </Button>
             </Box>
+            {children}
           </Stack>
         </Form>
       )}

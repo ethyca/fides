@@ -160,6 +160,39 @@ describe("System management page", () => {
           });
         });
       });
+
+      it("can render a warning when there is unsaved data", () => {
+        cy.visit("/add-systems/new");
+        cy.wait("@getSystems");
+        cy.wait("@getConnectionTypes");
+        cy.getByTestId("create-system-btn").click();
+        cy.getByTestId("input-name").type("test");
+        cy.getByTestId("input-fides_key").type("test");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@postSystem");
+
+        // start typing a description
+        const description = "half formed thought";
+        cy.getByTestId("input-description").type(description);
+        // then try navigating to the privacy declarations tab
+        cy.getByTestId("tab-Privacy declarations").click();
+        cy.getByTestId("confirmation-modal");
+        // make sure canceling works
+        cy.getByTestId("cancel-btn").click();
+        cy.getByTestId("input-description").should("have.value", description);
+        // now actually discard
+        cy.getByTestId("tab-Privacy declarations").click();
+        cy.getByTestId("continue-btn").click();
+        // should load the privacy declarations page
+        cy.wait("@getDataCategories");
+        cy.wait("@getDataQualifiers");
+        cy.wait("@getDataSubjects");
+        cy.wait("@getDataUses");
+        cy.getByTestId("privacy-declaration-form");
+        // navigate back
+        cy.getByTestId("tab-System information").click();
+        cy.getByTestId("input-description").should("have.value", "");
+      });
     });
   });
 
