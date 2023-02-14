@@ -16,24 +16,20 @@ import {
   useClipboard,
   useToast,
 } from "@fidesui/react";
-import DaysLeftTag from "common/DaysLeftTag";
-import RequestType from "common/RequestType";
-import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
-import ApprovePrivacyRequestModal from "privacy-requests/ApprovePrivacyRequestModal";
 import React, { useRef, useState } from "react";
 
+import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures } from "~/features/common/features";
+import PII from "~/features/common/PII";
+import RequestStatusBadge from "~/features/common/RequestStatusBadge";
+import RequestType from "~/features/common/RequestType";
+import { formatDate } from "~/features/common/utils";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
-import PII from "../common/PII";
-import RequestStatusBadge from "../common/RequestStatusBadge";
+import ApproveButton from "./buttons/ApproveButton";
+import DenyButton from "./buttons/DenyButton";
 import ReprocessButton from "./buttons/ReprocessButton";
-import DenyPrivacyRequestModal from "./DenyPrivacyRequestModal";
-import {
-  useApproveRequestMutation,
-  useDenyRequestMutation,
-} from "./privacy-requests.slice";
 import { PrivacyRequestEntity } from "./types";
 
 const useRequestRow = (request: PrivacyRequestEntity) => {
@@ -45,10 +41,6 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [denyModalOpen, setDenyModalOpen] = useState(false);
-  const [approveModalOpen, setApproveModalOpen] = useState(false);
-  const [approveRequest, approveRequestResult] = useApproveRequestMutation();
-  const [denyRequest, denyRequestResult] = useDenyRequestMutation();
   const handleMenuOpen = () => setMenuOpen(true);
   const handleMenuClose = () => setMenuOpen(false);
   const handleMouseEnter = () => setHovered(true);
@@ -60,26 +52,11 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
   };
   const handleFocus = () => setFocused(true);
   const handleBlur = () => setFocused(false);
-  const handleApproveRequest = () => approveRequest(request);
-
-  const handleDenyRequest = (reason: string) =>
-    denyRequest({ id: request.id, reason });
   const { onCopy } = useClipboard(request.id);
-  const handleDenyModalOpen = () => setDenyModalOpen(true);
-  const handleApproveModalOpen = () => setApproveModalOpen(true);
   const resetSharedModalStates = () => {
     setFocused(false);
     setHovered(false);
     setMenuOpen(false);
-  };
-  const handleDenyModalClose = () => {
-    setDenyModalOpen(false);
-    resetSharedModalStates();
-  };
-
-  const handleApproveModalClose = () => {
-    setApproveModalOpen(false);
-    resetSharedModalStates();
   };
   const handleIdCopy = () => {
     onCopy();
@@ -107,17 +84,10 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
     router.push(url);
   };
   return {
-    approveRequestResult,
-    denyRequestResult,
     hovered,
     focused,
     menuOpen,
-    denyModalOpen,
-    approveModalOpen,
-    handleDenyModalOpen,
-    handleDenyModalClose,
-    handleApproveModalOpen,
-    handleApproveModalClose,
+    resetSharedModalStates,
     handleMenuClose,
     handleMenuOpen,
     handleMouseEnter,
@@ -125,8 +95,6 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
     handleFocus,
     handleBlur,
     handleIdCopy,
-    handleApproveRequest,
-    handleDenyRequest,
     hoverButtonRef,
     shiftFocusToHoverMenu,
     handleViewDetails,
@@ -152,22 +120,13 @@ const RequestRow = ({
     handleMenuClose,
     handleMouseEnter,
     handleMouseLeave,
-    handleApproveRequest,
-    handleDenyRequest,
     handleIdCopy,
     menuOpen,
-    approveRequestResult,
-    denyRequestResult,
     hoverButtonRef,
-    denyModalOpen,
-    handleDenyModalClose,
-    handleDenyModalOpen,
-    approveModalOpen,
-    handleApproveModalClose,
-    handleApproveModalOpen,
     shiftFocusToHoverMenu,
     handleFocus,
     handleBlur,
+    resetSharedModalStates,
     focused,
     handleViewDetails,
   } = useRequestRow(request);
@@ -181,6 +140,7 @@ const RequestRow = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       height="36px"
+      data-testid={`privacy-request-row-${request.status}`}
     >
       <Td px={0}>
         <Checkbox
@@ -238,6 +198,7 @@ const RequestRow = ({
           mr={2.5}
           onFocus={shiftFocusToHoverMenu}
           tabIndex={showMenu ? -1 : 0}
+          data-testid="privacy-request-more-btn"
         >
           <MoreIcon color="gray.700" w={18} h={18} />
         </Button>
@@ -265,49 +226,19 @@ const RequestRow = ({
           )}
           {request.status === "pending" && (
             <>
-              <Button
-                size="xs"
-                mr="-px"
-                bg="white"
-                onClick={() => {
-                  handleApproveModalOpen();
-                  handleBlur();
-                }}
-                isDisabled={
-                  approveRequestResult.isLoading || denyRequestResult.isLoading
-                }
-                _hover={{
-                  bg: "gray.100",
-                }}
+              <ApproveButton
+                subjectRequest={request}
+                onClose={resetSharedModalStates}
                 ref={hoverButtonRef}
               >
                 Approve
-              </Button>
-              <Button
-                size="xs"
-                mr="-px"
-                bg="white"
-                onClick={handleDenyModalOpen}
-                isDisabled={
-                  approveRequestResult.isLoading || denyRequestResult.isLoading
-                }
-                _hover={{
-                  bg: "gray.100",
-                }}
+              </ApproveButton>
+              <DenyButton
+                subjectRequest={request}
+                onClose={resetSharedModalStates}
               >
                 Deny
-              </Button>
-              <DenyPrivacyRequestModal
-                isOpen={denyModalOpen}
-                handleMenuClose={handleDenyModalClose}
-                handleDenyRequest={handleDenyRequest}
-              />
-              <ApprovePrivacyRequestModal
-                isOpen={approveModalOpen}
-                handleMenuClose={handleApproveModalClose}
-                handleApproveRequest={handleApproveRequest}
-                isLoading={approveRequestResult.isLoading}
-              />
+              </DenyButton>
             </>
           )}
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
@@ -320,7 +251,7 @@ const RequestRow = ({
               <MoreIcon color="gray.700" w={18} h={18} />
             </MenuButton>
             <Portal>
-              <MenuList shadow="xl">
+              <MenuList shadow="xl" data-testid="privacy-request-more-menu">
                 <MenuItem
                   _focus={{ color: "complimentary.500", bg: "gray.100" }}
                   onClick={handleIdCopy}

@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { FidesMeta } from "./FidesMeta";
+
 /**
  * The DatasetField resource model.
  *
@@ -28,6 +30,7 @@ export type DatasetField = {
    * An optional string to describe the retention policy for a dataset. This field can also be applied more granularly at either the Collection or field level of a Dataset.
    */
   retention?: string;
+  fides_meta?: FidesMeta;
   /**
    * An optional array of objects that describe hierarchical/nested fields (typically found in NoSQL databases).
    */

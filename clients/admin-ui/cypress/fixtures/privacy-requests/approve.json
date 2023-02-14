@@ -1,0 +1,48 @@
+{
+  "failed": [],
+  "succeeded": [
+    {
+      "id": "pri_c3f64359-1656-4f82-a016-98a26b479f36",
+      "created_at": "2023-01-27T00:57:09.027484+00:00",
+      "started_processing_at": null,
+      "reviewed_at": "2023-01-31T21:51:57.317223+00:00",
+      "reviewed_by": null,
+      "reviewer": null,
+      "finished_processing_at": null,
+      "identity_verified_at": null,
+      "paused_at": null,
+      "status": "approved",
+      "external_id": null,
+      "identity": { "phone_number": null, "email": "cypress-user@ethyca.com" },
+      "policy": {
+        "name": "default_access_policy",
+        "key": "default_access_policy",
+        "drp_action": null,
+        "execution_timeframe": 45,
+        "rules": [
+          {
+            "name": "Example access Rule",
+            "key": "default_access_policy_rule",
+            "action_type": "access",
+            "storage_destination": {
+              "name": "s3_storage",
+              "type": "s3",
+              "details": {
+                "bucket": "fides-test-privacy-requests",
+                "naming": "request_id",
+                "auth_method": "secret_keys",
+                "max_retries": 0
+              },
+              "key": "s3_storage",
+              "format": "json"
+            },
+            "masking_strategy": null
+          }
+        ]
+      },
+      "action_required_details": null,
+      "resume_endpoint": null,
+      "days_left": 45
+    }
+  ]
+}

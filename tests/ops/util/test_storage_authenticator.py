@@ -1,7 +1,15 @@
 import pytest
 
 from fides.api.ops.common_exceptions import StorageUploadError
-from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
+from fides.api.ops.schemas.storage.storage import (
+    S3AuthMethod,
+    StorageSecrets,
+    StorageSecretsS3,
+    StorageType,
+)
+from fides.api.ops.service.storage.storage_authenticator_service import (
+    secrets_are_valid,
+)
 from fides.api.ops.util.storage_authenticator import get_s3_session
 
 
@@ -23,3 +31,32 @@ class TestGetS3Session:
         )
 
         assert "created automatic session" in loguru_caplog.text
+
+    def test_secrets_are_valid_bad_storage_type(self):
+        with pytest.raises(ValueError):
+            secrets_are_valid(
+                StorageSecretsS3(
+                    aws_access_key_id="aws_access_key_id",
+                    aws_secret_access_key="aws_secret_access_key",
+                ),
+                "fake_storage_type",
+            )
+
+    def test_secrets_are_valid(self):
+        # just test we don't error out
+        assert not secrets_are_valid(
+            StorageSecretsS3(
+                aws_access_key_id="aws_access_key_id",
+                aws_secret_access_key="aws_secret_access_key",
+            ),
+            "s3",
+        )  # we expect this to fail because they're not real secret values
+
+        # just test we don't error out
+        assert not secrets_are_valid(
+            StorageSecretsS3(
+                aws_access_key_id="aws_access_key_id",
+                aws_secret_access_key="aws_secret_access_key",
+            ),
+            StorageType.s3,
+        )  # we expect this to fail because they're not real secret values

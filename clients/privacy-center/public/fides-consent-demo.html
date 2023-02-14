@@ -2,6 +2,22 @@
 <html>
   <head>
     <title>fides-consent script demo page</title>
+
+    <script>
+      // Allow override of `globalPrivacyControl` via a query parameter, which allows Cypress to
+      // test that behavior.
+      (() => {
+        if (window.navigator.globalPrivacyControl !== undefined) {
+          return;
+        }
+
+        const url = new URL(window.location);
+        window.navigator.globalPrivacyControl = JSON.parse(
+          url.searchParams.get("globalPrivacyControl")
+        );
+      })();
+    </script>
+
     <script src="/fides-consent.js"></script>
 
     <style>
