@@ -478,9 +478,6 @@ async def test_access_erasure_type_conversion(
         connection_key=integration_mongodb_config.key,
     )
 
-    print("HERE!!!!!")
-    print(dataset)
-
     access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
