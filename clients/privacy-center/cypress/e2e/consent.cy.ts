@@ -62,7 +62,7 @@ describe("Consent settings", () => {
 
       cy.intercept(
         "PATCH",
-        `${hostUrl}/consent-request/consent-request-id/preferences/`,
+        `${hostUrl}/consent-request/consent-request-id/preferences`,
         (req) => {
           req.reply(req.body);
         }

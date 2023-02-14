@@ -132,4 +132,49 @@ describe("User management", () => {
       cy.getByTestId("reset-password-btn").should("not.exist");
     });
   });
+
+  describe("Delete user", () => {
+    beforeEach(() => {
+      cy.intercept("DELETE", "/api/v1/user/*", { body: {} }).as("deleteUser");
+    });
+    it("can delete a user", () => {
+      cy.visit("/user-management");
+      cy.getByTestId(`row-${USER_1_ID}`).within(() => {
+        cy.getByTestId("menu-btn").click();
+      });
+      cy.getByTestId(`menu-${USER_1_ID}`).within(() => {
+        cy.getByTestId("delete-btn").click();
+      });
+      cy.getByTestId("delete-user-modal");
+      cy.getByTestId("submit-btn").should("be.disabled");
+
+      // type mismatching usernames
+      cy.getByTestId("input-username").type("user_1");
+      cy.getByTestId("input-usernameConfirmation").type("user_one");
+      // trigger blur event
+      cy.getByTestId("delete-user-modal").click();
+      cy.getByTestId("delete-user-modal").contains("Usernames must match");
+      cy.getByTestId("submit-btn").should("be.disabled");
+
+      // type matching but incorrect username
+      cy.getByTestId("input-username").clear().type("user_one");
+      cy.getByTestId("input-usernameConfirmation").clear().type("user_one");
+      cy.getByTestId("delete-user-modal").contains(
+        "Username must match this user's"
+      );
+      cy.getByTestId("submit-btn").should("be.disabled");
+
+      // now enter the proper thing
+      cy.getByTestId("input-username").clear().type("user_1");
+      cy.getByTestId("input-usernameConfirmation").clear().type("user_1");
+      cy.getByTestId("submit-btn").should("be.enabled");
+      cy.getByTestId("submit-btn").click();
+
+      cy.wait("@deleteUser").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain(USER_1_ID);
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+  });
 });

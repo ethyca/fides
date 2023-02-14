@@ -1,6 +1,7 @@
 # pylint: disable=W0611
 # Import all the models, so that Base has them before being
 # imported by Alembic
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig

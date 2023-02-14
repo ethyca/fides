@@ -14,6 +14,8 @@ def get_db_engine(
     *,
     config: FidesConfig | None = None,
     database_uri: str | URL | None = None,
+    pool_size: int = 50,
+    max_overflow: int = 50,
 ) -> Engine:
     """Return a database engine.
 
@@ -29,7 +31,9 @@ def get_db_engine(
             database_uri = config.database.sqlalchemy_test_database_uri
         else:
             database_uri = config.database.sqlalchemy_database_uri
-    return create_engine(database_uri, pool_pre_ping=True)
+    return create_engine(
+        database_uri, pool_pre_ping=True, pool_size=pool_size, max_overflow=max_overflow
+    )
 
 
 def get_db_session(

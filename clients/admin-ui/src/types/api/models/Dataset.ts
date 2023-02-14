@@ -46,7 +46,7 @@ export type Dataset = {
    * Object used to hold application specific metadata for a dataset
    *
    */
-  fidesctl_meta?: DatasetMetadata;
+  fides_meta?: DatasetMetadata;
   /**
    *
    * The contact details information model.

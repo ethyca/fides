@@ -12,32 +12,29 @@ import {
 import { ExternalLinkIcon } from "@chakra-ui/icons";
 import { ConsentItem } from "~/features/consent/types";
 
-type SetConsentValueProp = {
-  setConsentValue: (x: boolean) => void;
+type ConsentItemProps = {
+  item: ConsentItem;
+  setConsentValue: (value: boolean) => void;
 };
 
-type ConsentItemProps = ConsentItem & SetConsentValueProp;
-
-const ConsentItemCard: React.FC<ConsentItemProps> = ({
-  name,
-  description,
-  highlight,
-  defaultValue,
-  consentValue,
-  url,
-  fidesDataUseKey,
-  setConsentValue,
-}) => {
-  const [value, setValue] = useState("false");
+const ConsentItemCard = ({ item, setConsentValue }: ConsentItemProps) => {
+  const {
+    name,
+    description,
+    highlight,
+    defaultValue,
+    consentValue,
+    url,
+    fidesDataUseKey,
+  } = item;
+  const [value, setValue] = useState(consentValue ?? defaultValue);
   const backgroundColor = highlight ? "gray.100" : "";
+
   useEffect(() => {
-    if (consentValue !== undefined) {
-      setValue(consentValue ? "true" : "false");
-    } else {
-      setValue(defaultValue ? "true" : "false");
-      setConsentValue(defaultValue);
+    if (consentValue !== value) {
+      setConsentValue(value);
     }
-  }, [consentValue, defaultValue, setValue, setConsentValue]);
+  }, [value, consentValue, setConsentValue]);
 
   return (
     <Flex
@@ -83,11 +80,10 @@ const ConsentItemCard: React.FC<ConsentItemProps> = ({
           </Link>
         </Box>
         <RadioGroup
+          value={value ? "true" : "false"}
           onChange={(e) => {
-            setValue(e);
-            setConsentValue(e === "true");
+            setValue(e === "true");
           }}
-          value={value}
         >
           <Stack direction="row">
             <Radio value="true" colorScheme="whatsapp">

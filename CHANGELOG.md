@@ -14,23 +14,52 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-
-## [Unreleased](https://github.com/ethyca/fides/compare/2.6.3...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.6.4...main)
 
 ### Added
+
+* Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
+* Increased default pool_size and max_overflow to 50 [#2560](https://github.com/ethyca/fides/pull/2560)
+* Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
+
+* Admin UI
+  * Create custom fields from a resource screen - Button to Trigger modal [#524](https://github.com/ethyca/fides/pull/2536)
+  * Create Custom Lists [#525](https://github.com/ethyca/fides/pull/2536)
+  * Create Custom Field Definition [#526](https://github.com/ethyca/fides/pull/2536)
+  * Provide a custom field value in a resource [#528](https://github.com/ethyca/fides/pull/2536)
 
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
 
 ### Changed
 
-* Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523) 
+* Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523)
+* Removes legacy `verify_oauth_client` function [#2527](https://github.com/ethyca/fides/pull/2527)
 * Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
 * Add flow for selecting system types when manually creating a system [#2530](https://github.com/ethyca/fides/pull/2530)
+* Various form components now take a `stacked` or `inline` variant [#2542](https://github.com/ethyca/fides/pull/2542)
+* UX fixes for user management [#2537](https://github.com/ethyca/fides/pull/2537)
 
 ### Fixed
 
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
+* Usernames are case insensitive now and prevent all duplicates [#2487](https://github.com/ethyca/fides/pull/2487)
+  * This PR contains a migration that deletes duplicate users and keeps the oldest original account.
+
+### Developer Experience
+
+* Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
+* New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
+* Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
+
+### Removed
+
+* Remove feature flagged config wizard stepper from Admin UI [#2553](https://github.com/ethyca/fides/pull/2553)
+
+## [2.6.4](https://github.com/ethyca/fides/compare/2.6.3...2.6.4)
+
+### Fixed
+
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
 
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
@@ -44,6 +73,9 @@ The types of changes are:
 ### Fixed
 
 * Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
+
+### Added
+* Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
@@ -96,8 +128,8 @@ The types of changes are:
 
 ### Developer Experience
 
-* `nox -s test_env` has been replaced with `nox -s fides_env(dev)`
-* New command `nox -s fides_env(test)` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
+* `nox -s test_env` has been replaced with `nox -s "fides_env(dev)"` 
+* New command `nox -s "fides_env(test)"` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
 * Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
 
 ### Fixed

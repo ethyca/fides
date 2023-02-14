@@ -1,4 +1,5 @@
 import { Button, Grid, GridItem, Stack, Text, VStack } from "@fidesui/react";
+import { useFeatures } from "common/features";
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 
@@ -6,7 +7,6 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
 import { System } from "~/types/api";
 
-import { useFeatures } from "../common/features";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import ReviewSystemStep from "./ReviewSystemStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";

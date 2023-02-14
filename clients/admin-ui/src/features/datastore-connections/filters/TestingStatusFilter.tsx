@@ -1,3 +1,4 @@
+import { Box } from "@fidesui/react";
 import SelectDropdown from "common/dropdown/SelectDropdown";
 import { ItemOption } from "common/dropdown/types";
 import { capitalize } from "common/utils";
@@ -38,13 +39,15 @@ const TestingStatusFilter: React.FC<TestingStatusFilterProps> = ({ width }) => {
   };
 
   return (
-    <SelectDropdown
-      label="Testing Status"
-      list={list}
-      onChange={handleChange}
-      selectedValue={test_status?.toString()}
-      width={width}
-    />
+    <Box>
+      <SelectDropdown
+        label="Testing Status"
+        list={list}
+        menuButtonProps={{ width }}
+        onChange={handleChange}
+        selectedValue={test_status?.toString()}
+      />
+    </Box>
   );
 };
 
