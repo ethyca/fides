@@ -58,4 +58,4 @@ task_default_queue = "fides"
 task_always_eager = true
 
 [notifications]
-notification_service_type = "mailgun"
+notification_service_type = "twilio_text"

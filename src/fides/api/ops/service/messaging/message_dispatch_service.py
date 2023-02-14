@@ -36,6 +36,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
+    TestMessage,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
@@ -112,7 +113,7 @@ def dispatch_message_task(
 def dispatch_message(
     db: Session,
     action_type: MessagingActionType,
-    to_identity: Optional[Identity],
+    to_identity: Optional[Union[Identity, TestMessage]],
     service_type: Optional[str],
     message_body_params: Optional[
         Union[
@@ -229,6 +230,8 @@ def _build_sms(  # pylint: disable=too-many-return-statements
         if body_params.rejection_reason:
             return f"Your privacy request has been denied for the following reason: {body_params.rejection_reason}"
         return "Your privacy request has been denied."
+    if action_type == MessagingActionType.TEST_MESSAGE:
+        return "Test message from Fides."
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(
         f"Message action type {action_type} is not implemented"
@@ -310,6 +313,11 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=base_template.render(
                 {"rejection_reason": body_params.rejection_reason}
             ),
+        )
+    if action_type == MessagingActionType.TEST_MESSAGE:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Test message from fides", body=base_template.render()
         )
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(

@@ -7,3 +7,4 @@ PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE = "privacy_request_complete_access.html
 PRIVACY_REQUEST_ERROR_NOTIFICATION_TEMPLATE = "privacy_request_error_notification.html"
 PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE = "privacy_request_review_deny.html"
 PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE = "privacy_request_review_approve.html"
+TEST_MESSAGE_TEMPLATE = "test_message.html"

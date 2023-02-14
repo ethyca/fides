@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 import pytest
 from fastapi_pagination import Params
@@ -14,6 +15,7 @@ from fides.api.ops.api.v1.urn_registry import (
     MESSAGING_BY_KEY,
     MESSAGING_CONFIG,
     MESSAGING_SECRETS,
+    MESSAGING_TEST,
     V1_URL_PREFIX,
 )
 from fides.api.ops.models.messaging import MessagingConfig
@@ -757,3 +759,42 @@ class TestDeleteConfig:
         db.expunge_all()
         config = db.query(MessagingConfig).filter_by(key=twilio_sms_config.key).first()
         assert config is None
+
+
+class TestTestMesage:
+    @pytest.fixture
+    def url(self):
+        return f"{V1_URL_PREFIX}{MESSAGING_TEST}"
+
+    @pytest.mark.parametrize(
+        "info",
+        [{"phone_number": "+19198675309"}, {"email": "some@email.com"}],
+    )
+    @patch("fides.api.ops.api.v1.endpoints.messaging_endpoints.dispatch_message")
+    def test_test_message(
+        self, mock_dispatch_message, info, generate_auth_header, url, api_client
+    ):
+        auth_header = generate_auth_header(scopes=[MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.post(url, json=info, headers=auth_header)
+        assert response.status_code == 200
+        assert mock_dispatch_message.called
+
+    def test_test_message_unauthorized(self, url, api_client):
+        response = api_client.post(url, json={"phone_number": "+19198675309"})
+        assert response.status_code == 401
+
+    @pytest.mark.parametrize(
+        "info",
+        [
+            {"phone_number": "+19198675309", "email": "some@email.com"},
+            {"phone_number": None, "email": None},
+        ],
+    )
+    def test_test_message_invalid(self, info, generate_auth_header, url, api_client):
+        auth_header = generate_auth_header(scopes=[MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.post(
+            url,
+            json=info,
+            headers=auth_header,
+        )
+        assert response.status_code == 422

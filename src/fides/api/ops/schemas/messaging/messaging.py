@@ -45,6 +45,7 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
     PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
+    TEST_MESSAGE = "test_message"
 
 
 class ErrorNotificaitonBodyParams(BaseModel):
@@ -290,3 +291,18 @@ class TestMessagingStatusMessage(Msg):
 
     test_status: Optional[MessagingConnectionTestStatus] = None
     failure_reason: Optional[str] = None
+
+
+class TestMessage(BaseModel):
+    phone_number: Optional[str] = None
+    email: Optional[str] = None
+
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if not values.get("phone_number") and not values.get("email"):
+            raise ValueError("Either a phone number or an email address is required")
+        if values.get("phone_number") and values.get("email"):
+            raise ValueError(
+                "Only a phone number or email address can be provided, not both"
+            )
+        return values
