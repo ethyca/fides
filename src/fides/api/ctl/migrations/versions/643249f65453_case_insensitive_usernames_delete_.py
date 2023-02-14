@@ -52,4 +52,5 @@ ORDER BY LOWER(username), created_at ASC"""
 
 
 def downgrade():
+    op.execute("ALTER TABLE fidesuser ALTER COLUMN username TYPE varchar;")
     op.execute("DROP EXTENSION IF EXISTS citext;")
