@@ -1,4 +1,12 @@
-import { Box, Button, Heading, Stack, Text, useToast } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  Divider,
+  Heading,
+  Stack,
+  Text,
+  useToast,
+} from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
@@ -7,11 +15,7 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomFieldsList } from "~/features/common/custom-fields";
-import {
-  CustomCreatableMultiSelect,
-  CustomSelect,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   defaultInitialValues,
@@ -29,7 +33,6 @@ import { ResourceTypes, System } from "~/types/api";
 
 const ValidationSchema = Yup.object().shape({
   fides_key: Yup.string().required().label("System key"),
-  system_type: Yup.string().required().label("System type"),
 });
 
 const SystemHeading = ({ system }: { system?: System }) => {
@@ -71,9 +74,6 @@ const DescribeSystemStep = ({
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
   const systems = useAppSelector(selectAllSystems);
-  const systemOptions = systems
-    ? systems.map((s) => ({ label: s.name ?? s.fides_key, value: s.fides_key }))
-    : [];
   const isEditing = useMemo(
     () =>
       Boolean(
@@ -127,7 +127,7 @@ const DescribeSystemStep = ({
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ dirty, values }) => (
+      {({ dirty, values, isValid }) => (
         <Form>
           <Stack spacing={10}>
             {withHeader ? <SystemHeading system={passedInSystem} /> : null}
@@ -139,54 +139,42 @@ const DescribeSystemStep = ({
               now.
             </Text>
             <Stack spacing={4}>
-              <CustomTextInput
-                id="name"
-                name="name"
-                label="System name"
-                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-              />
-              <CustomTextInput
-                id="fides_key"
-                name="fides_key"
-                label="System key"
-                disabled={isEditing}
-                tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
-              />
-              <CustomTextInput
-                id="description"
-                name="description"
-                label="System description"
-                tooltip="If you wish you can provide a description which better explains the purpose of this system."
-              />
-              <CustomTextInput
-                id="system_type"
-                label="System Type"
-                name="system_type"
-                tooltip="Describe the type of system being modeled, examples include: Service, Application, Third Party, etc"
-              />
-              <CustomCreatableMultiSelect
-                id="tags"
-                name="tags"
-                label="System Tags"
-                options={
-                  initialValues.tags
-                    ? initialValues.tags.map((s) => ({
-                        value: s,
-                        label: s,
-                      }))
-                    : []
-                }
-                tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
-              />
-              <CustomSelect
-                label="System dependencies"
-                name="system_dependencies"
-                tooltip="A list of fides keys to model dependencies."
-                options={systemOptions}
-                isMulti
-              />
+              {/* While we support both designs, change the width when in edit mode. When
+              we move to only supporting one design, the parent container should control the width */}
+              <Stack
+                spacing={4}
+                maxWidth={isEditing ? { base: "100%", lg: "50%" } : undefined}
+              >
+                <CustomTextInput
+                  id="name"
+                  name="name"
+                  label="System name"
+                  tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                  variant="stacked"
+                />
+                <CustomTextInput
+                  id="fides_key"
+                  name="fides_key"
+                  label="System Fides key"
+                  disabled={isEditing}
+                  tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
+                  variant="stacked"
+                />
+                <CustomTextInput
+                  id="description"
+                  name="description"
+                  label="System description"
+                  tooltip="If you wish you can provide a description which better explains the purpose of this system."
+                  variant="stacked"
+                />
+              </Stack>
               {!abridged ? (
-                <SystemInformationFormExtension values={values} />
+                <>
+                  <Box py={6}>
+                    <Divider />
+                  </Box>
+                  <SystemInformationFormExtension values={values} />
+                </>
               ) : null}
               {isEditing && (
                 <CustomFieldsList
@@ -211,8 +199,8 @@ const DescribeSystemStep = ({
                 size="sm"
                 isDisabled={
                   isLoading ||
-                  // If this system was created from scratch, the fields must be edited.
-                  (!passedInSystem && !dirty)
+                  // If this system was created from scratch, the fields must be edited and valid.
+                  (!passedInSystem && (!dirty || !isValid))
                 }
                 isLoading={isLoading}
                 data-testid="confirm-btn"
