@@ -9,7 +9,7 @@ import {
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
-import { Form, Formik } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
@@ -83,7 +83,10 @@ const SystemInformationForm = ({
 
   const toast = useToast();
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (
+    values: FormValues,
+    formikHelpers: FormikHelpers<FormValues>
+  ) => {
     const systemBody = transformFormValuesToSystem(values);
 
     const handleResult = (
@@ -101,6 +104,8 @@ const SystemInformationForm = ({
         });
       } else {
         toast.closeAll();
+        // Reset state such that isDirty will be checked again before next save
+        formikHelpers.resetForm({ values });
         onSuccess(systemBody);
       }
     };
@@ -190,11 +195,7 @@ const SystemInformationForm = ({
                 type="submit"
                 variant="primary"
                 size="sm"
-                isDisabled={
-                  isLoading ||
-                  // If this system was created from scratch, the fields must be edited and valid.
-                  (!passedInSystem && (!dirty || !isValid))
-                }
+                isDisabled={isLoading || !dirty || !isValid}
                 isLoading={isLoading}
                 data-testid="save-btn"
               >

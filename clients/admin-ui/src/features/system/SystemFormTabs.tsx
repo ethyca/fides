@@ -1,6 +1,6 @@
 import { Box, useToast } from "@fidesui/react";
 import { useRouter } from "next/router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
@@ -33,6 +33,21 @@ const SystemFormTabs = ({
     // TODO: more fleshed out toast message
     toast(successToastParams("System has been saved successfully"));
   };
+
+  useEffect(() => {
+    /**
+     * The first time this component mounts, if it's a create, make sure we don't have an active system
+     * This can happen if the user was editing a system, then navigated away by typing in a new URL path
+     * When navigating not through a URL path, the return unmount should handle resetting the system
+     */
+    if (isCreate) {
+      dispatch(setActiveSystem(undefined));
+    }
+    return () => {
+      // on unmount, unset the active system
+      dispatch(setActiveSystem(undefined));
+    };
+  }, [dispatch, isCreate]);
 
   const tabData: TabData[] = [
     {
