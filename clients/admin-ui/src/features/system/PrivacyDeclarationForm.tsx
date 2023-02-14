@@ -3,11 +3,7 @@ import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  CustomMultiSelect,
-  CustomSelect,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import {
   selectDataQualifiers,
   useGetAllDataQualifiersQuery,
@@ -92,7 +88,7 @@ const PrivacyDeclarationForm = ({
               label="Declaration name"
               tooltip="A system may have multiple privacy declarations, so each declaration should have a name to distinguish them clearly."
             />
-            <CustomMultiSelect
+            <CustomSelect
               name="data_categories"
               label="Data categories"
               options={allDataCategories?.map((data) => ({
@@ -100,6 +96,7 @@ const PrivacyDeclarationForm = ({
                 label: data.fides_key,
               }))}
               tooltip="What type of data is your system processing? This could be various types of user or system data."
+              isMulti
             />
             <CustomSelect
               id="data_use"
@@ -111,7 +108,7 @@ const PrivacyDeclarationForm = ({
               }))}
               tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
             />
-            <CustomMultiSelect
+            <CustomSelect
               name="data_subjects"
               label="Data subjects"
               options={allDataSubjects.map((data) => ({
@@ -119,6 +116,7 @@ const PrivacyDeclarationForm = ({
                 label: data.fides_key,
               }))}
               tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
+              isMulti
             />
             <CustomSelect
               id="data_qualifier"

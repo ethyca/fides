@@ -3,7 +3,7 @@ Contains an endpoint for extracting a data map from the server
 """
 from typing import Dict, List
 
-from fastapi import Depends, Response, status
+from fastapi import Depends, Response, Security, status
 from fideslang.parse import parse_dict
 from loguru import logger as log
 from pandas import DataFrame
@@ -19,6 +19,8 @@ from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ctl.utils.errors import DatabaseUnavailableError, NotFoundError
+from fides.api.ops.api.v1 import scope_registry
+from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 from fides.core.export import build_joined_dataframe
 from fides.core.export_helpers import DATAMAP_COLUMNS
 
@@ -37,6 +39,9 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 
 @router.get(
     "/{organization_fides_key}",
+    dependencies=[
+        Security(verify_oauth_client_cli, scopes=[scope_registry.DATAMAP_READ])
+    ],
     status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_200_OK: {

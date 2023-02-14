@@ -36,7 +36,7 @@ def fixture_created_resources(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             json_resource=dumps({"fides_key": key, "parent_key": parent_key}),
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
         created_keys.append(key)
 
@@ -48,7 +48,7 @@ def fixture_created_resources(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             resource_id=created_key,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )
 
 

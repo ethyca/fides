@@ -20,4 +20,5 @@ export enum ConnectionType {
   EMAIL = "email",
   MANUAL_WEBHOOK = "manual_webhook",
   TIMESCALE = "timescale",
+  FIDES = "fides",
 }

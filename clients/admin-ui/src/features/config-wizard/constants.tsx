@@ -42,8 +42,6 @@ export const HORIZONTAL_STEPS = [
   },
 ];
 
-export const iconButtonSize = 107;
-
 // When more links like these are introduced we should move them to a single file.
 export const DOCS_URL_AWS_PERMISSIONS =
   "https://ethyca.github.io/fides/2.0.0/getting-started/generate_resources/#required-permissions";

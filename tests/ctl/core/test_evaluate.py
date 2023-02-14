@@ -88,7 +88,7 @@ def create_policy_rule_with_keys(
 @pytest.mark.integration
 def test_get_all_server_policies(test_config: FidesConfig) -> None:
     result = evaluate.get_all_server_policies(
-        url=test_config.cli.server_url, headers=test_config.user.request_headers
+        url=test_config.cli.server_url, headers=test_config.user.auth_header
     )
     assert len(result) > 0
 
@@ -120,7 +120,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
             ],
         ),
         url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
         last_keys=[],
     )
 
@@ -175,7 +175,7 @@ def test_populate_referenced_keys_fails_missing_keys(
                 ],
             ),
             url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             last_keys=[],
         )
 
@@ -204,7 +204,7 @@ def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
     )
     actual_hydrated_taxonomy = evaluate.hydrate_missing_resources(
         url=test_config.cli.server_url,
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
         dehydrated_taxonomy=dehydrated_taxonomy,
         missing_resource_keys={
             "user.credentials",
@@ -592,7 +592,7 @@ def test_failed_evaluation_error_message(
         evaluate.evaluate(
             url=test_config.cli.server_url,
             manifests_dir="tests/ctl/data/failing_declaration_taxonomy.yml",
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
             local=True,
         )
     captured_out = string_cleaner(capsys.readouterr().out)

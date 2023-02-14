@@ -66,7 +66,7 @@ def upgrade():
 
         new_ctl_dataset_id: str = "ctl_" + str(uuid.uuid4())
         # Stashing extra text into the "meta" column so we can use this to downgrade if needed
-        appended_meta: Dict = dataset["meta"] or {}
+        appended_meta: Dict = dataset.get("meta") or {}
         appended_meta["fides_source"] = AUTO_MIGRATED_STRING
 
         validated_dataset: Dict = Dataset(

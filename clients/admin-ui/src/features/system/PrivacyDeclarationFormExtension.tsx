@@ -1,4 +1,4 @@
-import { CustomMultiSelect } from "../common/form/inputs";
+import { CustomSelect } from "../common/form/inputs";
 import { useGetAllDatasetsQuery } from "../dataset";
 
 const PrivacyDeclarationFormExtension = () => {
@@ -11,11 +11,12 @@ const PrivacyDeclarationFormExtension = () => {
     : [];
 
   return (
-    <CustomMultiSelect
+    <CustomSelect
       name="dataset_references"
       label="Dataset references"
       options={datasetOptions}
       tooltip="Referenced Dataset fides keys used by the system."
+      isMulti
     />
   );
 };

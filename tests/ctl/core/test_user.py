@@ -1,8 +1,14 @@
 from os import environ
+from unittest.mock import patch
 
 import pytest
 
-from fides.core.user import Credentials, get_credentials_path
+from fides.core.user import (
+    Credentials,
+    get_auth_header,
+    get_credentials_path,
+    read_credentials_file,
+)
 
 
 @pytest.mark.unit
@@ -27,6 +33,26 @@ class TestCredentials:
 def test_get_credentials_path() -> None:
     """Test that a custom path for the credentials file works as expected."""
     expected_path = "test_credentials"
-    environ["FIDES_CREDENTIALS_PATH"] = "test_credentials"
+    environ["FIDES_CREDENTIALS_PATH"] = expected_path
     actual_path = get_credentials_path()
     assert expected_path == actual_path
+
+
+def test_read_credentials_file_not_found() -> None:
+    with pytest.raises(FileNotFoundError):
+        credentials = read_credentials_file(credentials_path="notarealfile")
+        print(credentials)
+
+
+def test_get_auth_header_file_not_found():
+    """
+    Verify that a SystemExit is raised when a credentials file
+    can't be found.
+
+    Additionally, use the `verbose` flag to make sure that code
+    path is also covered.
+    """
+    environ["FIDES_CREDENTIALS_PATH"] = "thisfiledoesnotexist"
+    with pytest.raises(SystemExit):
+        header = get_auth_header(verbose=True)
+        print(header)

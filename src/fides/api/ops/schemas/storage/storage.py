@@ -106,21 +106,20 @@ class StorageType(Enum):
     local = "local"  # local should be used for testing only, not for processing real-world privacy requests
 
 
-class StorageDestination(BaseModel):
-    """Storage Destination Schema"""
+class StorageDestinationBase(BaseModel):
+    """Storage Destination Schema -- used for setting defaults"""
 
-    name: str
     type: StorageType
     details: Union[
         StorageDetailsS3,
         StorageDetailsLocal,
     ]
-    key: Optional[FidesKey]
     format: Optional[ResponseFormat] = ResponseFormat.json.value  # type: ignore
 
     class Config:
         use_enum_values = True
         orm_mode = True
+        extra = Extra.forbid
 
     @validator("details", pre=True, always=True)
     def validate_details(
@@ -176,6 +175,17 @@ class StorageDestination(BaseModel):
         return values
 
 
+class StorageDestination(StorageDestinationBase):
+    """Storage Destination Schema"""
+
+    name: str
+    key: Optional[FidesKey]
+
+    class Config:
+        use_enum_values = True
+        orm_mode = True
+
+
 class StorageDestinationResponse(BaseModel):
     """Storage Destination Response Schema"""
 
@@ -184,6 +194,7 @@ class StorageDestinationResponse(BaseModel):
     details: Dict[StorageDetails, Any]
     key: FidesKey
     format: ResponseFormat
+    is_default: bool = False
 
     class Config:
         orm_mode = True

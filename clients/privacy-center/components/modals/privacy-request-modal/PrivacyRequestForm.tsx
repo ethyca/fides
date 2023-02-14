@@ -11,7 +11,7 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Headers } from "headers-polyfill";
@@ -44,7 +44,6 @@ const usePrivacyRequestForm = ({
   isVerificationRequired: boolean;
 }) => {
   const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
-  const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
@@ -57,8 +56,6 @@ const usePrivacyRequestForm = ({
         // somehow we've reached a broken state, return
         return;
       }
-
-      setIsLoading(true);
 
       const body = [
         {
@@ -143,7 +140,7 @@ const usePrivacyRequestForm = ({
     }),
   });
 
-  return { ...formik, isLoading, identityInputs };
+  return { ...formik, identityInputs };
 };
 
 type PrivacyRequestFormProps = {
@@ -176,6 +173,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
     touched,
     values,
     isValid,
+    isSubmitting,
     dirty,
     resetForm,
     identityInputs,
@@ -276,7 +274,8 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
             _hover={{ bg: "primary.400" }}
             _active={{ bg: "primary.500" }}
             colorScheme="primary"
-            disabled={!(isValid && dirty)}
+            isLoading={isSubmitting}
+            isDisabled={isSubmitting || !(isValid && dirty)}
             size="sm"
           >
             Continue

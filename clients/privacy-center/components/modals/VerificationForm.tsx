@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Button,
   chakra,
@@ -40,7 +40,6 @@ const useVerificationForm = ({
   verificationType: VerificationType;
   successHandler: () => void;
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verificationCode, setVerificationCode] = useLocalStorage(
@@ -56,8 +55,6 @@ const useVerificationForm = ({
       code: "",
     },
     onSubmit: async (values) => {
-      setIsLoading(true);
-
       const body = {
         code: values.code,
       };
@@ -123,7 +120,7 @@ const useVerificationForm = ({
     },
   });
 
-  return { ...formik, isLoading, resetVerificationProcess };
+  return { ...formik, resetVerificationProcess };
 };
 
 type VerificationFormProps = {
@@ -153,6 +150,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
     touched,
     values,
     isValid,
+    isSubmitting,
     dirty,
     resetForm,
     resetVerificationProcess,
@@ -209,7 +207,8 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
                 _hover={{ bg: "primary.400" }}
                 _active={{ bg: "primary.500" }}
                 colorScheme="primary"
-                disabled={!(isValid && dirty)}
+                isLoading={isSubmitting}
+                isDisabled={isSubmitting || !(isValid && dirty)}
                 size="sm"
               >
                 Submit code
