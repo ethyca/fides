@@ -88,19 +88,28 @@ saas_config:
           headers:
             - name: Authorization
               value: Basic <api_token>
+          query_params:
+            - name: phone_number
+              value: <phoneNumber>
+          data_path: calls
           param_values:
             - name: api_token
               connector_param: api_token
+            - name: phoneNumber
+              identity: phone_number
             - name: email
               identity: email
-            - name: placeholder
-              identity: phone_number
         delete:
           method: DELETE
-          path: '/v1/calls/:id/recording'
+          path: /v1/calls/<calls_id>/recording
           headers:
             - name: Authorization
               value: Basic <api_token>
           param_values:
+            - name: calls_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: calls.id
+                  direction: from
             - name: api_token
               connector_param: api_token
