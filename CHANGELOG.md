@@ -44,6 +44,7 @@ The types of changes are:
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
 * Usernames are case insensitive now and prevent all duplicates [#2487](https://github.com/ethyca/fides/pull/2487)
   * This PR contains a migration that deletes duplicate users and keeps the oldest original account.
+* Update Logos for shipped connectors [#2464](https://github.com/ethyca/fides/pull/2587)
 * Search field on privacy request page isn't working [#2270](https://github.com/ethyca/fides/pull/2595)
 
 ### Developer Experience
