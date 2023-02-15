@@ -337,6 +337,7 @@ interface SelectProps {
   isClearable?: boolean;
   size?: Size;
   isMulti?: boolean;
+  variant?: Variant;
 }
 export const CustomSelect = ({
   label,
@@ -350,7 +351,7 @@ export const CustomSelect = ({
   isMulti,
   variant = "inline",
   ...props
-}: SelectProps & StringField & { variant?: Variant }) => {
+}: SelectProps & StringField) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
   if (variant === "inline") {
@@ -420,21 +421,51 @@ export const CustomCreatableMultiSelect = ({
   options,
   size = "sm",
   tooltip,
+  variant = "inline",
   ...props
 }: SelectProps & StringArrayField) => {
   const [initialField, meta] = useField(props);
   const field = { ...initialField, value: initialField.value ?? [] };
   const isInvalid = !!(meta.touched && meta.error);
 
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Grid templateColumns="1fr 3fr">
+          <Label htmlFor={props.id || props.name}>{label}</Label>
+          <Box
+            display="flex"
+            alignItems="center"
+            data-testid={`input-${field.name}`}
+          >
+            <CreatableMultiSelectInput
+              fieldName={field.name}
+              isClearable={isClearable}
+              options={options}
+              size={size}
+              isSearchable={isSearchable}
+            />
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Box>
+        </Grid>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
   return (
     <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr">
-        <Label htmlFor={props.id || props.name}>{label}</Label>
-        <Box
-          display="flex"
-          alignItems="center"
-          data-testid={`input-${field.name}`}
-        >
+      <VStack alignItems="start">
+        <Flex alignItems="center">
+          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+            {label}
+          </Label>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
+        <Box width="100%">
           <CreatableMultiSelectInput
             fieldName={field.name}
             isClearable={isClearable}
@@ -442,14 +473,13 @@ export const CustomCreatableMultiSelect = ({
             size={size}
             isSearchable={isSearchable}
           />
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
-      </Grid>
-      <ErrorMessage
-        isInvalid={isInvalid}
-        message={meta.error}
-        fieldName={field.name}
-      />
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </VStack>
     </FormControl>
   );
 };
