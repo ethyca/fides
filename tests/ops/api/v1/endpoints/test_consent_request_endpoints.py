@@ -16,6 +16,7 @@ from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
+from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -340,7 +341,7 @@ class TestConsentVerify:
 
         for data in deepcopy(consent_data):
             data["provided_identity_id"] = provided_identity.id
-            Consent.create(db, data=data)
+            Consent.create(db, data=dict(ConsentSchema(**data)))
 
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
@@ -441,7 +442,7 @@ class TestGetConsentUnverified:
 
         for data in deepcopy(consent_data):
             data["provided_identity_id"] = provided_identity.id
-            Consent.create(db, data=data)
+            Consent.create(db, data=dict(ConsentSchema(**data)))
 
         response = api_client.get(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}"
@@ -704,7 +705,7 @@ class TestSaveConsent:
 
         for data in deepcopy(consent_data):
             data["provided_identity_id"] = provided_identity.id
-            Consent.create(db, data=data)
+            Consent.create(db, data=dict(ConsentSchema(**data)))
 
         consent_data[1]["opt_in"] = False
 
@@ -774,7 +775,7 @@ class TestSaveConsent:
 
         for data in deepcopy(consent_data):
             data["provided_identity_id"] = provided_identity.id
-            Consent.create(db, data=data)
+            Consent.create(db, data=dict(ConsentSchema(**data)))
 
         consent_data[1]["opt_in"] = False
 
@@ -854,7 +855,7 @@ class TestGetConsentPreferences:
 
         for data in deepcopy(consent_data):
             data["provided_identity_id"] = provided_identity.id
-            Consent.create(db, data=data)
+            Consent.create(db, data=dict(ConsentSchema(**data)))
 
         auth_header = generate_auth_header(scopes=[CONSENT_READ])
         response = api_client.post(
