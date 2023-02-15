@@ -43,7 +43,10 @@ class CustomJSONEncoder(json.JSONEncoder):
                 return o.__dict__
             if not isinstance(o, int) and not isinstance(o, float):
                 return str(o)
-        return super().default(o)
+
+        # It doesn't seem possible to make it here, but I'm leaving in as a fail safe
+        # just in case.
+        return super().default(o)  # pragma: no cover
 
 
 def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
