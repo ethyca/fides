@@ -123,7 +123,11 @@ def setup_db(test_config: FidesConfig, test_client, monkeypatch_requests) -> Gen
     assert (
         requests.post == test_client.post
     )  # Sanity check to make sure monkeypatch_requests fixture has run
-    yield api.db_action(test_config.cli.server_url, "reset")
+    yield api.db_action(
+        server_url=test_config.cli.server_url,
+        headers=CONFIG.user.auth_header,
+        action="reset",
+    )
 
 
 @pytest.fixture(scope="function")

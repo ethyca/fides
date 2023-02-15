@@ -8,7 +8,6 @@ from fideslog.sdk.python.client import AnalyticsClient
 import fides
 from fides.cli.utils import check_server
 from fides.core.config import get_config
-from fides.core.user import get_auth_header
 
 from .commands.annotate import annotate
 from .commands.core import evaluate, parse, pull, push
