@@ -133,7 +133,7 @@ human_readable = "Twilio Conversations"
 [wunderkind]
 config = "data/saas/config/wunderkind_config.yml"
 dataset = "data/saas/dataset/wunderkind_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/wunderkind.svg"
 human_readable = "Wunderkind"
 
 [zendesk]

@@ -18,6 +18,7 @@ The types of changes are:
 
 * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
 * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
+* Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
 
 * Admin UI
   * Create custom fields from a resource screen - Button to Trigger modal [#524](https://github.com/ethyca/fides/pull/2536)
