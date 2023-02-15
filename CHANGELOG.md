@@ -16,16 +16,17 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.6...main)
 
-* Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
-* Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
-* Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
-
+* Fides API
+  * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
+  * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
+  * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
 * Admin UI
-  * Create custom fields from a resource screen - Button to Trigger modal [#524](https://github.com/ethyca/fides/pull/2536)
-  * Create Custom Lists [#525](https://github.com/ethyca/fides/pull/2536)
-  * Create Custom Field Definition [#526](https://github.com/ethyca/fides/pull/2536)
-  * Provide a custom field value in a resource [#528](https://github.com/ethyca/fides/pull/2536)
-
+  * Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
+    * Create Custom Lists
+    * Create Custom Field Definition
+    * Create custom fields from a the taxonomy editor
+    * Provide a custom field value in a resource
+    * Bulk edit custom field values [#2612](https://github.com/ethyca/fides/issues/2612)
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
 

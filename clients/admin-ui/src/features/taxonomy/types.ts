@@ -1,4 +1,5 @@
-import { TreeNode } from "../common/types";
+import { CustomFieldsFormValues } from "~/features/common/custom-fields";
+import { TreeNode } from "~/features/common/types";
 
 export interface TaxonomyEntityNode extends TreeNode {
   description?: string;
@@ -20,3 +21,7 @@ export interface Labels {
   description: string;
   parent_key?: string;
 }
+
+export type FormValues = Partial<TaxonomyEntity> &
+  Pick<TaxonomyEntity, "fides_key"> &
+  CustomFieldsFormValues;

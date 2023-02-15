@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Starter pokemon",
+    "description": null,
+    "field_type": "string",
+    "allow_list_id": "id-allow-list-pokemon",
+    "resource_type": "data category",
+    "field_definition": null,
+    "active": true,
+    "id": "id-custom-field-definition-starter-pokemon"
+  },
+  {
+    "name": "Pokemon party",
+    "description": null,
+    "field_type": "string[]",
+    "allow_list_id": "id-allow-list-pokemon",
+    "resource_type": "data category",
+    "field_definition": null,
+    "active": true,
+    "id": "id-custom-field-definition-pokemon-party"
+  },
+  {
+    "name": "Prime number",
+    "description": null,
+    "field_type": "string",
+    "allow_list_id": "id-allow-list-prime-numbers",
+    "resource_type": "data category",
+    "field_definition": null,
+    "active": true,
+    "id": "id-custom-field-definition-prime-number"
+  }
+]
