@@ -5,7 +5,6 @@
 import type { AccessLevel } from "./AccessLevel";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
-import type { ConsentEmailDocsSchema } from "./ConsentEmailDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
@@ -17,6 +16,7 @@ import type { PostgreSQLDocsSchema } from "./PostgreSQLDocsSchema";
 import type { RedshiftDocsSchema } from "./RedshiftDocsSchema";
 import type { SaaSSchema } from "./SaaSSchema";
 import type { SnowflakeDocsSchema } from "./SnowflakeDocsSchema";
+import type { SovrnEmailDocsSchema } from "./SovrnEmailDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
 
 /**
@@ -43,6 +43,6 @@ export type CreateConnectionConfigurationWithSecrets = {
     | ManualWebhookSchemaforDocs
     | TimescaleDocsSchema
     | FidesDocsSchema
-    | ConsentEmailDocsSchema;
+    | SovrnEmailDocsSchema;
   saas_connector_type?: string;
 };
