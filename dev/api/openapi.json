@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.6.1.post0.dev50"
+    "version": "2.6.1.post0.dev51"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10772,6 +10772,62 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TestMessagingStatusMessage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/config/test": {
+      "post": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Send Test Message",
+        "description": "Sends a test message.",
+        "operationId": "send_test_message_api_v1_messaging_config_test_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Identity"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Send Test Message Api V1 Messaging Config Test Post",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "details": "Test message successfully sent"
                 }
               }
             }
