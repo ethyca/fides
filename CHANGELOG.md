@@ -38,6 +38,7 @@ The types of changes are:
   * Patch Google Analytics Consent Connector to delete by client_id [#2355](https://github.com/ethyca/fides/pull/2355)
   * Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
   * Adds a new Universal Analytics Connector that works with the UA Tracking Id
+* Adds intake and storage of Global Privacy Control Signal props for Consent [#2599](https://github.com/ethyca/fides/pull/2599)
   
 ### Changed
 
