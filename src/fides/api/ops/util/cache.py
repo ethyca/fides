@@ -63,11 +63,11 @@ def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
             # The mongodb objectids couldn't be directly json encoded so they are converted
             # to strings and prefixed with encoded_object_id in order to find during decodeint.
             if v.startswith(ENCODED_MONGO_OBJECT_ID_PREFIX):
-                json_dict[k] = ObjectId(v[17:])
+                json_dict[k] = ObjectId(v[18:])
             # The bytes from secrets couldn't be directly json encoded so it is url
             # encode and prefixed with quite_encoded in order to find during decodeint.
             elif v.startswith(ENCODED_BYTES_PREFIX):
-                json_dict[k] = unquote_to_bytes(v)[13:]
+                json_dict[k] = unquote_to_bytes(v)[14:]
 
     return json_dict
 
