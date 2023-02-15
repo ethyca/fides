@@ -12,9 +12,6 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.saas.saas_config import SaaSRequest
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.ops.service.connectors import SaaSConnector
 from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
@@ -29,7 +26,7 @@ secrets = get_secrets("wunderkind")
 def wunderkind_secrets(saas_config):
     return {
         "website_id": pydash.get(saas_config, "wunderkind.website_id")
-        or secrets["domain"]
+        or "test_only_wunderkind_website_id_abcde"
     }
 
 
