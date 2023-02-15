@@ -18,7 +18,6 @@ from pytest import MonkeyPatch
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
-from tests.conftest import create_citext_extension
 
 from fides.api import main
 from fides.api.ctl.database.session import sync_engine, sync_session
@@ -32,8 +31,10 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.oauth.jwt import generate_jwe
+from tests.conftest import create_citext_extension
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
+TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 CONFIG = get_config()
 
