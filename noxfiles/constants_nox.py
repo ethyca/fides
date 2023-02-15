@@ -39,6 +39,7 @@ CWD = getcwd()
 # CI env variable is always set to true in Github Actions
 # The else statement is required due to the way commmands are structured and is arbitrary.
 CI_ARGS = "-T" if getenv("CI") else "--user=root"
+CI_ARGS_EXEC = "-t" if not getenv("CI") else "--user=root"
 
 # If FIDES__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDES__CLI__ANALYTICS_ID")
@@ -61,7 +62,7 @@ EXEC = (
     "docker",
     "exec",
     *ANALYTICS_ID_OVERRIDE,
-    CI_ARGS,
+    CI_ARGS_EXEC,
     CONTAINER_NAME,
 )
 RUN = (
