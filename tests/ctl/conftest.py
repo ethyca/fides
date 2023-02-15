@@ -46,16 +46,6 @@ orig_requests_patch = requests.patch
 orig_requests_delete = requests.delete
 
 
-@pytest.fixture(scope="session", autouse=True)
-def cli_login() -> None:
-    """Logs in via the CLI so that tests can use the default credentials file."""
-    login_command(
-        username=CONFIG.security.root_username or "root_username",
-        password=CONFIG.security.root_password or "Testpassword1!",
-        server_url=CONFIG.cli.server_url or "http://fides:8080",
-    )
-
-
 @pytest.fixture(scope="session")
 def monkeysession():
     """monkeypatch fixture at the session level instead of the function level"""

@@ -917,7 +917,7 @@ class TestUser:
         assert result.exit_code == 0
 
     @pytest.mark.unit
-    def test_user_permissions(
+    def test_user_permissions_valid(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test getting user permissions for the current user."""
@@ -929,3 +929,17 @@ class TestUser:
         )
         print(result.output)
         assert result.exit_code == 0
+
+    @pytest.mark.unit
+    def test_user_permissions_not_found(
+        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
+    ) -> None:
+        """Test getting user permissions but the credentials file doesn't exit."""
+        print(credentials_path)
+        result = test_cli_runner.invoke(
+            cli,
+            ["-f", test_config_path, "user", "permissions"],
+            env={"FIDES_CREDENTIALS_PATH": "/root/notarealfile.credentials"},
+        )
+        print(result.output)
+        assert result.exit_code == 1
