@@ -153,7 +153,9 @@ def dispatch_message(
             action_type=action_type,
             body_params=message_body_params,
         )
-    else:
+    else:  # pragma: no cover
+        # This is here as a fail safe, but it should be impossible to reach because
+        # is controlled by a datbase enum field.
         logger.error(
             "Notification service type is not valid: {}",
             CONFIG.notifications.notification_service_type,
@@ -229,6 +231,8 @@ def _build_sms(  # pylint: disable=too-many-return-statements
         if body_params.rejection_reason:
             return f"Your privacy request has been denied for the following reason: {body_params.rejection_reason}"
         return "Your privacy request has been denied."
+    if action_type == MessagingActionType.TEST_MESSAGE:
+        return "Test message from Fides."
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(
         f"Message action type {action_type} is not implemented"
@@ -310,6 +314,11 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=base_template.render(
                 {"rejection_reason": body_params.rejection_reason}
             ),
+        )
+    if action_type == MessagingActionType.TEST_MESSAGE:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Test message from fides", body=base_template.render()
         )
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(
@@ -478,12 +487,12 @@ def _twilio_sms_dispatcher(
     auth_token = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value
     ]
-    messaging_service_id = messaging_config.secrets[
+    messaging_service_id = messaging_config.secrets.get(
         MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
-    ]
-    sender_phone_number = messaging_config.secrets[
+    )
+    sender_phone_number = messaging_config.secrets.get(
         MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
-    ]
+    )
 
     client = Client(account_sid, auth_token)
     try:

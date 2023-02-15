@@ -17,6 +17,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.6...main)
 
 * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
+* Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
 
 * Admin UI
   * Create custom fields from a resource screen - Button to Trigger modal [#524](https://github.com/ethyca/fides/pull/2536)
