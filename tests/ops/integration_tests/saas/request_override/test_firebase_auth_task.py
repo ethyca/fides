@@ -560,13 +560,7 @@ async def test_firebase_auth_user_delete_function(
     erasure_policy_string_rewrite,
     firebase_auth_secrets,
 ) -> None:
-    """
-    Tests delete functionality by explicitly invoking the delete override function
-
-    We can't have an 'end-to-end' privacy request test, as preferred, because
-    our delete function is not configured by default (the update function is).
-    But this at least gives us some test coverage of the delete function directly.
-    """
+    """Tests delete functionality by explicitly invoking the delete override function"""
     privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
     identity = Identity(**{"email": firebase_auth_user.email})
     privacy_request.cache_identity(identity)
@@ -604,13 +598,7 @@ async def test_firebase_auth_user_delete_function_with_phone_number_identity(
     erasure_policy_string_rewrite,
     firebase_auth_secrets,
 ) -> None:
-    """
-    Tests delete functionality by explicitly invoking the delete override function
-
-    We can't have an 'end-to-end' privacy request test, as preferred, because
-    our delete function is not configured by default (the update function is).
-    But this at least gives us some test coverage of the delete function directly.
-    """
+    """Tests delete functionality by explicitly invoking the delete override function"""
     privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
     identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
     privacy_request.cache_identity(identity)
