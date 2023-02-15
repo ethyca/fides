@@ -23,6 +23,8 @@ from fides.api import main
 from fides.core.user import login_command
 from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.sql_models import FidesUser
+from fides.api.ctl.database.session import sync_engine, sync_session
+from fides.api.ctl.sql_models import FidesUser
 from fides.core import api
 from fides.core.config import FidesConfig, get_config
 from fides.lib.cryptography.schemas.jwt import (
@@ -33,7 +35,6 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.oauth.jwt import generate_jwe
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
-TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 CONFIG = get_config()
 
@@ -334,7 +335,10 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
 
 @pytest.fixture
 def db() -> Generator:
+    create_citext_extension(sync_engine)
+
     session = sync_session()
+
     yield session
     session.close()
 
@@ -344,6 +348,9 @@ def db() -> Generator:
 async def async_session(test_client) -> AsyncSession:
     assert CONFIG.test_mode
     assert requests.post == test_client.post
+
+    create_citext_extension(sync_engine)
+
     async_engine = create_async_engine(
         CONFIG.database.async_database_uri,
         echo=False,

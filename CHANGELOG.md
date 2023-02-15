@@ -14,12 +14,8 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.6.4...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.6.6...main)
 
-### Added
-
-* Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
-* Increased default pool_size and max_overflow to 50 [#2560](https://github.com/ethyca/fides/pull/2560)
 * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
 
 * Admin UI
@@ -42,6 +38,10 @@ The types of changes are:
 ### Fixed
 
 * Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
+* Usernames are case insensitive now and prevent all duplicates [#2487](https://github.com/ethyca/fides/pull/2487)
+  * This PR contains a migration that deletes duplicate users and keeps the oldest original account.
+* Update Logos for shipped connectors [#2464](https://github.com/ethyca/fides/pull/2587)
+* Search field on privacy request page isn't working [#2270](https://github.com/ethyca/fides/pull/2595)
 
 ### Developer Experience
 
@@ -53,11 +53,25 @@ The types of changes are:
 
 * Remove feature flagged config wizard stepper from Admin UI [#2553](https://github.com/ethyca/fides/pull/2553)
 
+## [2.6.6](https://github.com/ethyca/fides/compare/2.6.5...2.6.6)
+
+### Changed
+
+* Improve Readability for Custom Masking Override Exceptions [#2593](https://github.com/ethyca/fides/pull/2593)
+
+## [2.6.5](https://github.com/ethyca/fides/compare/2.6.4...2.6.5)
+
+### Added
+
+* Added config properties to override database Engine parameters [#2511](https://github.com/ethyca/fides/pull/2511)
+* Increased default pool_size and max_overflow to 50 [#2560](https://github.com/ethyca/fides/pull/2560)
+
 ## [2.6.4](https://github.com/ethyca/fides/compare/2.6.3...2.6.4)
 
 ### Fixed
 
 * Fixed bug for SMS completion notification not being sent [#2526](https://github.com/ethyca/fides/issues/2526)
+* Fixed bug where refreshing a page in the UI would result in a 404 [#2502](https://github.com/ethyca/fides/pull/2502)
 
 ## [2.6.3](https://github.com/ethyca/fides/compare/2.6.2...2.6.3)
 
