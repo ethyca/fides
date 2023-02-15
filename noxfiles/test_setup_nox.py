@@ -1,15 +1,13 @@
 from nox import Session
 
 from constants_nox import (
-    EXEC,
-    LOGIN,
-    CONTAINER_NAME,
     CI_ARGS,
     COMPOSE_FILE,
-    COMPOSE_SERVICE_NAME,
+    CONTAINER_NAME,
+    EXEC,
     IMAGE_NAME,
     INTEGRATION_COMPOSE_FILE,
-    RUN_NO_DEPS,
+    LOGIN,
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )

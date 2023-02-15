@@ -4,7 +4,7 @@ from typing import Callable, Dict
 
 import nox
 
-from constants_nox import IMAGE_NAME, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG, LOGIN
+from constants_nox import IMAGE_NAME, LOGIN, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG
 from test_setup_nox import pytest_ctl, pytest_lib, pytest_ops
 from utils_nox import install_requirements
 
