@@ -75,10 +75,6 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     ctx.ensure_object(dict)
     config = get_config(config_path, verbose=True)
-    try:
-        config.user.auth_header = get_auth_header(verbose=False)
-    except SystemExit:
-        pass
 
     # Dyanmically add commands to the CLI
     cli.commands = LOCAL_COMMAND_DICT

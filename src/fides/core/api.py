@@ -119,8 +119,12 @@ def evaluate(
     return requests.get(url, headers=headers, params={"tag": tag, "message": message})
 
 
-def db_action(server_url: str, action: str) -> requests.Response:
+def db_action(
+    server_url: str,
+    headers: Dict[str,str],
+    action: str,
+) -> requests.Response:
     """
     Tell the API to perform a database action.
     """
-    return requests.post(f"{server_url}{API_PREFIX}/admin/db/{action}")
+    return requests.post(f"{server_url}{API_PREFIX}/admin/db/{action}", headers=headers)
