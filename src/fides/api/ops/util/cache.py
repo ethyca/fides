@@ -28,14 +28,14 @@ ENCODED_MONGO_OBJECT_ID_PREFIX = "encoded_object_id_"
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:  # pylint: disable=too-many-return-statements
+        print("HERE")
+        print(o)
         if isinstance(o, Enum):
             return o.value
         if isinstance(o, bytes):
             return f"{ENCODED_BYTES_PREFIX}{quote(o)}"
         if isinstance(o, (datetime, date)):
             return o.isoformat()
-        if isinstance(o, dict):
-            return o
         if isinstance(o, ObjectId):
             return f"{ENCODED_MONGO_OBJECT_ID_PREFIX}{str(o)}"
         if isinstance(o, object):

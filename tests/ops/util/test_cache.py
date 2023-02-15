@@ -124,12 +124,14 @@ class TestCustomJSONEncoder:
                 f'"{datetime(2023, 2, 14, 20, 58).isoformat()}"',
             ),
             ({"a": "b"}, '{"a": "b"}'),
+            ({"a": {"b": "c"}}, '{"a": {"b": "c"}}'),
             (
                 ObjectId("507f191e810c19729de860ea"),
                 f'"{ENCODED_MONGO_OBJECT_ID_PREFIX}507f191e810c19729de860ea"',
             ),
             ({"a": 1}, '{"a": 1}'),
             ("some value", '"some value"'),
+            (1, "1"),
         ],
     )
     def test_encode(self, value, expected):
