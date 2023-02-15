@@ -125,8 +125,24 @@ def fides_db_scan(session: nox.Session) -> None:
     """Scan the fides application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
-    run_command = (
-        *RUN,
+    login_command = (
+        "docker",
+        "container",
+        "exec",
+        "fides-fides-1",
+        "fides",
+        "user",
+        "login",
+        "-u",
+        "root_user",
+        "-p",
+        "Testpassword1!",
+    )
+    scan_command = (
+        "docker",
+        "container",
+        "exec",
+        "fides-fides-1",
         "fides",
         "scan",
         "dataset",
@@ -134,7 +150,8 @@ def fides_db_scan(session: nox.Session) -> None:
         "--credentials-id",
         "app_postgres",
     )
-    session.run(*run_command, external=True)
+    session.run(*login_command, external=True)
+    session.run(*scan_command, external=True)
 
 
 @nox.session()

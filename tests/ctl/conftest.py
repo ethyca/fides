@@ -16,13 +16,12 @@ import yaml
 from fideslang import models
 from pytest import MonkeyPatch
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.orm.exc import ObjectDeletedError
+from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 
 from fides.api import main
-from fides.api.ctl.database.session import engine, sync_session
-from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
+from fides.api.ctl.database.session import sync_session
+from fides.api.ctl.sql_models import FidesUser
 from fides.core import api
 from fides.core.config import FidesConfig, get_config
 from fides.lib.cryptography.schemas.jwt import (
@@ -30,9 +29,7 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
