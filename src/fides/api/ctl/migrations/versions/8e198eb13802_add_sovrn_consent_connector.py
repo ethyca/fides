@@ -1,7 +1,7 @@
 """Add sovrn consent connector
 
 Revision ID: 8e198eb13802
-Revises: 5d62bab40b71
+Revises: 643249f65453
 Create Date: 2023-01-27 21:58:23.344582
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "8e198eb13802"
-down_revision = "5d62bab40b71"
+down_revision = "643249f65453"
 branch_labels = None
 depends_on = None
 import sqlalchemy as sa

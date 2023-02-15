@@ -10,6 +10,7 @@ import {
   Td,
   Text,
   Tr,
+  useDisclosure,
 } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
@@ -24,46 +25,67 @@ interface UserManagementRowProps {
 
 const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const router = useRouter();
+  const deleteModal = useDisclosure();
 
   const handleEditUser = () => {
     router.push(`${USER_MANAGEMENT_ROUTE}/profile/${user.id}`);
   };
 
   return (
-    <Tr key={user.id} _hover={{ bg: "gray.50" }} height="36px">
-      <Td pl={0} py={1}>
-        {user.username}
-      </Td>
-      <Td pl={0} py={1}>
-        {user.first_name}
-      </Td>
-      <Td pl={0} py={1}>
-        {user.last_name}
-      </Td>
-      <Td pl={0} py={1}>
-        {user.created_at ? new Date(user.created_at).toUTCString() : null}
-      </Td>
-      <Td pr={0} py={1} textAlign="end" position="relative">
-        <ButtonGroup>
-          <Menu>
-            <MenuButton as={Button} size="xs" bg="white">
-              <MoreIcon color="gray.700" w={18} h={18} />
-            </MenuButton>
-            <Portal>
-              <MenuList shadow="xl">
-                <MenuItem
-                  _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                  onClick={handleEditUser}
-                >
-                  <Text fontSize="sm">Edit</Text>
-                </MenuItem>
-                <DeleteUserModal {...user} />
-              </MenuList>
-            </Portal>
-          </Menu>
-        </ButtonGroup>
-      </Td>
-    </Tr>
+    <>
+      <Tr
+        key={user.id}
+        _hover={{ bg: "gray.50" }}
+        height="36px"
+        data-testid={`row-${user.id}`}
+      >
+        <Td pl={0} py={1}>
+          {user.username}
+        </Td>
+        <Td pl={0} py={1}>
+          {user.first_name}
+        </Td>
+        <Td pl={0} py={1}>
+          {user.last_name}
+        </Td>
+        <Td pl={0} py={1}>
+          {user.created_at ? new Date(user.created_at).toUTCString() : null}
+        </Td>
+        <Td pr={0} py={1} textAlign="end" position="relative">
+          <ButtonGroup>
+            <Menu>
+              <MenuButton
+                as={Button}
+                size="xs"
+                bg="white"
+                data-testid="menu-btn"
+              >
+                <MoreIcon color="gray.700" w={18} h={18} />
+              </MenuButton>
+              <Portal>
+                <MenuList shadow="xl" data-testid={`menu-${user.id}`}>
+                  <MenuItem
+                    _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                    onClick={handleEditUser}
+                    data-testid="edit-btn"
+                  >
+                    <Text fontSize="sm">Edit</Text>
+                  </MenuItem>
+                  <MenuItem
+                    _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                    onClick={deleteModal.onOpen}
+                    data-testid="delete-btn"
+                  >
+                    <Text fontSize="sm">Delete</Text>
+                  </MenuItem>
+                </MenuList>
+              </Portal>
+            </Menu>
+          </ButtonGroup>
+        </Td>
+      </Tr>
+      <DeleteUserModal user={user} {...deleteModal} />
+    </>
   );
 };
 

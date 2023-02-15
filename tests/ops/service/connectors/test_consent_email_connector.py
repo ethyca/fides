@@ -4,9 +4,10 @@ import pytest
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionTestStatus
-from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
-    AdvancedSettings,
+from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
+    AdvancedSettingsWithExtendedIdentityTypes,
+    ExtendedConsentEmailSchema,
+    ExtendedIdentityTypes,
 )
 from fides.api.ops.schemas.messaging.messaging import (
     ConsentPreferencesByUser,
@@ -23,27 +24,33 @@ from fides.api.ops.service.connectors.consent_email_connector import (
 
 
 class TestEmailConsentConnectorMethods:
-    email_and_ljt_readerID_defined = ConsentEmailSchema(
+    email_and_ljt_readerID_defined = ExtendedConsentEmailSchema(
         third_party_vendor_name="Dawn's Bookstore",
         recipient_email_address="test@example.com",
-        advanced_settings=AdvancedSettings(
-            identity_types=["email"], browser_identity_types=["ljt_readerID"]
+        advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
+            identity_types=ExtendedIdentityTypes(
+                email=True, phone_number=False, cookie_ids=["ljt_readerID"]
+            )
         ),
     )
 
-    phone_defined = ConsentEmailSchema(
+    phone_defined = ExtendedConsentEmailSchema(
         third_party_vendor_name="Dawn's Bookstore",
         recipient_email_address="test@example.com",
-        advanced_settings=AdvancedSettings(
-            identity_types=["phone_number"], browser_identity_types=[]
+        advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
+            identity_types=ExtendedIdentityTypes(
+                email=False, phone_number=True, cookie_ids=[]
+            )
         ),
     )
 
-    ljt_readerID_defined = ConsentEmailSchema(
+    ljt_readerID_defined = ExtendedConsentEmailSchema(
         third_party_vendor_name="Dawn's Bookstore",
         recipient_email_address="test@example.com",
-        advanced_settings=AdvancedSettings(
-            identity_types=[], browser_identity_types=["ljt_readerID"]
+        advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
+            identity_types=ExtendedIdentityTypes(
+                email=False, phone_number=False, cookie_ids=["ljt_readerID"]
+            )
         ),
     )
 
@@ -73,7 +80,7 @@ class TestEmailConsentConnectorMethods:
     @pytest.mark.parametrize(
         "email_schema, identity_types",
         [
-            (email_and_ljt_readerID_defined, ["email", "ljt_readerID"]),
+            (email_and_ljt_readerID_defined, ["ljt_readerID", "email"]),
             (phone_defined, ["phone_number"]),
             (ljt_readerID_defined, ["ljt_readerID"]),
         ],

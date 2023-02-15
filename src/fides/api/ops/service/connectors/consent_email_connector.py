@@ -11,10 +11,13 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.ops.schemas.connection_configuration import ConsentEmailSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
-    SVORN_REQUIRED_IDENTITY,
-    AdvancedSettings,
+    AdvancedSettingsWithExtendedIdentityTypes,
+    ExtendedConsentEmailSchema,
+    ExtendedIdentityTypes,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
+    SOVRN_REQUIRED_IDENTITY,
 )
 from fides.api.ops.schemas.messaging.messaging import (
     ConsentEmailFulfillmentBodyParams,
@@ -44,7 +47,7 @@ class GenericEmailConsentConnector(LimitedConnector[None]):
     @property
     def required_identities(self) -> List[str]:
         """Returns the identity types we need to supply to the third party for this connector"""
-        config = ConsentEmailSchema(**self.configuration.secrets or {})
+        config = ExtendedConsentEmailSchema(**self.configuration.secrets or {})
         return get_identity_types_for_connector(config)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
@@ -52,7 +55,7 @@ class GenericEmailConsentConnector(LimitedConnector[None]):
         Sends an email to the "test_email" configured, just to establish
         that the email workflow is working.
         """
-        config = ConsentEmailSchema(**self.configuration.secrets or {})
+        config = ExtendedConsentEmailSchema(**self.configuration.secrets or {})
         try:
             if not config.test_email_address:
                 raise MessageDispatchException(
@@ -90,7 +93,7 @@ class SovrnConsentConnector(GenericEmailConsentConnector):
 
     @property
     def identities_for_test_email(self) -> Dict[str, Any]:
-        return {SVORN_REQUIRED_IDENTITY: "test_ljt_reader_id"}
+        return {SOVRN_REQUIRED_IDENTITY: "test_ljt_reader_id"}
 
 
 def get_consent_email_connection_configs(db: Session) -> Query:
@@ -102,19 +105,26 @@ def get_consent_email_connection_configs(db: Session) -> Query:
     )
 
 
-def get_identity_types_for_connector(email_secrets: ConsentEmailSchema) -> List[str]:
-    """Return a list of identity types we need to email to the third party vendor.
+def get_identity_types_for_connector(
+    email_secrets: ExtendedConsentEmailSchema,
+) -> List[str]:
+    """Return a list of identity types we need to email to the third party vendor."""
+    advanced_settings: AdvancedSettingsWithExtendedIdentityTypes = (
+        email_secrets.advanced_settings
+    )
+    identity_types: ExtendedIdentityTypes = advanced_settings.identity_types
+    flattened_list: List[str] = identity_types.cookie_ids
 
-    Combines identities from browser-retrieved identity types and supplied identity types.
-    """
-    advanced_settings: AdvancedSettings = email_secrets.advanced_settings
-    return [identifier.value for identifier in advanced_settings.identity_types] + [
-        identifier.value for identifier in advanced_settings.browser_identity_types
-    ]
+    if identity_types.email:
+        flattened_list.append("email")
+    if identity_types.phone_number:
+        flattened_list.append("phone_number")
+
+    return flattened_list
 
 
 def filter_user_identities_for_connector(
-    secrets: ConsentEmailSchema, user_identities: Dict[str, Any]
+    secrets: ExtendedConsentEmailSchema, user_identities: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Filter identities to just those specified for a given connector"""
     required_identities: List[str] = get_identity_types_for_connector(secrets)
