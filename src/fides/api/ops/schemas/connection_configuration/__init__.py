@@ -84,7 +84,7 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_snowflake
     SnowflakeSchema as SnowflakeSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
-    SOVRN_REQUIRED_IDENTITY as SVORN_REQUIRED_IDENTITY,
+    SOVRN_REQUIRED_IDENTITY as SOVRN_REQUIRED_IDENTITY,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
     SovrnEmailDocsSchema as SovrnEmailDocsSchema,
