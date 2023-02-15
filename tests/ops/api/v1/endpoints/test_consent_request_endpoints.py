@@ -692,6 +692,8 @@ class TestSaveConsent:
                 "data_use": "advertising",
                 "data_use_description": None,
                 "opt_in": True,
+                "has_gpc_flag": True,
+                "conflicts_with_gpc": False,
             },
             {
                 "data_use": "improve",
