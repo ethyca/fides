@@ -1021,6 +1021,12 @@ dataset:
     - name: opt_in
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: has_gpc_flag
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: conflicts_with_gpc
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: provided_identity_id
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
