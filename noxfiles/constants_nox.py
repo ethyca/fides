@@ -61,25 +61,10 @@ LOGIN = (
 EXEC = (
     "docker",
     "exec",
+    *ANALYTICS_OPT_OUT,
     *ANALYTICS_ID_OVERRIDE,
     CI_ARGS_EXEC,
     CONTAINER_NAME,
-)
-RUN = (
-    "docker",
-    "compose",
-    "run",
-    "-e",
-    "VAULT_ADDR",
-    "-e",
-    "VAULT_NAMESPACE",
-    "-e",
-    "VAULT_TOKEN",
-    "--rm",
-    *ANALYTICS_ID_OVERRIDE,
-    *ANALYTICS_OPT_OUT,
-    CI_ARGS,
-    COMPOSE_SERVICE_NAME,
 )
 RUN_NO_DEPS = (
     "docker",
