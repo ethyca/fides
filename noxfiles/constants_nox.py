@@ -12,6 +12,7 @@ WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 # Image Names & Tags
 REGISTRY = "ethyca"
 IMAGE_NAME = "fides"
+CONTAINER_NAME = "fides-fides-1"
 COMPOSE_SERVICE_NAME = "fides"
 
 # Image Names & Tags
@@ -44,6 +45,25 @@ ANALYTICS_ID_OVERRIDE = ("-e", "FIDES__CLI__ANALYTICS_ID")
 ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 
 # Reusable Commands
+LOGIN = (
+    "docker",
+    "exec",
+    "fides-fides-1",
+    "fides",
+    "user",
+    "login",
+    "-u",
+    "root_user",
+    "-p",
+    "Testpassword1!",
+)
+EXEC = (
+    "docker",
+    "exec",
+    *ANALYTICS_ID_OVERRIDE,
+    CI_ARGS,
+    CONTAINER_NAME,
+)
 RUN = (
     "docker",
     "compose",

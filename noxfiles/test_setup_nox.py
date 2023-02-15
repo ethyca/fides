@@ -1,6 +1,9 @@
 from nox import Session
 
 from constants_nox import (
+    EXEC,
+    LOGIN,
+    CONTAINER_NAME,
     CI_ARGS,
     COMPOSE_FILE,
     COMPOSE_SERVICE_NAME,
@@ -18,7 +21,7 @@ def pytest_lib(session: Session, coverage_arg: str) -> None:
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
-        *RUN_NO_DEPS,
+        *EXEC,
         "pytest",
         coverage_arg,
         "tests/lib/",
@@ -44,8 +47,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
         session.run(*start_command, external=True)
         run_command = (
             "docker",
-            "compose",
-            "run",
+            "exec",
             "-e",
             "SNOWFLAKE_FIDESCTL_PASSWORD",
             "-e",
@@ -62,7 +64,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "BIGQUERY_CONFIG",
             "--rm",
             CI_ARGS,
-            IMAGE_NAME,
+            CONTAINER_NAME,
             "pytest",
             coverage_arg,
             "-m",
@@ -72,8 +74,9 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
         session.run(*run_command, external=True)
     else:
         session.run(*START_APP, external=True)
+        session.run(*LOGIN, external=True)
         run_command = (
-            *RUN_NO_DEPS,
+            *EXEC,
             "pytest",
             coverage_arg,
             "tests/ctl/",
@@ -89,7 +92,7 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
     if mark == "unit":
         session.run(*START_APP, external=True)
         run_command = (
-            *RUN_NO_DEPS,
+            *EXEC,
             "pytest",
             coverage_arg,
             OPS_TEST_DIR,
@@ -109,8 +112,7 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
         session.run(*START_APP, external=True)
         run_command = (
             "docker",
-            "compose",
-            "run",
+            "exec",
             "-e",
             "ANALYTICS_OPT_OUT",
             "-e",
@@ -125,7 +127,7 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "BIGQUERY_DATASET",
             "--rm",
             CI_ARGS,
-            COMPOSE_SERVICE_NAME,
+            CONTAINER_NAME,
             "pytest",
             coverage_arg,
             OPS_TEST_DIR,
@@ -145,8 +147,7 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
         session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
         run_command = (
             "docker",
-            "compose",
-            "run",
+            "exec",
             "-e",
             "ANALYTICS_OPT_OUT",
             "-e",
@@ -157,7 +158,7 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "VAULT_TOKEN",
             "--rm",
             CI_ARGS,
-            COMPOSE_SERVICE_NAME,
+            CONTAINER_NAME,
             "pytest",
             coverage_arg,
             OPS_TEST_DIR,
