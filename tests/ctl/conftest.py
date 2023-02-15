@@ -18,6 +18,7 @@ from pytest import MonkeyPatch
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
+from tests.conftest import create_citext_extension
 
 from fides.api import main
 from fides.api.ctl.database.session import sync_engine, sync_session
