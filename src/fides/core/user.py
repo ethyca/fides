@@ -9,6 +9,7 @@ from fides.core.config import get_config
 from fides.core.utils import (
     Credentials,
     echo_green,
+    echo_red,
     get_auth_header,
     get_credentials_path,
     read_credentials_file,
@@ -120,7 +121,7 @@ def create_command(
     echo_green(f"User: '{username}' created and assigned permissions.")
 
 
-def login_command(username: str, password: str, server_url: str) -> None:
+def login_command(username: str, password: str, server_url: str) -> str:
     """
     Given a username and password, request an access_token from the API and
     store all user information in a local credentials file.
@@ -135,6 +136,7 @@ def login_command(username: str, password: str, server_url: str) -> None:
     credentials_path = get_credentials_path()
     write_credentials_file(credentials, credentials_path)
     echo_green(f"Credentials file written to: {credentials_path}")
+    return credentials_path
 
 
 def get_permissions_command(server_url: str) -> None:
@@ -142,7 +144,12 @@ def get_permissions_command(server_url: str) -> None:
     Get user permissions from the API.
     """
     credentials_path = get_credentials_path()
-    credentials = read_credentials_file(credentials_path)
+    try:
+        credentials = read_credentials_file(credentials_path)
+    except FileNotFoundError:
+        echo_red(f"No credentials file found at path: {credentials_path}")
+        raise SystemExit(1)
+
     user_id = credentials.user_id
     auth_header = get_auth_header()
     permissions: List[str] = get_user_permissions(user_id, auth_header, server_url)
