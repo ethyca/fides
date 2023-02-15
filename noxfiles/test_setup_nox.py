@@ -1,7 +1,7 @@
 from nox import Session
 
 from constants_nox import (
-    CI_ARGS,
+    CI_ARGS_EXEC,
     COMPOSE_FILE,
     CONTAINER_NAME,
     EXEC,
@@ -61,7 +61,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "-e",
             "BIGQUERY_CONFIG",
             "--rm",
-            CI_ARGS,
+            CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
             coverage_arg,
@@ -124,7 +124,7 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "-e",
             "BIGQUERY_DATASET",
             "--rm",
-            CI_ARGS,
+            CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
             coverage_arg,
@@ -155,7 +155,7 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "-e",
             "VAULT_TOKEN",
             "--rm",
-            CI_ARGS,
+            CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
             coverage_arg,
