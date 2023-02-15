@@ -7,9 +7,8 @@ from nox.command import CommandFailed
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
-    RUN,
+    EXEC,
     RUN_CYPRESS_TESTS,
-    RUN_NO_DEPS,
     START_APP,
     START_APP_REMOTE_DEBUG,
     START_TEST_ENV,
@@ -57,7 +56,7 @@ def dev(session: Session) -> None:
     if not datastores:
         if open_shell:
             session.run(*START_APP, external=True)
-            session.run(*RUN, "/bin/bash", external=True)
+            session.run(*EXEC, "/bin/bash", external=True)
         else:
             if remote_debug:
                 session.run(*START_APP_REMOTE_DEBUG, external=True)
@@ -152,7 +151,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         "Running example setup scripts for DSR Automation tests... (scripts/load_examples.py)"
     )
     session.run(
-        *RUN_NO_DEPS,
+        *EXEC,
         "python",
         "/fides/scripts/load_examples.py",
         external=True,
@@ -163,7 +162,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         "Pushing example resources for Data Mapping tests... (demo_resources/*)"
     )
     session.run(
-        *RUN_NO_DEPS,
+        *EXEC,
         "fides",
         "push",
         "demo_resources/",
@@ -204,7 +203,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         "Example Mongo Database running at localhost:27017 (user: 'mongo_test', pass: 'mongo_pass', db: 'mongo_test')"
     )
     session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
-    session.run(*RUN_NO_DEPS, shell_command, external=True, env=test_env_vars)
+    session.run(*EXEC, shell_command, external=True, env=test_env_vars)
 
 
 @nox_session()
