@@ -15,7 +15,7 @@ def try_get_auth_header() -> Dict[str, str]:
     """Try to get the auth header. If an error is thrown, return a default auth header instead."""
     try:
         return get_auth_header(verbose=False)
-    except FileNotFoundError:
+    except SystemExit:
         return create_auth_header("defaulttoken")
 
 

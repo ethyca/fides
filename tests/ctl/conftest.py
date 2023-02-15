@@ -20,13 +20,11 @@ from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 
 from fides.api import main
-from fides.core.user import login_command
-from fides.api.ctl.database.session import sync_session
-from fides.api.ctl.sql_models import FidesUser
 from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.ctl.sql_models import FidesUser
 from fides.core import api
 from fides.core.config import FidesConfig, get_config
+from fides.core.user import login_command
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

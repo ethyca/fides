@@ -121,7 +121,7 @@ def evaluate(
 
 def db_action(
     server_url: str,
-    headers: Dict[str,str],
+    headers: Dict[str, str],
     action: str,
 ) -> requests.Response:
     """
