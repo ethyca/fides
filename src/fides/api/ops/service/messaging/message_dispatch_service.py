@@ -36,7 +36,6 @@ from fides.api.ops.schemas.messaging.messaging import (
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
-    TestMessage,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
@@ -113,7 +112,7 @@ def dispatch_message_task(
 def dispatch_message(
     db: Session,
     action_type: MessagingActionType,
-    to_identity: Optional[Union[Identity, TestMessage]],
+    to_identity: Optional[Identity],
     service_type: Optional[str],
     message_body_params: Optional[
         Union[

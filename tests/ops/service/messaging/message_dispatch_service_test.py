@@ -18,7 +18,6 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceSecrets,
     MessagingServiceType,
     SubjectIdentityVerificationBodyParams,
-    TestMessage,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.messaging.message_dispatch_service import (
@@ -160,7 +159,7 @@ class TestMessageDispatchService:
         dispatch_message(
             db=db,
             action_type=MessagingActionType.TEST_MESSAGE,
-            to_identity=TestMessage(email="test@email.com"),
+            to_identity=Identity(email="test@email.com"),
             service_type=MessagingServiceType.MAILGUN.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
@@ -182,7 +181,7 @@ class TestMessageDispatchService:
         dispatch_message(
             db=db,
             action_type=MessagingActionType.TEST_MESSAGE,
-            to_identity=TestMessage(email="test@email.com"),
+            to_identity=Identity(email="test@email.com"),
             service_type=MessagingServiceType.TWILIO_EMAIL.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
@@ -204,7 +203,7 @@ class TestMessageDispatchService:
         dispatch_message(
             db=db,
             action_type=MessagingActionType.TEST_MESSAGE,
-            to_identity=TestMessage(phone_number="+19198675309"),
+            to_identity=Identity(phone_number="+19198675309"),
             service_type=MessagingServiceType.TWILIO_TEXT.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'

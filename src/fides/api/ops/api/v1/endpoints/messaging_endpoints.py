@@ -39,12 +39,12 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingConfigRequest,
     MessagingConfigResponse,
-    TestMessage,
     TestMessagingStatusMessage,
 )
 from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
 )
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.ops.service.messaging.messaging_crud_service import (
     create_or_update_messaging_config,
@@ -269,7 +269,7 @@ def delete_config_by_key(
     },
 )
 def send_test_message(
-    message_info: TestMessage, db: Session = Depends(deps.get_db)
+    message_info: Identity, db: Session = Depends(deps.get_db)
 ) -> Dict[str, str]:
     """Sends a test message."""
     try:
@@ -283,5 +283,4 @@ def send_test_message(
         raise HTTPException(
             status_code=400, detail=f"There was an error sending the test message: {e}"
         )
-
     return {"details": "Test message successfully sent"}
