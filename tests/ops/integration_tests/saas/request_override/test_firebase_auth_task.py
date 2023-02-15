@@ -13,7 +13,10 @@ from fides.api.ops.service.saas_request.override_implementations.firebase_auth_r
 )
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
+
+CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
@@ -267,7 +270,7 @@ async def test_firebase_auth_update_request(
         ],
     )
 
-    v = await graph_task.run_erasure(
+    await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -357,7 +360,7 @@ async def test_firebase_auth_update_request_phone_number_identity(
         ],
     )
 
-    v = await graph_task.run_erasure(
+    await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -402,9 +405,153 @@ async def test_firebase_auth_update_request_phone_number_identity(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_saas_override
+@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 async def test_firebase_auth_delete_request(
+    db,
+    policy,
+    firebase_auth_connection_config,
+    firebase_auth_dataset_config,
+    firebase_auth_user: auth.ImportUserRecord,
+    erasure_policy_string_rewrite,
+    firebase_auth_secrets,
+) -> None:
+    """Delete request based on the Firebase Auth SaaS config"""
+
+    privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
+    identity = Identity(**{"email": firebase_auth_user.email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
+    merged_graph = firebase_auth_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [firebase_auth_connection_config],
+        {"email": firebase_auth_user.email},
+        db,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:user"],
+        min_size=1,
+        keys=[
+            "uid",
+            "email",
+            "display_name",
+            "disabled",
+            "email_verified",
+        ],
+    )
+
+    masking_strict = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False
+
+    x = await graph_task.run_erasure(
+        privacy_request,
+        erasure_policy_string_rewrite,
+        graph,
+        [firebase_auth_connection_config],
+        {"email": firebase_auth_user.email},
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
+
+    assert x == {
+        f"{dataset_name}:user": 1,
+    }
+
+    app = initialize_firebase(firebase_auth_secrets)
+
+    # confirm the user no longer exists
+    with pytest.raises(UserNotFoundError):
+        auth.get_user_by_email(firebase_auth_user.email, app=app)
+
+    with pytest.raises(UserNotFoundError):
+        auth.get_user(firebase_auth_user.uid, app=app)
+
+    CONFIG.execution.masking_strict = masking_strict
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_firebase_auth
+@pytest.mark.asyncio
+async def test_firebase_auth_delete_request_phone_number_identity(
+    db,
+    policy,
+    firebase_auth_connection_config,
+    firebase_auth_dataset_config,
+    firebase_auth_user: auth.ImportUserRecord,
+    erasure_policy_string_rewrite,
+    firebase_auth_secrets,
+) -> None:
+    """Delete request based on the Firebase Auth SaaS config"""
+
+    privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
+    identity = Identity(**{"phone_number": firebase_auth_user.phone_number})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
+    merged_graph = firebase_auth_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [firebase_auth_connection_config],
+        {"phone_number": firebase_auth_user.phone_number},
+        db,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:user"],
+        min_size=1,
+        keys=[
+            "uid",
+            "email",
+            "display_name",
+            "disabled",
+            "email_verified",
+        ],
+    )
+
+    masking_strict = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False
+
+    x = await graph_task.run_erasure(
+        privacy_request,
+        erasure_policy_string_rewrite,
+        graph,
+        [firebase_auth_connection_config],
+        {"phone_number": firebase_auth_user.phone_number},
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
+
+    assert x == {
+        f"{dataset_name}:user": 1,
+    }
+
+    app = initialize_firebase(firebase_auth_secrets)
+
+    # confirm the user no longer exists
+    with pytest.raises(UserNotFoundError):
+        auth.get_user_by_phone_number(firebase_auth_user.phone_number, app=app)
+
+    with pytest.raises(UserNotFoundError):
+        auth.get_user(firebase_auth_user.uid, app=app)
+
+    CONFIG.execution.masking_strict = masking_strict
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_saas_override
+@pytest.mark.asyncio
+async def test_firebase_auth_user_delete_function(
     db,
     policy,
     firebase_auth_connection_config,
@@ -448,7 +595,7 @@ async def test_firebase_auth_delete_request(
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
 @pytest.mark.asyncio
-async def test_firebase_auth_delete_request_phone_number_identity(
+async def test_firebase_auth_user_delete_function_with_phone_number_identity(
     db,
     policy,
     firebase_auth_connection_config,
@@ -460,7 +607,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
     """
     Tests delete functionality by explicitly invoking the delete override function
 
-    We can't have an'end-to-end' privacy request test, as preferred, because
+    We can't have an 'end-to-end' privacy request test, as preferred, because
     our delete function is not configured by default (the update function is).
     But this at least gives us some test coverage of the delete function directly.
     """
