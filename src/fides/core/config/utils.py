@@ -13,7 +13,7 @@ def get_dev_mode() -> bool:
     dev_mode = getenv("FIDES__DEV_MODE", "").lower() == "true"
     return dev_mode
 
-# Figure out a better way to produce this, make it inclusive of new fields automagically?
+
 CONFIG_KEY_ALLOWLIST = {
     "cli": ["server_host", "server_port"],
     "user": ["analytics_opt_out"],
