@@ -12,9 +12,8 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.saas.saas_config import SaaSRequest
-from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.ops.service.connectors import SaaSConnector, get_connector
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
@@ -90,7 +89,7 @@ async def test_wunderkind_consent_request_task(
 @pytest.mark.integration_wunderkind
 @pytest.mark.asyncio
 @mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
-async def test_wunderkind_consent_preparedw_requests(
+async def test_wunderkind_consent_prepared_requests(
     mocked_client_send,
     db,
     consent_policy,
@@ -123,7 +122,7 @@ async def test_wunderkind_consent_preparedw_requests(
     query_params = mocked_client_send.call_args[0][0].query_params
     assert query_params["id_type"] == "email"
     assert query_params["id_value"] == wunderkind_identity_email
-    assert query_params["consent"] == "1YN"
+    assert query_params["consent"] == "1YY"
     assert (
         query_params["website_id"] == wunderkind_connection_config.secrets["website_id"]
     )
