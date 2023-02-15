@@ -20,6 +20,7 @@ from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 
 from fides.api import main
+from fides.core.user import login_command
 from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.sql_models import FidesUser
 from fides.core import api
@@ -42,6 +43,16 @@ orig_requests_post = requests.post
 orig_requests_put = requests.put
 orig_requests_patch = requests.patch
 orig_requests_delete = requests.delete
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cli_login() -> None:
+    """Logs in via the CLI so that tests can use the default credentials file."""
+    login_command(
+        username=CONFIG.security.root_username or "root_username",
+        password=CONFIG.security.root_password or "Testpassword1!",
+        server_url=CONFIG.cli.server_url or "http://fides:8080",
+    )
 
 
 @pytest.fixture(scope="session")

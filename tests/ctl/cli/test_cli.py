@@ -2,7 +2,6 @@
 import os
 from base64 import b64decode
 from json import dump, loads
-from pathlib import Path
 from typing import Generator
 
 import pytest
