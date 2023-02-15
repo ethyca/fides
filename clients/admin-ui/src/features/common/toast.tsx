@@ -12,7 +12,7 @@ const ErrorMessage = ({ message }: { message: string }) => (
   </Text>
 );
 
-const DEFAULT_TOAST_PARAMS: UseToastOptions = {
+export const DEFAULT_TOAST_PARAMS: UseToastOptions = {
   variant: "subtle",
   position: "top",
   description: "",
