@@ -150,7 +150,7 @@ class FidesopsRedis(Redis):
             result = json.loads(bs, object_hook=_custom_decoder)
             # Secrets are just a string and not dict so decode here.
             if isinstance(result, str) and result.startswith("quote_encoded"):
-                result = unquote_to_bytes(result)[13:]
+                result = unquote_to_bytes(result)[14:]
             return result
         return None
 
