@@ -416,6 +416,7 @@ class Collection(BaseModel):
     fields: List[Field]
     # an optional list of collections that this collection must run after
     after: Set[CollectionAddress] = set()
+    erase_after: Set[CollectionAddress] = set()
     # An optional set of dependent fields that need to be queried together
     grouped_inputs: Set[str] = set()
 
@@ -498,5 +499,6 @@ class GraphDataset(BaseModel):
     collections: List[Collection]
     # an optional list of datasets that this dataset must run after
     after: Set[DatasetAddress] = set()
+    erase_after: Set[DatasetAddress] = set()
     # ConnectionConfig key
     connection_key: FidesKey

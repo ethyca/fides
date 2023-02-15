@@ -511,7 +511,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
-    def erasure_request(self, retrieved_data: List[Row], *inputs: List[Row]) -> int:
+    def erasure_request(
+        self,
+        retrieved_data: List[Row],
+        inputs: List[List[Row]],
+        *_: int,
+    ) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
@@ -662,7 +667,7 @@ async def run_access_request(
                 data[tn.address] = GraphTask(tn, resources)
 
         def termination_fn(
-            *dependent_values: List[Row],
+            *_: List[Row],
         ) -> Dict[str, Optional[List[Row]]]:
             """A termination function that just returns its inputs mapped to their source addresses.
             This needs to wait for all dependent keys because this is how dask is informed to wait for
@@ -746,16 +751,20 @@ async def run_erasure(  # pylint: disable = too-many-arguments
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
+        # We don't rely on the output of `traverse` for the `end_nodes` like we do for
+        # the `access` task since all nodes are considered end nodes unless
+        # they are re-prioritized by the `erase_after` collection field
         env: Dict[CollectionAddress, Any] = {}
-        end_nodes = traversal.traverse(env, collect_tasks_fn)
+        traversal.traverse(env, collect_tasks_fn)
+        end_nodes = list(graph.nodes.keys())
 
-        def termination_fn(*dependent_values: int) -> Tuple[int, ...]:
-            """The dependent_values here is an int output from each task feeding in, where
-            each task reports the output of 'task.rtf(access_request_data)', which is the number of
-            records updated.
-
-            The termination function just returns this tuple of ints."""
-            return dependent_values
+        def termination_fn(*_: int) -> Dict[str, int]:
+            """
+            The erasure order can be affected in a way that not every node is directly linked
+            to the termination node. This means that we can't just aggregate the inputs directly,
+            we must read the erasure results from the cache.
+            """
+            return resources.get_all_cached_erasures()
 
         access_request_data[ROOT_COLLECTION_ADDRESS.value] = [identity]
 
@@ -765,18 +774,20 @@ async def run_erasure(  # pylint: disable = too-many-arguments
                 access_request_data.get(
                     str(k), []
                 ),  # Pass in the results of the access request for this collection
-                *[
+                [
                     access_request_data.get(
                         str(upstream_key), []
                     )  # Additionally pass in the original input data we used for the access request. It's helpful in
                     # cases like the EmailConnector where the access request doesn't actually retrieve data.
                     for upstream_key in t.input_keys
                 ],
+                *_evaluate_erasure_dependencies(t, end_nodes),
             )
             for k, t in env.items()
         }
         # terminator function waits for all keys
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
+        dsk[ROOT_COLLECTION_ADDRESS] = 0
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_erasure_mapping_from_cache(dsk, resources, start_function)
         await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
@@ -784,15 +795,24 @@ async def run_erasure(  # pylint: disable = too-many-arguments
             )
         )
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        return v.compute()
 
-        update_cts: Tuple[int, ...] = v.compute()
-        # we combine the output of the termination function with the input keys to provide
-        # a map of {collection_name: records_updated}:
-        erasure_update_map: Dict[str, int] = dict(
-            zip([str(x) for x in env], update_cts)
-        )
 
-        return erasure_update_map
+def _evaluate_erasure_dependencies(
+    t: GraphTask, end_nodes: List[CollectionAddress]
+) -> Set[CollectionAddress]:
+    """
+    Return a set of collection addresses corresponding to collections that need
+    to be erased before the given task. Remove the dependent collection addresses
+    from `end_nodes` so they can be executed in the correct order.
+    """
+    erase_after = t.traversal_node.node.collection.erase_after
+    for collection in erase_after:
+        if collection in end_nodes:
+            end_nodes.remove(collection)
+    # this task will execute after the collections in `erase_after` or
+    # execute at the beginning by linking it to the root node
+    return erase_after if len(erase_after) else set([ROOT_COLLECTION_ADDRESS])
 
 
 async def run_consent_request(  # pylint: disable = too-many-arguments

@@ -43,6 +43,7 @@ from .fixtures.mysql_fixtures import *
 from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.saas import *
+from .fixtures.saas_erasure_order_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 from .fixtures.timescale_fixtures import *

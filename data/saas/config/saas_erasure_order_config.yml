@@ -1,0 +1,79 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: SaaS Erasure Order Config
+  type: custom
+  description: A sample schema for testing
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+
+  client_config:
+    protocol: https
+    host: <domain>
+
+  test_request:
+    method: GET
+    path: /test/
+
+  endpoints:
+    - name: orders
+      erase_after:
+        - <instance_fides_key>.orders_to_refunds
+        - <instance_fides_key>.refunds_to_orders
+      requests:
+        read:
+          request_override: read_no_op
+          param_values:
+            - name: email
+              identity: email
+        delete:
+          request_override: delete_no_op
+    - name: refunds
+      erase_after:
+        - <instance_fides_key>.orders_to_refunds
+        - <instance_fides_key>.refunds_to_orders
+      requests:
+        read:
+          request_override: read_no_op
+          param_values:
+            - name: email
+              identity: email
+        delete:
+          request_override: delete_no_op
+    - name: labels
+      erase_after:
+        - <instance_fides_key>.orders
+        - <instance_fides_key>.refunds
+      requests:
+        read:
+          request_override: read_no_op
+          param_values:
+            - name: email
+              identity: email
+        delete:
+          request_override: delete_no_op
+    - name: orders_to_refunds
+      requests:
+        read:
+          request_override: read_no_op
+          param_values:
+            - name: order_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: orders.orders_id
+                  direction: from
+        delete:
+          request_override: delete_no_op
+    - name: refunds_to_orders
+      requests:
+        read:
+          request_override: read_no_op
+          param_values:
+            - name: refund_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: refunds.refunds_id
+                  direction: from
+        delete:
+          request_override: delete_no_op

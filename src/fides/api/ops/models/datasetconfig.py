@@ -275,8 +275,12 @@ def convert_dataset_to_graph(
 
     dataset_name = dataset.fides_key
     after = set()
-    if dataset.fides_meta and dataset.fides_meta.after:
-        after = set(dataset.fides_meta.after)
+    erase_after = set()
+    if dataset.fides_meta:
+        if dataset.fides_meta.after:
+            after = set(dataset.fides_meta.after)
+        if dataset.fides_meta.erase_after:
+            erase_after = set(dataset.fides_meta.erase_after)
     logger.debug("Parsing dataset '{}' into graph representation", dataset_name)
     graph_collections = []
     for collection in dataset.collections:
@@ -288,13 +292,24 @@ def convert_dataset_to_graph(
             len(graph_fields),
         )
         collection_after: Set[CollectionAddress] = set()
-        if collection.fides_meta and collection.fides_meta.after:
-            collection_after = {
-                CollectionAddress(*s.split(".")) for s in collection.fides_meta.after
-            }
+        collection_erase_after: Set[CollectionAddress] = set()
+        if collection.fides_meta:
+            if collection.fides_meta.after:
+                collection_after = {
+                    CollectionAddress(*s.split("."))
+                    for s in collection.fides_meta.after
+                }
+            if collection.fides_meta.erase_after:
+                collection_erase_after = {
+                    CollectionAddress(*s.split("."))
+                    for s in collection.fides_meta.erase_after
+                }
 
         graph_collection = Collection(
-            name=collection.name, fields=graph_fields, after=collection_after
+            name=collection.name,
+            fields=graph_fields,
+            after=collection_after,
+            erase_after=collection_erase_after,
         )
         graph_collections.append(graph_collection)
     logger.debug(
@@ -308,6 +323,7 @@ def convert_dataset_to_graph(
         collections=graph_collections,
         connection_key=connection_key,
         after=after,
+        erase_after=erase_after,
     )
 
 
