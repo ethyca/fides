@@ -3,7 +3,6 @@ import { Box, FormLabel, Stack } from "@fidesui/react";
 import { YesNoOptions } from "~/features/common/constants";
 import { COUNTRY_OPTIONS } from "~/features/common/countries";
 import {
-  CustomMultiSelect,
   CustomRadioGroup,
   CustomSelect,
   CustomTextInput,
@@ -23,18 +22,20 @@ const DescribeSystemsFormExtension = ({ values }: { values: FormValues }) => (
       name="data_responsibility_title"
       options={dataResponsibilityOptions}
       tooltip="An attribute to describe the role of responsibility over the personal data, used when exporting to a data map"
+      isMulti={false}
     />
     <CustomTextInput
       label="Administrating department"
       name="administrating_department"
       tooltip="An optional value to identify the owning department or group of the system within your organization"
     />
-    <CustomMultiSelect
+    <CustomSelect
       name="third_country_transfers"
       label="Geographic location"
       tooltip="An optional array to identify any third countries where data is transited to. For consistency purposes, these fields are required to follow the Alpha-3 code set in ISO 3166-1"
       isSearchable
       options={COUNTRY_OPTIONS}
+      isMulti
     />
     <Box>
       <Box display="flex" alignItems="center" mb={4}>

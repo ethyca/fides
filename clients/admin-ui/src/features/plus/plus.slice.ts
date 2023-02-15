@@ -192,6 +192,13 @@ export const plusApi = createApi({
       }),
       invalidatesTags: ["CustomFields"],
     }),
+    deleteCustomField: build.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: `custom-metadata/custom-field/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["CustomFields"],
+    }),
 
     // Custom Metadata Custom Field Definition
     addCustomFieldDefinition: build.mutation<
@@ -221,6 +228,7 @@ export const plusApi = createApi({
 
 export const {
   useUpsertCustomFieldMutation,
+  useDeleteCustomFieldMutation,
   useUpsertAllowListMutation,
   useUpdateScanMutation,
   useUpdateClassifyInstanceMutation,
