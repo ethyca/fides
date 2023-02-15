@@ -5,10 +5,10 @@ import React, { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
+import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { System } from "~/types/api";
 
-import { useInterzoneNav } from "../common/hooks/useInterzoneNav";
-import { DEFAULT_TOAST_PARAMS } from "../common/toast";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
