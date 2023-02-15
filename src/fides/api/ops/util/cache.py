@@ -22,6 +22,9 @@ RedisValue = Union[bytes, float, int, str]
 
 _connection = None
 
+ENCODED_BYTES_PREFIX = "quote_encoded_"
+ENCODED_MONGO_OBJECT_ID_PREFIX = "encoded_object_id_"
+
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:  # pylint: disable=too-many-return-statements
@@ -30,7 +33,7 @@ class CustomJSONEncoder(json.JSONEncoder):
                 return o.value
             self.default(o.value)
         if isinstance(o, bytes):
-            return f"quote_encoded{quote(o)}"
+            return f"{ENCODED_BYTES_PREFIX}{quote(o)}"
         if isinstance(o, (datetime, date)):
             return o.isoformat()
         if isinstance(o, dict):
@@ -39,7 +42,7 @@ class CustomJSONEncoder(json.JSONEncoder):
                     self.default(v)
             return o
         if isinstance(o, ObjectId):
-            return f"encoded_object_id{str(o)}"
+            return f"{ENCODED_MONGO_OBJECT_ID_PREFIX}{str(o)}"
         if isinstance(o, object):
             if hasattr(o, "__dict__"):
                 return o.__dict__
@@ -48,7 +51,7 @@ class CustomJSONEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-def _custom_decoder(json_dict: dict[str, Any]) -> dict[str, Any]:
+def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
     for k, v in json_dict.items():
         try:
             json_dict[k] = datetime.fromisoformat(v)
@@ -59,11 +62,11 @@ def _custom_decoder(json_dict: dict[str, Any]) -> dict[str, Any]:
         if isinstance(v, str):
             # The mongodb objectids couldn't be directly json encoded so they are converted
             # to strings and prefixed with encoded_object_id in order to find during decodeint.
-            if v.startswith("encoded_object_id"):
+            if v.startswith(ENCODED_MONGO_OBJECT_ID_PREFIX):
                 json_dict[k] = ObjectId(v[17:])
             # The bytes from secrets couldn't be directly json encoded so it is url
             # encode and prefixed with quite_encoded in order to find during decodeint.
-            elif v.startswith("quote_encoded"):
+            elif v.startswith(ENCODED_BYTES_PREFIX):
                 json_dict[k] = unquote_to_bytes(v)[13:]
 
     return json_dict
