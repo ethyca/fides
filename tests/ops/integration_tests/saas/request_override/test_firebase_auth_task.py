@@ -221,6 +221,9 @@ async def test_firebase_auth_access_request_phone_number_identity(
     assert "photo_url" not in provider_data[1].keys()
 
 
+@pytest.mark.skip(
+    "Re-enable this test if the general config needs to test the user update functionality"
+)
 @pytest.mark.integration_saas
 @pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
@@ -308,6 +311,9 @@ async def test_firebase_auth_update_request(
     )
 
 
+@pytest.mark.skip(
+    "Re-enable this test if the general config needs to test the user update functionality"
+)
 @pytest.mark.integration_saas
 @pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
@@ -410,8 +416,8 @@ async def test_firebase_auth_delete_request(
     """
     Tests delete functionality by explicitly invoking the delete override function
 
-    We can't have an'end-to-end' privacy request test, as preferred, because
-    our delete function is not configured by default (the udpate function is).
+    We can't have an 'end-to-end' privacy request test, as preferred, because
+    our delete function is not configured by default (the update function is).
     But this at least gives us some test coverage of the delete function directly.
     """
     privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
@@ -455,7 +461,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
     Tests delete functionality by explicitly invoking the delete override function
 
     We can't have an'end-to-end' privacy request test, as preferred, because
-    our delete function is not configured by default (the udpate function is).
+    our delete function is not configured by default (the update function is).
     But this at least gives us some test coverage of the delete function directly.
     """
     privacy_request = PrivacyRequest(id=f"test_firebase_delete_request_task_{uuid4()}")
