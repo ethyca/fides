@@ -16,36 +16,34 @@ ENV_PREFIX = "FIDES__DATABASE__"
 class DatabaseSettings(FidesSettings):
     """Configuration settings for Postgres."""
 
-    user: str = Field(
-        default="defaultuser",
-        description="The database user with which to login to the application database.",
+    db: str = Field(
+        default="default_db", description="The name of the application database."
     )
     password: str = Field(
         default="defaultpassword",
         description="The password with which to login to the application database.",
     )
-    server: str = Field(
-        default="default-db",
-        description="The hostname of the application database server.",
-    )
     port: str = Field(
         default="5432",
         description="The port at which the application database will be accessible.",
     )
-    db: str = Field(
-        default="default_db", description="The name of the application database."
+    server: str = Field(
+        default="default-db",
+        description="The hostname of the application database server.",
     )
+    task_engine_pool_size: int = Field(default=50, description="TODO")
+    task_engine_max_overflow: int = Field(default=50, description="TODO")
     test_db: str = Field(
         default="default_test_db",
         description="Used instead of the 'db' value when the FIDES_TEST_MODE environment variable is set to True. Avoids overwriting production data.",
         exclude=True,
     )
+    user: str = Field(
+        default="defaultuser",
+        description="The database user with which to login to the application database.",
+    )
 
-    api_engine_pool_size: int = Field(default=50, description="TODO")
-    api_engine_max_overflow: int = Field(default=50, description="TODO")
-    task_engine_pool_size: int = Field(default=50, description="TODO")
-    task_engine_max_overflow: int = Field(default=50, description="TODO")
-
+    # These must be at the end because they require other values to construct
     sqlalchemy_database_uri: Optional[str] = Field(
         description="Generic connection string for the application database.",
         exclude=True,
