@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 from urllib.parse import quote_plus
 
-from pydantic import validator, Field
+from pydantic import Field, validator
 
 from .fides_settings import FidesSettings
 

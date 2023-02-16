@@ -4,7 +4,7 @@
 
 from typing import Dict, Optional
 
-from pydantic import PostgresDsn, validator, Field
+from pydantic import Field, PostgresDsn, validator
 
 from fides.core.config.utils import get_test_mode
 
@@ -16,6 +16,8 @@ ENV_PREFIX = "FIDES__DATABASE__"
 class DatabaseSettings(FidesSettings):
     """Configuration settings for Postgres."""
 
+    api_engine_pool_size: int = Field(default=50, description="TODO")
+    api_engine_max_overflow: int = Field(default=50, description="TODO")
     db: str = Field(
         default="default_db", description="The name of the application database."
     )
@@ -44,19 +46,24 @@ class DatabaseSettings(FidesSettings):
     )
 
     # These must be at the end because they require other values to construct
-    sqlalchemy_database_uri: Optional[str] = Field(
-        description="Generic connection string for the application database.",
+    sqlalchemy_database_uri: str = Field(
+        default="",
+        description="Programmatically created connection string for the application database.",
         exclude=True,
     )
-    sqlalchemy_test_database_uri: Optional[str] = Field(
-        description="Generic connection string for the test database.", exclude=True
-    )
-    async_database_uri: Optional[str] = Field(
-        description="Asynchronous connection string for the configured database (either application or test).",
+    sqlalchemy_test_database_uri: str = Field(
+        default="",
+        description="Programmatically created connection string for the test database.",
         exclude=True,
     )
-    sync_database_uri: Optional[str] = Field(
-        description="Synchronous connection string for the configured database (either application or test).",
+    async_database_uri: str = Field(
+        default="",
+        description="Programmatically created asynchronous connection string for the configured database (either application or test).",
+        exclude=True,
+    )
+    sync_database_uri: str = Field(
+        default="",
+        description="Programmatically created synchronous connection string for the configured database (either application or test).",
         exclude=True,
     )
 

@@ -4,7 +4,7 @@
 from typing import Dict, List, Optional, Tuple, Union
 
 import validators
-from pydantic import validator, Field
+from pydantic import Field, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY

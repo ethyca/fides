@@ -1,9 +1,9 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from pydantic import Field
-
 from typing import Dict, Optional
+
+from pydantic import Field
 
 from .fides_settings import FidesSettings
 
