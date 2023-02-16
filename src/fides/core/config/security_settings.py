@@ -24,7 +24,7 @@ class SecuritySettings(FidesSettings):
         default="", description="The key used to sign Fides API access tokens."
     )
     cors_origins: List[str] = Field(
-        default=[""],
+        default=[],
         description="A list of pre-approved addresses of clients allowed to communicate with the Fides application server.",
     )
     drp_jwt_secret: Optional[str] = Field(default=None, description="TODO")
