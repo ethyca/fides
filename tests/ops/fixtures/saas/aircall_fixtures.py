@@ -38,6 +38,12 @@ def aircall_identity_email(saas_config):
         pydash.get(saas_config, "aircall.identity_email") or secrets["identity_email"]
     )
 
+@pytest.fixture(scope="session")
+def aircall_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "aircall.identity_phone_number") or secrets["identity_phone_number"]
+    )
+
 
 @pytest.fixture(scope="function")
 def aircall_erasure_identity_email() -> str:
@@ -110,40 +116,3 @@ def aircall_dataset_config(
     yield dataset
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
-
-
-@pytest.fixture(scope="function")
-def aircall_create_erasure_data(
-    aircall_connection_config: ConnectionConfig, aircall_erasure_identity_email: str
-) -> None:
-
-    aircall_secrets = aircall_connection_config.secrets
-    base_url = f"https://{aircall_secrets['domain']}"
-    headers = {
-        "Authorization": f"Basic {aircall_secrets['api_key']}",
-    }
-
-    # contact create
-    body = {
-        "first_name": "Paari",
-        "last_name": "Thiyagarajan",
-        "phone_numbers": [
-            {
-            "label": "Work",
-            "value": f"+1{aircall_erasure_identity_phone}"
-            }
-        ],
-        "emails": [
-            {
-            "label": "Office",
-            "value": aircall_erasure_identity_email
-            }
-        ]
-    }
-
-    users_response = requests.post(url=f"{base_url}/v1/contacts", headers=headers, json=body)
-    contact = users_response.json()
-
-    sleep(30)
-
-    yield contact

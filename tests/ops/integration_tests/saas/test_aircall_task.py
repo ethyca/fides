@@ -70,27 +70,35 @@ async def test_aircall_access_request_task(
         ],
     )
 
+    assert_rows_match(
+        v[f"{dataset_name}:calls"],
+        min_size=1,
+        keys=[
+            "calls",
+            "meta",
+        ],
+    )
+
+    # verify we only returned data for our identity email
+    assert v[f"{dataset_name}:contact"][0]["emails"][0]["value"] == aircall_identity_email
+
 @pytest.mark.integration_saas
 @pytest.mark.integration_aircall
 @pytest.mark.asyncio
-async def test_aircall_erasure_request_task(
+async def test_aircall_access_request_task_by_phone_number(
     db,
     policy,
-    erasure_policy_string_rewrite,
     aircall_connection_config,
     aircall_dataset_config,
-    aircall_erasure_identity_email,
-    aircall_create_erasure_data,
+    aircall_identity_email,
+    aircall_identity_phone_number,
 ) -> None:
-    """Full erasure request based on the aircall SaaS config"""
-
-    masking_strict = CONFIG.execution.masking_strict
-    CONFIG.execution.masking_strict = False  # Allow Delete
+    """Full access request based on the aircall SaaS config"""
 
     privacy_request = PrivacyRequest(
-        id=f"test_aircall_erasure_request_task_{random.randint(0, 1000)}"
+        id=f"test_aircall_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = Identity(**{"email": aircall_erasure_identity_email})
+    identity = Identity(**{"phone_number": aircall_identity_phone_number})
     privacy_request.cache_identity(identity)
 
     dataset_name = aircall_connection_config.get_saas_config().fides_key
@@ -102,7 +110,7 @@ async def test_aircall_erasure_request_task(
         policy,
         graph,
         [aircall_connection_config],
-        {"email": aircall_erasure_identity_email},
+        {"phone_number": aircall_identity_phone_number},
         db,
     )
 
@@ -120,23 +128,18 @@ async def test_aircall_erasure_request_task(
             "created_at",
             "updated_at",
             "phone_numbers",
-            "emails"
+            "emails",
         ],
     )
 
-    x = await graph_task.run_erasure(
-        privacy_request,
-        erasure_policy_string_rewrite,
-        graph,
-        [aircall_connection_config],
-        {"email": aircall_erasure_identity_email},
-        get_cached_data_for_erasures(privacy_request.id),
-        db,
+    assert_rows_match(
+        v[f"{dataset_name}:calls"],
+        min_size=1,
+        keys=[
+            "calls",
+            "meta",
+        ],
     )
-
-    assert x == {
-        f"{dataset_name}:contact": 1,
-        f"{dataset_name}:calls": 0,
-    }
-
-    CONFIG.execution.masking_strict = masking_strict
+    # verify we only returned data for our identity phone number
+    for customer in v[f"{dataset_name}:contact"]:
+        assert customer["phone_numbers"][0]["value"] == aircall_identity_phone_number

@@ -30,28 +30,34 @@ saas_config:
       requests:
         read:
           method: GET
-          path: /v1/contacts
+          path: /v1/contacts/search
           query_params:
             - name: per_page
               value: '1'
+            - name: phone_number
+              value: <phoneNumber>
+            - name: email
+              value: <email>
           data_path: contacts
           param_values:
-            - name: placeholder
+            - name: email
               identity: email
-        update:
-          method: POST
-          path: /v1/contacts/<contact_id>
-          body: |
-            {
-             "last_name": "CT Updated",
-             "company_name": "Kuya"
-            }
-          param_values:
-            - name: contact_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: contact.id
-                  direction: from
+            - name: phoneNumber
+              identity: phone_number
+        # update:
+        #   method: POST
+        #   path: /v1/contacts/<contact_id>
+        #   body: |
+        #     {
+        #      "last_name": "CT Updated",
+        #      "company_name": "Kuya"
+        #     }
+        #   param_values:
+        #     - name: contact_id
+        #       references:
+        #         - dataset: <instance_fides_key>
+        #           field: contact.id
+        #           direction: from
         delete:
           method: DELETE
           path: /v1/contacts/<contact_id>
@@ -66,10 +72,11 @@ saas_config:
         read:
           method: GET
           path: /v1/calls
-          data_path: calls
           param_values:
-            - name: placeholder
+            - name: email
               identity: email
+            - name: placeholder
+              identity: phone_number
         delete:
           method: DELETE
           path: /v1/calls/<calls_id>/recording
