@@ -6,7 +6,7 @@ import pytest
 
 from fides.lib.cryptography.cryptographic_util import hash_with_salt
 from fides.lib.models.client import ClientDetail, _get_root_client_detail
-from fides.lib.oauth.scopes import SCOPES
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
 
 
 def test_create_client_and_secret(db, config):

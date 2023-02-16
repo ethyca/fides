@@ -13,7 +13,7 @@ from fides.cli.utils import handle_cli_response
 from fides.core.config import get_config
 from fides.core.utils import echo_green, echo_red
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
-from fides.lib.oauth.scopes import SCOPES
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
 
 config = get_config()
 CREATE_USER_PATH = "/api/v1/user"
