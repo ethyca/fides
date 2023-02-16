@@ -1,7 +1,16 @@
-import { Box, Button, Divider, Heading, Stack, useToast } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  Divider,
+  Heading,
+  Stack,
+  Text,
+  useToast,
+} from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { FormikHelpers } from "formik";
+import NextLink from "next/link";
 import { Fragment, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -24,16 +33,15 @@ const transformFormValuesToDeclaration = (
 interface Props {
   system: System;
   onSuccess: (system: System) => void;
-  onCancel: () => void;
 }
 
-const PrivacyDeclarationStep = ({ system, onSuccess, onCancel }: Props) => {
+const PrivacyDeclarationStep = ({ system, onSuccess }: Props) => {
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<
     PrivacyDeclaration[]
   >(system?.privacy_declarations ? [...system.privacy_declarations] : []);
-  const [updateSystem] = useUpdateSystemMutation();
-  const [isLoading, setIsLoading] = useState(false);
+  const [updateSystemMutationTrigger, { isLoading }] =
+    useUpdateSystemMutation();
 
   const handleSubmit = async () => {
     const systemBodyWithDeclaration = {
@@ -62,12 +70,11 @@ const PrivacyDeclarationStep = ({ system, onSuccess, onCancel }: Props) => {
       }
     };
 
-    setIsLoading(true);
-
-    const updateSystemResult = await updateSystem(systemBodyWithDeclaration);
+    const updateSystemResult = await updateSystemMutationTrigger(
+      systemBodyWithDeclaration
+    );
 
     handleResult(updateSystemResult);
-    setIsLoading(false);
   };
 
   const handleEditDeclaration = (
@@ -114,17 +121,24 @@ const PrivacyDeclarationStep = ({ system, onSuccess, onCancel }: Props) => {
   };
 
   return (
-    <Stack spacing={10}>
-      <Heading as="h3" size="lg">
-        {/* TODO FUTURE: Path when describing system from infra scanning */}
-        Privacy Declaration for {system.name}
+    <Stack spacing={3}>
+      <Heading as="h3" size="md">
+        Data uses
       </Heading>
-      <div>
-        Now we’re going to declare our system’s privacy characteristics. Think
-        of this as explaining who’s data the system is processing, what kind of
-        data it’s processing and for what purpose it’s using that data and
-        finally, how identifiable is the user with this data.
-      </div>
+      <Text fontSize="sm">
+        This is where you describe your system privacy characteristics. First,
+        you declare a data processing activity (&quot;Data use&quot;) and then
+        assign the Data categories and Data subjects that are related to this
+        activity. Individual Data categories and subjects may be assigned to
+        multiple Data uses. If you don&apos;t find the activity, category, or
+        subject that you need, the taxonomy may need to be updated.{" "}
+        <NextLink href="/taxonomy" passHref>
+          <Text as="a" color="complimentary.600">
+            Manage taxonomy
+          </Text>
+        </NextLink>
+        .
+      </Text>
       {formDeclarations.map((declaration) => (
         <Fragment key={declaration.name}>
           <PrivacyDeclarationAccordion
@@ -139,22 +153,13 @@ const PrivacyDeclarationStep = ({ system, onSuccess, onCancel }: Props) => {
       <ConnectedPrivacyDeclarationForm onSubmit={addDeclaration} />
       <Box>
         <Button
-          onClick={onCancel}
-          mr={2}
-          size="sm"
-          variant="outline"
-          data-testid="back-btn"
-        >
-          Cancel
-        </Button>
-        <Button
           colorScheme="primary"
-          size="sm"
+          size="xs"
           isLoading={isLoading}
           data-testid="save-btn"
           onClick={handleSubmit}
         >
-          Save
+          Add a Data Use +
         </Button>
       </Box>
     </Stack>

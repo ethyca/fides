@@ -5,76 +5,22 @@ import {
   AccordionItem,
   AccordionPanel,
   Box,
-  Button,
-  Stack,
-  Text,
 } from "@fidesui/react";
-import { useState } from "react";
 
-import TaxonomyEntityTag from "~/features/taxonomy/TaxonomyEntityTag";
 import { PrivacyDeclaration } from "~/types/api";
 
-import { DeclarationItem } from "./form-layout";
-import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
-
-const DeclarationReview = ({
-  declaration,
-  abridged,
-}: {
-  declaration: PrivacyDeclaration;
-  abridged?: boolean;
-}) => (
-  <Stack spacing={2}>
-    <DeclarationItem label="Data categories">
-      {declaration.data_categories.map((category) => (
-        <TaxonomyEntityTag key={category} name={category} mr={1} />
-      ))}
-    </DeclarationItem>
-    <DeclarationItem label="Data use">
-      <TaxonomyEntityTag name={declaration.data_use} />
-    </DeclarationItem>
-    <DeclarationItem label="Data subjects">
-      {declaration.data_subjects.map((subject) => (
-        <TaxonomyEntityTag name={subject} key={subject} mr={1} />
-      ))}
-    </DeclarationItem>
-    <DeclarationItem label="Data qualifier">
-      {declaration.data_qualifier ? (
-        <TaxonomyEntityTag name={declaration.data_qualifier} />
-      ) : (
-        "None"
-      )}
-    </DeclarationItem>
-    {!abridged ? (
-      <DeclarationItem label="Dataset references">
-        {declaration.dataset_references ? (
-          <Text>{declaration.dataset_references.join(", ")}</Text>
-        ) : (
-          "None"
-        )}
-      </DeclarationItem>
-    ) : null}
-  </Stack>
-);
+import ConnectedPrivacyDeclarationForm from "./PrivacyDeclarationForm";
 
 interface Props {
   privacyDeclaration: PrivacyDeclaration;
   onEdit?: (declaration: PrivacyDeclaration) => void;
-  abridged?: boolean;
 }
-const PrivacyDeclarationAccordion = ({
-  privacyDeclaration,
-  onEdit,
-  abridged,
-}: Props) => {
-  const [isEditing, setIsEditing] = useState(false);
+const PrivacyDeclarationAccordion = ({ privacyDeclaration, onEdit }: Props) => {
   const handleEdit = (newValues: PrivacyDeclaration) => {
     if (onEdit) {
       onEdit(newValues);
-      setIsEditing(false);
     }
   };
-  const showEditButton = onEdit && !isEditing;
 
   return (
     <Accordion
@@ -96,31 +42,10 @@ const PrivacyDeclarationAccordion = ({
             <AccordionIcon />
           </AccordionButton>
           <AccordionPanel px="0">
-            <Box mb={2}>
-              {isEditing ? (
-                <PrivacyDeclarationForm
-                  onSubmit={handleEdit}
-                  onCancel={() => setIsEditing(false)}
-                  initialValues={privacyDeclaration}
-                  abridged={abridged}
-                />
-              ) : (
-                <DeclarationReview
-                  abridged={abridged}
-                  declaration={privacyDeclaration}
-                />
-              )}
-            </Box>
-            {showEditButton ? (
-              <Button
-                size="sm"
-                colorScheme="primary"
-                data-testid="edit-declaration-btn"
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                Edit
-              </Button>
-            ) : null}
+            <ConnectedPrivacyDeclarationForm
+              onSubmit={handleEdit}
+              initialValues={privacyDeclaration}
+            />
           </AccordionPanel>
         </>
       </AccordionItem>

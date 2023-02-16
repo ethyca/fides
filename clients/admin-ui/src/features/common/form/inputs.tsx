@@ -125,7 +125,8 @@ const SelectInput = ({
   isSearchable,
   isClearable,
   isMulti = false,
-}: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
+  singleValueBlock,
+}: { fieldName: string } & Omit<SelectProps, "label">) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? [] };
   const selected = isMulti
@@ -187,6 +188,16 @@ const SelectInput = ({
           background: "primary.400",
           color: "white",
         }),
+        singleValue: singleValueBlock
+          ? (provided) => ({
+              ...provided,
+              background: "primary.400",
+              color: "white",
+              borderRadius: ".375rem",
+              fontSize: ".75rem",
+              paddingX: ".5rem",
+            })
+          : undefined,
       }}
       components={components}
       isSearchable={isSearchable}
@@ -275,6 +286,11 @@ interface SelectProps {
   isClearable?: boolean;
   size?: Size;
   isMulti?: boolean;
+  /**
+   * If true, when isMulti=false, the selected value will be rendered as a block,
+   * similar to how the multi values are rendered
+   */
+  singleValueBlock?: boolean;
 }
 export const CustomSelect = ({
   label,
@@ -287,6 +303,7 @@ export const CustomSelect = ({
   size = "sm",
   isMulti,
   variant = "inline",
+  singleValueBlock,
   ...props
 }: SelectProps & StringField & { variant?: Variant }) => {
   const [field, meta] = useField(props);
@@ -310,6 +327,7 @@ export const CustomSelect = ({
               isSearchable={isSearchable === undefined ? isMulti : isSearchable}
               isClearable={isClearable}
               isMulti={isMulti}
+              singleValueBlock={singleValueBlock}
             />
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Box>
@@ -339,6 +357,7 @@ export const CustomSelect = ({
             isSearchable={isSearchable === undefined ? isMulti : isSearchable}
             isClearable={isClearable}
             isMulti={isMulti}
+            singleValueBlock={singleValueBlock}
           />
         </Box>
         <ErrorMessage

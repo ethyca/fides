@@ -184,7 +184,6 @@ const SystemFormTabs = ({
         <Box px={6}>
           <PrivacyDeclarationStep
             system={activeSystem as System}
-            onCancel={goBack}
             onSuccess={goBack}
           />
         </Box>

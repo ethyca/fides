@@ -65,10 +65,6 @@ const EditSystemFlow = () => {
     [currentStepIndex, dispatch]
   );
 
-  const decrementStep = () => {
-    setCurrentStepIndex(currentStepIndex - 1);
-  };
-
   return (
     <>
       {navV2 && (
@@ -99,7 +95,6 @@ const EditSystemFlow = () => {
             {currentStepIndex === 1 && activeSystem ? (
               <PrivacyDeclarationStep
                 system={activeSystem}
-                onCancel={decrementStep}
                 onSuccess={handleSuccess}
               />
             ) : null}

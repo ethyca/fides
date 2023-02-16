@@ -3,12 +3,12 @@
  * to allow for more re-use
  */
 
-import { AddIcon, Box, Button, ButtonGroup, Stack } from "@fidesui/react";
+import { Button, ButtonGroup, Stack } from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { CustomSelect } from "~/features/common/form/inputs";
 import {
   selectDataSubjects,
   useGetAllDataSubjectsQuery,
@@ -42,15 +42,12 @@ const defaultInitialValues: PrivacyDeclaration = {
   data_categories: [],
   data_subjects: [],
   data_use: "",
-  data_qualifier: "",
-  dataset_references: [],
 };
 
 type FormValues = typeof defaultInitialValues;
 
 export const PrivacyDeclarationForm = ({
   onSubmit,
-  onCancel,
   initialValues: passedInInitialValues,
   allDataCategories,
   allDataUses,
@@ -60,7 +57,6 @@ export const PrivacyDeclarationForm = ({
   allDataUses: DataUse[];
   allDataSubjects: DataSubject[];
 }) => {
-  const isEditing = !!passedInInitialValues;
   const initialValues = passedInInitialValues ?? defaultInitialValues;
 
   const handleSubmit = (
@@ -82,10 +78,17 @@ export const PrivacyDeclarationForm = ({
       {({ dirty }) => (
         <Form data-testid="privacy-declaration-form">
           <Stack spacing={4}>
-            <CustomTextInput
-              name="name"
-              label="Declaration name"
-              tooltip="A system may have multiple privacy declarations, so each declaration should have a name to distinguish them clearly."
+            <CustomSelect
+              id="data_use"
+              label="Data use"
+              name="data_use"
+              options={allDataUses.map((data) => ({
+                value: data.fides_key,
+                label: data.fides_key,
+              }))}
+              tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
+              variant="stacked"
+              singleValueBlock
             />
             <CustomSelect
               name="data_categories"
@@ -96,16 +99,7 @@ export const PrivacyDeclarationForm = ({
               }))}
               tooltip="What type of data is your system processing? This could be various types of user or system data."
               isMulti
-            />
-            <CustomSelect
-              id="data_use"
-              label="Data use"
-              name="data_use"
-              options={allDataUses.map((data) => ({
-                value: data.fides_key,
-                label: data.fides_key,
-              }))}
-              tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
+              variant="stacked"
             />
             <CustomSelect
               name="data_subjects"
@@ -116,40 +110,24 @@ export const PrivacyDeclarationForm = ({
               }))}
               tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
               isMulti
+              variant="stacked"
             />
-          </Stack>
-          <Box>
-            {isEditing ? (
-              <ButtonGroup size="sm" mt={2}>
-                {onCancel && (
-                  <Button
-                    variant="outline"
-                    data-testid="back-btn"
-                    onClick={onCancel}
-                  >
-                    Back
-                  </Button>
-                )}
-                <Button
-                  colorScheme="primary"
-                  type="submit"
-                  data-testid="confirm-edit-btn"
-                >
-                  Confirm
-                </Button>
-              </ButtonGroup>
-            ) : (
+            <ButtonGroup
+              size="sm"
+              display="flex"
+              justifyContent="space-between"
+            >
+              <Button variant="outline">Delete</Button>
               <Button
                 type="submit"
-                colorScheme="purple"
-                variant="link"
+                colorScheme="primary"
                 disabled={!dirty}
                 data-testid="add-btn"
               >
-                Add <AddIcon boxSize={10} />
+                Save
               </Button>
-            )}
-          </Box>
+            </ButtonGroup>
+          </Stack>
         </Form>
       )}
     </Formik>
@@ -161,7 +139,6 @@ interface Props {
     values: PrivacyDeclaration,
     formikHelpers: FormikHelpers<PrivacyDeclaration>
   ) => void;
-  onCancel?: () => void;
   initialValues?: PrivacyDeclaration;
 }
 const ConnectedPrivacyDeclarationForm = (props: Props) => {
