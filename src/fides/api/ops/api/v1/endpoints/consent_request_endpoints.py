@@ -317,7 +317,7 @@ def set_consent_preferences(
         ).first()
 
         if current_preference:
-            current_preference.update(db, data=dict(ConsentSchema(**dict(preference))))
+            current_preference.update(db, data=dict(preference))
         else:
             preference_dict = dict(preference)
             preference_dict["provided_identity_id"] = provided_identity.id

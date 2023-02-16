@@ -5,8 +5,8 @@ services:
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
-      timeout: 15s
-      retries: 20
+      timeout: 5s
+      retries: 10
     ports:
       - "8080:8080"
     depends_on:
@@ -70,7 +70,7 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 15s
-      timeout: 15s
+      timeout: 5s
       retries: 5
     volumes:
       - postgres:/var/lib/postgresql/data
