@@ -186,3 +186,6 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     config = build_config(config_dict={})
 
     return config
+
+
+CONFIG = get_config()
