@@ -28,8 +28,6 @@ ENCODED_MONGO_OBJECT_ID_PREFIX = "encoded_object_id_"
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:  # pylint: disable=too-many-return-statements
-        print("HERE")
-        print(o)
         if isinstance(o, Enum):
             return o.value
         if isinstance(o, bytes):
