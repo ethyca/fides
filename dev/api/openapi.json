@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.6.1.post0.dev56"
+    "version": "2.6.1.post0.dev57"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5689,6 +5689,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/FidesDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SovrnEmailDocsSchema"
                   }
                 ]
               }
@@ -11908,6 +11911,19 @@
         "type": "string",
         "description": "The purpose of a particular privacy request"
       },
+      "AdvancedSettingsWithExtendedIdentityTypes": {
+        "title": "AdvancedSettingsWithExtendedIdentityTypes",
+        "required": [
+          "identity_types"
+        ],
+        "type": "object",
+        "properties": {
+          "identity_types": {
+            "$ref": "#/components/schemas/ExtendedIdentityTypes"
+          }
+        },
+        "description": "Overrides base AdvancedSettings to have extended IdentityTypes"
+      },
       "AesDecryptionRequest": {
         "title": "AesDecryptionRequest",
         "required": [
@@ -12531,6 +12547,7 @@
           "bigquery",
           "manual",
           "email",
+          "sovrn",
           "manual_webhook",
           "timescale",
           "fides"
@@ -12885,6 +12902,9 @@
               },
               {
                 "$ref": "#/components/schemas/FidesDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SovrnEmailDocsSchema"
               }
             ]
           },
@@ -12904,6 +12924,7 @@
           "erasure",
           "consent",
           "erasure_email_post_send",
+          "consent_email_post_send",
           "post_webhooks"
         ],
         "description": "An enumeration."
@@ -13947,6 +13968,33 @@
         ],
         "description": "Enum for execution log statuses, reflecting where they are in their workflow"
       },
+      "ExtendedIdentityTypes": {
+        "title": "ExtendedIdentityTypes",
+        "required": [
+          "email",
+          "phone_number"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "boolean"
+          },
+          "phone_number": {
+            "title": "Phone Number",
+            "type": "boolean"
+          },
+          "cookie_ids": {
+            "title": "Cookie Ids",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "description": "Overrides basic IdentityTypes to add cookie_ids"
+      },
       "ExternalDatasetReference": {
         "title": "ExternalDatasetReference",
         "required": [
@@ -14317,6 +14365,10 @@
           },
           "ga_client_id": {
             "title": "Ga Client Id",
+            "type": "string"
+          },
+          "ljt_readerID": {
+            "title": "Ljt Readerid",
             "type": "string"
           }
         },
@@ -16080,6 +16132,7 @@
           "in_processing",
           "complete",
           "paused",
+          "awaiting_consent_email_send",
           "canceled",
           "error"
         ],
@@ -16884,6 +16937,9 @@
               },
               {
                 "$ref": "#/components/schemas/FidesDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SovrnEmailDocsSchema"
               }
             ]
           },
@@ -16934,6 +16990,34 @@
         },
         "additionalProperties": false,
         "description": "Snowflake Secrets Schema for API Docs"
+      },
+      "SovrnEmailDocsSchema": {
+        "title": "SovrnEmailDocsSchema",
+        "required": [
+          "recipient_email_address",
+          "advanced_settings"
+        ],
+        "type": "object",
+        "properties": {
+          "third_party_vendor_name": {
+            "title": "Third Party Vendor Name",
+            "type": "string",
+            "default": "Sovrn"
+          },
+          "recipient_email_address": {
+            "title": "Recipient Email Address",
+            "type": "string"
+          },
+          "test_email_address": {
+            "title": "Test Email Address",
+            "type": "string"
+          },
+          "advanced_settings": {
+            "$ref": "#/components/schemas/AdvancedSettingsWithExtendedIdentityTypes"
+          }
+        },
+        "additionalProperties": false,
+        "description": "SovrnDocsSchema Secrets Schema for API Docs"
       },
       "SpecialCategoriesEnum": {
         "title": "SpecialCategoriesEnum",
@@ -17355,7 +17439,8 @@
         "enum": [
           "saas",
           "database",
-          "manual"
+          "manual",
+          "email"
         ],
         "description": "An enumeration."
       },
