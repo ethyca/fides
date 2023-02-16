@@ -66,6 +66,15 @@ EXEC = (
     CI_ARGS_EXEC,
     CONTAINER_NAME,
 )
+EXEC_IT = (
+    "docker",
+    "exec",
+    "-it",
+    *ANALYTICS_OPT_OUT,
+    *ANALYTICS_ID_OVERRIDE,
+    CI_ARGS_EXEC,
+    CONTAINER_NAME,
+)
 RUN_NO_DEPS = (
     "docker",
     "compose",

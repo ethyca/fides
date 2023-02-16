@@ -8,6 +8,7 @@ from nox.command import CommandFailed
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
     EXEC,
+    EXEC_IT,
     RUN_CYPRESS_TESTS,
     START_APP,
     START_APP_REMOTE_DEBUG,
@@ -56,7 +57,7 @@ def dev(session: Session) -> None:
     if not datastores:
         if open_shell:
             session.run(*START_APP, external=True)
-            session.run(*EXEC, "/bin/bash", external=True)
+            session.run(*EXEC_IT, "/bin/bash", external=True)
         else:
             if remote_debug:
                 session.run(*START_APP_REMOTE_DEBUG, external=True)
