@@ -75,12 +75,10 @@ from fides.api.ops.util.cache import (
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.db.session import get_db_session
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.schemas.base_class import BaseSchema
-
-CONFIG = get_config()
 
 
 class ManualWebhookResults(BaseSchema):

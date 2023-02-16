@@ -10,7 +10,6 @@ import toml
 from pydantic import BaseModel
 
 from fides.cli.utils import handle_cli_response
-from fides.core.config import CONFIG
 from fides.core.utils import echo_green, echo_red
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.oauth.scopes import SCOPES

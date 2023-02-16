@@ -34,7 +34,7 @@ from fides.lib.db.base import (  # type: ignore[attr-defined]
 )
 from fides.lib.db.base_class import FidesBase as FideslibBase
 
-CONFIG: FidesConfig = get_config()
+CONFIG: Fides
 
 
 class FidesBase(FideslibBase):

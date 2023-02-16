@@ -23,10 +23,10 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
 from fides.api.ops.util.storage_authenticator import get_s3_session
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str
 
-CONFIG = get_config()
+
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 

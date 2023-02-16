@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from fides.core.config import FidesConfig, get_config
 from fides.lib.db.session import get_db_engine, get_db_session
 
-CONFIG = get_config()
+
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 
 
@@ -41,7 +41,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         return self._sessionmaker()
 
 
-def _create_celery(config: FidesConfig = get_config()) -> Celery:
+def _create_celery(config: Fides) -> Celery:
     """
     Returns a configured version of the Celery application
     """

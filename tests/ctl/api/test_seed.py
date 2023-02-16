@@ -10,8 +10,6 @@ from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
 from fides.lib.models.fides_user import FidesUser
 
-CONFIG = get_config()
-
 
 @pytest.fixture(scope="function", name="data_category")
 def fixture_data_category(test_config: FidesConfig) -> Generator:

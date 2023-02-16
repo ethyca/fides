@@ -27,11 +27,9 @@ from fides.api.ops.models.storage import (
     get_active_default_storage_config,
 )
 from fides.api.ops.util.data_category import _validate_data_category
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.db.base_class import Base, FidesBase
 from fides.lib.models.client import ClientDetail
-
-CONFIG = get_config()
 
 
 class CurrentStep(EnumType):

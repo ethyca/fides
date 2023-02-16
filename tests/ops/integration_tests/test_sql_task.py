@@ -26,7 +26,7 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 from ..graph.graph_test_util import (
     assert_rows_match,
@@ -40,7 +40,6 @@ from ..task.traversal_data import (
     str_converter,
 )
 
-CONFIG = get_config()
 
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",

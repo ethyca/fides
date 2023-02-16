@@ -4,9 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
-config = get_config()
 
 engine = create_async_engine(
     config.database.async_database_uri,

@@ -5,9 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 
 from fides.api.ops.tasks import DatabaseTask, _create_celery
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 
 @pytest.fixture
@@ -42,7 +40,7 @@ def test_celery_default_config() -> None:
 
 
 def test_celery_config_override() -> None:
-    config = get_config()
+
     config.celery["event_queue_prefix"] = "overridden_fides_worker"
     config.celery["task_default_queue"] = "overridden_fides"
 

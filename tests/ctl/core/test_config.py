@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.database_settings import DatabaseSettings
 from fides.core.config.security_settings import SecurityEnv
 
@@ -113,13 +113,11 @@ def test_get_deprecated_api_config_from_env(test_config_path: str) -> None:
 def test_get_config_cache() -> None:
     "Test lru cache hits."
 
-    config = get_config()
     cache_info = get_config.cache_info()
     assert config.user.encryption_key == "test_encryption_key"
     assert cache_info.hits == 0
     assert cache_info.misses == 1
 
-    config = get_config()
     cache_info = get_config.cache_info()
     assert config.user.encryption_key == "test_encryption_key"
     assert cache_info.hits == 1
@@ -146,7 +144,6 @@ def test_get_config_cache() -> None:
 @pytest.mark.unit
 def test_config_from_env_vars() -> None:
     "Test building a config from env vars."
-    config = get_config()
 
     assert config.user.encryption_key == "test_key_one"
     assert config.cli.server_url == "http://test:8080"
@@ -187,7 +184,7 @@ def test_database_url_test_mode_disabled() -> None:
 )
 def test_config_from_path() -> None:
     """Test reading config using the FIDES__CONFIG_PATH option."""
-    config = get_config()
+
     print(os.environ)
     assert config.admin_ui.enabled == True
     assert config.execution.require_manual_request_approval == True
@@ -204,7 +201,7 @@ def test_config_from_path() -> None:
 )
 def test_overriding_config_from_env_vars() -> None:
     """Test overriding config using ENV vars."""
-    config = get_config()
+
     assert config.database.server == "envserver"
     assert config.redis.host == "envhost"
     assert config.security.app_encryption_key == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
@@ -222,7 +219,7 @@ def test_config_app_encryption_key_validation() -> None:
         },
         clear=True,
     ):
-        config = get_config()
+
         assert config.security.app_encryption_key == app_encryption_key
 
 
@@ -266,7 +263,7 @@ def test_config_log_level(log_level, expected_log_level):
         },
         clear=True,
     ):
-        config = get_config()
+
         assert config.logging.level == expected_log_level
 
 

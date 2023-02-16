@@ -27,10 +27,8 @@ from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
 )
 from fides.api.ops.util.logger import Pii
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
-
-CONFIG = get_config()
 
 
 def get_messaging_method(

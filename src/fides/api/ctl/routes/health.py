@@ -30,7 +30,7 @@ class CoreHealthCheck(BaseModel):
     workers: List[Optional[str]]
 
 
-CONFIG: FidesConfig = get_config()
+CONFIG: Fides
 
 router = APIRouter(tags=["Health"])
 

@@ -38,7 +38,6 @@ from tests.conftest import create_citext_extension
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
-CONFIG = get_config()
 
 
 orig_requests_get = requests.get

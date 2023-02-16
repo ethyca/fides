@@ -57,10 +57,10 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
     upload_access_results,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
-CONFIG = get_config()
+
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30

@@ -27,7 +27,7 @@ from fides.api.ops.util.oauth_util import (
     oauth2_scheme,
     verify_oauth_client,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import b64_str_to_str
 from fides.lib.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.lib.exceptions import AuthenticationError
@@ -41,7 +41,7 @@ from fides.lib.oauth.schemas.user import (
     UserUpdate,
 )
 
-CONFIG = get_config()
+
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
 

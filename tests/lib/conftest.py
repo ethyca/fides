@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from sqlalchemy_utils.functions import create_database, database_exists
 from starlette.testclient import TestClient
 
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

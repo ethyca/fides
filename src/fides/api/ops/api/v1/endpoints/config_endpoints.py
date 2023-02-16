@@ -16,7 +16,7 @@ from fides.api.ops.schemas.application_config import (
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import censor_config
-from fides.core.config import get_config as get_app_config
+from fides.core.config import CONFIG as get_app_config
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
 

@@ -25,11 +25,9 @@ from fides.api.ops.schemas.privacy_request import (
     PrivacyRequestResponse,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
-
-CONFIG = get_config()
 
 
 def test_consent(db):

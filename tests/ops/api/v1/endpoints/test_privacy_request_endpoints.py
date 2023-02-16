@@ -84,7 +84,7 @@ from fides.api.ops.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -94,7 +94,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 
-CONFIG = get_config()
+
 page_size = Params().size
 
 

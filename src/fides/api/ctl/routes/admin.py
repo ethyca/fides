@@ -11,7 +11,7 @@ from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 from fides.core.config import FidesConfig, get_config
 
-CONFIG: FidesConfig = get_config()
+CONFIG: Fides
 router = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 
 

@@ -10,7 +10,7 @@ from fides.api.ops.schemas.identity_verification import (
     IdentityVerificationConfigResponse,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 router = APIRouter(tags=["Identity Verification"], prefix=urls.V1_URL_PREFIX)
 
@@ -24,7 +24,7 @@ def get_id_verification_config(
     db: Session = Depends(deps.get_db),
 ) -> IdentityVerificationConfigResponse:
     """Returns id verification config."""
-    config = get_config()
+
     messaging_config: Optional[MessagingConfig] = db.query(MessagingConfig).first()
     return IdentityVerificationConfigResponse(
         identity_verification_required=config.execution.subject_identity_verification_required,

@@ -3,9 +3,7 @@ import hmac
 from typing import Callable
 
 from fides.api.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 
 def hmac_encrypt_return_bytes(

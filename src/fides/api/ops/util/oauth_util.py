@@ -20,7 +20,7 @@ from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -32,7 +32,7 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
 from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 
-CONFIG = get_config()
+
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
 
