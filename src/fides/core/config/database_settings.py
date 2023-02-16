@@ -73,7 +73,7 @@ class DatabaseSettings(FidesSettings):
         cls, value: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into a connection string"""
-        if isinstance(value, str) and value != "":
+        if isinstance(value, str) and value:
             # This validates that the string is a valid PostgresDns.
             return str(PostgresDsn(value))
 
@@ -95,7 +95,7 @@ class DatabaseSettings(FidesSettings):
         cls, value: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into an async connection string."""
-        if isinstance(value, str) and value != "":
+        if isinstance(value, str) and value:
             # This validates that the string is a valid PostgresDns.
             return str(PostgresDsn(value))
 
@@ -115,7 +115,7 @@ class DatabaseSettings(FidesSettings):
     @classmethod
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, str]) -> str:
         """Join DB connection credentials into a synchronous connection string."""
-        if isinstance(v, str):
+        if isinstance(v, str) and v:
             return v
         return str(
             PostgresDsn.build(
@@ -134,7 +134,7 @@ class DatabaseSettings(FidesSettings):
         cls, v: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into a connection string"""
-        if isinstance(v, str):
+        if isinstance(v, str) and v:
             return v
         return str(
             PostgresDsn.build(
