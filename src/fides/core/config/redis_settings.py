@@ -70,7 +70,7 @@ class RedisSettings(FidesSettings):
             return v
 
         db_index = values.get("db_index") if values.get("db_index") is not None else ""
-        connection_protocol = "redis"
+        connection_protocol = "rediss"
         params = ""
         use_tls = values.get("ssl", False)
         if use_tls:
