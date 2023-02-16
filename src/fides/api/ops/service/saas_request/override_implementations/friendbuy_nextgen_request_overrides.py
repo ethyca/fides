@@ -11,8 +11,6 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.core.config import CONFIG
-
 
 logger = logging.getLogger(__name__)
 

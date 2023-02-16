@@ -8,9 +8,6 @@ from fides.api.ops.task.task_resources import TaskResources
 from fides.core.config import CONFIG
 from tests.ops.task.traversal_data import integration_db_graph
 
-
-from tests.ops.task.traversal_data import integration_db_graph
-
 t1 = Collection(
     name="t1",
     fields=[

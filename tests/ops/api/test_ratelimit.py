@@ -9,7 +9,6 @@ from fides.api.main import app
 from fides.api.ops.api.v1.urn_registry import HEALTH
 from fides.core.config import SecuritySettings, get_config
 
-
 LIMIT = 2
 
 

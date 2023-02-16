@@ -28,7 +28,6 @@ from fides.api.ops.util.saas_util import (
 )
 from fides.core.config import CONFIG
 
-
 T = TypeVar("T")
 
 

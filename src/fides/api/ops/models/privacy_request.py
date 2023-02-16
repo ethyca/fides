@@ -70,7 +70,6 @@ from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.jwt import generate_jwe
 
-
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
     CurrentStep.pre_webhooks,

@@ -32,7 +32,6 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
 from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 
-
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
 

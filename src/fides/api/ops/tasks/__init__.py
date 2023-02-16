@@ -4,9 +4,8 @@ from celery import Celery, Task
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG, FidesConfig
 from fides.lib.db.session import get_db_engine, get_db_session
-
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 
@@ -41,7 +40,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         return self._sessionmaker()
 
 
-def _create_celery(config: Fides) -> Celery:
+def _create_celery(config: FidesConfig) -> Celery:
     """
     Returns a configured version of the Celery application
     """
@@ -75,7 +74,7 @@ def _create_celery(config: Fides) -> Celery:
     return app
 
 
-celery_app = _create_celery()
+celery_app = _create_celery(CONFIG)
 
 
 def get_worker_ids() -> List[Optional[str]]:

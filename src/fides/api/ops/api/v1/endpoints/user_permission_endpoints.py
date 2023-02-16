@@ -30,7 +30,6 @@ from fides.core.config import CONFIG
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 
-
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
 

@@ -41,7 +41,6 @@ from fides.lib.oauth.schemas.user import (
     UserUpdate,
 )
 
-
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
 

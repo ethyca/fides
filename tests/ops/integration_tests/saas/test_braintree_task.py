@@ -12,7 +12,6 @@ from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.core.config import CONFIG
 from tests.ops.graph.graph_test_util import assert_rows_match
 
-
 logger = logging.getLogger(__name__)
 
 

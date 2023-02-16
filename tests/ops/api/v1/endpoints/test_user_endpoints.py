@@ -46,7 +46,6 @@ from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
 from tests.ops.conftest import generate_auth_header_for_user
 
-
 page_size = Params().size
 
 

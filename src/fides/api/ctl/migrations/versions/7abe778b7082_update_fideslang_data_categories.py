@@ -15,7 +15,6 @@ from fides.api.ops.db.base import DatasetConfig
 from fides.core.config import CONFIG
 from fides.lib.db.session import get_db_session
 
-
 logger = logging.getLogger(__name__)
 
 # revision identifiers, used by Alembic.

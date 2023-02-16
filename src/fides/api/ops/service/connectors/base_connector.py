@@ -10,7 +10,6 @@ from fides.api.ops.service.connectors.query_config import QueryConfig
 from fides.api.ops.util.collection_util import Row
 from fides.core.config import CONFIG
 
-
 DB_CONNECTOR_TYPE = TypeVar("DB_CONNECTOR_TYPE")
 
 

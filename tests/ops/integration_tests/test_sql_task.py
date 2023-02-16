@@ -40,7 +40,6 @@ from ..task.traversal_data import (
     str_converter,
 )
 
-
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
     "user.unique_id",

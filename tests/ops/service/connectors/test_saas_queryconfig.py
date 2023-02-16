@@ -17,7 +17,6 @@ from fides.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
 from fides.core.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
 
-
 privacy_request = PrivacyRequest(id="234544")
 
 

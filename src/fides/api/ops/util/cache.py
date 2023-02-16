@@ -14,7 +14,6 @@ from fides.api.ops import common_exceptions
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
 from fides.core.config import CONFIG
 
-
 # This constant represents every type a redis key may contain, and can be
 # extended if needed
 RedisValue = Union[bytes, float, int, str]
