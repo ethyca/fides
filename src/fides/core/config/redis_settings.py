@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 from urllib.parse import quote_plus
 
-from pydantic import validator
+from pydantic import validator, Field
 
 from .fides_settings import FidesSettings
 
@@ -11,19 +11,48 @@ ENV_PREFIX = "FIDES__REDIS__"
 class RedisSettings(FidesSettings):
     """Configuration settings for Redis."""
 
-    host: str = "redis"
-    port: int = 6379
-    user: Optional[str] = ""
-    password: str = "testpassword"
-    charset: str = "utf8"
-    decode_responses: bool = True
-    default_ttl_seconds: int = 604800
-    identity_verification_code_ttl_seconds: int = 600
-    db_index: Optional[int]
-    enabled: bool = False
-    ssl: bool = False
-    ssl_cert_reqs: Optional[str] = "required"
-    connection_url: Optional[str] = None
+    charset: str = Field(default="utf8", description="TODO")
+    connection_url: Optional[str] = Field(
+        default=None,
+        description="A full connection URL to the Redis cache. If not specified, this URL is automatically assembled from the host, port, password and db_index specified above.",
+    )
+    db_index: Optional[int] = Field(
+        default=None,
+        description="The application will use this index in the Redis cache to cache data.",
+    )
+    decode_responses: bool = Field(default=True, description="")
+    default_ttl_seconds: int = Field(
+        default=604800,
+        description="The number of seconds for which data will live in Redis before automatically expiring.",
+    )
+    enabled: bool = Field(
+        default=False,
+        description="Whether the application's Redis cache should be enabled. Only set to false for certain narrow uses of the application.",
+    )
+    host: str = Field(
+        default="redis",
+        description="The network address for the application Redis cache.",
+    )
+    identity_verification_code_ttl_seconds: int = Field(default=600, description="TODO")
+    password: str = Field(
+        default="testpassword",
+        description="The password with which to login to the Redis cache.",
+    )
+    port: int = Field(
+        default=6379,
+        description="The port at which the application cache will be accessible.",
+    )
+    ssl: bool = Field(
+        default=False,
+        description="Whether the application's connections to the cache should be encrypted using TLS.",
+    )
+    ssl_cert_reqs: Optional[str] = Field(
+        default="required",
+        description="If using TLS encryption, set this to 'required' if you wish to enforce the Redis cache to provide a certificate. Note that not all cache providers support this e.g. AWS Elasticache.",
+    )
+    user: Optional[str] = Field(
+        default=None, description="The user with which to login to the Redis cache."
+    )
 
     @validator("connection_url", pre=True)
     @classmethod
