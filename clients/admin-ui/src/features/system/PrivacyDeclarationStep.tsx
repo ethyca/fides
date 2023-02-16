@@ -8,7 +8,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PrivacyDeclaration, System } from "~/types/api";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
-import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
+import ConnectedPrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import { useUpdateSystemMutation } from "./system.slice";
 
 type FormValues = PrivacyDeclaration;
@@ -25,15 +25,9 @@ interface Props {
   system: System;
   onSuccess: (system: System) => void;
   onCancel: () => void;
-  abridged?: boolean;
 }
 
-const PrivacyDeclarationStep = ({
-  system,
-  onSuccess,
-  onCancel,
-  abridged,
-}: Props) => {
+const PrivacyDeclarationStep = ({ system, onSuccess, onCancel }: Props) => {
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<
     PrivacyDeclaration[]
@@ -142,7 +136,7 @@ const PrivacyDeclarationStep = ({
           <Divider m="0px !important" />
         </Fragment>
       ))}
-      <PrivacyDeclarationForm onSubmit={addDeclaration} abridged={abridged} />
+      <ConnectedPrivacyDeclarationForm onSubmit={addDeclaration} />
       <Box>
         <Button
           onClick={onCancel}

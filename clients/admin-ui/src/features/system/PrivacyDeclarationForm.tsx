@@ -1,13 +1,14 @@
+/**
+ * This file exports both a connected and unconnected version of the same component
+ * to allow for more re-use
+ */
+
 import { AddIcon, Box, Button, ButtonGroup, Stack } from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
-import {
-  selectDataQualifiers,
-  useGetAllDataQualifiersQuery,
-} from "~/features/data-qualifier/data-qualifier.slice";
 import {
   selectDataSubjects,
   useGetAllDataSubjectsQuery,
@@ -20,12 +21,14 @@ import {
   selectDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
-import { PrivacyDeclaration } from "~/types/api";
-
-import PrivacyDeclarationFormExtension from "./PrivacyDeclarationFormExtension";
+import {
+  DataCategory,
+  DataSubject,
+  DataUse,
+  PrivacyDeclaration,
+} from "~/types/api";
 
 const ValidationSchema = Yup.object().shape({
-  name: Yup.string().required().label("Declaration name"),
   data_categories: Yup.array(Yup.string())
     .min(1, "Must assign at least one data category")
     .label("Data categories"),
@@ -36,7 +39,6 @@ const ValidationSchema = Yup.object().shape({
 });
 
 const defaultInitialValues: PrivacyDeclaration = {
-  name: "",
   data_categories: [],
   data_subjects: [],
   data_use: "",
@@ -44,40 +46,37 @@ const defaultInitialValues: PrivacyDeclaration = {
   dataset_references: [],
 };
 
-interface Props {
-  onSubmit: (
-    values: PrivacyDeclaration,
-    formikHelpers: FormikHelpers<PrivacyDeclaration>
-  ) => void;
-  onCancel?: () => void;
-  abridged?: boolean;
-  initialValues?: PrivacyDeclaration;
-}
-const PrivacyDeclarationForm = ({
+type FormValues = typeof defaultInitialValues;
+
+export const PrivacyDeclarationForm = ({
   onSubmit,
   onCancel,
-  abridged,
   initialValues: passedInInitialValues,
-}: Props) => {
+  allDataCategories,
+  allDataUses,
+  allDataSubjects,
+}: Props & {
+  allDataCategories: DataCategory[];
+  allDataUses: DataUse[];
+  allDataSubjects: DataSubject[];
+}) => {
   const isEditing = !!passedInInitialValues;
   const initialValues = passedInInitialValues ?? defaultInitialValues;
 
-  // Query subscriptions:
-  useGetAllDataCategoriesQuery();
-  useGetAllDataSubjectsQuery();
-  useGetAllDataQualifiersQuery();
-  useGetAllDataUsesQuery();
-
-  const allDataCategories = useAppSelector(selectDataCategories);
-  const allDataSubjects = useAppSelector(selectDataSubjects);
-  const allDataUses = useAppSelector(selectDataUses);
-  const allDataQualifiers = useAppSelector(selectDataQualifiers);
+  const handleSubmit = (
+    values: FormValues,
+    formikHelpers: FormikHelpers<FormValues>
+  ) => {
+    onSubmit(values, formikHelpers);
+    // Reset state such that isDirty will be checked again before next save
+    formikHelpers.resetForm({ values });
+  };
 
   return (
     <Formik
       enableReinitialize
       initialValues={initialValues}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
       {({ dirty }) => (
@@ -118,17 +117,6 @@ const PrivacyDeclarationForm = ({
               tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
               isMulti
             />
-            <CustomSelect
-              id="data_qualifier"
-              label="Data qualifier"
-              name="data_qualifier"
-              options={allDataQualifiers.map((data) => ({
-                value: data.fides_key,
-                label: data.fides_key,
-              }))}
-              tooltip="How identifiable is the user in the data in this system? For instance, is it anonymized data where the user is truly unknown/unidentifiable, or it is partially identifiable data?"
-            />
-            {!abridged ? <PrivacyDeclarationFormExtension /> : null}
           </Stack>
           <Box>
             {isEditing ? (
@@ -168,4 +156,32 @@ const PrivacyDeclarationForm = ({
   );
 };
 
-export default PrivacyDeclarationForm;
+interface Props {
+  onSubmit: (
+    values: PrivacyDeclaration,
+    formikHelpers: FormikHelpers<PrivacyDeclaration>
+  ) => void;
+  onCancel?: () => void;
+  initialValues?: PrivacyDeclaration;
+}
+const ConnectedPrivacyDeclarationForm = (props: Props) => {
+  // Query subscriptions:
+  useGetAllDataCategoriesQuery();
+  useGetAllDataSubjectsQuery();
+  useGetAllDataUsesQuery();
+
+  const allDataCategories = useAppSelector(selectDataCategories);
+  const allDataSubjects = useAppSelector(selectDataSubjects);
+  const allDataUses = useAppSelector(selectDataUses);
+
+  return (
+    <PrivacyDeclarationForm
+      {...props}
+      allDataCategories={allDataCategories}
+      allDataSubjects={allDataSubjects}
+      allDataUses={allDataUses}
+    />
+  );
+};
+
+export default ConnectedPrivacyDeclarationForm;
