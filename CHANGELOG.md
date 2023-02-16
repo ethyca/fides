@@ -30,7 +30,8 @@ The types of changes are:
     * Bulk edit custom field values [#2612](https://github.com/ethyca/fides/issues/2612)
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
-  * `inspectForBrowserIdentities` now also looks for `ljt_readerID`
+  * When GPC is enabled, the UI indicates which data uses are opted out by default. [#2596](https://github.com/ethyca/fides/pull/2596)
+  * `inspectForBrowserIdentities` now also looks for `ljt_readerID`. [#2543](https://github.com/ethyca/fides/pull/2543)
 
 ### Added
   * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
