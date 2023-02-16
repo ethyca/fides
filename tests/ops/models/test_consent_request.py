@@ -12,7 +12,6 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.ops.schemas.policy import PolicyResponse
-from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     ConsentPreferences,
@@ -40,14 +39,14 @@ def test_consent(db):
         "data_use": "user.biometric_health",
         "opt_in": True,
     }
-    consent_1 = Consent.create(db, data=dict(ConsentSchema(**consent_data_1)))
+    consent_1 = Consent.create(db, data=consent_data_1)
 
     consent_data_2 = {
         "provided_identity_id": provided_identity.id,
         "data_use": "user.browsing_history",
         "opt_in": False,
     }
-    consent_2 = Consent.create(db, data=dict(ConsentSchema(**consent_data_2)))
+    consent_2 = Consent.create(db, data=consent_data_2)
     data_uses = [x.data_use for x in provided_identity.consent]
 
     assert consent_data_1["data_use"] in data_uses
@@ -74,14 +73,14 @@ def test_consent_with_gpc(db):
         "has_gpc_flag": True,
         "conflicts_with_gpc": True,
     }
-    consent_1 = Consent.create(db, data=dict(ConsentSchema(**consent_data_1)))
+    consent_1 = Consent.create(db, data=consent_data_1)
 
     consent_data_2 = {
         "provided_identity_id": provided_identity.id,
         "data_use": "user.browsing_history",
         "opt_in": False,
     }
-    consent_2 = Consent.create(db, data=dict(ConsentSchema(**consent_data_2)))
+    consent_2 = Consent.create(db, data=consent_data_2)
     data_uses = [x.data_use for x in provided_identity.consent]
 
     assert consent_data_1["data_use"] in data_uses

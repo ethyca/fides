@@ -322,7 +322,7 @@ def set_consent_preferences(
             preference_dict = dict(preference)
             preference_dict["provided_identity_id"] = provided_identity.id
             try:
-                Consent.create(db, data=dict(ConsentSchema(**preference_dict)))
+                Consent.create(db, data=preference_dict)
             except IntegrityError as exc:
                 raise HTTPException(
                     status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc))
