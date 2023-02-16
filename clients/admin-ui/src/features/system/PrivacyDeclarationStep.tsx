@@ -157,10 +157,10 @@ const PrivacyDeclarationStep = ({
           colorScheme="primary"
           size="sm"
           isLoading={isLoading}
-          data-testid="next-btn"
+          data-testid="save-btn"
           onClick={handleSubmit}
         >
-          Next
+          Save
         </Button>
       </Box>
     </Stack>

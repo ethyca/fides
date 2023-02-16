@@ -96,27 +96,20 @@ describe("System management page", () => {
         cy.getByTestId("no-systems-found");
       });
 
-      // Skip while manual system creation is being redone
-      it.skip("Can step through the flow", () => {
+      it("Can step through the flow", () => {
         cy.fixture("system.json").then((system) => {
           // Fill in the describe form based on fixture data
           cy.visit("/add-systems");
           cy.getByTestId("manual-btn").click();
-          cy.url().should("contain", "/add-systems");
+          cy.url().should("contain", "/add-systems/new");
           cy.wait("@getSystems");
+          cy.wait("@getConnectionTypes");
+          cy.getByTestId("create-system-btn").click();
           cy.getByTestId("input-name").type(system.name);
           cy.getByTestId("input-fides_key").type(system.fides_key);
           cy.getByTestId("input-description").type(system.description);
-          cy.getByTestId("input-system_type").type(system.system_type);
-          system.tags.forEach((tag) => {
-            cy.getByTestId("input-tags").type(`${tag}{enter}`);
-          });
-          cy.getByTestId("input-system_dependencies").click();
-          cy.getByTestId("input-system_dependencies").within(() => {
-            cy.contains("Demo Analytics System").click();
-          });
 
-          cy.getByTestId("confirm-btn").click();
+          cy.getByTestId("save-btn").click();
           cy.wait("@postSystem").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql({
@@ -124,15 +117,16 @@ describe("System management page", () => {
               organization_fides_key: system.organization_fides_key,
               fides_key: system.fides_key,
               description: system.description,
-              system_type: system.system_type,
-              tags: system.tags,
+              system_type: "",
+              tags: [],
               privacy_declarations: [],
               third_country_transfers: [],
-              system_dependencies: ["demo_analytics_system"],
+              system_dependencies: [],
             });
           });
 
           // Fill in the privacy declaration form
+          cy.getByTestId("tab-Privacy declarations").click();
           cy.wait("@getDataCategories");
           cy.wait("@getDataQualifiers");
           cy.wait("@getDataSubjects");
@@ -156,7 +150,7 @@ describe("System management page", () => {
             cy.contains(declaration.data_qualifier).click();
           });
           cy.getByTestId("add-btn").click();
-          cy.getByTestId("next-btn").click();
+          cy.getByTestId("save-btn").click();
           cy.wait("@putSystem").then((interception) => {
             const { body } = interception.request;
             expect(body.privacy_declarations[0]).to.eql({
@@ -164,49 +158,40 @@ describe("System management page", () => {
               dataset_references: [],
             });
           });
-
-          // Now at the Review stage
-          cy.getByTestId("review-heading");
-          cy.getByTestId("review-System name").contains(system.name);
-          cy.getByTestId("review-System key").contains(system.fides_key);
-          cy.getByTestId("review-System description").contains(
-            system.description
-          );
-          cy.getByTestId("review-System type").contains(system.system_type);
-          system.tags.forEach((tag) => {
-            cy.getByTestId("review-System tags").contains(tag);
-          });
-          system.system_dependencies.forEach((dep) => {
-            cy.getByTestId("review-System dependencies").contains(dep);
-          });
-          // Open up the privacy declaration
-          cy.getByTestId(
-            "declaration-Analyze customer behaviour for improvements."
-          ).click();
-          const reviewDeclaration = system.privacy_declarations[0];
-          reviewDeclaration.data_categories.forEach((dc) => {
-            cy.getByTestId("declaration-Data categories").contains(dc);
-          });
-          cy.getByTestId("declaration-Data use").contains(
-            reviewDeclaration.data_use
-          );
-          reviewDeclaration.data_subjects.forEach((ds) => {
-            cy.getByTestId("declaration-Data subjects").contains(ds);
-          });
-          cy.getByTestId("declaration-Data qualifier").contains(
-            reviewDeclaration.data_qualifier
-          );
-
-          cy.getByTestId("confirm-btn").click();
-
-          // Success page
-          cy.getByTestId("success-page-heading").should(
-            "contain",
-            `${system.name} successfully registered`
-          );
-          cy.getByTestId("finish-btn").click();
-          cy.url().should("match", /system$/);
         });
+      });
+
+      it("can render a warning when there is unsaved data", () => {
+        cy.visit("/add-systems/new");
+        cy.wait("@getSystems");
+        cy.wait("@getConnectionTypes");
+        cy.getByTestId("create-system-btn").click();
+        cy.getByTestId("input-name").type("test");
+        cy.getByTestId("input-fides_key").type("test");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@postSystem");
+
+        // start typing a description
+        const description = "half formed thought";
+        cy.getByTestId("input-description").type(description);
+        // then try navigating to the privacy declarations tab
+        cy.getByTestId("tab-Privacy declarations").click();
+        cy.getByTestId("confirmation-modal");
+        // make sure canceling works
+        cy.getByTestId("cancel-btn").click();
+        cy.getByTestId("input-description").should("have.value", description);
+        // now actually discard
+        cy.getByTestId("tab-Privacy declarations").click();
+        cy.getByTestId("continue-btn").click();
+        // should load the privacy declarations page
+        cy.wait("@getDataCategories");
+        cy.wait("@getDataQualifiers");
+        cy.wait("@getDataSubjects");
+        cy.wait("@getDataUses");
+        cy.getByTestId("privacy-declaration-form");
+        // navigate back
+        cy.getByTestId("tab-System information").click();
+        cy.getByTestId("input-description").should("have.value", "");
       });
     });
   });
@@ -275,7 +260,6 @@ describe("System management page", () => {
         "have.value",
         "Software that functionally applies Fides."
       );
-      cy.getByTestId("input-system_type").should("have.value", "Service");
       cy.getByTestId("input-data_responsibility_title").should(
         "contain",
         "Controller"
@@ -287,13 +271,14 @@ describe("System management page", () => {
       // add something for joint controller
       const controllerName = "Sally Controller";
       cy.getByTestId("input-joint_controller.name").type(controllerName);
-      cy.getByTestId("confirm-btn").click();
+      cy.getByTestId("save-btn").click();
       cy.wait("@putSystem").then((interception) => {
         const { body } = interception.request;
         expect(body.joint_controller.name).to.eql(controllerName);
       });
 
       // add another privacy declaration
+      cy.getByTestId("tab-Privacy declarations").click();
       const secondName = "Second declaration";
       cy.getByTestId("privacy-declaration-form");
       cy.getByTestId("input-name").type(secondName);
@@ -314,7 +299,7 @@ describe("System management page", () => {
       cy.getByTestId(`declaration-${newName}`);
       cy.getByTestId(`declaration-${secondName}`);
 
-      cy.getByTestId("next-btn").click();
+      cy.getByTestId("save-btn").click();
       cy.wait("@putSystem").then((interception) => {
         const { body } = interception.request;
         expect(body.privacy_declarations.length).to.eql(2);
@@ -378,7 +363,7 @@ describe("System management page", () => {
         system.data_protection_impact_assessment.link
       );
 
-      cy.getByTestId("confirm-btn").click();
+      cy.getByTestId("save-btn").click();
       cy.wait("@putSystem").then((interception) => {
         const { body } = interception.request;
         const {
@@ -408,6 +393,7 @@ describe("System management page", () => {
       });
 
       // Add privacy declaration form
+      cy.getByTestId("tab-Privacy declarations").click();
       cy.wait("@getDataCategories");
       cy.wait("@getDataQualifiers");
       cy.wait("@getDataSubjects");
@@ -434,29 +420,10 @@ describe("System management page", () => {
         cy.contains("Demo Users Dataset 2").click();
       });
       cy.getByTestId("add-btn").click();
-      cy.getByTestId("next-btn").click();
+      cy.getByTestId("save-btn").click();
       cy.wait("@putSystem").then((interception) => {
         const { body } = interception.request;
         expect(body.privacy_declarations[1]).to.eql(declaration);
-      });
-
-      // Now at the Review stage
-      cy.getByTestId("review-heading");
-      cy.getByTestId("review-Data responsibility title").contains("Controller");
-      cy.getByTestId("review-Administrating department").contains(
-        "Engineering"
-      );
-      cy.getByTestId("review-Geographic location").contains("USA");
-      cy.getByTestId("review-Geographic location").contains("CAN");
-      cy.getByTestId("review-Joint controller").within(() => {
-        cy.getByTestId("review-Name").contains("Sally Controller");
-      });
-      cy.getByTestId("review-Data protection impact assessment").within(() => {
-        cy.getByTestId("review-Is required").contains("Yes");
-        cy.getByTestId("review-Progress").contains("Complete");
-        cy.getByTestId("review-Link").contains(
-          "https://example.org/analytics_system_data_protection_impact_assessment"
-        );
       });
     });
   });
