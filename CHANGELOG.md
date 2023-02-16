@@ -44,7 +44,6 @@ The types of changes are:
 * Minor logging improvements [#2566](https://github.com/ethyca/fides/pull/2566)
 * Various form components now take a `stacked` or `inline` variant [#2542](https://github.com/ethyca/fides/pull/2542)
 * UX fixes for user management [#2537](https://github.com/ethyca/fides/pull/2537)
-* Replaced pickle with json for storing cache [#2577](https://github.com/ethyca/fides/pull/2577)
 * Updating Firebase Auth connector to mask the user with a delete instead of an update [#2602](https://github.com/ethyca/fides/pull/2602)
 
 ### Fixed
