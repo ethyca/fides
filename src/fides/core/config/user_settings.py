@@ -13,7 +13,11 @@ ENV_PREFIX = "FIDES__USER__"
 class UserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
-    auth_header: Optional[Dict[str, str]] = Field(exclude=True)
+    auth_header: Optional[Dict[str, str]] = Field(
+        default=None,
+        description="Authentication header built automatically from the credentials file.",
+        exclude=True,
+    )
     analytics_opt_out: Optional[bool] = Field(
         description="When set to true, prevents sending anonymous analytics data to Ethyca."
     )
