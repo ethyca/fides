@@ -72,6 +72,7 @@ saas_config:
         read:
           method: GET
           path: /v1/calls
+          data_path: calls
           param_values:
             - name: email
               identity: email
