@@ -29,6 +29,10 @@ The types of changes are:
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
 
+### Added
+
+* Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
+
 ### Changed
 
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523)
