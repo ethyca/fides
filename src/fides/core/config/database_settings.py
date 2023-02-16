@@ -4,7 +4,7 @@
 
 from typing import Dict, Optional
 
-from pydantic import PostgresDsn, validator
+from pydantic import PostgresDsn, validator, Field
 
 from fides.core.config.utils import get_test_mode
 
@@ -16,26 +16,51 @@ ENV_PREFIX = "FIDES__DATABASE__"
 class DatabaseSettings(FidesSettings):
     """Configuration settings for Postgres."""
 
-    user: str = "defaultuser"
-    password: str = "defaultpassword"
-    server: str = "default-db"
-    port: str = "5432"
-    db: str = "default_db"
-    test_db: str = "default_test_db"
+    user: str = Field(
+        default="defaultuser",
+        description="The database user with which to login to the application database.",
+    )
+    password: str = Field(
+        default="defaultpassword",
+        description="The password with which to login to the application database.",
+    )
+    server: str = Field(
+        default="default-db",
+        description="The hostname of the application database server.",
+    )
+    port: str = Field(
+        default="5432",
+        description="The port at which the application database will be accessible.",
+    )
+    db: str = Field(
+        default="default_db", description="The name of the application database."
+    )
+    test_db: str = Field(
+        default="default_test_db",
+        description="Used instead of the 'db' value when the FIDES_TEST_MODE environment variable is set to True. Avoids overwriting production data.",
+        exclude=True,
+    )
 
-    api_engine_pool_size: int = 50
-    api_engine_max_overflow: int = 50
-    task_engine_pool_size: int = 50
-    task_engine_max_overflow: int = 50
+    api_engine_pool_size: int = Field(default=50, description="TODO")
+    api_engine_max_overflow: int = Field(default=50, description="TODO")
+    task_engine_pool_size: int = Field(default=50, description="TODO")
+    task_engine_max_overflow: int = Field(default=50, description="TODO")
 
-    sqlalchemy_database_uri: Optional[str] = None
-    sqlalchemy_test_database_uri: Optional[str] = None
-
-    # These values are set by validators, and are never empty strings within the
-    # application. The default values here are required in order to prevent the
-    # types being set to "Optional[str]", as they are not functionally optional.
-    async_database_uri: str = ""
-    sync_database_uri: str = ""
+    sqlalchemy_database_uri: Optional[str] = Field(
+        description="Generic connection string for the application database.",
+        exclude=True,
+    )
+    sqlalchemy_test_database_uri: Optional[str] = Field(
+        description="Generic connection string for the test database.", exclude=True
+    )
+    async_database_uri: Optional[str] = Field(
+        description="Asynchronous connection string for the configured database (either application or test).",
+        exclude=True,
+    )
+    sync_database_uri: Optional[str] = Field(
+        description="Synchronous connection string for the configured database (either application or test).",
+        exclude=True,
+    )
 
     @validator("sync_database_uri", pre=True)
     @classmethod
@@ -64,7 +89,7 @@ class DatabaseSettings(FidesSettings):
     def assemble_async_database_uri(
         cls, value: Optional[str], values: Dict[str, str]
     ) -> str:
-        """Join DB connection credentials into a connection string"""
+        """Join DB connection credentials into an async connection string."""
         if isinstance(value, str) and value != "":
             # This validates that the string is a valid PostgresDns.
             return str(PostgresDsn(value))
@@ -84,7 +109,7 @@ class DatabaseSettings(FidesSettings):
     @validator("sqlalchemy_database_uri", pre=True)
     @classmethod
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, str]) -> str:
-        """Join DB connection credentials into a connection string"""
+        """Join DB connection credentials into a synchronous connection string."""
         if isinstance(v, str):
             return v
         return str(
