@@ -20,6 +20,7 @@ export const CONNECTION_TYPE_FILTER_MAP = new Map<string, ItemOption>([
     },
   ],
   ["3rd party integrations", { value: SystemType.SAAS.toString() }],
+  ["Email connectors", { value: SystemType.EMAIL.toString() }],
   ["Show all", { value: "" }],
 ]);
 
@@ -37,6 +38,10 @@ export const CONNECTOR_PARAMETERS_OPTIONS: ConnectorParameterOption[] = [
       ConfigurationSettings.CONNECTOR_PARAMETERS,
       ConfigurationSettings.DSR_CUSTOMIZATION,
     ],
+  },
+  {
+    type: SystemType.EMAIL,
+    options: [ConfigurationSettings.CONNECTOR_PARAMETERS],
   },
   {
     type: SystemType.SAAS,

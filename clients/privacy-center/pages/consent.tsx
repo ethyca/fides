@@ -217,9 +217,6 @@ const Consent: NextPage = () => {
     }));
 
     const browserIdentity = inspectForBrowserIdentities();
-    const browserIdentityBody = browserIdentity
-      ? { ga_client_id: browserIdentity.gaClientId }
-      : undefined;
 
     updateConsentRequestPreferencesMutationTrigger({
       id: consentRequestId,
@@ -228,7 +225,7 @@ const Consent: NextPage = () => {
         policy_key: config.consent?.policy_key,
         consent,
         executable_options: executableOptions,
-        browser_identity: browserIdentityBody,
+        browser_identity: browserIdentity,
       },
     });
   }, [
