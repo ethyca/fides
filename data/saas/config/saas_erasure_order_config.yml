@@ -77,3 +77,12 @@ saas_config:
                   direction: from
         delete:
           request_override: delete_no_op
+    - name: products
+      requests:
+        read:
+          request_override: read_no_op
+          param_values:
+            - name: email
+              identity: email
+        delete:
+          request_override: delete_no_op

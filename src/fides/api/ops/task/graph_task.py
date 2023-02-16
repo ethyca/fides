@@ -785,6 +785,7 @@ async def run_erasure(  # pylint: disable = too-many-arguments
             )
             for k, t in env.items()
         }
+
         # terminator function waits for all keys
         dsk[ROOT_COLLECTION_ADDRESS] = 0
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
@@ -794,8 +795,13 @@ async def run_erasure(  # pylint: disable = too-many-arguments
                 privacy_request, env, end_nodes, resources, ActionType.erasure
             )
         )
+
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
-        return v.compute()
+        update_cts: Dict[str, int] = v.compute()
+        erasure_update_map = {
+            collection.value: update_cts.get(collection.value, 0) for collection in env
+        }
+        return erasure_update_map
 
 
 def _evaluate_erasure_dependencies(

@@ -499,6 +499,5 @@ class GraphDataset(BaseModel):
     collections: List[Collection]
     # an optional list of datasets that this dataset must run after
     after: Set[DatasetAddress] = set()
-    erase_after: Set[DatasetAddress] = set()
     # ConnectionConfig key
     connection_key: FidesKey

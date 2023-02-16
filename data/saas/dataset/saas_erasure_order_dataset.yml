@@ -38,3 +38,9 @@ dataset:
             fidesops_meta:
               data_type: integer
               primary_key: True
+      - name: products
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer

@@ -48,6 +48,7 @@ async def test_saas_erasure_order_request_task(
     assert_rows_match(v[f"{dataset_name}:orders"], min_size=1, keys=["orders_id"])
     assert_rows_match(v[f"{dataset_name}:refunds"], min_size=1, keys=["refunds_id"])
     assert_rows_match(v[f"{dataset_name}:labels"], min_size=1, keys=["labels_id"])
+    assert_rows_match(v[f"{dataset_name}:products"], min_size=1, keys=["products_id"])
     assert_rows_match(
         v[f"{dataset_name}:orders_to_refunds"],
         min_size=1,
@@ -76,6 +77,7 @@ async def test_saas_erasure_order_request_task(
         f"{dataset_name}:orders": 1,
         f"{dataset_name}:refunds": 1,
         f"{dataset_name}:labels": 1,
+        f"{dataset_name}:products": 0,
         f"{dataset_name}:orders_to_refunds": 1,
         f"{dataset_name}:refunds_to_orders": 1,
     }
@@ -90,6 +92,8 @@ async def test_saas_erasure_order_request_task(
     )
 
     assert [(log.collection_name, log.status.value) for log in execution_logs] == [
+        ("products", "in_processing"),
+        ("products", "complete"),
         ("orders_to_refunds", "in_processing"),
         ("orders_to_refunds", "complete"),
         ("refunds_to_orders", "in_processing"),
