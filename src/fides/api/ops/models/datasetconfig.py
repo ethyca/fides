@@ -275,9 +275,8 @@ def convert_dataset_to_graph(
 
     dataset_name = dataset.fides_key
     after = set()
-    if dataset.fides_meta:
-        if dataset.fides_meta.after:
-            after = set(dataset.fides_meta.after)
+    if dataset.fides_meta and dataset.fides_meta.after:
+        after = set(dataset.fides_meta.after)
     logger.debug("Parsing dataset '{}' into graph representation", dataset_name)
     graph_collections = []
     for collection in dataset.collections:
