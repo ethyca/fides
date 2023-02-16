@@ -29,7 +29,10 @@ class RedisSettings(FidesSettings):
         default="redis",
         description="The network address for the application Redis cache.",
     )
-    identity_verification_code_ttl_seconds: int = Field(default=600, description="TODO")
+    identity_verification_code_ttl_seconds: int = Field(
+        default=600,
+        description="Sets TTL for cached identity verification code as part of subject requests."
+    )
     password: str = Field(
         default="testpassword",
         description="The password with which to login to the Redis cache.",
