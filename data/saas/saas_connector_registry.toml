@@ -177,3 +177,9 @@ config = "data/saas/config/universal_analytics_config.yml"
 dataset = "data/saas/dataset/universal_analytics_dataset.yml"
 icon = "data/saas/icon/google_analytics.svg"
 human_readable = "Universal Analytics"
+
+[onesignal]
+config = "data/saas/config/onesignal_config.yml"
+dataset = "data/saas/dataset/onesignal_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Onesignal"

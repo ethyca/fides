@@ -1,0 +1,76 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: OneSignal SaaS Config
+  type: onesignal
+  description: A sample schema representing the OneSignal connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: player_id
+    - name: api_token
+    - name: app_id
+
+  client_config:
+    protocol: https
+    host: <domain>
+    # authentication:
+    #   strategy: no_authentication
+    #   configuration: {}
+
+  test_request:
+    method: GET
+    path: /api/v1/players?app_id=<app_id>
+    headers:
+      - name: Authorization
+        value: Basic <api_token>
+    param_values:
+      - name: app_id
+        connector_param: app_id
+      - name: api_token
+        connector_param: api_token
+
+  endpoints:
+    - name: devices
+      requests:
+        read:
+          method: GET
+          path: '/api/v1/players/<player_id>?app_id=<app_id>'
+          headers:
+            - name: Authorization
+              value: Basic <api_token>
+          param_values:
+            - name: player_id
+              connector_param: player_id
+            - name: app_id
+              connector_param: app_id
+            - name: api_token
+              connector_param: api_token
+            - name: placeholder
+              identity: email
+        update:
+          method: PUT
+          path: /api/v1/players/<devices_id>
+          body: |
+            {
+              <all_object_fields> 
+            }
+          param_values:
+            - name: devices_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: devices.id
+                  direction: from
+        delete:
+          method: DELETE
+          path: '/api/v1/players/<player_id>?app_id=<app_id>'
+          headers:
+            - name: Authorization
+              value: Basic <api_token>
+          param_values:
+            - name: player_id
+              connector_param: player_id
+            - name: app_id
+              connector_param: app_id
+            - name: api_token
+              connector_param: api_token
