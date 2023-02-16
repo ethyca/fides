@@ -14,7 +14,7 @@
     "description": "Custom fields can be added to many forms throughout Fides. You can create, show, and hide custom fields that you add to Fides at any time.",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   },
   "navV2": {
     "description": "The updated navigation experience with links to related features in the sidebar.",
