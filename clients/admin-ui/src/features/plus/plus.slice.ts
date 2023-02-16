@@ -163,7 +163,7 @@ export const plusApi = createApi({
       }),
       providesTags: ["AllowList"],
       transformResponse: (allowList: AllowList[]) =>
-        allowList.sort((a, b) => a.name!.localeCompare(b.name!)),
+        allowList.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
     upsertAllowList: build.mutation<AllowList, AllowListUpdate>({
       query: (params: AllowListUpdate) => ({
