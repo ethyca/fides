@@ -27,6 +27,7 @@ The types of changes are:
     * Create custom fields from a the taxonomy editor
     * Provide a custom field value in a resource
     * Bulk edit custom field values [#2612](https://github.com/ethyca/fides/issues/2612)
+    * Custom metadata UI Polish [#2624](https://github.com/ethyca/fides/pull/2625)
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
 
