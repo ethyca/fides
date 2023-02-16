@@ -16,16 +16,6 @@ from .fides_settings import FidesSettings
 ENV_PREFIX = "FIDES__SECURITY__"
 
 
-class SecurityEnv(Enum):
-    """
-    Defines the potential environments that Fides can
-    be configured to run in.
-    """
-
-    DEV = "dev"
-    PROD = "prod"
-
-
 class SecuritySettings(FidesSettings):
     """Configuration settings for Security variables."""
 
@@ -42,8 +32,8 @@ class SecuritySettings(FidesSettings):
     encoding: str = Field(
         default="UTF-8", description="Text encoding to use for the application."
     )
-    env: SecurityEnv = Field(
-        default=SecurityEnv.DEV,
+    env: str = Field(
+        default="dev",
         description="The default, `dev`, does not apply authentication to endpoints typically used by the CLI. The other option, `prod`, requires authentication for _all_ endpoints that may contain sensitive information.",
     )
     identity_verification_attempt_limit: int = Field(default=3, description="")
@@ -58,7 +48,10 @@ class SecuritySettings(FidesSettings):
     oauth_root_client_secret_hash: Optional[Tuple] = Field(
         default=None, description="TODO"
     )
-    oauth_access_token_expire_minutes: int = Field(default=11520, description="The time in minutes for which Fides API tokens will be valid. Default value is equal to 8 days.")
+    oauth_access_token_expire_minutes: int = Field(
+        default=11520,
+        description="The time in minutes for which Fides API tokens will be valid. Default value is equal to 8 days.",
+    )
     oauth_client_id_length_bytes: int = Field(default=16, description="TODO")
     oauth_client_secret_length_bytes: int = Field(default=16, description="TODO")
     parent_server_password: Optional[str] = Field(default=None, description="TODO")
@@ -168,6 +161,18 @@ class SecuritySettings(FidesSettings):
             e.g. 10/hour;100/day;2000 per year
             e.g. 100/day, 500/7days
             """
+            raise ValueError(message)
+        return v
+
+    @validator("env")
+    @classmethod
+    def validate_env(
+        cls,
+        v: str,
+    ) -> str:
+        """Validate the formatting of `request_rate_limit`"""
+        if v not in ["dev", "prod"]:
+            message = "Security environment must be either 'dev' or 'prod'."
             raise ValueError(message)
         return v
 
