@@ -14,6 +14,7 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.6.6...main)
 
 * Fides API
@@ -34,12 +35,13 @@ The types of changes are:
 ### Added
   * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
   * Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
-
+  * Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
 ### Changed
 
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523)
 * Removes legacy `verify_oauth_client` function [#2527](https://github.com/ethyca/fides/pull/2527)
 * Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
+* Minor logging improvements [#2566](https://github.com/ethyca/fides/pull/2566)
 * Various form components now take a `stacked` or `inline` variant [#2542](https://github.com/ethyca/fides/pull/2542)
 * UX fixes for user management [#2537](https://github.com/ethyca/fides/pull/2537)
 * Replaced pickle with json for storing cache [#2577](https://github.com/ethyca/fides/pull/2577)
