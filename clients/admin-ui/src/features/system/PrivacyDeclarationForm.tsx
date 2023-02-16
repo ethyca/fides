@@ -3,8 +3,17 @@
  * to allow for more re-use
  */
 
-import { Button, ButtonGroup, Stack } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  GreenCheckCircleIcon,
+  Heading,
+  Stack,
+  Text,
+} from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
@@ -58,6 +67,7 @@ export const PrivacyDeclarationForm = ({
   allDataSubjects: DataSubject[];
 }) => {
   const initialValues = passedInInitialValues ?? defaultInitialValues;
+  const [showSaved, setShowSaved] = useState(false);
 
   const handleSubmit = (
     values: FormValues,
@@ -66,6 +76,7 @@ export const PrivacyDeclarationForm = ({
     onSubmit(values, formikHelpers);
     // Reset state such that isDirty will be checked again before next save
     formikHelpers.resetForm({ values });
+    setShowSaved(true);
   };
 
   return (
@@ -78,6 +89,16 @@ export const PrivacyDeclarationForm = ({
       {({ dirty }) => (
         <Form data-testid="privacy-declaration-form">
           <Stack spacing={4}>
+            <Box display="flex" alignItems="center">
+              <Heading as="h4" size="sm" mr={4}>
+                title
+              </Heading>
+              {showSaved && !dirty ? (
+                <Text fontSize="sm">
+                  <GreenCheckCircleIcon /> Saved
+                </Text>
+              ) : null}
+            </Box>
             <CustomSelect
               id="data_use"
               label="Data use"

@@ -4,11 +4,13 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  Box,
+  Spinner,
+  Text,
 } from "@fidesui/react";
 
 import { PrivacyDeclaration } from "~/types/api";
 
+import { useGetDataUseByKeyQuery } from "../data-use/data-use.slice";
 import ConnectedPrivacyDeclarationForm from "./PrivacyDeclarationForm";
 
 interface Props {
@@ -16,29 +18,35 @@ interface Props {
   onEdit?: (declaration: PrivacyDeclaration) => void;
 }
 const PrivacyDeclarationAccordion = ({ privacyDeclaration, onEdit }: Props) => {
+  const { data: dataUse, isLoading } = useGetDataUseByKeyQuery(
+    privacyDeclaration.data_use
+  );
   const handleEdit = (newValues: PrivacyDeclaration) => {
     if (onEdit) {
       onEdit(newValues);
     }
   };
 
+  const title = dataUse?.name ?? privacyDeclaration.data_use;
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
   return (
     <Accordion
       allowToggle
       border="transparent"
-      key={privacyDeclaration.name}
+      key={privacyDeclaration.data_use}
       m="5px !important"
-      maxW="500px"
-      minW="500px"
-      width="500px"
-      data-testid={`declaration-${privacyDeclaration.name}`}
+      data-testid={`declaration-${privacyDeclaration.data_use}`}
     >
       <AccordionItem>
         <>
           <AccordionButton pr="0px" pl="0px">
-            <Box flex="1" textAlign="left">
-              {privacyDeclaration.name}
-            </Box>
+            <Text flex="1" textAlign="left" fontSize="sm" fontWeight="semibold">
+              {title}
+            </Text>
             <AccordionIcon />
           </AccordionButton>
           <AccordionPanel px="0">

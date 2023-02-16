@@ -16,37 +16,32 @@ import { Fragment, useState } from "react";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PrivacyDeclaration, System } from "~/types/api";
 
+import { errorToastParams, successToastParams } from "../common/toast";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 import ConnectedPrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import { useUpdateSystemMutation } from "./system.slice";
 
-type FormValues = PrivacyDeclaration;
-
-const transformFormValuesToDeclaration = (
-  formValues: FormValues
-): PrivacyDeclaration => ({
-  ...formValues,
-  data_qualifier:
-    formValues.data_qualifier === "" ? undefined : formValues.data_qualifier,
-});
-
 interface Props {
   system: System;
-  onSuccess: (system: System) => void;
 }
 
-const PrivacyDeclarationStep = ({ system, onSuccess }: Props) => {
+const PrivacyDeclarationStep = ({ system }: Props) => {
   const toast = useToast();
-  const [formDeclarations, setFormDeclarations] = useState<
+  const [accordionDeclarations, setAccordionDeclarations] = useState<
     PrivacyDeclaration[]
   >(system?.privacy_declarations ? [...system.privacy_declarations] : []);
   const [updateSystemMutationTrigger, { isLoading }] =
     useUpdateSystemMutation();
+  // There's a step when going from empty state to the intial form
+  const [showInitialForm, setShowInitialForm] = useState(false);
+  const [initialDeclaration, setInitialDeclaration] = useState<
+    PrivacyDeclaration | undefined
+  >(undefined);
 
-  const handleSubmit = async () => {
+  const save = async (updatedDeclarations: PrivacyDeclaration[]) => {
     const systemBodyWithDeclaration = {
       ...system,
-      privacy_declarations: formDeclarations,
+      privacy_declarations: updatedDeclarations,
     };
 
     const handleResult = (
@@ -59,16 +54,16 @@ const PrivacyDeclarationStep = ({ system, onSuccess }: Props) => {
           result.error,
           "An unexpected error occurred while updating the system. Please try again."
         );
+        console.log({ result });
 
-        toast({
-          status: "error",
-          description: errorMsg,
-        });
+        toast(errorToastParams(errorMsg));
       } else {
+        toast(successToastParams("Data use case saved"));
         toast.closeAll();
-        onSuccess(result.data);
       }
     };
+
+    console.log({ updatedDeclarations });
 
     const updateSystemResult = await updateSystemMutationTrigger(
       systemBodyWithDeclaration
@@ -77,25 +72,27 @@ const PrivacyDeclarationStep = ({ system, onSuccess }: Props) => {
     handleResult(updateSystemResult);
   };
 
-  const handleEditDeclaration = (
+  const handleEditDeclaration = async (
     oldDeclaration: PrivacyDeclaration,
     newDeclaration: PrivacyDeclaration
   ) => {
-    // Because the name can change, we also need a reference to the old declaration in order to
+    // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
-    setFormDeclarations(
-      formDeclarations.map((dec) =>
-        dec.name === oldDeclaration.name ? newDeclaration : dec
-      )
+    const updatedDeclarations = accordionDeclarations.map((dec) =>
+      dec.data_use === oldDeclaration.data_use ? newDeclaration : dec
     );
+    await save(updatedDeclarations);
   };
 
-  const addDeclaration = (
-    values: PrivacyDeclaration,
-    formikHelpers: FormikHelpers<PrivacyDeclaration>
+  const addDeclaration = async (
+    values: PrivacyDeclaration
+    // formikHelpers: FormikHelpers<PrivacyDeclaration>
   ) => {
-    const { resetForm } = formikHelpers;
-    if (formDeclarations.filter((d) => d.name === values.name).length > 0) {
+    // const { resetForm } = formikHelpers;
+    if (
+      accordionDeclarations.filter((d) => d.data_use === values.data_use)
+        .length > 0
+    ) {
       toast({
         status: "error",
         description:
@@ -103,20 +100,38 @@ const PrivacyDeclarationStep = ({ system, onSuccess }: Props) => {
       });
     } else {
       toast.closeAll();
-      setFormDeclarations([
-        ...formDeclarations,
-        transformFormValuesToDeclaration(values),
-      ]);
-      resetForm({
-        values: {
-          name: "",
-          data_subjects: [],
-          data_categories: [],
-          data_use: "",
-          data_qualifier: "",
-          dataset_references: [],
-        },
-      });
+      setInitialDeclaration(values);
+      const updatedDeclarations = [...accordionDeclarations, values];
+      // setFormDeclarations([
+      //   ...formDeclarations,
+      //   transformFormValuesToDeclaration(values),
+      // ]);
+      await save(updatedDeclarations);
+      // resetForm({
+      //   values: {
+      //     name: "",
+      //     data_subjects: [],
+      //     data_categories: [],
+      //     data_use: "",
+      //     data_qualifier: "",
+      //     dataset_references: [],
+      //   },
+      // });
+    }
+  };
+
+  const handleAddDataUse = () => {
+    if (accordionDeclarations.length === 0) {
+      setShowInitialForm(true);
+    } else {
+      if (initialDeclaration) {
+        setAccordionDeclarations([
+          ...accordionDeclarations,
+          initialDeclaration,
+        ]);
+      }
+      setInitialDeclaration(undefined);
+      setShowInitialForm(true);
     }
   };
 
@@ -126,12 +141,11 @@ const PrivacyDeclarationStep = ({ system, onSuccess }: Props) => {
         Data uses
       </Heading>
       <Text fontSize="sm">
-        This is where you describe your system privacy characteristics. First,
-        you declare a data processing activity (&quot;Data use&quot;) and then
-        assign the Data categories and Data subjects that are related to this
-        activity. Individual Data categories and subjects may be assigned to
-        multiple Data uses. If you don&apos;t find the activity, category, or
-        subject that you need, the taxonomy may need to be updated.{" "}
+        Data Uses describe the business purpose for which the personal data is
+        processed or collected. Within a Data Use, you assign which categories
+        of personal information are collected for this purpose and for which
+        categories of data subjects. To update the available categories and
+        uses, please visit{" "}
         <NextLink href="/taxonomy" passHref>
           <Text as="a" color="complimentary.600">
             Manage taxonomy
@@ -139,7 +153,7 @@ const PrivacyDeclarationStep = ({ system, onSuccess }: Props) => {
         </NextLink>
         .
       </Text>
-      {formDeclarations.map((declaration) => (
+      {accordionDeclarations.map((declaration) => (
         <Fragment key={declaration.name}>
           <PrivacyDeclarationAccordion
             privacyDeclaration={declaration}
@@ -150,14 +164,21 @@ const PrivacyDeclarationStep = ({ system, onSuccess }: Props) => {
           <Divider m="0px !important" />
         </Fragment>
       ))}
-      <ConnectedPrivacyDeclarationForm onSubmit={addDeclaration} />
-      <Box>
+      {showInitialForm ? (
+        <Box backgroundColor="gray.50" p={6}>
+          <ConnectedPrivacyDeclarationForm
+            initialValues={initialDeclaration}
+            onSubmit={addDeclaration}
+          />
+        </Box>
+      ) : null}
+      <Box py={2}>
         <Button
           colorScheme="primary"
           size="xs"
           isLoading={isLoading}
           data-testid="save-btn"
-          onClick={handleSubmit}
+          onClick={handleAddDataUse}
         >
           Add a Data Use +
         </Button>

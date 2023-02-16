@@ -172,7 +172,12 @@ const SelectInput = ({
       size={size}
       classNamePrefix="custom-select"
       chakraStyles={{
-        container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+        container: (provided) => ({
+          ...provided,
+          mr: 2,
+          flexGrow: 1,
+          backgroundColor: "white",
+        }),
         dropdownIndicator: (provided) => ({
           ...provided,
           bg: "transparent",
@@ -344,7 +349,13 @@ export const CustomSelect = ({
     <FormControl isInvalid={isInvalid} isDisabled={isDisabled}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} my={0} {...labelProps}>
+          <Label
+            htmlFor={props.id || props.name}
+            fontSize="sm"
+            my={0}
+            mr={1}
+            {...labelProps}
+          >
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}

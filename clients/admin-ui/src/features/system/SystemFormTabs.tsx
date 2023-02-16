@@ -1,7 +1,7 @@
 import { Box, Button, Text, useToast } from "@fidesui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
@@ -76,11 +76,6 @@ const SystemFormTabs = ({
   const toast = useToast();
   const dispatch = useAppDispatch();
   const activeSystem = useAppSelector(selectActiveSystem);
-
-  const goBack = useCallback(() => {
-    router.back();
-    dispatch(setActiveSystem(undefined));
-  }, [dispatch, router]);
 
   const handleSuccess = (system: System) => {
     // show a save message if this is the first time the system was saved
@@ -181,11 +176,8 @@ const SystemFormTabs = ({
     {
       label: "Privacy declarations",
       content: activeSystem ? (
-        <Box px={6}>
-          <PrivacyDeclarationStep
-            system={activeSystem as System}
-            onSuccess={goBack}
-          />
+        <Box px={6} width={{ base: "100%", lg: "70%" }}>
+          <PrivacyDeclarationStep system={activeSystem as System} />
         </Box>
       ) : null,
       isDisabled: !activeSystem,
