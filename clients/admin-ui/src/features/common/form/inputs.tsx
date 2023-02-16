@@ -196,6 +196,7 @@ const SelectInput = ({
       instanceId={`select-${field.name}`}
       isMulti={isMulti}
       isDisabled={isDisabled}
+      menuPosition="fixed"
     />
   );
 };
