@@ -100,7 +100,6 @@ class ManualWebhookResults(BaseSchema):
 def get_access_manual_webhook_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> ManualWebhookResults:
-
     """Retrieves manually uploaded data for all AccessManualWebhooks and formats in a way
     to match automatically retrieved data (a list of rows). Also returns if execution should proceed.
 

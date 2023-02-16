@@ -1,0 +1,6 @@
+{
+  "resource_id": "user.biometric",
+  "custom_field_definition_id": "id-custom-field-definition-pokemon-party",
+  "value": ["Charmander", "Eevee"],
+  "id": "id-custom-field-pokemon-party"
+}
