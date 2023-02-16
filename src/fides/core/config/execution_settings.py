@@ -21,7 +21,7 @@ class ExecutionSettings(FidesSettings):
         description="Whether privacy requests require explicit approval to execute.",
     )
     subject_identity_verification_required: bool = Field(
-        defalt=False,
+        default=False,
         description="Whether privacy requests require user identity verification.",
     )
     task_retry_backoff: int = Field(

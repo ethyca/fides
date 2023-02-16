@@ -12,10 +12,6 @@ class RedisSettings(FidesSettings):
     """Configuration settings for Redis."""
 
     charset: str = Field(default="utf8", description="TODO")
-    connection_url: Optional[str] = Field(
-        default=None,
-        description="A full connection URL to the Redis cache. If not specified, this URL is automatically assembled from the host, port, password and db_index specified above.",
-    )
     db_index: Optional[int] = Field(
         default=None,
         description="The application will use this index in the Redis cache to cache data.",
@@ -50,8 +46,15 @@ class RedisSettings(FidesSettings):
         default="required",
         description="If using TLS encryption, set this to 'required' if you wish to enforce the Redis cache to provide a certificate. Note that not all cache providers support this e.g. AWS Elasticache.",
     )
-    user: Optional[str] = Field(
-        default=None, description="The user with which to login to the Redis cache."
+    user: str = Field(
+        default="", description="The user with which to login to the Redis cache."
+    )
+
+    # This relies on other values to get built so must be last
+    connection_url: Optional[str] = Field(
+        default=None,
+        description="A full connection URL to the Redis cache. If not specified, this URL is automatically assembled from the host, port, password and db_index specified above.",
+        exclude=True,
     )
 
     @validator("connection_url", pre=True)
@@ -72,11 +75,11 @@ class RedisSettings(FidesSettings):
         use_tls = values.get("ssl", False)
         if use_tls:
             # If using TLS update the connection URL format
-            connection_protocol = "rediss"
+            connection_protocol = "redis"
             cert_reqs = values.get("ssl_cert_reqs", "none")
             params = f"?ssl_cert_reqs={quote_plus(cert_reqs)}"
-
-        return f"{connection_protocol}://{quote_plus(values.get('user', ''))}:{quote_plus(values.get('password', ''))}@{values.get('host', '')}:{values.get('port', '')}/{db_index}{params}"
+        connection_url = f"{connection_protocol}://{quote_plus(values.get('user', ''))}:{quote_plus(values.get('password', ''))}@{values.get('host', '')}:{values.get('port', '')}/{db_index}{params}"
+        return connection_url
 
     class Config:
         env_prefix = ENV_PREFIX
