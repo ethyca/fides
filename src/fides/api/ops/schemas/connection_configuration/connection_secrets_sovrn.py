@@ -22,7 +22,7 @@ class SovrnEmailSchema(ExtendedConsentEmailSchema):
     """
 
     third_party_vendor_name: str = "Sovrn"
-    recipient_email_address: str  # TODO Add Sovrn recipient email address as a default
+    recipient_email_address: str  # In production, use: privacy@sovrn.com
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
