@@ -19,7 +19,7 @@ The types of changes are:
 * Fides API
   * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
   * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
-  * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
+  
 * Admin UI
   * Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
     * Create Custom Lists
@@ -30,6 +30,10 @@ The types of changes are:
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
   * `inspectForBrowserIdentities` now also looks for `ljt_readerID`
+
+### Added
+  * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
+  * Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
 
 ### Changed
 
