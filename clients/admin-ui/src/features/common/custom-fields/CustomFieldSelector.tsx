@@ -44,7 +44,12 @@ export const CustomFieldSelector = ({
         return;
       }
 
-      helpers.setValue(customField.value, false);
+      helpers.setValue(
+        customFieldDefinition.field_type !== AllowedTypes.STRING
+          ? customField.value
+          : customField.value.toString(),
+        false
+      );
     },
     // This should only ever run once, on first render.
     // eslint-disable-next-line react-hooks/exhaustive-deps

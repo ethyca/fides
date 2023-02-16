@@ -43,6 +43,7 @@ interface CustomInputProps {
   label: string;
   tooltip?: string;
   variant?: Variant;
+  isRequired?: boolean;
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -125,6 +126,7 @@ const SelectInput = ({
   isSearchable,
   isClearable,
   isMulti = false,
+  isDisabled = false,
 }: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? [] };
@@ -193,6 +195,7 @@ const SelectInput = ({
       isClearable={isClearable}
       instanceId={`select-${field.name}`}
       isMulti={isMulti}
+      isDisabled={isDisabled}
     />
   );
 };
@@ -202,6 +205,7 @@ export const CustomTextInput = ({
   tooltip,
   disabled,
   variant = "inline",
+  isRequired = false,
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -213,7 +217,7 @@ export const CustomTextInput = ({
 
   if (variant === "inline") {
     return (
-      <FormControl isInvalid={isInvalid}>
+      <FormControl isInvalid={isInvalid} isRequired={isRequired}>
         <Grid templateColumns="1fr 3fr">
           <Label htmlFor={props.id || props.name}>{label}</Label>
           <Box display="flex" alignItems="center">
@@ -271,6 +275,7 @@ interface SelectProps {
   tooltip?: string;
   options: Option[];
   isDisabled?: boolean;
+  isRequired?: boolean;
   isSearchable?: boolean;
   isClearable?: boolean;
   size?: Size;
@@ -282,6 +287,7 @@ export const CustomSelect = ({
   tooltip,
   options,
   isDisabled,
+  isRequired,
   isSearchable,
   isClearable,
   size = "sm",
@@ -293,7 +299,7 @@ export const CustomSelect = ({
   const isInvalid = !!(meta.touched && meta.error);
   if (variant === "inline") {
     return (
-      <FormControl isInvalid={isInvalid}>
+      <FormControl isInvalid={isInvalid} isRequired={isRequired}>
         <Grid templateColumns="1fr 3fr">
           <Label htmlFor={props.id || props.name} {...labelProps}>
             {label}
@@ -310,6 +316,7 @@ export const CustomSelect = ({
               isSearchable={isSearchable === undefined ? isMulti : isSearchable}
               isClearable={isClearable}
               isMulti={isMulti}
+              isDisabled={isDisabled}
             />
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Box>
@@ -323,7 +330,7 @@ export const CustomSelect = ({
     );
   }
   return (
-    <FormControl isInvalid={isInvalid} isDisabled={isDisabled}>
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
           <Label htmlFor={props.id || props.name} my={0} {...labelProps}>
@@ -339,6 +346,7 @@ export const CustomSelect = ({
             isSearchable={isSearchable === undefined ? isMulti : isSearchable}
             isClearable={isClearable}
             isMulti={isMulti}
+            isDisabled={isDisabled}
           />
         </Box>
         <ErrorMessage

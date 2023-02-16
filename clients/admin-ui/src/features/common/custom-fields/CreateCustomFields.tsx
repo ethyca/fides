@@ -147,6 +147,7 @@ const CreateCustomFields = forwardRef(
                   options={FIELD_TYPE_OPTIONS}
                 />
                 <CustomSelect
+                  isRequired
                   label="Select custom list"
                   labelProps={CUSTOM_LABEL_STYLES}
                   name="allow_list_id"
