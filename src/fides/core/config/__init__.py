@@ -47,11 +47,6 @@ class FidesConfig(FidesSettings):
         description="Whether or not the application is being run in test mode.",
         exclude=True,
     )
-    is_test_mode: bool = Field(
-        default=test_mode,
-        description="A deprecated analog of 'test_mode' used in some places.",
-        exclude=True,
-    )
     hot_reloading: bool = Field(
         default=getenv("FIDES__HOT_RELOAD", "").lower() == "true",
         description="Whether or not to enable hot reloading for the webserver.",

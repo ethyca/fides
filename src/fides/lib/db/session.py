@@ -27,7 +27,7 @@ def get_db_engine(
 
     if database_uri is None and config is not None:
         # Don't override any database_uri explicitly passed in
-        if config.is_test_mode:
+        if config.test_mode:
             database_uri = config.database.sqlalchemy_test_database_uri
         else:
             database_uri = config.database.sqlalchemy_database_uri
