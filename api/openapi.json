@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.6.6"
+    "version": "2.7.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5131,6 +5131,18 @@
         "summary": "Get Config",
         "description": "Returns the current API exposable Fides configuration.",
         "operationId": "get_config_api_v1_config_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Api Set",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "api_set",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5142,12 +5154,69 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         },
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
               "config:read"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Config"
+        ],
+        "summary": "Update Settings",
+        "description": "Updates the global application settings record.\n\nOnly keys provided will be updated, others will be unaffected,\ni.e. true PATCH behavior.",
+        "operationId": "update_settings_api_v1_config_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationConfig"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "config:update"
             ]
           }
         ]
@@ -5620,6 +5689,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/FidesDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SovrnEmailDocsSchema"
                   }
                 ]
               }
@@ -10134,6 +10206,264 @@
         ]
       }
     },
+    "/api/v1/storage/default": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Get Default Configs",
+        "description": "Retrieves default configs for each storage types.",
+        "operationId": "get_default_configs_api_v1_storage_default_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_StorageDestinationResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "storage:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Put Default Config",
+        "description": "Create or update the default storage configuration for the given storage type",
+        "operationId": "put_default_config_api_v1_storage_default_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageDestinationBase"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageDestinationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "storage:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/storage/default/{storage_type}/secret": {
+      "put": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Put Default Config Secrets",
+        "description": "Add or update secrets for the default storage config of the given type",
+        "operationId": "put_default_config_secrets_api_v1_storage_default__storage_type__secret_put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StorageType"
+            },
+            "name": "storage_type",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Verify",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "verify",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageSecretsS3Docs"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestStatusMessage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "storage:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/storage/default/{storage_type}": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Get Default Config By Type",
+        "description": "Retrieves default config for given storage type.",
+        "operationId": "get_default_config_by_type_api_v1_storage_default__storage_type__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StorageType"
+            },
+            "name": "storage_type",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageDestinationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "storage:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/storage/active/default": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Get Active Default Config",
+        "description": "Retrieves the active default storage config.",
+        "operationId": "get_active_default_config_api_v1_storage_active_default_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageDestinationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "storage:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/messaging/config": {
       "get": {
         "tags": [
@@ -10445,6 +10775,62 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TestMessagingStatusMessage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/config/test": {
+      "post": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Send Test Message",
+        "description": "Sends a test message.",
+        "operationId": "send_test_message_api_v1_messaging_config_test_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Identity"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Send Test Message Api V1 Messaging Config Test Post",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "details": "Test message successfully sent"
                 }
               }
             }
@@ -11525,6 +11911,19 @@
         "type": "string",
         "description": "The purpose of a particular privacy request"
       },
+      "AdvancedSettingsWithExtendedIdentityTypes": {
+        "title": "AdvancedSettingsWithExtendedIdentityTypes",
+        "required": [
+          "identity_types"
+        ],
+        "type": "object",
+        "properties": {
+          "identity_types": {
+            "$ref": "#/components/schemas/ExtendedIdentityTypes"
+          }
+        },
+        "description": "Overrides base AdvancedSettings to have extended IdentityTypes"
+      },
       "AesDecryptionRequest": {
         "title": "AesDecryptionRequest",
         "required": [
@@ -11600,6 +11999,20 @@
           }
         },
         "description": "Specifies fields returned from the AES Encryption endpoint"
+      },
+      "ApplicationConfig": {
+        "title": "ApplicationConfig",
+        "required": [
+          "storage"
+        ],
+        "type": "object",
+        "properties": {
+          "storage": {
+            "$ref": "#/components/schemas/StorageApplicationConfig"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Application config settings update body is an arbitrary dict (JSON object)\nWe describe it in a schema to enforce some restrictions on the keys passed.\n\nTODO: Eventually this should be driven by a more formal validation schema for this\nthe application config that is properly hooked up to the global pydantic config module."
       },
       "AuditLogAction": {
         "title": "AuditLogAction",
@@ -12134,6 +12547,7 @@
           "bigquery",
           "manual",
           "email",
+          "sovrn",
           "manual_webhook",
           "timescale",
           "fides"
@@ -12488,6 +12902,9 @@
               },
               {
                 "$ref": "#/components/schemas/FidesDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SovrnEmailDocsSchema"
               }
             ]
           },
@@ -12507,6 +12924,7 @@
           "erasure",
           "consent",
           "erasure_email_post_send",
+          "consent_email_post_send",
           "post_webhooks"
         ],
         "description": "An enumeration."
@@ -13550,6 +13968,33 @@
         ],
         "description": "Enum for execution log statuses, reflecting where they are in their workflow"
       },
+      "ExtendedIdentityTypes": {
+        "title": "ExtendedIdentityTypes",
+        "required": [
+          "email",
+          "phone_number"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "boolean"
+          },
+          "phone_number": {
+            "title": "Phone Number",
+            "type": "boolean"
+          },
+          "cookie_ids": {
+            "title": "Cookie Ids",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "description": "Overrides basic IdentityTypes to add cookie_ids"
+      },
       "ExternalDatasetReference": {
         "title": "ExternalDatasetReference",
         "required": [
@@ -13920,6 +14365,10 @@
           },
           "ga_client_id": {
             "title": "Ga Client Id",
+            "type": "string"
+          },
+          "ljt_readerID": {
+            "title": "Ljt Readerid",
             "type": "string"
           }
         },
@@ -15683,6 +16132,7 @@
           "in_processing",
           "complete",
           "paused",
+          "awaiting_consent_email_send",
           "canceled",
           "error"
         ],
@@ -16487,6 +16937,9 @@
               },
               {
                 "$ref": "#/components/schemas/FidesDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SovrnEmailDocsSchema"
               }
             ]
           },
@@ -16538,6 +16991,34 @@
         "additionalProperties": false,
         "description": "Snowflake Secrets Schema for API Docs"
       },
+      "SovrnEmailDocsSchema": {
+        "title": "SovrnEmailDocsSchema",
+        "required": [
+          "recipient_email_address",
+          "advanced_settings"
+        ],
+        "type": "object",
+        "properties": {
+          "third_party_vendor_name": {
+            "title": "Third Party Vendor Name",
+            "type": "string",
+            "default": "Sovrn"
+          },
+          "recipient_email_address": {
+            "title": "Recipient Email Address",
+            "type": "string"
+          },
+          "test_email_address": {
+            "title": "Test Email Address",
+            "type": "string"
+          },
+          "advanced_settings": {
+            "$ref": "#/components/schemas/AdvancedSettingsWithExtendedIdentityTypes"
+          }
+        },
+        "additionalProperties": false,
+        "description": "SovrnDocsSchema Secrets Schema for API Docs"
+      },
       "SpecialCategoriesEnum": {
         "title": "SpecialCategoriesEnum",
         "enum": [
@@ -16563,19 +17044,29 @@
         "type": "string",
         "description": "The model for possible evaluation results."
       },
-      "StorageDestination": {
-        "title": "StorageDestination",
+      "StorageApplicationConfig": {
+        "title": "StorageApplicationConfig",
         "required": [
-          "name",
-          "type",
-          "details"
+          "active_default_storage_type"
         ],
         "type": "object",
         "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
+          "active_default_storage_type": {
+            "$ref": "#/components/schemas/StorageType"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A base template for all other Fides Schemas to inherit from."
+      },
+      "StorageDestination": {
+        "title": "StorageDestination",
+        "required": [
+          "type",
+          "details",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
           "type": {
             "$ref": "#/components/schemas/StorageType"
           },
@@ -16590,10 +17081,48 @@
               }
             ]
           },
+          "format": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResponseFormat"
+              }
+            ],
+            "default": "json"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
           "key": {
             "title": "Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Storage Destination Schema"
+      },
+      "StorageDestinationBase": {
+        "title": "StorageDestinationBase",
+        "required": [
+          "type",
+          "details"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/StorageType"
+          },
+          "details": {
+            "title": "Details",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StorageDetailsS3"
+              },
+              {
+                "$ref": "#/components/schemas/StorageDetailsLocal"
+              }
+            ]
           },
           "format": {
             "allOf": [
@@ -16604,7 +17133,8 @@
             "default": "json"
           }
         },
-        "description": "Storage Destination Schema"
+        "additionalProperties": false,
+        "description": "Storage Destination Schema -- used for setting defaults"
       },
       "StorageDestinationResponse": {
         "title": "StorageDestinationResponse",
@@ -16635,6 +17165,11 @@
           },
           "format": {
             "$ref": "#/components/schemas/ResponseFormat"
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean",
+            "default": false
           }
         },
         "description": "Storage Destination Response Schema"
@@ -16904,7 +17439,8 @@
         "enum": [
           "saas",
           "database",
-          "manual"
+          "manual",
+          "email"
         ],
         "description": "An enumeration."
       },
