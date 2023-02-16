@@ -225,7 +225,7 @@ def print_deploy_success() -> None:
 
     # Admin UI
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
-    echo_green("    (user=fidestest, password=Apassword1!)")
+    echo_green("    (user=root_user, password=Testpassword1!)")
 
     # Sample App
     echo_green("\n- Sample 'Cookie House' Application running at http://localhost:3000")

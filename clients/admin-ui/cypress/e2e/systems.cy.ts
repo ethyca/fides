@@ -67,10 +67,10 @@ describe("System management page", () => {
         cy.url().should("contain", "/add-systems/new");
         cy.wait("@getConnectionTypes");
         cy.getByTestId("header").contains("Choose a type of system");
-        cy.getByTestId("bigquery");
-        cy.getByTestId("mariadb");
+        cy.getByTestId("bigquery-item");
+        cy.getByTestId("mariadb-item");
         // Click into one of the connectors
-        cy.getByTestId("mongodb").click();
+        cy.getByTestId("mongodb-item").click();
         cy.getByTestId("header").contains("Describe your MongoDB system");
 
         // Go back to choosing to add a new type of system
@@ -82,12 +82,12 @@ describe("System management page", () => {
       it("should allow searching", () => {
         cy.visit("/add-systems/new");
         cy.wait("@getConnectionTypes");
-        cy.getByTestId("bigquery");
+        cy.getByTestId("bigquery-item");
         cy.getByTestId("system-catalog-search").type("db");
-        cy.getByTestId("bigquery").should("not.exist");
-        cy.getByTestId("mariadb");
-        cy.getByTestId("mongodb");
-        cy.getByTestId("timescale");
+        cy.getByTestId("bigquery-item").should("not.exist");
+        cy.getByTestId("mariadb-item");
+        cy.getByTestId("mongodb-item");
+        cy.getByTestId("timescale-item");
 
         // empty state
         cy.getByTestId("system-catalog-search")

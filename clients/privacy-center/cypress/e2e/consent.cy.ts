@@ -139,10 +139,13 @@ describe("Consent settings", () => {
       });
     });
 
-    it("can grab the GA cookie and send to a consent request", () => {
+    it("can grab cookies and send to a consent request", () => {
       const clientId = "999999999.8888888888";
-      const cookieValue = `GA1.1.${clientId}`;
-      cy.setCookie("_ga", cookieValue);
+      const gaCookieValue = `GA1.1.${clientId}`;
+      const sovrnCookieValue = "test";
+
+      cy.setCookie("_ga", gaCookieValue);
+      cy.setCookie("ljt_readerID", sovrnCookieValue);
       cy.visit("/consent");
       cy.getByTestId("consent");
 
@@ -151,6 +154,7 @@ describe("Consent settings", () => {
       cy.wait("@patchConsentPreferences").then((interception) => {
         const { body } = interception.request;
         expect(body.browser_identity.ga_client_id).to.eq(clientId);
+        expect(body.browser_identity.ljt_readerID).to.eq(sovrnCookieValue);
       });
     });
 

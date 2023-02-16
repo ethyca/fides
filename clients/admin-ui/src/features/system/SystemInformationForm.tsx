@@ -10,11 +10,14 @@ import {
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik, FormikHelpers } from "formik";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { CustomFieldsList } from "~/features/common/custom-fields";
+import {
+  CustomFieldsList,
+  useCustomFields,
+} from "~/features/common/custom-fields";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
@@ -70,9 +73,10 @@ const SystemInformationForm = ({
         : defaultInitialValues,
     [passedInSystem]
   );
-  const [createSystem] = useCreateSystemMutation();
-  const [updateSystem] = useUpdateSystemMutation();
-  const [isLoading, setIsLoading] = useState(false);
+  const [createSystemMutationTrigger, createSystemMutationResult] =
+    useCreateSystemMutation();
+  const [updateSystemMutationTrigger, updateSystemMutationResult] =
+    useUpdateSystemMutation();
   const systems = useAppSelector(selectAllSystems);
   const isEditing = useMemo(
     () =>
@@ -84,6 +88,11 @@ const SystemInformationForm = ({
   );
 
   const toast = useToast();
+
+  const customFields = useCustomFields({
+    resourceType: ResourceTypes.SYSTEM,
+    resourceFidesKey: passedInSystem?.fides_key,
+  });
 
   const handleSubmit = async (
     values: FormValues,
@@ -112,18 +121,22 @@ const SystemInformationForm = ({
       }
     };
 
-    setIsLoading(true);
-
     let result;
     if (isEditing) {
-      result = await updateSystem(systemBody);
+      result = await updateSystemMutationTrigger(systemBody);
     } else {
-      result = await createSystem(systemBody);
+      result = await createSystemMutationTrigger(systemBody);
     }
-    handleResult(result);
 
-    setIsLoading(false);
+    await customFields.upsertCustomFields(values);
+
+    handleResult(result);
   };
+
+  const isLoading =
+    updateSystemMutationResult.isLoading ||
+    createSystemMutationResult.isLoading ||
+    customFields.isLoading;
 
   return (
     <Formik
@@ -187,7 +200,7 @@ const SystemInformationForm = ({
               ) : null}
               {isEditing && (
                 <CustomFieldsList
-                  resourceId={passedInSystem!.fides_key}
+                  resourceFidesKey={passedInSystem?.fides_key}
                   resourceType={ResourceTypes.SYSTEM}
                 />
               )}
