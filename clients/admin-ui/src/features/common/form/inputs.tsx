@@ -118,6 +118,22 @@ const ErrorMessage = ({
   );
 };
 
+export interface Option {
+  value: string;
+  label: string;
+}
+interface SelectProps {
+  label: string;
+  labelProps?: FormLabelProps;
+  tooltip?: string;
+  options: Option[];
+  isDisabled?: boolean;
+  isSearchable?: boolean;
+  isClearable?: boolean;
+  size?: Size;
+  isMulti?: boolean;
+  variant?: Variant;
+}
 const SelectInput = ({
   options,
   fieldName,
@@ -197,26 +213,50 @@ const SelectInput = ({
   );
 };
 
-const CreatableMultiSelectInput = ({
+interface CreatableSelectProps extends SelectProps {
+  /** Do not render the dropdown menu */
+  disableMenu?: boolean;
+}
+const CreatableSelectInput = ({
   options,
   fieldName,
   size,
   isSearchable,
   isClearable,
-}: { fieldName: string } & Omit<SelectProps, "label">) => {
+  isMulti,
+  disableMenu,
+}: { fieldName: string } & Omit<CreatableSelectProps, "label">) => {
   const [initialField] = useField(fieldName);
-  const value: string[] = initialField.value ?? [];
+  const value: string[] | string = initialField.value ?? [];
   const field = { ...initialField, value };
-  const selected = field.value.map((v) => ({ label: v, value: v }));
+  const selected = Array.isArray(field.value)
+    ? field.value.map((v) => ({ label: v, value: v }))
+    : { label: field.value, value: field.value };
 
   const { setFieldValue, touched, setTouched } = useFormikContext();
 
-  const handleChange = (newValue: MultiValue<Option>) => {
+  const handleChangeMulti = (newValue: MultiValue<Option>) => {
     setFieldValue(
       field.name,
       newValue.map((v) => v.value)
     );
   };
+  const handleChangeSingle = (newValue: SingleValue<Option>) => {
+    if (newValue) {
+      field.onChange(field.name)(newValue.value);
+    } else {
+      field.onChange(field.name)("");
+    }
+  };
+
+  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) =>
+    isMulti
+      ? handleChangeMulti(newValue as MultiValue<Option>)
+      : handleChangeSingle(newValue as SingleValue<Option>);
+
+  const components = disableMenu
+    ? { Menu: () => null, DropdownIndicator: () => null }
+    : undefined;
 
   return (
     <CreatableSelect
@@ -247,14 +287,11 @@ const CreatableMultiSelectInput = ({
           visibility: "hidden",
         }),
       }}
-      components={{
-        Menu: () => null,
-        DropdownIndicator: () => null,
-      }}
+      components={components}
       isSearchable={isSearchable}
       isClearable={isClearable}
       instanceId={`creatable-select-${fieldName}`}
-      isMulti
+      isMulti={isMulti}
     />
   );
 };
@@ -323,22 +360,6 @@ export const CustomTextInput = ({
   );
 };
 
-export interface Option {
-  value: string;
-  label: string;
-}
-interface SelectProps {
-  label: string;
-  labelProps?: FormLabelProps;
-  tooltip?: string;
-  options: Option[];
-  isDisabled?: boolean;
-  isSearchable?: boolean;
-  isClearable?: boolean;
-  size?: Size;
-  isMulti?: boolean;
-  variant?: Variant;
-}
 export const CustomSelect = ({
   label,
   labelProps,
@@ -414,16 +435,15 @@ export const CustomSelect = ({
   );
 };
 
-export const CustomCreatableMultiSelect = ({
+export const CustomCreatableSelect = ({
   label,
   isSearchable = true,
-  isClearable,
   options,
   size = "sm",
   tooltip,
   variant = "inline",
   ...props
-}: SelectProps & StringArrayField) => {
+}: CreatableSelectProps & StringArrayField) => {
   const [initialField, meta] = useField(props);
   const field = { ...initialField, value: initialField.value ?? [] };
   const isInvalid = !!(meta.touched && meta.error);
@@ -438,12 +458,12 @@ export const CustomCreatableMultiSelect = ({
             alignItems="center"
             data-testid={`input-${field.name}`}
           >
-            <CreatableMultiSelectInput
+            <CreatableSelectInput
               fieldName={field.name}
-              isClearable={isClearable}
               options={options}
               size={size}
               isSearchable={isSearchable}
+              {...props}
             />
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Box>
@@ -466,12 +486,12 @@ export const CustomCreatableMultiSelect = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         <Box width="100%">
-          <CreatableMultiSelectInput
+          <CreatableSelectInput
             fieldName={field.name}
-            isClearable={isClearable}
             options={options}
             size={size}
             isSearchable={isSearchable}
+            {...props}
           />
         </Box>
         <ErrorMessage
