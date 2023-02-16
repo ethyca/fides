@@ -140,7 +140,7 @@ const RequestRow = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       height="36px"
-      data-testid={`privacy-request-row-${request.id}`}
+      data-testid={`privacy-request-row-${request.status}`}
     >
       <Td px={0}>
         <Checkbox

@@ -37,3 +37,10 @@ def test_get_connection_types():
     assert "https" not in [item.identifier for item in data]
     assert "custom" not in [item.identifier for item in data]
     assert "manual" not in [item.identifier for item in data]
+
+    assert {
+        "identifier": ConnectionType.sovrn.value,
+        "type": SystemType.email.value,
+        "human_readable": "Sovrn",
+        "encoded_icon": None,
+    } in data

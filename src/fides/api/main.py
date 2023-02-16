@@ -61,6 +61,9 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 
 # pylint: disable=wildcard-import, unused-wildcard-import
+from fides.api.ops.service.privacy_request.consent_email_batch_service import (
+    initiate_scheduled_batch_consent_email_send,
+)
 from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
@@ -268,6 +271,8 @@ async def setup_server() -> None:
 
     if not scheduler.running:
         scheduler.start()
+
+    initiate_scheduled_batch_consent_email_send()
 
     logger.debug("Sending startup analytics events...")
     await send_analytics_event(

@@ -155,7 +155,8 @@ const RequestFilters = ({ revealPII, setRevealPII }: RequestFiltersProps) => {
           autoFocus
           type="search"
           minWidth={200}
-          placeholder="Search"
+          placeholder="Search Request ID"
+          spellCheck={false}
           size="sm"
           borderRadius="md"
           value={id}

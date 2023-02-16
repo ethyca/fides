@@ -1,9 +1,6 @@
-import { capitalize } from "~/features/common/utils";
-import { ResourceTypes } from "~/types/api";
+import { narrow } from "narrow-minded";
 
-import { RESOURCE_TYPE_MAP } from "./constants";
+export const hasId = <I>(item: I): item is I & { id: string } =>
+  narrow({ id: "string" }, item);
 
-export const getResourceType = (value: string) =>
-  RESOURCE_TYPE_MAP.has(capitalize(value))
-    ? (RESOURCE_TYPE_MAP.get(capitalize(value))!.value as ResourceTypes)
-    : ResourceTypes.SYSTEM;
+export const filterWithId = <I>(items?: I[]) => (items ?? []).filter(hasId);
