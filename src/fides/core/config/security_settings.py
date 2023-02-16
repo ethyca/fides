@@ -1,7 +1,6 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 import validators
@@ -25,7 +24,7 @@ class SecuritySettings(FidesSettings):
         default="", description="The key used to sign Fides API access tokens."
     )
     cors_origins: List[str] = Field(
-        default=[],
+        default=[""],
         description="A list of pre-approved addresses of clients allowed to communicate with the Fides application server.",
     )
     drp_jwt_secret: Optional[str] = Field(default=None, description="TODO")
