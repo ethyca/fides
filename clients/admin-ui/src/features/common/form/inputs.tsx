@@ -26,6 +26,7 @@ import {
 } from "@fidesui/react";
 import {
   CreatableSelect,
+  MenuPosition,
   MultiValue,
   Select,
   SingleValue,
@@ -127,6 +128,7 @@ const SelectInput = ({
   isClearable,
   isMulti = false,
   isDisabled = false,
+  menuPosition = "absolute",
 }: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? [] };
@@ -196,7 +198,7 @@ const SelectInput = ({
       instanceId={`select-${field.name}`}
       isMulti={isMulti}
       isDisabled={isDisabled}
-      menuPosition="fixed"
+      menuPosition={menuPosition}
     />
   );
 };
@@ -281,6 +283,7 @@ interface SelectProps {
   isClearable?: boolean;
   size?: Size;
   isMulti?: boolean;
+  menuPosition?: MenuPosition;
 }
 export const CustomSelect = ({
   label,
@@ -318,6 +321,7 @@ export const CustomSelect = ({
               isClearable={isClearable}
               isMulti={isMulti}
               isDisabled={isDisabled}
+              menuPosition={props.menuPosition}
             />
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Box>
@@ -348,6 +352,7 @@ export const CustomSelect = ({
             isClearable={isClearable}
             isMulti={isMulti}
             isDisabled={isDisabled}
+            menuPosition={props.menuPosition}
           />
         </Box>
         <ErrorMessage
