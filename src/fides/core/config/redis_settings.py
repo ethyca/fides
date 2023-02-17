@@ -11,7 +11,10 @@ ENV_PREFIX = "FIDES__REDIS__"
 class RedisSettings(FidesSettings):
     """Configuration settings for Redis."""
 
-    charset: str = Field(default="utf8", description="Character set to use for Redis, defaults to 'utf8'. Not recommended to change.")
+    charset: str = Field(
+        default="utf8",
+        description="Character set to use for Redis, defaults to 'utf8'. Not recommended to change.",
+    )
     db_index: Optional[int] = Field(
         default=None,
         description="The application will use this index in the Redis cache to cache data.",
@@ -31,7 +34,7 @@ class RedisSettings(FidesSettings):
     )
     identity_verification_code_ttl_seconds: int = Field(
         default=600,
-        description="Sets TTL for cached identity verification code as part of subject requests."
+        description="Sets TTL for cached identity verification code as part of subject requests.",
     )
     password: str = Field(
         default="testpassword",

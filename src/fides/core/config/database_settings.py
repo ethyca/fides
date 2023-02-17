@@ -16,8 +16,14 @@ ENV_PREFIX = "FIDES__DATABASE__"
 class DatabaseSettings(FidesSettings):
     """Configuration settings for Postgres."""
 
-    api_engine_pool_size: int = Field(default=50, description="Number of concurrent database connections Fides will use for API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.")
-    api_engine_max_overflow: int = Field(default=50, description="Number of additional 'overflow' concurrent database connections Fides will use for API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.")
+    api_engine_pool_size: int = Field(
+        default=50,
+        description="Number of concurrent database connections Fides will use for API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
+    )
+    api_engine_max_overflow: int = Field(
+        default=50,
+        description="Number of additional 'overflow' concurrent database connections Fides will use for API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
+    )
     db: str = Field(
         default="default_db", description="The name of the application database."
     )
@@ -33,8 +39,14 @@ class DatabaseSettings(FidesSettings):
         default="default-db",
         description="The hostname of the application database server.",
     )
-    task_engine_pool_size: int = Field(default=50, description="Number of concurrent database connections Fides will use for executing privacy request tasks, either locally or on each worker. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.")
-    task_engine_max_overflow: int = Field(default=50, description="Number of additional 'overflow' concurrent database connections Fides will use for executing privacy request tasks, either locally or on each worker, if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.")
+    task_engine_pool_size: int = Field(
+        default=50,
+        description="Number of concurrent database connections Fides will use for executing privacy request tasks, either locally or on each worker. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
+    )
+    task_engine_max_overflow: int = Field(
+        default=50,
+        description="Number of additional 'overflow' concurrent database connections Fides will use for executing privacy request tasks, either locally or on each worker, if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
+    )
     test_db: str = Field(
         default="default_test_db",
         description="Used instead of the 'db' value when the FIDES_TEST_MODE environment variable is set to True. Avoids overwriting production data.",
