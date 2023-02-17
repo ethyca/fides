@@ -9,6 +9,7 @@ from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
+from pydantic import AnyHttpUrl
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
@@ -88,7 +89,7 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
 
 
 def create_fides_app(
-    cors_origins: List[str] = CONFIG.security.cors_origins,
+    cors_origins: List[AnyHttpUrl] = CONFIG.security.cors_origins,
     cors_origin_regex: Optional[str] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
