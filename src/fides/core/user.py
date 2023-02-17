@@ -1,42 +1,25 @@
 """Module for interaction with User endpoints/commands."""
 import json
-from os import getenv
-from os.path import isfile
-from pathlib import Path
 from typing import Dict, List, Tuple
 
 import requests
-import toml
-from pydantic import BaseModel
 
 from fides.cli.utils import handle_cli_response
-from fides.core.utils import echo_green, echo_red
+from fides.core.utils import (
+    Credentials,
+    echo_green,
+    echo_red,
+    get_auth_header,
+    get_credentials_path,
+    read_credentials_file,
+    write_credentials_file,
+)
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.oauth.scopes import SCOPES
 
 CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"
 USER_PERMISSIONS_PATH = "/api/v1/user/{}/permission"
-
-
-class Credentials(BaseModel):
-    """
-    User credentials for the CLI.
-    """
-
-    username: str
-    password: str
-    user_id: str
-    access_token: str
-
-
-def get_credentials_path() -> str:
-    """
-    Returns the default credentials path or the path set as an environment variable.
-    """
-    default_credentials_file_path = f"{str(Path.home())}/.fides_credentials"
-    credentials_path = getenv("FIDES_CREDENTIALS_PATH", default_credentials_file_path)
-    return credentials_path
 
 
 def get_access_token(username: str, password: str, server_url: str) -> Tuple[str, str]:
@@ -53,49 +36,6 @@ def get_access_token(username: str, password: str, server_url: str) -> Tuple[str
     user_id: str = response.json()["user_data"]["id"]
     access_token: str = response.json()["token_data"]["access_token"]
     return (user_id, access_token)
-
-
-def write_credentials_file(credentials: Credentials, credentials_path: str) -> str:
-    """Write the user credentials file."""
-    with open(credentials_path, "w", encoding="utf-8") as credentials_file:
-        credentials_file.write(toml.dumps(credentials.dict()))
-    return credentials_path
-
-
-def read_credentials_file(
-    credentials_path: str,
-) -> Credentials:
-    """Read and return the credentials file."""
-    if not isfile(credentials_path):
-        raise FileNotFoundError
-    with open(credentials_path, "r", encoding="utf-8") as credentials_file:
-        credentials = Credentials.parse_obj(toml.load(credentials_file))
-    return credentials
-
-
-def create_auth_header(access_token: str) -> Dict[str, str]:
-    """Given an access token, create an auth header."""
-    auth_header = {
-        "Authorization": f"Bearer {access_token}",
-    }
-    return auth_header
-
-
-def get_auth_header(verbose: bool = True) -> Dict[str, str]:
-    """
-    Executes all of the logic required to form a valid auth header.
-    """
-    credentials_path = get_credentials_path()
-    try:
-        credentials = read_credentials_file(credentials_path=credentials_path)
-    except FileNotFoundError:
-        if verbose:
-            echo_red("No credentials file found.")
-        raise SystemExit(1)
-
-    access_token = credentials.access_token
-    auth_header = create_auth_header(access_token)
-    return auth_header
 
 
 def create_user(
@@ -179,7 +119,7 @@ def create_command(
     echo_green(f"User: '{username}' created and assigned permissions.")
 
 
-def login_command(username: str, password: str, server_url: str) -> None:
+def login_command(username: str, password: str, server_url: str) -> str:
     """
     Given a username and password, request an access_token from the API and
     store all user information in a local credentials file.
@@ -194,6 +134,7 @@ def login_command(username: str, password: str, server_url: str) -> None:
     credentials_path = get_credentials_path()
     write_credentials_file(credentials, credentials_path)
     echo_green(f"Credentials file written to: {credentials_path}")
+    return credentials_path
 
 
 def get_permissions_command(server_url: str) -> None:
@@ -201,7 +142,12 @@ def get_permissions_command(server_url: str) -> None:
     Get user permissions from the API.
     """
     credentials_path = get_credentials_path()
-    credentials = read_credentials_file(credentials_path)
+    try:
+        credentials = read_credentials_file(credentials_path)
+    except FileNotFoundError:
+        echo_red(f"No credentials file found at path: {credentials_path}")
+        raise SystemExit(1)
+
     user_id = credentials.user_id
     auth_header = get_auth_header()
     permissions: List[str] = get_user_permissions(user_id, auth_header, server_url)

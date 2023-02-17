@@ -4,7 +4,14 @@ from typing import Callable, Dict
 
 import nox
 
-from constants_nox import IMAGE_NAME, RUN, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG
+from constants_nox import (
+    CONTAINER_NAME,
+    IMAGE_NAME,
+    LOGIN,
+    RUN_NO_DEPS,
+    START_APP,
+    WITH_TEST_CONFIG,
+)
 from test_setup_nox import pytest_ctl, pytest_lib, pytest_ops
 from utils_nox import install_requirements
 
@@ -129,8 +136,11 @@ def fides_db_scan(session: nox.Session) -> None:
     """Scan the fides application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
-    run_command = (
-        *RUN,
+    scan_command = (
+        "docker",
+        "container",
+        "exec",
+        CONTAINER_NAME,
         "fides",
         "scan",
         "dataset",
@@ -138,7 +148,8 @@ def fides_db_scan(session: nox.Session) -> None:
         "--credentials-id",
         "app_postgres",
     )
-    session.run(*run_command, external=True)
+    session.run(*LOGIN, external=True)
+    session.run(*scan_command, external=True)
 
 
 @nox.session()
