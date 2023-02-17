@@ -1,8 +1,7 @@
-import json
 import pickle
 import random
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, List
 
@@ -150,11 +149,23 @@ class PickleObj:
 
 
 class TestCustomDecoder:
-    def test_decode_bytes(self):
-        encoded_bytes = f'"{ENCODED_BYTES_PREFIX}some%20value"'
-        value = f'{{"a": {encoded_bytes}}}'
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            (f'{{"a": "{ENCODED_BYTES_PREFIX}some%20value"}}', {"a": b"some value"}),
+            (
+                f'{{"a": "{datetime(2023, 2, 17, 14, 5).isoformat()}"}}',
+                {"a": datetime(2023, 2, 17, 14, 5)},
+            ),
+            (
+                f'{{"a": "{ENCODED_MONGO_OBJECT_ID_PREFIX}507f191e810c19729de860ea"}}',
+                {"a": ObjectId("507f191e810c19729de860ea")},
+            ),
+        ],
+    )
+    def test_decode_bytes(self, value, expected):
         cache = FidesopsRedis()
-        assert cache.decode_obj(value) == {"a": b"some value"}
+        assert cache.decode_obj(value) == expected
 
     def test_decode_pickle_doesnt_break(self):
         """Test to ensure cache values in the old format don't break the decode."""
