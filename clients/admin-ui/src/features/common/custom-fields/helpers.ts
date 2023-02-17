@@ -1,8 +1,6 @@
-import { ResourceTypes } from "~/types/api";
+import { narrow } from "narrow-minded";
 
-import { RESOURCE_TYPE_OPTIONS } from "./constants";
+export const hasId = <I>(item: I): item is I & { id: string } =>
+  narrow({ id: "string" }, item);
 
-export const getResourceType = (valueOrLabel: string) =>
-  RESOURCE_TYPE_OPTIONS.find(
-    (option) => option.value === valueOrLabel || option.label === valueOrLabel
-  )?.value ?? ResourceTypes.SYSTEM;
+export const filterWithId = <I>(items?: I[]) => (items ?? []).filter(hasId);

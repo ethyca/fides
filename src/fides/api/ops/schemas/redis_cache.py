@@ -12,6 +12,7 @@ class Identity(BaseSchema):
     phone_number: Optional[str] = None
     email: Optional[str] = None
     ga_client_id: Optional[str] = None
+    ljt_readerID: Optional[str] = None
 
     @validator("phone_number")
     @classmethod

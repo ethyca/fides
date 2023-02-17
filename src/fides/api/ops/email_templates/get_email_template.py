@@ -5,6 +5,7 @@ from loguru import logger
 
 from fides.api.ops.common_exceptions import EmailTemplateUnhandledActionType
 from fides.api.ops.email_templates.template_names import (
+    CONSENT_REQUEST_EMAIL_FULFILLMENT,
     CONSENT_REQUEST_VERIFICATION_TEMPLATE,
     EMAIL_ERASURE_REQUEST_FULFILLMENT,
     PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE,
@@ -36,6 +37,8 @@ def get_email_template(  # pylint: disable=too-many-return-statements
         return template_env.get_template(SUBJECT_IDENTITY_VERIFICATION_TEMPLATE)
     if action_type == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT:
         return template_env.get_template(EMAIL_ERASURE_REQUEST_FULFILLMENT)
+    if action_type == MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT:
+        return template_env.get_template(CONSENT_REQUEST_EMAIL_FULFILLMENT)
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         return template_env.get_template(PRIVACY_REQUEST_RECEIPT_TEMPLATE)
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:

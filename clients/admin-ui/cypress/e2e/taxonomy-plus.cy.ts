@@ -10,22 +10,47 @@ describe("Taxonomy management with Plus features", () => {
     cy.visit("/taxonomy");
   });
 
+  const RESOURCE_TYPE = {
+    label: "Data Categories",
+    key: ResourceTypes.DATA_CATEGORY,
+  };
+  const RESOURCE_PARENT = {
+    label: "User Data",
+    key: "user",
+  };
+  const RESOURCE_CHILD = {
+    label: "Biometric Data",
+    key: "user.biometric",
+  };
+
   const navigateToEditor = () => {
-    cy.getByTestId("accordion-item-User Data").click();
-    cy.getByTestId("item-Biometric Data")
+    cy.getByTestId(`accordion-item-${RESOURCE_PARENT.label}`).click();
+    cy.getByTestId(`item-${RESOURCE_CHILD.label}`)
       .click()
       .within(() => {
         cy.getByTestId("edit-btn").click();
       });
   };
 
+  // TODO: Extract these to a cypress support file.
+  const getSelectValueContainer = (selectorId: string) =>
+    cy.getByTestId(selectorId).find(`.custom-select__value-container`);
+
+  const getSelectOptionList = (selectorId: string) =>
+    cy.getByTestId(selectorId).click().find(`.custom-select__menu-list`);
+
   const selectOption = (selectorId: string, optionText: string) => {
-    cy.getByTestId(selectorId)
-      .click()
-      .within(() => {
-        cy.contains(optionText).click();
-      });
+    getSelectOptionList(selectorId).contains(optionText).click();
   };
+
+  const removeMultiValue = (selectorId: string, optionText: string) =>
+    getSelectValueContainer(selectorId)
+      .contains(optionText)
+      .siblings(".custom-select__multi-value__remove")
+      .click();
+
+  const clearSingleValue = (selectorId: string) =>
+    cy.getByTestId(selectorId).find(".custom-select__clear-indicator").click();
 
   describe("Defining custom lists", () => {
     beforeEach(() => {
@@ -137,7 +162,7 @@ describe("Taxonomy management with Plus features", () => {
         active: true,
         field_type: "string[]",
         name: "Multi-select",
-        resource_type: ResourceTypes.DATA_CATEGORY,
+        resource_type: RESOURCE_TYPE.key,
       });
     });
 
@@ -146,6 +171,108 @@ describe("Taxonomy management with Plus features", () => {
       cy.getByTestId("create-custom-fields-form").should(
         "contain",
         "Name is required"
+      );
+    });
+  });
+
+  describe("Using custom fields", () => {
+    beforeEach(() => {
+      cy.intercept(
+        {
+          method: "GET",
+          pathname: "/api/v1/plus/custom-metadata/allow-list",
+          query: {
+            show_values: "true",
+          },
+        },
+        {
+          fixture: "taxonomy/custom-metadata/allow-list/list.json",
+        }
+      ).as("getAllowLists");
+      cy.intercept(
+        "GET",
+        // Cypress route matching doesn't escape special characters (whitespace).
+        `/api/v1/plus/custom-metadata/custom-field-definition/resource-type/${encodeURIComponent(
+          RESOURCE_TYPE.key
+        )}`,
+
+        {
+          fixture: "taxonomy/custom-metadata/custom-field-definition/list.json",
+        }
+      ).as("getCustomFieldDefinitions");
+      cy.intercept(
+        "GET",
+        `/api/v1/plus/custom-metadata/custom-field/resource/${RESOURCE_CHILD.key}`,
+        {
+          fixture: "taxonomy/custom-metadata/custom-field/list.json",
+        }
+      ).as("getCustomFields");
+
+      navigateToEditor();
+
+      cy.wait([
+        "@getAllowLists",
+        "@getCustomFieldDefinitions",
+        "@getCustomFields",
+      ]);
+    });
+
+    const testIdSingle =
+      "input-definitionIdToCustomFieldValue.id-custom-field-definition-starter-pokemon";
+    const testIdMulti =
+      "input-definitionIdToCustomFieldValue.id-custom-field-definition-pokemon-party";
+
+    it("initializes form fields with values returned by the API", () => {
+      cy.getByTestId("custom-fields-list");
+      getSelectValueContainer(testIdSingle).contains("Squirtle");
+
+      ["Charmander", "Eevee", "Snorlax"].forEach((value) => {
+        getSelectValueContainer(testIdMulti).contains(value);
+      });
+    });
+
+    it("allows choosing and changing selections", () => {
+      cy.getByTestId("custom-fields-list");
+
+      clearSingleValue(testIdSingle);
+      selectOption(testIdSingle, "Snorlax");
+      getSelectValueContainer(testIdSingle).contains("Snorlax");
+      clearSingleValue(testIdSingle);
+
+      removeMultiValue(testIdMulti, "Eevee");
+      removeMultiValue(testIdMulti, "Snorlax");
+      selectOption(testIdMulti, "Eevee");
+
+      ["Charmander", "Eevee"].forEach((value) => {
+        getSelectValueContainer(testIdMulti).contains(value);
+      });
+
+      cy.intercept(
+        "DELETE",
+        `/api/v1/plus/custom-metadata/custom-field/id-custom-field-starter-pokemon`,
+        {
+          statusCode: 204,
+        }
+      ).as("deleteStarter");
+      cy.intercept("PUT", `/api/v1/plus/custom-metadata/custom-field`, {
+        fixture: "taxonomy/custom-metadata/custom-field/update-party.json",
+      }).as("updateParty");
+
+      cy.getByTestId("submit-btn").click();
+
+      cy.wait(["@updateParty", "@deleteStarter"]).then(
+        ([updatePartyInterception]) => {
+          expect(updatePartyInterception.request.body.id).to.eql(
+            "id-custom-field-pokemon-party"
+          );
+          expect(updatePartyInterception.request.body.resource_id).to.eql(
+            RESOURCE_CHILD.key
+          );
+          expect(updatePartyInterception.request.body.value).to.eql([
+            "Charmander",
+            "Eevee",
+          ]);
+        }
       );
     });
   });

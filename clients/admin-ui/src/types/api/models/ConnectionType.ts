@@ -18,6 +18,7 @@ export enum ConnectionType {
   BIGQUERY = "bigquery",
   MANUAL = "manual",
   EMAIL = "email",
+  SOVRN = "sovrn",
   MANUAL_WEBHOOK = "manual_webhook",
   TIMESCALE = "timescale",
   FIDES = "fides",

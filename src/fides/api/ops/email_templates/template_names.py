@@ -1,4 +1,5 @@
 CONSENT_REQUEST_VERIFICATION_TEMPLATE = "consent_request_verification.html"
+CONSENT_REQUEST_EMAIL_FULFILLMENT = "consent_request_email_fulfillment.html"
 SUBJECT_IDENTITY_VERIFICATION_TEMPLATE = "subject_identity_verification.html"
 EMAIL_ERASURE_REQUEST_FULFILLMENT = "message_request_email_fulfillment.html"
 PRIVACY_REQUEST_RECEIPT_TEMPLATE = "privacy_request_receipt.html"
