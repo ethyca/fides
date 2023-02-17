@@ -9,7 +9,7 @@ from fides.core.config import CONFIG
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 alembic_config = context.config
-fides_
+fides_config = CONFIG
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
