@@ -24,3 +24,4 @@ export type DatabaseConnectorParametersFormFields =
   BaseConnectorParametersFields;
 
 export type SaasConnectorParametersFormFields = BaseConnectorParametersFields;
+export type EmailConnectorParametersFormFields = BaseConnectorParametersFields;

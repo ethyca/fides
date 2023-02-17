@@ -25,8 +25,9 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
+    ConsentEmailFulfillmentBodyParams,
     EmailForActionType,
-    ErrorNotificaitonBodyParams,
+    ErrorNotificationBodyParams,
     FidesopsMessage,
     MessagingActionType,
     MessagingMethod,
@@ -70,7 +71,7 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
                 kwargs={
                     "message_meta": FidesopsMessage(
                         action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
-                        body_params=ErrorNotificaitonBodyParams(
+                        body_params=ErrorNotificationBodyParams(
                             unsent_errors=len(unsent_errors)
                         ),
                     ).dict(),
@@ -114,12 +115,14 @@ def dispatch_message(
     message_body_params: Optional[
         Union[
             AccessRequestCompleteBodyParams,
+            ConsentEmailFulfillmentBodyParams,
             SubjectIdentityVerificationBodyParams,
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             List[CheckpointActionRequired],
         ]
     ] = None,
+    subject_override: Optional[str] = None,
 ) -> None:
     """
     Sends a message to `to_identity` with content supplied in `message_body_params`
@@ -140,6 +143,7 @@ def dispatch_message(
     )
     messaging_method = get_messaging_method(service_type)
     message: Optional[Union[EmailForActionType, str]] = None
+
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
             action_type=action_type,
@@ -179,6 +183,10 @@ def dispatch_message(
         "Starting message dispatch for messaging service with action type: {}",
         action_type,
     )
+
+    if subject_override and isinstance(message, EmailForActionType):
+        message.subject = subject_override
+
     dispatcher(
         messaging_config,
         message,
@@ -269,6 +277,12 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=base_template.render(
                 {"dataset_collection_action_required": body_params}
             ),
+        )
+    if action_type == MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Notification of users' consent preference changes",
+            body=base_template.render({"body": body_params}),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         base_template = get_email_template(action_type)

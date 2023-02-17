@@ -1,19 +1,7 @@
-import json
 import random
-from datetime import datetime
-from enum import Enum
 from typing import Any, List
 
-import pytest
-from bson.objectid import ObjectId
-
-from fides.api.ops.util.cache import (
-    ENCODED_BYTES_PREFIX,
-    ENCODED_MONGO_OBJECT_ID_PREFIX,
-    CustomJSONEncoder,
-    FidesopsRedis,
-    _custom_decoder,
-)
+from fides.api.ops.util.cache import FidesopsRedis
 from fides.core.config import CONFIG
 
 from ..fixtures.application_fixtures import faker
@@ -58,15 +46,11 @@ class CacheTestObject:
 
 
 def test_encode_decode() -> None:
-    for _ in range(10):
+    for i in range(10):
         test_obj = CacheTestObject(
             random.random(), random.randint(0, 1000), faker.name()
         )
-        result = FidesopsRedis.decode_obj(FidesopsRedis.encode_obj(test_obj))
-        assert CacheTestObject(*result["values"]) == test_obj
-
-
-def test_decode_none():
+        assert FidesopsRedis.decode_obj(FidesopsRedis.encode_obj(test_obj)) == test_obj
     assert FidesopsRedis.decode_obj(None) is None
 
 
@@ -87,58 +71,3 @@ def test_scan(cache: FidesopsRedis) -> List:
     cache.delete_keys_by_prefix(f"EN_{prefix}")
     keys = cache.get_keys_by_prefix(f"EN_{prefix}")
     assert len(keys) == 0
-
-
-class TestCustomJSONEncoder:
-    def test_encode_enum_string(self):
-        class TestEnum(Enum):
-            test = "test_value"
-
-        result = json.dumps({"key": TestEnum.test}, cls=CustomJSONEncoder)
-
-        assert result == '{"key": "test_value"}'
-
-    def test_encode_enum_dict(self):
-        class TestEnum(Enum):
-            test = {"key": "test_value"}
-
-        result = json.dumps({"key": TestEnum.test}, cls=CustomJSONEncoder)
-
-        assert result == '{"key": {"key": "test_value"}}'
-
-    def test_encode_object(self):
-        class SomeClass:
-            def __init__(self):
-                self.val = "some value"
-
-        assert json.dumps(SomeClass(), cls=CustomJSONEncoder) == '{"val": "some value"}'
-
-    @pytest.mark.parametrize(
-        "value, expected",
-        [
-            (b"some value", f'"{ENCODED_BYTES_PREFIX}some%20value"'),
-            (
-                datetime(2023, 2, 14, 20, 58),
-                f'"{datetime(2023, 2, 14, 20, 58).isoformat()}"',
-            ),
-            ({"a": "b"}, '{"a": "b"}'),
-            ({"a": {"b": "c"}}, '{"a": {"b": "c"}}'),
-            (
-                ObjectId("507f191e810c19729de860ea"),
-                f'"{ENCODED_MONGO_OBJECT_ID_PREFIX}507f191e810c19729de860ea"',
-            ),
-            ({"a": 1}, '{"a": 1}'),
-            ("some value", '"some value"'),
-            (1, "1"),
-        ],
-    )
-    def test_encode(self, value, expected):
-        assert json.dumps(value, cls=CustomJSONEncoder) == expected
-
-
-class TestCustomDecoder:
-    def test_decode_bytes(self):
-        encoded_bytes = f'"{ENCODED_BYTES_PREFIX}some%20value"'
-        assert json.loads(f'{{"a": {encoded_bytes}}}', object_hook=_custom_decoder) == {
-            "a": b"some value"
-        }

@@ -42,7 +42,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
 
     @abstractmethod
     def test_connection(self) -> Optional[ConnectionTestStatus]:
-        """Used to make a trivial query with the client to ensure secrets are correct.
+        """Used to make a trivial query or request to ensure secrets are correct.
 
         If no issues are encountered, this should run without error, otherwise a ConnectionException
         will be raised.
@@ -111,3 +111,23 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     @abstractmethod
     def close(self) -> None:
         """Close any held resources"""
+
+
+class LimitedConnector(Generic[DB_CONNECTOR_TYPE], ABC):
+    """Abstract Connector that operates at the Dataset Level, not the Collection level.
+
+    Only supports a subset of functionality that the Connector class supports
+    """
+
+    def __init__(self, configuration: ConnectionConfig):
+        self.configuration = configuration
+        self.hide_parameters = not CONFIG.dev_mode
+        self.db_client: Optional[DB_CONNECTOR_TYPE] = None
+
+    @abstractmethod
+    def test_connection(self) -> Optional[ConnectionTestStatus]:
+        """Used to make a trivial query with the client to ensure secrets are correct.
+
+        If no issues are encountered, this should run without error, otherwise a ConnectionException
+        will be raised.
+        """

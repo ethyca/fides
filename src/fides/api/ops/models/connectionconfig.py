@@ -47,6 +47,7 @@ class ConnectionType(enum.Enum):
     bigquery = "bigquery"
     manual = "manual"  # Run as part of the traversal
     email = "email"
+    sovrn = "sovrn"
     manual_webhook = "manual_webhook"  # Run before the traversal
     timescale = "timescale"
     fides = "fides"
@@ -72,6 +73,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.manual_webhook.value: "Manual Webhook",
             ConnectionType.timescale.value: "TimescaleDB",
             ConnectionType.fides.value: "Fides Connector",
+            ConnectionType.sovrn.value: "Sovrn",
         }
         try:
             return readable_mapping[self.value]

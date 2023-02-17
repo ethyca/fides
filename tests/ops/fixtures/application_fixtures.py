@@ -1164,12 +1164,38 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
+def privacy_request_with_consent_policy(
+    db: Session, consent_policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        consent_policy,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_requires_input(db: Session, policy: Policy) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
         policy,
     )
     privacy_request.status = PrivacyRequestStatus.requires_input
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_awaiting_consent_email_send(
+    db: Session, consent_policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        consent_policy,
+    )
+    privacy_request.status = PrivacyRequestStatus.awaiting_consent_email_send
     privacy_request.save(db)
     yield privacy_request
     privacy_request.delete(db)
