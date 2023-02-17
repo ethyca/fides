@@ -117,6 +117,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         keep_alive = does not automatically call teardown after the session
     """
 
+    exec_command = EXEC if "test" in session.posargs else EXEC_IT
     shell_command = "fides" if "test" in session.posargs else "/bin/bash"
     keep_alive = "keep_alive" in session.posargs
 
@@ -208,7 +209,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         "Example Mongo Database running at localhost:27017 (user: 'mongo_test', pass: 'mongo_pass', db: 'mongo_test')"
     )
     session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
-    session.run(*EXEC_IT, shell_command, external=True, env=test_env_vars)
+    session.run(*exec_command, shell_command, external=True, env=test_env_vars)
 
 
 @nox_session()
