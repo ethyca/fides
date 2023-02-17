@@ -67,8 +67,8 @@ class SecuritySettings(FidesSettings):
     oauth_client_secret_length_bytes: int = Field(
         default=16, description="Sets desired length in bytes of generated client secret used for oauth."
     )
-    parent_server_password: Optional[str] = Field(default=None, description="TODO")
-    parent_server_username: Optional[str] = Field(default=None, description="TODO")
+    parent_server_password: Optional[str] = Field(default=None, description="When using a parent/child Fides deployment, this password will be used by the child server to access the parent server.")
+    parent_server_username: Optional[str] = Field(default=None, description="When using a parent/child Fides deployment, this username will be used by the child server to access the parent server.")
     rate_limit_prefix: str = Field(
         default="fides-",
         description="The prefix given to keys in the Redis cache used by the rate limiter.",
