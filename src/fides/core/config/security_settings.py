@@ -2,8 +2,7 @@
 
 # pylint: disable=C0115,C0116, E0213
 from enum import Enum
-from re import Pattern
-from typing import Dict, List, Optional, Pattern, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from pydantic import AnyHttpUrl, validator
 from slowapi.wrappers import parse_many  # type: ignore
@@ -46,7 +45,7 @@ class SecuritySettings(FidesSettings):
     env: SecurityEnv = SecurityEnv.DEV
 
     cors_origins: List[AnyHttpUrl] = []
-    cors_origin_regex: Optional[Pattern] = None
+    cors_origin_regex: Optional[str] = None
     oauth_root_client_id: str = ""
     oauth_root_client_secret: str = ""
     oauth_root_client_secret_hash: Optional[Tuple]
