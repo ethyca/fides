@@ -113,7 +113,6 @@ def check_virtualenv() -> bool:
     real_prefix = getattr(sys, "real_prefix", None)  # set by older virtualenv
     base_prefix = getattr(sys, "base_prefix", sys.prefix)
     running_in_virtualenv = (base_prefix or real_prefix) != sys.prefix
-    print(f"in check_virtualenv(), {sys.base_prefix}, {sys.prefix}")
 
     if not running_in_virtualenv:
         echo_red(
