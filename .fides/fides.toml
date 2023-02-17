@@ -32,7 +32,6 @@ ssl_cert_reqs = "required"
 
 [security]
 cors_origins = [ "http://localhost", "http://localhost:8080", "http://localhost:3000", "http://localhost:3001",]
-cors_origin_regex = "*"
 encoding = "UTF-8"
 root_username = "root_user"
 root_password = "Testpassword1!"
