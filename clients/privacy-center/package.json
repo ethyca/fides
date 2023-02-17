@@ -26,12 +26,10 @@
     "packages/fides-consent"
   ],
   "dependencies": {
-    "@chakra-ui/icons": "^1.1.7",
-    "@chakra-ui/react": "^1.7.4",
-    "@chakra-ui/system": "^1.12.1",
-    "@emotion/react": "^11",
-    "@emotion/styled": "^11",
-    "@fidesui/react": "^0.0.9",
+    "@chakra-ui/react": "^1.8.9",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@fidesui/react": "^0.0.21",
     "@fontsource/inter": "^4.5.4",
     "@reduxjs/toolkit": "^1.9.1",
     "fides-consent": "./packages/fides-consent",

@@ -4,15 +4,18 @@ import re
 from functools import partial
 from hashlib import sha1
 from json.decoder import JSONDecodeError
+from os import getenv
 from os.path import isfile
-from typing import Iterator, List
+from pathlib import Path
+from typing import Dict, Iterator, List
 
 import click
 import requests
 import sqlalchemy
+import toml
 from fideslang.models import DatasetField, FidesModel
 from loguru import logger
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -22,6 +25,17 @@ logger.bind(name="server_api")
 
 echo_red = partial(click.secho, fg="red", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)
+
+
+class Credentials(BaseModel):
+    """
+    User credentials for the CLI.
+    """
+
+    username: str
+    password: str
+    user_id: str
+    access_token: str
 
 
 def check_response_auth(response: requests.Response) -> requests.Response:
@@ -167,3 +181,55 @@ def git_is_dirty(dir_to_check: str = ".") -> bool:
     git_status = git_session.status(dir_to_check).split("\n")
     is_dirty = any(phrase in git_status for phrase in dirty_phrases)
     return is_dirty
+
+
+def write_credentials_file(credentials: Credentials, credentials_path: str) -> str:
+    """Write the user credentials file."""
+    with open(credentials_path, "w", encoding="utf-8") as credentials_file:
+        credentials_file.write(toml.dumps(credentials.dict()))
+    return credentials_path
+
+
+def get_credentials_path() -> str:
+    """
+    Returns the default credentials path or the path set as an environment variable.
+    """
+    default_credentials_file_path = f"{str(Path.home())}/.fides_credentials"
+    credentials_path = getenv("FIDES_CREDENTIALS_PATH", default_credentials_file_path)
+    return credentials_path
+
+
+def read_credentials_file(
+    credentials_path: str,
+) -> Credentials:
+    """Read and return the credentials file."""
+    if not isfile(credentials_path):
+        raise FileNotFoundError
+    with open(credentials_path, "r", encoding="utf-8") as credentials_file:
+        credentials = Credentials.parse_obj(toml.load(credentials_file))
+    return credentials
+
+
+def create_auth_header(access_token: str) -> Dict[str, str]:
+    """Given an access token, create an auth header."""
+    auth_header = {
+        "Authorization": f"Bearer {access_token}",
+    }
+    return auth_header
+
+
+def get_auth_header(verbose: bool = True) -> Dict[str, str]:
+    """
+    Executes all of the logic required to form a valid auth header.
+    """
+    credentials_path = get_credentials_path()
+    try:
+        credentials = read_credentials_file(credentials_path=credentials_path)
+    except FileNotFoundError:
+        if verbose:
+            echo_red("No credentials file found.")
+        raise SystemExit(1)
+
+    access_token = credentials.access_token
+    auth_header = create_auth_header(access_token)
+    return auth_header

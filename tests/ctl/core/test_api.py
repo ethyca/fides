@@ -14,7 +14,9 @@ from fides.api.ctl.routes import health
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import Dataset
 from fides.core import api as _api
-from fides.core.config import FidesConfig
+from fides.core.config import FidesConfig, get_config
+
+CONFIG = get_config()
 
 TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
 
@@ -427,7 +429,7 @@ def test_api_ping(
 def test_trailing_slash(test_config: FidesConfig, endpoint_name: str) -> None:
     """URLs both with and without a trailing slash should resolve and not 404"""
     url = f"{test_config.cli.server_url}{endpoint_name}"
-    response = requests.get(url)
+    response = requests.get(url, headers=CONFIG.user.auth_header)
     assert response.status_code == 200
-    response = requests.get(f"{url}/")
+    response = requests.get(f"{url}/", headers=CONFIG.user.auth_header)
     assert response.status_code == 200
