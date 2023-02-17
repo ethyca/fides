@@ -129,7 +129,7 @@ def fides_db_scan(session: nox.Session) -> None:
         "docker",
         "container",
         "exec",
-        "fides-fides-1",
+        CONTAINER_NAME,
         "fides",
         "scan",
         "dataset",
