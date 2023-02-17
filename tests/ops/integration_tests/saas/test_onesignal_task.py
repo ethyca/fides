@@ -174,7 +174,4 @@ async def test_onesignal_erasure_request_task(
     #check data is updated or not
     assert device_response["tags"]["first_name"] == "MASKED"
 
-    # Since user is deleted, it won't be available so response is 404
-    # assert response.status_code == 400
-
     CONFIG.execution.masking_strict = masking_strict

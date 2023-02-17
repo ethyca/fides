@@ -58,13 +58,3 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: devices.id
                   direction: from
-        delete:
-          method: DELETE
-          path: '/api/v1/players/<player_id>?app_id=<app_id>'
-          param_values:
-            - name: player_id
-              connector_param: player_id
-            - name: app_id
-              connector_param: app_id
-            - name: api_token
-              connector_param: api_token
