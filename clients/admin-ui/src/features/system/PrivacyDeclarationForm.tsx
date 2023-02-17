@@ -13,7 +13,7 @@ import {
   Text,
 } from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
@@ -69,6 +69,17 @@ export const PrivacyDeclarationForm = ({
   const initialValues = passedInInitialValues ?? defaultInitialValues;
   const [showSaved, setShowSaved] = useState(false);
 
+  // To get the human readable name, have to match it back to the data use object
+  const title = useMemo(() => {
+    const thisDataUse = allDataUses.filter(
+      (du) => du.fides_key === initialValues.data_use
+    )[0];
+    if (thisDataUse) {
+      return thisDataUse.name;
+    }
+    return undefined;
+  }, [allDataUses, initialValues]);
+
   const handleSubmit = (
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
@@ -90,9 +101,11 @@ export const PrivacyDeclarationForm = ({
         <Form data-testid="privacy-declaration-form">
           <Stack spacing={4}>
             <Box display="flex" alignItems="center">
-              <Heading as="h4" size="sm" mr={4}>
-                title
-              </Heading>
+              {title ? (
+                <Heading as="h4" size="sm" fontWeight="medium" mr={4}>
+                  {title}
+                </Heading>
+              ) : null}
               {showSaved && !dirty ? (
                 <Text fontSize="sm">
                   <GreenCheckCircleIcon /> Saved
