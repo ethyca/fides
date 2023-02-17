@@ -137,13 +137,19 @@ class FidesopsRedis(Redis):
         return json.dumps(obj, cls=CustomJSONEncoder)  # type: ignore
 
     @staticmethod
-    def decode_obj(bs: Optional[str]) -> Any:
+    def decode_obj(bs: Optional[str]) -> Optional[Dict[str, Any]]:
         """Decode an object from its JSON.
 
         Since Redis may not contain a value
         for a given key it's possible we may try to decode an empty object."""
         if bs:
-            result = json.loads(bs, object_hook=_custom_decoder)
+            try:
+                result = json.loads(bs, object_hook=_custom_decoder)
+            except json.decoder.JSONDecodeError:
+                # The cache used to be stored as a pickle. This decoder is unable
+                # to decode the pickle object (this is on purpose) so None is returned
+                # if a cache value is present in the old format rather the crashing.
+                return None
             # Secrets are just a string and not dict so decode here.
             if isinstance(result, str) and result.startswith("quote_encoded"):
                 result = unquote_to_bytes(result)[14:]

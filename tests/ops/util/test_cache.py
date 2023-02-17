@@ -1,5 +1,7 @@
 import json
+import pickle
 import random
+from base64 import b64encode
 from datetime import datetime
 from enum import Enum
 from typing import Any, List
@@ -10,9 +12,7 @@ from bson.objectid import ObjectId
 from fides.api.ops.util.cache import (
     ENCODED_BYTES_PREFIX,
     ENCODED_MONGO_OBJECT_ID_PREFIX,
-    CustomJSONEncoder,
     FidesopsRedis,
-    _custom_decoder,
 )
 from fides.core.config import get_config
 
@@ -96,7 +96,8 @@ class TestCustomJSONEncoder:
         class TestEnum(Enum):
             test = "test_value"
 
-        result = json.dumps({"key": TestEnum.test}, cls=CustomJSONEncoder)
+        cache = FidesopsRedis()
+        result = cache.encode_obj({"key": TestEnum.test})
 
         assert result == '{"key": "test_value"}'
 
@@ -104,7 +105,8 @@ class TestCustomJSONEncoder:
         class TestEnum(Enum):
             test = {"key": "test_value"}
 
-        result = json.dumps({"key": TestEnum.test}, cls=CustomJSONEncoder)
+        cache = FidesopsRedis()
+        result = cache.encode_obj({"key": TestEnum.test})
 
         assert result == '{"key": {"key": "test_value"}}'
 
@@ -113,7 +115,8 @@ class TestCustomJSONEncoder:
             def __init__(self):
                 self.val = "some value"
 
-        assert json.dumps(SomeClass(), cls=CustomJSONEncoder) == '{"val": "some value"}'
+        cache = FidesopsRedis()
+        assert cache.encode_obj(SomeClass()) == '{"val": "some value"}'
 
     @pytest.mark.parametrize(
         "value, expected",
@@ -135,12 +138,26 @@ class TestCustomJSONEncoder:
         ],
     )
     def test_encode(self, value, expected):
-        assert json.dumps(value, cls=CustomJSONEncoder) == expected
+        cache = FidesopsRedis()
+        assert cache.encode_obj(value) == expected
+
+
+class PickleObj:
+    """For testing pickle decode."""
+
+    def __init__(self):
+        self.field = "value"
 
 
 class TestCustomDecoder:
     def test_decode_bytes(self):
         encoded_bytes = f'"{ENCODED_BYTES_PREFIX}some%20value"'
-        assert json.loads(f'{{"a": {encoded_bytes}}}', object_hook=_custom_decoder) == {
-            "a": b"some value"
-        }
+        value = f'{{"a": {encoded_bytes}}}'
+        cache = FidesopsRedis()
+        assert cache.decode_obj(value) == {"a": b"some value"}
+
+    def test_decode_pickle_doesnt_break(self):
+        """Test to ensure cache values in the old format don't break the decode."""
+        value = b64encode(pickle.dumps(PickleObj()))
+        cache = FidesopsRedis()
+        assert cache.decode_obj(value) is None
