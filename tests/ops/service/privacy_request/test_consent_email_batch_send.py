@@ -387,6 +387,8 @@ class TestConsentEmailBatchSendHelperFunctions:
                     "data_use": "Advertising, Marketing or Promotion",
                     "data_use_description": None,
                     "opt_in": False,
+                    "has_gpc_flag": False,
+                    "conflicts_with_gpc": False,
                 },
             ],
         }
