@@ -21,9 +21,9 @@ def upgrade():
     op.add_column('consent', sa.Column('has_gpc_flag', sa.Boolean(), nullable=True))
     op.add_column('consent', sa.Column('conflicts_with_gpc', sa.Boolean(), nullable=True))
     op.execute("UPDATE consent SET has_gpc_flag = false")
-    op.alter_column('consent', 'has_gpc_flag', server_default='0', default=False, nullable=False)
+    op.alter_column('consent', 'has_gpc_flag', server_default="f", default=False, nullable=False)
     op.execute("UPDATE consent SET conflicts_with_gpc = false")
-    op.alter_column('consent', 'conflicts_with_gpc', server_default='0', default=False, nullable=False)
+    op.alter_column('consent', 'conflicts_with_gpc', server_default="f", default=False, nullable=False)
     # ### end Alembic commands ###
 
 
