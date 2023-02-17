@@ -2,10 +2,10 @@
 
 # pylint: disable=C0115,C0116, E0213
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from re import Pattern
+from typing import Dict, List, Optional, Pattern, Tuple
 
-import validators
-from pydantic import validator
+from pydantic import AnyHttpUrl, validator
 from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
@@ -45,7 +45,8 @@ class SecuritySettings(FidesSettings):
     encoding: str = "UTF-8"
     env: SecurityEnv = SecurityEnv.DEV
 
-    cors_origins: List[str] = []
+    cors_origins: List[AnyHttpUrl] = []
+    cors_origin_regex: Optional[Pattern] = None
     oauth_root_client_id: str = ""
     oauth_root_client_secret: str = ""
     oauth_root_client_secret_hash: Optional[Tuple]
@@ -69,28 +70,6 @@ class SecuritySettings(FidesSettings):
                 "APP_ENCRYPTION_KEY value must be exactly 32 characters long"
             )
         return v
-
-    @validator("cors_origins", pre=True)
-    @classmethod
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        """Return a list of valid origins for CORS requests"""
-
-        def validate(values: List[str]) -> None:
-            for value in values:
-                if value != "*":
-                    if not validators.url(value):
-                        raise ValueError(f"{value} is not a valid url")
-
-        if isinstance(v, str) and not v.startswith("["):
-            values = [i.strip() for i in v.split(",")]
-            validate(values)
-
-            return values
-        if isinstance(v, (list, str)):
-            validate(v)  # type: ignore
-
-            return v
-        raise ValueError(v)
 
     @validator("oauth_root_client_secret_hash")
     @classmethod
