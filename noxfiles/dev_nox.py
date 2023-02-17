@@ -57,6 +57,7 @@ def dev(session: Session) -> None:
     if not datastores:
         if open_shell:
             session.run(*START_APP, external=True)
+            session.log("~~Remember to login with `fides user login`!~~")
             session.run(*EXEC_IT, "/bin/bash", external=True)
         else:
             if remote_debug:
@@ -192,6 +193,9 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
             "Fides Admin UI (production build) running at http://localhost:8080 (user: 'root_user', pass: 'Testpassword1!')"
         )
     session.log(
+        "Run 'fides user login' to authenticate the CLI (user: 'root_user', pass: 'Testpassword1!')"
+    )
+    session.log(
         "Fides Admin UI (dev) running at http://localhost:3000 (user: 'root_user', pass: 'Testpassword1!')"
     )
     session.log(
@@ -204,7 +208,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         "Example Mongo Database running at localhost:27017 (user: 'mongo_test', pass: 'mongo_pass', db: 'mongo_test')"
     )
     session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
-    session.run(*EXEC, shell_command, external=True, env=test_env_vars)
+    session.run(*EXEC_IT, shell_command, external=True, env=test_env_vars)
 
 
 @nox_session()
