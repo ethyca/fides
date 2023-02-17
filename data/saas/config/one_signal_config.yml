@@ -60,7 +60,6 @@ saas_config:
           path: /api/v1/players/<player_id>
           body: |
             {
-                "app_id": "<app_id>", 
               <all_object_fields>
             }
           param_values:
