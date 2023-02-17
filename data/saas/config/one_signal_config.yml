@@ -1,0 +1,70 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: One signal SaaS Config
+  type: one_signal
+  description: A sample schema representing the One signal connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: onesignal.com
+    - name: app_id
+    - name: api_key
+    - name: player_id
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: Authorization
+            value: Basic <api_key> 
+
+  test_request:
+    method: GET
+    path: /api/v1/players
+    headers:
+      - name: Authorization
+        value: Basic <api_key>
+    query_params:
+      - name: app_id
+        value: <app_id>
+    param_values:
+      - name: api_key
+        connector_param: api_key
+      - name: app_id
+        connector_param: app_id
+
+  endpoints:
+    - name: device
+      requests:
+        read:
+          method: GET
+          path: /api/v1/players/<player_id>
+          query_params:
+            - name: app_id
+              value: <app_id>
+          param_values:
+            - name: placeholder
+              identity: email
+            - name: player_id
+              connector_param: player_id
+            - name: api_key
+              connector_param: api_key
+            - name: app_id
+              connector_param: app_id
+        update:
+          method: PUT
+          path: /api/v1/players/<player_id>
+          body: |
+            {
+                "app_id": "<app_id>", 
+              <all_object_fields>
+            }
+          param_values:
+            - name: player_id
+              connector_param: player_id
+            - name: app_id
+              connector_param: app_id
