@@ -93,10 +93,7 @@ const EditSystemFlow = () => {
               />
             ) : null}
             {currentStepIndex === 1 && activeSystem ? (
-              <PrivacyDeclarationStep
-                system={activeSystem}
-                onSuccess={handleSuccess}
-              />
+              <PrivacyDeclarationStep system={activeSystem} />
             ) : null}
             {currentStepIndex === 2 && activeSystem ? (
               <SystemRegisterSuccess

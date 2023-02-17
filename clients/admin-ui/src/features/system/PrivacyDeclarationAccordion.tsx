@@ -4,8 +4,8 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Heading,
   Spinner,
-  Text,
 } from "@fidesui/react";
 
 import { PrivacyDeclaration } from "~/types/api";
@@ -37,16 +37,21 @@ const PrivacyDeclarationAccordion = ({ privacyDeclaration, onEdit }: Props) => {
     <Accordion
       allowToggle
       border="transparent"
-      key={privacyDeclaration.data_use}
       m="5px !important"
       data-testid={`declaration-${privacyDeclaration.data_use}`}
     >
       <AccordionItem>
         <>
           <AccordionButton pr="0px" pl="0px">
-            <Text flex="1" textAlign="left" fontSize="sm" fontWeight="semibold">
+            <Heading
+              flex="1"
+              textAlign="left"
+              as="h4"
+              size="xs"
+              fontWeight="medium"
+            >
               {title}
-            </Text>
+            </Heading>
             <AccordionIcon />
           </AccordionButton>
           <AccordionPanel px="0">

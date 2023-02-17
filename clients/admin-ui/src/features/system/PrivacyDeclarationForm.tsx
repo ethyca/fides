@@ -13,7 +13,7 @@ import {
   Text,
 } from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
@@ -61,6 +61,7 @@ export const PrivacyDeclarationForm = ({
   allDataCategories,
   allDataUses,
   allDataSubjects,
+  withHeader,
 }: Props & {
   allDataCategories: DataCategory[];
   allDataUses: DataUse[];
@@ -68,6 +69,13 @@ export const PrivacyDeclarationForm = ({
 }) => {
   const initialValues = passedInInitialValues ?? defaultInitialValues;
   const [showSaved, setShowSaved] = useState(false);
+
+  // Reset showSaved when the form starts new
+  useEffect(() => {
+    if (!passedInInitialValues && showSaved) {
+      setShowSaved(false);
+    }
+  }, [passedInInitialValues, showSaved]);
 
   // To get the human readable name, have to match it back to the data use object
   const title = useMemo(() => {
@@ -101,8 +109,8 @@ export const PrivacyDeclarationForm = ({
         <Form data-testid="privacy-declaration-form">
           <Stack spacing={4}>
             <Box display="flex" alignItems="center">
-              {title ? (
-                <Heading as="h4" size="sm" fontWeight="medium" mr={4}>
+              {title && withHeader ? (
+                <Heading as="h4" size="xs" fontWeight="medium" mr={4}>
                   {title}
                 </Heading>
               ) : null}
@@ -151,7 +159,9 @@ export const PrivacyDeclarationForm = ({
               display="flex"
               justifyContent="space-between"
             >
-              <Button variant="outline">Delete</Button>
+              <Button variant="outline" disabled>
+                Delete
+              </Button>
               <Button
                 type="submit"
                 colorScheme="primary"
@@ -174,6 +184,7 @@ interface Props {
     formikHelpers: FormikHelpers<PrivacyDeclaration>
   ) => void;
   initialValues?: PrivacyDeclaration;
+  withHeader?: boolean;
 }
 const ConnectedPrivacyDeclarationForm = (props: Props) => {
   // Query subscriptions:
