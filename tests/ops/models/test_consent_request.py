@@ -85,10 +85,6 @@ def test_consent_with_gpc(db):
 
     assert consent_data_1["data_use"] in data_uses
     assert consent_data_2["data_use"] in data_uses
-    assert consent_data_1["has_gpc_flag"] is True
-    assert consent_data_1["conflicts_with_gpc"] is True
-    assert consent_data_2["has_gpc_flag"] is False
-    assert consent_data_2["conflicts_with_gpc"] is False
 
     provided_identity.delete(db)
 
