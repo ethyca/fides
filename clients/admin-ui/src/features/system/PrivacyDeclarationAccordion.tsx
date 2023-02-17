@@ -4,66 +4,99 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  Heading,
   Spinner,
+  Stack,
 } from "@fidesui/react";
+import { Form, Formik } from "formik";
 
 import { PrivacyDeclaration } from "~/types/api";
 
-import { useGetDataUseByKeyQuery } from "../data-use/data-use.slice";
-import ConnectedPrivacyDeclarationForm from "./PrivacyDeclarationForm";
+import {
+  PrivacyDeclarationFormComponents,
+  usePrivacyDeclarationForm,
+  useTaxonomyData,
+  ValidationSchema,
+} from "./PrivacyDeclarationForm";
 
-interface Props {
-  privacyDeclaration: PrivacyDeclaration;
-  onEdit?: (declaration: PrivacyDeclaration) => void;
+interface AccordionProps {
+  privacyDeclarations: PrivacyDeclaration[];
+  onEdit: (
+    oldDeclaration: PrivacyDeclaration,
+    newDeclaration: PrivacyDeclaration
+  ) => Promise<boolean>;
 }
-const PrivacyDeclarationAccordion = ({ privacyDeclaration, onEdit }: Props) => {
-  const { data: dataUse, isLoading } = useGetDataUseByKeyQuery(
-    privacyDeclaration.data_use
-  );
-  const handleEdit = (newValues: PrivacyDeclaration) => {
-    if (onEdit) {
-      onEdit(newValues);
-    }
-  };
 
-  const title = dataUse?.name ?? privacyDeclaration.data_use;
+const PrivacyDeclarationAccordionItem = ({
+  privacyDeclaration,
+  onEdit,
+}: { privacyDeclaration: PrivacyDeclaration } & Pick<
+  AccordionProps,
+  "onEdit"
+>) => {
+  const handleEdit = (newValues: PrivacyDeclaration) =>
+    onEdit(privacyDeclaration, newValues);
+
+  const { isLoading, ...dataProps } = useTaxonomyData();
+  const { initialValues, renderHeader, handleSubmit } =
+    usePrivacyDeclarationForm({
+      initialValues: privacyDeclaration,
+      onSubmit: handleEdit,
+      ...dataProps,
+    });
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spinner size="sm" />;
   }
 
   return (
-    <Accordion
-      allowToggle
-      border="transparent"
-      m="5px !important"
-      data-testid={`declaration-${privacyDeclaration.data_use}`}
-    >
-      <AccordionItem>
-        <>
-          <AccordionButton pr="0px" pl="0px">
-            <Heading
-              flex="1"
-              textAlign="left"
-              as="h4"
-              size="xs"
-              fontWeight="medium"
-            >
-              {title}
-            </Heading>
-            <AccordionIcon />
-          </AccordionButton>
-          <AccordionPanel px="0">
-            <ConnectedPrivacyDeclarationForm
-              onSubmit={handleEdit}
-              initialValues={privacyDeclaration}
-            />
-          </AccordionPanel>
-        </>
-      </AccordionItem>
-    </Accordion>
+    <AccordionItem>
+      {({ isExpanded }) => (
+        <Formik
+          enableReinitialize
+          initialValues={initialValues}
+          onSubmit={handleSubmit}
+          validationSchema={ValidationSchema}
+        >
+          {({ dirty }) => (
+            <Form data-testid="privacy-declaration-form">
+              <AccordionButton
+                py={4}
+                borderBottomWidth={isExpanded ? "0px" : "1px"}
+                backgroundColor={isExpanded ? "gray.50" : undefined}
+              >
+                {renderHeader({ dirty, flex: "1", textAlign: "left" })}
+                <AccordionIcon />
+              </AccordionButton>
+              <AccordionPanel backgroundColor="gray.50" pt={0}>
+                <Stack spacing={4}>
+                  <PrivacyDeclarationFormComponents {...dataProps} />
+                </Stack>
+              </AccordionPanel>
+            </Form>
+          )}
+        </Formik>
+      )}
+    </AccordionItem>
   );
 };
+
+const PrivacyDeclarationAccordion = ({
+  privacyDeclarations,
+  ...props
+}: AccordionProps) => (
+  <Accordion
+    allowToggle
+    border="transparent"
+    data-testid="privacy-declaration-accordion"
+  >
+    {privacyDeclarations.map((dec) => (
+      <PrivacyDeclarationAccordionItem
+        key={dec.data_use}
+        privacyDeclaration={dec}
+        {...props}
+      />
+    ))}
+  </Accordion>
+);
 
 export default PrivacyDeclarationAccordion;

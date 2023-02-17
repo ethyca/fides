@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Divider,
-  Heading,
-  Stack,
-  Text,
-  useToast,
-} from "@fidesui/react";
+import { Box, Button, Heading, Stack, Text, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import NextLink from "next/link";
@@ -51,6 +43,21 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
     [system]
   );
 
+  const checkAlreadyExists = (values: PrivacyDeclaration) => {
+    if (
+      accordionDeclarations.filter((d) => d.data_use === values.data_use)
+        .length > 0
+    ) {
+      toast(
+        errorToastParams(
+          "A declaration already exists with that data use in this system. Please supply a different data use."
+        )
+      );
+      return true;
+    }
+    return false;
+  };
+
   const save = async (updatedDeclarations: PrivacyDeclaration[]) => {
     const transformedDeclarations = updatedDeclarations.map((d) =>
       transformFormValuesToDeclaration(d)
@@ -72,50 +79,55 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         );
 
         toast(errorToastParams(errorMsg));
-      } else {
-        toast(successToastParams("Data use case saved"));
-        toast.closeAll();
-        dispatch(setActiveSystem(result.data));
+        return false;
       }
+      toast(successToastParams("Data use case saved"));
+      toast.closeAll();
+      dispatch(setActiveSystem(result.data));
+      return true;
     };
 
     const updateSystemResult = await updateSystemMutationTrigger(
       systemBodyWithDeclaration
     );
 
-    handleResult(updateSystemResult);
+    return handleResult(updateSystemResult);
   };
 
   const handleEditDeclaration = async (
     oldDeclaration: PrivacyDeclaration,
     newDeclaration: PrivacyDeclaration
   ) => {
+    // Do not allow editing a privacy declaration to have the same data use as one that already exists
+    if (
+      newDeclaration.data_use !== oldDeclaration.data_use &&
+      checkAlreadyExists(newDeclaration)
+    ) {
+      return false;
+    }
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
     const updatedDeclarations = accordionDeclarations.map((dec) =>
       dec.data_use === oldDeclaration.data_use ? newDeclaration : dec
     );
-    await save(updatedDeclarations);
+    const success = await save(updatedDeclarations);
+    return success;
   };
 
   const saveNewDeclaration = async (values: PrivacyDeclaration) => {
-    if (
-      accordionDeclarations.filter((d) => d.data_use === values.data_use)
-        .length > 0
-    ) {
-      toast(
-        errorToastParams(
-          "A declaration already exists with that data use in this system. Please supply a different data use."
-        )
-      );
-    } else {
-      toast.closeAll();
-      setInitialDeclaration(values);
-      const updatedDeclarations = [...accordionDeclarations, values];
-      await save(updatedDeclarations);
+    if (checkAlreadyExists(values)) {
+      return false;
+    }
+
+    toast.closeAll();
+    setInitialDeclaration(values);
+    const updatedDeclarations = [...accordionDeclarations, values];
+    const success = await save(updatedDeclarations);
+    if (success) {
       setShowInitialForm(false);
       setInitialDeclaration(undefined);
     }
+    return success;
   };
 
   const showAddDataUseButton = !showInitialForm;
@@ -138,23 +150,15 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         </NextLink>
         .
       </Text>
-      {accordionDeclarations.map((declaration) => (
-        <Box key={declaration.data_use}>
-          <PrivacyDeclarationAccordion
-            privacyDeclaration={declaration}
-            onEdit={(newValues) => {
-              handleEditDeclaration(declaration, newValues);
-            }}
-          />
-          <Divider m="0px !important" />
-        </Box>
-      ))}
+      <PrivacyDeclarationAccordion
+        privacyDeclarations={accordionDeclarations}
+        onEdit={handleEditDeclaration}
+      />
       {showInitialForm ? (
         <Box backgroundColor="gray.50" p={6}>
           <ConnectedPrivacyDeclarationForm
             initialValues={initialDeclaration}
             onSubmit={saveNewDeclaration}
-            withHeader
           />
         </Box>
       ) : null}
