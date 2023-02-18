@@ -771,7 +771,7 @@ class TestSaveConsent:
             {
                 "data_use": "improve",
                 "data_use_description": None,
-                "opt_in": True,
+                "opt_in": False,
                 "has_gpc_flag": False,
                 "conflicts_with_gpc": False,
             },
