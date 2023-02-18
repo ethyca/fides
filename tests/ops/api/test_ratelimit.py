@@ -7,7 +7,7 @@ from slowapi.util import get_remote_address
 
 from fides.api.main import app
 from fides.api.ops.api.v1.urn_registry import HEALTH
-from fides.core.config import SecuritySettings, get_config
+from fides.core.config import SecuritySettings, CONFIG
 
 LIMIT = 2
 
