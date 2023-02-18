@@ -20,6 +20,7 @@ from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 
 from fides.api import main
+from fides.core.config import CONFIG
 from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.ctl.sql_models import FidesUser
 from fides.core import api
