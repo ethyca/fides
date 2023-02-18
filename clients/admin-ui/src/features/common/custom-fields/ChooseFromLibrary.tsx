@@ -2,19 +2,27 @@
 import {
   Center,
   Flex,
-  FormControl,
-  FormLabel,
   forwardRef,
+  Input,
+  Spacer,
   Spinner,
+  Switch,
 } from "@fidesui/react";
-import { FieldArray, Form, Formik, FormikHelpers, FormikProps } from "formik";
-import { useImperativeHandle, useMemo, useRef } from "react";
+import {
+  Field,
+  FieldArray,
+  FieldInputProps,
+  Form,
+  Formik,
+  FormikHelpers,
+  FormikProps,
+} from "formik";
+import { ChangeEvent, useImperativeHandle, useMemo, useRef } from "react";
 
 import { useAlert } from "~/features/common/hooks";
 import { useGetCustomFieldDefinitionsByResourceTypeQuery } from "~/features/plus/plus.slice";
 import { CustomFieldDefinitionWithId, ResourceTypes } from "~/types/api";
 
-import { CUSTOM_LABEL_STYLES } from "./form/CustomInput";
 import { Layout } from "./Layout";
 
 const initialValues = {
@@ -103,15 +111,44 @@ const ChooseFromLibrary = forwardRef(
                                 // eslint-disable-next-line react/no-array-index-key
                                 key={index}
                                 mt={index > 0 ? "12px" : undefined}
+                                mr="16px"
                               >
-                                <FormControl display="flex">
+                                {/*  <FormControl display="flex">
                                   <FormLabel
                                     htmlFor={`customFieldDefinitions[${index}]`}
                                     {...CUSTOM_LABEL_STYLES}
                                   >
                                     {value.name}
                                   </FormLabel>
-                                </FormControl>
+                                </FormControl> */}
+                                <Input
+                                  color="gray.700"
+                                  isDisabled
+                                  size="sm"
+                                  value={value.name}
+                                />
+                                <Spacer />
+                                <Field
+                                  name={`customFieldDefinitions[${index}].active`}
+                                >
+                                  {({
+                                    field,
+                                  }: {
+                                    field: FieldInputProps<string>;
+                                  }) => (
+                                    <Switch
+                                      {...field}
+                                      colorScheme="secondary"
+                                      isChecked={value.active}
+                                      onChange={(
+                                        event: ChangeEvent<HTMLInputElement>
+                                      ) => {
+                                        field.onChange(event);
+                                      }}
+                                      size="sm"
+                                    />
+                                  )}
+                                </Field>
                               </Flex>
                             ))}
                           </Flex>
