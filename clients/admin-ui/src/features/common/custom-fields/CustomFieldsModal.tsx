@@ -21,6 +21,7 @@ import ConfirmationModal from "~/features/common/ConfirmationModal";
 import DataTabs from "~/features/common/DataTabs";
 import { ResourceTypes } from "~/types/api";
 
+import { ChooseFromLibrary } from "./ChooseFromLibrary";
 import { TabTypes } from "./constants";
 import { CreateCustomFields } from "./CreateCustomFields";
 import { CreateCustomLists } from "./CreateCustomLists";
@@ -39,6 +40,7 @@ const CustomFieldsModal: React.FC<CustomFieldsModalProps> = ({
   const btnRef = useRef(null);
   const createCustomFieldsRef = useRef(null);
   const createCustomListsRef = useRef(null);
+  const chooseFromLibraryRef = useRef(null);
   const firstField = useRef(null);
 
   const DEFAULT_TAB_INDEX = TabTypes.CREATE_CUSTOM_FIELDS;
@@ -54,6 +56,9 @@ const CustomFieldsModal: React.FC<CustomFieldsModalProps> = ({
         break;
       case TabTypes.CREATE_CUSTOM_LISTS:
         formRef = createCustomListsRef!.current as any;
+        break;
+      case TabTypes.CHOOSE_FROM_LIBRARY:
+        formRef = chooseFromLibraryRef!.current as any;
         break;
       default:
         break;
@@ -108,11 +113,17 @@ const CustomFieldsModal: React.FC<CustomFieldsModalProps> = ({
       ),
       submitButtonText: "Save to library",
     },
-    // TODO: Temporary comment out for now. Future development placeholder.
-    /* {
+    {
       label: "Choose from library",
-      content: <ChooseFromLibrary />,
-    }, */
+      content: (
+        <ChooseFromLibrary
+          onSubmitComplete={handleSubmitComplete}
+          ref={chooseFromLibraryRef}
+          resourceType={resourceType}
+        />
+      ),
+      submitButtonText: "Save",
+    },
   ];
 
   return (

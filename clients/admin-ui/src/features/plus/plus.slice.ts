@@ -175,6 +175,13 @@ export const plusApi = createApi({
     }),
 
     // Custom Metadata Custom Field
+    deleteCustomField: build.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: `custom-metadata/custom-field/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["CustomFields"],
+    }),
     getCustomFieldsForResource: build.query<CustomFieldWithId[], string>({
       query: (resource_id: string) => ({
         url: `custom-metadata/custom-field/resource/${resource_id}`,
@@ -191,13 +198,6 @@ export const plusApi = createApi({
           resource_id: params.resource_id,
           value: params.value,
         },
-      }),
-      invalidatesTags: ["CustomFields"],
-    }),
-    deleteCustomField: build.mutation<void, { id: string }>({
-      query: ({ id }) => ({
-        url: `custom-metadata/custom-field/${id}`,
-        method: "DELETE",
       }),
       invalidatesTags: ["CustomFields"],
     }),
@@ -224,27 +224,29 @@ export const plusApi = createApi({
         url: `custom-metadata/custom-field-definition/resource-type/${resource_type}`,
       }),
       providesTags: ["CustomFieldDefinition"],
+      transformResponse: (list: CustomFieldDefinitionWithId[]) =>
+        list.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
   }),
 });
 
 export const {
-  useUpsertCustomFieldMutation,
-  useDeleteCustomFieldMutation,
-  useUpsertAllowListMutation,
-  useUpdateScanMutation,
-  useUpdateClassifyInstanceMutation,
-  useLazyGetLatestScanDiffQuery,
-  useGetLatestScanDiffQuery,
-  useGetHealthQuery,
-  useGetCustomFieldsForResourceQuery,
-  useGetCustomFieldDefinitionsByResourceTypeQuery,
-  useGetClassifySystemQuery,
-  useGetClassifyDatasetQuery,
-  useGetAllClassifyInstancesQuery,
-  useGetAllAllowListQuery,
-  useCreateClassifyInstanceMutation,
   useAddCustomFieldDefinitionMutation,
+  useCreateClassifyInstanceMutation,
+  useDeleteCustomFieldMutation,
+  useGetAllAllowListQuery,
+  useGetAllClassifyInstancesQuery,
+  useGetClassifyDatasetQuery,
+  useGetClassifySystemQuery,
+  useGetCustomFieldDefinitionsByResourceTypeQuery,
+  useGetCustomFieldsForResourceQuery,
+  useGetHealthQuery,
+  useGetLatestScanDiffQuery,
+  useLazyGetLatestScanDiffQuery,
+  useUpdateClassifyInstanceMutation,
+  useUpdateScanMutation,
+  useUpsertAllowListMutation,
+  useUpsertCustomFieldMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
