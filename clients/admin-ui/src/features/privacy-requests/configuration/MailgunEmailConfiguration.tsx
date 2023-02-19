@@ -8,6 +8,7 @@ import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
+  useCreateTestConnectionMessageMutation,
   useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
@@ -25,6 +26,8 @@ const MailgunEmailConfiguration = () => {
     useCreateMessagingConfigurationMutation();
   const [createMessagingConfigurationSecrets] =
     useCreateMessagingConfigurationSecretsMutation();
+  const [createTestConnectionMessage] =
+    useCreateTestConnectionMessageMutation();
 
   const handleMailgunConfiguration = async (value: { domain: string }) => {
     const result = await createMessagingConfiguration({
@@ -56,7 +59,22 @@ const MailgunEmailConfiguration = () => {
       handleError(result.error);
     } else {
       successAlert(`Mailgun security key successfully updated.`);
+      setConfigurationStep("testConnection");
     }
+  };
+
+  const handleTestConnection = async () => {
+    const result = await createTestConnectionMessage({
+      // test
+    });
+
+    if (isErrorResult(result)) {
+      handleError(result.error);
+    } else {
+      successAlert(`Test message successfully sent.`);
+    }
+    // I can enter a test identifier (Email or SMS) based on the messaging service type.
+    // I can click on test the configuration to send a test message.
   };
 
   const initialValues = {
@@ -65,6 +83,10 @@ const MailgunEmailConfiguration = () => {
 
   const initialAPIKeyValue = {
     api_key: messagingDetails?.key ?? "",
+  };
+
+  const initialEmailValue = {
+    email: messagingDetails?.email ?? "",
   };
 
   return (
@@ -109,8 +131,8 @@ const MailgunEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {configurationStep === "apiKey" ? (
-        // TODO: configurationStep === "testConnection" will be set after https://github.com/ethyca/fides/issues/2237
+      {configurationStep === "apiKey" ||
+      configurationStep === "testConnection" ? (
         <>
           <Divider />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
@@ -128,6 +150,47 @@ const MailgunEmailConfiguration = () => {
                     label="API key"
                     placeholder="Optional"
                     type="password"
+                  />
+                  <Button
+                    onClick={() => resetForm()}
+                    mr={2}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    isDisabled={isSubmitting}
+                    type="submit"
+                    colorScheme="primary"
+                    size="sm"
+                    data-testid="save-btn"
+                  >
+                    Save
+                  </Button>
+                </Form>
+              )}
+            </Formik>
+          </Stack>
+        </>
+      ) : null}
+      {configurationStep === "testConnection" ? (
+        <>
+          <Divider />
+          <Heading fontSize="md" fontWeight="semibold" mt={10}>
+            Test connection
+          </Heading>
+          <Stack>
+            <Formik
+              initialValues={initialEmailValue}
+              onSubmit={handleTestConnection}
+            >
+              {({ isSubmitting, resetForm }) => (
+                <Form>
+                  <CustomTextInput
+                    name="email"
+                    label="Email"
+                    placeholder="youremail@domain.com"
                   />
                   <Button
                     onClick={() => resetForm()}
