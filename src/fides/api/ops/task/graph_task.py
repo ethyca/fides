@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
 from dask import delayed  # type: ignore[attr-defined]
+from dask.core import getcycle
 from dask.threaded import get
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -16,6 +17,7 @@ from fides.api.ops.common_exceptions import (
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
+    TraversalError,
 )
 from fides.api.ops.graph.analytics_events import (
     fideslog_graph_rerun,
@@ -515,7 +517,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self,
         retrieved_data: List[Row],
         inputs: List[List[Row]],
-        *_: int,
+        *erasure_prereqs: int,
     ) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration
@@ -724,9 +726,9 @@ def update_erasure_mapping_from_cache(
     cached_erasures: Dict[str, int] = resources.get_all_cached_erasures()
 
     for collection_name in cached_erasures:
-        dsk[CollectionAddress.from_string(collection_name)] = (
-            start_fn(cached_erasures[collection_name]),
-        )
+        dsk[CollectionAddress.from_string(collection_name)] = cached_erasures[
+            collection_name
+        ]
 
 
 async def run_erasure(  # pylint: disable = too-many-arguments
@@ -751,14 +753,13 @@ async def run_erasure(  # pylint: disable = too-many-arguments
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
-        # We don't rely on the output of `traverse` for the `end_nodes` like we do for
-        # the `access` task since all nodes are considered end nodes unless
-        # they are re-prioritized by the `erase_after` collection field
+        # We store the end nodes from the traversal for analytics purposes
+        # but we generate a separate erasure_end_nodes list for the actual erasure traversal
         env: Dict[CollectionAddress, Any] = {}
-        traversal.traverse(env, collect_tasks_fn)
-        end_nodes = list(graph.nodes.keys())
+        access_end_nodes = traversal.traverse(env, collect_tasks_fn)
+        erasure_end_nodes = list(graph.nodes.keys())
 
-        def termination_fn(*_: int) -> Dict[str, int]:
+        def termination_fn(*dependent_values: int) -> Dict[str, int]:
             """
             The erasure order can be affected in a way that not every node is directly linked
             to the termination node. This means that we can't just aggregate the inputs directly,
@@ -781,20 +782,28 @@ async def run_erasure(  # pylint: disable = too-many-arguments
                     # cases like the EmailConnector where the access request doesn't actually retrieve data.
                     for upstream_key in t.input_keys
                 ],
-                *_evaluate_erasure_dependencies(t, end_nodes),
+                *_evaluate_erasure_dependencies(t, erasure_end_nodes),
             )
             for k, t in env.items()
         }
 
-        # terminator function waits for all keys
+        # root node returns 0 to be consistent with the output of the other erasure tasks
         dsk[ROOT_COLLECTION_ADDRESS] = 0
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
+        # terminator function reads and returns the cached erasure results for the entire erasure traversal
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *erasure_end_nodes)
         update_erasure_mapping_from_cache(dsk, resources, start_function)
         await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
-                privacy_request, env, end_nodes, resources, ActionType.erasure
+                privacy_request, env, access_end_nodes, resources, ActionType.erasure
             )
         )
+
+        # using an existing function from dask.core to detect cycles in the generated graph
+        collection_cycle = getcycle(dsk, None)
+        if collection_cycle:
+            raise TraversalError(
+                f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}"
+            )
 
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         update_cts: Dict[str, int] = v.compute()
@@ -815,6 +824,7 @@ def _evaluate_erasure_dependencies(
     erase_after = t.traversal_node.node.collection.erase_after
     for collection in erase_after:
         if collection in end_nodes:
+            # end_node list is modified in place
             end_nodes.remove(collection)
     # this task will execute after the collections in `erase_after` or
     # execute at the beginning by linking it to the root node
