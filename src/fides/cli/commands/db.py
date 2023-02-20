@@ -26,6 +26,7 @@ def db_init(ctx: click.Context) -> None:
     handle_cli_response(
         _api.db_action(
             server_url=config.cli.server_url,
+            headers=config.user.auth_header,
             action="init",
         )
     )
@@ -52,6 +53,7 @@ def db_reset(ctx: click.Context, yes: bool) -> None:
         handle_cli_response(
             _api.db_action(
                 server_url=config.cli.server_url,
+                headers=config.user.auth_header,
                 action="reset",
             )
         )

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, Optional
 
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
@@ -31,9 +31,13 @@ from fides.api.ops.api.v1.urn_registry import (
     MESSAGING_DEFAULT_BY_TYPE,
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
+    MESSAGING_TEST,
     V1_URL_PREFIX,
 )
-from fides.api.ops.common_exceptions import MessagingConfigNotFoundException
+from fides.api.ops.common_exceptions import (
+    MessageDispatchException,
+    MessagingConfigNotFoundException,
+)
 from fides.api.ops.models.messaging import (
     MessagingConfig,
     default_messaging_config_key,
@@ -41,6 +45,7 @@ from fides.api.ops.models.messaging import (
     get_schema_for_secrets,
 )
 from fides.api.ops.schemas.messaging.messaging import (
+    MessagingActionType,
     MessagingConfigBase,
     MessagingConfigRequest,
     MessagingConfigResponse,
@@ -50,6 +55,8 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
 )
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.ops.service.messaging.messaging_crud_service import (
     create_or_update_messaging_config,
     delete_messaging_config,
@@ -59,8 +66,11 @@ from fides.api.ops.service.messaging.messaging_crud_service import (
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.core.config import get_config
 
 router = APIRouter(tags=["messaging"], prefix=V1_URL_PREFIX)
+
+CONFIG = get_config()
 
 
 @router.post(
@@ -357,3 +367,38 @@ def delete_config_by_key(
             status_code=HTTP_404_NOT_FOUND,
             detail=e.message,
         )
+
+
+@router.post(
+    MESSAGING_TEST,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_CREATE_OR_UPDATE])],
+    response_model=Dict[str, str],
+    responses={
+        HTTP_200_OK: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "details": "Test message successfully sent",
+                    }
+                }
+            }
+        }
+    },
+)
+def send_test_message(
+    message_info: Identity, db: Session = Depends(deps.get_db)
+) -> Dict[str, str]:
+    """Sends a test message."""
+    try:
+        dispatch_message(
+            db,
+            action_type=MessagingActionType.TEST_MESSAGE,
+            to_identity=message_info,
+            service_type=CONFIG.notifications.notification_service_type,
+        )
+    except MessageDispatchException as e:
+        raise HTTPException(
+            status_code=400, detail=f"There was an error sending the test message: {e}"
+        )
+    return {"details": "Test message successfully sent"}

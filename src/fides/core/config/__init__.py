@@ -5,7 +5,7 @@ config sections into a single config object.
 
 from functools import lru_cache
 from os import getenv
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 import toml
 from loguru import logger as log
@@ -93,18 +93,22 @@ class FidesConfig(FidesSettings):
                 )
 
 
-def censor_config(config: FidesConfig) -> Dict[str, Any]:
+def censor_config(config: Union[FidesConfig, Dict[str, Any]]) -> Dict[str, Any]:
     """
     Returns a config that is safe to expose over the API. This function will
     strip out any keys not specified in the `CONFIG_KEY_ALLOWLIST` above.
     """
-    as_dict = config.dict()
+    if not isinstance(config, Dict):
+        as_dict = config.dict()
+    else:
+        as_dict = config
     filtered: Dict[str, Any] = {}
     for key, value in CONFIG_KEY_ALLOWLIST.items():
-        data = as_dict[key]
-        filtered[key] = {}
-        for field in value:
-            filtered[key][field] = data[field]
+        if key in as_dict:
+            data = as_dict[key]
+            filtered[key] = {}
+            for field in value:
+                filtered[key][field] = data[field]
 
     return filtered
 

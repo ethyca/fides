@@ -162,6 +162,8 @@ export const plusApi = createApi({
         params: { show_values },
       }),
       providesTags: ["AllowList"],
+      transformResponse: (allowList: AllowList[]) =>
+        allowList.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
     }),
     upsertAllowList: build.mutation<AllowList, AllowListUpdate>({
       query: (params: AllowListUpdate) => ({
@@ -189,6 +191,13 @@ export const plusApi = createApi({
           resource_id: params.resource_id,
           value: params.value,
         },
+      }),
+      invalidatesTags: ["CustomFields"],
+    }),
+    deleteCustomField: build.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: `custom-metadata/custom-field/${id}`,
+        method: "DELETE",
       }),
       invalidatesTags: ["CustomFields"],
     }),
@@ -221,6 +230,7 @@ export const plusApi = createApi({
 
 export const {
   useUpsertCustomFieldMutation,
+  useDeleteCustomFieldMutation,
   useUpsertAllowListMutation,
   useUpdateScanMutation,
   useUpdateClassifyInstanceMutation,

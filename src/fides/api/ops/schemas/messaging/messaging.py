@@ -2,11 +2,13 @@ from enum import Enum
 from re import compile as regex
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
+from fideslang import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas import Msg
+from fides.api.ops.schemas.privacy_request import Consent
 
 
 class MessagingMethod(Enum):
@@ -38,6 +40,7 @@ class MessagingActionType(str, Enum):
     # verify email upon acct creation
     CONSENT_REQUEST = "consent_request"
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
+    CONSENT_REQUEST_EMAIL_FULFILLMENT = "consent_request_email_fulfillment"
     MESSAGE_ERASURE_REQUEST_FULFILLMENT = "message_erasure_fulfillment"
     PRIVACY_REQUEST_ERROR_NOTIFICATION = "privacy_request_error_notification"
     PRIVACY_REQUEST_RECEIPT = "privacy_request_receipt"
@@ -45,9 +48,10 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
     PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
+    TEST_MESSAGE = "test_message"
 
 
-class ErrorNotificaitonBodyParams(BaseModel):
+class ErrorNotificationBodyParams(BaseModel):
     """Body params required for privacy request error notifications."""
 
     unsent_errors: int
@@ -84,6 +88,42 @@ class RequestReviewDenyBodyParams(BaseModel):
     rejection_reason: Optional[str]
 
 
+class ConsentPreferencesByUser(BaseModel):
+    """Used for capturing the preferences of a single user.
+
+    Used for ConsentEmailFulfillmentBodyParams where we potentially send a list
+    of batched user preferences to a third party vendor all at once.
+    """
+
+    identities: Dict[str, Any]
+    consent_preferences: List[Consent]  # Consent schema
+
+    @root_validator
+    def transform_data_use_format(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Transform a data use fides_key to a corresponding name if possible"""
+        consent_preferences = values.get("consent_preferences") or []
+        for preference in consent_preferences:
+            preference.data_use = next(
+                (
+                    data_use.name
+                    for data_use in DEFAULT_TAXONOMY.data_use
+                    if data_use.fides_key == preference.data_use
+                ),
+                preference.data_use,
+            )
+        values["consent_preferences"] = consent_preferences
+        return values
+
+
+class ConsentEmailFulfillmentBodyParams(BaseModel):
+    """Body params required to send batched user consent preferences by email"""
+
+    controller: str
+    third_party_vendor_name: str
+    required_identities: List[str]
+    requested_changes: List[ConsentPreferencesByUser]
+
+
 class FidesopsMessage(
     BaseModel,
     smart_union=True,
@@ -94,6 +134,7 @@ class FidesopsMessage(
     action_type: MessagingActionType
     body_params: Optional[
         Union[
+            ConsentEmailFulfillmentBodyParams,
             SubjectIdentityVerificationBodyParams,
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,

@@ -4,16 +4,25 @@
 
 from typing import Dict, Optional
 
+from fides.core.utils import create_auth_header, get_auth_header
+
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__USER__"
 
 
+def try_get_auth_header() -> Dict[str, str]:
+    """Try to get the auth header. If an error is thrown, return a default auth header instead."""
+    try:
+        return get_auth_header(verbose=False)
+    except SystemExit:
+        return create_auth_header("defaulttoken")
+
+
 class UserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
-    # Auth headers are set when the CLI is initiated.
-    auth_header: Optional[Dict[str, str]]
+    auth_header: Dict[str, str] = try_get_auth_header()
     analytics_opt_out: Optional[bool]
     encryption_key: str = "test_encryption_key"
 

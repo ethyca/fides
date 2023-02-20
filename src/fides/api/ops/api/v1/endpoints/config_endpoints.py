@@ -33,7 +33,7 @@ def get_config(
     logger.info("Getting the exposable Fides configuration")
     if api_set:
         logger.info("Retrieving api-set application settings")
-        return ApplicationConfig.get_api_set(db)
+        return censor_config(ApplicationConfig.get_api_set(db))
     config = censor_config(get_app_config())
     return config
 
@@ -57,8 +57,7 @@ def update_settings(
     i.e. true PATCH behavior.
     """
     logger.info("Updating application settings")
-    updated_settings: ApplicationConfig = ApplicationConfig.create_or_update(
-        db, data={"api_set": data.dict(exclude_none=True)}
+    update_config: ApplicationConfig = ApplicationConfig.update_api_set(
+        db, data.dict(exclude_none=True)
     )
-    print(updated_settings.api_set)
-    return updated_settings.api_set
+    return update_config.api_set

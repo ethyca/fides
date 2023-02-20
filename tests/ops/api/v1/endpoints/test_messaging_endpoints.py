@@ -1,6 +1,6 @@
 import json
 from unittest import mock
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from fastapi_pagination import Params
@@ -20,8 +20,10 @@ from fides.api.ops.api.v1.urn_registry import (
     MESSAGING_DEFAULT_BY_TYPE,
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
+    MESSAGING_TEST,
     V1_URL_PREFIX,
 )
+from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.schemas.messaging.messaging import (
@@ -1219,3 +1221,56 @@ class TestGetActiveDefaultMessagingConfig:
                 MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
         }
+
+
+class TestTestMesage:
+    @pytest.fixture
+    def url(self):
+        return f"{V1_URL_PREFIX}{MESSAGING_TEST}"
+
+    @pytest.mark.parametrize(
+        "info",
+        [{"phone_number": "+19198675309"}, {"email": "some@email.com"}],
+    )
+    @patch("fides.api.ops.api.v1.endpoints.messaging_endpoints.dispatch_message")
+    def test_test_message(
+        self, mock_dispatch_message, info, generate_auth_header, url, api_client
+    ):
+        auth_header = generate_auth_header(scopes=[MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.post(url, json=info, headers=auth_header)
+        assert response.status_code == 200
+        assert mock_dispatch_message.called
+
+    def test_test_message_unauthorized(self, url, api_client):
+        response = api_client.post(url, json={"phone_number": "+19198675309"})
+        assert response.status_code == 401
+
+    @pytest.mark.parametrize(
+        "info",
+        [
+            {"phone_number": "+19198675309", "email": "some@email.com"},
+            {"phone_number": None, "email": None},
+        ],
+    )
+    def test_test_message_invalid(self, info, generate_auth_header, url, api_client):
+        auth_header = generate_auth_header(scopes=[MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.post(
+            url,
+            json=info,
+            headers=auth_header,
+        )
+        assert response.status_code == 400
+
+    @patch(
+        "fides.api.ops.api.v1.endpoints.messaging_endpoints.dispatch_message",
+        side_effect=MessageDispatchException("No service"),
+    )
+    def test_test_message_dispatch_error(
+        self, mock_dispatch_message, generate_auth_header, url, api_client
+    ):
+        auth_header = generate_auth_header(scopes=[MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.post(
+            url, json={"phone_number": "+19198675309"}, headers=auth_header
+        )
+        assert response.status_code == 400
+        assert mock_dispatch_message.called

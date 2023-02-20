@@ -1286,6 +1286,7 @@ class TestGetPrivacyRequests:
             "email": TEST_EMAIL,
             "phone_number": TEST_PHONE,
             "ga_client_id": None,
+            "ljt_readerID": None,
         }
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"
@@ -1798,6 +1799,7 @@ class TestApprovePrivacyRequest:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_review_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_approve_privacy_request_not_authenticated(self, url, api_client):
         response = api_client.patch(url)
@@ -2016,6 +2018,7 @@ class TestDenyPrivacyRequest:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_review_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_deny_privacy_request_not_authenticated(self, url, api_client):
         response = api_client.patch(url)
@@ -2966,6 +2969,7 @@ class TestVerifyIdentity:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_receipt_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_incorrect_privacy_request_status(self, api_client, url, privacy_request):
         request_body = {"code": self.code}
@@ -3250,6 +3254,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.execution.subject_identity_verification_required = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_create_privacy_request_no_email_config(
         self,
@@ -3805,6 +3810,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_receipt_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -3921,6 +3927,7 @@ class TestCreatePrivacyRequestAuthenticated:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.execution.subject_identity_verification_required = original
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"

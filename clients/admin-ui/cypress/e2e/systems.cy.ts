@@ -94,10 +94,10 @@ describe("System management page", () => {
           });
 
           // Fill in the privacy declaration form
-          cy.wait("@getDataCategory");
-          cy.wait("@getDataQualifier");
-          cy.wait("@getDataSubject");
-          cy.wait("@getDataUse");
+          cy.wait("@getDataCategories");
+          cy.wait("@getDataQualifiers");
+          cy.wait("@getDataSubjects");
+          cy.wait("@getDataUses");
           cy.getByTestId("privacy-declaration-form");
           const declaration = system.privacy_declarations[0];
           cy.getByTestId("input-name").type(declaration.name);
@@ -369,10 +369,10 @@ describe("System management page", () => {
       });
 
       // Add privacy declaration form
-      cy.wait("@getDataCategory");
-      cy.wait("@getDataQualifier");
-      cy.wait("@getDataSubject");
-      cy.wait("@getDataUse");
+      cy.wait("@getDataCategories");
+      cy.wait("@getDataQualifiers");
+      cy.wait("@getDataSubjects");
+      cy.wait("@getDataUses");
       cy.wait("@getDatasets");
       cy.getByTestId("privacy-declaration-form");
       const declaration = {

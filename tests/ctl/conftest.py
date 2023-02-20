@@ -16,23 +16,22 @@ import yaml
 from fideslang import models
 from pytest import MonkeyPatch
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.orm.exc import ObjectDeletedError
+from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 
 from fides.api import main
-from fides.api.ctl.database.session import engine, sync_session
-from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
+from fides.api.ctl.database.session import sync_engine, sync_session
+from fides.api.ctl.sql_models import FidesUser
 from fides.core import api
 from fides.core.config import FidesConfig, get_config
+from fides.core.user import login_command
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
+from tests.conftest import create_citext_extension
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
@@ -116,7 +115,11 @@ def setup_db(test_config: FidesConfig, test_client, monkeypatch_requests) -> Gen
     assert (
         requests.post == test_client.post
     )  # Sanity check to make sure monkeypatch_requests fixture has run
-    yield api.db_action(test_config.cli.server_url, "reset")
+    yield api.db_action(
+        server_url=test_config.cli.server_url,
+        headers=CONFIG.user.auth_header,
+        action="reset",
+    )
 
 
 @pytest.fixture(scope="function")
@@ -326,7 +329,10 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
 
 @pytest.fixture
 def db() -> Generator:
+    create_citext_extension(sync_engine)
+
     session = sync_session()
+
     yield session
     session.close()
 
@@ -336,6 +342,9 @@ def db() -> Generator:
 async def async_session(test_client) -> AsyncSession:
     assert CONFIG.test_mode
     assert requests.post == test_client.post
+
+    create_citext_extension(sync_engine)
+
     async_engine = create_async_engine(
         CONFIG.database.async_database_uri,
         echo=False,

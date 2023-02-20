@@ -4,7 +4,7 @@ from typing import Any, Dict
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.application_config import ApplicationConfig, _get_property
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 
@@ -244,70 +244,6 @@ class TestApplicationConfigModel:
 
 
 class TestApplicationConfigResolution:
-    @pytest.mark.parametrize(
-        "prop_dict, prop_path, expected_value",
-        [
-            ({}, "spam", None),
-            ({"spam": "ham"}, "eggs", None),
-            ({"spam": "ham"}, "spam", "ham"),
-            ({"spam": "ham", "eggs": "overeasy"}, "spam", "ham"),
-            ({"spam": "ham", "eggs": "overeasy"}, "eggs", "overeasy"),
-            ({"spam": 1}, "spam", 1),
-            ({"spam": False}, "spam", False),
-            ({"spam": ["ham", "eggs"]}, "spam", ["ham", "eggs"]),
-            ({"spam": "ham"}, "spam.", "ham"),
-            ({"spam": {"spam1": "ham1"}}, "spam", {"spam1": "ham1"}),
-            ({"spam": {"spam1": "ham1"}}, "spam.spam1", "ham1"),
-            ({"spam": {"spam1": "ham1"}, "eggs": "overeasy"}, "spam.spam1", "ham1"),
-            ({"spam": {"spam1": "ham1"}, "eggs": "overeasy"}, "spam.spam1.", "ham1"),
-            (
-                {"spam": {"spam1": {"spam2": "ham2"}}, "eggs": "overeasy"},
-                "spam.spam1.spam2",
-                "ham2",
-            ),
-            (
-                {"spam": {"spam1": {"spam2": "ham2"}}, "eggs": "overeasy"},
-                "spam.spam1",
-                {"spam2": "ham2"},
-            ),
-            (
-                {"spam": {"spam1": {"spam2": "ham2", "eggs": "overeasy"}}},
-                "spam.spam1.spam2",
-                "ham2",
-            ),
-            (
-                {"spam": {"spam1": {"spam2": "ham2", "eggs": "overeasy"}}},
-                "spam.spam1.eggs",
-                "overeasy",
-            ),
-            (
-                {"spam": {"spam1": {"spam2": "ham2", "eggs": ["over", "easy"]}}},
-                "spam.spam1.eggs",
-                ["over", "easy"],
-            ),
-            ({"spam": {"spam1": {"spam2": "ham2", "eggs": 1}}}, "spam.spam1.eggs", 1),
-            (
-                {"spam": {"spam1": {"spam2": "ham2", "eggs": False}}},
-                "spam.spam1.eggs",
-                False,
-            ),
-        ],
-    )
-    def test_get_property(self, prop_dict, prop_path, expected_value):
-        assert _get_property(prop_dict, prop_path) == expected_value
-
-    @pytest.mark.parametrize(
-        "prop_dict, prop_path, expected_value, default_value",
-        [
-            ({}, "spam", "ham", "ham"),
-            ({"spam": "ham"}, "eggs", "ham", "ham"),
-        ],
-    )
-    def test_get_property_default(
-        self, prop_dict, prop_path, expected_value, default_value
-    ):
-        assert _get_property(prop_dict, prop_path, default_value) == expected_value
-
     @pytest.fixture(scope="function")
     def example_config_dict(self) -> Dict[str, str]:
         return {
@@ -404,6 +340,7 @@ class TestConfigProxy:
         yield
         # set back to original value
         CONFIG.notifications.notification_service_type = service_type
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.fixture
     def insert_app_config_set_notifications_none(self, db):
@@ -413,6 +350,7 @@ class TestConfigProxy:
         yield
         # set back to original value
         CONFIG.notifications = notifications
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.mark.usefixtures("insert_app_config_set_notification_service_type_none")
     def test_config_proxy_none_set(self, config_proxy: ConfigProxy):

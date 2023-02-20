@@ -178,6 +178,7 @@ const CustomFieldsModal: React.FC<CustomFieldsModalProps> = ({
                 _hover={{ bg: "primary.400" }}
                 bg="primary.800"
                 color="white"
+                data-testid="custom-fields-modal-submit-btn"
                 isDisabled={isSubmitting}
                 isLoading={isSubmitting}
                 loadingText="Submitting"
