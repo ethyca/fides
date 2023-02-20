@@ -1,3 +1,4 @@
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -19,6 +20,11 @@ The types of changes are:
 ### Changed
 
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
+* Update how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
+
+### Developer Experience
+
+* Set the security environment of the fides dev setup to `prod` instead of `dev` [#2588](https://github.com/ethyca/fides/pull/2588)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
@@ -40,9 +46,11 @@ The types of changes are:
   * `inspectForBrowserIdentities` now also looks for `ljt_readerID`. [#2543](https://github.com/ethyca/fides/pull/2543)
 
 ### Added
+
   * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
   * Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
   * Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
+
 ### Changed
 
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523)
@@ -64,7 +72,6 @@ The types of changes are:
 ### Developer Experience
 
 * Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
-* Set the security environment of the fides dev setup to `prod` instead of `dev` [#2588](https://github.com/ethyca/fides/pull/2588)
 * New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
 * Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
 * Change from `randomint` to `uuid` in mongodb tests to reduce flakiness. [#2591](https://github.com/ethyca/fides/pull/2591)
