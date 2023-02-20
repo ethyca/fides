@@ -20,6 +20,10 @@ The types of changes are:
 
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 
+### Added
+
+* Added the `erase_after` field on collections to be able to set the order for erasures [#2619](https://github.com/ethyca/fides/pull/2619)
+
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
 * Fides API
