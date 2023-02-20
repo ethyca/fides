@@ -282,3 +282,61 @@ def test_config_log_level_invalid():
         with pytest.raises(ValidationError) as err:
             get_config()
         assert "Invalid LOG_LEVEL" in str(err.value)
+
+
+class TestBuildingDatabaseValues:
+    def test_validating_included_sqlalchemy_database_uri(self) -> None:
+        """
+        Test that injecting a pre-configured database uri is
+        correctly used as opposed to building a new one.
+        """
+        incorrect_value = "incorrecthost"
+        correct_value = "correcthosthost"
+        database_settings = DatabaseSettings(
+            server=incorrect_value,
+            sqlalchemy_database_uri=f"postgresql://postgres:fides@{correct_value}:5432/fides",
+        )
+        assert incorrect_value not in database_settings.sqlalchemy_database_uri
+        assert correct_value in database_settings.sqlalchemy_database_uri
+
+    def test_validating_included_sqlalchemy_test_database_uri(self) -> None:
+        """
+        Test that injecting a pre-configured test database uri is
+        correctly used as opposed to building a new one.
+        """
+        incorrect_value = "incorrecthost"
+        correct_value = "correcthosthost"
+        database_settings = DatabaseSettings(
+            server=incorrect_value,
+            sqlalchemy_test_database_uri=f"postgresql://postgres:fides@{correct_value}:5432/fides",
+        )
+        assert incorrect_value not in database_settings.sqlalchemy_test_database_uri
+        assert correct_value in database_settings.sqlalchemy_test_database_uri
+
+    def test_validating_included_sync_database_uri(self) -> None:
+        """
+        Test that injecting a pre-configured database uri is
+        correctly used as opposed to building a new one.
+        """
+        incorrect_value = "incorrecthost"
+        correct_value = "correcthosthost"
+        database_settings = DatabaseSettings(
+            server=incorrect_value,
+            sync_database_uri=f"postgresql://postgres:fides@{correct_value}:5432/fides",
+        )
+        assert incorrect_value not in database_settings.sync_database_uri
+        assert correct_value in database_settings.sync_database_uri
+
+    def test_validating_included_async_database_uri(self) -> None:
+        """
+        Test that injecting a pre-configured database uri is
+        correctly used as opposed to building a new one.
+        """
+        incorrect_value = "incorrecthost"
+        correct_value = "correcthosthost"
+        database_settings = DatabaseSettings(
+            server=incorrect_value,
+            async_database_uri=f"postgresql://postgres:fides@{correct_value}:5432/fides",
+        )
+        assert incorrect_value not in database_settings.async_database_uri
+        assert correct_value in database_settings.async_database_uri

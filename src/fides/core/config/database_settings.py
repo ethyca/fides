@@ -86,8 +86,7 @@ class DatabaseSettings(FidesSettings):
     ) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(value, str) and value:
-            # This validates that the string is a valid PostgresDns.
-            return str(PostgresDsn(value))
+            return value
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
         return str(
@@ -108,8 +107,7 @@ class DatabaseSettings(FidesSettings):
     ) -> str:
         """Join DB connection credentials into an async connection string."""
         if isinstance(value, str) and value:
-            # This validates that the string is a valid PostgresDns.
-            return str(PostgresDsn(value))
+            return value
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
         return str(
