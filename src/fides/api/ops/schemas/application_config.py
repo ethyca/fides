@@ -1,33 +1,27 @@
 from __future__ import annotations
 
+from enum import Enum
 from typing import Dict, Optional
 
 from pydantic import Extra, root_validator, validator
 
-from fides.api.ops.schemas.storage.storage import StorageType
+from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
 from fides.lib.schemas.base_class import BaseSchema
 
 
+class StorageTypeApiAccepted(Enum):
+    """Enum for storage destination types accepted in API updates"""
+
+    s3 = "s3"
+    local = "local"  # local should be used for testing only, not for processing real-world privacy requests
+
+
 class StorageApplicationConfig(BaseSchema):
-    active_default_storage_type: StorageType
+    active_default_storage_type: StorageTypeApiAccepted
 
     class Config:
         use_enum_values = True
         extra = Extra.forbid
-
-    @validator("active_default_storage_type")
-    @classmethod
-    def validate_storage_type(cls, storage_type: StorageType) -> StorageType:
-        """
-        For now, only `local` and `s3` storage types are supported
-        as an `active_default_storage_type`
-        """
-        valid_storage_types = (StorageType.local.value, StorageType.s3.value)
-        if storage_type not in valid_storage_types:
-            raise ValueError(
-                f"Only '{valid_storage_types}' are supported as `active_default_storage_type`s"
-            )
-        return storage_type
 
 
 # TODO: the below models classes are "duplicates" of the pydantic
@@ -52,12 +46,12 @@ class NotificationApplicationConfig(BaseSchema):
     def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
         if value:
-            valid_values = ("MAILGUN", "TWILIO_TEXT", "TWILIO_EMAIL")
             value = value.upper()  # force uppercase for safety
-
-            if value not in valid_values:
+            try:
+                MessagingServiceType[value]
+            except ValueError:
                 raise ValueError(
-                    f"Invalid NOTIFICATION_SERVICE_TYPE provided '{value}', must be one of: {', '.join([level for level in valid_values])}"
+                    f"Invalid notification.notification_service_type provided '{value}', must be one of: {', '.join([service_type.name for service_type in MessagingServiceType])}"
                 )
 
         return value
