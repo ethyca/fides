@@ -714,7 +714,7 @@ def get_cached_data_for_erasures(
 
 
 def update_erasure_mapping_from_cache(
-    dsk: Dict[CollectionAddress, Tuple[Any, ...]],
+    dsk: Dict[CollectionAddress, Union[Tuple[Any, ...], int]],
     resources: TaskResources,
     start_fn: Callable,
 ) -> None:
