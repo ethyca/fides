@@ -18,6 +18,7 @@ The types of changes are:
 
 ### Changed
 
+* Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
@@ -41,7 +42,6 @@ The types of changes are:
 
 ### Added
 
-* Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
 * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
 * Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
 * Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
