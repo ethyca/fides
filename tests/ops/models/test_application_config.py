@@ -404,6 +404,7 @@ class TestConfigProxy:
         yield
         # set back to original value
         CONFIG.notifications.notification_service_type = service_type
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.fixture
     def insert_app_config_set_notifications_none(self, db):
@@ -413,6 +414,7 @@ class TestConfigProxy:
         yield
         # set back to original value
         CONFIG.notifications = notifications
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.mark.usefixtures("insert_app_config_set_notification_service_type_none")
     def test_config_proxy_none_set(self, config_proxy: ConfigProxy):

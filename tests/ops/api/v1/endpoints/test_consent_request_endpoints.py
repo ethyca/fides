@@ -69,6 +69,7 @@ class TestConsentRequest:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.fixture(scope="function")
     def set_notification_service_type_to_twilio_sms(self, db):
@@ -80,6 +81,7 @@ class TestConsentRequest:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.mark.usefixtures(
         "messaging_config",

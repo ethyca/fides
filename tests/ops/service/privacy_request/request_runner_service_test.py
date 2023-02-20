@@ -75,6 +75,7 @@ def privacy_request_complete_email_notification_enabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_completion_notification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @mock.patch(
@@ -1859,6 +1860,7 @@ class TestPrivacyRequestsEmailNotifications:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_completion_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration

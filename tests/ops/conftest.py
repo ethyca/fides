@@ -289,6 +289,7 @@ def subject_identity_verification_required(db):
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.execution.subject_identity_verification_required = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -299,6 +300,7 @@ def subject_identity_verification_not_required(db):
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.execution.subject_identity_verification_required = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -309,6 +311,7 @@ def privacy_request_complete_email_notification_disabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_completion_notification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -319,6 +322,7 @@ def privacy_request_receipt_notification_disabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_receipt_notification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -329,6 +333,7 @@ def privacy_request_review_notification_disabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_review_notification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -339,3 +344,4 @@ def set_notification_service_type_mailgun(db):
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.notification_service_type = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)

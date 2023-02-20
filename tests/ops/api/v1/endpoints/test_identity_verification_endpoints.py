@@ -20,6 +20,7 @@ class TestGetIdentityVerificationConfig:
         ApplicationConfig.update_config_set(db, config)
         yield
         config.execution.subject_identity_verification_required = original_value
+        ApplicationConfig.update_config_set(db, config)
 
     @pytest.fixture(scope="function")
     def subject_identity_verification_required_via_api(self, db):
@@ -30,6 +31,7 @@ class TestGetIdentityVerificationConfig:
         ApplicationConfig.update_config_set(db, config)
         yield
         config.execution.subject_identity_verification_required = original_value
+        ApplicationConfig.update_config_set(db, config)
 
     def test_get_config_with_verification_required_no_email_config(
         self,
