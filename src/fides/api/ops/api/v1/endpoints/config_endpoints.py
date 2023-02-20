@@ -33,7 +33,7 @@ def get_config(
     logger.info("Getting the exposable Fides configuration")
     if api_set:
         logger.info("Retrieving api-set application settings")
-        return ApplicationConfig.get_api_set(db)
+        return censor_config(ApplicationConfig.get_api_set(db))
     config = censor_config(get_app_config())
     return config
 
