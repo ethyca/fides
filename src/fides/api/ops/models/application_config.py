@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 
 from loguru import logger
 from pydantic.utils import deep_update
+from pydash.objects import get
 from sqlalchemy import Boolean, CheckConstraint, Column
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
@@ -163,33 +164,10 @@ class ApplicationConfig(Base):
         """
         config_record = db.query(cls).first()
         if config_record:
-            api_prop = _get_property(config_record.api_set, config_property)
+            api_prop = get(config_record.api_set, config_property)
             if api_prop is None:
                 logger.info(f"No API-set {config_property} property found")
-                return _get_property(
-                    config_record.config_set, config_property, default_value
-                )
+                return get(config_record.config_set, config_property, default_value)
             return api_prop
         logger.warning("No config record found!")
         return default_value
-
-
-def _get_property(
-    properties: Any, property_path: str | None = None, default_value: Any = None
-) -> Any:
-    """
-    Internal helper to recursively traverse a property dict/value with a
-    dot-separated `property_path` string
-    """
-    if property_path:
-        if not isinstance(properties, dict):
-            raise ValueError("Invalid property lookup")
-        path_split = property_path.split(".", maxsplit=1)
-        index = path_split.pop(0)
-        try:
-            return _get_property(
-                properties[index], path_split[0] if path_split else None
-            )
-        except KeyError:
-            return default_value
-    return properties
