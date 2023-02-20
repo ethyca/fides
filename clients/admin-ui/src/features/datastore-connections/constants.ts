@@ -47,6 +47,7 @@ export enum SaasType {
   STRIPE = "stripe",
   TWILIO_CONVERSATIONS = "twilio_conversations",
   UNIVERSAL_ANALYTICS = "universal_analytics",
+  WUNDERKIND = "wunderkind",
   ZENDESK = "zendesk",
 }
 
@@ -101,10 +102,12 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   [SaasType.SENTRY, "sentry.svg"],
   [SaasType.SHOPIFY, "shopify.svg"],
   [SaasType.SLACK_ENTERPRISE, "slack.svg"],
+  [ConnectionType.SOVRN, "sovrn.svg"],
   [SaasType.SQUARE, "square.svg"],
   [SaasType.STRIPE, "stripe.svg"],
   [SaasType.TWILIO_CONVERSATIONS, "twilio.svg"],
   [SaasType.UNIVERSAL_ANALYTICS, "google_analytics.svg"],
+  [SaasType.WUNDERKIND, "wunderkind.svg"],
   [SaasType.ZENDESK, "zendesk.svg"],
 ]);
 

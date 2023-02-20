@@ -160,10 +160,14 @@ const CreateCustomLists = forwardRef(({ onSubmitComplete }, ref) => {
                               displayHelpIcon={false}
                               name={`allowed_values[${index}]`}
                             />
-                            <Icon
-                              as={TrashCanSolidIcon}
-                              _hover={{ cursor: "pointer" }}
+                            <IconButton
+                              aria-label="Remove this list value"
+                              data-testid={`remove-list-value-btn-${index}`}
+                              icon={<TrashCanSolidIcon />}
+                              isDisabled={allowed_values.length <= 1}
                               onClick={() => fieldArrayProps.remove(index)}
+                              size="sm"
+                              variant="ghost"
                             />
                           </Flex>
                         ))}

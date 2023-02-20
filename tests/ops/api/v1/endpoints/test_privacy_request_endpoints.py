@@ -1286,6 +1286,7 @@ class TestGetPrivacyRequests:
             "email": TEST_EMAIL,
             "phone_number": TEST_PHONE,
             "ga_client_id": None,
+            "ljt_readerID": None,
         }
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"

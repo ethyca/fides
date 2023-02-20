@@ -1,6 +1,5 @@
 import { Box, Button, CloseSolidIcon, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
-import Stepper from "common/Stepper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
@@ -13,7 +12,6 @@ import AddSystem from "./AddSystem";
 import AuthenticateScanner from "./AuthenticateScanner";
 import {
   changeReviewStep,
-  changeStep,
   reset,
   reviewManualSystem,
   selectReviewStep,
@@ -22,7 +20,7 @@ import {
   selectSystemsForReview,
   setSystemInReview,
 } from "./config-wizard.slice";
-import { HORIZONTAL_STEPS, STEPS } from "./constants";
+import { HORIZONTAL_STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import ScanResults from "./ScanResults";
 import SuccessPage from "./SuccessPage";
@@ -68,20 +66,7 @@ const ConfigWizardWalkthrough = () => {
         height="100vh"
         width="100%"
       >
-        <Box flexShrink={0}>
-          <Stepper
-            activeStep={step}
-            setActiveStep={(s) => dispatch(changeStep(s))}
-            steps={STEPS}
-          />
-        </Box>
-        <Box
-          display="flex"
-          justifyContent={
-            features.flags.configWizardStepper ? undefined : "center"
-          }
-          w="100%"
-        >
+        <Box display="flex" justifyContent="center" w="100%">
           {step === 1 ? <OrganizationInfoForm /> : null}
           {step === 2 ? <AddSystem /> : null}
           {step === 3 ? <AuthenticateScanner /> : null}

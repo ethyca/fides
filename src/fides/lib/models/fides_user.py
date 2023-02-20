@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
+from citext import CIText
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.orm import Session, relationship
 
@@ -14,7 +15,7 @@ from fides.lib.models.audit_log import AuditLog
 class FidesUser(Base):
     """The DB ORM model for FidesUser."""
 
-    username = Column(String, unique=True, index=True)
+    username = Column(CIText, unique=True, index=True)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)

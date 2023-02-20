@@ -1,0 +1,10 @@
+{
+  "name": "Created custom field",
+  "description": null,
+  "field_type": "string",
+  "allow_list_id": "id-allow-list-pokemon",
+  "resource_type": "data category",
+  "field_definition": null,
+  "active": true,
+  "id": "id-custom-field-definition-created"
+}

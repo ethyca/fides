@@ -315,6 +315,22 @@ class TestGetConnections:
             }
         ]
 
+    def test_search_email_type(self, api_client, generate_auth_header, url):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+
+        resp = api_client.get(url + "?system_type=email", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+        assert len(data) == 1
+        assert data == [
+            {
+                "identifier": "sovrn",
+                "type": "email",
+                "human_readable": "Sovrn",
+                "encoded_icon": None,
+            }
+        ]
+
 
 class TestGetConnectionSecretSchema:
     @pytest.fixture(scope="function")

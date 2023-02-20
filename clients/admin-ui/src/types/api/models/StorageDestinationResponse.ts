@@ -14,4 +14,5 @@ export type StorageDestinationResponse = {
   details: any;
   key: string;
   format: ResponseFormat;
+  is_default?: boolean;
 };
