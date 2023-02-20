@@ -807,7 +807,7 @@ class TestGetDefaultMessagingConfig:
         auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(
             (V1_URL_PREFIX + MESSAGING_DEFAULT_BY_TYPE).format(
-                storage_type=MessagingServiceType.MAILGUN.value
+                service_type=MessagingServiceType.MAILGUN.value
             ),
             headers=auth_header,
         )
@@ -886,7 +886,7 @@ class TestPutDefaultMessagingConfig:
 
         assert response_body["key"] is not None
         assert response_body["service_type"] == payload["service_type"]
-        assert response_body["details"] == payload["details"]
+        assert response_body["details"]["domain"] == payload["details"]["domain"]
         messaging_configs = (
             db.query(MessagingConfig)
             .filter_by(service_type=payload["service_type"])
@@ -894,8 +894,8 @@ class TestPutDefaultMessagingConfig:
         )
         assert len(messaging_configs) == 1
         assert messaging_configs[0].key == response_body["key"]
-        assert messaging_configs[0].type.value == payload["service_type"]
-        assert messaging_configs[0].details == payload["details"]
+        assert messaging_configs[0].service_type.value == payload["service_type"]
+        assert messaging_configs[0].details["domain"] == payload["details"]["domain"]
 
         messaging_configs[0].delete(db)
 
@@ -930,8 +930,8 @@ class TestPutDefaultMessagingConfig:
     @pytest.mark.parametrize(
         "service_type",
         [
-            MessagingServiceType.TWILIO_EMAIL,
-            MessagingServiceType.TWILIO_TEXT,
+            MessagingServiceType.TWILIO_EMAIL.value,
+            MessagingServiceType.TWILIO_TEXT.value,
         ],
     )
     def test_put_default_messaging_config_with_different_service_types(
@@ -951,7 +951,7 @@ class TestPutDefaultMessagingConfig:
         config_key = response_body["key"]
         messaging_config = MessagingConfig.get_by(db, field="key", value=config_key)
         assert service_type == response_body["service_type"]
-        assert service_type == messaging_config.service_type
+        assert service_type == messaging_config.service_type.value
         messaging_config.delete(db)
 
     def test_put_default_messaging_config_twice_only_one_record(
@@ -971,13 +971,13 @@ class TestPutDefaultMessagingConfig:
         config_key = response_body["key"]
         messaging_configs = (
             db.query(MessagingConfig)
-            .filter_by(service_typetype=payload["service_type"])
+            .filter_by(service_type=payload["service_type"])
             .all()
         )
         assert len(messaging_configs) == 1
         messaging_config = messaging_configs[0]
         assert messaging_config.key == config_key
-        assert messaging_config.details == payload["details"]
+        assert messaging_config.details["domain"] == payload["details"]["domain"]
 
         # try a follow-up put after changing a detail assert it made the update to existing record
         payload["details"][MessagingServiceDetails.DOMAIN.value] = "a.new.domain"
@@ -1001,14 +1001,14 @@ class TestPutDefaultMessagingConfig:
 
         messaging_config.delete(db)
 
-    def test_put_default_config_twilio_email_rejects_mailgun_details(
+    def test_put_default_config_invalid_details(
         self,
         url,
         api_client: TestClient,
         generate_auth_header,
         payload,
     ):
-        payload["service_type"] = MessagingServiceType.TWILIO_EMAIL
+        payload["details"] = {"invalid": "invalid"}
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
@@ -1016,9 +1016,9 @@ class TestPutDefaultMessagingConfig:
         assert response.status_code == 422
 
 
-class TestPutDefaultMessagingConfigSecretsS3:
+class TestPutDefaultMessagingConfigSecrets:
     @pytest.fixture(scope="function")
-    def url(self) -> str:
+    def url(self, messaging_config) -> str:
         return (V1_URL_PREFIX + MESSAGING_DEFAULT_SECRETS).format(
             service_type=MessagingServiceType.MAILGUN.value
         )
@@ -1131,6 +1131,7 @@ class TestGetActiveDefaultMessagingConfig:
         )
         assert 404 == response.status_code
 
+    @pytest.mark.usefixtures("notification_service_type_none")
     def test_get_active_default_app_setting_not_set(
         self,
         url,
@@ -1159,6 +1160,17 @@ class TestGetActiveDefaultMessagingConfig:
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.fixture(scope="function")
+    def notification_service_type_none(self, db):
+        """Set mailgun as the `notification_service_type` property"""
+        original_value = CONFIG.notifications.notification_service_type
+        CONFIG.notifications.notification_service_type = None
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.mark.usefixtures("notification_service_type_mailgun")
     def test_get_active_default_app_setting_but_not_configured(

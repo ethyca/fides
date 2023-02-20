@@ -198,4 +198,4 @@ def default_messaging_config_key(service_type: str) -> str:
 
     Returns a key to be used in a default messaging config for the given type.
     """
-    return f"default_messaging_config_[{service_type.lower()}]"
+    return f"default_messaging_config_{service_type.lower()}"

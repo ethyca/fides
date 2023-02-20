@@ -224,23 +224,7 @@ class MessagingConfigBase(BaseModel):
     class Config:
         use_enum_values = False
         orm_mode = True
-
-    @root_validator(pre=True)
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        service_type_pre = values.get("service_type")
-        if service_type_pre:
-            # uppercase to match enums in database
-            values["service_type"] = service_type_pre.upper()
-            service_type: MessagingServiceType = values["service_type"]
-            if service_type == MessagingServiceType.MAILGUN.value:
-                cls._validate_details_schema(
-                    values=values, schema=MessagingServiceDetailsMailgun
-                )
-            if service_type == MessagingServiceType.TWILIO_EMAIL.value:
-                cls._validate_details_schema(
-                    values=values, schema=MessagingServiceDetailsTwilioEmail
-                )
-        return values
+        extra = Extra.forbid
 
     @staticmethod
     def _validate_details_schema(
@@ -260,6 +244,25 @@ class MessagingConfigRequest(MessagingConfigBase):
 
     name: str
     key: Optional[FidesKey]
+
+    @root_validator(pre=True)
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        service_type_pre = values.get("service_type")
+        if service_type_pre:
+            # uppercase to match enums in database
+            if isinstance(service_type_pre, str):
+                service_type_pre = service_type_pre.upper()
+            values["service_type"] = service_type_pre
+            service_type: MessagingServiceType = values["service_type"]
+            if service_type == MessagingServiceType.MAILGUN.value:
+                cls._validate_details_schema(
+                    values=values, schema=MessagingServiceDetailsMailgun
+                )
+            if service_type == MessagingServiceType.TWILIO_EMAIL.value:
+                cls._validate_details_schema(
+                    values=values, schema=MessagingServiceDetailsTwilioEmail
+                )
+        return values
 
 
 class MessagingConfigResponse(MessagingConfigBase):
