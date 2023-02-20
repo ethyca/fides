@@ -5,16 +5,26 @@ from typing import Dict, Optional
 
 from pydantic import Field
 
+from fides.core.utils import create_auth_header, get_auth_header
+
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__USER__"
 
 
+def try_get_auth_header() -> Dict[str, str]:
+    """Try to get the auth header. If an error is thrown, return a default auth header instead."""
+    try:
+        return get_auth_header(verbose=False)
+    except SystemExit:
+        return create_auth_header("defaulttoken")
+
+
 class UserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
-    auth_header: Optional[Dict[str, str]] = Field(
-        default=None,
+    auth_header: Dict[str, str] = Field(
+        default=try_get_auth_header(),
         description="Authentication header built automatically from the credentials file.",
         exclude=True,
     )
