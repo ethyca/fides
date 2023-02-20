@@ -10,7 +10,7 @@ from fides.api.ops.schemas.storage.storage import StorageType
 
 class ConfigProxyBase:
     """
-    Base class that's used to make config proxy classes that corresopnd
+    Base class that's used to make config proxy classes that correspond
     to our config/settings sub-sections.
 
     Config proxy classes are a construct to allow for accessing "resolved"
