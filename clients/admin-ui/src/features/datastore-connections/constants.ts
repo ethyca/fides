@@ -102,6 +102,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   [SaasType.SENTRY, "sentry.svg"],
   [SaasType.SHOPIFY, "shopify.svg"],
   [SaasType.SLACK_ENTERPRISE, "slack.svg"],
+  [ConnectionType.SOVRN, "sovrn.svg"],
   [SaasType.SQUARE, "square.svg"],
   [SaasType.STRIPE, "stripe.svg"],
   [SaasType.TWILIO_CONVERSATIONS, "twilio.svg"],

@@ -59,6 +59,12 @@
       "type": "manual",
       "human_readable": "Manual Webhook",
       "encoded_icon": null
+    },
+    {
+      "identifier": "sovrn",
+      "type": "email",
+      "human_readable": "Sovrn",
+      "encoded_icon": null
     }
   ],
   "total": 10,

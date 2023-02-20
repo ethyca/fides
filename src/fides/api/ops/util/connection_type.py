@@ -79,6 +79,7 @@ def get_connection_types(
                     ConnectionType.email,
                     ConnectionType.manual_webhook,
                     ConnectionType.fides,
+                    ConnectionType.sovrn,
                 ]
                 and is_match(conn_type.value)
             ]
@@ -139,6 +140,25 @@ def get_connection_types(
                     human_readable=ConnectionType(item).human_readable,
                 )
                 for item in manual_types
+            ]
+        )
+
+    if system_type == SystemType.email or system_type is None:
+        email_types: list[str] = sorted(
+            [
+                email_type.value
+                for email_type in ConnectionType
+                if email_type == ConnectionType.sovrn and is_match(email_type.value)
+            ]
+        )
+        connection_system_types.extend(
+            [
+                ConnectionSystemTypeMap(
+                    identifier=item,
+                    type=SystemType.email,
+                    human_readable=ConnectionType(item).human_readable,
+                )
+                for item in email_types
             ]
         )
     return connection_system_types

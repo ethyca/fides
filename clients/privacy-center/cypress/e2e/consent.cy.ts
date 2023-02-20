@@ -1,5 +1,6 @@
 import { hostUrl } from "~/constants";
 import { CONSENT_COOKIE_NAME } from "fides-consent";
+import { GpcStatus } from "~/features/consent/types";
 
 describe("Consent settings", () => {
   describe("when the user isn't verified", () => {
@@ -100,6 +101,17 @@ describe("Consent settings", () => {
             highlight: false,
             cookieKeys: ["tracking"],
           },
+          {
+            fidesDataUseKey: "collect.gpc",
+            name: "GPC test",
+            description: "Just used for testing GPC.",
+            url: "https://example.com/privacy#gpc",
+            default: {
+              value: true,
+              globalPrivacyControl: false,
+            },
+            cookieKeys: ["gpc_test"],
+          },
         ],
       });
     });
@@ -113,6 +125,11 @@ describe("Consent settings", () => {
         cy.getRadio().should("not.be.checked");
       });
       cy.getByTestId(`consent-item-card-improve`).within(() => {
+        cy.getRadio().should("be.checked");
+      });
+
+      // Without GPC, this defaults to true.
+      cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
         cy.getRadio().should("be.checked");
       });
 
@@ -133,16 +150,19 @@ describe("Consent settings", () => {
       });
 
       // The cookie should also have been updated.
-      cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should((cookie) => {
         const cookieKeyConsent = JSON.parse(decodeURIComponent(cookie!.value));
         expect(cookieKeyConsent.data_sales).to.eq(true);
       });
     });
 
-    it("can grab the GA cookie and send to a consent request", () => {
+    it("can grab cookies and send to a consent request", () => {
       const clientId = "999999999.8888888888";
-      const cookieValue = `GA1.1.${clientId}`;
-      cy.setCookie("_ga", cookieValue);
+      const gaCookieValue = `GA1.1.${clientId}`;
+      const sovrnCookieValue = "test";
+
+      cy.setCookie("_ga", gaCookieValue);
+      cy.setCookie("ljt_readerID", sovrnCookieValue);
       cy.visit("/consent");
       cy.getByTestId("consent");
 
@@ -151,6 +171,7 @@ describe("Consent settings", () => {
       cy.wait("@patchConsentPreferences").then((interception) => {
         const { body } = interception.request;
         expect(body.browser_identity.ga_client_id).to.eq(clientId);
+        expect(body.browser_identity.ljt_readerID).to.eq(sovrnCookieValue);
       });
     });
 
@@ -172,6 +193,7 @@ describe("Consent settings", () => {
         expect(win).to.have.nested.property("Fides.consent").that.eql({
           data_sales: false,
           tracking: false,
+          gpc_test: true,
         });
 
         // GTM configuration
@@ -183,6 +205,7 @@ describe("Consent settings", () => {
                 consent: {
                   data_sales: false,
                   tracking: false,
+                  gpc_test: true,
                 },
               },
             },
@@ -195,6 +218,22 @@ describe("Consent settings", () => {
             ["consent", "revoke"],
             ["dataProcessingOptions", ["LDU"], 1, 1000],
           ]);
+      });
+    });
+
+    describe("when globalPrivacyControl is enabled", () => {
+      it("lets the user consent to override GPC", () => {
+        cy.visit("/consent?globalPrivacyControl=true");
+        cy.getByTestId("consent");
+
+        cy.getByTestId("gpc-banner");
+
+        cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
+          cy.contains("GPC test");
+          cy.getRadio().should("not.be.checked");
+
+          cy.getByTestId("gpc-badge").should("contain", GpcStatus.APPLIED);
+        });
       });
     });
   });

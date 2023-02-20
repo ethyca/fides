@@ -16,6 +16,7 @@ export type ConnectionTypeSecretSchemaProperty = {
   allOf?: {
     $ref: string;
   }[];
+  items?: { $ref: string };
 };
 
 export type ConnectionTypeSecretSchemaReponse = {
@@ -25,6 +26,10 @@ export type ConnectionTypeSecretSchemaReponse = {
   required: string[];
   title: string;
   type: string;
+  definitions: {
+    ExtendedIdentityTypes: ConnectionTypeSecretSchemaReponse;
+    AdvancedSettingsWithExtendedIdentityTypes: ConnectionTypeSecretSchemaReponse;
+  };
 };
 
 export type ConnectionTypeState = ConnectionTypeParams & {

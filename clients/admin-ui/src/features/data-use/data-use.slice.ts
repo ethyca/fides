@@ -2,12 +2,19 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
+import { selectToken } from "~/features/auth";
+import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { DataUse } from "~/types/api";
 
 export const dataUseApi = createApi({
   reducerPath: "dataUseApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
+    prepareHeaders: (headers, { getState }) => {
+      const token: string | null = selectToken(getState() as RootState);
+      addCommonHeaders(headers, token);
+      return headers;
+    },
   }),
   tagTypes: ["Data Uses"],
   endpoints: (build) => ({

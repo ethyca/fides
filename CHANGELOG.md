@@ -14,12 +14,18 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.6.6...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.7.0...main)
+
+### Changed
+
+* Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
+
+## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
 * Fides API
   * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
   * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
-  * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
+  
 * Admin UI
   * Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
     * Create Custom Lists
@@ -27,17 +33,24 @@ The types of changes are:
     * Create custom fields from a the taxonomy editor
     * Provide a custom field value in a resource
     * Bulk edit custom field values [#2612](https://github.com/ethyca/fides/issues/2612)
+    * Custom metadata UI Polish [#2624](https://github.com/ethyca/fides/pull/2625)
 * Privacy Center
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
+  * When GPC is enabled, the UI indicates which data uses are opted out by default. [#2596](https://github.com/ethyca/fides/pull/2596)
+  * `inspectForBrowserIdentities` now also looks for `ljt_readerID`. [#2543](https://github.com/ethyca/fides/pull/2543)
 
+### Added
+  * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
+  * Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
+  * Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
 ### Changed
 
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523)
 * Removes legacy `verify_oauth_client` function [#2527](https://github.com/ethyca/fides/pull/2527)
 * Updated the UI for adding systems to a new design [#2490](https://github.com/ethyca/fides/pull/2490)
+* Minor logging improvements [#2566](https://github.com/ethyca/fides/pull/2566)
 * Various form components now take a `stacked` or `inline` variant [#2542](https://github.com/ethyca/fides/pull/2542)
 * UX fixes for user management [#2537](https://github.com/ethyca/fides/pull/2537)
-* Replaced pickle with json for storing cache [#2577](https://github.com/ethyca/fides/pull/2577)
 * Updating Firebase Auth connector to mask the user with a delete instead of an update [#2602](https://github.com/ethyca/fides/pull/2602)
 
 ### Fixed
@@ -51,6 +64,7 @@ The types of changes are:
 ### Developer Experience
 
 * Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
+* Set the security environment of the fides dev setup to `prod` instead of `dev` [#2588](https://github.com/ethyca/fides/pull/2588)
 * New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
 * Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
 * Change from `randomint` to `uuid` in mongodb tests to reduce flakiness. [#2591](https://github.com/ethyca/fides/pull/2591)
