@@ -1,3 +1,4 @@
+import sys
 import webbrowser
 from functools import partial
 from os import environ, getcwd, makedirs
@@ -95,6 +96,38 @@ def check_docker_version() -> bool:
             f"Error: Your Docker version (v{docker_version}) is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
         )
     return version_is_valid
+
+
+def check_virtualenv() -> bool:
+    """
+    Check to see if the deploy is running from a virtual environment, and log a
+    warning if not.
+
+    In many cases, running outside of a virtual environment will lead to
+    mysterious Docker or Python errors, so warning the user helps get ahead of
+    some of these problems.
+    """
+
+    # Adapted from https://stackoverflow.com/a/58026969/
+    # Detect a virtualenv by checking sys.prefix if the  "base" prefixes match
+    real_prefix = getattr(sys, "real_prefix", None)  # set by older virtualenv
+    base_prefix = getattr(sys, "base_prefix", sys.prefix)
+    running_in_virtualenv = (base_prefix or real_prefix) != sys.prefix
+
+    if not running_in_virtualenv:
+        echo_red(
+            f"WARNING: Your 'fides' CLI is installed outside of a virtual environment at: {sys.prefix}"
+        )
+        echo_red(
+            "Docker may not have permission to access this path, so if you encounter issues with Docker mounts, "
+            "try reinstalling 'ethyca-fides' using a virtual environment (see https://docs.python.org/3/library/venv.html)."
+        )
+        echo_red(
+            "If you did install using a virtual environment, check your PATH. "
+            "You may have a global version of 'ethyca-fides' installed that is taking precedence!"
+        )
+        return False
+    return True
 
 
 def seed_example_data() -> None:
