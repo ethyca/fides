@@ -1,5 +1,6 @@
 import { Box, Button, Heading, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
+import { useState } from "react";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
@@ -9,7 +10,10 @@ import {
   useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
+import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
+
 const TwilioSMSConfiguration = () => {
+  const [configurationStep, setConfigurationStep] = useState("");
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
@@ -35,6 +39,7 @@ const TwilioSMSConfiguration = () => {
       handleError(result.error);
     } else {
       successAlert(`Twilio text secrets successfully updated.`);
+      setConfigurationStep("testConnection");
     }
   };
 
@@ -103,6 +108,11 @@ const TwilioSMSConfiguration = () => {
           )}
         </Formik>
       </Stack>
+      {configurationStep === "testConnection" ? (
+        <TestMessagingProviderConnectionButton
+          messagingDetails={messagingDetails}
+        />
+      ) : null}
     </Box>
   );
 };

@@ -8,9 +8,10 @@ import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
-  useCreateTestConnectionMessageMutation,
   useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
+
+import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
 
 type ConnectionStep = "" | "apiKey" | "testConnection";
 
@@ -26,8 +27,6 @@ const MailgunEmailConfiguration = () => {
     useCreateMessagingConfigurationMutation();
   const [createMessagingConfigurationSecrets] =
     useCreateMessagingConfigurationSecretsMutation();
-  const [createTestConnectionMessage] =
-    useCreateTestConnectionMessageMutation();
 
   const handleMailgunConfiguration = async (value: { domain: string }) => {
     const result = await createMessagingConfiguration({
@@ -63,30 +62,12 @@ const MailgunEmailConfiguration = () => {
     }
   };
 
-  const handleTestConnection = async () => {
-    const result = await createTestConnectionMessage({
-      // test
-    });
-
-    if (isErrorResult(result)) {
-      handleError(result.error);
-    } else {
-      successAlert(`Test message successfully sent.`);
-    }
-    // I can enter a test identifier (Email or SMS) based on the messaging service type.
-    // I can click on test the configuration to send a test message.
-  };
-
   const initialValues = {
     domain: messagingDetails?.details.domain ?? "",
   };
 
   const initialAPIKeyValue = {
     api_key: messagingDetails?.key ?? "",
-  };
-
-  const initialEmailValue = {
-    email: messagingDetails?.email ?? "",
   };
 
   return (
@@ -175,45 +156,9 @@ const MailgunEmailConfiguration = () => {
         </>
       ) : null}
       {configurationStep === "testConnection" ? (
-        <>
-          <Divider />
-          <Heading fontSize="md" fontWeight="semibold" mt={10}>
-            Test connection
-          </Heading>
-          <Stack>
-            <Formik
-              initialValues={initialEmailValue}
-              onSubmit={handleTestConnection}
-            >
-              {({ isSubmitting, resetForm }) => (
-                <Form>
-                  <CustomTextInput
-                    name="email"
-                    label="Email"
-                    placeholder="youremail@domain.com"
-                  />
-                  <Button
-                    onClick={() => resetForm()}
-                    mr={2}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    isDisabled={isSubmitting}
-                    type="submit"
-                    colorScheme="primary"
-                    size="sm"
-                    data-testid="save-btn"
-                  >
-                    Save
-                  </Button>
-                </Form>
-              )}
-            </Formik>
-          </Stack>
-        </>
+        <TestMessagingProviderConnectionButton
+          messagingDetails={messagingDetails}
+        />
       ) : null}
     </Box>
   );
