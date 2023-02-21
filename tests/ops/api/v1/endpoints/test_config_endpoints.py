@@ -246,6 +246,26 @@ class TestPatchApplicationConfig:
         assert db_settings.api_set["notifications"] == payload["notifications"]
         assert "execution" not in db_settings.api_set
 
+    def test_patch_application_config_invalid_notification_type(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        payload,
+        db: Session,
+    ):
+
+        payload = {
+            "notifications": {"notification_service_type": "invalid_service_type"}
+        }
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 422
+
 
 class TestGetApplicationConfigApiSet:
     @pytest.fixture(scope="function")
