@@ -20,7 +20,7 @@ REQUIRED_ENV_VARS = {
 @pytest.mark.unit
 def test_get_config_verbose() -> None:
     """Simple test to check the 'verbose' code path."""
-    config = get_config(verbose=True)
+    config = get_config(verbose=True, config_path_override="fakefiledoesntexist.toml")
     assert config
 
 
