@@ -191,7 +191,7 @@ export const usePrivacyDeclarationForm = ({
           {title}
         </Heading>
       ) : null}
-      {!hideSaved && showSaved && !dirty ? (
+      {!hideSaved && showSaved && !dirty && initialValues.data_use ? (
         <Text fontSize="sm" data-testid="saved-indicator">
           <GreenCheckCircleIcon /> Saved
         </Text>

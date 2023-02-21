@@ -1,4 +1,12 @@
-import { Box, Button, Heading, Stack, Text, useToast } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  Heading,
+  Stack,
+  Text,
+  Tooltip,
+  useToast,
+} from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import NextLink from "next/link";
@@ -32,16 +40,20 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   const dispatch = useAppDispatch();
   const [updateSystemMutationTrigger, { isLoading }] =
     useUpdateSystemMutation();
-  // There's a step when going from empty state to the intial form
-  const [showInitialForm, setShowInitialForm] = useState(false);
-  const [initialDeclaration, setInitialDeclaration] = useState<
+
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [newDeclaration, setNewDeclaration] = useState<
     PrivacyDeclaration | undefined
   >(undefined);
 
-  const accordionDeclarations = useMemo(
-    () => system.privacy_declarations,
-    [system]
-  );
+  const accordionDeclarations = useMemo(() => {
+    if (!newDeclaration) {
+      return system.privacy_declarations;
+    }
+    return system.privacy_declarations.filter(
+      (pd) => pd.data_use !== newDeclaration.data_use
+    );
+  }, [newDeclaration, system]);
 
   const checkAlreadyExists = (values: PrivacyDeclaration) => {
     if (
@@ -96,19 +108,19 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
 
   const handleEditDeclaration = async (
     oldDeclaration: PrivacyDeclaration,
-    newDeclaration: PrivacyDeclaration
+    updatedDeclaration: PrivacyDeclaration
   ) => {
     // Do not allow editing a privacy declaration to have the same data use as one that already exists
     if (
-      newDeclaration.data_use !== oldDeclaration.data_use &&
-      checkAlreadyExists(newDeclaration)
+      updatedDeclaration.data_use !== oldDeclaration.data_use &&
+      checkAlreadyExists(updatedDeclaration)
     ) {
       return false;
     }
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
     const updatedDeclarations = accordionDeclarations.map((dec) =>
-      dec.data_use === oldDeclaration.data_use ? newDeclaration : dec
+      dec.data_use === oldDeclaration.data_use ? updatedDeclaration : dec
     );
     const success = await save(updatedDeclarations);
     return success;
@@ -120,17 +132,20 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
     }
 
     toast.closeAll();
-    setInitialDeclaration(values);
+    setNewDeclaration(values);
     const updatedDeclarations = [...accordionDeclarations, values];
     const success = await save(updatedDeclarations);
-    if (success) {
-      setShowInitialForm(false);
-      setInitialDeclaration(undefined);
-    }
     return success;
   };
 
-  const showAddDataUseButton = !showInitialForm;
+  const handleShowNewForm = () => {
+    setShowNewForm(true);
+    setNewDeclaration(undefined);
+  };
+
+  const showAddDataUseButton =
+    system.privacy_declarations.length > 0 ||
+    (system.privacy_declarations.length === 0 && !showNewForm);
 
   return (
     <Stack spacing={3} data-testid="privacy-declaration-step">
@@ -154,25 +169,32 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         privacyDeclarations={accordionDeclarations}
         onEdit={handleEditDeclaration}
       />
-      {showInitialForm ? (
+      {showNewForm ? (
         <Box backgroundColor="gray.50" p={6} data-testid="new-declaration-form">
           <ConnectedPrivacyDeclarationForm
-            initialValues={initialDeclaration}
+            initialValues={newDeclaration}
             onSubmit={saveNewDeclaration}
           />
         </Box>
       ) : null}
       {showAddDataUseButton ? (
         <Box py={2}>
-          <Button
-            colorScheme="primary"
-            size="xs"
-            isLoading={isLoading}
-            data-testid="add-btn"
-            onClick={() => setShowInitialForm(true)}
+          <Tooltip
+            label="Add another use case"
+            hasArrow
+            placement="top"
+            isDisabled={accordionDeclarations.length === 0}
           >
-            Add a Data Use +
-          </Button>
+            <Button
+              colorScheme="primary"
+              size="xs"
+              isLoading={isLoading}
+              data-testid="add-btn"
+              onClick={handleShowNewForm}
+            >
+              Add a Data Use +
+            </Button>
+          </Tooltip>
         </Box>
       ) : null}
     </Stack>
