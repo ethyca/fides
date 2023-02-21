@@ -2,6 +2,8 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
+import { selectToken } from "~/features/auth";
+import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { System } from "~/types/api";
 
 interface SystemDeleteResponse {
@@ -19,6 +21,11 @@ export const systemApi = createApi({
   reducerPath: "systemApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
+    prepareHeaders: (headers, { getState }) => {
+      const token: string | null = selectToken(getState() as RootState);
+      addCommonHeaders(headers, token);
+      return headers;
+    },
   }),
   tagTypes: ["System"],
   endpoints: (build) => ({

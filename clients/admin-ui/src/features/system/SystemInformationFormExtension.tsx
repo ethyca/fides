@@ -5,7 +5,7 @@ import { useAppSelector } from "~/app/hooks";
 import { YesNoOptions } from "~/features/common/constants";
 import { COUNTRY_OPTIONS } from "~/features/common/countries";
 import {
-  CustomCreatableMultiSelect,
+  CustomCreatableSelect,
   CustomRadioGroup,
   CustomSelect,
   CustomTextInput,
@@ -28,7 +28,7 @@ const DescribeSystemsFormExtension = ({ values }: { values: FormValues }) => {
 
   return (
     <>
-      <CustomCreatableMultiSelect
+      <CustomCreatableSelect
         id="tags"
         name="tags"
         label="System Tags"
@@ -41,6 +41,7 @@ const DescribeSystemsFormExtension = ({ values }: { values: FormValues }) => {
             : []
         }
         tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
+        isMulti
       />
       <CustomSelect
         label="System dependencies"
