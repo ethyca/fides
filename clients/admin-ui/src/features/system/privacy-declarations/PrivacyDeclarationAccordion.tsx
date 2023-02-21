@@ -4,7 +4,6 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  Spinner,
   Stack,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
@@ -12,13 +11,13 @@ import { Form, Formik } from "formik";
 import { PrivacyDeclaration } from "~/types/api";
 
 import {
+  DataProps,
   PrivacyDeclarationFormComponents,
   usePrivacyDeclarationForm,
-  useTaxonomyData,
   ValidationSchema,
 } from "./PrivacyDeclarationForm";
 
-interface AccordionProps {
+interface AccordionProps extends DataProps {
   privacyDeclarations: PrivacyDeclaration[];
   onEdit: (
     oldDeclaration: PrivacyDeclaration,
@@ -29,24 +28,20 @@ interface AccordionProps {
 const PrivacyDeclarationAccordionItem = ({
   privacyDeclaration,
   onEdit,
-}: { privacyDeclaration: PrivacyDeclaration } & Pick<
+  ...dataProps
+}: { privacyDeclaration: PrivacyDeclaration } & Omit<
   AccordionProps,
-  "onEdit"
+  "privacyDeclarations"
 >) => {
   const handleEdit = (newValues: PrivacyDeclaration) =>
     onEdit(privacyDeclaration, newValues);
 
-  const { isLoading, ...dataProps } = useTaxonomyData();
   const { initialValues, renderHeader, handleSubmit } =
     usePrivacyDeclarationForm({
       initialValues: privacyDeclaration,
       onSubmit: handleEdit,
       ...dataProps,
     });
-
-  if (isLoading) {
-    return <Spinner size="sm" />;
-  }
 
   return (
     <AccordionItem>

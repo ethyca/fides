@@ -1,6 +1,5 @@
 /**
- * This file exports both a connected and unconnected version of the same component
- * to allow for more re-use
+ * Exports various parts of the privacy declaration form for flexibility
  */
 
 import {
@@ -56,7 +55,7 @@ const defaultInitialValues: PrivacyDeclaration = {
 
 type FormValues = typeof defaultInitialValues;
 
-interface DataProps {
+export interface DataProps {
   allDataCategories: DataCategory[];
   allDataUses: DataUse[];
   allDataSubjects: DataSubject[];
@@ -202,6 +201,14 @@ export const usePrivacyDeclarationForm = ({
   return { handleSubmit, renderHeader, initialValues };
 };
 
+interface Props {
+  onSubmit: (
+    values: PrivacyDeclaration,
+    formikHelpers: FormikHelpers<PrivacyDeclaration>
+  ) => Promise<boolean>;
+  initialValues?: PrivacyDeclaration;
+}
+
 export const PrivacyDeclarationForm = ({
   onSubmit,
   initialValues: passedInInitialValues,
@@ -232,18 +239,3 @@ export const PrivacyDeclarationForm = ({
     </Formik>
   );
 };
-
-interface Props {
-  onSubmit: (
-    values: PrivacyDeclaration,
-    formikHelpers: FormikHelpers<PrivacyDeclaration>
-  ) => Promise<boolean>;
-  initialValues?: PrivacyDeclaration;
-}
-const ConnectedPrivacyDeclarationForm = (props: Props) => {
-  const dataProps = useTaxonomyData();
-
-  return <PrivacyDeclarationForm {...props} {...dataProps} />;
-};
-
-export default ConnectedPrivacyDeclarationForm;

@@ -4,9 +4,9 @@ import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System } from "~/types/api";
 
-import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemFormTabs from "./SystemFormTabs";
 import SystemInformationForm from "./SystemInformationForm";
