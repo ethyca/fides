@@ -63,6 +63,7 @@ const PrivacyDeclarationAccordionItem = ({
                 py={4}
                 borderBottomWidth={isExpanded ? "0px" : "1px"}
                 backgroundColor={isExpanded ? "gray.50" : undefined}
+                data-testid={`accordion-header-${privacyDeclaration.data_use}`}
               >
                 {renderHeader({
                   dirty,

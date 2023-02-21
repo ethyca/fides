@@ -113,7 +113,7 @@ export const PrivacyDeclarationFormComponents = ({
           colorScheme="primary"
           disabled={!dirty || !isValid}
           isLoading={isSubmitting}
-          data-testid="add-btn"
+          data-testid="save-btn"
         >
           Save
         </Button>
@@ -192,7 +192,7 @@ export const usePrivacyDeclarationForm = ({
         </Heading>
       ) : null}
       {!hideSaved && showSaved && !dirty ? (
-        <Text fontSize="sm">
+        <Text fontSize="sm" data-testid="saved-indicator">
           <GreenCheckCircleIcon /> Saved
         </Text>
       ) : null}
@@ -222,7 +222,7 @@ export const PrivacyDeclarationForm = ({
       validationSchema={ValidationSchema}
     >
       {({ dirty }) => (
-        <Form data-testid="privacy-declaration-form">
+        <Form>
           <Stack spacing={4}>
             {renderHeader({ dirty })}
             <PrivacyDeclarationFormComponents {...dataProps} />

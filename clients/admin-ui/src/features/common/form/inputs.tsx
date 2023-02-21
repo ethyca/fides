@@ -360,7 +360,7 @@ export const CustomSelect = ({
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <Box width="100%">
+        <Box width="100%" data-testid={`input-${field.name}`}>
           <SelectInput
             options={options}
             fieldName={field.name}

@@ -133,7 +133,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   const showAddDataUseButton = !showInitialForm;
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} data-testid="privacy-declaration-step">
       <Heading as="h3" size="md">
         Data uses
       </Heading>
@@ -155,7 +155,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         onEdit={handleEditDeclaration}
       />
       {showInitialForm ? (
-        <Box backgroundColor="gray.50" p={6}>
+        <Box backgroundColor="gray.50" p={6} data-testid="new-declaration-form">
           <ConnectedPrivacyDeclarationForm
             initialValues={initialDeclaration}
             onSubmit={saveNewDeclaration}
@@ -168,7 +168,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
             colorScheme="primary"
             size="xs"
             isLoading={isLoading}
-            data-testid="save-btn"
+            data-testid="add-btn"
             onClick={() => setShowInitialForm(true)}
           >
             Add a Data Use +
