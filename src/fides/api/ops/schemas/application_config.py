@@ -43,16 +43,15 @@ class NotificationApplicationConfig(BaseSchema):
 
     @validator("notification_service_type", pre=True)
     @classmethod
-    def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
+    def validate_notification_service_type(cls, value: str) -> Optional[str]:
         """Ensure the provided type is a valid value."""
-        if value:
-            value = value.upper()  # force uppercase for safety
-            try:
-                MessagingServiceType[value]
-            except ValueError:
-                raise ValueError(
-                    f"Invalid notification.notification_service_type provided '{value}', must be one of: {', '.join([service_type.name for service_type in MessagingServiceType])}"
-                )
+        value = value.upper()  # force uppercase for safety
+        try:
+            MessagingServiceType[value]
+        except KeyError:
+            raise ValueError(
+                f"Invalid notification.notification_service_type provided '{value}', must be one of: {', '.join([service_type.name for service_type in MessagingServiceType])}"
+            )
 
         return value
 

@@ -251,7 +251,9 @@ async def setup_server() -> None:
         ApplicationConfig.update_config_set(db, CONFIG)
     except Exception as e:
         logger.error("Error occurred writing config settings to database: {}", str(e))
-        return
+        raise FidesError(
+            f"Error occurred writing config settings to database: {str(e)}"
+        )
 
     logger.info("Validating SaaS connector templates...")
     try:
