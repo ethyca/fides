@@ -81,8 +81,8 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         toast(errorToastParams(errorMsg));
         return false;
       }
-      toast(successToastParams("Data use case saved"));
       toast.closeAll();
+      toast(successToastParams("Data use case saved"));
       dispatch(setActiveSystem(result.data));
       return true;
     };

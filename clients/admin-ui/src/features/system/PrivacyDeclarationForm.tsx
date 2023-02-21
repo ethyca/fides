@@ -163,13 +163,6 @@ export const usePrivacyDeclarationForm = ({
     return undefined;
   }, [allDataUses, initialValues]);
 
-  // // Reset showSaved when the form starts new
-  // useEffect(() => {
-  //   if (!passedInInitialValues && showSaved) {
-  //     setShowSaved(false);
-  //   }
-  // }, [passedInInitialValues, showSaved]);
-
   const handleSubmit = async (
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
@@ -184,15 +177,21 @@ export const usePrivacyDeclarationForm = ({
 
   const renderHeader = ({
     dirty,
-    ...boxProps
-  }: { dirty: boolean } & BoxProps) => (
+    boxProps,
+    /** Allow overriding showing the saved indicator */
+    hideSaved,
+  }: {
+    dirty: boolean;
+    hideSaved?: boolean;
+    boxProps?: BoxProps;
+  }) => (
     <Box display="flex" alignItems="center" {...boxProps}>
       {title ? (
         <Heading as="h4" size="xs" fontWeight="medium" mr={4}>
           {title}
         </Heading>
       ) : null}
-      {showSaved && !dirty ? (
+      {!hideSaved && showSaved && !dirty ? (
         <Text fontSize="sm">
           <GreenCheckCircleIcon /> Saved
         </Text>

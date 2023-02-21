@@ -64,7 +64,11 @@ const PrivacyDeclarationAccordionItem = ({
                 borderBottomWidth={isExpanded ? "0px" : "1px"}
                 backgroundColor={isExpanded ? "gray.50" : undefined}
               >
-                {renderHeader({ dirty, flex: "1", textAlign: "left" })}
+                {renderHeader({
+                  dirty,
+                  boxProps: { flex: "1", textAlign: "left" },
+                  hideSaved: !isExpanded,
+                })}
                 <AccordionIcon />
               </AccordionButton>
               <AccordionPanel backgroundColor="gray.50" pt={0}>
@@ -89,9 +93,13 @@ const PrivacyDeclarationAccordion = ({
     border="transparent"
     data-testid="privacy-declaration-accordion"
   >
-    {privacyDeclarations.map((dec) => (
+    {privacyDeclarations.map((dec, i) => (
       <PrivacyDeclarationAccordionItem
-        key={dec.data_use}
+        // Privacy declarations don't have an enforced unique key right now
+        // The closest is 'data_use' but that is only enforced on the frontend. Furthermore,
+        // if it changes, it causes re-renders we don't need (so makes the "Saved" indicator disappear)
+        // eslint-disable-next-line react/no-array-index-key
+        key={i}
         privacyDeclaration={dec}
         {...props}
       />
