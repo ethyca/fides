@@ -89,7 +89,7 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
 
 
 def create_fides_app(
-    cors_origins: List[AnyHttpUrl] = CONFIG.security.cors_origins,
+    cors_origins: List[str] = CONFIG.security.cors_origins,
     cors_origin_regex: Optional[str] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
