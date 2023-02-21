@@ -12,6 +12,7 @@ WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 # Image Names & Tags
 REGISTRY = "ethyca"
 IMAGE_NAME = "fides"
+CONTAINER_NAME = "fides-fides-1"
 COMPOSE_SERVICE_NAME = "fides"
 
 # Image Names & Tags
@@ -38,27 +39,41 @@ CWD = getcwd()
 # CI env variable is always set to true in Github Actions
 # The else statement is required due to the way commmands are structured and is arbitrary.
 CI_ARGS = "-T" if getenv("CI") else "--user=root"
+CI_ARGS_EXEC = "-t" if not getenv("CI") else "--user=root"
 
 # If FIDES__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDES__CLI__ANALYTICS_ID")
 ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 
 # Reusable Commands
-RUN = (
+LOGIN = (
     "docker",
-    "compose",
-    "run",
-    "-e",
-    "VAULT_ADDR",
-    "-e",
-    "VAULT_NAMESPACE",
-    "-e",
-    "VAULT_TOKEN",
-    "--rm",
-    *ANALYTICS_ID_OVERRIDE,
+    "exec",
+    "fides-fides-1",
+    "fides",
+    "user",
+    "login",
+    "-u",
+    "root_user",
+    "-p",
+    "Testpassword1!",
+)
+EXEC = (
+    "docker",
+    "exec",
     *ANALYTICS_OPT_OUT,
-    CI_ARGS,
-    COMPOSE_SERVICE_NAME,
+    *ANALYTICS_ID_OVERRIDE,
+    CI_ARGS_EXEC,
+    CONTAINER_NAME,
+)
+EXEC_IT = (
+    "docker",
+    "exec",
+    "-it",
+    *ANALYTICS_OPT_OUT,
+    *ANALYTICS_ID_OVERRIDE,
+    CI_ARGS_EXEC,
+    CONTAINER_NAME,
 )
 RUN_NO_DEPS = (
     "docker",

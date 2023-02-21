@@ -218,13 +218,13 @@ async def prepare_and_log_request(
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
-
-    logger.warning(
+    logger.info(f"Starting Fides - v{VERSION}")
+    logger.info(
         "Startup configuration: reloading = {}, dev_mode = {}",
         CONFIG.hot_reloading,
         CONFIG.dev_mode,
     )
-    logger.warning("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
+    logger.info("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
 
     if CONFIG.logging.level == DEBUG:
         logger.warning(
@@ -301,7 +301,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
     logger.bind(
         method=request.method,
         status_code=response.status_code,
-        handler_time=f"{handler_time.microseconds * 0.001}ms",
+        handler_time=f"{round(handler_time.microseconds * 0.001,3)}ms",
         path=request.url.path,
     ).info("Request received")
     return response
