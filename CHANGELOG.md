@@ -28,6 +28,7 @@ The types of changes are:
 * Fides API
   * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
   * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
+  * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
   
 * Admin UI
   * Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
