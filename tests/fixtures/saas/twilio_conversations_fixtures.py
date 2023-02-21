@@ -180,7 +180,7 @@ def twilio_postgres_dataset_config(
 def twilio_postgres_db(postgres_integration_session):
     postgres_integration_session = seed_postgres_data(
         postgres_integration_session,
-        "./tests/ops/fixtures/saas/external_datasets/twilio.sql",
+        "./tests/fixtures/saas/external_datasets/twilio.sql",
     )
     yield postgres_integration_session
     drop_database(postgres_integration_session.bind.url)

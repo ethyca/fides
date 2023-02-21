@@ -24,8 +24,8 @@ from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.core.config import get_config
 from fides.lib.db.session import get_db_session
+from tests.fixtures.application_fixtures import integration_secrets
 
-from ..fixtures.application_fixtures import integration_secrets
 from ..service.privacy_request.request_runner_service_test import (
     get_privacy_request_results,
 )
