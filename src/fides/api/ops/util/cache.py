@@ -53,6 +53,9 @@ def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
             json_dict[k] = datetime.fromisoformat(v)
             continue
         except (TypeError, ValueError):
+            logger.info(
+                "Error decoding cache. If you are coming from a version of fides prior to 2.8 this could be an issue with cache format and the request needs to be reprocessed."
+            )
             pass
 
         if isinstance(v, str):
