@@ -74,7 +74,8 @@ const ChooseFromLibrary = forwardRef(
       if ("error" in updateResult) {
         errorAlert(
           getErrorMessage(updateResult.error),
-          `One or more custom field(s) failed to update due to the following:`
+          `One or more custom field(s) failed to update due to the following:`,
+          { containerStyle: { maxWidth: "max-content" } }
         );
       } else {
         helpers.resetForm();
@@ -138,8 +139,7 @@ const ChooseFromLibrary = forwardRef(
                                 alignItems="baseline"
                                 flexGrow={1}
                                 gap="12px"
-                                // eslint-disable-next-line react/no-array-index-key
-                                key={index}
+                                key={value.id}
                                 mt={index > 0 ? "12px" : undefined}
                                 mr="16px"
                               >
