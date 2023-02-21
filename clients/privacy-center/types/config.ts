@@ -1,5 +1,11 @@
 import { ConsentValue } from "fides-consent";
 
+export type IdentityInputs = {
+  name?: string;
+  email?: string;
+  phone?: string;
+};
+
 export type Config = {
   title: string;
   description: string;
@@ -7,12 +13,12 @@ export type Config = {
   server_url_production?: string;
   logo_path: string;
   actions: PrivacyRequestOption[];
-  includeConsent: boolean;
+  includeConsent?: boolean;
   consent?: {
     icon_path: string;
     title: string;
     description: string;
-    identity_inputs?: Record<string, string>;
+    identity_inputs?: IdentityInputs;
     policy_key?: string;
     consentOptions: ConfigConsentOption[];
   };
@@ -23,7 +29,7 @@ export type PrivacyRequestOption = {
   icon_path: string;
   title: string;
   description: string;
-  identity_inputs?: Record<string, string>;
+  identity_inputs?: IdentityInputs;
 };
 
 export type ConfigConsentOption = {
