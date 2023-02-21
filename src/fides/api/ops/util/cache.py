@@ -53,9 +53,7 @@ def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
             json_dict[k] = datetime.fromisoformat(v)
             continue
         except (TypeError, ValueError):
-            logger.info(
-                "Error decoding cache. If you are coming from a version of fides prior to 2.8 this could be an issue with cache format and the request needs to be reprocessed."
-            )
+            pass
 
         if isinstance(v, str):
             # The mongodb objectids couldn't be directly json encoded so they are converted
@@ -151,6 +149,10 @@ class FidesopsRedis(Redis):
                 # The cache used to be stored as a pickle. This decoder is unable
                 # to decode the pickle object (this is on purpose) so None is returned
                 # if a cache value is present in the old format rather the crashing.
+
+                logger.info(
+                    "Error decoding cache. If you are coming from a version of fides prior to 2.8 this could be an issue with cache format and the request needs to be reprocessed."
+                )
                 return None
             # Secrets are just a string and not dict so decode here.
             if isinstance(result, str) and result.startswith("quote_encoded"):
