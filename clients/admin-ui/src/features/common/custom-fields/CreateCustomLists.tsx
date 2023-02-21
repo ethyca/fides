@@ -138,7 +138,6 @@ const CreateCustomLists = forwardRef(
                         <Flex flexDirection="column">
                           {allowed_values.map((_value, index) => (
                             <Flex
-                              alignItems="baseline"
                               flexGrow={1}
                               gap="12px"
                               // eslint-disable-next-line react/no-array-index-key
@@ -146,18 +145,18 @@ const CreateCustomLists = forwardRef(
                               mt={index > 0 ? "12px" : undefined}
                               ref={fieldRef}
                             >
-                              <Text
-                                color="gray.600"
-                                fontSize="sm"
-                                fontWeight="500"
-                                lineHeight="20px"
-                                minW="126px"
-                                pr="8px"
-                              >
-                                List item {index + 1}
-                              </Text>
                               <CustomInput
+                                customLabelProps={{
+                                  color: "gray.600",
+                                  fontSize: "sm",
+                                  fontWeight: "500",
+                                  lineHeight: "20px",
+                                  minW: "126px",
+                                  pr: "8px",
+                                }}
                                 displayHelpIcon={false}
+                                isRequired
+                                label={`List item ${index + 1}`}
                                 name={`allowed_values[${index}]`}
                               />
                               <IconButton

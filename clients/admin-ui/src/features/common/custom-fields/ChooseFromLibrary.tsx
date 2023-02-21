@@ -1,8 +1,9 @@
 import {
   Center,
   Flex,
+  FormControl,
+  FormLabel,
   forwardRef,
-  Input,
   Spacer,
   Spinner,
   Switch,
@@ -72,7 +73,7 @@ const ChooseFromLibrary = forwardRef(
       if ("error" in updateResult) {
         errorAlert(
           getErrorMessage(updateResult.error),
-          `One or more custom field(s) failed to save due to the following:`
+          `One or more custom field(s) failed to update due to the following:`
         );
       } else {
         helpers.resetForm();
@@ -141,20 +142,19 @@ const ChooseFromLibrary = forwardRef(
                                 mt={index > 0 ? "12px" : undefined}
                                 mr="16px"
                               >
-                                {/*  <FormControl display="flex">
+                                <FormControl display="flex">
                                   <FormLabel
                                     htmlFor={`customFieldDefinitions[${index}]`}
-                                    {...CUSTOM_LABEL_STYLES}
+                                    {...{
+                                      color: "gray.600",
+                                      fontSize: "14px",
+                                      fontWeight: "medium",
+                                      minWidth: "150px",
+                                    }}
                                   >
                                     {value.name}
                                   </FormLabel>
-                                </FormControl> */}
-                                <Input
-                                  color="gray.700"
-                                  isDisabled
-                                  size="sm"
-                                  value={value.name}
-                                />
+                                </FormControl>
                                 <Spacer />
                                 <Field
                                   name={`customFieldDefinitions[${index}].active`}
