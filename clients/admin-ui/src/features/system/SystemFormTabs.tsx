@@ -174,7 +174,7 @@ const SystemFormTabs = ({
       ),
     },
     {
-      label: "Privacy declarations",
+      label: "Data uses",
       content: activeSystem ? (
         <Box px={6} width={{ base: "100%", lg: "70%" }}>
           <PrivacyDeclarationStep system={activeSystem as System} />

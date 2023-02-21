@@ -191,6 +191,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
               isLoading={isLoading}
               data-testid="add-btn"
               onClick={handleShowNewForm}
+              disabled={showNewForm && !newDeclaration}
             >
               Add a Data Use +
             </Button>

@@ -126,7 +126,7 @@ describe("System management page", () => {
           });
 
           // Fill in the privacy declaration form
-          cy.getByTestId("tab-Privacy declarations").click();
+          cy.getByTestId("tab-Data uses").click();
           cy.getByTestId("add-btn").click();
           cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
           cy.getByTestId("new-declaration-form");
@@ -172,13 +172,13 @@ describe("System management page", () => {
         const description = "half formed thought";
         cy.getByTestId("input-description").type(description);
         // then try navigating to the privacy declarations tab
-        cy.getByTestId("tab-Privacy declarations").click();
+        cy.getByTestId("tab-Data uses").click();
         cy.getByTestId("confirmation-modal");
         // make sure canceling works
         cy.getByTestId("cancel-btn").click();
         cy.getByTestId("input-description").should("have.value", description);
         // now actually discard
-        cy.getByTestId("tab-Privacy declarations").click();
+        cy.getByTestId("tab-Data uses").click();
         cy.getByTestId("continue-btn").click();
         // should load the privacy declarations page
         cy.getByTestId("privacy-declaration-step");
@@ -271,9 +271,9 @@ describe("System management page", () => {
       });
 
       // add another privacy declaration
-      cy.getByTestId("tab-Privacy declarations").click();
+      cy.getByTestId("tab-Data uses").click();
       const secondDataUse = "advertising";
-      cy.getByTestId("tab-Privacy declarations").click();
+      cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
@@ -402,7 +402,7 @@ describe("System management page", () => {
         cy.getByTestId("edit-btn").click();
       });
       // "improve.system" is already being used
-      cy.getByTestId("tab-Privacy declarations").click();
+      cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
@@ -432,7 +432,7 @@ describe("System management page", () => {
         cy.getByTestId("edit-btn").click();
       });
 
-      cy.getByTestId("tab-Privacy declarations").click();
+      cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
 
