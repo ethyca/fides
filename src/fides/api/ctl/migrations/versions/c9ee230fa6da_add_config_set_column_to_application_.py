@@ -1,7 +1,7 @@
 """add config_set column to application settings
 
 Revision ID: c9ee230fa6da
-Revises: 5d62bab40b71
+Revises: 8e198eb13802
 Create Date: 2023-02-01 15:13:52.133075
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "c9ee230fa6da"
-down_revision = "5d62bab40b71"
+down_revision = "8e198eb13802"
 branch_labels = None
 depends_on = None
 
