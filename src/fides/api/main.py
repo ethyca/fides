@@ -9,7 +9,6 @@ from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
-from pydantic import AnyHttpUrl
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
