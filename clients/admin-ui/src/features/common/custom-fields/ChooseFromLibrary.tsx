@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Center,
   Flex,
@@ -19,8 +18,12 @@ import {
 } from "formik";
 import { ChangeEvent, useImperativeHandle, useMemo, useRef } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import { useGetCustomFieldDefinitionsByResourceTypeQuery } from "~/features/plus/plus.slice";
+import {
+  useGetCustomFieldDefinitionsByResourceTypeQuery,
+  useUpdateCustomFieldDefinitionMutation,
+} from "~/features/plus/plus.slice";
 import { CustomFieldDefinitionWithId, ResourceTypes } from "~/types/api";
 
 import { Layout } from "./Layout";
@@ -44,10 +47,37 @@ const ChooseFromLibrary = forwardRef(
     const { data, isFetching, isLoading, isSuccess } =
       useGetCustomFieldDefinitionsByResourceTypeQuery(resourceType);
 
+    const [updateCustomFieldDefinition] =
+      useUpdateCustomFieldDefinitionMutation();
+
+    initialValues.customFieldDefinitions = useMemo(() => data || [], [data]);
+
     const handleSubmit = async (
       values: FormValues,
       helpers: FormikHelpers<FormValues>
     ) => {
+      const dirtyFields = values.customFieldDefinitions.filter((item) =>
+        initialValues.customFieldDefinitions.some(
+          (cfd) => cfd.id === item.id && cfd.active !== item.active
+        )
+      );
+      if (dirtyFields.length === 0) {
+        return;
+      }
+      const updateResults = await Promise.all(
+        dirtyFields.map((item) => updateCustomFieldDefinition(item))
+      );
+      const updateResult =
+        updateResults.find((result) => "error" in result) ?? updateResults[0];
+      if ("error" in updateResult) {
+        errorAlert(
+          getErrorMessage(updateResult.error),
+          `One or more custom field(s) failed to save due to the following:`
+        );
+      } else {
+        helpers.resetForm();
+        successAlert(`Custom field(s) successfully saved`);
+      }
       onSubmitComplete();
     };
 
@@ -69,8 +99,6 @@ const ChooseFromLibrary = forwardRef(
       }),
       []
     );
-
-    initialValues.customFieldDefinitions = useMemo(() => data || [], [data]);
 
     return (
       <Layout>
@@ -98,7 +126,7 @@ const ChooseFromLibrary = forwardRef(
                 >
                   <FieldArray
                     name="customFieldDefinitions"
-                    render={(fieldArrayProps) => {
+                    render={() => {
                       const { customFieldDefinitions } = props.values;
                       return (
                         <Flex flexDirection="column" gap="24px">

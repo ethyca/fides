@@ -214,6 +214,17 @@ export const plusApi = createApi({
       }),
       invalidatesTags: ["CustomFieldDefinition"],
     }),
+    updateCustomFieldDefinition: build.mutation<
+      CustomFieldDefinitionWithId,
+      CustomFieldDefinition
+    >({
+      query: (params) => ({
+        url: `custom-metadata/custom-field-definition`,
+        method: "PUT",
+        body: params,
+      }),
+      invalidatesTags: ["CustomFieldDefinition"],
+    }),
 
     // Custom Metadata Custom Field Definition By Resource Type
     getCustomFieldDefinitionsByResourceType: build.query<
@@ -244,6 +255,7 @@ export const {
   useGetLatestScanDiffQuery,
   useLazyGetLatestScanDiffQuery,
   useUpdateClassifyInstanceMutation,
+  useUpdateCustomFieldDefinitionMutation,
   useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
