@@ -1,0 +1,78 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Postie SaaS Config
+  type: postie
+  description: A sample schema representing the Postie connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: x_user_token
+    - name: x_user_email
+
+  client_config:
+    protocol: https
+    host: <domain>
+    # authentication:
+    #   strategy: no_authentication
+    #   configuration: {}
+
+  test_request:
+    method: POST
+    path: /api/v1/ccpa-members
+    headers:
+      - name: X-User-Token
+        value: <x_user_token>
+      - name: X-User-Email
+        value: <x_user_email>
+    body: >
+      {"data": {"type": "ccpa-members", "attributes": {"email":
+      "test@ethyca.com"}}}
+    param_values:
+      - name: x_user_token
+        connector_param: x_user_token
+      - name: x_user_email
+        connector_param: x_user_email
+
+  endpoints:
+    - name: ccpa_members
+      requests:
+        read:
+          method: POST
+          path: /api/v1/ccpa-members
+          headers:
+            - name: X-User-Token
+              value: <x_user_token>
+            - name: X-User-Email
+              value: <x_user_email>
+          body: >
+            {"data": {"type": "ccpa-members", "attributes": {"email":
+            "<email>"}}}
+          param_values:
+            - name: x_user_token
+              connector_param: x_user_token
+            - name: x_user_email
+              connector_param: x_user_email
+            - name: email
+              identity: email
+          data_path: data
+        delete:
+          method: POST
+          path: /api/v1/ccpa-members
+          headers:
+            - name: X-User-Token
+              value: <x_user_token>
+            - name: X-User-Email
+              value: <x_user_email>
+            - name: Content-Type
+              value: application/vnd.api+json
+          body: >
+            {"data": {"type": "ccpa-members", "attributes": {"email":
+            "<email>"}}}
+          param_values:
+            - name: x_user_token
+              connector_param: x_user_token
+            - name: x_user_email
+              connector_param: x_user_email
+            - name: email
+              identity: email

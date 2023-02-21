@@ -1,0 +1,19 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: postie
+    description: A sample dataset representing the Postie connector for Fides
+    collections:
+      - name: ccpa_members
+        fields:
+          - name: data
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: type
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
