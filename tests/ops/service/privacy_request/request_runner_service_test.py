@@ -14,6 +14,7 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
+from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import AccessLevel
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
@@ -38,6 +39,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceType,
 )
 from fides.api.ops.schemas.policy import Rule
+from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
@@ -51,6 +53,8 @@ from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
+    build_consent_dataset_graph,
+    needs_consent_email_send,
     run_webhooks_and_report_status,
     upload_access_results,
 )
@@ -2212,3 +2216,109 @@ class TestPrivacyRequestsManualWebhooks:
         assert mock_upload.call_args.kwargs["data"] == {
             "manual_webhook_example": [{"email": None, "last_name": None}]
         }
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_mailchimp_transactional
+def test_build_consent_dataset_graph(
+    postgres_example_test_dataset_config_read_access,
+    mysql_example_test_dataset_config,
+    mailchimp_transactional_dataset_config,
+):
+    """Currently returns a DatasetGraph made up of resources that have consent requests defined
+    in the saas config"""
+    dataset_graph: DatasetGraph = build_consent_dataset_graph(
+        [
+            postgres_example_test_dataset_config_read_access,
+            mysql_example_test_dataset_config,
+            mailchimp_transactional_dataset_config,
+        ]
+    )
+    assert len(dataset_graph.nodes.keys()) == 1
+    assert [col_addr.value for col_addr in dataset_graph.nodes.keys()] == [
+        "mailchimp_transactional_instance:mailchimp_transactional_instance"
+    ]
+
+
+class TestConsentEmailStep:
+    def test_privacy_request_completes_if_no_consent_email_send_needed(
+        self, db, privacy_request_with_consent_policy, run_privacy_request_task
+    ):
+        run_privacy_request_task.delay(
+            privacy_request_id=privacy_request_with_consent_policy.id,
+            from_step=None,
+        ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+        db.refresh(privacy_request_with_consent_policy)
+        assert (
+            privacy_request_with_consent_policy.status == PrivacyRequestStatus.complete
+        )
+
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_privacy_request_is_put_in_awaiting_email_send_status(
+        self,
+        db,
+        privacy_request_with_consent_policy,
+        run_privacy_request_task,
+    ):
+        identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
+        privacy_request_with_consent_policy.cache_identity(identity)
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        privacy_request_with_consent_policy.save(db)
+
+        run_privacy_request_task.delay(
+            privacy_request_id=privacy_request_with_consent_policy.id,
+            from_step=None,
+        ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+        db.refresh(privacy_request_with_consent_policy)
+        assert (
+            privacy_request_with_consent_policy.status
+            == PrivacyRequestStatus.awaiting_consent_email_send
+        )
+        assert (
+            privacy_request_with_consent_policy.awaiting_consent_email_send_at
+            is not None
+        )
+
+    def test_needs_consent_email_send_no_consent_preferences(
+        self, db, privacy_request_with_consent_policy
+    ):
+        assert not needs_consent_email_send(
+            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
+        )
+
+    def test_needs_consent_email_send_no_email_consent_connections(
+        self, db, privacy_request_with_consent_policy
+    ):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        privacy_request_with_consent_policy.save(db)
+        assert not needs_consent_email_send(
+            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
+        )
+
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_needs_consent_email_send_no_relevant_identities(
+        self, db, privacy_request_with_consent_policy
+    ):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        privacy_request_with_consent_policy.save(db)
+        assert not needs_consent_email_send(
+            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
+        )
+
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_needs_consent_email_send(self, db, privacy_request_with_consent_policy):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        privacy_request_with_consent_policy.save(db)
+        assert needs_consent_email_send(
+            db,
+            {"email": "customer-1@example.com", "ljt_readerID": "12345"},
+            privacy_request_with_consent_policy,
+        )

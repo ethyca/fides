@@ -1280,16 +1280,19 @@ class TestGetPrivacyRequests:
         csv_file = csv.DictReader(file, delimiter=",")
 
         first_row = next(csv_file)
-        assert parse(first_row["Time received"], ignoretz=True) == created_at
-        assert ast.literal_eval(first_row["Subject identity"]) == {
+        assert parse(first_row["Time Received"], ignoretz=True) == created_at
+        assert ast.literal_eval(first_row["Subject Identity"]) == {
             "email": TEST_EMAIL,
             "phone_number": TEST_PHONE,
+            "ga_client_id": None,
+            "ljt_readerID": None,
         }
-        assert first_row["Policy key"] == "example_access_request_policy"
-        assert first_row["Request status"] == "approved"
-        assert first_row["Reviewer"] == user.id
-        assert parse(first_row["Time approved/denied"], ignoretz=True) == reviewed_at
-        assert first_row["Denial reason"] == ""
+        assert first_row["Request Type"] == "access"
+        assert first_row["Status"] == "approved"
+        assert first_row["Reviewed By"] == user.id
+        assert parse(first_row["Time Approved/Denied"], ignoretz=True) == reviewed_at
+        assert first_row["Denial Reason"] == ""
+        assert first_row["Request ID"] == privacy_request.id
 
         privacy_request.delete(db)
 

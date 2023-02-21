@@ -34,7 +34,7 @@ const ConfigureConnector: React.FC = () => {
   const mounted = useRef(false);
   const [steps, setSteps] = useState([STEPS[0], STEPS[1], STEPS[2]]);
   const [canRedirect, setCanRedirect] = useState(false);
-  const { connection, connectionOption, step } = useAppSelector(
+  const { connection, connectionOption } = useAppSelector(
     selectConnectionTypeState
   );
   const connector = CONNECTOR_PARAMETERS_OPTIONS.find(
@@ -123,12 +123,6 @@ const ConfigureConnector: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (step) {
-      setSelectedItem(
-        connector?.options[Number(step.stepId) - connector.options.length]
-      );
-    }
-
     // If a connection has been initially created, then auto redirect the user accordingly.
     if (connection?.key) {
       handleNavChange(
@@ -146,7 +140,6 @@ const ConfigureConnector: React.FC = () => {
     connectionOption?.type,
     connector?.options,
     handleNavChange,
-    step,
   ]);
 
   return (

@@ -36,11 +36,16 @@ STORAGE_CONFIG = "/storage/config"
 STORAGE_SECRETS = "/storage/config/{config_key}/secret"
 STORAGE_BY_KEY = "/storage/config/{config_key}"
 STORAGE_UPLOAD = "/storage/{request_id}"
+STORAGE_DEFAULT = "/storage/default"
+STORAGE_DEFAULT_SECRETS = "/storage/default/{storage_type}/secret"
+STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
+STORAGE_ACTIVE_DEFAULT = "/storage/active/default"
 
 # Email URLs
 MESSAGING_CONFIG = "/messaging/config"
 MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
+MESSAGING_TEST = "/messaging/config/test"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
@@ -128,6 +133,7 @@ SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
+USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
 
 # User Permission URLs
 USER_PERMISSIONS = "/user/{user_id}/permission"

@@ -28,15 +28,17 @@ const DataTabs = ({
 }: Props & Omit<TabsProps, "children">) => (
   <Tabs colorScheme="complimentary" {...other}>
     <TabList width={border === "partial" ? "max-content" : undefined}>
-      {data.map((tab) => (
+      {data.map((tab, index) => (
         <Tab
-          key={tab.label}
+          // eslint-disable-next-line react/no-array-index-key
+          key={index}
           data-testid={`tab-${tab.label}`}
           _selected={{
             fontWeight: "600",
             color: "complimentary.500",
             borderColor: "complimentary.500",
           }}
+          fontSize={other.fontSize}
           fontWeight="500"
           color="gray.500"
           isDisabled={tab.isDisabled || false}
@@ -46,8 +48,9 @@ const DataTabs = ({
       ))}
     </TabList>
     <TabPanels>
-      {data.map((tab) => (
-        <TabPanel px={0} key={tab.label} data-testid={`tab-panel-${tab.label}`}>
+      {data.map((tab, index) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <TabPanel px={0} key={index} data-testid={`tab-panel-${tab.label}`}>
           {tab.content}
         </TabPanel>
       ))}

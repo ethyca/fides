@@ -104,6 +104,9 @@ class SaaSRequest(BaseModel):
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[bool] = False
     rate_limit_config: Optional[RateLimitConfig]
+    skip_missing_param_values: Optional[
+        bool
+    ] = False  # Skip instead of raising an exception if placeholders can't be populated in body
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -209,6 +212,27 @@ class SaaSRequestMap(BaseModel):
     read: Union[SaaSRequest, List[SaaSRequest]] = []
     update: Optional[SaaSRequest]
     delete: Optional[SaaSRequest]
+
+
+class ConsentRequestMap(BaseModel):
+    """A map of actions to Consent requests"""
+
+    opt_in: Union[SaaSRequest, List[SaaSRequest]] = []
+    opt_out: Union[SaaSRequest, List[SaaSRequest]] = []
+
+    @validator("opt_in", "opt_out")
+    def validate_list_field(
+        cls,
+        field_value: Union[SaaSRequest, List[SaaSRequest]],
+    ) -> List[SaaSRequest]:
+        """Convert all opt_in/opt_out request formats to a list of requests.
+
+        We allow either a single request or a list of requests to be defined, but this makes
+        sure that everything is a list once that data has been read in.
+        """
+        if isinstance(field_value, SaaSRequest):
+            return [field_value]
+        return field_value
 
 
 class Endpoint(BaseModel):
@@ -337,6 +361,7 @@ class SaaSConfig(SaaSConfigBase):
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
     rate_limit_config: Optional[RateLimitConfig]
+    consent_requests: Optional[ConsentRequestMap]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:

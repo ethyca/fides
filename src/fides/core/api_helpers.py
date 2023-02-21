@@ -10,6 +10,7 @@ from fideslang.validation import FidesKey
 from requests import Response
 
 from fides.core import api
+from fides.core.utils import check_response_auth
 
 
 def get_server_resources(
@@ -57,8 +58,13 @@ def get_server_resource(
     right resource, this function helps check what resource
     a fides_key belongs to by allowing us to check without errors.
     """
-    raw_server_response: Response = api.get(
-        url=url, resource_type=resource_type, resource_id=resource_key, headers=headers
+    raw_server_response: Response = check_response_auth(
+        api.get(
+            url=url,
+            resource_type=resource_type,
+            resource_id=resource_key,
+            headers=headers,
+        )
     )
 
     server_resource: Optional[FidesModel] = (
@@ -89,7 +95,9 @@ def list_server_resources(
 
     Returns an empty list if no resources are found or if the API returns an error.
     """
-    response: Response = api.ls(url=url, resource_type=resource_type, headers=headers)
+    response: Response = check_response_auth(
+        api.ls(url=url, resource_type=resource_type, headers=headers)
+    )
     server_resources = (
         [
             resource

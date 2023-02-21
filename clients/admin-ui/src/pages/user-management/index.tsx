@@ -8,7 +8,7 @@ import Layout from "~/features/common/Layout";
 
 const UserManagement: NextPage = () => (
   <Layout title="User Management">
-    <Heading fontSize="2xl" fontWeight="semibold">
+    <Heading fontSize="2xl" fontWeight="semibold" mb={4}>
       User Management
     </Heading>
     <UserManagementTableActions />

@@ -62,7 +62,7 @@ Navigate to the Fides Privacy Center (<http://localhost:3001>), submit a "Downlo
 
 Then, navigate to the Fides Admin UI (<http://localhost:8080>) to review the pending privacy request.
 
-Use username `fidestest` and password `Apassword1!` to login, approve the request, and review the resulting package in your `./fides_uploads` folder!
+Use username `root_user` and password `Testpassword1!` to login, approve the request, and review the resulting package in your `./fides_uploads` folder!
 
 ### Next Steps
 

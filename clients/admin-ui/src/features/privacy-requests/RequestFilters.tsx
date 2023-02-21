@@ -30,7 +30,7 @@ import {
 } from "./privacy-requests.slice";
 import { PrivacyRequestStatus } from "./types";
 
-const useRequestFilters = () => {
+const useRequestFilters = (setRevealPII: (revealPII: boolean) => void) => {
   const filters = useSelector(selectPrivacyRequestFilters);
   const token = useSelector(selectToken);
   const dispatch = useDispatch();
@@ -56,7 +56,10 @@ const useRequestFilters = () => {
     dispatch(setRequestFrom(event?.target.value));
   const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestTo(event?.target.value));
-  const handleClearAllFilters = () => dispatch(clearAllFilters());
+  const handleClearAllFilters = () => {
+    setRevealPII(false);
+    dispatch(clearAllFilters());
+  };
   const handleDownloadClick = async () => {
     let message;
     try {
@@ -113,7 +116,12 @@ const useRequestFilters = () => {
   };
 };
 
-const RequestFilters: React.FC = () => {
+type RequestFiltersProps = {
+  revealPII: boolean;
+  setRevealPII: (revealPII: boolean) => void;
+};
+
+const RequestFilters = ({ revealPII, setRevealPII }: RequestFiltersProps) => {
   const {
     handleSearchChange,
     handleStatusChange,
@@ -126,7 +134,7 @@ const RequestFilters: React.FC = () => {
     selectedStatusList,
     statusList,
     to,
-  } = useRequestFilters();
+  } = useRequestFilters(setRevealPII);
 
   return (
     <Stack direction="row" spacing={4} mb={6}>
@@ -147,7 +155,8 @@ const RequestFilters: React.FC = () => {
           autoFocus
           type="search"
           minWidth={200}
-          placeholder="Search"
+          placeholder="Search Request ID"
+          spellCheck={false}
           size="sm"
           borderRadius="md"
           value={id}
@@ -181,7 +190,7 @@ const RequestFilters: React.FC = () => {
         <Text fontSize="xs" mr={2} size="sm">
           Reveal PII
         </Text>
-        <PIIToggle />
+        <PIIToggle revealPII={revealPII} onChange={setRevealPII} />
       </Flex>
       <Button
         variant="ghost"

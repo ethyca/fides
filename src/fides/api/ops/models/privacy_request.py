@@ -78,7 +78,9 @@ EXECUTION_CHECKPOINTS = [
     CurrentStep.pre_webhooks,
     CurrentStep.access,
     CurrentStep.erasure,
+    CurrentStep.consent,
     CurrentStep.erasure_email_post_send,
+    CurrentStep.consent_email_post_send,
     CurrentStep.post_webhooks,
 ]
 
@@ -128,6 +130,7 @@ class PrivacyRequestStatus(str, EnumType):
     in_processing = "in_processing"
     complete = "complete"
     paused = "paused"
+    awaiting_consent_email_send = "awaiting_consent_email_send"
     canceled = "canceled"
     error = "error"
 
@@ -190,6 +193,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
+    consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
@@ -223,6 +227,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
     due_date = Column(DateTime(timezone=True), nullable=True)
+    awaiting_consent_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
@@ -695,6 +700,13 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             },
         )
 
+    def pause_processing_for_consent_email_send(self, db: Session) -> None:
+        """Put the privacy request in a state of awaiting_consent_email_send"""
+        if self.awaiting_consent_email_send_at is None:
+            self.awaiting_consent_email_send_at = datetime.utcnow()
+        self.status = PrivacyRequestStatus.awaiting_consent_email_send
+        self.save(db=db)
+
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
         """Cancels a privacy request.  Currently should only cancel 'pending' tasks"""
         if self.canceled_at is None:
@@ -765,6 +777,8 @@ class ProvidedIdentityType(EnumType):
 
     email = "email"
     phone_number = "phone_number"
+    ga_client_id = "ga_client_id"
+    ljt_readerID = "ljt_readerID"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904
@@ -854,6 +868,9 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         ProvidedIdentity,
         back_populates="consent_request",
     )
+
+    privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
+    privacy_request = relationship(PrivacyRequest)
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""

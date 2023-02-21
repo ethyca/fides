@@ -11,12 +11,12 @@ ENCRYPTION = "encryption"
 EXEC = "exec"
 FIDES_TAXONOMY = "fides_taxonomy"
 ORGANIZATION = "organization"
+PASSWORD_RESET = "password-reset"
 POLICY = "policy"
 PRIVACY_REQUEST = "privacy-request"
 READ = "read"
 RESUME = "resume"
 REVIEW = "review"
-RESET_PASSWORD = "reset-password"
 RULE = "rule"
 SAAS_CONFIG = "saas_config"
 SCOPE = "scope"
@@ -93,7 +93,7 @@ USER_CREATE = f"{USER}:{CREATE}"
 USER_DELETE = f"{USER}:{DELETE}"
 USER_READ = f"{USER}:{READ}"
 USER_UPDATE = f"{USER}:{UPDATE}"
-USER_PASSWORD_RESET = f"{USER}:{RESET_PASSWORD}"
+USER_PASSWORD_RESET = f"{USER}:{PASSWORD_RESET}"
 
 USER_PERMISSION_CREATE = f"{USER_PERMISSION}:{CREATE}"
 USER_PERMISSION_UPDATE = f"{USER_PERMISSION}:{UPDATE}"
@@ -131,7 +131,6 @@ SCOPE_DOCS = {
     PRIVACY_REQUEST_REVIEW: "Review privacy requests",
     PRIVACY_REQUEST_UPLOAD_DATA: "Manually upload data for the privacy request",
     PRIVACY_REQUEST_VIEW_DATA: "View subject data related to the privacy request",
-    RESET_PASSWORD: "Reset user password",
     RULE_CREATE_OR_UPDATE: "Create or update rules",
     RULE_DELETE: "Remove rules",
     RULE_READ: "View rules",
@@ -152,7 +151,7 @@ SCOPE_DOCS = {
     USER_UPDATE: "Update users",
     USER_DELETE: "Remove users",
     USER_READ: "View users",
-    USER_PASSWORD_RESET: "Update user password",
+    USER_PASSWORD_RESET: "Reset another user's password",
     USER_PERMISSION_CREATE: "Create user permissions",
     USER_PERMISSION_UPDATE: "Update user permissions",
     USER_PERMISSION_READ: "View user permissions",

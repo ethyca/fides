@@ -64,6 +64,7 @@ class SystemType(Enum):
     saas = "saas"
     database = "database"
     manual = "manual"
+    email = "email"
 
 
 class ConnectionSystemTypeMap(BaseModel):
