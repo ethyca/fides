@@ -254,6 +254,8 @@ async def setup_server() -> None:
         raise FidesError(
             f"Error occurred writing config settings to database: {str(e)}"
         )
+    finally:
+        db.close()
 
     logger.info("Validating SaaS connector templates...")
     try:
