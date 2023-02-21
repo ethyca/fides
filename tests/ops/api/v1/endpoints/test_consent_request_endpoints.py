@@ -795,7 +795,7 @@ class TestSaveConsent:
             "to a Privacy Request provided identity"
         )
         assert consent_request.privacy_request.consent_preferences == [
-            {"opt_in": True, "data_use": "advertising", "data_use_description": None},
+            {"conflicts_with_gpc": False, "opt_in": True, "data_use": "advertising", "has_gpc_flag": True, "data_use_description": None},
         ], "Only executable consent preferences stored"
 
         assert mock_run_privacy_request.called
