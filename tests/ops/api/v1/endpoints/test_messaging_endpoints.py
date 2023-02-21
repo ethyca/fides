@@ -1054,6 +1054,18 @@ class TestPutDefaultMessagingConfigSecrets:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
 
+    def test_put_default_messaging_secret_missing_config(
+        self, api_client: TestClient, payload, generate_auth_header
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        url = (V1_URL_PREFIX + MESSAGING_DEFAULT_SECRETS).format(
+            service_type=MessagingServiceType.MAILGUN.value
+        )
+        # this should get a 404 because we have not added the messaging config
+        # through a fixture
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 404 == response.status_code
+
     def test_update_default_with_invalid_secrets_key(
         self, api_client: TestClient, generate_auth_header, url
     ):
@@ -1166,9 +1178,19 @@ class TestGetActiveDefaultMessagingConfig:
 
     @pytest.fixture(scope="function")
     def notification_service_type_none(self, db):
-        """Set mailgun as the `notification_service_type` property"""
+        """Set the `notification_service_type` property to `None`"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = None
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.fixture(scope="function")
+    def notification_service_type_invalid(self, db):
+        """Set an invalid string as the `notification_service_type` property"""
+        original_value = CONFIG.notifications.notification_service_type
+        CONFIG.notifications.notification_service_type = "invalid_service_type"
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
@@ -1192,6 +1214,26 @@ class TestGetActiveDefaultMessagingConfig:
             headers=auth_header,
         )
         assert 404 == response.status_code
+
+    @pytest.mark.usefixtures("notification_service_type_invalid")
+    def test_get_active_default_app_setting_invalid(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        This is contrived and should not be able to occur, but here we test what happens
+        if somehow the `notifications.notification_service_type` config property is set
+        to an invalid value.
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        with pytest.raises(ValueError) as e:
+            api_client.get(
+                url,
+                headers=auth_header,
+            )
+        assert "Unknown notification_service_type" in str(e)
 
     @pytest.mark.usefixtures("notification_service_type_mailgun")
     def test_get_active_default_config(
