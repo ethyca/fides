@@ -224,7 +224,7 @@ export const PrivacyDeclarationForm = ({
       {({ dirty }) => (
         <Form>
           <Stack spacing={4}>
-            {renderHeader({ dirty })}
+            <Box data-testid="header">{renderHeader({ dirty })}</Box>
             <PrivacyDeclarationFormComponents {...dataProps} />
           </Stack>
         </Form>

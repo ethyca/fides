@@ -58,7 +58,7 @@ const PrivacyDeclarationAccordionItem = ({
           validationSchema={ValidationSchema}
         >
           {({ dirty }) => (
-            <Form data-testid="privacy-declaration-form">
+            <Form data-testid={`${privacyDeclaration.data_use}-form`}>
               <AccordionButton
                 py={4}
                 borderBottomWidth={isExpanded ? "0px" : "1px"}

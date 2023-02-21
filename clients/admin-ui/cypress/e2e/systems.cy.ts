@@ -3,9 +3,9 @@ import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 describe("System management page", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
-      "getSystems"
-    );
+    cy.intercept("GET", "/api/v1/system", {
+      fixture: "systems/systems.json",
+    }).as("getSystems");
   });
 
   // TODO: Update Cypress test to reflect the nav bar 2.0
@@ -97,7 +97,7 @@ describe("System management page", () => {
       });
 
       it("Can step through the flow", () => {
-        cy.fixture("system.json").then((system) => {
+        cy.fixture("systems/system.json").then((system) => {
           // Fill in the describe form based on fixture data
           cy.visit("/add-systems");
           cy.getByTestId("manual-btn").click();
@@ -152,9 +152,9 @@ describe("System management page", () => {
               data_subjects: declaration.data_subjects,
             });
           });
-          cy.getByTestId(`accordion-header-${declaration.data_use}`).contains(
-            "System"
-          );
+          cy.getByTestId("new-declaration-form").within(() => {
+            cy.getByTestId("header").contains("System");
+          });
         });
       });
 
@@ -291,7 +291,7 @@ describe("System management page", () => {
       // edit the existing declaration
       const newDataUse = "collect";
       cy.getByTestId("accordion-header-improve.system").click();
-      cy.getByTestId("privacy-declaration-form").within(() => {
+      cy.getByTestId("improve.system-form").within(() => {
         cy.getByTestId("input-data_use").type(`${newDataUse}{enter}`);
         cy.getByTestId("save-btn").click();
       });
@@ -386,6 +386,65 @@ describe("System management page", () => {
             system.data_protection_impact_assessment,
         });
       });
+    });
+  });
+
+  describe("Data uses", () => {
+    beforeEach(() => {
+      stubSystemCrud();
+      stubTaxonomyEntities();
+    });
+
+    it("warns when a data use is being added that is already used", () => {
+      cy.visit("/system");
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("edit-btn").click();
+      });
+      // "improve.system" is already being used
+      cy.getByTestId("tab-Privacy declarations").click();
+      cy.getByTestId("add-btn").click();
+      cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+      cy.getByTestId("new-declaration-form").within(() => {
+        cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
+        cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
+        cy.getByTestId("save-btn").click();
+      });
+      cy.getByTestId("toast-error-msg");
+
+      // changing to a different data use should go through
+      cy.getByTestId("new-declaration-form").within(() => {
+        cy.getByTestId("input-data_use").type(`collect{enter}`);
+        cy.getByTestId("save-btn").click();
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it("warns when a data use is being edited to one that is already used", () => {
+      cy.intercept("GET", "/api/v1/system", {
+        fixture: "systems/systems_with_data_uses.json",
+      }).as("getSystemsWithDataUses");
+      cy.visit("/system");
+      cy.wait("@getSystemsWithDataUses");
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("edit-btn").click();
+      });
+
+      cy.getByTestId("tab-Privacy declarations").click();
+      cy.getByTestId("add-btn").click();
+      cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+
+      cy.getByTestId(`accordion-header-improve.system`);
+      cy.getByTestId(`accordion-header-advertising`).click();
+
+      // try to change 'advertising' to 'improve.system'
+      cy.getByTestId("advertising-form").within(() => {
+        cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("save-btn").click();
+      });
+      cy.getByTestId("toast-error-msg");
     });
   });
 });
