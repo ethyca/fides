@@ -22,7 +22,7 @@ class TestSecuirtySettings:
         with pytest.raises(ValueError) as err:
             SecuritySettings(cors_origins=["123"])
 
-        assert "invalid or missing URL scheme" in str(err.value)
+        assert "not a valid url" in str(err.value)
 
     def test_validate_assemble_cors_origins_invalid_type(self):
         with pytest.raises(ValueError):
