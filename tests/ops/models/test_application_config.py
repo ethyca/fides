@@ -199,11 +199,19 @@ class TestApplicationConfigModel:
         assert config_record.api_set["setting3"] == "value3"
         assert config_record_db.id == config_record.id
 
-    def test_get_api_config_nothing_set(
+    def test_get_api_set_nothing_set(
         self,
         db: Session,
     ):
+        db.query(ApplicationConfig).delete()
         assert ApplicationConfig.get_api_set(db) == {}
+
+    def test_get_config_set_nothing_set(
+        self,
+        db: Session,
+    ):
+        db.query(ApplicationConfig).delete()
+        assert ApplicationConfig.get_config_set(db) == {}
 
     def test_get_api_config(self, db: Session, example_config_record: Dict[str, Any]):
         ApplicationConfig.create_or_update(db, data=example_config_record)
@@ -241,6 +249,19 @@ class TestApplicationConfigModel:
         # reset config values to initial values to ensure we don't mess up any state
         CONFIG.notifications.notification_service_type = notification_service_type
         CONFIG.execution.masking_strict = execution_strict
+
+    def test_update_config_nondict_errors(
+        self, db: Session, example_config_record: Dict[str, Any]
+    ):
+        """
+        Test coverage for error path if non-dict is passed into `update` method
+        as either the `config_set` key or the `api_set` key
+        """
+        app_config = ApplicationConfig.create_or_update(db, data=example_config_record)
+        with pytest.raises(ValueError):
+            app_config.update(db, {"config_set": "invalid"})
+        with pytest.raises(ValueError):
+            app_config.update(db, {"api_set": "invalid"})
 
 
 class TestApplicationConfigResolution:
@@ -298,6 +319,13 @@ class TestApplicationConfigResolution:
             send_request_completion_notification
             == CONFIG.notifications.send_request_completion_notification
         )
+
+    def test_get_resolved_config_property_no_config_record(self, db: Session):
+        db.query(ApplicationConfig).delete()
+        notification_service_type = ApplicationConfig.get_resolved_config_property(
+            db, "notifications.notification_service_type"
+        )
+        assert notification_service_type is None
 
 
 class TestConfigProxy:
