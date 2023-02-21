@@ -65,8 +65,9 @@ const ChooseFromLibrary = forwardRef(
       if (dirtyFields.length === 0) {
         return;
       }
+      const updatedFields = dirtyFields.map(({ id, ...rest }) => rest);
       const updateResults = await Promise.all(
-        dirtyFields.map((item) => updateCustomFieldDefinition(item))
+        updatedFields.map((item) => updateCustomFieldDefinition(item))
       );
       const updateResult =
         updateResults.find((result) => "error" in result) ?? updateResults[0];
