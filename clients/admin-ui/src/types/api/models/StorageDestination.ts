@@ -11,9 +11,9 @@ import type { StorageType } from "./StorageType";
  * Storage Destination Schema
  */
 export type StorageDestination = {
-  name: string;
   type: StorageType;
   details: StorageDetailsS3 | StorageDetailsLocal;
-  key?: string;
   format?: ResponseFormat;
+  name: string;
+  key?: string;
 };

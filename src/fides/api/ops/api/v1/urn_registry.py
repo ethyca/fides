@@ -45,6 +45,7 @@ STORAGE_ACTIVE_DEFAULT = "/storage/active/default"
 MESSAGING_CONFIG = "/messaging/config"
 MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
+MESSAGING_TEST = "/messaging/config/test"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"

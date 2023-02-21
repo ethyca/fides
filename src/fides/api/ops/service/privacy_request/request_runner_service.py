@@ -6,7 +6,7 @@ import requests
 from loguru import logger
 from pydantic import ValidationError
 from redis.exceptions import DataError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.api.v1.urn_registry import (
@@ -44,12 +44,19 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+    ExtendedConsentEmailSchema,
+)
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import FidesConnector
+from fides.api.ops.service.connectors.consent_email_connector import (
+    filter_user_identities_for_connector,
+    get_consent_email_connection_configs,
+)
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
@@ -93,7 +100,6 @@ class ManualWebhookResults(BaseSchema):
 def get_access_manual_webhook_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> ManualWebhookResults:
-
     """Retrieves manually uploaded data for all AccessManualWebhooks and formats in a way
     to match automatically retrieved data (a list of rows). Also returns if execution should proceed.
 
@@ -434,14 +440,34 @@ async def run_privacy_request(
                 _log_exception(exc, CONFIG.dev_mode)
                 return
 
-        # Run post-execution webhooks
-        proceed = run_webhooks_and_report_status(
-            db=session,
-            privacy_request=privacy_request,
-            webhook_cls=PolicyPostWebhook,  # type: ignore
-        )
-        if not proceed:
+        # Check if privacy request needs consent emails sent
+        if (
+            policy.get_rules_for_action(action_type=ActionType.consent)
+            and can_run_checkpoint(
+                request_checkpoint=CurrentStep.consent_email_post_send,
+                from_checkpoint=resume_step,
+            )
+            and needs_consent_email_send(session, identity_data, privacy_request)
+        ):
+            privacy_request.pause_processing_for_consent_email_send(session)
+            logger.info(
+                "Privacy request '{}' exiting: awaiting consent email send.",
+                privacy_request.id,
+            )
             return
+
+        # Run post-execution webhooks
+        if can_run_checkpoint(
+            request_checkpoint=CurrentStep.post_webhooks,
+            from_checkpoint=resume_step,
+        ):
+            proceed = run_webhooks_and_report_status(
+                db=session,
+                privacy_request=privacy_request,
+                webhook_cls=PolicyPostWebhook,  # type: ignore
+            )
+            if not proceed:
+                return
 
         if CONFIG.notifications.send_request_completion_notification:
             try:
@@ -649,3 +675,30 @@ def _retrieve_child_results(  # pylint: disable=R0911
         return None
 
     return results
+
+
+def needs_consent_email_send(
+    db: Session, user_identity: Dict[str, Any], privacy_request: PrivacyRequest
+) -> bool:
+    """
+    Returns True if the privacy request fulfills the requirements for consent email send:
+
+    1) Privacy request must have consent preferences saved
+    2) There must be consent email connections configured
+    3) The user must have identity data matching at least one of these connectors
+    """
+    if not privacy_request.consent_preferences:
+        return False
+
+    email_consent_connection_configs: Query = get_consent_email_connection_configs(db)
+
+    for connection_config in email_consent_connection_configs:
+        secrets: ExtendedConsentEmailSchema = ExtendedConsentEmailSchema(
+            **connection_config.secrets or {}
+        )
+        filtered_user_identities = filter_user_identities_for_connector(
+            secrets, user_identity
+        )
+        if filtered_user_identities:
+            return True
+    return False

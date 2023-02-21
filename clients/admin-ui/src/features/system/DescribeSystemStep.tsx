@@ -2,12 +2,16 @@ import { Box, Button, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
-  CustomCreatableMultiSelect,
+  CustomFieldsList,
+  useCustomFields,
+} from "~/features/common/custom-fields";
+import {
+  CustomCreatableSelect,
   CustomSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
@@ -26,8 +30,6 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { ResourceTypes, System } from "~/types/api";
-
-import { CustomFieldsList } from "../common/custom-fields";
 
 const ValidationSchema = Yup.object().shape({
   fides_key: Yup.string().required().label("System key"),
@@ -65,9 +67,10 @@ const DescribeSystemStep = ({
         : defaultInitialValues,
     [passedInSystem]
   );
-  const [createSystem] = useCreateSystemMutation();
-  const [updateSystem] = useUpdateSystemMutation();
-  const [isLoading, setIsLoading] = useState(false);
+  const [createSystemMutationTrigger, createSystemMutationResult] =
+    useCreateSystemMutation();
+  const [updateSystemMutationTrigger, updateSystemMutationResult] =
+    useUpdateSystemMutation();
   const dispatch = useAppDispatch();
   const systems = useAppSelector(selectAllSystems);
   const systemOptions = systems
@@ -83,6 +86,11 @@ const DescribeSystemStep = ({
   );
 
   const toast = useToast();
+
+  const customFields = useCustomFields({
+    resourceType: ResourceTypes.SYSTEM,
+    resourceFidesKey: passedInSystem?.fides_key,
+  });
 
   const handleBack = () => {
     dispatch(changeStep(2));
@@ -110,18 +118,22 @@ const DescribeSystemStep = ({
       }
     };
 
-    setIsLoading(true);
-
     let result;
     if (isEditing) {
-      result = await updateSystem(systemBody);
+      result = await updateSystemMutationTrigger(systemBody);
     } else {
-      result = await createSystem(systemBody);
+      result = await createSystemMutationTrigger(systemBody);
     }
-    handleResult(result);
 
-    setIsLoading(false);
+    await customFields.upsertCustomFields(values);
+
+    handleResult(result);
   };
+
+  const isLoading =
+    updateSystemMutationResult.isLoading ||
+    createSystemMutationResult.isLoading ||
+    customFields.isLoading;
 
   return (
     <Formik
@@ -166,7 +178,7 @@ const DescribeSystemStep = ({
                 name="system_type"
                 tooltip="Describe the type of system being modeled, examples include: Service, Application, Third Party, etc"
               />
-              <CustomCreatableMultiSelect
+              <CustomCreatableSelect
                 id="tags"
                 name="tags"
                 label="System Tags"
@@ -179,6 +191,8 @@ const DescribeSystemStep = ({
                     : []
                 }
                 tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
+                disableMenu
+                isMulti
               />
               <CustomSelect
                 label="System dependencies"
@@ -192,7 +206,7 @@ const DescribeSystemStep = ({
               ) : null}
               {isEditing && (
                 <CustomFieldsList
-                  resourceId={passedInSystem!.fides_key}
+                  resourceFidesKey={passedInSystem?.fides_key}
                   resourceType={ResourceTypes.SYSTEM}
                 />
               )}

@@ -72,6 +72,7 @@ def _create_celery(config: FidesConfig = get_config()) -> Celery:
             "fides.api.ops.service.privacy_request.request_runner_service",
         ]
     )
+
     return app
 
 

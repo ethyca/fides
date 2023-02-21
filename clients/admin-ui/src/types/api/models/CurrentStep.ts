@@ -11,5 +11,6 @@ export enum CurrentStep {
   ERASURE = "erasure",
   CONSENT = "consent",
   ERASURE_EMAIL_POST_SEND = "erasure_email_post_send",
+  CONSENT_EMAIL_POST_SEND = "consent_email_post_send",
   POST_WEBHOOKS = "post_webhooks",
 }

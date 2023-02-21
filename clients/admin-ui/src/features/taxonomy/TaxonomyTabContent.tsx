@@ -56,6 +56,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     isLoading,
     data,
     labels,
+    entityToEdit,
+    setEntityToEdit,
     handleCreate: createEntity,
     handleEdit,
     handleDelete: deleteEntity,
@@ -69,7 +71,6 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     return null;
   }, [data]);
 
-  const [entityToEdit, setEntityToEdit] = useState<TaxonomyEntity | null>(null);
   const [nodeToDelete, setNodeToDelete] = useState<TaxonomyEntityNode | null>(
     null
   );
@@ -81,7 +82,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     if (isAdding) {
       setEntityToEdit(null);
     }
-  }, [isAdding]);
+  }, [isAdding, setEntityToEdit]);
 
   const closeAddForm = () => {
     dispatch(setIsAddFormOpen(false));

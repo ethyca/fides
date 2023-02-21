@@ -25,8 +25,9 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
+    ConsentEmailFulfillmentBodyParams,
     EmailForActionType,
-    ErrorNotificaitonBodyParams,
+    ErrorNotificationBodyParams,
     FidesopsMessage,
     MessagingActionType,
     MessagingMethod,
@@ -73,7 +74,7 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
                 kwargs={
                     "message_meta": FidesopsMessage(
                         action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
-                        body_params=ErrorNotificaitonBodyParams(
+                        body_params=ErrorNotificationBodyParams(
                             unsent_errors=len(unsent_errors)
                         ),
                     ).dict(),
@@ -117,12 +118,14 @@ def dispatch_message(
     message_body_params: Optional[
         Union[
             AccessRequestCompleteBodyParams,
+            ConsentEmailFulfillmentBodyParams,
             SubjectIdentityVerificationBodyParams,
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             List[CheckpointActionRequired],
         ]
     ] = None,
+    subject_override: Optional[str] = None,
 ) -> None:
     """
     Sends a message to `to_identity` with content supplied in `message_body_params`
@@ -143,6 +146,7 @@ def dispatch_message(
     )
     messaging_method = get_messaging_method(service_type)
     message: Optional[Union[EmailForActionType, str]] = None
+
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
             action_type=action_type,
@@ -153,7 +157,9 @@ def dispatch_message(
             action_type=action_type,
             body_params=message_body_params,
         )
-    else:
+    else:  # pragma: no cover
+        # This is here as a fail safe, but it should be impossible to reach because
+        # is controlled by a datbase enum field.
         logger.error(
             "Notification service type is not valid: {}",
             CONFIG.notifications.notification_service_type,
@@ -180,6 +186,10 @@ def dispatch_message(
         "Starting message dispatch for messaging service with action type: {}",
         action_type,
     )
+
+    if subject_override and isinstance(message, EmailForActionType):
+        message.subject = subject_override
+
     dispatcher(
         messaging_config,
         message,
@@ -229,6 +239,8 @@ def _build_sms(  # pylint: disable=too-many-return-statements
         if body_params.rejection_reason:
             return f"Your privacy request has been denied for the following reason: {body_params.rejection_reason}"
         return "Your privacy request has been denied."
+    if action_type == MessagingActionType.TEST_MESSAGE:
+        return "Test message from Fides."
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(
         f"Message action type {action_type} is not implemented"
@@ -268,6 +280,12 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=base_template.render(
                 {"dataset_collection_action_required": body_params}
             ),
+        )
+    if action_type == MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Notification of users' consent preference changes",
+            body=base_template.render({"body": body_params}),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         base_template = get_email_template(action_type)
@@ -310,6 +328,11 @@ def _build_email(  # pylint: disable=too-many-return-statements
             body=base_template.render(
                 {"rejection_reason": body_params.rejection_reason}
             ),
+        )
+    if action_type == MessagingActionType.TEST_MESSAGE:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Test message from fides", body=base_template.render()
         )
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(
@@ -478,12 +501,12 @@ def _twilio_sms_dispatcher(
     auth_token = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value
     ]
-    messaging_service_id = messaging_config.secrets[
+    messaging_service_id = messaging_config.secrets.get(
         MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
-    ]
-    sender_phone_number = messaging_config.secrets[
+    )
+    sender_phone_number = messaging_config.secrets.get(
         MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
-    ]
+    )
 
     client = Client(account_sid, auth_token)
     try:
