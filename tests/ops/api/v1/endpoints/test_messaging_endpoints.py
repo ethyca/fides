@@ -100,6 +100,23 @@ class TestPostMessagingConfig:
         assert response.json()["detail"][0]["msg"] == "field required"
         assert response.json()["detail"][1]["msg"] == "extra fields not permitted"
 
+    def test_post_mailgun_email_config_with_a_twilio_detail(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        payload,
+        generate_auth_header,
+    ):
+        # add a twilio detail field to a mailgun request, should receive a validation error
+        payload["details"] = {"twilio_email_from": "invalid"}
+
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.post(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+        assert response.json()["detail"][0]["msg"] == "field required"
+        assert response.json()["detail"][1]["msg"] == "extra fields not permitted"
+
     def test_post_email_config_with_not_supported_service_type(
         self,
         db: Session,
@@ -930,10 +947,13 @@ class TestPutDefaultMessagingConfig:
         assert 422 == response.status_code
 
     @pytest.mark.parametrize(
-        "service_type",
+        "service_type, details",
         [
-            MessagingServiceType.TWILIO_EMAIL.value,
-            MessagingServiceType.TWILIO_TEXT.value,
+            (
+                MessagingServiceType.TWILIO_EMAIL.value,
+                {"twilio_email_from": "test_email@test.com"},
+            ),
+            (MessagingServiceType.TWILIO_TEXT.value, None),
         ],
     )
     def test_put_default_messaging_config_with_different_service_types(
@@ -941,10 +961,13 @@ class TestPutDefaultMessagingConfig:
         db: Session,
         api_client: TestClient,
         service_type,
+        details,
         url,
         generate_auth_header,
     ):
         payload = {"service_type": service_type}
+        if details:
+            payload["details"] = details
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
 
@@ -1011,6 +1034,21 @@ class TestPutDefaultMessagingConfig:
         payload,
     ):
         payload["details"] = {"invalid": "invalid"}
+
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert response.status_code == 422
+
+    def test_put_default_config_invalid_details_for_type(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        payload,
+    ):
+        # add a twilio detail field to a mailgun request, should receive a validation error
+        payload["details"] = {"twilio_email_from": "invalid"}
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
