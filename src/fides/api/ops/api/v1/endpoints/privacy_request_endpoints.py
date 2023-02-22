@@ -1703,7 +1703,9 @@ def create_privacy_request_func(
                 detail=exc.args[0],
             )
         except Exception as exc:
-            logger.error("Exception: {}", Pii(str(exc)))
+            as_string = Pii(str(exc))
+            error_cls = str(exc.__class__.__name__)
+            logger.error(f"Exception {error_cls}: {as_string}")
             failure = {
                 "message": "This record could not be added",
                 "data": kwargs,
@@ -1724,7 +1726,6 @@ def _process_privacy_request_restart(
     failed_collection: Optional[CollectionAddress],
     db: Session,
 ) -> PrivacyRequestResponse:
-
     logger.info(
         "Restarting failed privacy request '{}' from '{} step, 'collection '{}'",
         privacy_request.id,
