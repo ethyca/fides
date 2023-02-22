@@ -1686,7 +1686,7 @@ def create_privacy_request_func(
             )
         except Exception as exc:
             as_string = Pii(str(exc))
-            error_cls = str(exc.__class__)
+            error_cls = str(exc.__class__.__name__)
             logger.error(f"Exception {error_cls}: {as_string}")
             failure = {
                 "message": "This record could not be added",
