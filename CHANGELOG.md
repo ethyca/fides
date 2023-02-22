@@ -19,6 +19,7 @@ The types of changes are:
 ### Added
 
 * Added the `erase_after` field on collections to be able to set the order for erasures [#2619](https://github.com/ethyca/fides/pull/2619)
+
 ### Changed
 
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
