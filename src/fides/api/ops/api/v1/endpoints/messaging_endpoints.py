@@ -67,6 +67,7 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import get_config
+from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["messaging"], prefix=V1_URL_PREFIX)
 
@@ -387,7 +388,9 @@ def delete_config_by_key(
     },
 )
 def send_test_message(
-    message_info: Identity, db: Session = Depends(deps.get_db)
+    message_info: Identity,
+    db: Session = Depends(deps.get_db),
+    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
 ) -> Dict[str, str]:
     """Sends a test message."""
     try:
@@ -395,7 +398,7 @@ def send_test_message(
             db,
             action_type=MessagingActionType.TEST_MESSAGE,
             to_identity=message_info,
-            service_type=CONFIG.notifications.notification_service_type,
+            service_type=config_proxy.notifications.notification_service_type,
         )
     except MessageDispatchException as e:
         raise HTTPException(
