@@ -276,6 +276,10 @@ class TestGetApplicationConfigApiSet:
     def payload(self):
         return {"storage": {"active_default_storage_type": StorageType.s3.value}}
 
+    @pytest.fixture(scope="function")
+    def payload_single_notification_property(self):
+        return {"notifications": {"notification_service_type": "twilio_email"}}
+
     def test_get_application_config_unauthenticated(self, api_client: TestClient, url):
         response = api_client.get(url, headers={})
         assert 401 == response.status_code
@@ -309,6 +313,7 @@ class TestGetApplicationConfigApiSet:
         url,
         db: Session,
         payload,
+        payload_single_notification_property,
     ):
         # first we PATCH in some settings
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
@@ -325,6 +330,44 @@ class TestGetApplicationConfigApiSet:
             url,
             headers=auth_header,
             params={"api_set": True},
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert (
+            response_settings["storage"]["active_default_storage_type"]
+            == payload["storage"]["active_default_storage_type"]
+        )
+
+        # now PATCH in a single notification property
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload_single_notification_property,
+        )
+        assert response.status_code == 200
+
+        # then we test that we can GET it
+        auth_header = generate_auth_header([scopes.CONFIG_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+            params={"api_set": True},
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert (
+            response_settings["storage"]["active_default_storage_type"]
+            == payload["storage"]["active_default_storage_type"]
+        )
+        assert (
+            response_settings["notifications"]["notification_service_type"]
+            == payload_single_notification_property["notifications"][
+                "notification_service_type"
+            ].upper()
+        )
+
+
 class TestDeleteApplicationConfig:
     @pytest.fixture(scope="function")
     def url(self) -> str:
