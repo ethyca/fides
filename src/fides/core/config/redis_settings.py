@@ -14,7 +14,7 @@ class RedisSettings(FidesSettings):
     host: str = "redis"
     port: int = 6379
     user: Optional[str] = None
-    password: str = "testpassword"
+    password: str = None
     charset: str = "utf8"
     decode_responses: bool = True
     default_ttl_seconds: int = 604800
@@ -42,13 +42,20 @@ class RedisSettings(FidesSettings):
         params = ""
         use_tls = values.get("ssl", False)
         user = values.get("user") or ""
+        password = values.get("password") or ""
         if use_tls:
             # If using TLS update the connection URL format
             connection_protocol = "rediss"
             cert_reqs = values.get("ssl_cert_reqs", "none")
             params = f"?ssl_cert_reqs={quote_plus(cert_reqs)}"
 
-        return f"{connection_protocol}://{quote_plus(user)}:{quote_plus(values.get('password', ''))}@{values.get('host', '')}:{values.get('port', '')}/{db_index}{params}"
+        # Configure a basic auth prefix if either user or password is provided, e.g.
+        # redis://<user>:<password>@<host>
+        auth_prefix = ""
+        if password or user:
+            auth_prefix = f"{quote_plus(user)}:{quote_plus(password)}@"
+
+        return f"{connection_protocol}://{auth_prefix}{values.get('host', '')}:{values.get('port', '')}/{db_index}{params}"
 
     class Config:
         env_prefix = ENV_PREFIX
