@@ -239,7 +239,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         seed_index = self.input_keys.index(ROOT_COLLECTION_ADDRESS)
         seed_data = data[seed_index]
 
-        for (foreign_field_path, local_field_path) in dependent_field_mappings[
+        for foreign_field_path, local_field_path in dependent_field_mappings[
             ROOT_COLLECTION_ADDRESS
         ]:
             dependent_values = consolidate_query_matches(
@@ -533,6 +533,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ActionType.erasure,
                 ExecutionLogStatus.complete,
             )
+            # Cache that the erasure was performed in case we need to restart
+            self.resources.cache_erasure(self.key.value, 0)
             return 0
 
         if not self.can_write_data():
@@ -547,6 +549,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ActionType.erasure,
                 ExecutionLogStatus.error,
             )
+            self.resources.cache_erasure(self.key.value, 0)
             return 0
 
         formatted_input_data: NodeInput = self.pre_process_input_data(
@@ -669,7 +672,7 @@ async def run_access_request(
                 data[tn.address] = GraphTask(tn, resources)
 
         def termination_fn(
-            *_: List[Row],
+            *dependent_values: List[Row],
         ) -> Dict[str, Optional[List[Row]]]:
             """A termination function that just returns its inputs mapped to their source addresses.
             This needs to wait for all dependent keys because this is how dask is informed to wait for
@@ -714,9 +717,7 @@ def get_cached_data_for_erasures(
 
 
 def update_erasure_mapping_from_cache(
-    dsk: Dict[CollectionAddress, Union[Tuple[Any, ...], int]],
-    resources: TaskResources,
-    start_fn: Callable,
+    dsk: Dict[CollectionAddress, Union[Tuple[Any, ...], int]], resources: TaskResources
 ) -> None:
     """On pause or restart from failure, update the dsk graph to skip running erasures on collections
     we've already visited. Instead, just return the previous count of rows affected.
@@ -791,7 +792,7 @@ async def run_erasure(  # pylint: disable = too-many-arguments
         dsk[ROOT_COLLECTION_ADDRESS] = 0
         # terminator function reads and returns the cached erasure results for the entire erasure traversal
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *erasure_end_nodes)
-        update_erasure_mapping_from_cache(dsk, resources, start_function)
+        update_erasure_mapping_from_cache(dsk, resources)
         await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, access_end_nodes, resources, ActionType.erasure
@@ -806,11 +807,7 @@ async def run_erasure(  # pylint: disable = too-many-arguments
             )
 
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
-        update_cts: Dict[str, int] = v.compute()
-        erasure_update_map = {
-            collection.value: update_cts.get(collection.value, 0) for collection in env
-        }
-        return erasure_update_map
+        return v.compute()
 
 
 def _evaluate_erasure_dependencies(
@@ -819,7 +816,8 @@ def _evaluate_erasure_dependencies(
     """
     Return a set of collection addresses corresponding to collections that need
     to be erased before the given task. Remove the dependent collection addresses
-    from `end_nodes` so they can be executed in the correct order.
+    from `end_nodes` so they can be executed in the correct order. If a task does
+    not have any dependencies it is linked directly to the root node
     """
     erase_after = t.traversal_node.node.collection.erase_after
     for collection in erase_after:
@@ -828,7 +826,7 @@ def _evaluate_erasure_dependencies(
             end_nodes.remove(collection)
     # this task will execute after the collections in `erase_after` or
     # execute at the beginning by linking it to the root node
-    return erase_after if len(erase_after) else set([ROOT_COLLECTION_ADDRESS])
+    return erase_after if len(erase_after) else {ROOT_COLLECTION_ADDRESS}
 
 
 async def run_consent_request(  # pylint: disable = too-many-arguments
