@@ -254,11 +254,9 @@ class MessagingServiceSecretsTwilioEmail(BaseModel):
         extra = Extra.forbid
 
 
-class MessagingConfigRequest(BaseModel):
-    """Messaging Config Request Schema"""
+class MessagingConfigBase(BaseModel):
+    """Base model shared by messaging config related models"""
 
-    name: str
-    key: Optional[FidesKey]
     service_type: MessagingServiceType
     details: Optional[
         Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
@@ -267,14 +265,16 @@ class MessagingConfigRequest(BaseModel):
     class Config:
         use_enum_values = False
         orm_mode = True
+        extra = Extra.forbid
 
     @root_validator(pre=True)
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         service_type_pre = values.get("service_type")
         if service_type_pre:
             # uppercase to match enums in database
-            values["service_type"] = service_type_pre.upper()
-            service_type: MessagingServiceType = values["service_type"]
+            if isinstance(service_type_pre, str):
+                service_type_pre = service_type_pre.upper()
+            service_type: str = service_type_pre
             if service_type == MessagingServiceType.MAILGUN.value:
                 cls._validate_details_schema(
                     values=values, schema=MessagingServiceDetailsMailgun
@@ -298,13 +298,18 @@ class MessagingConfigRequest(BaseModel):
         schema.validate(values.get("details"))
 
 
-class MessagingConfigResponse(BaseModel):
+class MessagingConfigRequest(MessagingConfigBase):
+    """Messaging Config Request Schema"""
+
+    name: str
+    key: Optional[FidesKey]
+
+
+class MessagingConfigResponse(MessagingConfigBase):
     """Messaging Config Response Schema"""
 
     name: str
     key: FidesKey
-    service_type: MessagingServiceType
-    details: Optional[Dict[MessagingServiceDetails, Any]]
 
     class Config:
         orm_mode = True
