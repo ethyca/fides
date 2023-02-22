@@ -24,14 +24,25 @@ const Layout = ({
 }) => {
   const features = useFeatures();
   const router = useRouter();
-  const { data: activeMessagingProvider } =
-    useGetActiveMessagingProviderQuery();
-  const { data: activeStorage } = useGetActiveStorageQuery();
-  const showConfigurationNotificationBanner =
-    (!activeStorage || !activeMessagingProvider) &&
-    features.flags.privacyRequestsConfiguration &&
-    (router.pathname === "/privacy-requests" ||
-      router.pathname === "/datastore-connection");
+  const showConfigurationNotificationBanner = () => {
+    if (
+      router.pathname === "/privacy-requests" ||
+      router.pathname === "/datastore-connection"
+    ) {
+      const { data: activeMessagingProvider } =
+        useGetActiveMessagingProviderQuery();
+
+      const { data: activeStorage } = useGetActiveStorageQuery();
+
+      if (
+        (!activeStorage || !activeMessagingProvider) &&
+        features.flags.privacyRequestsConfiguration
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   return (
     <div data-testid={title}>
@@ -50,7 +61,7 @@ const Layout = ({
               <NavSideBar />
             </Box>
             <Flex direction="column" flex={1} minWidth={0}>
-              {showConfigurationNotificationBanner ? (
+              {showConfigurationNotificationBanner() ? (
                 <ConfigurationNotificationBanner />
               ) : null}
               {children}

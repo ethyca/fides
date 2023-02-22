@@ -24,14 +24,19 @@ import {
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
-  const { successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
   const [storageValue, setStorageValue] = useState("");
-  const [saveStorageType, { isLoading }] = useCreateStorageMutation();
-  const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
   const { data: storageDetails } = useGetStorageDetailsQuery({
     type: storageValue,
   });
+  const activeStorageType = storageDetails.items.find(
+    (item: any) => item.is_default === true
+  );
+
+  const { successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
+
+  const [saveStorageType, { isLoading }] = useCreateStorageMutation();
+  const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
 
   const handleChange = async (value: string) => {
     if (value === "local") {
@@ -118,7 +123,7 @@ const StorageConfiguration = () => {
         <RadioGroup
           isDisabled={isLoading}
           onChange={handleChange}
-          value={storageValue}
+          value={activeStorageType ? activeStorageType.type : storageValue}
           data-testid="privacy-requests-storage-selection"
           colorScheme="secondary"
           p={3}
