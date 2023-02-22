@@ -50,6 +50,7 @@ MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
 MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
 MESSAGING_ACTIVE_DEFAULT = "/messaging/active/default"
 MESSAGING_TEST = "/messaging/config/test"
+MESSAGING_STATUS = "/messaging/status"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"

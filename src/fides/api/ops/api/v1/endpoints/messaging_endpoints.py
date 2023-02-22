@@ -31,6 +31,7 @@ from fides.api.ops.api.v1.urn_registry import (
     MESSAGING_DEFAULT_BY_TYPE,
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
+    MESSAGING_STATUS,
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
@@ -49,6 +50,8 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingConfigBase,
     MessagingConfigRequest,
     MessagingConfigResponse,
+    MessagingConfigStatus,
+    MessagingConfigStatusMessage,
     MessagingServiceType,
     TestMessagingStatusMessage,
 )
@@ -67,6 +70,7 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import get_config
+from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["messaging"], prefix=V1_URL_PREFIX)
 
@@ -349,6 +353,74 @@ def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> Messagin
     return messaging_config
 
 
+@router.get(
+    MESSAGING_STATUS,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_READ])],
+    response_model=MessagingConfigStatusMessage,
+    responses={
+        HTTP_200_OK: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "config_status": "configured",
+                        "detail": "Active default messaging service of type MAILGUN is fully configured",
+                    }
+                }
+            }
+        }
+    },
+)
+def get_messaging_status(
+    *, db: Session = Depends(deps.get_db)
+) -> MessagingConfigStatusMessage:
+    """
+    Determines the status of the active default messaging config
+    """
+    logger.info("Determining active default messaging config status")
+
+    # confirm an active default messaging config is present
+    messaging_config = MessagingConfig.get_active_default(db)
+    if not messaging_config:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail="No active default messaging configuration found",
+        )
+
+    try:
+        details = messaging_config.details
+        MessagingConfigBase.validate_details_schema(
+            messaging_config.service_type, details
+        )
+    except Exception:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail=f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration",
+        )
+
+    # confirm secrets are present and pass validation
+    secrets = messaging_config.secrets
+    if not secrets:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail=f"No secrets found for {messaging_config.service_type.value} messaging configuration",
+        )
+    try:
+        get_schema_for_secrets(
+            service_type=messaging_config.service_type,  # type: ignore
+            secrets=secrets,
+        )
+    except Exception as e:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {str(e)}",
+        )
+
+    return MessagingConfigStatusMessage(
+        config_status=MessagingConfigStatus.configured,
+        detail=f"Active default messaging service of type {messaging_config.service_type.value} is fully configured",
+    )
+
+
 @router.delete(
     MESSAGING_BY_KEY,
     status_code=HTTP_204_NO_CONTENT,
@@ -390,12 +462,13 @@ def send_test_message(
     message_info: Identity, db: Session = Depends(deps.get_db)
 ) -> Dict[str, str]:
     """Sends a test message."""
+    config_proxy = ConfigProxy(db)
     try:
         dispatch_message(
             db,
             action_type=MessagingActionType.TEST_MESSAGE,
             to_identity=message_info,
-            service_type=CONFIG.notifications.notification_service_type,
+            service_type=config_proxy.notifications.notification_service_type,
         )
     except MessageDispatchException as e:
         raise HTTPException(

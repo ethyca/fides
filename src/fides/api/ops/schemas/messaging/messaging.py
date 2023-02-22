@@ -268,16 +268,20 @@ class MessagingConfigBase(BaseModel):
         extra = Extra.forbid
 
     @staticmethod
-    def _validate_details_schema(
-        values: Dict[str, Any],
-        schema: Union[
-            Type[MessagingServiceDetailsMailgun],
-            Type[MessagingServiceDetailsTwilioEmail],
-        ],
+    def validate_details_schema(
+        service_type: Union[MessagingServiceType, str],
+        details: Optional[Dict[str, Any]],
     ) -> None:
-        if not values.get("details"):
-            raise ValueError("Messaging config must include details")
-        schema.validate(values.get("details"))
+        if isinstance(service_type, MessagingServiceType):
+            service_type = service_type.value
+        if service_type == MessagingServiceType.MAILGUN.value:
+            if not details:
+                raise ValueError("Messaging config must include details")
+            MessagingServiceDetailsMailgun.validate(details)
+        if service_type == MessagingServiceType.TWILIO_EMAIL.value:
+            if not details:
+                raise ValueError("Messaging config must include details")
+            MessagingServiceDetailsTwilioEmail.validate(details)
 
 
 class MessagingConfigRequest(MessagingConfigBase):
@@ -295,14 +299,7 @@ class MessagingConfigRequest(MessagingConfigBase):
                 service_type_pre = service_type_pre.upper()
             values["service_type"] = service_type_pre
             service_type: MessagingServiceType = values["service_type"]
-            if service_type == MessagingServiceType.MAILGUN.value:
-                cls._validate_details_schema(
-                    values=values, schema=MessagingServiceDetailsMailgun
-                )
-            if service_type == MessagingServiceType.TWILIO_EMAIL.value:
-                cls._validate_details_schema(
-                    values=values, schema=MessagingServiceDetailsTwilioEmail
-                )
+            cls.validate_details_schema(service_type, values.get("details", None))
         return values
 
 
@@ -333,7 +330,21 @@ class MessagingConnectionTestStatus(Enum):
 
 
 class TestMessagingStatusMessage(Msg):
-    """A schema for checking status of message config."""
+    """A schema for testing functionality of a messaging config."""
 
     test_status: Optional[MessagingConnectionTestStatus] = None
     failure_reason: Optional[str] = None
+
+
+class MessagingConfigStatus(Enum):
+    """Enum for configuration statuses of a messaging config"""
+
+    configured = "configured"
+    not_configured = "not configured"
+
+
+class MessagingConfigStatusMessage(BaseModel):
+    """A schema for checking configuration status of message config."""
+
+    config_status: Optional[MessagingConfigStatus] = None
+    detail: Optional[str] = None
