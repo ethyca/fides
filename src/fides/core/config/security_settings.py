@@ -61,8 +61,9 @@ class SecuritySettings(FidesSettings):
 
         def validate(values: List[str]) -> None:
             for value in values:
-                if not validators.url(value):
-                    raise ValueError(f"{value} is not a valid url")
+                if value != "*":
+                    if not validators.url(value):
+                        raise ValueError(f"{value} is not a valid url")
 
         if isinstance(v, str) and not v.startswith("["):
             values = [i.strip() for i in v.split(",")]
