@@ -15,29 +15,36 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.7.0...main)
 
+### Added
+* Add API support for messaging config properties [#2551](https://github.com/ethyca/fides/pull/2551)
+
 ### Changed
 
 - Admin UI
   - Add flow for selecting system types when manually creating a system [#2530](https://github.com/ethyca/fides/pull/2530)
+  - Updated forms for privacy declarations [#2648](https://github.com/ethyca/fides/pull/2648)
+
 - Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
-- Fides API
-  - Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
-  - Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
-- Admin UI
-  - Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
-    - Create Custom Lists
-    - Create Custom Field Definition
-    - Create custom fields from a the taxonomy editor
-    - Provide a custom field value in a resource
-    - Bulk edit custom field values [#2612](https://github.com/ethyca/fides/issues/2612)
-    - Custom metadata UI Polish [#2624](https://github.com/ethyca/fides/pull/2625)
-- Privacy Center
-  - The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
-  - When GPC is enabled, the UI indicates which data uses are opted out by default. [#2596](https://github.com/ethyca/fides/pull/2596)
-  - `inspectForBrowserIdentities` now also looks for `ljt_readerID`. [#2543](https://github.com/ethyca/fides/pull/2543)
+* Fides API
+  * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
+  * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
+  * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
+  
+* Admin UI
+  * Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
+    * Create Custom Lists
+    * Create Custom Field Definition
+    * Create custom fields from a the taxonomy editor
+    * Provide a custom field value in a resource
+    * Bulk edit custom field values [#2612](https://github.com/ethyca/fides/issues/2612)
+    * Custom metadata UI Polish [#2624](https://github.com/ethyca/fides/pull/2625)
+* Privacy Center
+  * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
+  * When GPC is enabled, the UI indicates which data uses are opted out by default. [#2596](https://github.com/ethyca/fides/pull/2596)
+  * `inspectForBrowserIdentities` now also looks for `ljt_readerID`. [#2543](https://github.com/ethyca/fides/pull/2543)
 
 ### Added
 
@@ -107,9 +114,12 @@ The types of changes are:
 
 - Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
 
+<<<<<<< HEAD
 ### Added
 
 - Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
+=======
+>>>>>>> main
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 

@@ -6,7 +6,7 @@ from sqlalchemy.orm import backref, relationship
 from fides.lib.db.base_class import Base
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.privileges import privileges
-from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ
+from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
 
 
 class FidesUserPermissions(Base):
