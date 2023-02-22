@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.0.post0.dev10"
+    "version": "2.7.0.post0.dev11"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10755,6 +10755,124 @@
         ]
       }
     },
+    "/api/v1/messaging/default": {
+      "put": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Put Default Config",
+        "description": "Updates default messaging config for given service type.",
+        "operationId": "put_default_config_api_v1_messaging_default_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessagingConfigBase"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/default/{service_type}/secret": {
+      "put": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Put Default Config Secrets",
+        "operationId": "put_default_config_secrets_api_v1_messaging_default__service_type__secret_put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MessagingServiceType"
+            },
+            "name": "service_type",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Unvalidated Messaging Secrets",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MessagingSecretsMailgunDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingSecretsTwilioSMSDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingSecretsTwilioEmailDocs"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestMessagingStatusMessage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/messaging/config/{config_key}/secret": {
       "put": {
         "tags": [
@@ -10822,6 +10940,84 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "messaging:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/default/{service_type}": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Get Default Config By Type",
+        "description": "Retrieves default config for messaging service by type.",
+        "operationId": "get_default_config_by_type_api_v1_messaging_default__service_type__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MessagingServiceType"
+            },
+            "name": "service_type",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/active/default": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Get Active Default Config",
+        "description": "Retrieves the active default messaging config.",
+        "operationId": "get_active_default_config_api_v1_messaging_active_default_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:read"
             ]
           }
         ]
@@ -14724,23 +14920,13 @@
         "type": "string",
         "description": "The MatchesEnum resource model.\n\nDetermines how the listed resources are matched in the evaluation logic."
       },
-      "MessagingConfigRequest": {
-        "title": "MessagingConfigRequest",
+      "MessagingConfigBase": {
+        "title": "MessagingConfigBase",
         "required": [
-          "name",
           "service_type"
         ],
         "type": "object",
         "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "key": {
-            "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.<>-]+$",
-            "type": "string"
-          },
           "service_type": {
             "$ref": "#/components/schemas/MessagingServiceType"
           },
@@ -14756,17 +14942,31 @@
             ]
           }
         },
-        "description": "Messaging Config Request Schema"
+        "additionalProperties": false,
+        "description": "Base model shared by messaging config related models"
       },
-      "MessagingConfigResponse": {
-        "title": "MessagingConfigResponse",
+      "MessagingConfigRequest": {
+        "title": "MessagingConfigRequest",
         "required": [
-          "name",
-          "key",
-          "service_type"
+          "service_type",
+          "name"
         ],
         "type": "object",
         "properties": {
+          "service_type": {
+            "$ref": "#/components/schemas/MessagingServiceType"
+          },
+          "details": {
+            "title": "Details",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              }
+            ]
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -14775,15 +14975,45 @@
             "title": "Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
-          },
+          }
+        },
+        "additionalProperties": false,
+        "description": "Messaging Config Request Schema"
+      },
+      "MessagingConfigResponse": {
+        "title": "MessagingConfigResponse",
+        "required": [
+          "service_type",
+          "name",
+          "key"
+        ],
+        "type": "object",
+        "properties": {
           "service_type": {
             "$ref": "#/components/schemas/MessagingServiceType"
           },
           "details": {
             "title": "Details",
-            "type": "object"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
           }
         },
+        "additionalProperties": false,
         "description": "Messaging Config Response Schema"
       },
       "MessagingConnectionTestStatus": {
