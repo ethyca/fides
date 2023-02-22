@@ -92,10 +92,12 @@ def update_user_permissions(
     logger.info("Updated FidesUserPermission record")
 
     if user.client:
-        user.client.update(db=db, data=permissions.dict())
+        user.client.update(
+            db=db, data={"scopes": permissions.scopes, "roles": permissions.roles}
+        )
     return user.permissions.update(  # type: ignore[attr-defined]
         db=db,
-        data={"id": user.permissions.id, "user_id": user_id, **permissions.dict()},  # type: ignore[attr-defined]
+        data={"id": user.permissions.id, "user_id": user_id, "scopes": permissions.scopes, "roles": permissions.roles},  # type: ignore[attr-defined]
     )
 
 

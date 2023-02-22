@@ -265,6 +265,7 @@ class TestEditUserPermissions:
                 "roles": [VIEWER],
             },
         )
+        permissions_id = permissions.id
 
         ClientDetail.create_client_and_secret(
             db,
@@ -276,17 +277,19 @@ class TestEditUserPermissions:
         )
 
         updated_scopes = [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]
-        body = {"id": permissions.id, "scopes": updated_scopes}
+        # Note: The permissions id should not be in the request body.
+        # Verify that we ignore this id
+        body = {"id": "invalid_id", "scopes": updated_scopes}
         response = api_client.put(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
         response_body = response.json()
         assert HTTP_200_OK == response.status_code
-        assert response_body["id"] == permissions.id
         assert response_body["scopes"] == updated_scopes
         assert (
             response_body["roles"] == []
         ), "Roles removed as they were not specified in the request"
+        assert response_body["id"] == permissions_id
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
         assert client.scopes == updated_scopes
@@ -295,6 +298,7 @@ class TestEditUserPermissions:
         db.refresh(permissions)
         assert permissions.scopes == updated_scopes
         assert permissions.roles == []
+        assert permissions.id == permissions_id
 
         user.delete(db)
 
@@ -329,7 +333,6 @@ class TestEditUserPermissions:
         )
         response_body = response.json()
         assert HTTP_200_OK == response.status_code
-        assert response_body["id"] == permissions.id
         assert (
             response_body["scopes"] == []
         ), "Scopes removed as they were not specified in the request"
