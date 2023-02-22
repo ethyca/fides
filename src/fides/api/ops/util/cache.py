@@ -172,6 +172,7 @@ def get_cache() -> FidesopsRedis:
             host=CONFIG.redis.host,
             port=CONFIG.redis.port,
             db=CONFIG.redis.db_index,
+            username=CONFIG.redis.user,
             password=CONFIG.redis.password,
             ssl=CONFIG.redis.ssl,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,

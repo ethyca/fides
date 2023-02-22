@@ -13,7 +13,7 @@ class RedisSettings(FidesSettings):
 
     host: str = "redis"
     port: int = 6379
-    user: Optional[str] = ""
+    user: Optional[str] = None
     password: str = "testpassword"
     charset: str = "utf8"
     decode_responses: bool = True
