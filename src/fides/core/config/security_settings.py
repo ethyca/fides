@@ -2,7 +2,7 @@
 
 # pylint: disable=C0115,C0116, E0213
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
 from pydantic import validator
@@ -46,13 +46,30 @@ class SecuritySettings(FidesSettings):
     env: SecurityEnv = SecurityEnv.DEV
 
     cors_origins: List[str] = []
-    cors_origin_regex: Optional[str] = None
+    cors_origin_regex: Optional[Pattern] = None
     oauth_root_client_id: str = ""
     oauth_root_client_secret: str = ""
     oauth_root_client_secret_hash: Optional[Tuple]
     oauth_access_token_expire_minutes: int = 60 * 24 * 8
     oauth_client_id_length_bytes = 16
     oauth_client_secret_length_bytes = 16
+
+    @validator("app_encryption_key")
+    @classmethod
+    def validate_encryption_key_length(
+        cls, v: Optional[str], values: Dict[str, str]
+    ) -> Optional[str]:
+        """Validate the encryption key is exactly 32 characters"""
+
+        # If the value is the default value, return immediately to prevent unwanted errors
+        if v == "":
+            return v
+
+        if v is None or len(v.encode(values.get("encoding", "UTF-8"))) != 32:
+            raise ValueError(
+                "APP_ENCRYPTION_KEY value must be exactly 32 characters long"
+            )
+        return v
 
     @validator("cors_origins", pre=True)
     @classmethod
@@ -75,23 +92,6 @@ class SecuritySettings(FidesSettings):
 
             return v
         raise ValueError(v)
-
-    @validator("app_encryption_key")
-    @classmethod
-    def validate_encryption_key_length(
-        cls, v: Optional[str], values: Dict[str, str]
-    ) -> Optional[str]:
-        """Validate the encryption key is exactly 32 characters"""
-
-        # If the value is the default value, return immediately to prevent unwanted errors
-        if v == "":
-            return v
-
-        if v is None or len(v.encode(values.get("encoding", "UTF-8"))) != 32:
-            raise ValueError(
-                "APP_ENCRYPTION_KEY value must be exactly 32 characters long"
-            )
-        return v
 
     @validator("oauth_root_client_secret_hash")
     @classmethod
