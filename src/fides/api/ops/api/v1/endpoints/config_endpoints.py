@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import Depends
 from fastapi.params import Security
@@ -61,3 +61,24 @@ def update_settings(
         db, data.dict(exclude_none=True)
     )
     return update_config.api_set
+
+
+@router.delete(
+    urls.CONFIG,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE])],
+    response_model=Dict,
+)
+def reset_settings(
+    *,
+    db: Session = Depends(deps.get_db),
+) -> dict:
+    """
+    Resets the global application settings record.
+
+    Only the "api-set" values are cleared, "config-set" values are
+    not updated via any API calls
+    """
+    logger.info("Resetting api-set application settings")
+    update_config: Optional[ApplicationConfig] = ApplicationConfig.clear_api_set(db)
+    return update_config.api_set if update_config else {}
