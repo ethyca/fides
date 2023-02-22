@@ -38,6 +38,14 @@ def kustomer_identity_email(saas_config):
     )
 
 
+@pytest.fixture(scope="session")
+def kustomer_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "kustomer.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
+
+
 @pytest.fixture(scope="function")
 def kustomer_erasure_identity_email() -> str:
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
@@ -117,16 +125,14 @@ def kustomer_create_erasure_data(
     headers = {
         "Authorization": f"Bearer {kustomer_secrets['api_key']}",
     }
-    # create customer 
+    # create customer
     body = {
         "name": "Ethyca Test Erasure",
-        "emails": [
-          {
-               "email": kustomer_erasure_identity_email
-          }
-        ]
+        "emails": [{"email": kustomer_erasure_identity_email}],
     }
 
-    customer_response = requests.post(url=f"{base_url}/v1/customers", headers=headers, json=body)
+    customer_response = requests.post(
+        url=f"{base_url}/v1/customers", headers=headers, json=body
+    )
     customer = customer_response.json()
     yield customer

@@ -16,6 +16,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.7.0...main)
 
+### Added
+* Access and erasure support for Kustomer (#2520)[https://github.com/ethyca/fides/pull/2520]
+
 ### Changed
 
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)

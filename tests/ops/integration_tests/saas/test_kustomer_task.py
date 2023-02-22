@@ -1,5 +1,4 @@
 import random
-import time
 
 import pytest
 import requests
@@ -25,14 +24,14 @@ def test_kustomer_connection_test(kustomer_connection_config) -> None:
 @pytest.mark.integration_saas
 @pytest.mark.integration_kustomer
 @pytest.mark.asyncio
-async def test_kustomer_access_request_task(
+async def test_kustomer_access_request_task_with_email(
     db,
     policy,
     kustomer_connection_config,
     kustomer_dataset_config,
     kustomer_identity_email,
 ) -> None:
-    """Full access request based on the kustomer SaaS config"""
+    """Full access request based on the Kustomer SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_kustomer_access_request_task_{random.randint(0, 1000)}"
@@ -56,17 +55,59 @@ async def test_kustomer_access_request_task(
     assert_rows_match(
         v[f"{dataset_name}:customer"],
         min_size=1,
-        keys=[
-            "type",
-            "id",
-            "attributes",
-            "relationships",
-            "links"
-        ],
+        keys=["type", "id", "attributes", "relationships", "links"],
     )
 
     # verify we only returned data for our identity email
-    assert v[f"{dataset_name}:customer"][0]["attributes"]["emails"][0]["email"] == kustomer_identity_email    
+    assert (
+        v[f"{dataset_name}:customer"][0]["attributes"]["emails"][0]["email"]
+        == kustomer_identity_email
+    )
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_kustomer
+@pytest.mark.asyncio
+async def test_kustomer_access_request_task_with_phone_number(
+    db,
+    policy,
+    kustomer_connection_config,
+    kustomer_dataset_config,
+    kustomer_identity_phone_number,
+) -> None:
+    """Full access request based on the Kustomer SaaS config"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_kustomer_access_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"phone_number": kustomer_identity_phone_number})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = kustomer_connection_config.get_saas_config().fides_key
+    merged_graph = kustomer_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [kustomer_connection_config],
+        {"phone_number": kustomer_identity_phone_number},
+        db,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:customer"],
+        min_size=1,
+        keys=["type", "id", "attributes", "relationships", "links"],
+    )
+
+    # verify we only returned data for our identity phone number
+    assert (
+        v[f"{dataset_name}:customer"][0]["attributes"]["phones"][0]["phone"]
+        == kustomer_identity_phone_number
+    )
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_kustomer
@@ -80,7 +121,7 @@ async def test_kustomer_erasure_request_task(
     kustomer_erasure_identity_email,
     kustomer_create_erasure_data,
 ) -> None:
-    """Full erasure request based on the kustomer SaaS config"""
+    """Full erasure request based on the Kustomer SaaS config"""
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete
@@ -107,13 +148,7 @@ async def test_kustomer_erasure_request_task(
     assert_rows_match(
         v[f"{dataset_name}:customer"],
         min_size=1,
-        keys=[
-            "type",
-            "id",
-            "attributes",
-            "relationships",
-            "links"
-        ],
+        keys=["type", "id", "attributes", "relationships", "links"],
     )
 
     x = await graph_task.run_erasure(
@@ -126,21 +161,18 @@ async def test_kustomer_erasure_request_task(
         db,
     )
 
-    assert x == {
-        f"{dataset_name}:customer": 1
-    }
+    assert x == {f"{dataset_name}:customer": 1}
 
     kustomer_secrets = kustomer_connection_config.secrets
     headers = {
         "Authorization": f"Bearer {kustomer_secrets['api_key']}",
-    }    
+    }
     base_url = f"https://{kustomer_secrets['domain']}"
 
     response = requests.get(
         url=f"{base_url}/v1/customers/email={kustomer_erasure_identity_email}",
         headers=headers,
     )
-    customer = response.json()
 
     assert response.status_code == 404
 

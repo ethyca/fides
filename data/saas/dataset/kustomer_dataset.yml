@@ -58,6 +58,21 @@ dataset:
                       data_type: string
               - name: sharedEmails
               - name: phones
+                fidesops_meta:
+                  data_type: "object[]"
+                fields:
+                  - name: type
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: verified
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: boolean
+                  - name: phone
+                    data_categories: [user.contact.phone_number]
+                    fidesops_meta:
+                      data_type: string
               - name: sharedPhones
               - name: whatsapps
               - name: facebookIds
@@ -159,11 +174,11 @@ dataset:
               - name: roleGroupVersions
               - name: accessOverride
               - name: firstName
-                data_categories: [user]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: lastName
-                data_categories: [user]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: unmaskingWindow

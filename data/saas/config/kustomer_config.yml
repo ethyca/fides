@@ -21,17 +21,26 @@ saas_config:
   test_request:
     method: GET
     path: /v1/audit-logs
+    query_params:
+      - name: count
+        value: 1
 
   endpoints:
     - name: customer
       requests:
         read:
-          method: GET
-          path: /v1/customers/email=<email>
-          data_path: data
-          param_values:
-            - name: email
-              identity: email
+          - method: GET
+            path: /v1/customers/email=<email>
+            param_values:
+              - name: email
+                identity: email
+            data_path: data
+          - method: GET
+            path: /v1/customers/phone=<phone_number>
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            data_path: data
         delete:
           method: DELETE
           path: /v1/customers/<customer_id>
