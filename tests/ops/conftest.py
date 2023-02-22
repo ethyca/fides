@@ -19,6 +19,7 @@ from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.core.api import db_action
 from fides.core.config import get_config
+from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -85,6 +86,11 @@ def db(api_client) -> Generator:
     # Teardown below...
     the_session.close()
     engine.dispose()
+
+
+@pytest.fixture(scope="session")
+def config_proxy(db) -> ConfigProxy:
+    return ConfigProxy(db)
 
 
 @pytest.fixture(autouse=True)
@@ -338,54 +344,66 @@ def require_manual_request_approval():
 
 
 @pytest.fixture(scope="function")
-def subject_identity_verification_required():
+def subject_identity_verification_required(db):
     """Enable identity verification."""
     original_value = CONFIG.execution.subject_identity_verification_required
     CONFIG.execution.subject_identity_verification_required = True
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.execution.subject_identity_verification_required = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(autouse=True, scope="function")
-def subject_identity_verification_not_required():
+def subject_identity_verification_not_required(db):
     """Disable identity verification for most tests unless overridden"""
     original_value = CONFIG.execution.subject_identity_verification_required
     CONFIG.execution.subject_identity_verification_required = False
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.execution.subject_identity_verification_required = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(autouse=True, scope="function")
-def privacy_request_complete_email_notification_disabled():
+def privacy_request_complete_email_notification_disabled(db):
     """Disable request completion email for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_completion_notification
     CONFIG.notifications.send_request_completion_notification = False
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_completion_notification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(autouse=True, scope="function")
-def privacy_request_receipt_notification_disabled():
+def privacy_request_receipt_notification_disabled(db):
     """Disable request receipt notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_receipt_notification
     CONFIG.notifications.send_request_receipt_notification = False
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_receipt_notification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(autouse=True, scope="function")
-def privacy_request_review_notification_disabled():
+def privacy_request_review_notification_disabled(db):
     """Disable request review notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_review_notification
     CONFIG.notifications.send_request_review_notification = False
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_review_notification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @pytest.fixture(scope="function", autouse=True)
-def set_notification_service_type_mailgun():
+def set_notification_service_type_mailgun(db):
     """Set default notification service type"""
     original_value = CONFIG.notifications.notification_service_type
     CONFIG.notifications.notification_service_type = MessagingServiceType.MAILGUN.value
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.notification_service_type = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)

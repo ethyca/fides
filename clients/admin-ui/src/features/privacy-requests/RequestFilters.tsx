@@ -137,7 +137,7 @@ const RequestFilters = ({ revealPII, setRevealPII }: RequestFiltersProps) => {
   } = useRequestFilters(setRevealPII);
 
   return (
-    <Stack direction="row" spacing={4} mb={6}>
+    <Stack direction="row" mb={6} flexWrap="wrap" gap={2}>
       <MultiSelectDropdown
         label="Select Status"
         list={statusList}
@@ -146,7 +146,7 @@ const RequestFilters = ({ revealPII, setRevealPII }: RequestFiltersProps) => {
         onChange={handleStatusChange}
         tooltipPlacement="top"
       />
-      <InputGroup size="sm">
+      <InputGroup size="sm" flex={1} marginStart="0px !important">
         <InputLeftElement pointerEvents="none">
           <SearchLineIcon color="gray.300" w="17px" h="17px" />
         </InputLeftElement>
@@ -164,7 +164,7 @@ const RequestFilters = ({ revealPII, setRevealPII }: RequestFiltersProps) => {
           onChange={handleSearchChange}
         />
       </InputGroup>
-      <InputGroup size="sm">
+      <InputGroup size="sm" flex={1} marginStart="0px !important">
         <InputLeftAddon borderRadius="md">From</InputLeftAddon>
         <Input
           type="date"
@@ -175,7 +175,7 @@ const RequestFilters = ({ revealPII, setRevealPII }: RequestFiltersProps) => {
           borderRadius="md"
         />
       </InputGroup>
-      <InputGroup size="sm">
+      <InputGroup size="sm" flex={1} marginStart="0px !important">
         <InputLeftAddon borderRadius="md">To</InputLeftAddon>
         <Input
           type="date"

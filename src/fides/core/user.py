@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 
 import requests
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
 from fides.cli.utils import handle_cli_response
 from fides.core.config import get_config
 from fides.core.utils import (
@@ -122,7 +122,7 @@ def create_command(
     user_id = user_response.json()["id"]
     update_user_permissions(
         user_id=user_id,
-        scopes=SCOPE_REGISTRY,
+        scopes=SCOPES,
         auth_header=auth_header,
         server_url=server_url,
         roles=[ADMIN],

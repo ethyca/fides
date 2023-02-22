@@ -1,7 +1,7 @@
 """add_role_based_foundation
 
 Revision ID: 985d3756f908
-Revises: 8e198eb13802
+Revises: d65bbc647083
 Create Date: 2023-02-17 21:04:20.113779
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "985d3756f908"
-down_revision = "8e198eb13802"
+down_revision = "d65bbc647083"
 branch_labels = None
 depends_on = None
 

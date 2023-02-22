@@ -6,7 +6,12 @@ from datetime import datetime
 import pytest
 from fastapi.security import SecurityScopes
 
-from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
+from fides.api.ops.api.v1.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_READ,
+    USER_DELETE,
+    USER_READ,
+)
 from fides.api.ops.util.oauth_util import (
     _has_correct_scopes,
     _has_direct_scopes,
@@ -25,7 +30,6 @@ from fides.lib.exceptions import AuthorizationError
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
 from fides.lib.oauth.roles import ADMIN, VIEWER
-from fides.lib.oauth.scopes import DATASET_CREATE_OR_UPDATE, USER_DELETE, USER_READ
 
 
 @pytest.fixture
