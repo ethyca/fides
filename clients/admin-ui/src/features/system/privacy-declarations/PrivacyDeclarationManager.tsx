@@ -19,7 +19,10 @@ const transformFormValuesToDeclaration = (
 interface Props {
   system: System;
   onCollision: () => void;
-  onSave: (privacyDeclarations: PrivacyDeclaration[]) => Promise<boolean>;
+  onSave: (
+    privacyDeclarations: PrivacyDeclaration[],
+    isDelete?: boolean
+  ) => Promise<boolean>;
 }
 
 const PrivacyDeclarationManager = ({
@@ -55,11 +58,14 @@ const PrivacyDeclarationManager = ({
     return false;
   };
 
-  const handleSave = async (updatedDeclarations: PrivacyDeclaration[]) => {
+  const handleSave = async (
+    updatedDeclarations: PrivacyDeclaration[],
+    isDelete?: boolean
+  ) => {
     const transformedDeclarations = updatedDeclarations.map((d) =>
       transformFormValuesToDeclaration(d)
     );
-    const success = await onSave(transformedDeclarations);
+    const success = await onSave(transformedDeclarations, isDelete);
     return success;
   };
 
@@ -79,8 +85,7 @@ const PrivacyDeclarationManager = ({
     const updatedDeclarations = accordionDeclarations.map((dec) =>
       dec.data_use === oldDeclaration.data_use ? updatedDeclaration : dec
     );
-    const success = await handleSave(updatedDeclarations);
-    return success;
+    return handleSave(updatedDeclarations);
   };
 
   const saveNewDeclaration = async (values: PrivacyDeclaration) => {
@@ -91,13 +96,26 @@ const PrivacyDeclarationManager = ({
     toast.closeAll();
     setNewDeclaration(values);
     const updatedDeclarations = [...accordionDeclarations, values];
-    const success = await handleSave(updatedDeclarations);
-    return success;
+    return handleSave(updatedDeclarations);
   };
 
   const handleShowNewForm = () => {
     setShowNewForm(true);
     setNewDeclaration(undefined);
+  };
+
+  const handleDelete = (declarationToDelete: PrivacyDeclaration) => {
+    const updatedDeclarations = system.privacy_declarations.filter(
+      (dec) => dec.data_use !== declarationToDelete.data_use
+    );
+    return handleSave(updatedDeclarations, true);
+  };
+
+  const handleDeleteNew = (declarationToDelete: PrivacyDeclaration) => {
+    const success = handleDelete(declarationToDelete);
+    setShowNewForm(false);
+    setNewDeclaration(undefined);
+    return success;
   };
 
   const showAddDataUseButton =
@@ -109,6 +127,7 @@ const PrivacyDeclarationManager = ({
       <PrivacyDeclarationAccordion
         privacyDeclarations={accordionDeclarations}
         onEdit={handleEditDeclaration}
+        onDelete={handleDelete}
         {...dataProps}
       />
       {showNewForm ? (
@@ -116,6 +135,7 @@ const PrivacyDeclarationManager = ({
           <PrivacyDeclarationForm
             initialValues={newDeclaration}
             onSubmit={saveNewDeclaration}
+            onDelete={handleDeleteNew}
             {...dataProps}
           />
         </Box>

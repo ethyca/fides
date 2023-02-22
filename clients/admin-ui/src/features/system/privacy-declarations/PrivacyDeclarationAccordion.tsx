@@ -23,11 +23,13 @@ interface AccordionProps extends DataProps {
     oldDeclaration: PrivacyDeclaration,
     newDeclaration: PrivacyDeclaration
   ) => Promise<boolean>;
+  onDelete: (declaration: PrivacyDeclaration) => Promise<boolean>;
 }
 
 const PrivacyDeclarationAccordionItem = ({
   privacyDeclaration,
   onEdit,
+  onDelete,
   ...dataProps
 }: { privacyDeclaration: PrivacyDeclaration } & Omit<
   AccordionProps,
@@ -69,7 +71,10 @@ const PrivacyDeclarationAccordionItem = ({
               </AccordionButton>
               <AccordionPanel backgroundColor="gray.50" pt={0}>
                 <Stack spacing={4}>
-                  <PrivacyDeclarationFormComponents {...dataProps} />
+                  <PrivacyDeclarationFormComponents
+                    onDelete={onDelete}
+                    {...dataProps}
+                  />
                 </Stack>
               </AccordionPanel>
             </Form>
