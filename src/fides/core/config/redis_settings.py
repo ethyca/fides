@@ -37,12 +37,16 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        db_index = values.get("db_index") or ""
         connection_protocol = "redis"
         params = ""
         use_tls = values.get("ssl", False)
+
+        # These vars are intentionally fetched with `or ""` as the default to account
+        # for the edge case where `None` is explicitly set in `values` by Pydantic because
+        # it is not overridden by the config file or an env var
         user = values.get("user") or ""
         password = values.get("password") or ""
+        db_index = values.get("db_index") or ""
         if use_tls:
             # If using TLS update the connection URL format
             connection_protocol = "rediss"
