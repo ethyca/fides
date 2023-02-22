@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.0.post0.dev7"
+    "version": "2.7.0.post0.dev8"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5170,6 +5170,34 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "config:read"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Config"
+        ],
+        "summary": "Reset Settings",
+        "description": "Resets the global application settings record.\n\nOnly the \"api-set\" values are cleared, \"config-set\" values are\nnot updated via any API calls",
+        "operationId": "reset_settings_api_v1_config_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Reset Settings Api V1 Config Delete",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "config:update"
             ]
           }
         ]
@@ -12002,13 +12030,16 @@
       },
       "ApplicationConfig": {
         "title": "ApplicationConfig",
-        "required": [
-          "storage"
-        ],
         "type": "object",
         "properties": {
           "storage": {
             "$ref": "#/components/schemas/StorageApplicationConfig"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/NotificationApplicationConfig"
+          },
+          "execution": {
+            "$ref": "#/components/schemas/ExecutionApplicationConfig"
           }
         },
         "additionalProperties": false,
@@ -13910,6 +13941,21 @@
         },
         "description": "Schema for the combined ExecutionLogs and Audit Logs\nassociated with a PrivacyRequest"
       },
+      "ExecutionApplicationConfig": {
+        "title": "ExecutionApplicationConfig",
+        "required": [
+          "subject_identity_verification_required"
+        ],
+        "type": "object",
+        "properties": {
+          "subject_identity_verification_required": {
+            "title": "Subject Identity Verification Required",
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A base template for all other Fides Schemas to inherit from."
+      },
       "ExecutionLogDetailResponse": {
         "title": "ExecutionLogDetailResponse",
         "required": [
@@ -14919,6 +14965,29 @@
         },
         "additionalProperties": false,
         "description": "MySQL Secrets Schema for API Docs"
+      },
+      "NotificationApplicationConfig": {
+        "title": "NotificationApplicationConfig",
+        "type": "object",
+        "properties": {
+          "send_request_completion_notification": {
+            "title": "Send Request Completion Notification",
+            "type": "boolean"
+          },
+          "send_request_receipt_notification": {
+            "title": "Send Request Receipt Notification",
+            "type": "boolean"
+          },
+          "send_request_review_notification": {
+            "title": "Send Request Review Notification",
+            "type": "boolean"
+          },
+          "notification_service_type": {
+            "title": "Notification Service Type",
+            "type": "string"
+          }
+        },
+        "description": "API model - configuration settings for data subject and/or data processor notifications"
       },
       "OktaConfig": {
         "title": "OktaConfig",
@@ -17052,7 +17121,7 @@
         "type": "object",
         "properties": {
           "active_default_storage_type": {
-            "$ref": "#/components/schemas/StorageType"
+            "$ref": "#/components/schemas/StorageTypeApiAccepted"
           }
         },
         "additionalProperties": false,
@@ -17246,6 +17315,14 @@
           "local"
         ],
         "description": "Enum for storage destination types"
+      },
+      "StorageTypeApiAccepted": {
+        "title": "StorageTypeApiAccepted",
+        "enum": [
+          "s3",
+          "local"
+        ],
+        "description": "Enum for storage destination types accepted in API updates"
       },
       "Strategy": {
         "title": "Strategy",
