@@ -325,7 +325,47 @@ class TestGetApplicationConfigApiSet:
             url,
             headers=auth_header,
             params={"api_set": True},
+class TestDeleteApplicationConfig:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return urls.V1_URL_PREFIX + urls.CONFIG
+
+    @pytest.fixture(scope="function")
+    def payload(self):
+        return {
+            "storage": {"active_default_storage_type": StorageType.s3.value},
+            "notifications": {
+                "notification_service_type": "TWILIO_TEXT",
+                "send_request_completion_notification": True,
+                "send_request_receipt_notification": True,
+                "send_request_review_notification": True,
+            },
+            "execution": {"subject_identity_verification_required": True},
+        }
+
+    def test_reset_application_config(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+        payload,
+    ):
+        # first we PATCH in some settings
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
             json=payload,
+        )
+        assert response.status_code == 200
+
+        # then we test that we can GET them
+        auth_header = generate_auth_header([scopes.CONFIG_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+            params={"api_set": True},
         )
         assert response.status_code == 200
         response_settings = response.json()
@@ -333,6 +373,101 @@ class TestGetApplicationConfigApiSet:
             response_settings["storage"]["active_default_storage_type"]
             == payload["storage"]["active_default_storage_type"]
         )
+
+        # then we delete them
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.delete(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+
+        # then we ensure they are no longer returned
+        auth_header = generate_auth_header([scopes.CONFIG_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+            params={"api_set": True},
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings == {}
+
+        # and cleared from the db
+        db_settings = db.query(ApplicationConfig).first()
+        # this should be empty
+        assert db_settings.api_set == {}
+
+    def test_reset_application_config_non_existing(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ):
+        """
+        Test that a DELETE works even if no 'api-set' settings have been set yet
+        """
+        # we ensure they are not returned
+        auth_header = generate_auth_header([scopes.CONFIG_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+            params={"api_set": True},
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings == {}
+
+        # and nothing in the db
+        db_settings = db.query(ApplicationConfig).first()
+        # this should be empty
+        assert db_settings.api_set == {}
+
+        # actually run the delete
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.delete(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+
+        # we ensure they are still not returned
+        auth_header = generate_auth_header([scopes.CONFIG_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+            params={"api_set": True},
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings == {}
+
+        # and still nothing in the db
+        db_settings = db.query(ApplicationConfig).first()
+        # this should be empty
+        assert db_settings.api_set == {}
+
+        # now actually delete the application config record
+        db_settings.delete(db)
+        # and ensure the delete call doesn't error
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.delete(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+
+        # and ensure the GET works but still returns nothing
+        auth_header = generate_auth_header([scopes.CONFIG_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+            params={"api_set": True},
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings == {}
 
 
 class TestGetConnections:

@@ -139,6 +139,20 @@ class ApplicationConfig(Base):
         return cls.create_or_update(db, data={"api_set": api_set_dict})
 
     @classmethod
+    def clear_api_set(cls, db: Session) -> Optional[ApplicationConfig]:
+        """
+        Utility method to set the `api_set` column on the `applicationconfig`
+        db record to an empty dict
+
+        """
+        existing_record = db.query(cls).first()
+        if existing_record:
+            existing_record.api_set = {}
+            existing_record.save(db)
+            return existing_record
+        return None
+
+    @classmethod
     def update_config_set(cls, db: Session, config: FidesConfig) -> ApplicationConfig:
         """
         Utility method to set the `config_set` column on the `applicationconfig`
