@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.0.post0.dev11"
+    "version": "2.7.0.post0.dev12"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -12848,6 +12848,16 @@
           "opt_in": {
             "title": "Opt In",
             "type": "boolean"
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean",
+            "default": false
+          },
+          "conflicts_with_gpc": {
+            "title": "Conflicts With Gpc",
+            "type": "boolean",
+            "default": false
           }
         },
         "description": "Schema for consent."
