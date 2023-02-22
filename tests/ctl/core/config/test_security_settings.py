@@ -20,13 +20,19 @@ class TestSecuirtySettings:
 
     def test_validate_assemble_cors_origins_invalid_url(self):
         with pytest.raises(ValueError) as err:
-            SecuritySettings(cors_origins=["123"])
+            SecuritySettings(cors_origins="123")
 
         assert "not a valid url" in str(err.value)
 
     def test_validate_assemble_cors_origins_invalid_type(self):
         with pytest.raises(ValueError):
             SecuritySettings(cors_origins=123)
+
+    def test_validate_assemble_cors_origins_string_of_urls(self):
+        urls = ["http://localhost.com", "http://test.com"]
+        settings = SecuritySettings(cors_origins=", ".join(urls))
+
+        assert settings.cors_origins == urls
 
     def test_assemble_root_access_token_none(self):
         settings = SecuritySettings(oauth_root_client_secret="")
@@ -36,9 +42,3 @@ class TestSecuirtySettings:
     def test_validate_request_rate_limit_invalid_format(self):
         with pytest.raises(ValueError):
             SecuritySettings(request_rate_limit="invalid")
-
-    def test_validate_assemble_cors_origins_string_of_urls(self):
-        urls = ["http://localhost.com", "http://test.com"]
-        settings = SecuritySettings(cors_origins=", ".join(urls))
-
-        assert settings.cors_origins == urls
