@@ -274,7 +274,7 @@ class MessagingConfigBase(BaseModel):
             # uppercase to match enums in database
             if isinstance(service_type_pre, str):
                 service_type_pre = service_type_pre.upper()
-            service_type: MessagingServiceType = service_type_pre
+            service_type: str = service_type_pre
             if service_type == MessagingServiceType.MAILGUN.value:
                 cls._validate_details_schema(
                     values=values, schema=MessagingServiceDetailsMailgun
