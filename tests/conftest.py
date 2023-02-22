@@ -18,6 +18,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
+from fides.api.ctl.database.session import sync_engine
+
 # from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
