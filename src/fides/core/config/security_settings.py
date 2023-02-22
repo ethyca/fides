@@ -45,7 +45,7 @@ class SecuritySettings(FidesSettings):
     encoding: str = "UTF-8"
     env: SecurityEnv = SecurityEnv.DEV
 
-    cors_origins: List[str] = []
+    cors_origins: Union[str, List[str]] = []
     cors_origin_regex: Optional[Pattern] = None
     oauth_root_client_id: str = ""
     oauth_root_client_secret: str = ""
