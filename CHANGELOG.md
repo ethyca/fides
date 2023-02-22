@@ -16,6 +16,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.7.0...main)
 
+### Added
+* Add API support for messaging config properties [#2551](https://github.com/ethyca/fides/pull/2551)
+
 ### Changed
 
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
@@ -25,6 +28,7 @@ The types of changes are:
 * Fides API
   * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
   * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
+  * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
   
 * Admin UI
   * Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
@@ -105,8 +109,6 @@ The types of changes are:
 
 * Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
 
-### Added
-* Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
@@ -138,6 +140,7 @@ The types of changes are:
   * Patch Google Analytics Consent Connector to delete by client_id [#2355](https://github.com/ethyca/fides/pull/2355)
   * Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
   * Adds a new Universal Analytics Connector that works with the UA Tracking Id
+* Adds intake and storage of Global Privacy Control Signal props for Consent [#2599](https://github.com/ethyca/fides/pull/2599)
   
 ### Changed
 

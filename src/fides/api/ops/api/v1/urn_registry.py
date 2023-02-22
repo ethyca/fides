@@ -45,6 +45,10 @@ STORAGE_ACTIVE_DEFAULT = "/storage/active/default"
 MESSAGING_CONFIG = "/messaging/config"
 MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
+MESSAGING_DEFAULT = "/messaging/default"
+MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
+MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
+MESSAGING_ACTIVE_DEFAULT = "/messaging/active/default"
 MESSAGING_TEST = "/messaging/config/test"
 
 # Policy URLs

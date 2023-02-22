@@ -54,4 +54,7 @@ CONFIG_KEY_ALLOWLIST = {
         "task_retry_backoff",
         "require_manual_request_approval",
     ],
+    "storage": [
+        "active_default_storage_type",
+    ],
 }

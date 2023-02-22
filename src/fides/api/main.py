@@ -53,6 +53,7 @@ from fides.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
@@ -243,6 +244,18 @@ async def setup_server() -> None:
     except Exception as e:
         logger.error("Error creating parent user: {}", str(e))
         raise FidesError(f"Error creating parent user: {str(e)}")
+
+    logger.info("Loading config settings into database...")
+    try:
+        db = get_api_session()
+        ApplicationConfig.update_config_set(db, CONFIG)
+    except Exception as e:
+        logger.error("Error occurred writing config settings to database: {}", str(e))
+        raise FidesError(
+            f"Error occurred writing config settings to database: {str(e)}"
+        )
+    finally:
+        db.close()
 
     logger.info("Validating SaaS connector templates...")
     try:
