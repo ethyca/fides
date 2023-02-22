@@ -59,7 +59,8 @@ class FidesConfig(FidesSettings):
     )
     oauth_instance: Optional[str] = Field(
         default=getenv("FIDES__OAUTH_INSTANCE"),
-        description="TODO: Should this be hidden?",
+        description="A value that is prepended to the generated 'state' param in outbound OAuth2 authorization requests. Used during OAuth2 testing to associate callback responses back to this specific Fides instance.",
+        exclude=True,
     )
 
     # Setting Subsections
