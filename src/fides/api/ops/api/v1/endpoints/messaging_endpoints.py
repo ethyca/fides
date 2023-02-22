@@ -31,6 +31,7 @@ from fides.api.ops.api.v1.urn_registry import (
     MESSAGING_DEFAULT_BY_TYPE,
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
+    MESSAGING_STATUS,
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
@@ -49,6 +50,8 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingConfigRequestBase,
     MessagingConfigResponse,
+    MessagingConfigStatus,
+    MessagingConfigStatusMessage,
     MessagingServiceType,
     TestMessagingStatusMessage,
 )
@@ -163,6 +166,76 @@ def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> Messagin
             detail="No active default messaging config found.",
         )
     return messaging_config
+
+
+# this needs to come before other `/default/{messaging_type}` routes so that `/status`
+# isn't picked up as a path param
+@router.get(
+    MESSAGING_STATUS,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_READ])],
+    response_model=MessagingConfigStatusMessage,
+    responses={
+        HTTP_200_OK: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "config_status": "configured",
+                        "detail": "Active default messaging service of type MAILGUN is fully configured",
+                    }
+                }
+            }
+        }
+    },
+)
+def get_messaging_status(
+    *, db: Session = Depends(deps.get_db)
+) -> MessagingConfigStatusMessage:
+    """
+    Determines the status of the active default messaging config
+    """
+    logger.info("Determining active default messaging config status")
+
+    # confirm an active default messaging config is present
+    messaging_config = MessagingConfig.get_active_default(db)
+    if not messaging_config:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail="No active default messaging configuration found",
+        )
+
+    try:
+        details = messaging_config.details
+        MessagingConfigRequestBase.validate_details_schema(
+            messaging_config.service_type, details
+        )
+    except Exception:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail=f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration",  # type: ignore
+        )
+
+    # confirm secrets are present and pass validation
+    secrets = messaging_config.secrets
+    if not secrets:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail=f"No secrets found for {messaging_config.service_type.value} messaging configuration",  # type: ignore
+        )
+    try:
+        get_schema_for_secrets(
+            service_type=messaging_config.service_type,  # type: ignore
+            secrets=secrets,
+        )
+    except Exception as e:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {str(e)}",  # type: ignore
+        )
+
+    return MessagingConfigStatusMessage(
+        config_status=MessagingConfigStatus.configured,
+        detail=f"Active default messaging service of type {messaging_config.service_type.value} is fully configured",  # type: ignore
+    )
 
 
 @router.put(
