@@ -3,7 +3,7 @@ Contains the code that sets up the API.
 """
 from datetime import datetime, timezone
 from logging import DEBUG, WARNING
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Pattern, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -89,7 +89,8 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
 
 
 def create_fides_app(
-    cors_origins: List[str] = CONFIG.security.cors_origins,
+    cors_origins: Union[str, List[str]] = CONFIG.security.cors_origins,
+    cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
     api_prefix: str = API_PREFIX,
@@ -112,10 +113,11 @@ def create_fides_app(
         fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)
     fastapi_app.add_middleware(SlowAPIMiddleware)
 
-    if cors_origins:
+    if cors_origins or cors_origin_regex:
         fastapi_app.add_middleware(
             CORSMiddleware,
             allow_origins=[str(origin) for origin in cors_origins],
+            allow_origin_regex=cors_origin_regex,
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
