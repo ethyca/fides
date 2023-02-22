@@ -1,7 +1,7 @@
 """adds GPC info to consent table
 
 Revision ID: d65bbc647083
-Revises: 8e198eb13802
+Revises: c9ee230fa6da
 Create Date: 2023-02-15 13:57:36.159161
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'd65bbc647083'
-down_revision = '8e198eb13802'
+down_revision = 'c9ee230fa6da'
 branch_labels = None
 depends_on = None
 
