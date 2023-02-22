@@ -507,6 +507,8 @@ def _prepare_consent_preferences(
                 data_use=x.data_use,
                 data_use_description=x.data_use_description,
                 opt_in=x.opt_in,
+                has_gpc_flag=x.has_gpc_flag,
+                conflicts_with_gpc=x.conflicts_with_gpc,
             )
             for x in consent
         ],

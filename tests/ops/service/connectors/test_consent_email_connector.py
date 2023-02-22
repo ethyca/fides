@@ -296,11 +296,15 @@ class TestSovrnEmailConsentConnector:
                         "data_use": "Advertising, Marketing or Promotion",
                         "data_use_description": None,
                         "opt_in": False,
+                        "has_gpc_flag": False,
+                        "conflicts_with_gpc": False,
                     },
                     {
                         "data_use": "Improve the capability",
                         "data_use_description": None,
                         "opt_in": True,
+                        "has_gpc_flag": False,
+                        "conflicts_with_gpc": False,
                     },
                 ],
             }

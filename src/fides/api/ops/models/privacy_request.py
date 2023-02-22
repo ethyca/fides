@@ -856,6 +856,8 @@ class Consent(Base):
     data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
+    has_gpc_flag = Column(Boolean, server_default="f", default=False, nullable=False)
+    conflicts_with_gpc = Column(Boolean, server_default="f", default=False, nullable=False)
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
 
