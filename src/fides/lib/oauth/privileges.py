@@ -1,4 +1,4 @@
-from fides.lib.oauth.scopes import (
+from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
