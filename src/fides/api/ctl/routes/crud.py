@@ -18,7 +18,6 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 from fides.api.ctl.database.crud import (
     create_resource,
     delete_resource,
-    get_resource,
     get_resource_with_custom_fields,
     list_resource,
     update_resource,
