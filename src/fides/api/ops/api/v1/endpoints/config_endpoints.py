@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import Depends
 from fastapi.params import Security
@@ -33,7 +33,7 @@ def get_config(
     logger.info("Getting the exposable Fides configuration")
     if api_set:
         logger.info("Retrieving api-set application settings")
-        return ApplicationConfig.get_api_set_config(db)
+        return censor_config(ApplicationConfig.get_api_set(db))
     config = censor_config(get_app_config())
     return config
 
@@ -43,6 +43,7 @@ def get_config(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE])],
     response_model=ApplicationConfigSchema,
+    response_model_exclude_unset=True,
 )
 def update_settings(
     *,
@@ -56,8 +57,28 @@ def update_settings(
     i.e. true PATCH behavior.
     """
     logger.info("Updating application settings")
-
-    updated_settings: ApplicationConfig = ApplicationConfig.create_or_update(
-        db, data={"api_set": data.dict()}
+    update_config: ApplicationConfig = ApplicationConfig.update_api_set(
+        db, data.dict(exclude_none=True)
     )
-    return updated_settings.api_set
+    return update_config.api_set
+
+
+@router.delete(
+    urls.CONFIG,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE])],
+    response_model=Dict,
+)
+def reset_settings(
+    *,
+    db: Session = Depends(deps.get_db),
+) -> dict:
+    """
+    Resets the global application settings record.
+
+    Only the "api-set" values are cleared, "config-set" values are
+    not updated via any API calls
+    """
+    logger.info("Resetting api-set application settings")
+    update_config: Optional[ApplicationConfig] = ApplicationConfig.clear_api_set(db)
+    return update_config.api_set if update_config else {}

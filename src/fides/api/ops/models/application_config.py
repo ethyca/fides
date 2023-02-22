@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from json import loads
+from typing import Any, Dict, Optional
 
+from loguru import logger
+from pydantic.utils import deep_update
+from pydash.objects import get
 from sqlalchemy import Boolean, CheckConstraint, Column
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
@@ -11,7 +15,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops.db.base_class import JSONTypeOverride
-from fides.core.config import get_config
+from fides.core.config import FidesConfig, get_config
 from fides.lib.db.base_class import Base
 
 CONFIG = get_config()
@@ -25,6 +29,18 @@ class ApplicationConfig(Base):
     """
 
     api_set = Column(
+        MutableDict.as_mutable(
+            StringEncryptedType(
+                JSONTypeOverride,
+                CONFIG.security.app_encryption_key,
+                AesGcmEngine,
+                "pkcs5",
+            )
+        ),
+        nullable=False,
+        default={},
+    )  # store as encrypted JSON blob since config settings may have sensitive data
+    config_set = Column(
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
@@ -60,19 +76,34 @@ class ApplicationConfig(Base):
 
     def update(self, db: Session, data: Dict[str, Any]) -> ApplicationConfig:  # type: ignore[override]
         """
-        Updates the config record, merging contents of the JSON column
-        """
-        incoming_config = data["api_set"]
-        if not isinstance(incoming_config, dict):
-            raise ValueError("`api_set` column must be a dictionary")
+        Updates the config record, merging contents of the particular JSON column that
+        corresponds to the updated data.
 
-        # update, i.e. merge, the `api_set` dict
-        self.api_set.update(incoming_config)
+        Given `data` dict should have either/both an `api_set` and/or `config_set` key at the top-level.
+        Those keys will then point to `dict`s of data to update, i.e. merge, with the existing contents
+        of the `api_set` or `config_set` columns, respectively.
+        """
+        if "api_set" in data:
+            incoming_api_config = data["api_set"]
+            if not isinstance(incoming_api_config, dict):
+                raise ValueError("`api_set` column must be a dictionary")
+
+            # update, i.e. merge, the `api_set` dict
+            self.api_set = deep_update(self.api_set, incoming_api_config)
+
+        if "config_set" in data:
+            incoming_config_config = data["config_set"]
+            if not isinstance(incoming_config_config, dict):
+                raise ValueError("`config_set` column must be a dictionary")
+
+            # update, i.e. merge, the `config_set` dict
+            self.config_set = deep_update(self.config_set, incoming_config_config)
+
         self.save(db=db)
         return self
 
     @classmethod
-    def get_api_set_config(cls, db: Session) -> Dict[str, Any]:
+    def get_api_set(cls, db: Session) -> Dict[str, Any]:
         """
         Utility method to get the api_set config settings dict
 
@@ -82,3 +113,75 @@ class ApplicationConfig(Base):
         if config_record:
             return config_record.api_set
         return {}
+
+    @classmethod
+    def get_config_set(cls, db: Session) -> Dict[str, Any]:
+        """
+        Utility method to get the config_set config dict
+
+        An empty `dict` will be returned if no config settings have been set through config
+        """
+        config_record = db.query(cls).first()
+        if config_record:
+            return config_record.config_set
+        return {}
+
+    @classmethod
+    def update_api_set(
+        cls, db: Session, api_set_dict: Dict[str, Any]
+    ) -> ApplicationConfig:
+        """
+        Utility method to set the `api_set` column on the `applicationconfig`
+        db record with the provided dictionary of data.
+
+        Updates are *merged* with any existing `api_set` data in the db.
+        """
+        return cls.create_or_update(db, data={"api_set": api_set_dict})
+
+    @classmethod
+    def clear_api_set(cls, db: Session) -> Optional[ApplicationConfig]:
+        """
+        Utility method to set the `api_set` column on the `applicationconfig`
+        db record to an empty dict
+
+        """
+        existing_record = db.query(cls).first()
+        if existing_record:
+            existing_record.api_set = {}
+            existing_record.save(db)
+            return existing_record
+        return None
+
+    @classmethod
+    def update_config_set(cls, db: Session, config: FidesConfig) -> ApplicationConfig:
+        """
+        Utility method to set the `config_set` column on the `applicationconfig`
+        db record by serializing the given `FidesConfig` to a JSON blob.
+        """
+        # need to do this deserialization round-trip to get us a dict
+        # that's serializable as JSON in the db:
+        # pydantic's `.dict()` is NOT serializable as JSON --
+        # see https://github.com/pydantic/pydantic/issues/1409
+        config_dict = loads(config.json())
+        return cls.create_or_update(db, data={"config_set": config_dict})
+
+    @classmethod
+    def get_resolved_config_property(
+        cls, db: Session, config_property: str, default_value: Any = None
+    ) -> Optional[Any]:
+        """
+        Gets the 'resolved' config property based on api-set and config-set configs.
+        `config_property` is a dot-separated path to the config property,
+        e.g. `notifications.notification_service_type`.
+
+        Api-set values get priority over config-set, in case of conflict.
+        """
+        config_record = db.query(cls).first()
+        if config_record:
+            api_prop = get(config_record.api_set, config_property)
+            if api_prop is None:
+                logger.info(f"No API-set {config_property} property found")
+                return get(config_record.config_set, config_property, default_value)
+            return api_prop
+        logger.warning("No config record found!")
+        return default_value
