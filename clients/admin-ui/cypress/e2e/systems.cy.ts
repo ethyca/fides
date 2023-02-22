@@ -3,9 +3,9 @@ import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 describe("System management page", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
-      "getSystems"
-    );
+    cy.intercept("GET", "/api/v1/system", {
+      fixture: "systems/systems.json",
+    }).as("getSystems");
   });
 
   // TODO: Update Cypress test to reflect the nav bar 2.0
@@ -97,7 +97,7 @@ describe("System management page", () => {
       });
 
       it("Can step through the flow", () => {
-        cy.fixture("system.json").then((system) => {
+        cy.fixture("systems/system.json").then((system) => {
           // Fill in the describe form based on fixture data
           cy.visit("/add-systems");
           cy.getByTestId("manual-btn").click();
@@ -126,37 +126,34 @@ describe("System management page", () => {
           });
 
           // Fill in the privacy declaration form
-          cy.getByTestId("tab-Privacy declarations").click();
-          cy.wait("@getDataCategories");
-          cy.wait("@getDataQualifiers");
-          cy.wait("@getDataSubjects");
-          cy.wait("@getDataUses");
-          cy.getByTestId("privacy-declaration-form");
+          cy.getByTestId("tab-Data uses").click();
+          cy.getByTestId("add-btn").click();
+          cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+          cy.getByTestId("new-declaration-form");
           const declaration = system.privacy_declarations[0];
-          cy.getByTestId("input-name").type(declaration.name);
-          declaration.data_categories.forEach((dc) => {
-            cy.getByTestId("input-data_categories").type(`${dc}{enter}`);
-          });
           cy.getByTestId("input-data_use").click();
           cy.getByTestId("input-data_use").within(() => {
             cy.contains(declaration.data_use).click();
           });
-
+          declaration.data_categories.forEach((dc) => {
+            cy.getByTestId("input-data_categories").type(`${dc}{enter}`);
+          });
           declaration.data_subjects.forEach((ds) => {
             cy.getByTestId("input-data_subjects").type(`${ds}{enter}`);
           });
-          cy.getByTestId("input-data_qualifier").click();
-          cy.getByTestId("input-data_qualifier").within(() => {
-            cy.contains(declaration.data_qualifier).click();
-          });
-          cy.getByTestId("add-btn").click();
+
           cy.getByTestId("save-btn").click();
           cy.wait("@putSystem").then((interception) => {
             const { body } = interception.request;
             expect(body.privacy_declarations[0]).to.eql({
-              ...declaration,
-              dataset_references: [],
+              name: "",
+              data_use: declaration.data_use,
+              data_categories: declaration.data_categories,
+              data_subjects: declaration.data_subjects,
             });
+          });
+          cy.getByTestId("new-declaration-form").within(() => {
+            cy.getByTestId("header").contains("System");
           });
         });
       });
@@ -175,20 +172,16 @@ describe("System management page", () => {
         const description = "half formed thought";
         cy.getByTestId("input-description").type(description);
         // then try navigating to the privacy declarations tab
-        cy.getByTestId("tab-Privacy declarations").click();
+        cy.getByTestId("tab-Data uses").click();
         cy.getByTestId("confirmation-modal");
         // make sure canceling works
         cy.getByTestId("cancel-btn").click();
         cy.getByTestId("input-description").should("have.value", description);
         // now actually discard
-        cy.getByTestId("tab-Privacy declarations").click();
+        cy.getByTestId("tab-Data uses").click();
         cy.getByTestId("continue-btn").click();
         // should load the privacy declarations page
-        cy.wait("@getDataCategories");
-        cy.wait("@getDataQualifiers");
-        cy.wait("@getDataSubjects");
-        cy.wait("@getDataUses");
-        cy.getByTestId("privacy-declaration-form");
+        cy.getByTestId("privacy-declaration-step");
         // navigate back
         cy.getByTestId("tab-System information").click();
         cy.getByTestId("input-description").should("have.value", "");
@@ -278,34 +271,36 @@ describe("System management page", () => {
       });
 
       // add another privacy declaration
-      cy.getByTestId("tab-Privacy declarations").click();
-      const secondName = "Second declaration";
-      cy.getByTestId("privacy-declaration-form");
-      cy.getByTestId("input-name").type(secondName);
-      cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
-      cy.getByTestId("input-data_use").type(`advertising{enter}`);
-      cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
+      cy.getByTestId("tab-Data uses").click();
+      const secondDataUse = "advertising";
+      cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
-
-      // edit the existing declaration
-      const newName = "Store a lot of system data";
-      cy.getByTestId("declaration-Store system data.")
-        .click()
-        .within(() => {
-          cy.getByTestId("edit-declaration-btn").click();
-          cy.getByTestId("input-name").clear().type(newName);
-          cy.getByTestId("confirm-edit-btn").click();
-        });
-      cy.getByTestId(`declaration-${newName}`);
-      cy.getByTestId(`declaration-${secondName}`);
-
-      cy.getByTestId("save-btn").click();
+      cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+      cy.getByTestId("new-declaration-form").within(() => {
+        cy.getByTestId("input-data_use").type(`${secondDataUse}{enter}`);
+        cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
+        cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
+        cy.getByTestId("save-btn").click();
+      });
       cy.wait("@putSystem").then((interception) => {
         const { body } = interception.request;
         expect(body.privacy_declarations.length).to.eql(2);
-        expect(body.privacy_declarations[0].name).to.eql(newName);
-        expect(body.privacy_declarations[1].name).to.eql(secondName);
+        expect(body.privacy_declarations[1].data_use).to.eql(secondDataUse);
       });
+
+      // edit the existing declaration
+      const newDataUse = "collect";
+      cy.getByTestId("accordion-header-improve.system").click();
+      cy.getByTestId("improve.system-form").within(() => {
+        cy.getByTestId("input-data_use").type(`${newDataUse}{enter}`);
+        cy.getByTestId("save-btn").click();
+      });
+      cy.wait("@putSystem").then((interception) => {
+        const { body } = interception.request;
+        expect(body.privacy_declarations.length).to.eql(1);
+        expect(body.privacy_declarations[0].data_use).to.eql(newDataUse);
+      });
+      cy.getByTestId("saved-indicator");
     });
 
     it("Can render and edit extended form fields", () => {
@@ -391,40 +386,65 @@ describe("System management page", () => {
             system.data_protection_impact_assessment,
         });
       });
+    });
+  });
 
-      // Add privacy declaration form
-      cy.getByTestId("tab-Privacy declarations").click();
-      cy.wait("@getDataCategories");
-      cy.wait("@getDataQualifiers");
-      cy.wait("@getDataSubjects");
-      cy.wait("@getDataUses");
-      cy.wait("@getDatasets");
-      cy.getByTestId("privacy-declaration-form");
-      const declaration = {
-        name: "my declaration",
-        data_categories: ["user.biometric", "user.contact"],
-        data_use: "advertising",
-        data_subjects: ["citizen_voter", "consultant"],
-        dataset_references: ["demo_users_dataset_2"],
-      };
-      cy.getByTestId("input-name").type(declaration.name);
-      declaration.data_categories.forEach((dc) => {
-        cy.getByTestId("input-data_categories").type(`${dc}{enter}`);
+  describe("Data uses", () => {
+    beforeEach(() => {
+      stubSystemCrud();
+      stubTaxonomyEntities();
+    });
+
+    it("warns when a data use is being added that is already used", () => {
+      cy.visit("/system");
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("input-data_use").type(`${declaration.data_use}{enter}`);
-      declaration.data_subjects.forEach((ds) => {
-        cy.getByTestId("input-data_subjects").type(`${ds}{enter}`);
-      });
-      cy.getByTestId("input-dataset_references").click();
-      cy.getByTestId("input-dataset_references").within(() => {
-        cy.contains("Demo Users Dataset 2").click();
-      });
+      // "improve.system" is already being used
+      cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
-      cy.getByTestId("save-btn").click();
-      cy.wait("@putSystem").then((interception) => {
-        const { body } = interception.request;
-        expect(body.privacy_declarations[1]).to.eql(declaration);
+      cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+      cy.getByTestId("new-declaration-form").within(() => {
+        cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
+        cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
+        cy.getByTestId("save-btn").click();
       });
+      cy.getByTestId("toast-error-msg");
+
+      // changing to a different data use should go through
+      cy.getByTestId("new-declaration-form").within(() => {
+        cy.getByTestId("input-data_use").type(`collect{enter}`);
+        cy.getByTestId("save-btn").click();
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it("warns when a data use is being edited to one that is already used", () => {
+      cy.intercept("GET", "/api/v1/system", {
+        fixture: "systems/systems_with_data_uses.json",
+      }).as("getSystemsWithDataUses");
+      cy.visit("/system");
+      cy.wait("@getSystemsWithDataUses");
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("edit-btn").click();
+      });
+
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("add-btn").click();
+      cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+
+      cy.getByTestId(`accordion-header-improve.system`);
+      cy.getByTestId(`accordion-header-advertising`).click();
+
+      // try to change 'advertising' to 'improve.system'
+      cy.getByTestId("advertising-form").within(() => {
+        cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("save-btn").click();
+      });
+      cy.getByTestId("toast-error-msg");
     });
   });
 });

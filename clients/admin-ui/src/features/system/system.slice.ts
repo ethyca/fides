@@ -74,31 +74,6 @@ export const systemApi = createApi({
         body: patch,
       }),
       invalidatesTags: ["System"],
-      // For optimistic updates
-      async onQueryStarted(
-        { fides_key, ...patch },
-        { dispatch, queryFulfilled }
-      ) {
-        const patchResult = dispatch(
-          systemApi.util.updateQueryData(
-            "getSystemByFidesKey",
-            fides_key,
-            (draft) => {
-              Object.assign(draft, patch);
-            }
-          )
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-          /**
-           * Alternatively, on failure you can invalidate the corresponding cache tags
-           * to trigger a re-fetch:
-           * dispatch(api.util.invalidateTags(['System']))
-           */
-        }
-      },
     }),
   }),
 });

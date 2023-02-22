@@ -3,9 +3,9 @@ import { stubPlus, stubTaxonomyEntities } from "cypress/support/stubs";
 describe("Classify systems page", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
-      "getSystems"
-    );
+    cy.intercept("GET", "/api/v1/system", {
+      fixture: "systems/systems.json",
+    }).as("getSystems");
   });
 
   it("Should reroute if not in plus", () => {
@@ -21,9 +21,9 @@ describe("Classify systems page", () => {
       cy.intercept("GET", "/api/v1/plus/classify*", {
         fixture: "classify/list-systems.json",
       }).as("getClassifyList");
-      cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
-        "getSystems"
-      );
+      cy.intercept("GET", "/api/v1/system", {
+        fixture: "systems/systems.json",
+      }).as("getSystems");
     });
 
     it("Should be accessible to plus users", () => {
@@ -109,9 +109,9 @@ describe("Classify systems page", () => {
       cy.intercept("PUT", "/api/v1/plus/classify/*", { body: undefined }).as(
         "putClassifyInstance"
       );
-      cy.intercept("PUT", "/api/v1/system*", { fixture: "system.json" }).as(
-        "putSystem"
-      );
+      cy.intercept("PUT", "/api/v1/system*", {
+        fixture: "systems/system.json",
+      }).as("putSystem");
       cy.visit("/classify-systems");
 
       // Open up an ingress

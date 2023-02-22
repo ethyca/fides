@@ -4,9 +4,9 @@ import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System } from "~/types/api";
 
-import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemFormTabs from "./SystemFormTabs";
 import SystemInformationForm from "./SystemInformationForm";
@@ -65,10 +65,6 @@ const EditSystemFlow = () => {
     [currentStepIndex, dispatch]
   );
 
-  const decrementStep = () => {
-    setCurrentStepIndex(currentStepIndex - 1);
-  };
-
   return (
     <>
       {navV2 && (
@@ -97,11 +93,7 @@ const EditSystemFlow = () => {
               />
             ) : null}
             {currentStepIndex === 1 && activeSystem ? (
-              <PrivacyDeclarationStep
-                system={activeSystem}
-                onCancel={decrementStep}
-                onSuccess={handleSuccess}
-              />
+              <PrivacyDeclarationStep system={activeSystem} />
             ) : null}
             {currentStepIndex === 2 && activeSystem ? (
               <SystemRegisterSuccess
