@@ -446,5 +446,55 @@ describe("System management page", () => {
       });
       cy.getByTestId("toast-error-msg");
     });
+
+    describe("delete privacy declaration", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/system", {
+          fixture: "systems/systems_with_data_uses.json",
+        }).as("getSystemsWithDataUses");
+        cy.visit("/system");
+        cy.wait("@getSystemsWithDataUses");
+        cy.getByTestId("system-fidesctl_system").within(() => {
+          cy.getByTestId("more-btn").click();
+          cy.getByTestId("edit-btn").click();
+        });
+        cy.getByTestId("tab-Data uses").click();
+      });
+
+      it("deletes a new privacy declaration", () => {
+        cy.getByTestId("add-btn").click();
+        cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+
+        // new form's "delete" btn should be disabled until save
+        cy.getByTestId("new-declaration-form").within(() => {
+          cy.getByTestId("input-data_use").type(`collect{enter}`);
+          cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
+          cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
+          cy.getByTestId("delete-btn").should("be.disabled");
+          cy.getByTestId("save-btn").click();
+          cy.wait("@putSystem");
+          cy.getByTestId("delete-btn").should("be.enabled");
+          // now go through delete flow
+          cy.getByTestId("delete-btn").click();
+        });
+        cy.getByTestId("continue-btn").click();
+        cy.wait("@putSystem");
+        cy.getByTestId("toast-success-msg").contains("Data use case deleted");
+      });
+
+      it("deletes an accordion privacy declaration", () => {
+        cy.getByTestId("accordion-header-improve.system").click();
+        cy.getByTestId("improve.system-form").within(() => {
+          cy.getByTestId("delete-btn").click();
+        });
+        cy.getByTestId("continue-btn").click();
+        cy.wait("@putSystem").then((interception) => {
+          const { body } = interception.request;
+          expect(body.privacy_declarations.length).to.eql(1);
+          expect(body.privacy_declarations[0].data_use !== "improve.system");
+        });
+        cy.getByTestId("toast-success-msg").contains("Data use case deleted");
+      });
+    });
   });
 });

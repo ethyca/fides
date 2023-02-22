@@ -104,17 +104,19 @@ const PrivacyDeclarationManager = ({
     setNewDeclaration(undefined);
   };
 
-  const handleDelete = (declarationToDelete: PrivacyDeclaration) => {
+  const handleDelete = async (declarationToDelete: PrivacyDeclaration) => {
     const updatedDeclarations = system.privacy_declarations.filter(
       (dec) => dec.data_use !== declarationToDelete.data_use
     );
     return handleSave(updatedDeclarations, true);
   };
 
-  const handleDeleteNew = (declarationToDelete: PrivacyDeclaration) => {
-    const success = handleDelete(declarationToDelete);
-    setShowNewForm(false);
-    setNewDeclaration(undefined);
+  const handleDeleteNew = async (declarationToDelete: PrivacyDeclaration) => {
+    const success = await handleDelete(declarationToDelete);
+    if (success) {
+      setShowNewForm(false);
+      setNewDeclaration(undefined);
+    }
     return success;
   };
 

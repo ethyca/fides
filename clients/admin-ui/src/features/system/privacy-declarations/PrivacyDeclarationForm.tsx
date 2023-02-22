@@ -2,7 +2,6 @@
  * Exports various parts of the privacy declaration form for flexibility
  */
 
-import { ConfirmationModal } from "@fidesui/components";
 import {
   Box,
   BoxProps,
@@ -19,6 +18,7 @@ import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { CustomSelect } from "~/features/common/form/inputs";
 import {
   selectDataSubjects,
@@ -73,8 +73,8 @@ export const PrivacyDeclarationFormComponents = ({
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
 
-  const handleDelete = () => {
-    onDelete(initialValues);
+  const handleDelete = async () => {
+    await onDelete(initialValues);
     deleteModal.onClose();
   };
 
@@ -121,6 +121,7 @@ export const PrivacyDeclarationFormComponents = ({
           variant="outline"
           onClick={deleteModal.onOpen}
           disabled={deleteDisabled}
+          data-testid="delete-btn"
         >
           Delete
         </Button>
@@ -140,6 +141,7 @@ export const PrivacyDeclarationFormComponents = ({
         message="Are you sure you want to delete this data use? This action can't be undone."
         isOpen={deleteModal.isOpen}
         onClose={deleteModal.onClose}
+        isCentered
       />
     </Stack>
   );
