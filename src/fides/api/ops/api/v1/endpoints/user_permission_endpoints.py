@@ -29,6 +29,7 @@ from fides.api.ops.util.oauth_util import (
 from fides.core.config import get_config
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.roles import ADMIN
 
 CONFIG = get_config()
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
@@ -62,6 +63,9 @@ def create_user_permissions(
             status_code=HTTP_400_BAD_REQUEST,
             detail="This user already has permissions set.",
         )
+
+    if user.client:
+        user.client.update(db=db, data=permissions.dict())
     logger.info("Created FidesUserPermission record")
     return FidesUserPermissions.create(
         db=db, data={"user_id": user_id, **permissions.dict()}
@@ -79,10 +83,16 @@ def update_user_permissions(
     user_id: str,
     permissions: UserPermissionsEdit,
 ) -> FidesUserPermissions:
+    """Update either a user's role(s) and/or scope(s).
+
+    Typically we'll assign roles to a user and they'll inherit the associated scopes,
+    but we're still supporting assigning scopes directly as well.
+    """
     user = validate_user_id(db, user_id)
     logger.info("Updated FidesUserPermission record")
+
     if user.client:
-        user.client.update(db=db, data={"scopes": permissions.scopes})
+        user.client.update(db=db, data=permissions.dict())
     return user.permissions.update(  # type: ignore[attr-defined]
         db=db,
         data={"id": user.permissions.id, "user_id": user_id, **permissions.dict()},  # type: ignore[attr-defined]
@@ -109,6 +119,7 @@ async def get_user_permissions(
                 id=CONFIG.security.oauth_root_client_id,
                 user_id=CONFIG.security.oauth_root_client_id,
                 scopes=SCOPE_REGISTRY,
+                roles=[ADMIN],
             )
 
         logger.info("Retrieved FidesUserPermission record for current user")

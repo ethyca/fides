@@ -81,7 +81,11 @@ def create_user(
     user = FidesUser.create(db=db, data=user_data.dict())
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+        db=db,
+        data={
+            "user_id": user.id,
+            "scopes": [PRIVACY_REQUEST_READ],
+        },  # TODO - Change this to Viewer Role by default?
     )
     return user
 
@@ -175,6 +179,7 @@ def user_login(
             object_id=config.security.oauth_root_client_id,
             config=config,
             scopes=config.security.root_user_scopes,
+            roles=config.security.root_user_roles,
         )
 
         if not client_check:
@@ -241,6 +246,7 @@ def perform_login(
             client_id_byte_length,
             client_secret_btye_length,
             scopes=user.permissions.scopes,  # type: ignore
+            roles=user.permissions.roles,  # type: ignore
             user_id=user.id,
         )
 

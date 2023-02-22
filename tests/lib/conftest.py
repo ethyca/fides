@@ -24,6 +24,7 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api.routes.user_endpoints import router
 from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.roles import ADMIN, VIEWER
 from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 from tests.conftest import create_citext_extension
 
@@ -84,9 +85,33 @@ def fides_toml_path():
 def oauth_client(db):
     """Return a client for authentication purposes."""
     client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=SCOPES,
+        hashed_secret="thisisatest", salt="thisisstillatest", scopes=SCOPES, roles=[]
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+    client.delete(db)
+
+
+@pytest.fixture
+def admin_client(db):
+    """Return a client with an "admin" role for authentication purposes."""
+    client = ClientDetail(
+        hashed_secret="thisisatest", salt="thisisstillatest", scopes=[], roles=[ADMIN]
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+    client.delete(db)
+
+
+@pytest.fixture
+def viewer_client(db):
+    """Return a client with a "viewer" role for authentication purposes."""
+    client = ClientDetail(
+        hashed_secret="thisisatest", salt="thisisstillatest", scopes=[], roles=[VIEWER]
     )
     db.add(client)
     db.commit()
@@ -127,6 +152,62 @@ def user(db):
 
     FidesUserPermissions.create(
         db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def admin_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_admin_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[ADMIN],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": [ADMIN]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def viewer_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER]}
     )
 
     db.add(client)

@@ -22,11 +22,16 @@ from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.db.session import Session, get_db_engine, get_db_session
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.roles import (
+    PRIVACY_REQUEST_MANAGER,
+    VIEWER_AND_PRIVACY_REQUEST_MANAGER,
+)
 from tests.conftest import create_citext_extension
 
 from .fixtures.application_fixtures import *
@@ -156,6 +161,25 @@ def oauth_client(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def oauth_role_client(db: Session) -> Generator:
+    """Return a client that has all the roles for authentication purposes"""
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        roles=[
+            ADMIN,
+            PRIVACY_REQUEST_MANAGER,
+            VIEWER,
+            VIEWER_AND_PRIVACY_REQUEST_MANAGER,
+        ],
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+
+
+@pytest.fixture(scope="function")
 def oauth_root_client(db: Session) -> ClientDetail:
     """Return the configured root client (never persisted)"""
     return ClientDetail.get(
@@ -188,9 +212,26 @@ def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
     return {"Authorization": "Bearer " + jwe}
 
 
+def generate_role_header_for_user(user, roles) -> Dict[str, str]:
+    payload = {
+        JWE_PAYLOAD_ROLES: roles,
+        JWE_PAYLOAD_CLIENT_ID: user.client.id,
+        JWE_ISSUED_AT: datetime.now().isoformat(),
+    }
+    jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+    return {"Authorization": "Bearer " + jwe}
+
+
 @pytest.fixture(scope="function")
 def generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
     return _generate_auth_header(oauth_client, CONFIG.security.app_encryption_key)
+
+
+@pytest.fixture(scope="function")
+def generate_role_header(oauth_role_client) -> Callable[[Any], Dict[str, str]]:
+    return _generate_auth_role_header(
+        oauth_role_client, CONFIG.security.app_encryption_key
+    )
 
 
 @pytest.fixture
@@ -206,6 +247,23 @@ def _generate_auth_header(
     def _build_jwt(scopes: List[str]) -> Dict[str, str]:
         payload = {
             JWE_PAYLOAD_SCOPES: scopes,
+            JWE_PAYLOAD_CLIENT_ID: client_id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        jwe = generate_jwe(json.dumps(payload), app_encryption_key)
+        return {"Authorization": "Bearer " + jwe}
+
+    return _build_jwt
+
+
+def _generate_auth_role_header(
+    oauth_role_client, app_encryption_key
+) -> Callable[[Any], Dict[str, str]]:
+    client_id = oauth_role_client.id
+
+    def _build_jwt(roles: List[str]) -> Dict[str, str]:
+        payload = {
+            JWE_PAYLOAD_ROLES: roles,
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }

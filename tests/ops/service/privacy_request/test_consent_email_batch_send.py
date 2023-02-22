@@ -272,6 +272,12 @@ class TestConsentEmailBatchSend:
 
         call_kwargs = send_single_consent_email.call_args.kwargs
 
+        user_consent_preferences = call_kwargs["user_consent_preferences"]
+        assert {"12345", "abcde"} == {
+            consent_pref.identities["ljt_readerID"]
+            for consent_pref in user_consent_preferences
+        }
+
         assert call_kwargs["user_consent_preferences"] == [
             ConsentPreferencesByUser(
                 identities={"ljt_readerID": "12345"},
