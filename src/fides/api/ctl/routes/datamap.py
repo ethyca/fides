@@ -117,7 +117,7 @@ async def export_datamap(
     # load resources from server, filtered by organization
     try:
         try:
-            organization = await get_resource_with_custom_fields(
+            organization = await get_resource(
                 sql_model_map["organization"], organization_fides_key, db
             )
         except NotFoundError:
