@@ -4,6 +4,8 @@ from sqlalchemy.exc import IntegrityError
 
 from fides.api.ops.db.base import Base
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
+from fides.lib.db.session import get_db_engine, get_db_session
+from tests.conftest import create_citext_extension
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -12,6 +14,30 @@ def setup_db(api_client, config):
     assert config.test_mode
     assert requests.post != api_client.post
     yield api_client.post(url=f"{config.cli.server_url}/v1/admin/db/reset")
+
+
+@pytest.fixture(scope="session")
+def db(api_client, config):
+    """Return a connection to the test DB"""
+    # Create the test DB engine
+    assert config.test_mode
+    assert requests.post != api_client.post
+    engine = get_db_engine(
+        database_uri=config.database.sqlalchemy_test_database_uri,
+    )
+
+    create_citext_extension(engine)
+
+    if not scheduler.running:
+        scheduler.start()
+    SessionLocal = get_db_session(config, engine=engine)
+    the_session = SessionLocal()
+    # Setup above...
+
+    yield the_session
+    # Teardown below...
+    the_session.close()
+    engine.dispose()
 
 
 @pytest.fixture(autouse=True)

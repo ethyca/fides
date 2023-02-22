@@ -14,7 +14,6 @@ from httpx import AsyncClient
 from loguru import logger
 from pytest import MonkeyPatch
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
@@ -36,7 +35,6 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.lib.db.session import get_db_engine, get_db_session
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
@@ -124,63 +122,6 @@ async def async_session(test_client):
         async_engine.dispose()
 
 
-# @pytest.fixture(scope="session", autouse=True)
-# @pytest.mark.usefixtures("monkeypatch_requests")
-# def setup_ctl_db(test_config, test_client):
-#     "Sets up the database for testing."
-#     assert CONFIG.test_mode
-#     assert (
-#         requests.post == test_client.post
-#     )  # Sanity check to make sure monkeypatch_requests fixture has run
-#     yield api.db_action(
-#         server_url=test_config.cli.server_url,
-#         headers=CONFIG.user.auth_header,
-#         action="reset",
-#     )
-
-
-@pytest.fixture
-def db():
-    create_citext_extension(sync_engine)
-
-    session = sync_session()
-
-    yield session
-    session.close()
-
-
-# @pytest.fixture(scope="session", autouse=True)
-# def setup_db(api_client):
-#     """Apply migrations at beginning and end of testing session"""
-#     assert CONFIG.test_mode
-#     assert requests.post != api_client.post
-#     yield api_client.post(url=f"{CONFIG.cli.server_url}/v1/admin/db/reset")
-
-
-# @pytest.fixture(scope="session")
-# def db(api_client):
-#    """Return a connection to the test DB"""
-#    # Create the test DB engine
-#    assert CONFIG.test_mode
-#    assert requests.post != api_client.post
-#    engine = get_db_engine(
-#        database_uri=CONFIG.database.sqlalchemy_test_database_uri,
-#    )
-#
-#    create_citext_extension(engine)
-#
-#    if not scheduler.running:
-#        scheduler.start()
-#    SessionLocal = get_db_session(CONFIG, engine=engine)
-#    the_session = SessionLocal()
-#    # Setup above...
-#
-#    yield the_session
-#    # Teardown below...
-#    the_session.close()
-#    engine.dispose()
-
-
 @pytest.fixture(scope="session")
 def api_client():
     """Return a client used to make API requests"""
@@ -205,34 +146,6 @@ def event_loop():
         loop = asyncio.new_event_loop()
     yield loop
     loop.close()
-
-
-# @pytest.fixture(autouse=True)
-# def clear_db_tables(db):
-#     """Clear data from tables between tests.
-#
-#     If relationships are not set to cascade on delete they will fail with an
-#     IntegrityError if there are relationsips present. This function stores tables
-#     that fail with this error then recursively deletes until no more IntegrityErrors
-#     are present.
-#     """
-#     yield
-#
-#     def delete_data(tables):
-#         redo = []
-#         for table in tables:
-#             try:
-#                 db.execute(table.delete())
-#             except IntegrityError:
-#                 redo.append(table)
-#             finally:
-#                 db.commit()
-#
-#         if redo:
-#             delete_data(redo)
-#
-#     db.commit()  # make sure all transactions are closed before starting deletes
-#     delete_data(Base.metadata.sorted_tables)
 
 
 @pytest.fixture(scope="session")
