@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.0.post0.dev18"
+    "version": "2.7.0.post0.dev19"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10767,7 +10767,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MessagingConfigBase"
+                "$ref": "#/components/schemas/MessagingConfigRequestBase"
               }
             }
           },
@@ -14930,31 +14930,6 @@
         "type": "string",
         "description": "The MatchesEnum resource model.\n\nDetermines how the listed resources are matched in the evaluation logic."
       },
-      "MessagingConfigBase": {
-        "title": "MessagingConfigBase",
-        "required": [
-          "service_type"
-        ],
-        "type": "object",
-        "properties": {
-          "service_type": {
-            "$ref": "#/components/schemas/MessagingServiceType"
-          },
-          "details": {
-            "title": "Details",
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
-              },
-              {
-                "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false,
-        "description": "Base model shared by messaging config related models"
-      },
       "MessagingConfigRequest": {
         "title": "MessagingConfigRequest",
         "required": [
@@ -14989,6 +14964,31 @@
         },
         "additionalProperties": false,
         "description": "Messaging Config Request Schema"
+      },
+      "MessagingConfigRequestBase": {
+        "title": "MessagingConfigRequestBase",
+        "required": [
+          "service_type"
+        ],
+        "type": "object",
+        "properties": {
+          "service_type": {
+            "$ref": "#/components/schemas/MessagingServiceType"
+          },
+          "details": {
+            "title": "Details",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "description": "Base model shared by messaging config requests to provide validation on request inputs"
       },
       "MessagingConfigResponse": {
         "title": "MessagingConfigResponse",
