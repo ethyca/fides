@@ -12,9 +12,7 @@ from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 # This constant represents every type a redis key may contain, and can be
 # extended if needed

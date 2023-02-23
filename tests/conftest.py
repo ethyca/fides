@@ -55,6 +55,7 @@ from tests.fixtures.mysql_fixtures import *
 from tests.fixtures.postgres_fixtures import *
 from tests.fixtures.redshift_fixtures import *
 from tests.fixtures.saas import *
+from tests.fixtures.saas_erasure_order_fixtures import *
 from tests.fixtures.saas_example_fixtures import *
 from tests.fixtures.snowflake_fixtures import *
 from tests.fixtures.timescale_fixtures import *
@@ -124,9 +125,9 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 def config():
-    config = get_config()
-    config.test_mode = True
-    yield config
+
+    CONFIG.test_mode = True
+    yield CONFIG
 
 
 @pytest.fixture

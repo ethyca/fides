@@ -46,8 +46,8 @@ from fides.api.ops.models.messaging import (
 )
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
-    MessagingConfigBase,
     MessagingConfigRequest,
+    MessagingConfigRequestBase,
     MessagingConfigResponse,
     MessagingServiceType,
     TestMessagingStatusMessage,
@@ -66,12 +66,9 @@ from fides.api.ops.service.messaging.messaging_crud_service import (
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["messaging"], prefix=V1_URL_PREFIX)
-
-CONFIG = get_config()
 
 
 @router.post(
@@ -147,6 +144,27 @@ def patch_config_by_key(
         )
 
 
+# this needs to come before other `/default/{messaging_type}` routes so that `/status`
+# isn't picked up as a path param
+@router.get(
+    MESSAGING_ACTIVE_DEFAULT,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_READ])],
+    response_model=MessagingConfigResponse,
+)
+def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> MessagingConfig:
+    """
+    Retrieves the active default messaging config.
+    """
+    logger.info("Finding active default messaging config")
+    messaging_config = MessagingConfig.get_active_default(db)
+    if not messaging_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No active default messaging config found.",
+        )
+    return messaging_config
+
+
 @router.put(
     MESSAGING_DEFAULT,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_CREATE_OR_UPDATE])],
@@ -155,7 +173,7 @@ def patch_config_by_key(
 def put_default_config(
     *,
     db: Session = Depends(deps.get_db),
-    messaging_config: MessagingConfigBase,
+    messaging_config: MessagingConfigRequestBase,
 ) -> Optional[MessagingConfigResponse]:
     """
     Updates default messaging config for given service type.
@@ -327,25 +345,6 @@ def get_default_config_by_type(
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No default messaging config found of type '{service_type}'",
-        )
-    return messaging_config
-
-
-@router.get(
-    MESSAGING_ACTIVE_DEFAULT,
-    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_READ])],
-    response_model=MessagingConfigResponse,
-)
-def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> MessagingConfig:
-    """
-    Retrieves the active default messaging config.
-    """
-    logger.info("Finding active default messaging config")
-    messaging_config = MessagingConfig.get_active_default(db)
-    if not messaging_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="No active default messaging config found.",
         )
     return messaging_config
 

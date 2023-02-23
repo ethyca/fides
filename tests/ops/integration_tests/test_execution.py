@@ -22,15 +22,13 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.db.session import get_db_session
 from tests.fixtures.application_fixtures import integration_secrets
 
 from ..service.privacy_request.request_runner_service_test import (
     get_privacy_request_results,
 )
-
-CONFIG = get_config()
 
 
 def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):

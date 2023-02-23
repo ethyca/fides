@@ -40,6 +40,7 @@ import { getGpcStatus, makeCookieKeyConsent } from "~/features/consent/helpers";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
+import { GpcStatus } from "~/features/consent/types";
 
 const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -219,11 +220,18 @@ const Consent: NextPage = () => {
     const consent = consentOptions.map((option) => {
       const defaultValue = resolveConsentValue(option.default, consentContext);
       const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
+      const gpcStatus = getGpcStatus({
+        value,
+        consentOption: option,
+        consentContext,
+      });
 
       return {
         data_use: option.fidesDataUseKey,
         data_use_description: option.description,
         opt_in: value,
+        has_gpc_flag: gpcStatus !== GpcStatus.NONE,
+        conflicts_with_gpc: gpcStatus === GpcStatus.OVERRIDDEN,
       };
     });
 

@@ -105,13 +105,25 @@ def get_collection_grouped_inputs(
 def get_collection_after(
     collections: List[Collection], name: str
 ) -> Set[CollectionAddress]:
-    """If specified, return the collections that need to run before the current collection for saas configs"""
+    """If specified, return the collections that need to be read before the current collection for saas configs"""
     collection: Collection | None = next(
         (collect for collect in collections if collect.name == name), None
     )
     if not collection:
         return set()
     return collection.after
+
+
+def get_collection_erase_after(
+    collections: List[Collection], name: str
+) -> Set[CollectionAddress]:
+    """If specified, return the collections that need to be erased before the current collection for saas configs"""
+    collection: Collection | None = next(
+        (collect for collect in collections if collect.name == name), None
+    )
+    if not collection:
+        return set()
+    return collection.erase_after
 
 
 def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> GraphDataset:
@@ -135,6 +147,9 @@ def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> Graph
                     config_dataset.collections, collection_name
                 ),
                 after=get_collection_after(config_dataset.collections, collection_name),
+                erase_after=get_collection_erase_after(
+                    config_dataset.collections, collection_name
+                ),
             )
         )
 

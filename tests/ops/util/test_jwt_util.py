@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -9,8 +9,6 @@ from fides.lib.cryptography.schemas.jwt import (
 )
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
-
-CONFIG = get_config()
 
 
 def test_jwe_create_and_extract() -> None:

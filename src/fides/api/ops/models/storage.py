@@ -20,11 +20,9 @@ from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
 )
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.storage_util import get_schema_for_secrets
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.db.base_class import Base
-
-CONFIG = get_config()
 
 
 class StorageConfig(Base):
