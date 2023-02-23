@@ -57,7 +57,7 @@ const TwilioEmailConfiguration = () => {
   };
 
   const initialValues = {
-    email: messagingDetails?.email ?? "",
+    email: messagingDetails?.details.twilio_email_from ?? "",
   };
 
   const initialAPIKeyValues = {
@@ -73,6 +73,7 @@ const TwilioEmailConfiguration = () => {
         <Formik
           initialValues={initialValues}
           onSubmit={handleTwilioEmailConfiguration}
+          enableReinitialize
         >
           {({ isSubmitting, resetForm }) => (
             <Form>
@@ -81,6 +82,7 @@ const TwilioEmailConfiguration = () => {
                   name="email"
                   label="Email"
                   placeholder="Enter email"
+                  isRequired
                 />
               </Stack>
               <Box mt={10}>
@@ -124,6 +126,7 @@ const TwilioEmailConfiguration = () => {
                       name="api-key"
                       label="API key"
                       type="password"
+                      isRequired
                     />
                   </Stack>
                   <Button

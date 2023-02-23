@@ -10,7 +10,7 @@ import {
   Text,
 } from "@fidesui/react";
 import NextLink from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
@@ -18,6 +18,7 @@ import Layout from "~/features/common/Layout";
 import {
   useCreateConfigurationSettingsMutation,
   useCreateMessagingConfigurationMutation,
+  useGetActiveMessagingProviderQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
@@ -31,6 +32,14 @@ const MessagingConfiguration = () => {
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
   const [saveActiveConfiguration] = useCreateConfigurationSettingsMutation();
+  const { data: activeMessagingProvider } =
+    useGetActiveMessagingProviderQuery();
+
+  useEffect(() => {
+    if (activeMessagingProvider) {
+      setMessagingValue(activeMessagingProvider?.service_type);
+    }
+  }, [activeMessagingProvider]);
 
   const handleChange = async (value: string) => {
     const result = await saveActiveConfiguration({
@@ -45,8 +54,7 @@ const MessagingConfiguration = () => {
 
     if (isErrorResult(result)) {
       handleError(result.error);
-    } else if (value !== "twilio_text") {
-      successAlert(`Messaging type configured successfully.`);
+    } else if (value !== "TWILIO_TEXT") {
       setMessagingValue(value);
     } else {
       const twilioTextResult = await createMessagingConfiguration({
@@ -116,34 +124,34 @@ const MessagingConfiguration = () => {
         >
           <Stack direction="row">
             <Radio
-              key="mailgun"
-              value="mailgun"
-              data-testid="option-mailgun"
+              key="MAILGUN"
+              value="MAILGUN"
+              data-testid="option-MAILGUN"
               mr={5}
             >
               Mailgun email
             </Radio>
             <Radio
-              key="twilio_email"
-              value="twilio_email"
-              data-testid="option-twilio_email"
+              key="TWILIO_EMAIL"
+              value="TWILIO_EMAIL"
+              data-testid="option-TWILIO_EMAIL"
             >
               Twilio email
             </Radio>
             <Radio
-              key="twilio_text"
-              value="twilio_text"
-              data-testid="option-twilio_text"
+              key="TWILIO_TEXT"
+              value="TWILIO_TEXT"
+              data-testid="option-TWILIO_TEXT"
             >
               Twilio sms
             </Radio>
           </Stack>
         </RadioGroup>
-        {messagingValue === "mailgun" ? <MailgunEmailConfiguration /> : null}
-        {messagingValue === "twilio_email" ? (
+        {messagingValue === "MAILGUN" ? <MailgunEmailConfiguration /> : null}
+        {messagingValue === "TWILIO_EMAIL" ? (
           <TwilioEmailConfiguration />
         ) : null}
-        {messagingValue === "twilio_text" ? <TwilioSMSConfiguration /> : null}
+        {messagingValue === "TWILIO_TEXT" ? <TwilioSMSConfiguration /> : null}
       </Box>
     </Layout>
   );

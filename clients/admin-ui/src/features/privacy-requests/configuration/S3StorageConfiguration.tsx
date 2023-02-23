@@ -95,6 +95,7 @@ const S3StorageConfiguration = (storageDetails: any) => {
                     { label: "json", value: "json" },
                     { label: "csv", value: "csv" },
                   ]}
+                  isRequired
                 />
                 <CustomSelect
                   name="auth_method"
@@ -103,6 +104,7 @@ const S3StorageConfiguration = (storageDetails: any) => {
                     { label: "secret_keys", value: "secret_keys" },
                     { label: "automatic", value: "automatic" },
                   ]}
+                  isRequired
                 />
                 <CustomTextInput
                   name="bucket"

@@ -76,6 +76,7 @@ const MailgunEmailConfiguration = () => {
         <Formik
           initialValues={initialValues}
           onSubmit={handleMailgunConfiguration}
+          enableReinitialize
         >
           {({ isSubmitting, resetForm }) => (
             <Form>
@@ -84,6 +85,7 @@ const MailgunEmailConfiguration = () => {
                   name="domain"
                   label="Domain"
                   placeholder="Enter domain"
+                  isRequired
                 />
               </Stack>
               <Box mt={10}>

@@ -150,7 +150,7 @@ export interface ConfigMessagingRequest {
 }
 
 export interface ConfigMessagingDetailsRequest {
-  type: string;
+  service_type: string;
   details?: {
     is_eu_domain?: string;
     domain?: string;
