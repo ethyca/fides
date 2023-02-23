@@ -132,11 +132,19 @@ async def export_datamap(
 
         for resource_type in ["system", "dataset", "data_subject", "data_use"]:
             server_resources = await list_resource(sql_model_map[resource_type], db)
-            filtered_server_resources = [
-                parse_dict(resource_type, resource.__dict__, from_server=True)
-                for resource in server_resources
-                if resource.organization_fides_key == organization_fides_key
-            ]
+            for r in server_resources:
+                sql_model = sql_model_map[resource_type]
+                server_resources_w = await get_resource_with_custom_fields(
+                    sql_model, r.fides_key, db
+                )
+                print("MEEEEEE!!!!!!!")
+                print(server_resources_w)
+                filtered_server_resources = [
+                    server_resources_w
+                    # parse_dict(resource_type, resource.__dict__, from_server=True)
+                    for resource in server_resources_w
+                    if resource.get("organization_fides_key") == organization_fides_key
+                ]
             server_resource_dict[resource_type] = filtered_server_resources
     except DatabaseUnavailableError:
         database_unavailable_error = DatabaseUnavailableError(
@@ -148,8 +156,10 @@ async def export_datamap(
         raise database_unavailable_error
 
     joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
+    # print(f"{joined_system_dataset_df=}")
 
     formatted_datamap = format_datamap_values(joined_system_dataset_df)
+    # print(f"{formatted_datamap=}")
 
     # prepend column names
     formatted_datamap = [DATAMAP_COLUMNS_API] + formatted_datamap
