@@ -81,6 +81,7 @@ describe("configureNavGroups", () => {
         ScopeRegistry.DATAMAP_READ,
         ScopeRegistry.CLI_OBJECTS_CREATE,
         ScopeRegistry.CLI_OBJECTS_READ,
+        ScopeRegistry.CLI_OBJECTS_UPDATE,
       ],
     });
 
@@ -99,6 +100,83 @@ describe("configureNavGroups", () => {
         { title: "Manage datasets", path: "/dataset" },
         { title: "Classify systems", path: "/classify-systems" },
       ],
+    });
+  });
+  describe("configure by scopes", () => {
+    it("does not render paths the user does not have scopes for", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        hasSystems: true,
+        userScopes: [ScopeRegistry.CLI_OBJECTS_READ],
+      });
+
+      expect(navGroups[0]).toMatchObject({
+        title: "Home",
+        children: [{ title: "Home", path: "/" }],
+      });
+
+      expect(navGroups[1]).toMatchObject({
+        title: "Data map",
+        children: [{ title: "View systems", path: "/system" }],
+      });
+    });
+
+    it("only shows minimal nav when user has the wrong scopes", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        // entirely irrelevant scope in this case
+        userScopes: [ScopeRegistry.DATABASE_RESET],
+      });
+
+      expect(navGroups[0]).toMatchObject({
+        title: "Home",
+        children: [{ title: "Home", path: "/" }],
+      });
+
+      expect(navGroups[1]).toMatchObject({
+        title: "Management",
+        children: [{ title: "About Fides", path: "/management/about" }],
+      });
+    });
+
+    it("conditionally shows request manager using scopes", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        hasSystems: true,
+        hasConnections: true,
+        userScopes: [ScopeRegistry.PRIVACY_REQUEST_READ],
+      });
+      expect(navGroups[1]).toMatchObject({
+        title: "Privacy requests",
+        children: [{ title: "Request manager", path: "/privacy-requests" }],
+      });
+    });
+
+    it("does not show /datamap if plus is not enabled but user has the scope", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        hasSystems: true,
+        userScopes: [
+          ScopeRegistry.DATAMAP_READ,
+          ScopeRegistry.CLI_OBJECTS_CREATE,
+          ScopeRegistry.CLI_OBJECTS_READ,
+        ],
+      });
+
+      expect(navGroups[0]).toMatchObject({
+        title: "Home",
+        children: [{ title: "Home", path: "/" }],
+      });
+
+      // The data map should _not_ include the actual "/datamap".
+      expect(navGroups[1]).toMatchObject({
+        title: "Data map",
+        children: [
+          { title: "View systems", path: "/system" },
+          { title: "Add systems", path: "/add-systems" },
+          { title: "Manage datasets", path: "/dataset" },
+        ],
+      });
     });
   });
 });

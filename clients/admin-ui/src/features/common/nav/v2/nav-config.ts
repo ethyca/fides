@@ -84,7 +84,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Classify systems",
         path: "/classify-systems",
         requiresPlus: true,
-        scopes: [], // this path may be going away soon
+        scopes: [ScopeRegistry.CLI_OBJECTS_UPDATE], // temporary scope until we decide what to do here
       },
     ],
   },
