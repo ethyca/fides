@@ -16,7 +16,6 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
 
 from fides.api.ops.api.deps import get_db
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
@@ -31,7 +30,7 @@ from fides.lib.exceptions import AuthenticationError, AuthorizationError
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
-from fides.lib.oauth.roles import ADMIN, get_scopes_from_roles
+from fides.lib.oauth.roles import get_scopes_from_roles
 from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
@@ -142,7 +141,11 @@ async def get_root_client(
     This function is primarily used to let users bypass endpoint authorization
     """
     client = ClientDetail.get(
-        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY, roles=[ADMIN]
+        db,
+        object_id=client_id,
+        config=CONFIG,
+        scopes=CONFIG.security.root_user_scopes,
+        roles=CONFIG.security.root_user_roles,
     )
     if not client:
         logger.debug("Auth token belongs to an invalid client_id.")
@@ -193,7 +196,11 @@ async def verify_oauth_client(
 
     # scopes/roles param is only used if client is root client, otherwise we use the client's associated scopes
     client = ClientDetail.get(
-        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY, roles=[ADMIN]
+        db,
+        object_id=client_id,
+        config=CONFIG,
+        scopes=CONFIG.security.root_user_scopes,
+        roles=CONFIG.security.root_user_roles,
     )
 
     if not client:

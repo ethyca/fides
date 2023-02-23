@@ -5,6 +5,7 @@ from loguru import logger
 
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.core.config import CONFIG
 from fides.lib.oauth.roles import ADMIN
 
 from . import constants
@@ -51,7 +52,11 @@ def create_user(
     response = requests.put(
         f"{constants.BASE_URL}{user_permissions_url}",
         headers=auth_header,
-        json={"id": user_id, "scopes": SCOPE_REGISTRY, "roles": [ADMIN]},
+        json={
+            "id": user_id,
+            "scopes": CONFIG.security.root_user_scopes,
+            "roles": CONFIG.security.root_user_roles,
+        },
     )
 
     if not response.ok:

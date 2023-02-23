@@ -4,8 +4,8 @@ from typing import Dict, List, Tuple
 
 import requests
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
 from fides.cli.utils import handle_cli_response
+from fides.core.config import CONFIG
 from fides.core.utils import (
     Credentials,
     echo_green,
@@ -16,7 +16,6 @@ from fides.core.utils import (
     write_credentials_file,
 )
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
-from fides.lib.oauth.roles import ADMIN
 
 CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"
@@ -120,10 +119,10 @@ def create_command(
     user_id = user_response.json()["id"]
     update_user_permissions(
         user_id=user_id,
-        scopes=SCOPES,
+        scopes=CONFIG.security.root_user_scopes,
         auth_header=auth_header,
         server_url=server_url,
-        roles=[ADMIN],
+        roles=CONFIG.security.root_user_roles,
     )
     echo_green(f"User: '{username}' created and assigned permissions.")
 

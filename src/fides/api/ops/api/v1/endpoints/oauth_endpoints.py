@@ -50,7 +50,7 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
 from fides.lib.models.client import ClientDetail
-from fides.lib.oauth.roles import ADMIN, roles_to_scopes_mapping
+from fides.lib.oauth.roles import roles_to_scopes_mapping
 from fides.lib.oauth.schemas.oauth import (
     AccessToken,
     OAuth2ClientCredentialsRequestForm,
@@ -84,7 +84,11 @@ async def acquire_access_token(
 
     # scopes/roles params are only used if client is root client, otherwise we use the client's associated scopes and/or roles
     client_detail = ClientDetail.get(
-        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY, roles=[ADMIN]
+        db,
+        object_id=client_id,
+        config=CONFIG,
+        scopes=CONFIG.security.root_user_scopes,
+        roles=CONFIG.security.root_user_roles,
     )
 
     if client_detail is None:

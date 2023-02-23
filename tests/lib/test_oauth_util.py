@@ -187,6 +187,24 @@ async def test_verify_oauth_client_wrong_client_scope(db, config, user):
 
 
 class TestVerifyOauthClientRoles:
+    async def test_token_does_not_have_roles(self, db, config, user):
+        """Test no error even if there are not roles on the token"""
+        payload = {
+            JWE_PAYLOAD_SCOPES: [USER_DELETE],
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        client = await verify_oauth_client(
+            SecurityScopes([USER_DELETE]),
+            token,
+            db=db,
+        )
+        assert client == user.client
+
     async def test_verify_oauth_client_roles(self, db, config, admin_user):
         """Test token has the correct role and the client also has the matching role"""
         payload = {

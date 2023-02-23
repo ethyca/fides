@@ -9,7 +9,6 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NO
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.scope_registry import (
-    SCOPE_REGISTRY,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
@@ -29,7 +28,6 @@ from fides.api.ops.util.oauth_util import (
 from fides.core.config import CONFIG
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import ADMIN
 
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
@@ -121,8 +119,8 @@ async def get_user_permissions(
             return FidesUserPermissions(
                 id=CONFIG.security.oauth_root_client_id,
                 user_id=CONFIG.security.oauth_root_client_id,
-                scopes=SCOPE_REGISTRY,
-                roles=[ADMIN],
+                scopes=CONFIG.security.root_user_scopes,
+                roles=CONFIG.security.root_user_roles,
             )
 
         logger.info("Retrieved FidesUserPermission record for current user")
