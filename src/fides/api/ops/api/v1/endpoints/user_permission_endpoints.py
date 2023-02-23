@@ -57,6 +57,7 @@ def create_user_permissions(
     user_id: str,
     permissions: UserPermissionsCreate,
 ) -> FidesUserPermissions:
+    """Create user permissions with big picture roles and/or scopes."""
     user = validate_user_id(db, user_id)
     if user.permissions is not None:  # type: ignore[attr-defined]
         raise HTTPException(
@@ -65,6 +66,7 @@ def create_user_permissions(
         )
 
     if user.client:
+        # Just in case - this shouldn't happen in practice.
         user.client.update(db=db, data=permissions.dict())
     logger.info("Created FidesUserPermission record")
     return FidesUserPermissions.create(
