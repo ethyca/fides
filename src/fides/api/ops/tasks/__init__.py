@@ -40,7 +40,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         return self._sessionmaker()
 
 
-def _create_celery(config: FidesConfig) -> Celery:
+def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     """
     Returns a configured version of the Celery application
     """
