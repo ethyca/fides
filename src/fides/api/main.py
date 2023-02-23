@@ -3,7 +3,7 @@ Contains the code that sets up the API.
 """
 from datetime import datetime, timezone
 from logging import DEBUG, WARNING
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Pattern, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -70,11 +70,10 @@ from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
 from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_cli
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG
 from fides.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
-CONFIG: FidesConfig = get_config()
 VERSION = fides.__version__
 
 ROUTERS = crud.routers + [  # type: ignore[attr-defined]
@@ -89,13 +88,14 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
 
 
 def create_fides_app(
-    cors_origins: List[str] = CONFIG.security.cors_origins,
+    cors_origins: Union[str, List[str]] = CONFIG.security.cors_origins,
+    cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
     api_prefix: str = API_PREFIX,
     request_rate_limit: str = CONFIG.security.request_rate_limit,
     rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
-    security_env: str = CONFIG.security.env.value,
+    security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
 
@@ -112,10 +112,11 @@ def create_fides_app(
         fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)
     fastapi_app.add_middleware(SlowAPIMiddleware)
 
-    if cors_origins:
+    if cors_origins or cors_origin_regex:
         fastapi_app.add_middleware(
             CORSMiddleware,
             allow_origins=[str(origin) for origin in cors_origins],
+            allow_origin_regex=cors_origin_regex,
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],

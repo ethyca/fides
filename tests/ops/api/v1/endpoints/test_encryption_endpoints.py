@@ -19,10 +19,8 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
-
-CONFIG = get_config()
 
 
 class TestGetEncryptionKey:

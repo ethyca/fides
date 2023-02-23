@@ -146,13 +146,13 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
-CONFIG = get_config()
+
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
@@ -1703,7 +1703,9 @@ def create_privacy_request_func(
                 detail=exc.args[0],
             )
         except Exception as exc:
-            logger.error("Exception: {}", Pii(str(exc)))
+            as_string = Pii(str(exc))
+            error_cls = str(exc.__class__.__name__)
+            logger.error(f"Exception {error_cls}: {as_string}")
             failure = {
                 "message": "This record could not be added",
                 "data": kwargs,
@@ -1724,7 +1726,6 @@ def _process_privacy_request_restart(
     failed_collection: Optional[CollectionAddress],
     db: Session,
 ) -> PrivacyRequestResponse:
-
     logger.info(
         "Restarting failed privacy request '{}' from '{} step, 'collection '{}'",
         privacy_request.id,

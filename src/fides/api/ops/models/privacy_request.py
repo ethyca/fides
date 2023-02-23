@@ -62,16 +62,13 @@ from fides.api.ops.util.cache import (
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
 from fides.api.ops.util.identity_verification import IdentityVerificationMixin
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import hash_with_salt
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 from fides.lib.models.audit_log import AuditLog
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.jwt import generate_jwe
-
-CONFIG = get_config()
-
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -856,6 +853,10 @@ class Consent(Base):
     data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
+    has_gpc_flag = Column(Boolean, server_default="f", default=False, nullable=False)
+    conflicts_with_gpc = Column(
+        Boolean, server_default="f", default=False, nullable=False
+    )
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
 

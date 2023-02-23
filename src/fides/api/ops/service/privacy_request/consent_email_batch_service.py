@@ -244,7 +244,7 @@ def requeue_privacy_requests_after_consent_email_send(
 def initiate_scheduled_batch_consent_email_send() -> None:
     """Initiates scheduler to add weekly batch consent email send"""
 
-    if CONFIG.is_test_mode:
+    if CONFIG.test_mode:
         return
 
     logger.info("Initiating scheduler for batch consent email send")

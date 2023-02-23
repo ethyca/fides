@@ -4,9 +4,7 @@ from loguru import logger
 
 from fides.api.ops.common_exceptions import IdentityVerificationException
 from fides.api.ops.util.cache import FidesopsRedis, get_cache
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 
 class IdentityVerificationMixin:

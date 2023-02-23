@@ -64,7 +64,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
     StringRewriteMaskingStrategy,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.helpers import load_file
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
@@ -75,8 +75,6 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("tests/ops/integration_test_config.toml")
-
-CONFIG = get_config()
 
 
 # Unified list of connections to integration dbs specified from fides.api-integration.toml
