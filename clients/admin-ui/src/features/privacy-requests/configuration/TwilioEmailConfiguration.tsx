@@ -16,7 +16,7 @@ const TwilioEmailConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "twilio_email",
+    type: "TWILIO_EMAIL",
   });
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
@@ -25,7 +25,7 @@ const TwilioEmailConfiguration = () => {
 
   const handleTwilioEmailConfiguration = async (value: { email: string }) => {
     const result = await createMessagingConfiguration({
-      type: "twilio_email",
+      service_type: "TWILIO_EMAIL",
       details: {
         twilio_email_from: value.email,
       },

@@ -13,7 +13,7 @@ const TwilioSMSConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "twilio_text",
+    type: "TWILIO_TEXT",
   });
   const [createMessagingConfigurationSecrets] =
     useCreateMessagingConfigurationSecretsMutation();

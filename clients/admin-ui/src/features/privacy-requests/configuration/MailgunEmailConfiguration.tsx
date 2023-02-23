@@ -19,7 +19,7 @@ const MailgunEmailConfiguration = () => {
     useState<ConnectionStep>("");
   const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "mailgun",
+    type: "MAILGUN",
   });
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
@@ -28,7 +28,7 @@ const MailgunEmailConfiguration = () => {
 
   const handleMailgunConfiguration = async (value: { domain: string }) => {
     const result = await createMessagingConfiguration({
-      type: "mailgun",
+      service_type: "MAILGUN",
       details: {
         is_eu_domain: "false",
         domain: value.domain,

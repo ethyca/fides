@@ -34,31 +34,29 @@ const MessagingConfiguration = () => {
 
   const handleChange = async (value: string) => {
     const result = await saveActiveConfiguration({
-      fides: {
-        notifications: {
-          notification_service_type: value,
-          send_request_completion_notification: true,
-          send_request_receipt_notification: true,
-          send_request_review_notification: true,
-          subject_identity_verification_required: true,
-        },
+      notifications: {
+        notification_service_type: value,
+        send_request_completion_notification: true,
+        send_request_receipt_notification: true,
+        send_request_review_notification: true,
+        subject_identity_verification_required: true,
       },
     });
 
     if (isErrorResult(result)) {
       handleError(result.error);
     } else if (value !== "twilio_text") {
-      successAlert(`Configured storage type successfully.`);
+      successAlert(`Messaging type configured successfully.`);
       setMessagingValue(value);
     } else {
       const twilioTextResult = await createMessagingConfiguration({
-        type: "twilio_text",
+        service_type: "TWILIO_TEXT",
       });
 
       if (isErrorResult(twilioTextResult)) {
         handleError(twilioTextResult.error);
       } else {
-        successAlert(`Configure messaging provider saved successfully.`);
+        successAlert(`Messaging provider saved successfully.`);
         setMessagingValue(value);
       }
     }
@@ -118,36 +116,34 @@ const MessagingConfiguration = () => {
         >
           <Stack direction="row">
             <Radio
-              key="mailgun-email"
-              value="mailgun-email"
-              data-testid="option-mailgun-email"
+              key="mailgun"
+              value="mailgun"
+              data-testid="option-mailgun"
               mr={5}
             >
               Mailgun email
             </Radio>
             <Radio
-              key="twilio-email"
-              value="twilio-email"
-              data-testid="option-twilio-email"
+              key="twilio_email"
+              value="twilio_email"
+              data-testid="option-twilio_email"
             >
               Twilio email
             </Radio>
             <Radio
-              key="twilio-text"
-              value="twilio-text"
-              data-testid="option-twilio-text"
+              key="twilio_text"
+              value="twilio_text"
+              data-testid="option-twilio_text"
             >
               Twilio sms
             </Radio>
           </Stack>
         </RadioGroup>
-        {messagingValue === "mailgun-email" ? (
-          <MailgunEmailConfiguration />
-        ) : null}
-        {messagingValue === "twilio-email" ? (
+        {messagingValue === "mailgun" ? <MailgunEmailConfiguration /> : null}
+        {messagingValue === "twilio_email" ? (
           <TwilioEmailConfiguration />
         ) : null}
-        {messagingValue === "twilio-text" ? <TwilioSMSConfiguration /> : null}
+        {messagingValue === "twilio_text" ? <TwilioSMSConfiguration /> : null}
       </Box>
     </Layout>
   );

@@ -401,7 +401,7 @@ export const privacyRequestApi = createApi({
       ConfigMessagingDetailsRequest
     >({
       query: (params) => ({
-        url: `messaging/default/${params.type}`,
+        url: `messaging/default`,
         method: "PUT",
         body: params,
       }),

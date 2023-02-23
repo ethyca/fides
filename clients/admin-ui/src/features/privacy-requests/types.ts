@@ -118,14 +118,12 @@ export interface MessagingConfigResponse {
 }
 
 export interface StorageConfigResponse {
-  fides: {
-    notifications: {
-      notification_service_type: string;
-      send_request_completion_notification: boolean;
-      send_request_receipt_notification: boolean;
-      send_request_review_notification: boolean;
-      subject_identity_verification_required: boolean;
-    };
+  notifications: {
+    notification_service_type: string;
+    send_request_completion_notification: boolean;
+    send_request_receipt_notification: boolean;
+    send_request_review_notification: boolean;
+    subject_identity_verification_required: boolean;
   };
 }
 
