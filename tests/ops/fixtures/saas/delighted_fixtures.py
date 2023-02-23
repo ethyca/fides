@@ -1,9 +1,9 @@
-from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
 import requests
+from requests import Response
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
@@ -18,6 +18,7 @@ from fides.api.ops.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.lib.cryptography import cryptographic_util
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("delighted")
@@ -27,7 +28,8 @@ secrets = get_secrets("delighted")
 def delighted_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "delighted.domain") or secrets["domain"],
-        "username": pydash.get(saas_config, "delighted.username") or secrets["username"],
+        "username": pydash.get(saas_config, "delighted.username")
+        or secrets["username"],
         "api_key": pydash.get(saas_config, "delighted.api_key") or secrets["api_key"],
     }
 
@@ -108,37 +110,64 @@ def delighted_dataset_config(
     ctl_dataset.delete(db=db)
 
 
+class DelightedTestClient:
+    def __init__(self, delighted_connection_config: ConnectionConfig):
+        delighted_secrets = delighted_connection_config.secrets
+        self.auth = delighted_secrets["username"], delighted_secrets["api_key"]
+        self.base_url = f"https://{delighted_secrets['domain']}"
+
+    def create_person(self, email) -> Response:
+        return requests.post(
+            url=f"{self.base_url}/v1/people",
+            auth=self.auth,
+            json={
+                "name": "ethyca test erasure",
+                "email": email,
+                "send": "false",
+            },
+        )
+
+    def create_survey_response(self, person_id) -> Response:
+        return requests.post(
+            url=f"{self.base_url}/v1/survey_responses.json",
+            auth=self.auth,
+            json={"person": person_id, "score": "3"},
+        )
+
+    def get_person(self, email) -> Response:
+        return requests.get(
+            url=f"{self.base_url}/v1/people.json",
+            auth=self.auth,
+            params={"email": email},
+        )
+
+    def get_survey_responses(self, person_id) -> Response:
+        return requests.get(
+            url=f"{self.base_url}/v1/survey_responses",
+            auth=self.auth,
+            params={"person_id": person_id},
+        )
+
+
+@pytest.fixture(scope="function")
+def delighted_test_client(
+    delighted_connection_config: DelightedTestClient,
+) -> Generator:
+    test_client = DelightedTestClient(delighted_connection_config)
+    yield test_client
+
+
 @pytest.fixture(scope="function")
 def delighted_create_erasure_data(
-    delighted_connection_config: ConnectionConfig, delighted_erasure_identity_email: str
-) -> None:
+    delighted_test_client, delighted_erasure_identity_email
+) -> Generator:
+    # create person
+    response = delighted_test_client.create_person(delighted_erasure_identity_email)
+    assert response.ok
+    person = response.json()
 
-    delighted_secrets = delighted_connection_config.secrets
-    auth = delighted_secrets["username"], delighted_secrets["api_key"]
-    base_url = f"https://{delighted_secrets['domain']}"
-
-    # people
-    body = {
-        "name": "ethyca test erasure",
-        "email": delighted_erasure_identity_email,
-        "send": "false"
-    }
-
-    peoples_response = requests.post(url=f"{base_url}/v1/people", auth=auth, json=body)
-    people = peoples_response.json()
-    people_id = people["id"]
-
-    # survey_response
-    survey_response_data = {
-        "person": people_id,
-        "score": "3"
-    }
-    #need to add person info to body
-    response = requests.post(
-        url=f"{base_url}/v1/survey_responses.json", auth=auth, json=survey_response_data
-    )
-
-    sleep(60)
-
-    survey_response = response.json()
-    yield survey_response, peoples_response
+    # create survey response
+    response = delighted_test_client.create_survey_response(person["id"])
+    assert response.ok
+    poll_for_existence(delighted_test_client.get_survey_responses, (person["id"],))
+    yield person
