@@ -18,7 +18,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageDestination,
     StorageDetails,
     StorageSecrets,
-    StorageType,
+    StorageType, HtmlLandingPageProps,
 )
 from fides.lib.db.base_class import KeyOrNameAlreadyExists
 
@@ -49,7 +49,7 @@ class TestStorageConfigModel:
     def storage_incoming_two(self, storage_details_s3) -> StorageDestination:
         name = "test storage destination 2"
         storage_type = StorageType.s3
-        html_landing_page = {HtmlLandingPageProps.value: "path/to/logo.png"}
+        html_landing_page = {HtmlLandingPageProps.LOGO_PATH.value: "path/to/logo.png"}
         return StorageDestination(
             name=name,
             type=storage_type,
@@ -172,7 +172,7 @@ class TestStorageConfigModel:
         assert storage_config.download_format == DownloadFormat.csv
         assert storage_config.key == "test_storage_destination_2"
         assert storage_config.html_landing_page == {
-            HtmlLandingPageProps.value: "path/to/logo.png"
+            HtmlLandingPageProps.LOGO_PATH.value: "path/to/logo.png"
         }
         assert storage_config.secrets is None
 

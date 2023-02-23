@@ -138,7 +138,7 @@ class HtmlLandingPage(BaseModel):
         if value:
             pattern = regex(r"(\/.*?\.[\w:]+)")
             if not pattern.search(value):
-                raise ValueError("Logo path must be formatted like `path/to/logo.png`")
+                raise ValueError("Invalid logo path. Logo path must be formatted like the following: `path/to/logo.png`")
         return value
 
 

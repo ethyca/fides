@@ -194,7 +194,7 @@ class TestPatchStorageConfig:
         url,
         generate_auth_header,
     ):
-        payload[0]["html_landing_page"] = {HtmlLandingPageProps.value: "my/logo.png"}
+        payload[0]["html_landing_page"] = {HtmlLandingPageProps.LOGO_PATH.value: "my/logo.png"}
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
 
         response = api_client.patch(url, headers=auth_header, json=payload)
@@ -216,7 +216,7 @@ class TestPatchStorageConfig:
                     },
                     "key": "test_destination",
                     "download_format": "csv",
-                    "html_landing_page": {HtmlLandingPageProps.value: "my/logo.png"},
+                    "html_landing_page": {HtmlLandingPageProps.LOGO_PATH.value: "my/logo.png"},
                     "is_default": False,
                 }
             ],
@@ -224,6 +224,24 @@ class TestPatchStorageConfig:
         }
         assert expected_response == response_body
         storage_config.delete(db)
+
+    def test_patch_storage_config_with_invalid_html_landing_page_props(
+            self,
+            db: Session,
+            api_client: TestClient,
+            payload,
+            url,
+            generate_auth_header,
+    ):
+        payload[0]["html_landing_page"] = {HtmlLandingPageProps.LOGO_PATH.value: "not-valid-path-to-logo"}
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 422 == response.status_code
+        assert (
+                json.loads(response.text)["detail"][0]["msg"]
+                == "Invalid logo path. Logo path must be formatted like the following: `path/to/logo.png`"
+        )
 
     def test_patch_storage_config_with_key(
         self,

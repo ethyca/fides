@@ -248,7 +248,7 @@
                 "max_retries": 0
               },
               "key": "s3_storage",
-              "dispatch_message": "json"
+              "download_format": "json"
             },
             "masking_strategy": null
           }
@@ -291,7 +291,7 @@
                 "max_retries": 0
               },
               "key": "s3_storage",
-              "dispatch_message": "json"
+              "download_format": "json"
             },
             "masking_strategy": null
           }
@@ -337,7 +337,7 @@
                 "max_retries": 0
               },
               "key": "s3_storage",
-              "dispatch_message": "json"
+              "download_format": "json"
             },
             "masking_strategy": null
           }
