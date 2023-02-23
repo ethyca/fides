@@ -124,8 +124,9 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 def config():
-    CONFIG.is_test_mode = True
-    yield CONFIG
+    config = get_config()
+    config.test_mode = True
+    yield config
 
 
 @pytest.fixture

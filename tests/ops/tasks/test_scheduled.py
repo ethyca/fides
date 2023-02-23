@@ -28,7 +28,7 @@ def test_initiate_scheduled_paused_privacy_request_followup(
 
 
 def test_initiate_batch_consent_email_send() -> None:
-    CONFIG.is_test_mode = False
+    CONFIG.test_mode = False
 
     initiate_scheduled_batch_consent_email_send()
     assert scheduler.running
@@ -44,4 +44,4 @@ def test_initiate_batch_consent_email_send() -> None:
 
     assert type(job.trigger.timezone).__name__ == "US/Eastern"
 
-    CONFIG.is_test_mode = True
+    CONFIG.test_mode = True
