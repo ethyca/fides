@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 from fides.api.ops.common_exceptions import StorageUploadError
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import (
-    FileNaming,
     DownloadFormat,
+    FileNaming,
     StorageDetails,
     StorageType,
 )

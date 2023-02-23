@@ -22,8 +22,8 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.storage.storage import (
-    FileNaming,
     DownloadFormat,
+    FileNaming,
     StorageDetails,
     StorageType,
 )

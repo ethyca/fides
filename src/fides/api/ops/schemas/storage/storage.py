@@ -125,6 +125,7 @@ FULLY_CONFIGURED_STORAGE_TYPES = (
 
 class HtmlLandingPage(BaseModel):
     """HTML Landing Page Schema"""
+
     logo_path: Optional[str] = None
 
     @validator("logo_path")
@@ -137,9 +138,7 @@ class HtmlLandingPage(BaseModel):
         if value:
             pattern = regex(r"(\/.*?\.[\w:]+)")
             if not pattern.search(value):
-                raise ValueError(
-                    "Logo path must be formatted like `path/to/logo.png`"
-                )
+                raise ValueError("Logo path must be formatted like `path/to/logo.png`")
         return value
 
 

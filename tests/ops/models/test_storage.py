@@ -12,8 +12,8 @@ from fides.api.ops.models.storage import (
     get_default_storage_config_by_type,
 )
 from fides.api.ops.schemas.storage.storage import (
-    FileNaming,
     DownloadFormat,
+    FileNaming,
     S3AuthMethod,
     StorageDestination,
     StorageDetails,
@@ -49,9 +49,7 @@ class TestStorageConfigModel:
     def storage_incoming_two(self, storage_details_s3) -> StorageDestination:
         name = "test storage destination 2"
         storage_type = StorageType.s3
-        html_landing_page = {
-            HtmlLandingPageProps.value: "path/to/logo.png"
-        }
+        html_landing_page = {HtmlLandingPageProps.value: "path/to/logo.png"}
         return StorageDestination(
             name=name,
             type=storage_type,
@@ -159,10 +157,10 @@ class TestStorageConfigModel:
         storage_config.delete(db)
 
     def test_create_storage_config_with_html_landing_page_details(
-            self,
-            db: Session,
-            storage_incoming_two,
-            storage_details_s3,
+        self,
+        db: Session,
+        storage_incoming_two,
+        storage_details_s3,
     ):
         storage_config = StorageConfig.create_or_update(
             db=db, data=storage_incoming_two.dict()

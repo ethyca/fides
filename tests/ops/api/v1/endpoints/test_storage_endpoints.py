@@ -29,14 +29,15 @@ from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.storage import StorageConfig, default_storage_config_name
 from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.ops.schemas.storage.storage import (
-    FileNaming,
     DownloadFormat,
+    FileNaming,
+    HtmlLandingPageProps,
     S3AuthMethod,
     StorageConfigStatus,
     StorageConfigStatusMessage,
     StorageDetails,
     StorageSecrets,
-    StorageType, HtmlLandingPageProps,
+    StorageType,
 )
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
@@ -186,16 +187,14 @@ class TestPatchStorageConfig:
         )
 
     def test_patch_storage_config_with_html_landing_page_props(
-            self,
-            db: Session,
-            api_client: TestClient,
-            payload,
-            url,
-            generate_auth_header,
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
     ):
-        payload[0]["html_landing_page"] = {
-            HtmlLandingPageProps.value: "my/logo.png"
-        }
+        payload[0]["html_landing_page"] = {HtmlLandingPageProps.value: "my/logo.png"}
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
 
         response = api_client.patch(url, headers=auth_header, json=payload)
@@ -217,9 +216,7 @@ class TestPatchStorageConfig:
                     },
                     "key": "test_destination",
                     "download_format": "csv",
-                    "html_landing_page": {
-                        HtmlLandingPageProps.value: "my/logo.png"
-                    },
+                    "html_landing_page": {HtmlLandingPageProps.value: "my/logo.png"},
                     "is_default": False,
                 }
             ],
@@ -315,8 +312,8 @@ class TestPatchStorageConfig:
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 200
         assert (
-                json.loads(response.text)["succeeded"][0]["download_format"]
-                == DownloadFormat.json.value
+            json.loads(response.text)["succeeded"][0]["download_format"]
+            == DownloadFormat.json.value
         )
 
         # Update storage config
@@ -325,8 +322,8 @@ class TestPatchStorageConfig:
         )
         assert response.status_code == 200
         assert (
-                json.loads(response.text)["succeeded"][0]["download_format"]
-                == DownloadFormat.json.value
+            json.loads(response.text)["succeeded"][0]["download_format"]
+            == DownloadFormat.json.value
         )
 
         storage_config = StorageConfig.get_by(db=db, field="key", value=key)
