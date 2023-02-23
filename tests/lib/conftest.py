@@ -13,7 +13,6 @@ from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
-from fides.core.config import get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

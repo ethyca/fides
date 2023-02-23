@@ -15,6 +15,7 @@ class TestGetIdentityVerificationConfig:
     def subject_identity_verification_required(self, db):
         """Override autouse fixture to enable identity verification for tests"""
         config = get_config()
+
         original_value = config.execution.subject_identity_verification_required
         config.execution.subject_identity_verification_required = True
         ApplicationConfig.update_config_set(db, config)

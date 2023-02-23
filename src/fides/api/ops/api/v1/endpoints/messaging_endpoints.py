@@ -66,12 +66,9 @@ from fides.api.ops.service.messaging.messaging_crud_service import (
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["messaging"], prefix=V1_URL_PREFIX)
-
-CONFIG = get_config()
 
 
 @router.post(
