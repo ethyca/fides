@@ -214,6 +214,7 @@ export type { SaasConnectionTemplateValues } from "./models/SaasConnectionTempla
 export type { SaaSRequest } from "./models/SaaSRequest";
 export type { SaaSRequestMap } from "./models/SaaSRequestMap";
 export type { SaaSSchema } from "./models/SaaSSchema";
+export { ScopeRegistry } from "./models/ScopeRegistry";
 export type { SnowflakeDocsSchema } from "./models/SnowflakeDocsSchema";
 export type { SovrnEmailDocsSchema } from "./models/SovrnEmailDocsSchema";
 export { SpecialCategoriesEnum } from "./models/SpecialCategoriesEnum";
