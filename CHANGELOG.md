@@ -27,6 +27,10 @@ The types of changes are:
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 * Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
 
+### Developer Experience
+
+* Combined conftest.py files [#2669](https://github.com/ethyca/fides/pull/2669)
+
 ### Fixed
 
 * Fix support for "redis.user" setting when authenticating to the Redis cache [#2666](https://github.com/ethyca/fides/pull/2666)
