@@ -19,6 +19,7 @@ The types of changes are:
 ### Added
 * Add API support for messaging config properties [#2551](https://github.com/ethyca/fides/pull/2551)
 * Access and erasure support for Kustomer [#2520](https://github.com/ethyca/fides/pull/2520)
+* Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
 
 ### Changed
 
