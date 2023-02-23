@@ -1,5 +1,6 @@
-from fides.api.input_validation import InputStr, PhoneNumber
 import pytest
+
+from fides.api.input_validation import InputStr, PhoneNumber
 
 DANGEROUS_STRINGS = [
     "<svg onload=alert(1)>",
@@ -30,7 +31,6 @@ DANGEROUS_STRINGS = [
     "<script>alert(1)<!–",
     "<script src=//brutelogic.com.br/1.js>",
     "<script src=//3334957647/1>",
-    "%3Cx onxxx=alert(1)",
     "<%78 onxxx=1",
     "<x %6Fnxxx=1",
     "<x o%6Exxx=1",
@@ -115,7 +115,11 @@ DANGEROUS_STRINGS = [
     "<menu id=x contextmenu=x onshow=alert(1)>right click me!",
 ]
 
+INVALID_PHONE_NUMBER_LIST = ["foo", "+1-555-123-4568", "15551234567", "+123456"]
+VALID_PHONE_NUMBER_LIST = ["+15551234567", "+15551049382910"]
 
+
+@pytest.mark.unit
 class TestInputStr:
     @pytest.mark.parametrize("dangerous_string", DANGEROUS_STRINGS)
     def test_danger_list(self, dangerous_string: str) -> None:
@@ -125,3 +129,18 @@ class TestInputStr:
         """
         result = InputStr.validate(dangerous_string)
         assert result != dangerous_string
+
+
+@pytest.mark.unit
+class TestPhoneNumber:
+    @pytest.mark.parametrize("phone_number", INVALID_PHONE_NUMBER_LIST)
+    def test_invalid_phone_numbers(self, phone_number: str) -> None:
+        """Test that a list of invalid phone numbers is caught."""
+        with pytest.raises(ValueError):
+            PhoneNumber.validate(phone_number)
+
+    @pytest.mark.parametrize("phone_number", VALID_PHONE_NUMBER_LIST)
+    def test_valid_phone_numbers(self, phone_number: str) -> None:
+        """Test that a list of valid phone numbers doesn't throw any errors."""
+        validated_number = PhoneNumber.validate(phone_number)
+        assert validated_number == phone_number

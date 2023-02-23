@@ -30,7 +30,11 @@ class InputStr(str):
 
 
 class PhoneNumber(str):
-    """Format validated type for phone numbers."""
+    """
+    Format validated type for phone numbers.
+
+    Standard can be found here: https://en.wikipedia.org/wiki/E.164
+    """
 
     @classmethod
     def __get_validators__(cls) -> Generator:
@@ -38,10 +42,15 @@ class PhoneNumber(str):
 
     @classmethod
     def validate(cls, value: str) -> str:
-        if value:
-            pattern = regex(r"^\+[1-9]\d{1,14}$")
-            if not pattern.search(value):
-                raise ValueError(
-                    "Identity phone number must be formatted in E.164 format. E.g +15558675309"
-                )
+        max_length = 16  # Includes the +
+        min_length = 9
+        pattern = regex(r"^\+[1-9]\d{1,14}$")
+        if (
+            len(value) > max_length
+            or len(value) < min_length
+            or not pattern.search(value)
+        ):
+            raise ValueError(
+                "Phone number must be formatted in E.164 format, i.e. '+15558675309' with a maximum of 15 digits."
+            )
         return value
