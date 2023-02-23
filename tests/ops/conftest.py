@@ -1,3 +1,7 @@
+"""This file is only for the database fixture. For all other fixtures add them to the
+tests/conftest.py file.
+"""
+
 import pytest
 import requests
 from sqlalchemy.exc import IntegrityError

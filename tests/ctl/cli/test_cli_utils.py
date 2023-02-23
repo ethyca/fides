@@ -6,7 +6,7 @@ from requests_mock import Mocker
 import fides.cli.utils as utils
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.core.config import FidesConfig
-from tests.conftest import orig_requests_get
+from tests.ctl.conftest import orig_requests_get
 
 
 @pytest.mark.unit

@@ -12,7 +12,6 @@ from fastapi.testclient import TestClient
 from fideslang import models
 from httpx import AsyncClient
 from loguru import logger
-from pytest import MonkeyPatch
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -65,33 +64,6 @@ CONFIG = get_config()
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
-
-orig_requests_get = requests.get
-orig_requests_post = requests.post
-orig_requests_put = requests.put
-orig_requests_patch = requests.patch
-orig_requests_delete = requests.delete
-
-
-@pytest.fixture(scope="session")
-def monkeysession():
-    """monkeypatch fixture at the session level instead of the function level"""
-    mpatch = MonkeyPatch()
-    yield mpatch
-    mpatch.undo()
-
-
-@pytest.fixture(autouse=True, scope="session")
-def monkeypatch_requests(test_client, monkeysession) -> None:
-    """The requests library makes requests against the running webserver
-    which talks to the application db.  This monkeypatching operation
-    makes `requests` calls from src/fides/core/api.py in a test
-    context talk to the test db instead"""
-    monkeysession.setattr(requests, "get", test_client.get)
-    monkeysession.setattr(requests, "post", test_client.post)
-    monkeysession.setattr(requests, "put", test_client.put)
-    monkeysession.setattr(requests, "patch", test_client.patch)
-    monkeysession.setattr(requests, "delete", test_client.delete)
 
 
 @pytest.fixture(scope="session")
@@ -617,9 +589,11 @@ def subject_identity_verification_not_required(db):
     original_value = CONFIG.execution.subject_identity_verification_required
     CONFIG.execution.subject_identity_verification_required = False
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
     yield
     CONFIG.execution.subject_identity_verification_required = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -628,9 +602,11 @@ def privacy_request_complete_email_notification_disabled(db):
     original_value = CONFIG.notifications.send_request_completion_notification
     CONFIG.notifications.send_request_completion_notification = False
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
     yield
     CONFIG.notifications.send_request_completion_notification = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -639,9 +615,11 @@ def privacy_request_receipt_notification_disabled(db):
     original_value = CONFIG.notifications.send_request_receipt_notification
     CONFIG.notifications.send_request_receipt_notification = False
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
     yield
     CONFIG.notifications.send_request_receipt_notification = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -649,10 +627,12 @@ def privacy_request_review_notification_disabled(db):
     """Disable request review notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_review_notification
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
     CONFIG.notifications.send_request_review_notification = False
     yield
     CONFIG.notifications.send_request_review_notification = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -661,9 +641,11 @@ def set_notification_service_type_mailgun(db):
     original_value = CONFIG.notifications.notification_service_type
     CONFIG.notifications.notification_service_type = MessagingServiceType.MAILGUN.value
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
     yield
     CONFIG.notifications.notification_service_type = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
+    db.commit()
 
 
 @pytest.fixture(scope="session")
