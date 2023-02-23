@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 /**
- * Response formats
+ * Download formats for DSR packages
  */
-export enum ResponseFormat {
+export enum DownloadFormat {
   JSON = "json",
   CSV = "csv",
 }

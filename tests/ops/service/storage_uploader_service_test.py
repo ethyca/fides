@@ -16,7 +16,7 @@ from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
-    ResponseFormat,
+    DownloadFormat,
     S3AuthMethod,
     StorageDetails,
     StorageSecrets,
@@ -389,5 +389,5 @@ class TestEncryptResultsPackage:
 
 
 def test_get_extension():
-    assert get_extension(ResponseFormat.json) == "json"
-    assert get_extension(ResponseFormat.csv) == "zip"
+    assert get_extension(DownloadFormat.json) == "json"
+    assert get_extension(DownloadFormat.csv) == "zip"

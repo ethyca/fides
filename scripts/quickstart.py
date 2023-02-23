@@ -297,7 +297,7 @@ def create_local_storage(key: str, file_format: str):
             "name": key,
             "key": key,
             "type": "local",
-            "format": file_format,
+            "download_format": file_format,
             "details": {
                 "naming": "request_id",
             },

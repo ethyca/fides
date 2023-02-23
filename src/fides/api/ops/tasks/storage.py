@@ -14,7 +14,7 @@ from botocore.exceptions import ClientError, ParamValidationError
 from loguru import logger
 
 from fides.api.ops.schemas.storage.storage import (
-    ResponseFormat,
+    DownloadFormat,
     S3AuthMethod,
     StorageSecrets,
 )
@@ -55,18 +55,18 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
 
 
 def write_to_in_memory_buffer(
-    resp_format: str, data: Dict[str, Any], request_id: str
+    download_format: str, data: Dict[str, Any], request_id: str
 ) -> BytesIO:
     """Write JSON/CSV data to in-memory file-like object to be passed to S3. Encrypt data if encryption key/nonce
     has been cached for the given privacy request id
 
-    :param resp_format: str, should be one of ResponseFormat
+    :param download_format: str, should be one of DownloadFormat
     :param data: Dict
     :param request_id: str, The privacy request id
     """
     logger.info("Writing data to in-memory buffer")
 
-    if resp_format == ResponseFormat.json.value:
+    if download_format == DownloadFormat.json.value:
         json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
         return BytesIO(
             encrypt_access_request_results(json_str, request_id).encode(
@@ -74,7 +74,7 @@ def write_to_in_memory_buffer(
             )
         )
 
-    if resp_format == ResponseFormat.csv.value:
+    if download_format == DownloadFormat.csv.value:
         zipped_csvs = BytesIO()
         with zipfile.ZipFile(zipped_csvs, "w") as f:
             for key in data:
@@ -90,7 +90,7 @@ def write_to_in_memory_buffer(
         zipped_csvs.seek(0)
         return zipped_csvs
 
-    raise NotImplementedError(f"No handling for response format {resp_format}.")
+    raise NotImplementedError(f"No handling for response format {download_format}.")
 
 
 def create_presigned_url_for_s3(

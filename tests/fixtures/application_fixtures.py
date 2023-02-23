@@ -34,7 +34,7 @@ from fides.api.ops.models.policy import (
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.models.registration import UserRegistration
 from fides.api.ops.models.storage import (
-    ResponseFormat,
+    DownloadFormat,
     StorageConfig,
     _create_local_default_storage,
     default_storage_config_name,
@@ -155,7 +155,7 @@ def storage_config(db: Session) -> Generator:
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "key": "my_test_config",
-            "format": ResponseFormat.json,
+            "download_format": DownloadFormat.json,
         },
     )
     storage_config.set_secrets(
@@ -181,7 +181,7 @@ def storage_config_local(db: Session) -> Generator:
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
             },
             "key": "my_test_config_local",
-            "format": ResponseFormat.json,
+            "download_format": DownloadFormat.json,
         },
     )
     yield storage_config
@@ -205,7 +205,7 @@ def storage_config_default(db: Session) -> Generator:
                 StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
-            "format": ResponseFormat.json,
+            "download_format": DownloadFormat.json,
         },
     )
     yield sc

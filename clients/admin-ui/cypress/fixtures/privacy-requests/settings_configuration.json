@@ -6,6 +6,6 @@
         "bucket": "my_bucket"
     },
     "key": "some_random_key",
-    "format": "json",
+    "download_format": "json",
     "is_default": true
   }

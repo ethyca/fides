@@ -34,7 +34,7 @@
                 "max_retries": 0
               },
               "key": "s3_storage",
-              "format": "json"
+              "download_format": "json"
             },
             "masking_strategy": null
           }

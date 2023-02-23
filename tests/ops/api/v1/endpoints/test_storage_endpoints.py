@@ -30,7 +30,7 @@ from fides.api.ops.models.storage import StorageConfig, default_storage_config_n
 from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
-    ResponseFormat,
+    DownloadFormat,
     S3AuthMethod,
     StorageConfigStatus,
     StorageConfigStatusMessage,
@@ -126,7 +126,7 @@ class TestPatchStorageConfig:
                     "naming": "some-filename-convention-enum",
                     "max_retries": 10,
                 },
-                "format": "csv",
+                "download_format": "csv",
             }
         ]
 
@@ -214,7 +214,7 @@ class TestPatchStorageConfig:
                         "max_retries": 10,
                     },
                     "key": "my_s3_bucket",
-                    "format": "csv",
+                    "download_format": "csv",
                     "is_default": False,
                 }
             ],
@@ -272,8 +272,8 @@ class TestPatchStorageConfig:
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 200
         assert (
-            json.loads(response.text)["succeeded"][0]["format"]
-            == ResponseFormat.json.value
+                json.loads(response.text)["succeeded"][0]["download_format"]
+                == DownloadFormat.json.value
         )
 
         # Update storage config
@@ -282,8 +282,8 @@ class TestPatchStorageConfig:
         )
         assert response.status_code == 200
         assert (
-            json.loads(response.text)["succeeded"][0]["format"]
-            == ResponseFormat.json.value
+                json.loads(response.text)["succeeded"][0]["download_format"]
+                == DownloadFormat.json.value
         )
 
         storage_config = StorageConfig.get_by(db=db, field="key", value=key)
@@ -497,7 +497,7 @@ class TestGetStorageConfigs:
                         "bucket": "test_bucket",
                         "naming": "request_id",
                     },
-                    "format": "json",
+                    "download_format": "json",
                     "is_default": False,
                 }
             ],
@@ -553,7 +553,7 @@ class TestGetStorageConfig:
                 "naming": "request_id",
             },
             "key": "my_test_config",
-            "format": "json",
+            "download_format": "json",
             "is_default": False,
         }
 
@@ -618,7 +618,7 @@ class TestDeleteConfig:
                     StorageDetails.BUCKET.value: "test_bucket",
                 },
                 "key": "my_storage_config",
-                "format": ResponseFormat.json,
+                "download_format": DownloadFormat.json,
             },
         )
         url = (V1_URL_PREFIX + STORAGE_BY_KEY).format(config_key=storage_config.key)
@@ -672,7 +672,7 @@ class TestGetDefaultStorageConfigs:
                         "bucket": "test_bucket",
                     },
                     "key": storage_config_default.key,
-                    "format": storage_config_default.format.value,
+                    "download_format": storage_config_default.format.value,
                     "is_default": True,
                 }
             ],
@@ -752,7 +752,7 @@ class TestGetDefaultStorageConfig:
                 "bucket": "test_bucket",
             },
             "key": storage_config_default.key,
-            "format": storage_config_default.format.value,
+            "download_format": storage_config_default.format.value,
             "is_default": True,
         }
 
@@ -771,7 +771,7 @@ class TestPutDefaultStorageConfig:
                 "bucket": "some-bucket",
                 "max_retries": 10,
             },
-            "format": "csv",
+            "download_format": "csv",
         }
 
     def test_put_default_storage_config_not_authenticated(
@@ -927,9 +927,9 @@ class TestPutDefaultStorageConfig:
     ):
         payload["type"] = StorageType.local.value
         payload[
-            "format"
+            "download_format"
         ] = (
-            ResponseFormat.json.value
+            DownloadFormat.json.value
         )  # change to JSON because that's what local expects
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
 
@@ -963,9 +963,9 @@ class TestPutDefaultStorageConfig:
     ):
         payload["type"] = StorageType.local.value
         payload[
-            "format"
+            "download_format"
         ] = (
-            ResponseFormat.json.value
+            DownloadFormat.json.value
         )  # change to JSON because that's what local expects
         payload["details"] = {
             "naming": FileNaming.request_id.value
@@ -1024,9 +1024,9 @@ class TestPutDefaultStorageConfig:
         mock_create_or_update.side_effect = KeyOrNameAlreadyExists("Key already exists")
         payload["type"] = StorageType.local.value
         payload[
-            "format"
+            "download_format"
         ] = (
-            ResponseFormat.json.value
+            DownloadFormat.json.value
         )  # change to JSON because that's what local expects
         payload["details"] = {
             "naming": FileNaming.request_id.value
@@ -1050,9 +1050,9 @@ class TestPutDefaultStorageConfig:
         mock_create_or_update.side_effect = KeyValidationError()
         payload["type"] = StorageType.local.value
         payload[
-            "format"
+            "download_format"
         ] = (
-            ResponseFormat.json.value
+            DownloadFormat.json.value
         )  # change to JSON because that's what local expects
         payload["details"] = {
             "naming": FileNaming.request_id.value
@@ -1342,7 +1342,7 @@ class TestGetActiveDefaultStorageConfig:
                 "bucket": "test_bucket",
             },
             "key": storage_config_default.key,
-            "format": storage_config_default.format.value,
+            "download_format": storage_config_default.format.value,
             "is_default": True,
         }
 

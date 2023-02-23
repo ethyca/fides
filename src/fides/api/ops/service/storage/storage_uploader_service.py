@@ -8,7 +8,7 @@ from fides.api.ops.common_exceptions import StorageUploadError
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
-    ResponseFormat,
+    DownloadFormat,
     StorageDetails,
     StorageType,
 )
@@ -35,19 +35,19 @@ def upload(db: Session, *, request_id: str, data: Dict, storage_key: FidesKey) -
     return uploader(db, config, data, request_id)
 
 
-def get_extension(resp_format: ResponseFormat) -> str:
+def get_extension(download_format: DownloadFormat) -> str:
     """
-    Determine file extension for various response formats.
+    Determine file extension for various download formats.
 
     CSV's are zipped together before uploading to s3.
     """
-    if resp_format == ResponseFormat.csv:
+    if download_format == DownloadFormat.csv:
         return "zip"
 
-    if resp_format == ResponseFormat.json:
+    if download_format == DownloadFormat.json:
         return "json"
 
-    raise NotImplementedError(f"No extension defined for {resp_format}")
+    raise NotImplementedError(f"No extension defined for {download_format}")
 
 
 def _construct_file_key(request_id: str, config: StorageConfig) -> str:

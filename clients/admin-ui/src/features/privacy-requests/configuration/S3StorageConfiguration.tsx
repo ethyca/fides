@@ -103,7 +103,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
             <Form>
               <Stack mt={5} spacing={5}>
                 <CustomSelect
-                  name="format"
+                  name="download_format"
                   label="Format"
                   options={[
                     { label: "json", value: "json" },

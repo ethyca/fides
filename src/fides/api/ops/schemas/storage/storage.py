@@ -8,8 +8,8 @@ from pydantic.main import BaseModel
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 
 
-class ResponseFormat(Enum):
-    """Response formats"""
+class DownloadFormat(Enum):
+    """Download formats for DSR packages"""
 
     json = "json"
     csv = "csv"
@@ -119,7 +119,7 @@ class StorageDestinationBase(BaseModel):
         StorageDetailsS3,
         StorageDetailsLocal,
     ]
-    format: Optional[ResponseFormat] = ResponseFormat.json.value  # type: ignore
+    download_format: Optional[DownloadFormat] = DownloadFormat.json.value  # type: ignore
 
     class Config:
         use_enum_values = True
@@ -180,11 +180,11 @@ class StorageDestinationBase(BaseModel):
         """
         json_only_destinations = [StorageType.local.value]
         storage_type = values.get("type")
-        response_format = values.get("format")
+        download_format = values.get("download_format")
         if (
             storage_type in json_only_destinations
-            and response_format
-            and response_format != ResponseFormat.json.value
+            and download_format
+            and download_format != DownloadFormat.json.value
         ):
             raise ValueError(
                 "Only JSON upload format is supported for local storage destinations."
@@ -211,7 +211,7 @@ class StorageDestinationResponse(BaseModel):
     type: StorageType
     details: Dict[StorageDetails, Any]
     key: FidesKey
-    format: ResponseFormat
+    format: DownloadFormat
     is_default: bool = False
 
     class Config:

@@ -13,7 +13,7 @@ from fides.api.ops.models.storage import (
 )
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
-    ResponseFormat,
+    DownloadFormat,
     S3AuthMethod,
     StorageDestination,
     StorageDetails,
@@ -42,7 +42,7 @@ class TestStorageConfigModel:
             type=storage_type,
             details=storage_details_s3,
             key=None,
-            format=ResponseFormat.csv,
+            download_format=DownloadFormat.csv,
         )
 
     @pytest.fixture(scope="function")
@@ -54,7 +54,7 @@ class TestStorageConfigModel:
         return StorageDestination(
             type=StorageType.local,
             is_default=True,
-            format=ResponseFormat.json,
+            download_format=DownloadFormat.json,
             details={
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
             },
@@ -70,7 +70,7 @@ class TestStorageConfigModel:
             key="sample_default_local_storage",
             type=StorageType.local,
             is_default=True,
-            format=ResponseFormat.json,
+            download_format=DownloadFormat.json,
             details={
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
             },
@@ -86,7 +86,7 @@ class TestStorageConfigModel:
             key="another_default_local_storage",
             type=StorageType.local,
             is_default=True,
-            format=ResponseFormat.json,
+            download_format=DownloadFormat.json,
             details={
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
             },
@@ -135,7 +135,7 @@ class TestStorageConfigModel:
         assert storage_config.name == "test storage destination 1"
         assert storage_config.type == StorageType.s3
         assert storage_config.details == storage_details_s3
-        assert storage_config.format == ResponseFormat.csv
+        assert storage_config.format == DownloadFormat.csv
         assert storage_config.key == "test_storage_destination_1"
         assert storage_config.secrets is None
 
@@ -143,14 +143,14 @@ class TestStorageConfigModel:
 
     def test_update_storage_config(self, db: Session, storage_config):
         data = storage_config.__dict__
-        data["format"] = ResponseFormat.json
+        data["download_format"] = DownloadFormat.json
 
         storage_config = StorageConfig.create_or_update(db=db, data=data)
 
         assert storage_config.name == storage_config.name
         assert storage_config.type == storage_config.type
         assert storage_config.details == storage_config.details
-        assert storage_config.format == ResponseFormat.json
+        assert storage_config.format == DownloadFormat.json
         assert storage_config.key == storage_config.key
 
         storage_config.delete(db)

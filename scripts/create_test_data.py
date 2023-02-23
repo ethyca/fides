@@ -23,7 +23,7 @@ from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
-    ResponseFormat,
+    DownloadFormat,
     StorageDetails,
     StorageType,
 )
@@ -81,7 +81,7 @@ def _create_dsr_policy(
                     StorageDetails.BUCKET.value: "test_bucket",
                 },
                 "key": f"storage_config_for_{policy_key}",
-                "format": ResponseFormat.json,
+                "download_format": DownloadFormat.json,
             },
         )
         data = {

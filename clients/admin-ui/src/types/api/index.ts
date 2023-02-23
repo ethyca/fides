@@ -198,7 +198,7 @@ export type { Registration } from "./models/Registration";
 export type { Registry } from "./models/Registry";
 export type { ResourceFilter } from "./models/ResourceFilter";
 export { ResourceTypes } from "./models/ResourceTypes";
-export { ResponseFormat } from "./models/ResponseFormat";
+export { ResponseFormat } from "./models/DownloadFormat";
 export type { ReviewPrivacyRequestIds } from "./models/ReviewPrivacyRequestIds";
 export { RoleRegistry } from "./models/RoleRegistry";
 export type { RowCountRequest } from "./models/RowCountRequest";

@@ -19,7 +19,7 @@ def create_s3_storage(
         headers=auth_header,
         json={
             "type": "s3",
-            "format": "json",
+            "download_format": "json",
             "details": {
                 "auth_method": "secret_keys",
                 "bucket": bucket,

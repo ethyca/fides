@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ResponseFormat } from "./ResponseFormat";
+import type { DownloadFormat } from "./DownloadFormat";
 import type { StorageType } from "./StorageType";
 
 /**
@@ -13,6 +13,6 @@ export type StorageDestinationResponse = {
   type: StorageType;
   details: any;
   key: string;
-  format: ResponseFormat;
+  download_format: DownloadFormat;
   is_default?: boolean;
 };

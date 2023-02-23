@@ -14,7 +14,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops.db.base_class import JSONTypeOverride
-from fides.api.ops.schemas.storage.storage import ResponseFormat, StorageType
+from fides.api.ops.schemas.storage.storage import DownloadFormat, StorageType
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
@@ -46,8 +46,8 @@ class StorageConfig(Base):
         nullable=True,
     )  # Type bytea in the db
 
-    format = Column(
-        Enum(ResponseFormat), server_default="json", nullable=False, default="json"
+    download_format = Column(
+        Enum(DownloadFormat), server_default="json", nullable=False, default="json"
     )
 
     __table_args__ = (
@@ -142,7 +142,7 @@ def _create_local_default_storage(db: Session) -> StorageConfig:
             "name": default_storage_config_name(StorageType.local.value),
             "type": StorageType.local,
             "is_default": True,
-            "format": ResponseFormat.json,
+            "download_format": DownloadFormat.json,
             "details": {"naming": "request_id"},
         },
     )
