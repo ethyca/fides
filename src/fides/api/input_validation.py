@@ -23,7 +23,7 @@ class InputStr(str):
         # HTML Escapes
         value = escape(value)
 
-        # Truncate to 100 characters
+        # Truncate to 500 characters
         value = value[:500]
 
         return value
@@ -51,6 +51,6 @@ class PhoneNumber(str):
             or not pattern.search(value)
         ):
             raise ValueError(
-                "Phone number must be formatted in E.164 format, i.e. '+15558675309' with a maximum of 15 digits."
+                "Phone number must be formatted in E.164 format, i.e. '+15558675309'."
             )
         return value
