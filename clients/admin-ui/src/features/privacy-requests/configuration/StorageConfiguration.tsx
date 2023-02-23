@@ -10,7 +10,7 @@ import {
   Text,
 } from "@fidesui/react";
 import NextLink from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
@@ -24,45 +24,52 @@ import {
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
+  const { successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
   const [storageValue, setStorageValue] = useState("");
+
   const { data: storageDetails } = useGetStorageDetailsQuery({
     type: storageValue,
   });
-  const activeStorageType = storageDetails.items.find(
-    (item: any) => item.is_default === true
-  );
-
-  const { successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
-
   const [saveStorageType, { isLoading }] = useCreateStorageMutation();
   const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
+
+  useEffect(() => {
+    if (storageDetails) {
+      const activeStorageValueType = storageDetails?.items?.find(
+        (item: any) => item.is_default === true
+      );
+
+      if (activeStorageValueType) {
+        setStorageValue(activeStorageValueType.type);
+      }
+    }
+  }, [storageDetails]);
 
   const handleChange = async (value: string) => {
     if (value === "local") {
       const storageDetailsResult = await saveStorageType({
         type: value,
+        details: {},
         format: "json",
       });
       if (isErrorResult(storageDetailsResult)) {
         handleError(storageDetailsResult.error);
       } else {
-        successAlert(`Configure storage type details saved successfully.`);
+        successAlert(`Configured storage details successfully.`);
       }
     }
 
     const activeStorageResults = await saveActiveStorage({
-      fides: {
-        storage: {
-          active_default_storage_type: value,
-        },
+      storage: {
+        active_default_storage_type: value,
       },
     });
 
     if (isErrorResult(activeStorageResults)) {
       handleError(activeStorageResults.error);
     } else {
-      successAlert(`Configure active storage type saved successfully.`);
+      successAlert(`Configured active storage type successfully.`);
       setStorageValue(value);
     }
   };
@@ -123,7 +130,7 @@ const StorageConfiguration = () => {
         <RadioGroup
           isDisabled={isLoading}
           onChange={handleChange}
-          value={activeStorageType ? activeStorageType.type : storageValue}
+          value={storageValue}
           data-testid="privacy-requests-storage-selection"
           colorScheme="secondary"
           p={3}

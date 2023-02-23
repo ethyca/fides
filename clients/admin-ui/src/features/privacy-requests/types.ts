@@ -112,10 +112,8 @@ export type RetryRequests = {
 };
 
 export interface MessagingConfigResponse {
-  fides: {
-    storage: {
-      active_default_storage_type: string;
-    };
+  storage: {
+    active_default_storage_type: string;
   };
 }
 
@@ -133,6 +131,8 @@ export interface StorageConfigResponse {
 
 export interface ConfigStorageDetailsRequest {
   type: string;
+  auth_method?: string;
+  bucket?: string;
   details?: {
     auth_method?: string;
     bucket?: string;

@@ -12,10 +12,8 @@ import {
 
 interface StorageDetails {
   type: string;
-  details: {
-    auth_method: string;
-    bucket: string;
-  };
+  auth_method: string;
+  bucket: string;
   format: string;
 }
 interface SecretsStorageData {
@@ -23,9 +21,7 @@ interface SecretsStorageData {
   aws_secret_access_key: string;
 }
 
-const S3StorageConfiguration = ({
-  storageDetails: { auth_method, bucket, format },
-}: any) => {
+const S3StorageConfiguration = (storageDetails: any) => {
   const [authMethod, setAuthMethod] = useState("");
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
@@ -35,11 +31,9 @@ const S3StorageConfiguration = ({
 
   const initialValues = {
     type: "s3",
-    details: {
-      auth_method: auth_method ?? "",
-      bucket: bucket ?? "",
-    },
-    format: format ?? "",
+    auth_method: storageDetails.storageDetails.details?.auth_method ?? "",
+    bucket: storageDetails.storageDetails.details?.bucket ?? "",
+    format: storageDetails.storageDetails.format ?? "",
   };
 
   const initialSecretValues = {
@@ -53,8 +47,8 @@ const S3StorageConfiguration = ({
     const result = await saveStorageDetails({
       type: "s3",
       details: {
-        auth_method: newValues.details.auth_method,
-        bucket: newValues.details.bucket,
+        auth_method: newValues.auth_method,
+        bucket: newValues.bucket,
       },
       format: newValues.format,
     });
@@ -62,7 +56,7 @@ const S3StorageConfiguration = ({
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {
-      setAuthMethod(newValues.details.auth_method);
+      setAuthMethod(newValues.auth_method);
       successAlert(`S3 storage credentials successfully updated.`);
     }
   };
@@ -89,6 +83,7 @@ const S3StorageConfiguration = ({
         <Formik
           initialValues={initialValues}
           onSubmit={handleSubmitStorageConfiguration}
+          enableReinitialize
         >
           {({ isSubmitting, resetForm }) => (
             <Form>
