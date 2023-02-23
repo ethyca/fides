@@ -98,8 +98,10 @@ export const getUpdatedDatasetFromClassifyDataset = (
         draftCollection.name
       );
 
-      if (classifyCollection?.name !== activeCollection) {
-        return;
+      if (activeCollection) {
+        if (classifyCollection?.name !== activeCollection) {
+          return;
+        }
       }
 
       const classifyFieldMap = new Map(
