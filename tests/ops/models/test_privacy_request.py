@@ -28,11 +28,9 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.manual_connector import ManualAction
 from fides.api.ops.util.cache import FidesopsRedis, get_identity_cache_key
 from fides.api.ops.util.constants import API_DATE_FORMAT
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
-
-CONFIG = get_config()
 
 
 def test_privacy_request(

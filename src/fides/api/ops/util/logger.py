@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from loguru import logger
 
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 MASKED = "MASKED"
-
-CONFIG = get_config()
 
 
 class Pii(str):

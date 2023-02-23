@@ -41,11 +41,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
-from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
-
-CONFIG = get_config()
-
 
 EMAIL_JOIN_STRING = ", "
 

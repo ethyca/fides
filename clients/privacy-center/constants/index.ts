@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import { Config } from "~/types/config";
+import { Config, IdentityInputs } from "~/types/config";
 import configJson from "~/config/config.json";
 
 export const config: Config = configJson;
@@ -13,4 +13,4 @@ export const hostUrl =
     ? config.server_url_development || (config as any).fidesops_host_development
     : config.server_url_production || (config as any).fidesops_host_production;
 
-export const defaultIdentityInput = { email: "optional" };
+export const defaultIdentityInput: IdentityInputs = { email: "optional" };
