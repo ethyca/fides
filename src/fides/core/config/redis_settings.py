@@ -19,7 +19,7 @@ class RedisSettings(FidesSettings):
         default=None,
         description="The application will use this index in the Redis cache to cache data.",
     )
-    decode_responses: bool = Field(default=True, description="")
+    decode_responses: bool = Field(default=True, description="TODO")
     default_ttl_seconds: int = Field(
         default=604800,
         description="The number of seconds for which data will live in Redis before automatically expiring.",
@@ -75,16 +75,29 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        db_index = values.get("db_index") if values.get("db_index") is not None else ""
         connection_protocol = "redis"
         params = ""
         use_tls = values.get("ssl", False)
+
+        # These vars are intentionally fetched with `or ""` as the default to account
+        # for the edge case where `None` is explicitly set in `values` by Pydantic because
+        # it is not overridden by the config file or an env var
+        user = values.get("user") or ""
+        password = values.get("password") or ""
+        db_index = values.get("db_index") or ""
         if use_tls:
             # If using TLS update the connection URL format
             connection_protocol = "rediss"
             cert_reqs = values.get("ssl_cert_reqs", "none")
             params = f"?ssl_cert_reqs={quote_plus(cert_reqs)}"
-        connection_url = f"{connection_protocol}://{quote_plus(values.get('user', ''))}:{quote_plus(values.get('password', ''))}@{values.get('host', '')}:{values.get('port', '')}/{db_index}{params}"
+
+        # Configure a basic auth prefix if either user or password is provided, e.g.
+        # redis://<user>:<password>@<host>
+        auth_prefix = ""
+        if password or user:
+            auth_prefix = f"{quote_plus(user)}:{quote_plus(password)}@"
+
+        connection_url = f"{connection_protocol}://{auth_prefix}{values.get('host', '')}:{values.get('port', '')}/{db_index}{params}"
         return connection_url
 
     class Config:

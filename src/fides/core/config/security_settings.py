@@ -2,6 +2,8 @@
 
 # pylint: disable=C0115,C0116, E0213
 from typing import Dict, List, Optional, Tuple, Union
+from enum import Enum
+from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
 from pydantic import Field, validator
@@ -29,10 +31,11 @@ class SecuritySettings(FidesSettings):
     app_encryption_key: str = Field(
         default="", description="The key used to sign Fides API access tokens."
     )
-    cors_origins: List[str] = Field(
+    cors_origins: Union[str, List[str]] = Field(
         default=[],
         description="A list of pre-approved addresses of clients allowed to communicate with the Fides application server.",
     )
+    cors_origin_regex: Optional[Pattern] = Field(default=None, description="TODO")
     drp_jwt_secret: Optional[str] = Field(
         default=None,
         description="JWT secret by which passed-in identity is decrypted according to the HS256 algorithm.",

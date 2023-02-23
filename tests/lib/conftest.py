@@ -24,7 +24,10 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api.routes.user_endpoints import router
 from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
+from fides.api.ops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    SCOPE_REGISTRY as SCOPES,
+)
 from tests.conftest import create_citext_extension
 
 ROOT_PATH = Path().absolute()

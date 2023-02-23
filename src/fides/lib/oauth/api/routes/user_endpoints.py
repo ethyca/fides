@@ -32,7 +32,7 @@ from fides.lib.oauth.schemas.user import (
     UserLoginResponse,
     UserResponse,
 )
-from fides.lib.oauth.scopes import (
+from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     USER_CREATE,
     USER_DELETE,

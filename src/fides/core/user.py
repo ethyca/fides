@@ -16,7 +16,7 @@ from fides.core.utils import (
     write_credentials_file,
 )
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
-from fides.lib.oauth.scopes import SCOPES
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
 
 config = get_config()
 CREATE_USER_PATH = "/api/v1/user"
