@@ -46,6 +46,22 @@ class TestStorageConfigModel:
         )
 
     @pytest.fixture(scope="function")
+    def storage_incoming_two(self, storage_details_s3) -> StorageDestination:
+        name = "test storage destination 2"
+        storage_type = StorageType.s3
+        html_landing_page = {
+            HtmlLandingPageProps.value: "path/to/logo.png"
+        }
+        return StorageDestination(
+            name=name,
+            type=storage_type,
+            details=storage_details_s3,
+            key=None,
+            download_format=DownloadFormat.csv,
+            html_landing_page=html_landing_page,
+        )
+
+    @pytest.fixture(scope="function")
     def storage_incoming_default(db: Session) -> StorageDestination:
         """
         A storage destination schema object for a default storage config
@@ -135,8 +151,31 @@ class TestStorageConfigModel:
         assert storage_config.name == "test storage destination 1"
         assert storage_config.type == StorageType.s3
         assert storage_config.details == storage_details_s3
-        assert storage_config.format == DownloadFormat.csv
+        assert storage_config.download_format == DownloadFormat.csv
         assert storage_config.key == "test_storage_destination_1"
+        assert storage_config.html_landing_page is None
+        assert storage_config.secrets is None
+
+        storage_config.delete(db)
+
+    def test_create_storage_config_with_html_landing_page_details(
+            self,
+            db: Session,
+            storage_incoming_two,
+            storage_details_s3,
+    ):
+        storage_config = StorageConfig.create_or_update(
+            db=db, data=storage_incoming_two.dict()
+        )
+
+        assert storage_config.name == "test storage destination 2"
+        assert storage_config.type == StorageType.s3
+        assert storage_config.details == storage_details_s3
+        assert storage_config.download_format == DownloadFormat.csv
+        assert storage_config.key == "test_storage_destination_2"
+        assert storage_config.html_landing_page == {
+            HtmlLandingPageProps.value: "path/to/logo.png"
+        }
         assert storage_config.secrets is None
 
         storage_config.delete(db)
@@ -150,7 +189,7 @@ class TestStorageConfigModel:
         assert storage_config.name == storage_config.name
         assert storage_config.type == storage_config.type
         assert storage_config.details == storage_config.details
-        assert storage_config.format == DownloadFormat.json
+        assert storage_config.download_format == DownloadFormat.json
         assert storage_config.key == storage_config.key
 
         storage_config.delete(db)

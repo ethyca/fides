@@ -49,6 +49,7 @@ class StorageConfig(Base):
     download_format = Column(
         Enum(DownloadFormat), server_default="json", nullable=False, default="json"
     )
+    html_landing_page = Column(MutableDict.as_mutable(JSONB), nullable=True)
 
     __table_args__ = (
         Index(

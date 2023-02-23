@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 from fideslang.validation import FidesKey
 from pydantic import Extra, ValidationError, root_validator, validator
 from pydantic.main import BaseModel
+from validators.url import regex
 
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 
@@ -29,6 +30,17 @@ class StorageDetails(Enum):
     NAMING = "naming"
     MAX_RETRIES = "max_retries"
     AUTH_METHOD = "auth_method"
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
+
+
+class HtmlLandingPageProps(Enum):
+    """Enum for Html Landing Page props"""
+
+    LOGO_PATH = "logo_path"
 
     class Config:
         """Restrict adding other fields through this schema."""
@@ -111,6 +123,26 @@ FULLY_CONFIGURED_STORAGE_TYPES = (
 )  # storage types that are considered "fully configured"
 
 
+class HtmlLandingPage(BaseModel):
+    """HTML Landing Page Schema"""
+    logo_path: Optional[str] = None
+
+    @validator("logo_path")
+    @classmethod
+    def validate_logo_path(cls, value: str) -> str:
+        """
+        Custom validation logic for the `logo_path` field.
+        Should be formatted like `path/to/logo.png`.
+        """
+        if value:
+            pattern = regex(r"(\/.*?\.[\w:]+)")
+            if not pattern.search(value):
+                raise ValueError(
+                    "Logo path must be formatted like `path/to/logo.png`"
+                )
+        return value
+
+
 class StorageDestinationBase(BaseModel):
     """Storage Destination Schema -- used for setting defaults"""
 
@@ -120,11 +152,19 @@ class StorageDestinationBase(BaseModel):
         StorageDetailsLocal,
     ]
     download_format: Optional[DownloadFormat] = DownloadFormat.json.value  # type: ignore
+    html_landing_page: Optional[HtmlLandingPage] = None
 
     class Config:
         use_enum_values = True
         orm_mode = True
         extra = Extra.forbid
+
+    @root_validator(pre=True)
+    def maintain_backwards_compatibility(cls, values: Dict) -> Dict:
+        """Ensures backwards compatibility after renaming `format` -> `download_format`"""
+        if values["format"]:
+            values["download_format"] = values["format"]
+        return values
 
     @validator("details", pre=True, always=True)
     @classmethod
@@ -211,7 +251,8 @@ class StorageDestinationResponse(BaseModel):
     type: StorageType
     details: Dict[StorageDetails, Any]
     key: FidesKey
-    format: DownloadFormat
+    download_format: DownloadFormat
+    html_landing_page: Dict[HtmlLandingPageProps, Any]
     is_default: bool = False
 
     class Config:

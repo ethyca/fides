@@ -36,7 +36,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageConfigStatusMessage,
     StorageDetails,
     StorageSecrets,
-    StorageType,
+    StorageType, HtmlLandingPageProps,
 )
 from fides.core.config import get_config
 from fides.core.config.config_proxy import ConfigProxy
@@ -184,6 +184,49 @@ class TestPatchStorageConfig:
             json.loads(response.text)["detail"][0]["msg"]
             == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
         )
+
+    def test_patch_storage_config_with_html_landing_page_props(
+            self,
+            db: Session,
+            api_client: TestClient,
+            payload,
+            url,
+            generate_auth_header,
+    ):
+        payload[0]["html_landing_page"] = {
+            HtmlLandingPageProps.value: "my/logo.png"
+        }
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+
+        response_body = json.loads(response.text)
+        storage_config = db.query(StorageConfig).filter_by(key="test_destination")[0]
+
+        expected_response = {
+            "succeeded": [
+                {
+                    "name": "test destination",
+                    "type": StorageType.s3.value,
+                    "details": {
+                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                        "bucket": "some-bucket",
+                        "naming": "some-filename-convention-enum",
+                        "max_retries": 10,
+                    },
+                    "key": "test_destination",
+                    "download_format": "csv",
+                    "html_landing_page": {
+                        HtmlLandingPageProps.value: "my/logo.png"
+                    },
+                    "is_default": False,
+                }
+            ],
+            "failed": [],
+        }
+        assert expected_response == response_body
+        storage_config.delete(db)
 
     def test_patch_storage_config_with_key(
         self,
@@ -1342,7 +1385,7 @@ class TestGetActiveDefaultStorageConfig:
                 "bucket": "test_bucket",
             },
             "key": storage_config_default.key,
-            "download_format": storage_config_default.format.value,
+            "download_format": storage_config_default.download_format.value,
             "is_default": True,
         }
 
