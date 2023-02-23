@@ -101,7 +101,6 @@ export const getUpdatedDatasetFromClassifyDataset = (
       if (activeCollection && classifyCollection?.name !== activeCollection) {
         return;
       }
-      }
 
       const classifyFieldMap = new Map(
         classifyCollection?.fields?.map((f) => [f.name, f])
