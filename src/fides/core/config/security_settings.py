@@ -1,8 +1,6 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import Dict, List, Optional, Tuple, Union
-from enum import Enum
 from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
