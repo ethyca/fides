@@ -50,7 +50,7 @@ async def test_delighted_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:people"],
+        v[f"{dataset_name}:person"],
         min_size=1,
         keys=[
             "id",
@@ -83,10 +83,10 @@ async def test_delighted_access_request_task(
     )
 
     # verify we only returned data for our identity email
-    assert v[f"{dataset_name}:people"][0]["email"] == delighted_identity_email
-    people_id = v[f"{dataset_name}:people"][0]["id"]
+    assert v[f"{dataset_name}:person"][0]["email"] == delighted_identity_email
+    person_id = v[f"{dataset_name}:person"][0]["id"]
 
-    assert v[f"{dataset_name}:survey_response"][0]["person"] == people_id
+    assert v[f"{dataset_name}:survey_response"][0]["person"] == person_id
 
 
 @pytest.mark.integration_saas
@@ -129,7 +129,7 @@ async def test_delighted_erasure_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:people"],
+        v[f"{dataset_name}:person"],
         min_size=1,
         keys=[
             "id",
@@ -172,7 +172,7 @@ async def test_delighted_erasure_request_task(
     )
 
     assert x == {
-        f"{dataset_name}:people": 1,
+        f"{dataset_name}:person": 1,
         f"{dataset_name}:survey_response": 0,
     }
 

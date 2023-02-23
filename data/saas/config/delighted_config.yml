@@ -28,7 +28,7 @@ saas_config:
         value: test@gmail1.com
 
   endpoints:
-    - name: people
+    - name: person
       requests:
         read:
           method: GET
@@ -41,13 +41,16 @@ saas_config:
               identity: email
         delete:
           method: DELETE
-          path: /v1/people/email:<email>
+          path: /v1/people/<person_id>
           headers:
             - name: Accept
               value: application/json
           param_values:
-            - name: email
-              identity: email
+            - name: person_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: person.id
+                  direction: from
     - name: survey_response
       requests:
         read:

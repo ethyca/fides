@@ -3,7 +3,7 @@ dataset:
     name: delighted
     description: A sample dataset representing the Delighted connector for Fides
     collections:
-      - name: people
+      - name: person
         fields:
           - name: id
             data_categories: [user.unique_id]
