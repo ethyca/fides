@@ -33,19 +33,15 @@ The types of changes are:
 
 * Set the security environment of the fides dev setup to `prod` instead of `dev` [#2588](https://github.com/ethyca/fides/pull/2588)
 * Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
-
-### Fixed
-
-* Fix support for "redis.user" setting when authenticating to the Redis cache [#2666](https://github.com/ethyca/fides/pull/2666)
-
-### Developer Experience
-
 * Privacy Center
   * Typechecking and validation of the `config.json` will be checked for backwards-compatibility. [#2661](https://github.com/ethyca/fides/pull/2661)
 
 ### Fixed
 
+* Fix support for "redis.user" setting when authenticating to the Redis cache [#2666](https://github.com/ethyca/fides/pull/2666)
 * Fix error with the classify dataset feature flag not writing the dataset to the server [#2675](https://github.com/ethyca/fides/pull/2675)
+* Admin UI
+  * Remove Identifiability (Data Qualifier) from taxonomy editor [2684](https://github.com/ethyca/fides/pull/2684)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
