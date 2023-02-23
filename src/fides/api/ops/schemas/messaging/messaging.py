@@ -267,6 +267,10 @@ class MessagingConfigBase(BaseModel):
         orm_mode = True
         extra = Extra.forbid
 
+
+class MessagingConfigRequestBase(MessagingConfigBase):
+    """Base model shared by messaging config requests to provide validation on request inputs"""
+
     @root_validator(pre=True)
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         service_type_pre = values.get("service_type")
@@ -275,6 +279,10 @@ class MessagingConfigBase(BaseModel):
             if isinstance(service_type_pre, str):
                 service_type_pre = service_type_pre.upper()
             service_type: str = service_type_pre
+
+            # assign the transformed service_type value back into the values dict
+            values["service_type"] = service_type
+
             if service_type == MessagingServiceType.MAILGUN.value:
                 cls._validate_details_schema(
                     values=values, schema=MessagingServiceDetailsMailgun
@@ -298,7 +306,7 @@ class MessagingConfigBase(BaseModel):
         schema.validate(values.get("details"))
 
 
-class MessagingConfigRequest(MessagingConfigBase):
+class MessagingConfigRequest(MessagingConfigRequestBase):
     """Messaging Config Request Schema"""
 
     name: str

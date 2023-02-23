@@ -67,6 +67,13 @@ class TestPostMessagingConfig:
             "service_type": MessagingServiceType.TWILIO_TEXT.value,
         }
 
+    @pytest.fixture(scope="function")
+    def payload_twilio_sms_lowered(self):
+        return {
+            "name": "twilio_sms",
+            "service_type": MessagingServiceType.TWILIO_TEXT.value.lower(),
+        }
+
     def test_post_email_config_not_authenticated(
         self, api_client: TestClient, payload, url
     ):
@@ -287,6 +294,40 @@ class TestPostMessagingConfig:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
         response = api_client.post(url, headers=auth_header, json=payload_twilio_sms)
+        assert 200 == response.status_code
+
+        response_body = json.loads(response.text)
+        email_config = db.query(MessagingConfig).filter_by(key="my_twilio_sms_config")[
+            0
+        ]
+
+        expected_response = {
+            "key": "my_twilio_sms_config",
+            "name": "twilio_sms",
+            "service_type": MessagingServiceType.TWILIO_TEXT.value,
+            "details": None,
+        }
+        assert expected_response == response_body
+        email_config.delete(db)
+
+    def test_post_twilio_sms_config_lowercased(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload_twilio_sms_lowered,
+        url,
+        generate_auth_header,
+    ):
+        """
+        Ensure lower-cased `service_type` values are handled well
+        """
+
+        payload_twilio_sms_lowered["key"] = "my_twilio_sms_config"
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(
+            url, headers=auth_header, json=payload_twilio_sms_lowered
+        )
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
@@ -953,6 +994,10 @@ class TestPutDefaultMessagingConfig:
                 MessagingServiceType.TWILIO_EMAIL.value,
                 {"twilio_email_from": "test_email@test.com"},
             ),
+            (
+                MessagingServiceType.TWILIO_EMAIL.value.lower(),
+                {"twilio_email_from": "test_email@test.com"},
+            ),
             (MessagingServiceType.TWILIO_TEXT.value, None),
         ],
     )
@@ -975,8 +1020,8 @@ class TestPutDefaultMessagingConfig:
         response_body = json.loads(response.text)
         config_key = response_body["key"]
         messaging_config = MessagingConfig.get_by(db, field="key", value=config_key)
-        assert service_type == response_body["service_type"]
-        assert service_type == messaging_config.service_type.value
+        assert service_type.upper() == response_body["service_type"]
+        assert service_type.upper() == messaging_config.service_type.value
         messaging_config.delete(db)
 
     def test_put_default_messaging_config_twice_only_one_record(

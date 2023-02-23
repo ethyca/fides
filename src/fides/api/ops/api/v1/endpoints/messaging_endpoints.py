@@ -46,8 +46,8 @@ from fides.api.ops.models.messaging import (
 )
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
-    MessagingConfigBase,
     MessagingConfigRequest,
+    MessagingConfigRequestBase,
     MessagingConfigResponse,
     MessagingServiceType,
     TestMessagingStatusMessage,
@@ -155,7 +155,7 @@ def patch_config_by_key(
 def put_default_config(
     *,
     db: Session = Depends(deps.get_db),
-    messaging_config: MessagingConfigBase,
+    messaging_config: MessagingConfigRequestBase,
 ) -> Optional[MessagingConfigResponse]:
     """
     Updates default messaging config for given service type.
