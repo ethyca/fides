@@ -1,11 +1,14 @@
 import { describe, expect, it } from "@jest/globals";
 
+import { ScopeRegistry } from "~/types/api";
+
 import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
 
 describe("configureNavGroups", () => {
   it("only includes home and management by default", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
+      userScopes: [],
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -15,11 +18,7 @@ describe("configureNavGroups", () => {
 
     expect(navGroups[1]).toMatchObject({
       title: "Management",
-      children: [
-        { title: "Taxonomy", path: "/taxonomy" },
-        { title: "Users", path: "/user-management" },
-        { title: "About Fides", path: "/management/about" },
-      ],
+      children: [{ title: "About Fides", path: "/management/about" }],
     });
   });
 
@@ -27,6 +26,10 @@ describe("configureNavGroups", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
       hasConnections: true,
+      userScopes: [
+        ScopeRegistry.PRIVACY_REQUEST_READ,
+        ScopeRegistry.CONNECTION_CREATE_OR_UPDATE,
+      ],
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -47,6 +50,10 @@ describe("configureNavGroups", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
       hasSystems: true,
+      userScopes: [
+        ScopeRegistry.CLI_OBJECTS_CREATE,
+        ScopeRegistry.CLI_OBJECTS_READ,
+      ],
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -69,8 +76,12 @@ describe("configureNavGroups", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
       hasSystems: true,
-
       hasPlus: true,
+      userScopes: [
+        ScopeRegistry.DATAMAP_READ,
+        ScopeRegistry.CLI_OBJECTS_CREATE,
+        ScopeRegistry.CLI_OBJECTS_READ,
+      ],
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -98,6 +109,12 @@ describe("findActiveNav", () => {
     hasPlus: true,
     hasSystems: true,
     hasConnections: true,
+    userScopes: [
+      ScopeRegistry.DATAMAP_READ,
+      ScopeRegistry.CLI_OBJECTS_CREATE,
+      ScopeRegistry.CLI_OBJECTS_READ,
+      ScopeRegistry.CONNECTION_CREATE_OR_UPDATE,
+    ],
   });
 
   const testCases = [

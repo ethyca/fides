@@ -1,8 +1,12 @@
+import { ScopeRegistry } from "~/types/api";
+
 export type NavConfigRoute = {
   title?: string;
   path: string;
   exact?: boolean;
   requiresPlus?: boolean;
+  /** This route is only available if the user has ANY of these scopes */
+  scopes: ScopeRegistry[];
 };
 
 export type NavConfigGroup = {
@@ -20,6 +24,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         path: "/",
         exact: true,
+        scopes: [],
       },
     ],
   },
@@ -27,32 +32,76 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Privacy requests",
     requiresConnections: true,
     routes: [
-      { title: "Request manager", path: "/privacy-requests" },
-      { title: "Connection manager", path: "/datastore-connection" },
-      { title: "Configuration", path: "/privacy-requests/configure" },
+      {
+        title: "Request manager",
+        path: "/privacy-requests",
+        scopes: [ScopeRegistry.PRIVACY_REQUEST_READ],
+      },
+      {
+        title: "Connection manager",
+        path: "/datastore-connection",
+        scopes: [ScopeRegistry.CONNECTION_CREATE_OR_UPDATE],
+      },
+      {
+        title: "Configuration",
+        path: "/privacy-requests/configure",
+        scopes: [ScopeRegistry.MESSAGING_CREATE_OR_UPDATE],
+      },
     ],
   },
   {
     title: "Data map",
     requiresSystems: true,
     routes: [
-      { title: "View map", path: "/datamap", requiresPlus: true },
-      { title: "View systems", path: "/system" },
-      { title: "Add systems", path: "/add-systems" },
-      { title: "Manage datasets", path: "/dataset" },
+      {
+        title: "View map",
+        path: "/datamap",
+        requiresPlus: true,
+        scopes: [ScopeRegistry.DATAMAP_READ],
+      },
+      {
+        title: "View systems",
+        path: "/system",
+        scopes: [ScopeRegistry.CLI_OBJECTS_READ],
+      },
+      {
+        title: "Add systems",
+        path: "/add-systems",
+        scopes: [
+          ScopeRegistry.CLI_OBJECTS_CREATE,
+          ScopeRegistry.CLI_OBJECTS_UPDATE,
+        ],
+      },
+      {
+        title: "Manage datasets",
+        path: "/dataset",
+        scopes: [
+          ScopeRegistry.CLI_OBJECTS_CREATE,
+          ScopeRegistry.CLI_OBJECTS_UPDATE,
+        ],
+      },
       {
         title: "Classify systems",
         path: "/classify-systems",
         requiresPlus: true,
+        scopes: [], // this path may be going away soon
       },
     ],
   },
   {
     title: "Management",
     routes: [
-      { title: "Taxonomy", path: "/taxonomy" },
-      { title: "Users", path: "/user-management" },
-      { title: "About Fides", path: "/management/about" },
+      {
+        title: "Taxonomy",
+        path: "/taxonomy",
+        scopes: [ScopeRegistry.CLI_OBJECTS_READ],
+      },
+      {
+        title: "Users",
+        path: "/user-management",
+        scopes: [ScopeRegistry.USER_READ],
+      },
+      { title: "About Fides", path: "/management/about", scopes: [] },
     ],
   },
 ];
@@ -77,12 +126,14 @@ export type NavGroup = {
 
 export const configureNavGroups = ({
   config,
+  userScopes,
   hasPlus = false,
   hasSystems = false,
   hasConnections = false,
   hasAccessToPrivacyRequestConfigurations = false,
 }: {
   config: NavConfigGroup[];
+  userScopes: ScopeRegistry[];
   hasPlus?: boolean;
   hasSystems?: boolean;
   hasConnections?: boolean;
@@ -97,6 +148,24 @@ export const configureNavGroups = ({
       (group.requiresSystems && !hasSystems)
     ) {
       return;
+    }
+
+    // Skip groups that contain only routes the user cannot access
+    // an empty scopes [] is a special case where everything should succeed
+    if (
+      group.routes.filter((route) => route.scopes.length === 0).length === 0
+    ) {
+      const allScopesAcrossRoutes = group.routes.reduce((acc, route) => {
+        const { scopes } = route;
+        return [...acc, ...scopes];
+      }, [] as ScopeRegistry[]);
+      if (
+        allScopesAcrossRoutes.length &&
+        allScopesAcrossRoutes.filter((scope) => userScopes.includes(scope))
+          .length === 0
+      ) {
+        return;
+      }
     }
 
     const navGroup: NavGroup = {
@@ -115,6 +184,17 @@ export const configureNavGroups = ({
       if (
         route.path === "/privacy-requests/configure" &&
         !hasAccessToPrivacyRequestConfigurations
+      ) {
+        return;
+      }
+
+      // If the user does not have any of the scopes listed in the route's requirements,
+      // exclude it from the group.
+      if (
+        route.scopes.length &&
+        route.scopes.filter((requiredScope) =>
+          userScopes.includes(requiredScope)
+        ).length === 0
       ) {
         return;
       }
