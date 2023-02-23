@@ -225,12 +225,12 @@ def _build_sms(  # pylint: disable=too-many-return-statements
         if len(body_params.download_links) > 1:
             return (
                 "Your data access has been completed and can be downloaded at the following links. "
-                f"For security purposes, these secret links will expire in {subject_request_download_time_in_days}: "
+                f"For security purposes, these secret links will expire in {subject_request_download_time_in_days} days: "
                 f"{separator.join(body_params.download_links)}"
             )
         return (
             f"Your data access has been completed and can be downloaded at {body_params.download_links[0]}. "
-            f"For security purposes, this secret link will expire in {subject_request_download_time_in_days}."
+            f"For security purposes, this secret link will expire in {subject_request_download_time_in_days} days."
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return "Your privacy request for deletion has been completed."
