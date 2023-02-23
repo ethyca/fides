@@ -8,7 +8,7 @@ from fides.core.config import get_config
 @pytest.fixture(scope="session")
 def config():
     config = get_config()
-    config.is_test_mode = True
+    config.test_mode = True
     yield config
 
 

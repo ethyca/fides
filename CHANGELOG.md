@@ -23,6 +23,7 @@ The types of changes are:
 
 ### Changed
 
+* Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 * Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
 
@@ -51,9 +52,11 @@ The types of changes are:
   * `inspectForBrowserIdentities` now also looks for `ljt_readerID`. [#2543](https://github.com/ethyca/fides/pull/2543)
 
 ### Added
-  * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
-  * Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
-  * Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
+
+* Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
+* Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
+* Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
+
 ### Changed
 
 * Update Admin UI to show all action types (access, erasure, consent, update) [#2523](https://github.com/ethyca/fides/pull/2523)

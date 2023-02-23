@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import toml
 from loguru import logger as log
+from pydantic import Field
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
@@ -41,11 +42,26 @@ class FidesConfig(FidesSettings):
     """
 
     # Root Settings
-    test_mode: bool = get_test_mode()
-    is_test_mode: bool = test_mode
-    hot_reloading: bool = getenv("FIDES__HOT_RELOAD", "").lower() == "true"
-    dev_mode: bool = getenv("FIDES__DEV_MODE", "").lower() == "true"
-    oauth_instance: Optional[str] = getenv("FIDES__OAUTH_INSTANCE")
+    test_mode: bool = Field(
+        default=get_test_mode(),
+        description="Whether or not the application is being run in test mode.",
+        exclude=True,
+    )
+    hot_reloading: bool = Field(
+        default=getenv("FIDES__HOT_RELOAD", "").lower() == "true",
+        description="Whether or not to enable hot reloading for the webserver.",
+        exclude=True,
+    )
+    dev_mode: bool = Field(
+        default=getenv("FIDES__DEV_MODE", "").lower() == "true",
+        description="Similar to 'test_mode', enables certain features when true.",
+        exclude=True,
+    )
+    oauth_instance: Optional[str] = Field(
+        default=None,
+        description="A value that is prepended to the generated 'state' param in outbound OAuth2 authorization requests. Used during OAuth2 testing to associate callback responses back to this specific Fides instance.",
+        exclude=True,
+    )
 
     # Setting Subsections
     # These should match the `settings_map` in `build_config`
