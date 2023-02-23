@@ -22,7 +22,7 @@ analytics_opt_out = false
 
 [redis]
 host = "redis"
-password = "testpassword"
+password = "redispassword"
 port = 6379
 charset = "utf8"
 default_ttl_seconds = 604800
