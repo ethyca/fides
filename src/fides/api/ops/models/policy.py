@@ -16,10 +16,16 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops import common_exceptions
-from fides.api.ops.common_exceptions import WebhookOrderException
+from fides.api.ops.common_exceptions import (
+    StorageConfigNotFoundException,
+    WebhookOrderException,
+)
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.models.storage import (
+    StorageConfig,
+    get_active_default_storage_config,
+)
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.core.config import get_config
 from fides.lib.db.base_class import Base, FidesBase
@@ -32,7 +38,9 @@ class CurrentStep(EnumType):
     pre_webhooks = "pre_webhooks"
     access = "access"
     erasure = "erasure"
+    consent = "consent"
     erasure_email_post_send = "erasure_email_post_send"
+    consent_email_post_send = "consent_email_post_send"
     post_webhooks = "post_webhooks"
 
 
@@ -83,6 +91,7 @@ def _validate_rule(
     """Check that the rule's action_type and storage_destination are valid."""
     if not action_type:
         raise common_exceptions.RuleValidationError("action_type is required.")
+
     if action_type == ActionType.erasure.value:
         if storage_destination_id is not None:
             raise common_exceptions.RuleValidationError(
@@ -92,12 +101,7 @@ def _validate_rule(
             raise common_exceptions.RuleValidationError(
                 "Erasure Rules must have masking strategies."
             )
-    if action_type == ActionType.access.value:
-        if storage_destination_id is None:
-            raise common_exceptions.RuleValidationError(
-                "Access Rules must have a storage destination."
-            )
-    if action_type in [ActionType.consent.value, ActionType.update.value]:
+    if action_type in [ActionType.update.value]:
         raise common_exceptions.RuleValidationError(
             f"{action_type} Rules are not supported at this time."
         )
@@ -150,6 +154,11 @@ class Policy(Base):
     def get_rules_for_action(self, action_type: ActionType) -> List["Rule"]:
         """Returns all Rules related to this Policy filtered by `action_type`."""
         return [rule for rule in self.rules if rule.action_type == action_type]  # type: ignore[attr-defined]
+
+    def get_consent_rule(self) -> Optional["Rule"]:
+        """Returns a Consent Rule if it exists. There should only be one."""
+        consent_rules = self.get_rules_for_action(ActionType.consent)
+        return consent_rules[0] if consent_rules else None
 
 
 def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
@@ -269,7 +278,28 @@ class Rule(Base):
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
-        """Validate this object's data before deferring to the superclass on update"""
+        """Validate this object's data before deferring to the superclass on create"""
+        policy_id: Optional[str] = data.get("policy_id")
+
+        if not policy_id:
+            raise common_exceptions.RuleValidationError(
+                "Policy id must be specified on Rule create."
+            )
+
+        policy = Policy.get_by(db=db, field="id", value=policy_id)
+        if not policy:
+            raise common_exceptions.RuleValidationError(
+                "Policy id must be specified on Rule create."
+            )
+        existing_consent_rules = policy.get_rules_for_action(ActionType.consent)
+
+        if (
+            existing_consent_rules
+            and data.get("action_type") == ActionType.consent.value
+        ):
+            raise common_exceptions.RuleValidationError(
+                f"Policies can only have one consent rule attached.  Existing rule {existing_consent_rules[0].key} found."
+            )
         _validate_rule(
             action_type=data.get("action_type"),
             storage_destination_id=data.get("storage_destination_id"),
@@ -288,6 +318,21 @@ class Rule(Base):
         that this Rule is configured to apply to.
         """
         return [target.data_category for target in self.targets]  # type: ignore[attr-defined]
+
+    def get_storage_destination(self, db: Session) -> StorageConfig:
+        """
+        Utility to return the appropriate proper storage destination for the Rule.
+        If the Rule does not have an explicit `storage_destination` set, then the
+        application's default storage config will be returned
+        """
+        if self.storage_destination:
+            return self.storage_destination
+        storage_destination = get_active_default_storage_config(db)
+        if storage_destination is None:
+            raise StorageConfigNotFoundException(
+                f"The given rule `{self.key}` has no `storage_destination` configured, and there is no active default storage configuration defined"
+            )
+        return storage_destination
 
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]

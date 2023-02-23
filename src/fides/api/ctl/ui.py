@@ -15,7 +15,12 @@ ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
 
 
 def get_package_path() -> Optional[Path]:
-    """Returns a Path to the root directory of this package's installation, if it exists."""
+    """
+    Returns a Path to the root directory of this package's installation, if it exists.
+
+    If installed via `pip install -e` (like in Dockerfile's `dev` target), this may be /fides/src/fides
+    If installed via `pip install ethyca-fides`, this will be more like /usr/local/lib/python/site-packages/fides
+    """
     package_name = __package__.split(".", maxsplit=1)[0]
     spec = importlib.util.find_spec(package_name)
     if spec and spec.origin:
@@ -46,14 +51,8 @@ def get_admin_index_as_response() -> Response:
 
 
 @lru_cache
-def get_local_file_map() -> Dict[re.Pattern, Path]:
-    """Get the Admin UI route map for the local build."""
-    return generate_route_file_map(Path(FIDES_DIRECTORY) / ADMIN_UI_DIRECTORY)
-
-
-@lru_cache
-def get_package_file_map() -> Dict[re.Pattern, Path]:
-    """Get the Admin UI route map from the installed package's static files."""
+def get_ui_file_map() -> Dict[re.Pattern, Path]:
+    """Get the Admin UI route map from its static files."""
     package_path = get_package_path()
     if package_path is None:
         return {}

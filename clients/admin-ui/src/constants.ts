@@ -85,8 +85,8 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "user:delete",
   },
   {
-    privilege: "Reset their own password",
-    scope: "user:reset-password",
+    privilege: "Reset another user's password",
+    scope: "user:password-reset",
   },
   {
     privilege: "Assign user permissions",
@@ -141,4 +141,6 @@ export const CONFIG_WIZARD_ROUTE = "/add-systems";
 export const DATAMAP_ROUTE = "/datamap";
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
+export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE =
+  "/privacy-requests/configure";
 export const SYSTEM_ROUTE = "/system";

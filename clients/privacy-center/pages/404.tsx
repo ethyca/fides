@@ -2,6 +2,8 @@ import Head from "next/head";
 import NextLink from "next/link";
 import { Stack, Heading, Box, Text, Button, Link, Image } from "@fidesui/react";
 
+import { config } from "~/constants";
+
 const Custom404 = () => (
   <div>
     <Head>
@@ -53,8 +55,8 @@ const Custom404 = () => (
             </Stack>
             <Box display={[null, null, "none"]}>
               <Image
-                src="/logo.svg"
-                alt="FidesOps logo"
+                src={config.logo_path}
+                alt="Logo"
                 width="124px"
                 height="38px"
               />
@@ -66,8 +68,8 @@ const Custom404 = () => (
             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <Link>
               <Image
-                src="/logo.svg"
-                alt="FidesOps logo"
+                src={config.logo_path}
+                alt="Logo"
                 width="124px"
                 height="38px"
               />

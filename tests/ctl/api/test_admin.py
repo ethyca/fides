@@ -14,7 +14,7 @@ def test_db_reset_dev_mode_enabled(
     assert test_config.dev_mode
     response = test_client.post(
         test_config.cli.server_url + API_PREFIX + "/admin/db/reset/",
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
     )
     assert response.status_code == 200
     assert response.json() == {"data": {"message": "fides database reset"}}
@@ -31,5 +31,5 @@ def test_db_reset_dev_mode_disabled(
     ):
         test_client.post(
             test_config.cli.server_url + API_PREFIX + "/admin/db/reset/",
-            headers=test_config.user.request_headers,
+            headers=test_config.user.auth_header,
         )

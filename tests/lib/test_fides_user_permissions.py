@@ -8,7 +8,7 @@ from fides.api.ops.models.manual_webhook import (  # pylint: disable=unused-impo
     AccessManualWebhook,
 )
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.scopes import (
+from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     USER_CREATE,
     USER_DELETE,

@@ -1,28 +1,44 @@
-from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
+from typing import Any, ContextManager, Dict, List, Optional
 
 from celery import Celery, Task
 from loguru import logger
 from sqlalchemy.orm import Session
-from toml import load as load_toml
 
 from fides.core.config import FidesConfig, get_config
-from fides.lib.db.session import get_db_session
+from fides.lib.db.session import get_db_engine, get_db_session
 
 CONFIG = get_config()
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 
 
 class DatabaseTask(Task):  # pylint: disable=W0223
-    _session = None
+    _task_engine = None
+    _sessionmaker = None
 
-    @property
-    def session(self) -> ContextManager[Session]:
-        """Creates Session once per process"""
-        if self._session is None:
-            SessionLocal = get_db_session(CONFIG)
-            self._session = SessionLocal()
+    def get_new_session(self) -> ContextManager[Session]:
+        """
+        Creates a new Session to be used for each task invocation.
 
-        return self._session
+        The new Sessions will reuse a shared `Engine` and `sessionmaker`
+        across invocations, so as to reuse db connection resources.
+        """
+        # only one engine will be instantiated in a given task scope, i.e
+        # once per celery process.
+        if self._task_engine is None:
+            _task_engine = get_db_engine(
+                config=CONFIG,
+                pool_size=CONFIG.database.task_engine_pool_size,
+                max_overflow=CONFIG.database.task_engine_max_overflow,
+            )
+
+        # same for the sessionmaker
+        if self._sessionmaker is None:
+            self._sessionmaker = get_db_session(config=CONFIG, engine=_task_engine)
+
+        # but a new session is instantiated each time the method is invoked
+        # to prevent session overlap when requests are executing concurrently
+        # when in task_always_eager mode (i.e. without proper workers)
+        return self._sessionmaker()
 
 
 def _create_celery(config: FidesConfig = get_config()) -> Celery:
@@ -56,6 +72,7 @@ def _create_celery(config: FidesConfig = get_config()) -> Celery:
             "fides.api.ops.service.privacy_request.request_runner_service",
         ]
     )
+
     return app
 
 
@@ -74,20 +91,3 @@ def get_worker_ids() -> List[Optional[str]]:
         logger.critical(exception)
         connected_workers = []
     return connected_workers
-
-
-def start_worker() -> None:
-    logger.info("Running Celery worker...")
-    default_queue_name = celery_app.conf.get("task_default_queue", "celery")
-    celery_app.worker_main(
-        argv=[
-            "worker",
-            "--loglevel=info",
-            "--concurrency=2",
-            f"--queues={default_queue_name},{MESSAGING_QUEUE_NAME}",
-        ]
-    )
-
-
-if __name__ == "__main__":  # pragma: no cover
-    start_worker()

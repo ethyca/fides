@@ -1,3 +1,5 @@
+import { ConsentValue } from "fides-consent";
+
 export type Config = {
   title: string;
   description: string;
@@ -11,6 +13,7 @@ export type Config = {
     title: string;
     description: string;
     identity_inputs?: Record<string, string>;
+    policy_key?: string;
     consentOptions: ConfigConsentOption[];
   };
 };
@@ -25,10 +28,11 @@ export type PrivacyRequestOption = {
 
 export type ConfigConsentOption = {
   cookieKeys: string[];
-  default?: boolean;
+  default?: ConsentValue;
   description: string;
   fidesDataUseKey: string;
   highlight?: boolean;
   name: string;
   url: string;
+  executable?: boolean;
 };

@@ -1,7 +1,8 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import Dict, List, Optional, Tuple, Union
+from enum import Enum
+from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
 from pydantic import validator
@@ -13,6 +14,16 @@ from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_s
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__SECURITY__"
+
+
+class SecurityEnv(Enum):
+    """
+    Defines the potential environments that Fides can
+    be configured to run in.
+    """
+
+    DEV = "dev"
+    PROD = "prod"
 
 
 class SecuritySettings(FidesSettings):
@@ -32,8 +43,10 @@ class SecuritySettings(FidesSettings):
     parent_server_password: Optional[str] = None
     identity_verification_attempt_limit: int = 3  # 3 attempts
     encoding: str = "UTF-8"
+    env: SecurityEnv = SecurityEnv.DEV
 
-    cors_origins: List[str] = []
+    cors_origins: Union[str, List[str]] = []
+    cors_origin_regex: Optional[Pattern] = None
     oauth_root_client_id: str = ""
     oauth_root_client_secret: str = ""
     oauth_root_client_secret_hash: Optional[Tuple]

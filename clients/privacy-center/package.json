@@ -8,7 +8,7 @@
     "build:fides-consent": "npm run --workspace=fides-consent build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --fix --ext .ts,.tsx",
+    "lint:fix": "lint-staged --diff=main",
     "format": "prettier --write types/ theme/ pages/ config/ components/ __tests__/",
     "format:ci": "prettier --check types/ theme/ pages/ config/ components/ __tests__/",
     "test": "jest --watch",
@@ -26,12 +26,10 @@
     "packages/fides-consent"
   ],
   "dependencies": {
-    "@chakra-ui/icons": "^1.1.7",
-    "@chakra-ui/react": "^1.7.4",
-    "@chakra-ui/system": "^1.12.1",
-    "@emotion/react": "^11",
-    "@emotion/styled": "^11",
-    "@fidesui/react": "^0.0.9",
+    "@chakra-ui/react": "^1.8.9",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@fidesui/react": "^0.0.21",
     "@fontsource/inter": "^4.5.4",
     "@reduxjs/toolkit": "^1.9.1",
     "fides-consent": "./packages/fides-consent",
@@ -72,10 +70,17 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
+    "lint-staged": "^13.0.3",
     "msw": "^0.39.0",
     "openapi-typescript-codegen": "^0.20.1",
     "prettier": "^2.6.2",
     "typescript": "4.5.5",
     "whatwg-fetch": "^3.6.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write --list-different",
+      "eslint --fix"
+    ]
   }
 }

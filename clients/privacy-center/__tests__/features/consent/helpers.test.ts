@@ -1,196 +1,144 @@
-import {
-  makeConsentItems,
-  makeCookieKeyConsent,
-} from "~/features/consent/helpers";
-import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
+import { ConsentContext } from "fides-consent";
+
+import { makeCookieKeyConsent } from "~/features/consent/helpers";
 import { ConfigConsentOption } from "~/types/config";
 
-describe("makeConsentItems", () => {
-  const consentOptions: ConfigConsentOption[] = [
-    {
-      cookieKeys: ["data_sharing"],
-      default: false,
-      description: "Data shared with third parties",
-      fidesDataUseKey: "third_party_sharing",
-      highlight: true,
-      name: "Third Party Sharing",
-      url: "https://example.com/privacy#data-sales",
-    },
-    {
-      cookieKeys: ["custom_key"],
-      default: false,
-      description: "Configured description",
-      fidesDataUseKey: "custom.use",
-      highlight: true,
-      name: "Custom",
-      url: "https://example.com/privacy#custom",
-    },
-    {
-      cookieKeys: [],
-      default: true,
-      description: "Default opted in",
-      fidesDataUseKey: "provide.service",
-      name: "Provide a service",
-      url: "https://example.com/privacy#provide-service",
-    },
-  ];
-
-  it("Matches config options with API response data", () => {
-    const data: ApiUserConsents = {
-      consent: [
-        {
-          data_use: "third_party_sharing",
-          opt_in: false,
-        },
-        {
-          data_use: "custom.use",
-          data_use_description: "Custom API description",
-          opt_in: true,
-        },
-      ],
-    };
-
-    const items = makeConsentItems(data, consentOptions);
-
-    expect(items).toEqual([
-      {
-        cookieKeys: ["data_sharing"],
-        consentValue: false,
-        defaultValue: false,
-        description: "Data shared with third parties",
-        fidesDataUseKey: "third_party_sharing",
-        highlight: true,
-        name: "Third Party Sharing",
-        url: "https://example.com/privacy#data-sales",
-      },
-      {
-        cookieKeys: ["custom_key"],
-        consentValue: true,
-        defaultValue: false,
-        description: "Custom API description",
-        fidesDataUseKey: "custom.use",
-        highlight: true,
-        name: "Custom",
-        url: "https://example.com/privacy#custom",
-      },
-      {
-        cookieKeys: [],
-        defaultValue: true,
-        description: "Default opted in",
-        fidesDataUseKey: "provide.service",
-        highlight: false,
-        name: "Provide a service",
-        url: "https://example.com/privacy#provide-service",
-      },
-    ]);
-  });
-
-  it("Creates default items when there is no API response data", () => {
-    const items = makeConsentItems({}, consentOptions);
-
-    expect(items).toEqual([
-      {
-        cookieKeys: ["data_sharing"],
-        defaultValue: false,
-        description: "Data shared with third parties",
-        fidesDataUseKey: "third_party_sharing",
-        highlight: true,
-        name: "Third Party Sharing",
-        url: "https://example.com/privacy#data-sales",
-      },
-      {
-        cookieKeys: ["custom_key"],
-        defaultValue: false,
-        description: "Configured description",
-        fidesDataUseKey: "custom.use",
-        highlight: true,
-        name: "Custom",
-        url: "https://example.com/privacy#custom",
-      },
-      {
-        cookieKeys: [],
-        defaultValue: true,
-        description: "Default opted in",
-        fidesDataUseKey: "provide.service",
-        highlight: false,
-        name: "Provide a service",
-        url: "https://example.com/privacy#provide-service",
-      },
-    ]);
-  });
-});
-
 describe("makeCookieKeyConsent", () => {
-  // Only the consent booleans and cookieKeys matter for resolving the cookie mapping.
+  // Some display options don't matter for these tests.
   const irrelevantProps = {
     description: "",
     highlight: false,
     name: "",
-    fidesDataUseKey: "",
     url: "https://example.com/privacy#data-sales",
   };
 
-  const dataSalesWithConsent: ConsentItem = {
-    cookieKeys: ["data_sales"],
-    consentValue: true,
-    defaultValue: false,
-    ...irrelevantProps,
-  };
-  const dataSalesWithoutConsent: ConsentItem = {
-    cookieKeys: ["data_sales", "google_ads"],
-    consentValue: false,
-    defaultValue: false,
-    ...irrelevantProps,
-  };
-  const dataSharingWithConsent: ConsentItem = {
-    cookieKeys: ["data_sharing", "google_analytics"],
-    consentValue: true,
-    defaultValue: false,
-    ...irrelevantProps,
-  };
-  const dataSharingWithDefaultConsent: ConsentItem = {
-    cookieKeys: ["data_sharing", "google_analytics"],
-    defaultValue: true,
-    ...irrelevantProps,
-  };
-  const analyticsWithoutConsent: ConsentItem = {
-    cookieKeys: ["google_analytics"],
-    consentValue: false,
-    defaultValue: true,
-    ...irrelevantProps,
-  };
+  describe("With blank consent context", () => {
+    const consentContext: ConsentContext = {};
 
-  it("Applies default consent", () => {
-    expect(makeCookieKeyConsent([dataSharingWithDefaultConsent])).toEqual({
-      data_sharing: true,
-      google_analytics: true,
+    const dataUseSales: ConfigConsentOption = {
+      fidesDataUseKey: "data_use.sales",
+      cookieKeys: ["data_sales"],
+      default: false,
+      ...irrelevantProps,
+    };
+    const dataUseSalesGads: ConfigConsentOption = {
+      fidesDataUseKey: "data_use.sales.gads",
+      cookieKeys: ["data_sales", "google_ads"],
+      default: false,
+      ...irrelevantProps,
+    };
+    const dataUseSharingGanDefault: ConfigConsentOption = {
+      fidesDataUseKey: "data_use.sharing.gan.default",
+      cookieKeys: ["data_sharing", "google_analytics"],
+      default: true,
+      ...irrelevantProps,
+    };
+    const dataUseGanDefault: ConfigConsentOption = {
+      cookieKeys: ["google_analytics"],
+      fidesDataUseKey: "data_use.gan.default",
+      default: true,
+      ...irrelevantProps,
+    };
+
+    it("applies default consent", () => {
+      expect(
+        makeCookieKeyConsent({
+          consentOptions: [dataUseSharingGanDefault],
+          fidesKeyToConsent: {},
+          consentContext,
+        })
+      ).toEqual({
+        data_sharing: true,
+        google_analytics: true,
+      });
+    });
+
+    it("allows overriding default consent", () => {
+      expect(
+        makeCookieKeyConsent({
+          consentOptions: [dataUseGanDefault],
+          fidesKeyToConsent: {
+            [dataUseGanDefault.fidesDataUseKey]: false,
+          },
+          consentContext,
+        })
+      ).toEqual({
+        google_analytics: false,
+      });
+    });
+
+    it("removes consent if some matching keys don't have consent", () => {
+      expect(
+        makeCookieKeyConsent({
+          consentOptions: [dataUseSales, dataUseSalesGads],
+          fidesKeyToConsent: {
+            [dataUseSales.fidesDataUseKey]: false,
+            [dataUseSalesGads.fidesDataUseKey]: true,
+          },
+          consentContext,
+        })
+      ).toEqual({
+        data_sales: false,
+        google_ads: true,
+      });
+    });
+
+    it("applies consent if all matching keys have consent", () => {
+      expect(
+        makeCookieKeyConsent({
+          consentOptions: [dataUseSales, dataUseSalesGads],
+          fidesKeyToConsent: {
+            [dataUseSales.fidesDataUseKey]: true,
+            [dataUseSalesGads.fidesDataUseKey]: true,
+          },
+          consentContext,
+        })
+      ).toEqual({
+        data_sales: true,
+        google_ads: true,
+      });
     });
   });
 
-  it("Allows overriding default consent", () => {
-    expect(makeCookieKeyConsent([analyticsWithoutConsent])).toEqual({
-      google_analytics: false,
-    });
-  });
+  describe("With GPC enabled in the consent context", () => {
+    const consentContext: ConsentContext = {
+      globalPrivacyControl: true,
+    };
 
-  it("Removes consent if some matching keys don't have consent", () => {
-    expect(
-      makeCookieKeyConsent([dataSalesWithConsent, dataSalesWithoutConsent])
-    ).toEqual({
-      data_sales: false,
-      google_ads: false,
-    });
-  });
+    const dataUseSalesDefaultNoGpc: ConfigConsentOption = {
+      fidesDataUseKey: "data_use.sales",
+      cookieKeys: ["data_sales"],
+      default: {
+        value: true,
+        globalPrivacyControl: false,
+      },
+      ...irrelevantProps,
+    };
 
-  it("Applies consent if all matching keys have consent", () => {
-    expect(
-      makeCookieKeyConsent([
-        dataSharingWithConsent,
-        dataSharingWithDefaultConsent,
-      ])
-    ).toEqual({
-      data_sharing: true,
-      google_analytics: true,
+    it("applies the GPC default consent", () => {
+      expect(
+        makeCookieKeyConsent({
+          consentOptions: [dataUseSalesDefaultNoGpc],
+          fidesKeyToConsent: {},
+          consentContext,
+        })
+      ).toEqual({
+        data_sales: false,
+      });
+    });
+
+    it("allows overriding the GPC default consent", () => {
+      expect(
+        makeCookieKeyConsent({
+          consentOptions: [dataUseSalesDefaultNoGpc],
+          fidesKeyToConsent: {
+            [dataUseSalesDefaultNoGpc.fidesDataUseKey]: true,
+          },
+          consentContext,
+        })
+      ).toEqual({
+        data_sales: true,
+      });
     });
   });
 });
