@@ -149,11 +149,18 @@ describe("Consent settings", () => {
         expect(interception.request.body.browser_identity).to.eql(undefined);
       });
 
-      // The cookie should also have been updated.
-      cy.getCookie(CONSENT_COOKIE_NAME).should((cookie) => {
-        const cookieKeyConsent = JSON.parse(decodeURIComponent(cookie!.value));
-        expect(cookieKeyConsent.data_sales).to.eq(true);
-      });
+      // The cookie should also have been updated. This may take a moment in CI,
+      // so we `waitUntil` the value becomes what we expect.
+      // https://github.com/cypress-io/cypress/issues/4802#issuecomment-941891554
+      cy.waitUntil(() =>
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          // `waitUntil` retries until we return a truthy value.
+          return cookieKeyConsent.data_sales === true;
+        })
+      );
     });
 
     it("can grab cookies and send to a consent request", () => {
