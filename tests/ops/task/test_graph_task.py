@@ -643,7 +643,7 @@ class TestUpdateErasureMappingFromCache:
 
     def test_update_erasure_mapping_from_cache_without_data(self, dsk, task_resource):
         task_resource.get_all_cached_erasures = lambda: {}  # represents an empty cache
-        update_erasure_mapping_from_cache(dsk, task_resource, start_function)
+        update_erasure_mapping_from_cache(dsk, task_resource)
         (task, retrieved_data, input_list, *erasure_prereqs) = dsk[
             CollectionAddress("dr_1", "ds_1")
         ]
@@ -657,5 +657,5 @@ class TestUpdateErasureMappingFromCache:
         task_resource.get_all_cached_erasures = lambda: {
             "dr_1:ds_1": 1
         }  # a cache with the results of the ds_1 collection erasure
-        update_erasure_mapping_from_cache(dsk, task_resource, start_function)
+        update_erasure_mapping_from_cache(dsk, task_resource)
         assert dsk[CollectionAddress("dr_1", "ds_1")] == 1
