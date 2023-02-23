@@ -17,8 +17,7 @@ from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.core.api import db_action
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -52,8 +51,6 @@ from .fixtures.saas import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 from .fixtures.timescale_fixtures import *
-
-CONFIG = get_config()
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -32,7 +32,7 @@ from fides.api.ops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -47,7 +47,6 @@ from fides.lib.oauth.oauth_util import extract_payload
 from fides.lib.oauth.roles import ADMIN, VIEWER
 from tests.ops.conftest import generate_auth_header_for_user
 
-CONFIG = get_config()
 page_size = Params().size
 
 

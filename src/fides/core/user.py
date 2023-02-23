@@ -6,7 +6,6 @@ import requests
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
 from fides.cli.utils import handle_cli_response
-from fides.core.config import get_config
 from fides.core.utils import (
     Credentials,
     echo_green,
@@ -19,7 +18,6 @@ from fides.core.utils import (
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.oauth.roles import ADMIN
 
-config = get_config()
 CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"
 USER_PERMISSIONS_PATH = "/api/v1/user/{}/permission"

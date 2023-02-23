@@ -66,9 +66,7 @@ services:
 
   redis-child:
     image: "redis:6.2.5-alpine"
-    command: redis-server --requirepass testpassword
-    environment:
-      - REDIS_PASSWORD=testpassword
+    command: redis-server --requirepass redispassword
     expose:
       - 6379
     ports:

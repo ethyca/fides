@@ -23,9 +23,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 
 @pytest.fixture(scope="function")

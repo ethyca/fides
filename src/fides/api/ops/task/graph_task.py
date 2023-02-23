@@ -48,12 +48,12 @@ from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import NodeInput, Row, append, partition
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 dask.config.set(scheduler="threads")
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
-CONFIG = get_config()
+
 EMPTY_REQUEST = PrivacyRequest()
 
 

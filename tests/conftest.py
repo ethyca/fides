@@ -2,14 +2,14 @@ import pytest
 from loguru import logger
 from sqlalchemy.engine.base import Engine
 
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 
 @pytest.fixture(scope="session")
 def config():
-    config = get_config()
-    config.is_test_mode = True
-    yield config
+
+    CONFIG.test_mode = True
+    yield CONFIG
 
 
 @pytest.fixture
