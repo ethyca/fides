@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.0.post0.dev22"
+    "version": "2.7.0.post0.dev23"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14049,6 +14049,14 @@
           },
           "after": {
             "title": "After",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "erase_after": {
+            "title": "Erase After",
             "type": "array",
             "items": {
               "type": "string"
