@@ -58,6 +58,8 @@ class Consent(BaseSchema):
     data_use: str
     data_use_description: Optional[str] = None
     opt_in: bool
+    has_gpc_flag: bool = False
+    conflicts_with_gpc: bool = False
 
 
 class PrivacyRequestCreate(BaseSchema):

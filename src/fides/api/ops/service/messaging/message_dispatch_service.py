@@ -41,12 +41,14 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
-from fides.core.config import CONFIG
+from fides.core.config.config_proxy import ConfigProxy
+
 
 EMAIL_JOIN_STRING = ", "
 
 
 def check_and_dispatch_error_notifications(db: Session) -> None:
+    config_proxy = ConfigProxy(db)
     privacy_request_notifications = PrivacyRequestNotifications.all(db=db)
     if not privacy_request_notifications:
         return None
@@ -58,7 +60,7 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
         return None
 
     email_config = (
-        CONFIG.notifications.notification_service_type in EMAIL_MESSAGING_SERVICES
+        config_proxy.notifications.notification_service_type in EMAIL_MESSAGING_SERVICES
     )
 
     if (
@@ -75,7 +77,7 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
                             unsent_errors=len(unsent_errors)
                         ),
                     ).dict(),
-                    "service_type": CONFIG.notifications.notification_service_type,
+                    "service_type": config_proxy.notifications.notification_service_type,
                     "to_identity": {"email": email},
                 },
             )
@@ -157,12 +159,9 @@ def dispatch_message(
     else:  # pragma: no cover
         # This is here as a fail safe, but it should be impossible to reach because
         # is controlled by a datbase enum field.
-        logger.error(
-            "Notification service type is not valid: {}",
-            CONFIG.notifications.notification_service_type,
-        )
+        logger.error("Notification service type is not valid: {}", service_type)
         raise MessageDispatchException(
-            f"Notification service type is not valid: {CONFIG.notifications.notification_service_type}"
+            f"Notification service type is not valid: {service_type}"
         )
     messaging_service: MessagingServiceType = messaging_config.service_type  # type: ignore
     logger.info(

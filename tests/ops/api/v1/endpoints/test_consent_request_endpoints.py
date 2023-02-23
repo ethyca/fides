@@ -16,6 +16,7 @@ from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -59,22 +60,26 @@ class TestConsentRequest:
         return f"{V1_URL_PREFIX}{CONSENT_REQUEST}"
 
     @pytest.fixture(scope="function")
-    def set_notification_service_type_to_none(self):
+    def set_notification_service_type_to_none(self, db):
         """Overrides autouse fixture to remove default notification service type"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = None
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.fixture(scope="function")
-    def set_notification_service_type_to_twilio_sms(self):
+    def set_notification_service_type_to_twilio_sms(self, db):
         """Overrides autouse fixture to set notification service type to twilio sms"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = (
             MessagingServiceType.TWILIO_TEXT.value
         )
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.mark.usefixtures(
         "messaging_config",
@@ -346,7 +351,23 @@ class TestConsentVerify:
         )
         assert response.status_code == 200
         mock_verify_identity.assert_called_with(verification_code)
-        assert response.json()["consent"] == consent_data
+        expected_consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+                "has_gpc_flag": False,
+                "conflicts_with_gpc": False,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+                "has_gpc_flag": False,
+                "conflicts_with_gpc": False,
+            },
+        ]
+        assert response.json()["consent"] == expected_consent_data
 
 
 class TestGetConsentUnverified:
@@ -446,7 +467,23 @@ class TestGetConsentUnverified:
         )
         assert response.status_code == 200
         assert not mock_verify_identity.called
-        assert response.json()["consent"] == consent_data
+        expected_consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+                "has_gpc_flag": False,
+                "conflicts_with_gpc": False,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+                "has_gpc_flag": False,
+                "conflicts_with_gpc": False,
+            },
+        ]
+        assert response.json()["consent"] == expected_consent_data
 
 
 class TestSaveConsent:
@@ -567,6 +604,9 @@ class TestSaveConsent:
         # Assert the code verification endpoint also returns existing consent preferences
         assert response.json()["consent"][0]["data_use"] == "email"
         assert response.json()["consent"][0]["opt_in"] is True
+        assert response.json()["consent"][0]["has_gpc_flag"] is False
+        assert response.json()["consent"][0]["conflicts_with_gpc"] is False
+
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
@@ -690,6 +730,8 @@ class TestSaveConsent:
                 "data_use": "advertising",
                 "data_use_description": None,
                 "opt_in": True,
+                "has_gpc_flag": True,
+                "conflicts_with_gpc": False,
             },
             {
                 "data_use": "improve",
@@ -721,7 +763,23 @@ class TestSaveConsent:
         )
 
         assert response.status_code == 200
-        assert response.json()["consent"] == consent_data
+        expected_consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "advertising",
+                "data_use_description": None,
+                "opt_in": True,
+                "has_gpc_flag": True,
+                "conflicts_with_gpc": False,
+            },
+            {
+                "data_use": "improve",
+                "data_use_description": None,
+                "opt_in": False,
+                "has_gpc_flag": False,
+                "conflicts_with_gpc": False,
+            },
+        ]
+        assert response.json()["consent"] == expected_consent_data
         mock_verify_identity.assert_called_with(verification_code)
 
         db.refresh(consent_request)
@@ -740,7 +798,7 @@ class TestSaveConsent:
             "to a Privacy Request provided identity"
         )
         assert consent_request.privacy_request.consent_preferences == [
-            {"opt_in": True, "data_use": "advertising", "data_use_description": None},
+            {"conflicts_with_gpc": False, "opt_in": True, "data_use": "advertising", "has_gpc_flag": True, "data_use_description": None},
         ], "Only executable consent preferences stored"
 
         assert mock_run_privacy_request.called
@@ -783,7 +841,23 @@ class TestSaveConsent:
             json=data,
         )
         assert response.status_code == 200
-        assert response.json()["consent"] == consent_data
+        expected_consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+                "conflicts_with_gpc": False,
+                "has_gpc_flag": False,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+                "conflicts_with_gpc": False,
+                "has_gpc_flag": False,
+            },
+        ]
+        assert response.json()["consent"] == expected_consent_data
         assert not mock_verify_identity.called
 
 
@@ -860,4 +934,20 @@ class TestGetConsentPreferences:
         )
 
         assert response.status_code == 200
-        assert response.json()["consent"] == consent_data
+        expected_consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+                "conflicts_with_gpc": False,
+                "has_gpc_flag": False,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+                "conflicts_with_gpc": False,
+                "has_gpc_flag": False,
+            },
+        ]
+        assert response.json()["consent"] == expected_consent_data

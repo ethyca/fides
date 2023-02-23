@@ -139,7 +139,10 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()), CONFIG.security.app_encryption_key)
+    return generate_jwe(
+        json.dumps(jwe.dict()),
+        CONFIG.security.app_encryption_key,
+    )
 
 
 class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
@@ -437,7 +440,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         actions: List[CheckpointActionRequired] = []
         for email_content in email_contents.values():
             if email_content:
-                actions.append(CheckpointActionRequired.parse_obj(email_content))
+                actions.append(
+                    _parse_cache_to_checkpoint_action_required(email_content)
+                )
         return actions
 
     def cache_paused_collection_details(
@@ -848,6 +853,8 @@ class Consent(Base):
     data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
+    has_gpc_flag = Column(Boolean, server_default="f", default=False, nullable=False)
+    conflicts_with_gpc = Column(Boolean, server_default="f", default=False, nullable=False)
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
 
@@ -924,12 +931,11 @@ def get_action_required_details(
     performed to complete the request.
     """
     cache: FidesopsRedis = get_cache()
-    cached_stopped: Optional[CheckpointActionRequired] = cache.get_encoded_by_key(
-        cached_key
-    )
-    return (
-        CheckpointActionRequired.parse_obj(cached_stopped) if cached_stopped else None
-    )
+    cached_stopped: Optional[dict[str, Any]] = cache.get_encoded_by_key(cached_key)
+    if cached_stopped:
+        return _parse_cache_to_checkpoint_action_required(cached_stopped)
+
+    return None
 
 
 class ExecutionLogStatus(EnumType):
@@ -991,3 +997,26 @@ def can_run_checkpoint(
     return EXECUTION_CHECKPOINTS.index(
         request_checkpoint
     ) >= EXECUTION_CHECKPOINTS.index(from_checkpoint)
+
+
+def _parse_cache_to_checkpoint_action_required(
+    cache: dict[str, Any]
+) -> CheckpointActionRequired:
+    collection = (
+        CollectionAddress(
+            cache["collection"]["dataset"],
+            cache["collection"]["collection"],
+        )
+        if cache.get("collection")
+        else None
+    )
+    action_needed = (
+        [ManualAction(**action) for action in cache["action_needed"]]
+        if cache.get("action_needed")
+        else None
+    )
+    return CheckpointActionRequired(
+        step=cache["step"],
+        collection=collection,
+        action_needed=action_needed,
+    )

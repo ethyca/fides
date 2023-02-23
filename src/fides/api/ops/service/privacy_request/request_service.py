@@ -20,7 +20,9 @@ from fides.core.config import CONFIG
 
 
 def build_required_privacy_request_kwargs(
-    requested_at: Optional[datetime], policy_id: str
+    requested_at: Optional[datetime],
+    policy_id: str,
+    verification_required: bool,
 ) -> Dict[str, Any]:
     """Build kwargs required for creating privacy request
 
@@ -29,7 +31,7 @@ def build_required_privacy_request_kwargs(
     """
     status = (
         PrivacyRequestStatus.identity_unverified
-        if CONFIG.execution.subject_identity_verification_required
+        if verification_required
         else PrivacyRequestStatus.pending
     )
     return {

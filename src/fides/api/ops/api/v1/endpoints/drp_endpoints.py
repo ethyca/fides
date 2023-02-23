@@ -47,6 +47,7 @@ from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
+from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 
@@ -63,6 +64,7 @@ async def create_drp_privacy_request(
     *,
     cache: FidesopsRedis = Depends(deps.get_cache),
     db: Session = Depends(deps.get_db),
+    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
     data: DrpPrivacyRequestCreate,
 ) -> PrivacyRequestDRPStatusResponse:
     """
@@ -91,7 +93,7 @@ async def create_drp_privacy_request(
         )
 
     privacy_request_kwargs: Dict[str, Any] = build_required_privacy_request_kwargs(
-        None, policy.id
+        None, policy.id, config_proxy.execution.subject_identity_verification_required
     )
 
     try:

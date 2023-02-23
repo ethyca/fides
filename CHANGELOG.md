@@ -17,20 +17,31 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.7.0...main)
 
+### Added
+
+* Add API support for messaging config properties [#2551](https://github.com/ethyca/fides/pull/2551)
+* Access and erasure support for Kustomer [#2520](https://github.com/ethyca/fides/pull/2520)
+
 ### Changed
 
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
-* Update how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
+* Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
 
 ### Developer Experience
 
 * Set the security environment of the fides dev setup to `prod` instead of `dev` [#2588](https://github.com/ethyca/fides/pull/2588)
+* Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
+
+### Fixed
+
+* Fix support for "redis.user" setting when authenticating to the Redis cache [#2666](https://github.com/ethyca/fides/pull/2666)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
 * Fides API
   * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
   * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
+  * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
   
 * Admin UI
   * Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
@@ -112,8 +123,6 @@ The types of changes are:
 
 * Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
 
-### Added
-* Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
@@ -145,6 +154,7 @@ The types of changes are:
   * Patch Google Analytics Consent Connector to delete by client_id [#2355](https://github.com/ethyca/fides/pull/2355)
   * Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
   * Adds a new Universal Analytics Connector that works with the UA Tracking Id
+* Adds intake and storage of Global Privacy Control Signal props for Consent [#2599](https://github.com/ethyca/fides/pull/2599)
   
 ### Changed
 

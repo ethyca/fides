@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional
 
 from loguru import logger
@@ -28,6 +30,7 @@ from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
 )
 from fides.api.ops.util.logger import Pii
 from fides.core.config import CONFIG
+from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 
@@ -113,6 +116,17 @@ class MessagingConfig(Base):
             )
         return instance
 
+    @classmethod
+    def get_by_type(
+        cls,
+        db: Session,
+        service_type: MessagingServiceType,
+    ) -> Optional[MessagingConfig]:
+        """
+        Retrieve the messaging config of the given type
+        """
+        return db.query(cls).filter_by(service_type=service_type).first()
+
     def set_secrets(
         self,
         *,
@@ -142,3 +156,44 @@ class MessagingConfig(Base):
 
         self.secrets = messaging_secrets
         self.save(db=db)
+
+    @classmethod
+    def get_active_default(cls, db: Session) -> Optional[MessagingConfig]:
+        """
+        Utility method to return the active default messaging configuration.
+
+        This is determined by looking at the `notifications.notification_service_type`
+        config property. We determine that config property's value by using
+        the ConfigProxy, which resolves the value based on API-set or traditional
+        config-set mechanisms.
+        """
+        active_default_messaging_type = ConfigProxy(
+            db
+        ).notifications.notification_service_type
+        if not active_default_messaging_type:
+            return None
+        try:
+            service_type = MessagingServiceType[active_default_messaging_type]
+            return cls.get_by_type(db, service_type)
+        except KeyError:
+            raise ValueError(
+                f"Unknown notification_service_type {active_default_messaging_type} configured"
+            )
+
+
+def default_messaging_config_name(service_type: str) -> str:
+    """
+    Utility function for consistency in generating default message config names.
+
+    Returns a name to be used in a default messaging config for the given type.
+    """
+    return f"Default Messaging Config [{service_type}]"
+
+
+def default_messaging_config_key(service_type: str) -> str:
+    """
+    Utility function for consistency in generating default message config keys.
+
+    Returns a key to be used in a default messaging config for the given type.
+    """
+    return f"default_messaging_config_{service_type.lower()}"

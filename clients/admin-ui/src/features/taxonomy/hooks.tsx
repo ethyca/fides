@@ -17,7 +17,7 @@ import {
 
 import { YesNoOptions } from "../common/constants";
 import {
-  CustomCreatableMultiSelect,
+  CustomCreatableSelect,
   CustomRadioGroup,
   CustomSelect,
   CustomTextInput,
@@ -291,11 +291,13 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
         options={specialCategories}
         isClearable
       />
-      <CustomCreatableMultiSelect
+      <CustomCreatableSelect
         name="recipients"
         label={labels.recipient}
         options={[]}
         size="sm"
+        disableMenu
+        isMulti
       />
       <CustomRadioGroup
         name="legitimate_interest"

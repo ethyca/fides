@@ -14,7 +14,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops.db.base_class import JSONTypeOverride
-from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.storage.storage import ResponseFormat, StorageType
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
@@ -22,6 +21,7 @@ from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.storage_util import get_schema_for_secrets
 from fides.core.config import CONFIG
+from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.db.base_class import Base
 
 
@@ -164,9 +164,7 @@ def get_active_default_storage_config(db: Session) -> Optional[StorageConfig]:
     via _either_ API or env var/toml, i.e. to be properly reconciled with the global
     pydantic config module. For now, though, we just rely on this being set through API.
     """
-    api_app_settings = ApplicationConfig.get_api_set_config(db)
     active_default_storage_type = (
-        api_app_settings.get("storage", {}).get("active_default_storage_type")
-        or StorageType.local
+        ConfigProxy(db).storage.active_default_storage_type or StorageType.local
     )
     return get_default_storage_config_by_type(db, active_default_storage_type)
