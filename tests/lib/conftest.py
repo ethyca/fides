@@ -13,7 +13,6 @@ from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
-from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -41,7 +40,7 @@ def db(config):
     )
 
     # Create the test DB engine
-    assert config.is_test_mode
+    assert config.test_mode
     engine = get_db_engine(
         database_uri=config.database.sqlalchemy_database_uri,
     )

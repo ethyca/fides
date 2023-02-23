@@ -95,7 +95,7 @@ def create_fides_app(
     api_prefix: str = API_PREFIX,
     request_rate_limit: str = CONFIG.security.request_rate_limit,
     rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
-    security_env: str = CONFIG.security.env.value,
+    security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
 
