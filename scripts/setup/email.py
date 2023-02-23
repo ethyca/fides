@@ -22,7 +22,7 @@ def create_email_integration(
         json={
             "name": "fides Emails",
             "key": key,
-            "service_type": "mailgun",
+            "service_type": "MAILGUN",
             "details": {
                 "is_eu_domain": False,
                 "api_version": "v3",
