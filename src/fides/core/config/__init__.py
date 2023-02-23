@@ -183,7 +183,7 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     except IOError:
         echo_red(f"Error reading config file: {config_path}")
 
-    if verbose:
+    if verbose:  # pragma: no cover
         print("Using default configuration values.")
     config = build_config(config_dict={})
 
