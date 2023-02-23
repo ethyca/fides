@@ -80,6 +80,7 @@ class AccessRequestCompleteBodyParams(BaseModel):
     """Body params required for privacy request completion access template"""
 
     download_links: List[str]
+    subject_request_download_time_in_days: Union[int, float]
 
 
 class RequestReviewDenyBodyParams(BaseModel):

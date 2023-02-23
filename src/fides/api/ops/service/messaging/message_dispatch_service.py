@@ -220,15 +220,17 @@ def _build_sms(  # pylint: disable=too-many-return-statements
             return f"The following requests have been received: {separator.join(body_params.request_types)}"
         return f"Your {body_params.request_types[0]} request has been received"
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
+        # Converting the expiration time to days
+        subject_request_download_time_in_days = CONFIG.security.subject_request_download_link_ttl_seconds / 86400
         if len(body_params.download_links) > 1:
             return (
                 "Your data access has been completed and can be downloaded at the following links. "
-                "For security purposes, these secret links will expire in 24 hours: "
+                f"For security purposes, these secret links will expire in {subject_request_download_time_in_days}: "
                 f"{separator.join(body_params.download_links)}"
             )
         return (
             f"Your data access has been completed and can be downloaded at {body_params.download_links[0]}. "
-            f"For security purposes, this secret link will expire in 24 hours."
+            f"For security purposes, this secret link will expire in {subject_request_download_time_in_days}."
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return "Your privacy request for deletion has been completed."
@@ -434,7 +436,7 @@ def _mailgun_dispatcher(
                 )
     except Exception as e:
         logger.error("Email failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
+        raise MessageDispatchException(f"Email failed to send due to: {e}")
 
 
 def _twilio_email_dispatcher(
