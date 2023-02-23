@@ -2,7 +2,7 @@
 
 # pylint: disable=C0115,C0116, E0213
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
 from pydantic import validator
@@ -45,7 +45,8 @@ class SecuritySettings(FidesSettings):
     encoding: str = "UTF-8"
     env: SecurityEnv = SecurityEnv.DEV
 
-    cors_origins: List[str] = []
+    cors_origins: Union[str, List[str]] = []
+    cors_origin_regex: Optional[Pattern] = None
     oauth_root_client_id: str = ""
     oauth_root_client_secret: str = ""
     oauth_root_client_secret_hash: Optional[Tuple]
