@@ -63,8 +63,11 @@ const S3StorageConfiguration = (storageDetails: any) => {
 
   const handleSubmitStorageSecrets = async (newValues: SecretsStorageData) => {
     const result = await setStorageSecrets({
-      aws_access_key_id: newValues.aws_access_key_id,
-      aws_secret_access_key: newValues.aws_secret_access_key,
+      details: {
+        aws_access_key_id: newValues.aws_access_key_id,
+        aws_secret_access_key: newValues.aws_secret_access_key,
+      },
+      type: "s3",
     });
 
     if (isErrorResult(result)) {
@@ -160,6 +163,7 @@ const S3StorageConfiguration = (storageDetails: any) => {
                     <CustomTextInput
                       name="aws_secret_access_key"
                       label="AWS secret access key"
+                      type="password"
                     />
                   </Stack>
                   <Button

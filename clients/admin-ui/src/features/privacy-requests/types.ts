@@ -141,8 +141,10 @@ export interface ConfigStorageDetailsRequest {
 
 export interface ConfigStorageSecretsDetailsRequest {
   type?: string;
-  aws_access_key_id: string;
-  aws_secret_access_key: string;
+  details?: {
+    aws_access_key_id: string;
+    aws_secret_access_key: string;
+  };
 }
 
 export interface ConfigMessagingRequest {

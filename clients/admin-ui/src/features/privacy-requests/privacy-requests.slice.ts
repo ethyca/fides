@@ -383,7 +383,7 @@ export const privacyRequestApi = createApi({
       query: (params) => ({
         url: `storage/default/${params.type}/secret`,
         method: "PUT",
-        body: params,
+        body: params.details,
       }),
     }),
     getActiveMessagingProvider: build.query<any, void>({
