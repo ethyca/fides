@@ -1,12 +1,10 @@
 import pickle
 import random
 from base64 import b64encode
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Any, List
 
-from fides.api.ops.util.cache import FidesopsRedis
-from fides.core.config import CONFIG
 import pytest
 from bson.objectid import ObjectId
 
@@ -15,6 +13,7 @@ from fides.api.ops.util.cache import (
     ENCODED_MONGO_OBJECT_ID_PREFIX,
     FidesopsRedis,
 )
+from fides.core.config import CONFIG
 
 from ..fixtures.application_fixtures import faker
 

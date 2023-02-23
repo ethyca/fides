@@ -607,7 +607,6 @@ class TestSaveConsent:
         assert response.json()["consent"][0]["has_gpc_flag"] is False
         assert response.json()["consent"][0]["conflicts_with_gpc"] is False
 
-
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
@@ -798,7 +797,13 @@ class TestSaveConsent:
             "to a Privacy Request provided identity"
         )
         assert consent_request.privacy_request.consent_preferences == [
-            {"conflicts_with_gpc": False, "opt_in": True, "data_use": "advertising", "has_gpc_flag": True, "data_use_description": None},
+            {
+                "conflicts_with_gpc": False,
+                "opt_in": True,
+                "data_use": "advertising",
+                "has_gpc_flag": True,
+                "data_use_description": None,
+            },
         ], "Only executable consent preferences stored"
 
         assert mock_run_privacy_request.called

@@ -9,10 +9,7 @@ from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep
-from fides.api.ops.models.privacy_request import (
-    CheckpointActionRequired,
-    ManualAction,
-)
+from fides.api.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fides.api.ops.schemas.messaging.messaging import (
     ConsentEmailFulfillmentBodyParams,
     ConsentPreferencesByUser,

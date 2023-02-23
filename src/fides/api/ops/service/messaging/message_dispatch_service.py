@@ -43,7 +43,6 @@ from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
 from fides.core.config.config_proxy import ConfigProxy
 
-
 EMAIL_JOIN_STRING = ", "
 
 

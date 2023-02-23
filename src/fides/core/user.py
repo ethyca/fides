@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 
 import requests
 
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
 from fides.cli.utils import handle_cli_response
 from fides.core.utils import (
     Credentials,
@@ -15,7 +16,6 @@ from fides.core.utils import (
     write_credentials_file,
 )
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY as SCOPES
 
 CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"

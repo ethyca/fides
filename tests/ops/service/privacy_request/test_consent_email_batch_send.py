@@ -277,7 +277,11 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "12345"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False, conflicts_with_gpc=False, has_gpc_flag=False,
+                        data_use="advertising",
+                        data_use_description=None,
+                        opt_in=False,
+                        conflicts_with_gpc=False,
+                        has_gpc_flag=False,
                     )
                 ],
             ),
@@ -285,7 +289,11 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "abcde"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False, conflicts_with_gpc=False, has_gpc_flag=False,
+                        data_use="advertising",
+                        data_use_description=None,
+                        opt_in=False,
+                        conflicts_with_gpc=False,
+                        has_gpc_flag=False,
                     )
                 ],
             ),
