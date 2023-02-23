@@ -122,7 +122,8 @@ class StorageDestinationBase(BaseModel):
         extra = Extra.forbid
 
     @validator("details", pre=True, always=True)
-    def validate_details(
+    @classmethod
+    def validate_details_validator(
         cls,
         v: Dict[str, str],
         values: Dict[str, Any],
@@ -134,6 +135,19 @@ class StorageDestinationBase(BaseModel):
         if not storage_type:
             raise ValueError("A `type` field must be specified.")
 
+        return cls.validate_details(v, storage_type)
+
+    @classmethod
+    def validate_details(
+        cls,
+        details: Dict[str, str],
+        storage_type: str,
+    ) -> Dict[str, str]:
+        """
+        Validates the provided storage details field given the storage type.
+
+        Abstracts out the pydantic input parameters to make the validation logic more reusable.
+        """
         try:
             schema = {
                 StorageType.s3.value: StorageDetailsS3,
@@ -143,16 +157,15 @@ class StorageDestinationBase(BaseModel):
             raise ValueError(
                 f"`storage_type` {storage_type} has no supported `details` validation."
             )
-
         try:
-            schema.parse_obj(v)  # type: ignore
+            schema.parse_obj(details)  # type: ignore
         except ValidationError as exc:
             # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
             # so this exception is cast into a `ValueError`.
             errors = [f"{err['msg']} {str(err['loc'])}" for err in exc.errors()]
             raise ValueError(errors)
 
-        return v
+        return details
 
     @root_validator
     @classmethod
@@ -209,3 +222,17 @@ class BulkPutStorageConfigResponse(BulkResponse):
 
 
 SUPPORTED_STORAGE_SECRETS = StorageSecretsS3
+
+
+class StorageConfigStatus(Enum):
+    """Enum for configuration statuses of a storage config"""
+
+    configured = "configured"
+    not_configured = "not configured"
+
+
+class StorageConfigStatusMessage(BaseModel):
+    """A schema for checking configuration status of storage config."""
+
+    config_status: Optional[StorageConfigStatus] = None
+    detail: Optional[str] = None

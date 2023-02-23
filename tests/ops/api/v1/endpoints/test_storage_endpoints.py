@@ -21,23 +21,30 @@ from fides.api.ops.api.v1.urn_registry import (
     STORAGE_DEFAULT_BY_TYPE,
     STORAGE_DEFAULT_SECRETS,
     STORAGE_SECRETS,
+    STORAGE_STATUS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.storage import StorageConfig, default_storage_config_name
 from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     S3AuthMethod,
+    StorageConfigStatus,
+    StorageConfigStatusMessage,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
+from fides.core.config import get_config
+from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.exceptions import KeyOrNameAlreadyExists, KeyValidationError
 from fides.lib.models.client import ClientDetail
 
 PAGE_SIZE = Params().size
+CONFIG = get_config()
 
 
 class TestUploadData:
@@ -1338,3 +1345,274 @@ class TestGetActiveDefaultStorageConfig:
             "format": storage_config_default.format.value,
             "is_default": True,
         }
+
+
+class TestGetStorageStatus:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + STORAGE_STATUS
+
+    def test_get_storage_status_not_authenticated(self, url, api_client: TestClient):
+        response = api_client.get(url)
+        assert 401 == response.status_code
+
+    def test_get_storage_status_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header([STORAGE_DELETE])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_storage_status_none_set(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.not_configured
+        assert response.detail == "Active default storage configuration is not s3"
+
+    def test_get_storage_status_app_setting_not_set(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        storage_config_default,
+    ):
+        """
+        Even with `storage_config` fixture creating a default s3 storage config,
+        we should still not get a successful status reading, since the
+        `storage.active_default_storage_type` config property has not been set
+        and therefore we default to local storage
+
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.not_configured
+        assert response.detail == "Active default storage configuration is not s3"
+
+    @pytest.fixture(scope="function")
+    def active_default_storage_s3(self, db, config_proxy: ConfigProxy):
+        """Set s3 as the `active_default_storage_type` property"""
+        original_value = config_proxy.storage.active_default_storage_type
+        ApplicationConfig.update_api_set(
+            db, {"storage": {"active_default_storage_type": StorageType.s3.value}}
+        )
+        yield
+        ApplicationConfig.update_api_set(
+            db, {"storage": {"active_default_storage_type": original_value}}
+        )
+
+    @pytest.fixture(scope="function")
+    def active_default_storage_local(self, db, config_proxy: ConfigProxy):
+        """Set local as the `active_default_storage_type` property"""
+        original_value = config_proxy.storage.active_default_storage_type
+        ApplicationConfig.update_api_set(
+            db, {"storage": {"active_default_storage_type": StorageType.local.value}}
+        )
+        yield
+        ApplicationConfig.update_api_set(
+            db, {"storage": {"active_default_storage_type": original_value}}
+        )
+
+    @pytest.mark.usefixtures("active_default_storage_local", "storage_config_default")
+    def test_get_storage_status_app_setting_wrong_value(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        Even with `storage_config_default` fixture creating a default storage config,
+        we should still not get a successful status reading, since the
+        `storage.active_default_storage_type` config property has been set to
+        `local` and it needs to be set to s3 for storage to be considered
+        successfully configured
+
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.not_configured
+        assert response.detail == "Active default storage configuration is not s3"
+
+    @pytest.mark.usefixtures(
+        "active_default_storage_local", "storage_config_default_local"
+    )
+    def test_get_storage_status_app_setting_not_s3(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        Even with `storage_config_default_local` fixture creating a default local storage config,
+        we should still not get a successful status reading, since the
+        `storage.active_default_storage_type` config property has been set to
+        `local` and only s3 storage configs are considered fully "configured"
+
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.not_configured
+        assert response.detail == "Active default storage configuration is not s3"
+
+    @pytest.mark.usefixtures("active_default_storage_s3")
+    def test_get_storage_status_app_setting_but_not_configured(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        Without `storage_config_default` fixture creating a default storage config,
+        but by setting the application setting for `active_default_storage_type` to s3,
+        we should get a failure, since we have no s3 default configured.
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.not_configured
+        assert response.detail == "No active default storage configuration found"
+
+    @pytest.mark.usefixtures(
+        "active_default_storage_s3", "storage_config_default_s3_secret_keys"
+    )
+    def test_get_storage_status_secrets_not_present(
+        self,
+        url,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        If secrets aren't present on the s3 default config, we should get a failure
+        """
+        storage_config = db.query(StorageConfig).first()
+        storage_config.secrets = {}
+        storage_config.save(db)
+
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.not_configured
+        assert "No secrets found" in response.detail
+
+    @pytest.mark.usefixtures("active_default_storage_s3", "storage_config_default")
+    def test_get_storage_status_details_not_present(
+        self,
+        url,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        If details aren't present on the default storage config, we should get a failure
+        """
+        storage_config = db.query(StorageConfig).first()
+        storage_config.details = {}
+        storage_config.save(db)
+
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.not_configured
+        assert "Invalid or unpopulated details" in response.detail
+
+    @pytest.mark.usefixtures("active_default_storage_s3", "storage_config_default")
+    def test_get_storage_status_details_wrong_values(
+        self,
+        url,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        If wrong details are on the storage config, we should get a failure
+        """
+        storage_config = db.query(StorageConfig).first()
+        storage_config.details = {"invalid": "invalid"}
+        storage_config.save(db)
+
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.not_configured
+        assert "Invalid or unpopulated details" in response.detail
+
+    @pytest.mark.usefixtures("active_default_storage_s3", "storage_config_default")
+    def test_get_storage_status(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        We should get back a successful response now that
+        we set s3 as the `active_default_storage_type` via app setting
+        and the config has been added via fixture
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.configured
+        assert StorageType.s3.value in (response.detail)
+
+    @pytest.mark.usefixtures(
+        "active_default_storage_s3", "storage_config_default_s3_secret_keys"
+    )
+    def test_get_storage_status_s3_secret_keys(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        We should get back a successful response now that
+        we set s3 as the `active_default_storage_type` via app setting
+        and the config has been added via fixture
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.configured
+        assert StorageType.s3.value in (response.detail)
