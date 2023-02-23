@@ -75,7 +75,7 @@ const TwilioEmailConfiguration = () => {
           onSubmit={handleTwilioEmailConfiguration}
           enableReinitialize
         >
-          {({ isSubmitting, resetForm }) => (
+          {({ isSubmitting, handleReset }) => (
             <Form>
               <Stack mt={5} spacing={5}>
                 <CustomTextInput
@@ -87,7 +87,7 @@ const TwilioEmailConfiguration = () => {
               </Stack>
               <Box mt={10}>
                 <Button
-                  onClick={() => resetForm()}
+                  onClick={() => handleReset()}
                   mr={2}
                   size="sm"
                   variant="outline"
@@ -119,18 +119,18 @@ const TwilioEmailConfiguration = () => {
               initialValues={initialAPIKeyValues}
               onSubmit={handleTwilioEmailConfigurationSecrets}
             >
-              {({ isSubmitting, resetForm }) => (
+              {({ isSubmitting, handleReset }) => (
                 <Form>
                   <Stack mt={5} spacing={5}>
                     <CustomTextInput
-                      name="api-key"
+                      name="api_key"
                       label="API key"
                       type="password"
                       isRequired
                     />
                   </Stack>
                   <Button
-                    onClick={() => resetForm()}
+                    onClick={() => handleReset()}
                     mr={2}
                     size="sm"
                     variant="outline"

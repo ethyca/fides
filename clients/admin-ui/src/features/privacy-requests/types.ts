@@ -160,8 +160,8 @@ export interface ConfigMessagingDetailsRequest {
 
 export interface ConfigMessagingSecretsRequest {
   type?: string;
-  mailgun_api_key?: string;
   twilio_api_key?: string;
+  mailgun_api_key?: string;
   twilio_account_sid?: string;
   twilio_auth_token?: string;
   twilio_messaging_service_sid?: string;

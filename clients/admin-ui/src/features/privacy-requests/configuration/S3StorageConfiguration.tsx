@@ -85,7 +85,7 @@ const S3StorageConfiguration = (storageDetails: any) => {
           onSubmit={handleSubmitStorageConfiguration}
           enableReinitialize
         >
-          {({ isSubmitting, resetForm }) => (
+          {({ isSubmitting, handleReset }) => (
             <Form>
               <Stack mt={5} spacing={5}>
                 <CustomSelect
@@ -114,7 +114,7 @@ const S3StorageConfiguration = (storageDetails: any) => {
               </Stack>
 
               <Button
-                onClick={() => resetForm()}
+                onClick={() => handleReset()}
                 mt={5}
                 mr={2}
                 size="sm"
@@ -149,7 +149,7 @@ const S3StorageConfiguration = (storageDetails: any) => {
               initialValues={initialSecretValues}
               onSubmit={handleSubmitStorageSecrets}
             >
-              {({ isSubmitting, resetForm }) => (
+              {({ isSubmitting, handleReset }) => (
                 <Form>
                   <Stack mt={5} spacing={5}>
                     <CustomTextInput
@@ -163,7 +163,7 @@ const S3StorageConfiguration = (storageDetails: any) => {
                     />
                   </Stack>
                   <Button
-                    onClick={() => resetForm()}
+                    onClick={() => handleReset()}
                     mt={5}
                     mr={2}
                     size="sm"

@@ -78,7 +78,7 @@ const MailgunEmailConfiguration = () => {
           onSubmit={handleMailgunConfiguration}
           enableReinitialize
         >
-          {({ isSubmitting, resetForm }) => (
+          {({ isSubmitting, handleReset }) => (
             <Form>
               <Stack mt={5} spacing={5}>
                 <CustomTextInput
@@ -90,7 +90,7 @@ const MailgunEmailConfiguration = () => {
               </Stack>
               <Box mt={10}>
                 <Button
-                  onClick={() => resetForm()}
+                  onClick={handleReset}
                   mr={2}
                   size="sm"
                   variant="outline"
@@ -123,7 +123,7 @@ const MailgunEmailConfiguration = () => {
               initialValues={initialAPIKeyValue}
               onSubmit={handleMailgunAPIKeyConfiguration}
             >
-              {({ isSubmitting, resetForm }) => (
+              {({ isSubmitting, handleReset }) => (
                 <Form>
                   <CustomTextInput
                     name="api_key"
@@ -132,7 +132,7 @@ const MailgunEmailConfiguration = () => {
                     type="password"
                   />
                   <Button
-                    onClick={() => resetForm()}
+                    onClick={handleReset}
                     mr={2}
                     size="sm"
                     variant="outline"

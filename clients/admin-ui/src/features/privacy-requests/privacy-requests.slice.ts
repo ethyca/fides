@@ -411,7 +411,9 @@ export const privacyRequestApi = createApi({
       ConfigMessagingSecretsRequest
     >({
       query: (params) => ({
-        url: `messaging/default/${params.type}/secret`,
+        url: `messaging/config/${
+          params.twilio_api_key || params.mailgun_api_key
+        }/secret`,
         method: "PUT",
         body: params,
       }),

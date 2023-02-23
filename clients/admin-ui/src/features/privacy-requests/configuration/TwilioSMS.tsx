@@ -56,7 +56,7 @@ const TwilioSMSConfiguration = () => {
           onSubmit={handleTwilioTextConfigurationSecrets}
           enableReinitialize
         >
-          {({ isSubmitting, resetForm }) => (
+          {({ isSubmitting, handleReset }) => (
             <Form>
               <Stack mt={5} spacing={5}>
                 <CustomTextInput
@@ -76,18 +76,16 @@ const TwilioSMSConfiguration = () => {
                   name="messaging_service_sid"
                   label="Messaging Service SID"
                   placeholder="Enter messaging service SID"
-                  isRequired
                 />
                 <CustomTextInput
                   name="phone"
                   label="Phone Number"
                   placeholder="Enter phone number"
-                  isRequired
                 />
               </Stack>
               <Box mt={10}>
                 <Button
-                  onClick={() => resetForm()}
+                  onClick={() => handleReset()}
                   mr={2}
                   size="sm"
                   variant="outline"
