@@ -218,11 +218,17 @@ class TestEditUserPermissions:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
+        user = FidesUser.create(
+            db=db,
+            data={"username": "user_1", "password": "test_password"},
+        )
 
-        body = {"user_id": "bogus_user_id", "scopes": ["not a real scope"]}
+        body = {"scopes": ["not a real scope"]}
 
-        response = api_client.put(url, headers=auth_header, json=body)
+        response = api_client.put(f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert "Invalid Scope(s) {'not a real scope'}" in response.json()["detail"]
+        user.delete(db)
 
     def test_edit_user_permissions_invalid_user_id(
         self, db, api_client, generate_auth_header
@@ -248,6 +254,56 @@ class TestEditUserPermissions:
         )
         assert HTTP_404_NOT_FOUND == response.status_code
         assert permissions is None
+        user.delete(db)
+
+    def test_optional_permissions_id(self, db, api_client, generate_auth_header) -> None:
+        auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
+        user = FidesUser.create(
+            db=db,
+            data={"username": "user_1", "password": "test_password"},
+        )
+
+        permissions = FidesUserPermissions.create(
+            db=db,
+            data={
+                "user_id": user.id,
+                "scopes": [PRIVACY_REQUEST_READ],
+                "roles": [VIEWER],
+            },
+        )
+        permissions_id = permissions.id
+
+        ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[PRIVACY_REQUEST_READ],
+            roles=[VIEWER],
+            user_id=user.id,
+        )
+
+        updated_scopes = [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]
+        body = {"scopes": updated_scopes}
+        response = api_client.put(
+            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
+        )
+        response_body = response.json()
+        assert HTTP_200_OK == response.status_code
+        assert response_body["scopes"] == updated_scopes
+        assert (
+            response_body["roles"] == []
+        ), "Roles removed as they were not specified in the request"
+        assert response_body["id"] == permissions_id
+
+        client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
+        assert client.scopes == updated_scopes
+        assert client.roles == []
+
+        db.refresh(permissions)
+        assert permissions.scopes == updated_scopes
+        assert permissions.roles == []
+        assert permissions.id == permissions_id
+
         user.delete(db)
 
     def test_edit_user_scopes(self, db, api_client, generate_auth_header) -> None:
@@ -277,8 +333,8 @@ class TestEditUserPermissions:
         )
 
         updated_scopes = [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]
-        # Note: The permissions id should not be in the request body.
-        # Verify that we ignore this id
+        # Note: It is odd that we have the permissions id in the request body.
+        # I've made it optional as the UI sends it.  Verify we ignore it.
         body = {"id": "invalid_id", "scopes": updated_scopes}
         response = api_client.put(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
