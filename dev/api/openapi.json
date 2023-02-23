@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.0.post0.dev23"
+    "version": "2.7.0.post0.dev24"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10234,6 +10234,35 @@
         ]
       }
     },
+    "/api/v1/storage/default/active": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Get Active Default Config",
+        "description": "Retrieves the active default storage config.",
+        "operationId": "get_active_default_config_api_v1_storage_default_active_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageDestinationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "storage:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/storage/default": {
       "get": {
         "tags": [
@@ -10449,35 +10478,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "storage:read"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/storage/active/default": {
-      "get": {
-        "tags": [
-          "Storage"
-        ],
-        "summary": "Get Active Default Config",
-        "description": "Retrieves the active default storage config.",
-        "operationId": "get_active_default_config_api_v1_storage_active_default_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorageDestinationResponse"
                 }
               }
             }
@@ -10755,6 +10755,35 @@
         ]
       }
     },
+    "/api/v1/messaging/default/active": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Get Active Default Config",
+        "description": "Retrieves the active default messaging config.",
+        "operationId": "get_active_default_config_api_v1_messaging_default_active_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/messaging/default": {
       "put": {
         "tags": [
@@ -10980,35 +11009,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "messaging:read"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/messaging/active/default": {
-      "get": {
-        "tags": [
-          "messaging"
-        ],
-        "summary": "Get Active Default Config",
-        "description": "Retrieves the active default messaging config.",
-        "operationId": "get_active_default_config_api_v1_messaging_active_default_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessagingConfigResponse"
                 }
               }
             }
