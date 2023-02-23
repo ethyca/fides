@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum
 from re import compile as regex
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
@@ -25,6 +27,16 @@ class MessagingServiceType(Enum):
 
     TWILIO_TEXT = "TWILIO_TEXT"
     TWILIO_EMAIL = "TWILIO_EMAIL"
+
+    @classmethod
+    def _missing_(
+        cls: Type[MessagingServiceType], value: Any
+    ) -> Optional[MessagingServiceType]:
+        value = value.upper()
+        for member in cls:
+            if member.value == value:
+                return member
+        return None
 
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (

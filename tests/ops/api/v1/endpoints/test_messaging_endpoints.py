@@ -897,6 +897,34 @@ class TestGetDefaultMessagingConfig:
             },
         }
 
+    def test_get_default_config_lowered_url(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        messaging_config: MessagingConfig,
+    ):
+        """
+        Ensure that a lowercased URL can be used, since by default we're
+        using the uppercased enum values in our URL
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(url.lower(), headers=auth_header)
+        assert response.status_code == 200
+
+        response_body = response.json()
+
+        assert response_body == {
+            "key": "my_mailgun_messaging_config",
+            "name": messaging_config.name,
+            "service_type": MessagingServiceType.MAILGUN.value,
+            "details": {
+                MessagingServiceDetails.API_VERSION.value: "v3",
+                MessagingServiceDetails.DOMAIN.value: "some.domain",
+                MessagingServiceDetails.IS_EU_DOMAIN.value: False,
+            },
+        }
+
 
 class TestPutDefaultMessagingConfig:
     @pytest.fixture(scope="function")
@@ -1185,6 +1213,33 @@ class TestPutDefaultMessagingConfigSecrets:
     ):
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+
+        db.refresh(messaging_config)
+
+        assert json.loads(response.text) == {
+            "msg": f"Secrets updated for MessagingConfig with key: {messaging_config.key}.",
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert messaging_config.secrets == payload
+
+    def test_put_default_config_secrets_lowered(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        messaging_config,
+    ):
+        """
+        Ensure that a lowercased URL can be used, since by default we're
+        using the uppercased enum values in our URL
+        """
+
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url.lower(), headers=auth_header, json=payload)
         assert 200 == response.status_code
 
         db.refresh(messaging_config)
