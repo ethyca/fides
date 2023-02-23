@@ -203,9 +203,9 @@ def get_consent_preferences(
 ) -> ConsentPreferences:
     """Gets the consent preferences for the specified user."""
     if data.email:
-        lookup = data.email
+        lookup: str = data.email
     elif data.phone_number:
-        lookup = data.phone_number
+        lookup: str = data.phone_number
     else:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="No identity information provided"

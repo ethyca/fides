@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from pydantic import EmailStr
+
 from fides.api.ops.schemas.base_class import NoValidationSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -10,7 +12,7 @@ class EmailSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed for the EmailConnector"""
 
     to_email: str
-    test_email: Optional[str]  # Email to send a connection test email
+    test_email: Optional[EmailStr]  # Email to send a connection test email
 
     _required_components: List[str] = ["to_email"]
 

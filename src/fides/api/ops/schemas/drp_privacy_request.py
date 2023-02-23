@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import validator
+from pydantic import EmailStr, validator
 
+from fides.api.input_validation import PhoneNumber
 from fides.api.ops.models.policy import DrpAction
 from fides.api.ops.schemas.base_class import BaseSchema
 
@@ -50,9 +51,9 @@ class DrpIdentity(BaseSchema):
     aud: Optional[str]
     sub: Optional[str]
     name: Optional[str]
-    email: Optional[str]
+    email: Optional[EmailStr]
     email_verified: Optional[bool]
-    phone_number: Optional[str]
+    phone_number: Optional[PhoneNumber]
     phone_number_verified: Optional[bool]
     address: Optional[str]
     address_verified: Optional[bool]

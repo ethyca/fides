@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional, Tuple
 
 from fideslog.sdk.python.registration import Registration
+from pydantic import EmailStr
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import StringEncryptedType
@@ -68,7 +69,7 @@ class UserRegistration(Base):
         """
         Converts a `UserRegistration` into the format required by Fideslog.
         """
-        email: Optional[str] = self.user_email
+        email: Optional[EmailStr] = self.user_email
         organization: Optional[str] = self.user_organization
         return Registration(
             email=email,
