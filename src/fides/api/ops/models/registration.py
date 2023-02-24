@@ -1,7 +1,6 @@
 from typing import Any, Dict, Optional, Tuple
 
 from fideslog.sdk.python.registration import Registration
-from pydantic import EmailStr
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import StringEncryptedType
