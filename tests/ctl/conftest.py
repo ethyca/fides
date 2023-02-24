@@ -23,8 +23,7 @@ from fides.api import main
 from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.ctl.sql_models import FidesUser
 from fides.core import api
-from fides.core.config import FidesConfig, get_config
-from fides.core.user import login_command
+from fides.core.config import CONFIG, FidesConfig, get_config
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -36,7 +35,6 @@ from tests.conftest import create_citext_extension
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
-CONFIG = get_config()
 
 
 orig_requests_get = requests.get

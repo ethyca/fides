@@ -57,12 +57,12 @@ from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
-CONFIG = get_config()
+
 CONFIG_JSON_PATH = "clients/privacy-center/config/config.json"
 
 
@@ -507,6 +507,8 @@ def _prepare_consent_preferences(
                 data_use=x.data_use,
                 data_use_description=x.data_use_description,
                 opt_in=x.opt_in,
+                has_gpc_flag=x.has_gpc_flag,
+                conflicts_with_gpc=x.conflicts_with_gpc,
             )
             for x in consent
         ],

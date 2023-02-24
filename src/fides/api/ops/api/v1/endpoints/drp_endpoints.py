@@ -46,11 +46,11 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
-CONFIG = get_config()
+
 
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 

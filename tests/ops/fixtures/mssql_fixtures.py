@@ -12,12 +12,10 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.service.connectors import MicrosoftSQLServerConnector
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.db.session import get_db_engine, get_db_session
 
 from .application_fixtures import integration_secrets
-
-CONFIG = get_config()
 
 
 @pytest.fixture

@@ -17,6 +17,12 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
+from fides.api.ops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    USER_CREATE,
+    USER_DELETE,
+    USER_READ,
+)
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import FidesConfig, get_config
 from fides.lib.models.client import ClientDetail
@@ -31,12 +37,6 @@ from fides.lib.oauth.schemas.user import (
     UserLogin,
     UserLoginResponse,
     UserResponse,
-)
-from fides.api.ops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_READ,
-    USER_CREATE,
-    USER_DELETE,
-    USER_READ,
 )
 
 router = APIRouter()
