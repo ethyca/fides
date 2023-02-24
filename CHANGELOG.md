@@ -40,6 +40,7 @@ The types of changes are:
 
 * Fix support for "redis.user" setting when authenticating to the Redis cache [#2666](https://github.com/ethyca/fides/pull/2666)
 * Fix error with the classify dataset feature flag not writing the dataset to the server [#2675](https://github.com/ethyca/fides/pull/2675)
+* Allow string dates to stay strings in cache decoding [#2695](https://github.com/ethyca/fides/pull/2695)
 * Admin UI
   * Remove Identifiability (Data Qualifier) from taxonomy editor [2684](https://github.com/ethyca/fides/pull/2684)
 
