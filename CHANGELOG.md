@@ -36,6 +36,10 @@ The types of changes are:
 * Privacy Center
   * Typechecking and validation of the `config.json` will be checked for backwards-compatibility. [#2661](https://github.com/ethyca/fides/pull/2661)
 
+### Developer Experience
+
+* Combined conftest.py files [#2669](https://github.com/ethyca/fides/pull/2669)
+
 ### Fixed
 
 * Fix support for "redis.user" setting when authenticating to the Redis cache [#2666](https://github.com/ethyca/fides/pull/2666)

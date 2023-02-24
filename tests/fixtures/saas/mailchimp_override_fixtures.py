@@ -16,7 +16,7 @@ from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestPar
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
 from fides.api.ops.util.saas_util import load_config
 from fides.lib.db import session
-from tests.ops.fixtures.application_fixtures import load_dataset
+from tests.fixtures.application_fixtures import load_dataset
 
 
 @pytest.fixture

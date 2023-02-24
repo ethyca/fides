@@ -30,7 +30,7 @@ from fides.api.ops.service.privacy_request.consent_email_batch_service import (
 )
 from fides.core.config import get_config
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from tests.ops.fixtures.application_fixtures import _create_privacy_request_for_policy
+from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 CONFIG = get_config()
 

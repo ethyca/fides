@@ -14,8 +14,7 @@ from fides.api.ops.util.cache import (
     FidesopsRedis,
 )
 from fides.core.config import CONFIG
-
-from ..fixtures.application_fixtures import faker
+from tests.fixtures.application_fixtures import faker
 
 
 def test_get_cache(cache: FidesopsRedis) -> None:
