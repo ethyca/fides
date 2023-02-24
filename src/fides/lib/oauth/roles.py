@@ -79,7 +79,7 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ
     USER_READ,
 ]
 
-roles_to_scopes_mapping: Dict[str, List] = {
+ROLES_TO_SCOPES_MAPPING: Dict[str, List] = {
     ADMIN: sorted(SCOPE_REGISTRY),
     VIEWER_AND_PRIVACY_REQUEST_MANAGER: sorted(
         list(set(viewer_scopes + privacy_request_manager_scopes))
@@ -96,5 +96,5 @@ def get_scopes_from_roles(roles: Optional[List[str]]) -> List[str]:
 
     scope_list: List[str] = []
     for role in roles:
-        scope_list += roles_to_scopes_mapping.get(role, [])
+        scope_list += ROLES_TO_SCOPES_MAPPING.get(role, [])
     return [*set(scope_list)]

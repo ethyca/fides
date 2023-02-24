@@ -50,7 +50,7 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import CONFIG
 from fides.lib.models.client import ClientDetail
-from fides.lib.oauth.roles import roles_to_scopes_mapping
+from fides.lib.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.lib.oauth.schemas.oauth import (
     AccessToken,
     OAuth2ClientCredentialsRequestForm,
@@ -207,7 +207,7 @@ def read_scopes() -> List[str]:
 def read_roles_to_scopes_mapping() -> Dict[str, List]:
     """Returns a list of all roles and associated scopes available for assignment in the system"""
     logger.info("Getting all available roles")
-    return roles_to_scopes_mapping
+    return ROLES_TO_SCOPES_MAPPING
 
 
 @router.get(OAUTH_CALLBACK, response_model=None)
