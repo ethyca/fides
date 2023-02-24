@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Dict, List, Optional
 
 from fides.api.ops.api.v1.scope_registry import (
@@ -36,12 +37,13 @@ VIEWER_AND_PRIVACY_REQUEST_MANAGER = "viewer_and_privacy_request_manager"
 ADMIN = "admin"
 
 
-ROLE_REGISTRY = {
-    PRIVACY_REQUEST_MANAGER,
-    VIEWER,
-    VIEWER_AND_PRIVACY_REQUEST_MANAGER,
-    ADMIN,
-}
+class RoleRegistry(Enum):
+    """Enum of available roles"""
+
+    admin = ADMIN
+    viewer_and_privacy_request_manager = VIEWER_AND_PRIVACY_REQUEST_MANAGER
+    viewer = VIEWER
+    privacy_request_manager = PRIVACY_REQUEST_MANAGER
 
 
 privacy_request_manager_scopes = [

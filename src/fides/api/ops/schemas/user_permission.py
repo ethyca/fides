@@ -6,7 +6,7 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.schemas.base_class import BaseSchema
-from fides.lib.oauth.roles import ROLE_REGISTRY
+from fides.lib.oauth.roles import RoleRegistry
 
 
 class UserPermissionsCreate(BaseSchema):
@@ -17,7 +17,7 @@ class UserPermissionsCreate(BaseSchema):
     """
 
     scopes: List[str] = []
-    roles: List[str] = []
+    roles: List[RoleRegistry] = []
 
     @validator("scopes")
     @classmethod
@@ -31,17 +31,10 @@ class UserPermissionsCreate(BaseSchema):
             )
         return scopes
 
-    @validator("roles")
-    @classmethod
-    def validate_roles(cls, roles: List[str]) -> List[str]:
-        """Validates that all incoming roles are valid"""
-        diff: Set = set(roles).difference(set(ROLE_REGISTRY))
-        if len(diff) > 0:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Invalid Role(s) {diff}. Roles must be one of {ROLE_REGISTRY}.",
-            )
-        return roles
+    class Config:
+        """So roles are strings when we add to the db"""
+
+        use_enum_values = True
 
 
 class UserPermissionsEdit(UserPermissionsCreate):

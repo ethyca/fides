@@ -9,8 +9,8 @@ from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.lib.oauth.roles import ADMIN
 
-from ...lib.oauth.roles import ADMIN
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__SECURITY__"

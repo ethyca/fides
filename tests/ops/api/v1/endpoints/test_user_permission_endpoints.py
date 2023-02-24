@@ -138,14 +138,16 @@ class TestCreateUserPermissions:
             db=db,
             data={"username": "user_1", "password": "test_password"},
         )
-
         body = {"user_id": user.id, "roles": ["nonexistent role"]}
         response = api_client.post(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
         response_body = response.json()
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
-        assert "Invalid Role(s) {'nonexistent role'}." in response_body["detail"]
+        assert (
+            "value is not a valid enumeration member"
+            in response_body["detail"][0]["msg"]
+        )
 
     def test_create_user_permissions_add_roles(
         self, db, api_client, generate_auth_header
