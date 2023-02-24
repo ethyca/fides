@@ -669,8 +669,12 @@ def oauth_role_client(db: Session) -> Generator:
         salt="thisisstillatest",
         roles=[
             ADMIN,
+            PRIVACY_REQUEST_MANAGER,
+            VIEWER,
+            VIEWER_AND_PRIVACY_REQUEST_MANAGER,
         ],
-    )
+    )  # Intentionally adding all roles here so the client will always
+    # have a role that matches a role on a token for testing
     db.add(client)
     db.commit()
     db.refresh(client)
