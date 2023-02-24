@@ -27,7 +27,6 @@ from fides.api.ops.api.v1.urn_registry import (
 )
 from fides.api.ops.common_exceptions import OAuth2TokenException
 from fides.api.ops.models.authentication_request import AuthenticationRequest
-from fides.core.api import get
 from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -38,7 +37,7 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
-from fides.lib.oauth.roles import ADMIN, ROLE_REGISTRY
+from fides.lib.oauth.roles import ADMIN
 
 
 class TestCreateClient:

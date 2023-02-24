@@ -38,8 +38,8 @@ class ClientDetail(Base):
 
     hashed_secret = Column(String, nullable=False)
     salt = Column(String, nullable=False)
-    scopes = Column(ARRAY(String), nullable=True, server_default="{}", default=dict)
-    roles = Column(ARRAY(String), nullable=True, server_default="{}", default=dict)
+    scopes = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
+    roles = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
     fides_key = Column(String, index=True, unique=True, nullable=True)
     user_id = Column(
         String, ForeignKey(FidesUser.id_field_path), nullable=True, unique=True
@@ -98,8 +98,8 @@ class ClientDetail(Base):
         *,
         object_id: Any,
         config: FidesConfig,
-        scopes: list[str] | None = None,
-        roles: list[str] | None = None,
+        scopes: list[str] = [],
+        roles: list[str] = [],
     ) -> ClientDetail | None:
         """Fetch a database record via a client_id"""
         if object_id == config.security.oauth_root_client_id:
@@ -129,8 +129,8 @@ class ClientDetail(Base):
 
 def _get_root_client_detail(
     config: FidesConfig,
-    scopes: list[str] | None,
-    roles: list[str] | None,
+    scopes: list[str],
+    roles: list[str],
     encoding: str = "UTF-8",
 ) -> ClientDetail | None:
     """

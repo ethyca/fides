@@ -520,6 +520,22 @@ class TestGetUserPermissions:
         assert response_body["scopes"] == [PRIVACY_REQUEST_READ]
         assert response_body["roles"] == []
 
+    def test_get_user_with_no_permissions_as_root(
+        self, db, api_client, auth_user, root_auth_header
+    ):
+        FidesUserPermissions.create(
+            db=db, data={"user_id": auth_user.id, "scopes": None, "roles": None}
+        )
+
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/user/{auth_user.id}/permission",
+            headers=root_auth_header,
+        )
+        resp = response.json()
+        assert resp["scopes"] == []
+        assert resp["roles"] == []
+        assert resp["user_id"] == auth_user.id
+
     def test_get_current_user_permissions(self, db, api_client, auth_user) -> None:
         # Note: Does not include USER_PERMISSION_READ.
         scopes = [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]

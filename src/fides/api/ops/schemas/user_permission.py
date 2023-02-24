@@ -1,4 +1,4 @@
-from typing import List, Optional, Set
+from typing import List, Optional
 
 from fastapi import HTTPException
 from pydantic import validator

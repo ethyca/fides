@@ -931,6 +931,35 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == viewer_user.id
 
+    def test_login_with_no_permissions(self, db, url, viewer_user, api_client):
+        # Delete existing client for test purposes
+        viewer_user.client.delete(db)
+        body = {
+            "username": viewer_user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+        viewer_user.permissions.roles = []
+        viewer_user.save(db)  # Remove roles from user
+
+        assert viewer_user.client is None  # client does not exist
+        assert viewer_user.permissions is not None
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(viewer_user)
+        assert viewer_user.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == viewer_user.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == []  # Uses roles on existing client
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == viewer_user.id
+
     def test_login_updates_last_login_date(self, db, url, user, api_client):
         body = {
             "username": user.username,
