@@ -137,6 +137,11 @@ interface SelectProps {
   isMulti?: boolean;
   variant?: Variant;
   menuPosition?: MenuPosition;
+  /**
+   * If true, when isMulti=false, the selected value will be rendered as a block,
+   * similar to how the multi values are rendered
+   */
+  singleValueBlock?: boolean;
 }
 const SelectInput = ({
   options,
@@ -145,6 +150,7 @@ const SelectInput = ({
   isSearchable,
   isClearable,
   isMulti = false,
+  singleValueBlock,
   isDisabled = false,
   menuPosition = "absolute",
 }: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
@@ -193,7 +199,12 @@ const SelectInput = ({
       size={size}
       classNamePrefix="custom-select"
       chakraStyles={{
-        container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+        container: (provided) => ({
+          ...provided,
+          mr: 2,
+          flexGrow: 1,
+          backgroundColor: "white",
+        }),
         dropdownIndicator: (provided) => ({
           ...provided,
           bg: "transparent",
@@ -209,6 +220,16 @@ const SelectInput = ({
           background: "primary.400",
           color: "white",
         }),
+        singleValue: singleValueBlock
+          ? (provided) => ({
+              ...provided,
+              background: "primary.400",
+              color: "white",
+              borderRadius: ".375rem",
+              fontSize: ".75rem",
+              paddingX: ".5rem",
+            })
+          : undefined,
       }}
       components={components}
       isSearchable={isSearchable}
@@ -381,6 +402,7 @@ export const CustomSelect = ({
   size = "sm",
   isMulti,
   variant = "inline",
+  singleValueBlock,
   ...props
 }: SelectProps & StringField) => {
   const [field, meta] = useField(props);
@@ -404,6 +426,7 @@ export const CustomSelect = ({
               isSearchable={isSearchable === undefined ? isMulti : isSearchable}
               isClearable={isClearable}
               isMulti={isMulti}
+              singleValueBlock={singleValueBlock}
               isDisabled={isDisabled}
               menuPosition={props.menuPosition}
             />
@@ -433,7 +456,7 @@ export const CustomSelect = ({
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <Box width="100%">
+        <Box width="100%" data-testid={`input-${field.name}`}>
           <SelectInput
             options={options}
             fieldName={field.name}
@@ -441,6 +464,7 @@ export const CustomSelect = ({
             isSearchable={isSearchable === undefined ? isMulti : isSearchable}
             isClearable={isClearable}
             isMulti={isMulti}
+            singleValueBlock={singleValueBlock}
             isDisabled={isDisabled}
             menuPosition={props.menuPosition}
           />

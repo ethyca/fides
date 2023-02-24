@@ -5,9 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 
 from fides.api.ops.tasks import DatabaseTask, _create_celery
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG, get_config
 
 
 @pytest.fixture
@@ -34,7 +32,8 @@ def test_create_task(celery_session_app, celery_session_worker):
 
 
 def test_celery_default_config() -> None:
-    celery_app = _create_celery()
+    config = get_config()
+    celery_app = _create_celery(config)
     assert celery_app.conf["broker_url"] == CONFIG.redis.connection_url
     assert celery_app.conf["result_backend"] == CONFIG.redis.connection_url
     assert celery_app.conf["event_queue_prefix"] == "fides_worker"
@@ -43,6 +42,7 @@ def test_celery_default_config() -> None:
 
 def test_celery_config_override() -> None:
     config = get_config()
+
     config.celery["event_queue_prefix"] = "overridden_fides_worker"
     config.celery["task_default_queue"] = "overridden_fides"
 

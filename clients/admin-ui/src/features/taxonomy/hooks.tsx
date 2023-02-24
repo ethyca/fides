@@ -5,7 +5,6 @@ import { useCustomFields } from "~/features/common/custom-fields/hooks";
 import { RTKResult } from "~/features/common/types";
 import {
   DataCategory,
-  DataQualifier,
   DataSubject,
   DataSubjectRightsEnum,
   DataUse,
@@ -23,12 +22,6 @@ import {
   CustomTextInput,
 } from "../common/form/inputs";
 import { enumToOptions } from "../common/helpers";
-import {
-  useCreateDataQualifierMutation,
-  useDeleteDataQualifierMutation,
-  useGetAllDataQualifiersQuery,
-  useUpdateDataQualifierMutation,
-} from "../data-qualifier/data-qualifier.slice";
 import {
   useCreateDataSubjectMutation,
   useDeleteDataSubjectMutation,
@@ -466,45 +459,5 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     handleDelete,
     renderExtraFormFields,
     transformEntityToInitialValues,
-  };
-};
-
-export const useDataQualifier = (): TaxonomyHookData<DataQualifier> => {
-  const { data, isLoading } = useGetAllDataQualifiersQuery();
-  const [entityToEdit, setEntityToEdit] = useState<DataQualifier | null>(null);
-
-  const labels = {
-    fides_key: "Data qualifier",
-    name: "Data qualifier name",
-    description: "Data qualifier description",
-    parent_key: "Parent data qualifier",
-  };
-
-  const [createDataQualifierMutationTrigger] = useCreateDataQualifierMutation();
-  const [updateDataQualifierMutationTrigger] = useUpdateDataQualifierMutation();
-  const [deleteDataQualifierMutationTrigger] = useDeleteDataQualifierMutation();
-
-  const handleCreate = (initialValues: FormValues, newValues: FormValues) =>
-    createDataQualifierMutationTrigger(
-      transformBaseFormValuesToEntity(initialValues, newValues)
-    );
-
-  const handleEdit = (initialValues: FormValues, newValues: FormValues) =>
-    updateDataQualifierMutationTrigger(
-      transformBaseFormValuesToEntity(initialValues, newValues)
-    );
-
-  const handleDelete = deleteDataQualifierMutationTrigger;
-
-  return {
-    data,
-    isLoading,
-    labels,
-    entityToEdit,
-    setEntityToEdit,
-    handleCreate,
-    handleEdit,
-    handleDelete,
-    transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
   };
 };

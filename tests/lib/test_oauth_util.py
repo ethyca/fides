@@ -6,6 +6,7 @@ from datetime import datetime
 import pytest
 from fastapi.security import SecurityScopes
 
+from fides.api.ops.api.v1.scope_registry import USER_DELETE, USER_READ
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -15,7 +16,6 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.exceptions import AuthorizationError
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
-from fides.lib.oauth.scopes import USER_DELETE, USER_READ
 
 
 @pytest.fixture

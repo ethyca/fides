@@ -308,6 +308,29 @@ def delete_config_by_key(
     storage_config.delete(db)
 
 
+# this needs to come before other `/default/{storage_type}` routes so that `/status`
+# isn't picked up as a path param
+@router.get(
+    STORAGE_ACTIVE_DEFAULT,
+    dependencies=[Security(verify_oauth_client, scopes=[STORAGE_READ])],
+    response_model=StorageDestinationResponse,
+)
+def get_active_default_config(
+    *, db: Session = Depends(deps.get_db)
+) -> Optional[StorageConfig]:
+    """
+    Retrieves the active default storage config.
+    """
+    logger.info("Finding active default storage config")
+    storage_config = get_active_default_storage_config(db)
+    if not storage_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No active default storage config found.",
+        )
+    return storage_config
+
+
 @router.put(
     STORAGE_DEFAULT,
     status_code=HTTP_200_OK,
@@ -478,26 +501,5 @@ def get_default_config_by_type(
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No default config for storage type {storage_type.value}.",
-        )
-    return storage_config
-
-
-@router.get(
-    STORAGE_ACTIVE_DEFAULT,
-    dependencies=[Security(verify_oauth_client, scopes=[STORAGE_READ])],
-    response_model=StorageDestinationResponse,
-)
-def get_active_default_config(
-    *, db: Session = Depends(deps.get_db)
-) -> Optional[StorageConfig]:
-    """
-    Retrieves the active default storage config.
-    """
-    logger.info("Finding active default storage config")
-    storage_config = get_active_default_storage_config(db)
-    if not storage_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="No active default storage config found.",
         )
     return storage_config

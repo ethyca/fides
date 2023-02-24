@@ -4,7 +4,7 @@
 import os
 from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING, getLevelName
 
-from pydantic import validator
+from pydantic import Field, validator
 
 from .fides_settings import FidesSettings
 from .utils import get_dev_mode
@@ -16,10 +16,22 @@ class LoggingSettings(FidesSettings):
     """Class used to store values from the 'logging' section of the config."""
 
     # Logging
-    destination: str = ""
-    level: str = "INFO"
-    serialization: str = ""
-    log_pii: bool = False
+    destination: str = Field(
+        default="",
+        description="The output location for log files. Accepts any valid file path. If left unset, log entries are printed to stdout and log files are not produced.",
+    )
+    level: str = Field(
+        default="INFO",
+        description="The minimum log entry level to produce. Also accepts TRACE, DEBUG, WARNING, ERROR, or CRITICAL (case insensitive).",
+    )
+    serialization: str = Field(
+        default="",
+        description="The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts 'JSON' (case insensitive).",
+    )
+    log_pii: bool = Field(
+        default=False,
+        description="If True, PII values will display unmasked in log output. This variable should always be set to 'False' in production systems.",
+    )
 
     @validator("destination", pre=True)
     @classmethod

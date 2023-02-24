@@ -103,7 +103,11 @@ def xenon(session: nox.Session) -> None:
 ##################
 @nox.session()
 def check_install(session: nox.Session) -> None:
-    """Check that fides installs works correctly."""
+    """
+    Check that fides installs and works correctly.
+
+    This is also a good sanity check for correct syntax.
+    """
     session.install(".")
 
     REQUIRED_ENV_VARS = {
@@ -212,6 +216,9 @@ def validate_test_matrix(session: nox.Session) -> None:
 def collect_tests(session: nox.Session) -> None:
     """
     Collect all pytests as a validity check.
+
+    Good to run as a sanity check that there aren't any obvious syntax
+    errors within the test code.
     """
     session.install(".")
     install_requirements(session)

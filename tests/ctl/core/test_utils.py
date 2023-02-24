@@ -8,7 +8,7 @@ import requests
 from fideslang.models import DatasetCollection, DatasetField
 
 from fides.core import utils
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import get_config
 
 
 @pytest.fixture()

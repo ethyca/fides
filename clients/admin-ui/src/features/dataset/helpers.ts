@@ -98,7 +98,7 @@ export const getUpdatedDatasetFromClassifyDataset = (
         draftCollection.name
       );
 
-      if (classifyCollection?.name !== activeCollection) {
+      if (activeCollection && classifyCollection?.name !== activeCollection) {
         return;
       }
 

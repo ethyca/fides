@@ -32,9 +32,7 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     decrypt_combined_nonce_and_message,
 )
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 
 @mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")

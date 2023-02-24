@@ -4,9 +4,9 @@ from copy import deepcopy
 
 import pytest
 
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.lib.cryptography.cryptographic_util import hash_with_salt
 from fides.lib.models.client import ClientDetail, _get_root_client_detail
-from fides.lib.oauth.scopes import SCOPES
 
 
 def test_create_client_and_secret(db, config):
@@ -30,7 +30,7 @@ def test_get_client(db, oauth_client, config):
     client = ClientDetail.get(db, object_id=oauth_client.id, config=config)
     assert client
     assert client.id == oauth_client.id
-    assert client.scopes == SCOPES
+    assert client.scopes == SCOPE_REGISTRY
     assert oauth_client.hashed_secret == "thisisatest"
 
 
@@ -39,11 +39,11 @@ def test_get_client_root_client(db, config):
         db,
         object_id="fidesadmin",
         config=config,
-        scopes=SCOPES,
+        scopes=SCOPE_REGISTRY,
     )
     assert client
     assert client.id == config.security.oauth_root_client_id
-    assert client.scopes == SCOPES
+    assert client.scopes == SCOPE_REGISTRY
 
 
 def test_get_client_root_client_no_scopes(db, config):
@@ -57,7 +57,7 @@ def test_credentials_valid(db, config):
         db,
         config.security.oauth_client_id_length_bytes,
         config.security.oauth_client_secret_length_bytes,
-        scopes=SCOPES,
+        scopes=SCOPE_REGISTRY,
     )
 
     assert new_client.credentials_valid("this-is-not-the-right-secret") is False
@@ -68,4 +68,4 @@ def test_get_root_client_detail_no_root_client_hash(config):
     test_config = deepcopy(config)
     test_config.security.oauth_root_client_secret_hash = None
     with pytest.raises(ValueError):
-        _get_root_client_detail(test_config, SCOPES)
+        _get_root_client_detail(test_config, SCOPE_REGISTRY)
