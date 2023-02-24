@@ -9,10 +9,7 @@ from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep
-from fides.api.ops.models.privacy_request import (
-    CheckpointActionRequired,
-    ManualAction,
-)
+from fides.api.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fides.api.ops.schemas.messaging.messaging import (
     ConsentEmailFulfillmentBodyParams,
     ConsentPreferencesByUser,
@@ -32,9 +29,7 @@ from fides.api.ops.service.messaging.message_dispatch_service import (
     _twilio_sms_dispatcher,
     dispatch_message,
 )
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 
 @pytest.mark.unit

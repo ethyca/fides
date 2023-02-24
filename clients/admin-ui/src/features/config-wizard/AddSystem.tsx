@@ -1,4 +1,5 @@
 import { Box, Heading, SimpleGrid, Stack, Text } from "@fidesui/react";
+import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
 import {
@@ -27,6 +28,7 @@ const SectionTitle = ({ children }: { children: string }) => (
 
 const AddSystem = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   return (
     <Stack spacing={9} data-testid="add-systems">
@@ -55,8 +57,8 @@ const AddSystem = () => {
             icon={<ManualSetupIcon boxSize={8} />}
             description="Manually add a system for services not covered by automated scanners"
             onClick={() => {
-              dispatch(changeStep(5));
               dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
+              router.push("/add-systems/new");
             }}
             data-testid="manual-btn"
           />

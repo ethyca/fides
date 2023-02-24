@@ -70,11 +70,10 @@ from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
 from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_cli
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG
 from fides.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
-CONFIG: FidesConfig = get_config()
 VERSION = fides.__version__
 
 ROUTERS = crud.routers + [  # type: ignore[attr-defined]
@@ -96,7 +95,7 @@ def create_fides_app(
     api_prefix: str = API_PREFIX,
     request_rate_limit: str = CONFIG.security.request_rate_limit,
     rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
-    security_env: str = CONFIG.security.env.value,
+    security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
 

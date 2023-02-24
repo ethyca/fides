@@ -30,7 +30,7 @@ from fides.api.ops.service.privacy_request.consent_email_batch_service import (
 )
 from fides.core.config import get_config
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from tests.ops.fixtures.application_fixtures import _create_privacy_request_for_policy
+from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 CONFIG = get_config()
 
@@ -277,7 +277,11 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "12345"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False, conflicts_with_gpc=False, has_gpc_flag=False,
+                        data_use="advertising",
+                        data_use_description=None,
+                        opt_in=False,
+                        conflicts_with_gpc=False,
+                        has_gpc_flag=False,
                     )
                 ],
             ),
@@ -285,7 +289,11 @@ class TestConsentEmailBatchSend:
                 identities={"ljt_readerID": "abcde"},
                 consent_preferences=[
                     Consent(
-                        data_use="advertising", data_use_description=None, opt_in=False, conflicts_with_gpc=False, has_gpc_flag=False,
+                        data_use="advertising",
+                        data_use_description=None,
+                        opt_in=False,
+                        conflicts_with_gpc=False,
+                        has_gpc_flag=False,
                     )
                 ],
             ),

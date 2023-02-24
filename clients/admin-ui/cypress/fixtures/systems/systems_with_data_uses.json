@@ -1,0 +1,127 @@
+[
+  {
+    "fides_key": "fidesctl_system",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Fidesctl System",
+    "description": "Software that functionally applies Fides.",
+    "registry_id": null,
+    "meta": null,
+    "fidesctl_meta": null,
+    "system_type": "Service",
+    "data_responsibility_title": "Controller",
+    "privacy_declarations": [
+      {
+        "name": "Store system data.",
+        "data_categories": ["system.operations", "user.contact"],
+        "data_use": "improve.system",
+        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        "data_subjects": ["anonymous_user"],
+        "dataset_references": ["public"]
+      },
+      {
+        "name": "Collect data for marketing",
+        "data_categories": ["user.device.cookie_id"],
+        "data_use": "advertising",
+        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        "data_subjects": ["customer"],
+        "dataset_references": null,
+        "egress": null,
+        "ingress": null
+      }
+    ],
+    "system_dependencies": null,
+    "joint_controller": null,
+    "third_country_transfers": null,
+    "administrating_department": "Not defined",
+    "data_protection_impact_assessment": {
+      "is_required": false,
+      "progress": null,
+      "link": null
+    },
+    "ingress": [],
+    "egress": []
+  },
+  {
+    "fides_key": "demo_analytics_system",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Demo Analytics System",
+    "description": "A system used for analyzing customer behaviour.",
+    "registry_id": null,
+    "meta": null,
+    "fidesctl_meta": null,
+    "system_type": "Service",
+    "data_responsibility_title": "Controller",
+    "egress": null,
+    "ingress": [
+      {
+        "fides_key": "demo_marketing_system",
+        "type": "system",
+        "data_categories": null
+      }
+    ],
+    "privacy_declarations": [
+      {
+        "name": "Analyze customer behaviour for improvements.",
+        "data_categories": ["user.contact", "user.device.cookie_id"],
+        "data_use": "improve.system",
+        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        "data_subjects": ["customer"],
+        "dataset_references": ["demo_users_dataset"],
+        "egress": null,
+        "ingress": null
+      }
+    ],
+    "system_dependencies": null,
+    "joint_controller": null,
+    "third_country_transfers": ["USA", "CAN"],
+    "administrating_department": "Engineering",
+    "data_protection_impact_assessment": {
+      "is_required": true,
+      "progress": "Complete",
+      "link": "https://example.org/analytics_system_data_protection_impact_assessment"
+    }
+  },
+  {
+    "fides_key": "demo_marketing_system",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Demo Marketing System",
+    "description": "Collect data about our users for marketing.",
+    "registry_id": null,
+    "meta": null,
+    "fidesctl_meta": null,
+    "system_type": "Service",
+    "data_responsibility_title": "Processor",
+    "egress": [
+      {
+        "fides_key": "demo_analytics_system",
+        "type": "system",
+        "data_categories": null
+      }
+    ],
+    "ingress": null,
+    "privacy_declarations": [
+      {
+        "name": "Collect data for marketing",
+        "data_categories": ["user.device.cookie_id"],
+        "data_use": "advertising",
+        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+        "data_subjects": ["customer"],
+        "dataset_references": null,
+        "egress": null,
+        "ingress": null
+      }
+    ],
+    "system_dependencies": ["demo_analytics_system"],
+    "joint_controller": null,
+    "third_country_transfers": null,
+    "administrating_department": "Marketing",
+    "data_protection_impact_assessment": {
+      "is_required": false,
+      "progress": null,
+      "link": null
+    }
+  }
+]

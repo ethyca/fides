@@ -241,6 +241,7 @@ class Endpoint(BaseModel):
     name: str
     requests: SaaSRequestMap
     after: List[FidesCollectionKey] = []
+    erase_after: List[FidesCollectionKey] = []
 
     @validator("requests")
     def validate_grouped_inputs(
@@ -409,6 +410,10 @@ class SaaSConfig(SaaSConfigBase):
                         grouped_inputs=grouped_inputs,
                         after={
                             CollectionAddress(*s.split(".")) for s in endpoint.after
+                        },
+                        erase_after={
+                            CollectionAddress(*s.split("."))
+                            for s in endpoint.erase_after
                         },
                     )
                 )

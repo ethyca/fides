@@ -1,4 +1,6 @@
 /// <reference types="cypress" />
+// eslint-disable-next-line import/no-extraneous-dependencies
+import "cypress-wait-until";
 
 import type { AppDispatch } from "~/app/store";
 
