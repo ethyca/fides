@@ -25,6 +25,7 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import FidesConfig, get_config
+from fides.lib.exceptions import AuthorizationError
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
@@ -249,6 +250,10 @@ def perform_login(
             roles=user.permissions.roles,  # type: ignore
             user_id=user.id,
         )
+
+    if not user.permissions.scopes and not user.permissions.roles:  # type: ignore
+        logger.info("User needs scopes and/or roles to login.")
+        raise AuthorizationError(detail="Not Authorized for this action")
 
     user.last_login_at = datetime.utcnow()
     user.save(db)
