@@ -29,7 +29,7 @@ class SecuritySettings(FidesSettings):
     app_encryption_key: str = Field(
         default="", description="The key used to sign Fides API access tokens."
     )
-    cors_origins: Union[str, List[str]] = Field(
+    cors_origins: List[str] = Field(
         default=[],
         description="A list of pre-approved addresses of clients allowed to communicate with the Fides application server.",
     )
@@ -45,7 +45,7 @@ class SecuritySettings(FidesSettings):
         default="dev",
         description="The default, `dev`, does not apply authentication to endpoints typically used by the CLI. The other option, `prod`, requires authentication for _all_ endpoints that may contain sensitive information.",
     )
-    identity_verification_attempt_limit: int = Field(default=3, description="")
+    identity_verification_attempt_limit: int = Field(default=3, description="TODO")
     oauth_root_client_id: str = Field(
         default="",
         description="The value used to identify the Fides application root API client.",

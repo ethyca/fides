@@ -15,8 +15,8 @@ class RedisSettings(FidesSettings):
         default="utf8",
         description="Character set to use for Redis, defaults to 'utf8'. Not recommended to change.",
     )
-    db_index: Optional[int] = Field(
-        default=None,
+    db_index: int = Field(
+        default=0,
         description="The application will use this index in the Redis cache to cache data.",
     )
     decode_responses: bool = Field(default=True, description="TODO")
