@@ -411,9 +411,9 @@ export const privacyRequestApi = createApi({
       ConfigMessagingSecretsRequest
     >({
       query: (params) => ({
-        url: `messaging/config/${params.service_type}/secret`,
+        url: `messaging/default/${params.service_type}/secret`,
         method: "PUT",
-        body: params,
+        body: params.details,
       }),
     }),
     uploadManualWebhookData: build.mutation<

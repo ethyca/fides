@@ -11,7 +11,6 @@ import {
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 interface StorageDetails {
-  type: string;
   auth_method: string;
   bucket: string;
   format: string;

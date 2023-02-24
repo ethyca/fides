@@ -4,10 +4,7 @@ import { Form, Formik } from "formik";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
-import {
-  useCreateMessagingConfigurationSecretsMutation,
-  useGetMessagingConfigurationDetailsQuery,
-} from "~/features/privacy-requests/privacy-requests.slice";
+import { useCreateMessagingConfigurationSecretsMutation } from "~/features/privacy-requests/privacy-requests.slice";
 
 const TwilioSMSConfiguration = () => {
   const { successAlert } = useAlert();
