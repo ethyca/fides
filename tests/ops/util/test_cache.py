@@ -10,6 +10,7 @@ from bson.objectid import ObjectId
 
 from fides.api.ops.util.cache import (
     ENCODED_BYTES_PREFIX,
+    ENCODED_DATE_PREFIX,
     ENCODED_MONGO_OBJECT_ID_PREFIX,
     FidesopsRedis,
 )
@@ -120,7 +121,15 @@ class TestCustomJSONEncoder:
             (b"some value", f'"{ENCODED_BYTES_PREFIX}some%20value"'),
             (
                 datetime(2023, 2, 14, 20, 58),
-                f'"{datetime(2023, 2, 14, 20, 58).isoformat()}"',
+                f'"{ENCODED_DATE_PREFIX}{datetime(2023, 2, 14, 20, 58).isoformat()}"',
+            ),
+            (
+                {"a": datetime(2023, 2, 14, 20, 58)},
+                f'{{"a": "{ENCODED_DATE_PREFIX}{datetime(2023, 2, 14, 20, 58).isoformat()}"}}',
+            ),
+            (
+                {"a": {"b": datetime(2023, 2, 14, 20, 58)}},
+                f'{{"a": {{"b": "{ENCODED_DATE_PREFIX}{datetime(2023, 2, 14, 20, 58).isoformat()}"}}}}',
             ),
             ({"a": "b"}, '{"a": "b"}'),
             ({"a": {"b": "c"}}, '{"a": {"b": "c"}}'),
@@ -151,16 +160,28 @@ class TestCustomDecoder:
         [
             (f'{{"a": "{ENCODED_BYTES_PREFIX}some%20value"}}', {"a": b"some value"}),
             (
-                f'{{"a": "{datetime(2023, 2, 17, 14, 5).isoformat()}"}}',
-                {"a": datetime(2023, 2, 17, 14, 5)},
-            ),
-            (
                 f'{{"a": "{ENCODED_MONGO_OBJECT_ID_PREFIX}507f191e810c19729de860ea"}}',
                 {"a": ObjectId("507f191e810c19729de860ea")},
             ),
+            (
+                f'{{"a": "{ENCODED_DATE_PREFIX}{datetime(2023, 2, 17, 14, 5).isoformat()}"}}',
+                {"a": datetime(2023, 2, 17, 14, 5)},
+            ),
+            (
+                f'{{"a": {{"b": {{"c": "{ENCODED_DATE_PREFIX}{datetime(2023, 2, 17, 14, 5).isoformat()}"}}}}}}',
+                {"a": {"b": {"c": datetime(2023, 2, 17, 14, 5)}}},
+            ),
+            (
+                '{"birthday": "2001-11-08"}',
+                {"birthday": "2001-11-08"},
+            ),
+            (
+                '{"a": {"b": {"birthday": "2001-11-08"}}}',
+                {"a": {"b": {"birthday": "2001-11-08"}}},
+            ),
         ],
     )
-    def test_decode_bytes(self, value, expected):
+    def test_cache_decode(self, value, expected):
         cache = FidesopsRedis()
         assert cache.decode_obj(value) == expected
 
