@@ -1527,6 +1527,33 @@ class TestGetStorageStatus:
         assert response.config_status == StorageConfigStatus.not_configured
         assert "No secrets found" in response.detail
 
+    @pytest.mark.usefixtures(
+        "active_default_storage_s3", "storage_config_default_s3_secret_keys"
+    )
+    def test_get_storage_status_wrong_secrets(
+        self,
+        url,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        If invalid secrets are somehow present on the s3 default config, we should get a failure
+        """
+        storage_config = db.query(StorageConfig).first()
+        storage_config.secrets = {"invalid_secret": "invalid"}
+        storage_config.save(db)
+
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.not_configured
+        assert "Invalid secrets found" in response.detail
+
     @pytest.mark.usefixtures("active_default_storage_s3", "storage_config_default")
     def test_get_storage_status_details_not_present(
         self,
