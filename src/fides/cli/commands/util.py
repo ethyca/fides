@@ -13,7 +13,7 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
-from fides.core.config.helpers import create_config_file
+from fides.core.config.docs import create_config_file
 from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,

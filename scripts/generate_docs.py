@@ -1,175 +1,12 @@
 """
 This module handles generating documentation from code.
 """
-from textwrap import wrap
-import toml
-from typing import Dict, Set, List
 import json
 import sys
 
 from fides.api.main import app
-from fides.core.config import CONFIG, FidesConfig, get_config
-from pydantic import BaseSettings
-
-
-def get_non_object_fields(schema_properties: Dict[str, Dict]) -> Dict[str, Dict]:
-    """
-    Get the list of fields from the schema that are not references
-    to other settings objects.
-
-    Nested Pydantic settings objects don't have the `type` key, and generic
-    objects like dictionaries have the `object` type.
-    """
-    non_object_fields = {
-        field_name: field_info
-        for field_name, field_info in schema_properties.items()
-        if field_info.get("type") and field_info.get("type") != "object"
-    }
-    return non_object_fields
-
-
-def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
-    """
-    Get the list of fields from the full configuration settings that refer to
-    other settings objects.
-
-    The filter here is a reversal of `get_non_object_fields` with
-    some additional complexity added around getting the name of the class
-    that gets used later.
-
-    The returned object contains the name of the settings field as the key,
-    with the value being the Pydantic settings class itself.
-    """
-    nested_settings = {
-        settings_name
-        for settings_name, settings_info in config.schema()["properties"].items()
-        if not settings_info.get("type") and settings_info.get("type") != "object"
-    }
-
-    nested_settings_objects = {
-        settings_name: getattr(config, settings_name)
-        for settings_name in nested_settings
-    }
-    return nested_settings_objects
-
-
-def format_value_for_toml(value: str, value_type: str) -> str:
-    """Format the value into valid TOML."""
-    if value_type == "string":
-        return f'"{value}"'
-    elif value_type == "boolean":
-        return str(value).lower()
-    elif value_type == "array":
-        return "[]"
-    else:
-        return value
-
-
-def build_field_documentation(field_name: str, field_info: Dict[str, str]) -> str:
-    """Build a docstring for an individual docstring."""
-    try:
-        field_type = field_info["type"]
-        field_description = "\n".join(
-            wrap(
-                text=field_info["description"],
-                width=71,
-                subsequent_indent="# ",
-                initial_indent="# ",
-            )
-        )
-        field_default = format_value_for_toml(field_info.get("default", ""), field_type)
-        doc_string = (
-            f"{field_description}\n{field_name} = {field_default} # {field_type}\n"
-        )
-        return doc_string
-    except KeyError:
-        print(field_info)
-        raise SystemExit(f"!Failed to parse field: {field_name}!")
-
-
-def build_title_header(title: str) -> str:
-    """Build a pretty, TOML-valid title header."""
-    title_piece = f"#-- {title.upper()} --#\n"
-    top_piece = f"#{'-' * (len(title_piece) - 3)}#\n"
-    bottom_piece = f"#{'-' * 68}#\n"
-    header = top_piece + title_piece + bottom_piece
-    return header
-
-
-def convert_settings_to_toml_docs(settings_name: str, settings: BaseSettings) -> str:
-    """
-    Takes a Pydantic settings object and returns a
-    formatted string with included metadata.
-
-    The string is expected to be valid TOML.
-    """
-    settings_schema = settings.schema()
-    included_keys = set(settings.dict().keys())
-    title_header = build_title_header(settings_name)
-
-    print(f"> Building docs for section: {settings_name}...")
-    # Build the Section docstring
-    settings_description = settings_schema["description"]
-    settings_docstring = f"[{settings_name}] # {settings_description}\n"
-
-    # Build the field docstrings
-    fields = remove_excluded_fields(settings_schema["properties"], included_keys)
-    field_docstrings = [
-        build_field_documentation(field_name, field_info)
-        for field_name, field_info in fields.items()
-    ]
-    full_docstring = (
-        title_header + settings_docstring + "\n" + "\n".join(field_docstrings)
-    )
-    print(f"{settings_name} docs built successfully.")
-    return full_docstring
-
-
-def remove_excluded_fields(
-    fields: Dict[str, Dict], included_fields: Set[str]
-) -> Dict[str, Dict]:
-    """Remove fields that are marked as 'excluded=True' in their field."""
-    without_excluded_fields = {
-        key: value for key, value in fields.items() if key in included_fields
-    }
-    return without_excluded_fields
-
-
-def generate_config_docs(outfile_dir: str) -> None:
-    """
-    Autogenerate the schema for the configuration file
-    and format it nicely as valid TOML.
-
-    _Anything at the top-level of the config is ignored!_
-    """
-
-    outfile_name = "config/fides.toml"
-    outfile_path = f"{outfile_dir}/{outfile_name}"
-
-    # Build docstrings for the nested settings
-    settings: Dict[str, BaseSettings] = get_nested_settings(CONFIG)
-    ordered_settings: Dict[str, BaseSettings] = {
-        name: settings[name] for name in sorted(set(settings.keys()))
-    }
-    nested_settings_docs: List[str] = [
-        convert_settings_to_toml_docs(settings_name, settings_schema)
-        for settings_name, settings_schema in ordered_settings.items()
-    ]
-    docs: str = "\n".join(nested_settings_docs)
-
-    # Verify it is valid TOML before writing it out
-    toml.loads(docs)
-
-    # assert (
-    #     "# TODO" not in docs
-    # ), "All fields require documentation, no description TODOs allowed!"
-
-    with open(outfile_path, "w") as output_file:
-        output_file.write(docs)
-        print(f"Exported configuration file to: {outfile_path}")
-
-    # Verify it is a valid Fides config file
-    get_config(outfile_path)
+from fides.core.config import CONFIG
+from fides.core.config.docs import generate_config_docs
 
 
 def generate_openapi(outfile_dir: str) -> str:
@@ -192,4 +29,6 @@ if __name__ == "__main__":
         outfile_dir = default_outfile_dir
 
     generate_openapi(outfile_dir)
-    generate_config_docs(outfile_dir)
+    generate_config_docs(
+        config=CONFIG, outfile_path="docs/fides/docs/config/fides.toml"
+    )
