@@ -6,6 +6,7 @@ import sys
 
 from fides.api.main import app
 
+# Add logic to generate the config docs as well
 
 def generate_openapi(outfile_dir: str) -> None:
     "Write out an openapi.json file for the API."
