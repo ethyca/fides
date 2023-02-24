@@ -21,7 +21,11 @@ interface SecretsStorageData {
   aws_secret_access_key: string;
 }
 
-const S3StorageConfiguration = (storageDetails: any) => {
+const S3StorageConfiguration = ({
+  auth_method,
+  bucket,
+  format,
+}: StorageDetails) => {
   const [authMethod, setAuthMethod] = useState("");
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
@@ -31,9 +35,9 @@ const S3StorageConfiguration = (storageDetails: any) => {
 
   const initialValues = {
     type: "s3",
-    auth_method: storageDetails.storageDetails.details?.auth_method ?? "",
-    bucket: storageDetails.storageDetails.details?.bucket ?? "",
-    format: storageDetails.storageDetails.format ?? "",
+    auth_method: auth_method ?? "",
+    bucket: bucket ?? "",
+    format: format ?? "",
   };
 
   const initialSecretValues = {
@@ -145,8 +149,6 @@ const S3StorageConfiguration = (storageDetails: any) => {
           <Heading fontSize="md" fontWeight="semibold" mt={5}>
             Storage destination
           </Heading>
-          Use the key returned in the last step to provide and authenticate your
-          storage destination’s secrets:
           <Stack>
             <Formik
               initialValues={initialSecretValues}
@@ -156,7 +158,7 @@ const S3StorageConfiguration = (storageDetails: any) => {
                 <Form>
                   <Stack mt={5} spacing={5}>
                     <CustomTextInput
-                      name="aws_access_key_ID"
+                      name="aws_access_key_id"
                       label="AWS access key ID"
                     />
 

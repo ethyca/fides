@@ -12,9 +12,6 @@ import {
 const TwilioSMSConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
-  const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "TWILIO_TEXT",
-  });
   const [createMessagingConfigurationSecrets] =
     useCreateMessagingConfigurationSecretsMutation();
 
@@ -25,10 +22,13 @@ const TwilioSMSConfiguration = () => {
     phone: string;
   }) => {
     const result = await createMessagingConfigurationSecrets({
-      twilio_account_sid: value.account_sid,
-      twilio_auth_token: value.auth_token,
-      twilio_messaging_service_sid: value.messaging_service_sid,
-      twilio_sender_phone_number: value.phone,
+      details: {
+        twilio_account_sid: value.account_sid,
+        twilio_auth_token: value.auth_token,
+        twilio_messaging_service_sid: value.messaging_service_sid,
+        twilio_sender_phone_number: value.phone,
+      },
+      service_type: "TWILIO_TEXT",
     });
 
     if (isErrorResult(result)) {
@@ -39,10 +39,10 @@ const TwilioSMSConfiguration = () => {
   };
 
   const initialValues = {
-    account_sid: messagingDetails?.twilio_account_sid ?? "",
-    auth_token: messagingDetails?.twilio_auth_token ?? "",
-    messaging_service_sid: messagingDetails?.twilio_messaging_service_sid ?? "",
-    phone: messagingDetails?.twilio_sender_phone_number ?? "",
+    account_sid: "",
+    auth_token: "",
+    messaging_service_sid: "",
+    phone: "",
   };
 
   return (

@@ -49,7 +49,10 @@ const MailgunEmailConfiguration = () => {
     api_key: string;
   }) => {
     const result = await createMessagingConfigurationSecrets({
-      mailgun_api_key: value.api_key,
+      details: {
+        mailgun_api_key: value.api_key,
+      },
+      service_type: "MAILGUN",
     });
 
     if (isErrorResult(result)) {
@@ -64,7 +67,7 @@ const MailgunEmailConfiguration = () => {
   };
 
   const initialAPIKeyValue = {
-    api_key: messagingDetails?.key ?? "",
+    api_key: "",
   };
 
   return (
@@ -128,8 +131,8 @@ const MailgunEmailConfiguration = () => {
                   <CustomTextInput
                     name="api_key"
                     label="API key"
-                    placeholder="Optional"
                     type="password"
+                    isRequired
                   />
                   <Button
                     onClick={handleReset}

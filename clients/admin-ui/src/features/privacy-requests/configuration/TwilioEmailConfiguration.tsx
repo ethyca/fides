@@ -45,7 +45,10 @@ const TwilioEmailConfiguration = () => {
     api_key: string;
   }) => {
     const result = await createMessagingConfigurationSecrets({
-      twilio_api_key: value.api_key,
+      details: {
+        twilio_api_key: value.api_key,
+      },
+      service_type: "TWILIO_EMAIL",
     });
 
     if (isErrorResult(result)) {
@@ -61,7 +64,7 @@ const TwilioEmailConfiguration = () => {
   };
 
   const initialAPIKeyValues = {
-    api_key: messagingDetails?.key ?? "",
+    api_key: "",
   };
 
   return (
