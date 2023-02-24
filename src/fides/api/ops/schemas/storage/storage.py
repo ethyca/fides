@@ -1,10 +1,10 @@
+from re import compile as regex
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
 from pydantic import Extra, ValidationError, root_validator, validator
 from pydantic.main import BaseModel
-from validators.url import regex
 
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 
@@ -151,7 +151,7 @@ class StorageDestinationBase(BaseModel):
         StorageDetailsLocal,
     ]
     download_format: Optional[DownloadFormat] = DownloadFormat.json.value  # type: ignore
-    html_landing_page: Optional[HtmlLandingPage] = None
+    html_landing_page: Optional[HtmlLandingPage]
 
     class Config:
         use_enum_values = True
@@ -252,7 +252,7 @@ class StorageDestinationResponse(BaseModel):
     details: Dict[StorageDetails, Any]
     key: FidesKey
     download_format: DownloadFormat
-    html_landing_page: Dict[HtmlLandingPageProps, Any]
+    html_landing_page: Optional[Dict[HtmlLandingPageProps, Any]]
     is_default: bool = False
 
     class Config:
