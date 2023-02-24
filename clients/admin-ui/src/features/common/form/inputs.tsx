@@ -324,22 +324,24 @@ export const CustomTextInput = ({
       <FormControl isInvalid={isInvalid} isRequired={isRequired}>
         <Grid templateColumns="1fr 3fr">
           <Label htmlFor={props.id || props.name}>{label}</Label>
-          <Box display="flex" alignItems="center">
-            <TextInput
-              {...field}
-              isDisabled={disabled}
-              data-testid={`input-${field.name}`}
-              placeholder={placeholder}
-              isPassword={isPassword}
-            />
+          <Flex alignItems="center">
+            <Flex flexDir="column" flexGrow={1}>
+              <TextInput
+                {...field}
+                isDisabled={disabled}
+                data-testid={`input-${field.name}`}
+                placeholder={placeholder}
+                isPassword={isPassword}
+              />
+              <ErrorMessage
+                isInvalid={isInvalid}
+                message={meta.error}
+                fieldName={field.name}
+              />
+            </Flex>
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-          </Box>
+          </Flex>
         </Grid>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName={field.name}
-        />
       </FormControl>
     );
   }
@@ -392,29 +394,29 @@ export const CustomSelect = ({
           <Label htmlFor={props.id || props.name} {...labelProps}>
             {label}
           </Label>
-          <Box
-            display="flex"
-            alignItems="center"
-            data-testid={`input-${field.name}`}
-          >
-            <SelectInput
-              options={options}
-              fieldName={field.name}
-              size={size}
-              isSearchable={isSearchable === undefined ? isMulti : isSearchable}
-              isClearable={isClearable}
-              isMulti={isMulti}
-              isDisabled={isDisabled}
-              menuPosition={props.menuPosition}
-            />
+          <Flex alignItems="center" data-testid={`input-${field.name}`}>
+            <Flex flexDir="column" flexGrow={1}>
+              <SelectInput
+                options={options}
+                fieldName={field.name}
+                size={size}
+                isSearchable={
+                  isSearchable === undefined ? isMulti : isSearchable
+                }
+                isClearable={isClearable}
+                isMulti={isMulti}
+                isDisabled={isDisabled}
+                menuPosition={props.menuPosition}
+              />
+              <ErrorMessage
+                isInvalid={isInvalid}
+                message={meta.error}
+                fieldName={field.name}
+              />
+            </Flex>
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-          </Box>
+          </Flex>
         </Grid>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName={field.name}
-        />
       </FormControl>
     );
   }
@@ -473,26 +475,24 @@ export const CustomCreatableSelect = ({
       <FormControl isInvalid={isInvalid}>
         <Grid templateColumns="1fr 3fr">
           <Label htmlFor={props.id || props.name}>{label}</Label>
-          <Box
-            display="flex"
-            alignItems="center"
-            data-testid={`input-${field.name}`}
-          >
-            <CreatableSelectInput
-              fieldName={field.name}
-              options={options}
-              size={size}
-              isSearchable={isSearchable}
-              {...props}
-            />
+          <Flex alignItems="center" data-testid={`input-${field.name}`}>
+            <Flex flexDir="column" flexGrow={1}>
+              <CreatableSelectInput
+                fieldName={field.name}
+                options={options}
+                size={size}
+                isSearchable={isSearchable}
+                {...props}
+              />
+              <ErrorMessage
+                isInvalid={isInvalid}
+                message={meta.error}
+                fieldName={field.name}
+              />
+            </Flex>
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-          </Box>
+          </Flex>
         </Grid>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName={field.name}
-        />
       </FormControl>
     );
   }
@@ -556,14 +556,16 @@ export const CustomTextArea = ({
     return (
       <FormControl isInvalid={isInvalid}>
         <Flex>
-          {innerTextArea}
+          <Flex flexDir="column" flexGrow={1}>
+            {innerTextArea}
+            <ErrorMessage
+              isInvalid={isInvalid}
+              message={meta.error}
+              fieldName={field.name}
+            />
+          </Flex>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName={field.name}
-        />
       </FormControl>
     );
   }
@@ -574,15 +576,17 @@ export const CustomTextArea = ({
         <Grid templateColumns="1fr 3fr">
           {label ? <FormLabel>{label}</FormLabel> : null}
           <Flex>
-            {innerTextArea}
+            <Flex flexDir="column" flexGrow={1}>
+              {innerTextArea}
+              <ErrorMessage
+                isInvalid={isInvalid}
+                message={meta.error}
+                fieldName={field.name}
+              />
+            </Flex>
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Flex>
         </Grid>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName={field.name}
-        />
       </FormControl>
     );
   }
