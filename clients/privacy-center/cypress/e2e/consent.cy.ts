@@ -1,6 +1,7 @@
 import { hostUrl } from "~/constants";
 import { CONSENT_COOKIE_NAME } from "fides-consent";
 import { GpcStatus } from "~/features/consent/types";
+import { ConsentPreferencesWithVerificationCode } from "~/types/api";
 
 describe("Consent settings", () => {
   describe("when the user isn't verified", () => {
@@ -140,20 +141,37 @@ describe("Consent settings", () => {
       cy.getByTestId("save-btn").click();
 
       cy.wait("@patchConsentPreferences").then((interception) => {
-        const consent = interception.request.body.consent.find(
-          (c: any) => c.data_use === "advertising"
+        const body = interception.request
+          .body as ConsentPreferencesWithVerificationCode;
+
+        const advertisingConsent = body.consent.find(
+          (c) => c.data_use === "advertising"
         );
-        expect(consent?.opt_in).to.eq(true);
+        expect(advertisingConsent?.opt_in).to.eq(true);
+
+        const gpcConsent = body.consent.find(
+          (c) => c.data_use === "collect.gpc"
+        );
+        expect(gpcConsent?.opt_in).to.eq(true);
+        expect(gpcConsent?.has_gpc_flag).to.eq(false);
+        expect(gpcConsent?.conflicts_with_gpc).to.eq(false);
 
         // there should be no browser identity
-        expect(interception.request.body.browser_identity).to.eql(undefined);
+        expect(body.browser_identity).to.eql(undefined);
       });
 
-      // The cookie should also have been updated.
-      cy.getCookie(CONSENT_COOKIE_NAME).should((cookie) => {
-        const cookieKeyConsent = JSON.parse(decodeURIComponent(cookie!.value));
-        expect(cookieKeyConsent.data_sales).to.eq(true);
-      });
+      // The cookie should also have been updated. This may take a moment in CI,
+      // so we `waitUntil` the value becomes what we expect.
+      // https://github.com/cypress-io/cypress/issues/4802#issuecomment-941891554
+      cy.waitUntil(() =>
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent = JSON.parse(
+            decodeURIComponent(cookie!.value)
+          );
+          // `waitUntil` retries until we return a truthy value.
+          return cookieKeyConsent.data_sales === true;
+        })
+      );
     });
 
     it("can grab cookies and send to a consent request", () => {
@@ -169,9 +187,10 @@ describe("Consent settings", () => {
       cy.getByTestId("save-btn").click();
 
       cy.wait("@patchConsentPreferences").then((interception) => {
-        const { body } = interception.request;
-        expect(body.browser_identity.ga_client_id).to.eq(clientId);
-        expect(body.browser_identity.ljt_readerID).to.eq(sovrnCookieValue);
+        const body = interception.request
+          .body as ConsentPreferencesWithVerificationCode;
+        expect(body.browser_identity?.ga_client_id).to.eq(clientId);
+        expect(body.browser_identity?.ljt_readerID).to.eq(sovrnCookieValue);
       });
     });
 
@@ -222,7 +241,7 @@ describe("Consent settings", () => {
     });
 
     describe("when globalPrivacyControl is enabled", () => {
-      it("lets the user consent to override GPC", () => {
+      it("applies the GPC defaults", () => {
         cy.visit("/consent?globalPrivacyControl=true");
         cy.getByTestId("consent");
 
@@ -233,6 +252,48 @@ describe("Consent settings", () => {
           cy.getRadio().should("not.be.checked");
 
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.APPLIED);
+        });
+
+        cy.getByTestId("save-btn").click();
+
+        cy.wait("@patchConsentPreferences").then((interception) => {
+          const body = interception.request
+            .body as ConsentPreferencesWithVerificationCode;
+
+          const gpcConsent = body.consent.find(
+            (c) => c.data_use === "collect.gpc"
+          );
+          expect(gpcConsent?.opt_in).to.eq(false);
+          expect(gpcConsent?.has_gpc_flag).to.eq(true);
+          expect(gpcConsent?.conflicts_with_gpc).to.eq(false);
+        });
+      });
+
+      it("lets the user consent to override GPC", () => {
+        cy.visit("/consent?globalPrivacyControl=true");
+        cy.getByTestId("consent");
+
+        cy.getByTestId("gpc-banner");
+
+        cy.getByTestId(`consent-item-card-collect.gpc`).within(() => {
+          cy.contains("GPC test");
+          cy.getRadio().should("not.be.checked").check({ force: true });
+
+          cy.getByTestId("gpc-badge").should("contain", GpcStatus.OVERRIDDEN);
+        });
+
+        cy.getByTestId("save-btn").click();
+
+        cy.wait("@patchConsentPreferences").then((interception) => {
+          const body = interception.request
+            .body as ConsentPreferencesWithVerificationCode;
+
+          const gpcConsent = body.consent.find(
+            (c) => c.data_use === "collect.gpc"
+          );
+          expect(gpcConsent?.opt_in).to.eq(true);
+          expect(gpcConsent?.has_gpc_flag).to.eq(true);
+          expect(gpcConsent?.conflicts_with_gpc).to.eq(true);
         });
       });
     });

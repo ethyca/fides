@@ -144,6 +144,27 @@ def patch_config_by_key(
         )
 
 
+# this needs to come before other `/default/{messaging_type}` routes so that `/status`
+# isn't picked up as a path param
+@router.get(
+    MESSAGING_ACTIVE_DEFAULT,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_READ])],
+    response_model=MessagingConfigResponse,
+)
+def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> MessagingConfig:
+    """
+    Retrieves the active default messaging config.
+    """
+    logger.info("Finding active default messaging config")
+    messaging_config = MessagingConfig.get_active_default(db)
+    if not messaging_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No active default messaging config found.",
+        )
+    return messaging_config
+
+
 @router.put(
     MESSAGING_DEFAULT,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_CREATE_OR_UPDATE])],
@@ -324,25 +345,6 @@ def get_default_config_by_type(
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No default messaging config found of type '{service_type}'",
-        )
-    return messaging_config
-
-
-@router.get(
-    MESSAGING_ACTIVE_DEFAULT,
-    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_READ])],
-    response_model=MessagingConfigResponse,
-)
-def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> MessagingConfig:
-    """
-    Retrieves the active default messaging config.
-    """
-    logger.info("Finding active default messaging config")
-    messaging_config = MessagingConfig.get_active_default(db)
-    if not messaging_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="No active default messaging config found.",
         )
     return messaging_config
 

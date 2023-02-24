@@ -34,7 +34,7 @@ from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.roles import ADMIN, PRIVACY_REQUEST_MANAGER, VIEWER
-from tests.ops.fixtures.application_fixtures import integration_secrets
+from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
 

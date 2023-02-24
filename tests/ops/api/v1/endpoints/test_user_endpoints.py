@@ -45,7 +45,7 @@ from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
 from fides.lib.oauth.roles import ADMIN, VIEWER
-from tests.ops.conftest import generate_auth_header_for_user
+from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
 

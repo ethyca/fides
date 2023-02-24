@@ -30,7 +30,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
 from fides.api.ops.util.data_category import DataCategory
 from fides.api.ops.util.saas_util import load_config
 from fides.lib.models.client import ClientDetail
-from tests.ops.fixtures.application_fixtures import load_dataset
+from tests.fixtures.application_fixtures import load_dataset
 
 
 @pytest.fixture(scope="function")

@@ -3,12 +3,7 @@ import { Box, Button } from "@fidesui/react";
 import { useAppDispatch } from "~/app/hooks";
 
 import DataTabs, { TabData } from "../common/DataTabs";
-import {
-  useDataCategory,
-  useDataQualifier,
-  useDataSubject,
-  useDataUse,
-} from "./hooks";
+import { useDataCategory, useDataSubject, useDataUse } from "./hooks";
 import { setIsAddFormOpen } from "./taxonomy.slice";
 import TaxonomyTabContent from "./TaxonomyTabContent";
 
@@ -24,10 +19,6 @@ const TABS: TabData[] = [
   {
     label: "Data Subjects",
     content: <TaxonomyTabContent useTaxonomy={useDataSubject} />,
-  },
-  {
-    label: "Identifiability",
-    content: <TaxonomyTabContent useTaxonomy={useDataQualifier} />,
   },
 ];
 const TaxonomyTabs = () => {
