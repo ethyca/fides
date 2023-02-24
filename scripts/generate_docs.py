@@ -58,6 +58,8 @@ def format_value_for_toml(value: str, value_type: str) -> str:
         return f'"{value}"'
     elif value_type == "boolean":
         return str(value).lower()
+    elif value_type == "array":
+        return "[]"
     else:
         return value
 
