@@ -3,47 +3,34 @@ import Link from "next/link";
 import * as React from "react";
 import { useMemo } from "react";
 
+import { useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
+import { useGetUserPermissionsQuery } from "~/features/user-management";
+import { ScopeRegistry } from "~/types/api";
 
-import { MODULE_CARD_ITEMS, ModuleCardKeys } from "./constants";
-
-const DEFAULT_CARD_ITEMS = MODULE_CARD_ITEMS.filter((item) =>
-  [
-    ModuleCardKeys.ADD_SYSTEMS,
-    ModuleCardKeys.CONFIGURE_PRIVACY_REQUESTS,
-  ].includes(item.key)
-);
+import { MODULE_CARD_ITEMS } from "./constants";
+import { configureTiles } from "./tile-config";
 
 const HomeContent: React.FC = () => {
   const COLUMNS = 3;
-  const { connectionsCount, systemsCount } = useFeatures();
+  const { connectionsCount, systemsCount, plus } = useFeatures();
   const hasConnections = connectionsCount > 0;
   const hasSystems = systemsCount > 0;
+  const user = useAppSelector(selectUser);
+  const { data: permissions } = useGetUserPermissionsQuery(user?.id ?? "");
 
-  const getCardItem = (key: ModuleCardKeys) => {
-    const cardItem = MODULE_CARD_ITEMS.find((item) => item.key === key);
-    return cardItem;
-  };
-
-  const getCardList = useMemo(
-    () => () => {
-      const list = [...DEFAULT_CARD_ITEMS];
-      if (hasConnections || hasSystems) {
-        if (hasConnections) {
-          const card = getCardItem(ModuleCardKeys.REVIEW_PRIVACY_REQUESTS);
-          list.push(card!);
-        }
-        if (hasSystems) {
-          const card = getCardItem(ModuleCardKeys.MANAGE_SYSTEMS);
-          list.push(card!);
-        }
-      }
-      return list;
-    },
-    [hasConnections, hasSystems]
+  const list = useMemo(
+    () =>
+      configureTiles({
+        config: MODULE_CARD_ITEMS,
+        hasPlus: plus,
+        hasConnections,
+        hasSystems,
+        userScopes: permissions ? (permissions.scopes as ScopeRegistry[]) : [],
+      }),
+    [hasConnections, hasSystems, plus, permissions]
   );
-
-  const list = getCardList();
 
   return (
     <Center px="36px">
@@ -61,7 +48,7 @@ const HomeContent: React.FC = () => {
               passHref
             >
               <Flex
-                background={item.backgroundColor}
+                background={`${item.color}.50`}
                 borderRadius="8px"
                 boxShadow="base"
                 flexDirection="column"
@@ -71,16 +58,16 @@ const HomeContent: React.FC = () => {
                 maxW="469.33px"
                 _hover={{
                   border: "1px solid",
-                  borderColor: `${item.hoverBorderColor}`,
+                  borderColor: `${item.color}.500`,
                   cursor: "pointer",
                 }}
               >
                 <Flex
                   alignItems="center"
                   border="2px solid"
-                  borderColor={item.titleColor}
+                  borderColor={`${item.color}.300`}
                   borderRadius="5.71714px"
-                  color={item.titleColor}
+                  color={`${item.color}.300`}
                   fontSize="22px"
                   fontWeight="extrabold"
                   h="48px"
@@ -91,7 +78,7 @@ const HomeContent: React.FC = () => {
                   {item.title}
                 </Flex>
                 <Flex
-                  color={item.nameColor}
+                  color={`${item.color}.800`}
                   fontSize="16px"
                   fontWeight="semibold"
                   lineHeight="24px"
@@ -102,7 +89,7 @@ const HomeContent: React.FC = () => {
                   &nbsp; &#8594;
                 </Flex>
                 <Flex
-                  color={item.descriptionColor}
+                  color="gray.500"
                   fontSize="14px"
                   h="40px"
                   lineHeight="20px"
