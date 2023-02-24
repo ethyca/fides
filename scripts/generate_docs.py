@@ -7,7 +7,7 @@ import json
 import sys
 
 from fides.api.main import app
-from fides.core.config import CONFIG, FidesConfig
+from fides.core.config import CONFIG, FidesConfig, get_config
 from pydantic import BaseSettings
 
 
@@ -171,13 +171,15 @@ def generate_config_docs(outfile_dir: str) -> None:
     docs_list = [toplevel_docs, nested_settings_docs]
     docs = "\n".join(docs_list)
 
-    # Verify it is valid TOML
-    # toml.loads(docs)
+    # Verify it is valid TOML before writing it out
+    toml.loads(docs)
 
     with open(outfile_path, "w") as output_file:
         output_file.write(docs)
         print(f"Exported configuration schema to: {outfile_path}")
 
+    # Verify it is a valid Fides config file
+    get_config(outfile_path)
 
 def generate_openapi(outfile_dir: str) -> str:
     "Write out an openapi.json file for the API."

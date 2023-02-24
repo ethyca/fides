@@ -28,8 +28,9 @@ class UserSettings(FidesSettings):
         description="Authentication header built automatically from the credentials file.",
         exclude=True,
     )
-    analytics_opt_out: Optional[bool] = Field(
-        description="When set to true, prevents sending anonymous analytics data to Ethyca."
+    analytics_opt_out: bool = Field(
+        default=False,
+        description="When set to true, prevents sending anonymous analytics data to Ethyca.",
     )
     encryption_key: str = Field(
         default="test_encryption_key",
