@@ -1,4 +1,16 @@
-import { Stack, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import {
+  Flex,
+  Stack,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@fidesui/react";
+import ClassifyResultsToggle from "common/ClassifyResultsToggle";
+import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { SystemTableCell } from "~/features/common/SystemsCheckboxTable";
@@ -20,9 +32,16 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
   const handleClick = (system: System) => {
     dispatch(setActiveClassifySystemFidesKey(system.fides_key));
   };
+  const [hideEmpty, setHideEmpty] = useState(false);
 
   return (
     <Stack>
+      <Flex flexShrink={0} alignItems="center">
+        <Text fontSize="xs" mr={2} size="sm">
+          Only Show Findings
+        </Text>
+        <ClassifyResultsToggle hideEmpty={hideEmpty} onChange={setHideEmpty} />
+      </Flex>
       <Table size="sm" data-testid="systems-classify-table">
         <Thead>
           <Tr>
@@ -40,6 +59,7 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
                 _hover={{ bg: "gray.50" }}
                 cursor="pointer"
                 onClick={() => handleClick(system)}
+                hidden={hideEmpty && !classifyInstance?.has_labels}
               >
                 <Td>
                   <SystemTableCell system={system} attribute="name" />
