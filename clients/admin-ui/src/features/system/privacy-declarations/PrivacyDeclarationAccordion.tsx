@@ -23,11 +23,13 @@ interface AccordionProps extends DataProps {
     oldDeclaration: PrivacyDeclaration,
     newDeclaration: PrivacyDeclaration
   ) => Promise<boolean>;
+  onDelete: (declaration: PrivacyDeclaration) => Promise<boolean>;
 }
 
 const PrivacyDeclarationAccordionItem = ({
   privacyDeclaration,
   onEdit,
+  onDelete,
   ...dataProps
 }: { privacyDeclaration: PrivacyDeclaration } & Omit<
   AccordionProps,
@@ -69,7 +71,10 @@ const PrivacyDeclarationAccordionItem = ({
               </AccordionButton>
               <AccordionPanel backgroundColor="gray.50" pt={0}>
                 <Stack spacing={4}>
-                  <PrivacyDeclarationFormComponents {...dataProps} />
+                  <PrivacyDeclarationFormComponents
+                    onDelete={onDelete}
+                    {...dataProps}
+                  />
                 </Stack>
               </AccordionPanel>
             </Form>
@@ -89,13 +94,13 @@ const PrivacyDeclarationAccordion = ({
     border="transparent"
     data-testid="privacy-declaration-accordion"
   >
-    {privacyDeclarations.map((dec, i) => (
+    {privacyDeclarations.map((dec) => (
       <PrivacyDeclarationAccordionItem
-        // Privacy declarations don't have an enforced unique key right now
-        // The closest is 'data_use' but that is only enforced on the frontend. Furthermore,
-        // if it changes, it causes re-renders we don't need (so makes the "Saved" indicator disappear)
-        // eslint-disable-next-line react/no-array-index-key
-        key={i}
+        // This isn't a perfect key as privacy declarations don't have an enforced key right now.
+        // The closest is 'data_use' but that is only enforced on the frontend and can change
+        // This results in the "Saved" indicator not appearing if you change the 'data_use' in the form
+        // The fix would be to enforce a key, either on the backend, or through a significant workaround on the frontend
+        key={dec.data_use}
         privacyDeclaration={dec}
         {...props}
       />

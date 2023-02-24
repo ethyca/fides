@@ -22,7 +22,10 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const { isLoading, ...dataProps } = useTaxonomyData();
 
-  const handleSave = async (updatedDeclarations: PrivacyDeclaration[]) => {
+  const handleSave = async (
+    updatedDeclarations: PrivacyDeclaration[],
+    isDelete?: boolean
+  ) => {
     const systemBodyWithDeclaration = {
       ...system,
       privacy_declarations: updatedDeclarations,
@@ -43,7 +46,11 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         return false;
       }
       toast.closeAll();
-      toast(successToastParams("Data use case saved"));
+      toast(
+        successToastParams(
+          isDelete ? "Data use case deleted" : "Data use case saved"
+        )
+      );
       dispatch(setActiveSystem(result.data));
       return true;
     };

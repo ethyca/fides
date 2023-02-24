@@ -11,12 +11,14 @@ import {
   Heading,
   Stack,
   Text,
+  useDisclosure,
 } from "@fidesui/react";
 import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { CustomSelect } from "~/features/common/form/inputs";
 import {
   selectDataSubjects,
@@ -65,8 +67,19 @@ export const PrivacyDeclarationFormComponents = ({
   allDataUses,
   allDataCategories,
   allDataSubjects,
-}: DataProps) => {
-  const { dirty, isSubmitting, isValid } = useFormikContext<FormValues>();
+  onDelete,
+}: DataProps & Pick<Props, "onDelete">) => {
+  const { dirty, isSubmitting, isValid, initialValues } =
+    useFormikContext<FormValues>();
+  const deleteModal = useDisclosure();
+
+  const handleDelete = async () => {
+    await onDelete(initialValues);
+    deleteModal.onClose();
+  };
+
+  const deleteDisabled = initialValues.data_use === "";
+
   return (
     <Stack spacing={4}>
       <CustomSelect
@@ -104,7 +117,12 @@ export const PrivacyDeclarationFormComponents = ({
         variant="stacked"
       />
       <ButtonGroup size="sm" display="flex" justifyContent="space-between">
-        <Button variant="outline" disabled>
+        <Button
+          variant="outline"
+          onClick={deleteModal.onOpen}
+          disabled={deleteDisabled}
+          data-testid="delete-btn"
+        >
           Delete
         </Button>
         <Button
@@ -117,6 +135,14 @@ export const PrivacyDeclarationFormComponents = ({
           Save
         </Button>
       </ButtonGroup>
+      <ConfirmationModal
+        onConfirm={handleDelete}
+        title="Delete data use"
+        message="Are you sure you want to delete this data use? This action can't be undone."
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.onClose}
+        isCentered
+      />
     </Stack>
   );
 };
@@ -148,7 +174,7 @@ export const usePrivacyDeclarationForm = ({
   onSubmit,
   initialValues: passedInInitialValues,
   allDataUses,
-}: Props & Pick<DataProps, "allDataUses">) => {
+}: Omit<Props, "onDelete"> & Pick<DataProps, "allDataUses">) => {
   const initialValues = passedInInitialValues ?? defaultInitialValues;
   const [showSaved, setShowSaved] = useState(false);
 
@@ -206,12 +232,14 @@ interface Props {
     values: PrivacyDeclaration,
     formikHelpers: FormikHelpers<PrivacyDeclaration>
   ) => Promise<boolean>;
+  onDelete: (declaration: PrivacyDeclaration) => Promise<boolean>;
   initialValues?: PrivacyDeclaration;
 }
 
 export const PrivacyDeclarationForm = ({
   onSubmit,
   initialValues: passedInInitialValues,
+  onDelete,
   ...dataProps
 }: Props & DataProps) => {
   const { handleSubmit, renderHeader, initialValues } =
@@ -232,7 +260,10 @@ export const PrivacyDeclarationForm = ({
         <Form>
           <Stack spacing={4}>
             <Box data-testid="header">{renderHeader({ dirty })}</Box>
-            <PrivacyDeclarationFormComponents {...dataProps} />
+            <PrivacyDeclarationFormComponents
+              onDelete={onDelete}
+              {...dataProps}
+            />
           </Stack>
         </Form>
       )}

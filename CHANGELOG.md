@@ -23,6 +23,7 @@ The types of changes are:
 - Admin UI
   - Add flow for selecting system types when manually creating a system [#2530](https://github.com/ethyca/fides/pull/2530)
   - Updated forms for privacy declarations [#2648](https://github.com/ethyca/fides/pull/2648)
+  - Delete flow for privacy declarations [#2664](https://github.com/ethyca/fides/pull/2664)
 
 - Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 
