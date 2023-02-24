@@ -174,12 +174,18 @@ def generate_config_docs(outfile_dir: str) -> None:
     # Verify it is valid TOML before writing it out
     toml.loads(docs)
 
+    # Verify that there are no TODOs
+    assert (
+        "# TODO" not in docs
+    ), "All fields require documentation, no description TODOs allowed!"
+
     with open(outfile_path, "w") as output_file:
         output_file.write(docs)
         print(f"Exported configuration schema to: {outfile_path}")
 
     # Verify it is a valid Fides config file
     get_config(outfile_path)
+
 
 def generate_openapi(outfile_dir: str) -> str:
     "Write out an openapi.json file for the API."
