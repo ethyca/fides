@@ -58,7 +58,7 @@ def _construct_file_key(request_id: str, config: StorageConfig) -> str:
     if naming != FileNaming.request_id.value:
         raise ValueError(f"File naming of {naming} not supported")
 
-    return f"{request_id}.{get_extension(config.format)}"  # type: ignore
+    return f"{request_id}.{get_extension(config.download_format)}"  # type: ignore
 
 
 def _get_uploader_from_config_type(storage_type: StorageType) -> Any:
@@ -77,7 +77,7 @@ def _s3_uploader(_: Session, config: StorageConfig, data: Dict, request_id: str)
     auth_method = config.details[StorageDetails.AUTH_METHOD.value]
 
     return upload_to_s3(
-        config.secrets, data, bucket_name, file_key, config.format.value, request_id, auth_method  # type: ignore
+        config.secrets, data, bucket_name, file_key, config.download_format.value, request_id, auth_method  # type: ignore
     )
 
 
