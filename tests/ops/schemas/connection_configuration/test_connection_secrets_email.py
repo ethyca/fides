@@ -1,7 +1,8 @@
+import pytest
+
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     EmailSchema,
 )
-import pytest
 
 
 class TestEmailSchema:

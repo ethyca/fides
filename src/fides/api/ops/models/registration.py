@@ -69,7 +69,7 @@ class UserRegistration(Base):
         """
         Converts a `UserRegistration` into the format required by Fideslog.
         """
-        email: Optional[EmailStr] = self.user_email
+        email: Optional[str] = self.user_email
         organization: Optional[str] = self.user_organization
         return Registration(
             email=email,
