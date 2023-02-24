@@ -1,8 +1,9 @@
 """
 This module handles generating documentation from code.
 """
+from textwrap import wrap
 import toml
-from typing import Dict, Any, Set, List
+from typing import Dict, Set, List
 import json
 import sys
 
@@ -68,10 +69,17 @@ def build_field_documentation(field_name: str, field_info: Dict[str, str]) -> st
     """Build a docstring for an individual docstring."""
     try:
         field_type = field_info["type"]
-        field_description = field_info["description"]
+        field_description = "\n".join(
+            wrap(
+                text=field_info["description"],
+                width=71,
+                subsequent_indent="# ",
+                initial_indent="# ",
+            )
+        )
         field_default = format_value_for_toml(field_info.get("default", ""), field_type)
         doc_string = (
-            f"# {field_description}\n{field_name} = {field_default} # {field_type}\n"
+            f"{field_description}\n{field_name} = {field_default} # {field_type}\n"
         )
         return doc_string
     except KeyError:
@@ -79,12 +87,13 @@ def build_field_documentation(field_name: str, field_info: Dict[str, str]) -> st
         raise SystemExit(f"!Failed to parse field: {field_name}!")
 
 
-def join_section_field_docstrings(
-    settings_docstring: str, field_docstrings: List[str]
-) -> str:
-    """Joins a section docstring with a list of docstrings by field."""
-    joined_docstrings = settings_docstring + "\n" + "\n".join(field_docstrings)
-    return joined_docstrings
+def build_title_header(title: str) -> str:
+    """Build a pretty, TOML-valid title header."""
+    title_piece = f"#-- {title.upper()} --#\n"
+    top_piece = f"#{'-' * (len(title_piece) - 3)}#\n"
+    bottom_piece = f"#{'-' * 68}#\n"
+    header = top_piece + title_piece + bottom_piece
+    return header
 
 
 def convert_settings_to_toml_docs(settings_name: str, settings: BaseSettings) -> str:
@@ -96,6 +105,7 @@ def convert_settings_to_toml_docs(settings_name: str, settings: BaseSettings) ->
     """
     settings_schema = settings.schema()
     included_keys = set(settings.dict().keys())
+    title_header = build_title_header(settings_name)
 
     print(f"> Building docs for section: {settings_name}...")
     # Build the Section docstring
@@ -108,12 +118,11 @@ def convert_settings_to_toml_docs(settings_name: str, settings: BaseSettings) ->
         build_field_documentation(field_name, field_info)
         for field_name, field_info in fields.items()
     ]
-
-    joined_docstrings = join_section_field_docstrings(
-        settings_docstring, field_docstrings
+    full_docstring = (
+        title_header + settings_docstring + "\n" + "\n".join(field_docstrings)
     )
     print(f"{settings_name} docs built successfully.")
-    return joined_docstrings
+    return full_docstring
 
 
 def remove_excluded_fields(
@@ -139,7 +148,9 @@ def generate_config_docs(outfile_dir: str) -> None:
 
     # Build docstrings for the nested settings
     settings: Dict[str, BaseSettings] = get_nested_settings(CONFIG)
-    ordered_settings: Dict[str, BaseSettings] = {name: settings[name] for name in sorted(set(settings.keys()))}
+    ordered_settings: Dict[str, BaseSettings] = {
+        name: settings[name] for name in sorted(set(settings.keys()))
+    }
     nested_settings_docs: List[str] = [
         convert_settings_to_toml_docs(settings_name, settings_schema)
         for settings_name, settings_schema in ordered_settings.items()
