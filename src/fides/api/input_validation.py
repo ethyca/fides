@@ -14,7 +14,7 @@ class InputStr(str):
     """
 
     @classmethod
-    def __get_validators__(cls) -> Generator:
+    def __get_validators__(cls) -> Generator:  # pragma: no cover
         yield cls.validate
 
     @classmethod
@@ -33,7 +33,7 @@ class PhoneNumber(str):
     """
     Format validated type for phone numbers.
 
-    Standard can be found here: https://en.wikipedia.org/wiki/E.164
+    Standard format can be found here: https://en.wikipedia.org/wiki/E.164
     """
 
     @classmethod
