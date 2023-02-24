@@ -22,6 +22,7 @@ The types of changes are:
 * Add API support for messaging config properties [#2551](https://github.com/ethyca/fides/pull/2551)
 * Access and erasure support for Kustomer [#2520](https://github.com/ethyca/fides/pull/2520)
 * Added the `erase_after` field on collections to be able to set the order for erasures [#2619](https://github.com/ethyca/fides/pull/2619)
+* Added endpoints for storage and messaging config setup status [#2690](https://github.com/ethyca/fides/pull/2690)
 
 ### Changed
 
