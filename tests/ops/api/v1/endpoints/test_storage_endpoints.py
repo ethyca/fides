@@ -1377,7 +1377,10 @@ class TestGetStorageStatus:
         assert 200 == response.status_code
         response = StorageConfigStatusMessage(**response.json())
         assert response.config_status == StorageConfigStatus.not_configured
-        assert response.detail == "Active default storage configuration is not s3"
+        assert (
+            response.detail
+            == "Active default storage configuration is not one of the fully configured storage types"
+        )
 
     def test_get_storage_status_app_setting_not_set(
         self,
@@ -1401,7 +1404,10 @@ class TestGetStorageStatus:
         assert 200 == response.status_code
         response = StorageConfigStatusMessage(**response.json())
         assert response.config_status == StorageConfigStatus.not_configured
-        assert response.detail == "Active default storage configuration is not s3"
+        assert (
+            response.detail
+            == "Active default storage configuration is not one of the fully configured storage types"
+        )
 
     @pytest.fixture(scope="function")
     def active_default_storage_s3(self, db, config_proxy: ConfigProxy):
@@ -1450,7 +1456,10 @@ class TestGetStorageStatus:
         assert 200 == response.status_code
         response = StorageConfigStatusMessage(**response.json())
         assert response.config_status == StorageConfigStatus.not_configured
-        assert response.detail == "Active default storage configuration is not s3"
+        assert (
+            response.detail
+            == "Active default storage configuration is not one of the fully configured storage types"
+        )
 
     @pytest.mark.usefixtures(
         "active_default_storage_local", "storage_config_default_local"
@@ -1476,7 +1485,10 @@ class TestGetStorageStatus:
         assert 200 == response.status_code
         response = StorageConfigStatusMessage(**response.json())
         assert response.config_status == StorageConfigStatus.not_configured
-        assert response.detail == "Active default storage configuration is not s3"
+        assert (
+            response.detail
+            == "Active default storage configuration is not one of the fully configured storage types"
+        )
 
     @pytest.mark.usefixtures("active_default_storage_s3")
     def test_get_storage_status_app_setting_but_not_configured(

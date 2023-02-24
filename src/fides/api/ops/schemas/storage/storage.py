@@ -106,6 +106,11 @@ class StorageType(Enum):
     local = "local"  # local should be used for testing only, not for processing real-world privacy requests
 
 
+FULLY_CONFIGURED_STORAGE_TYPES = (
+    StorageType.s3,
+)  # storage types that are considered "fully configured"
+
+
 class StorageDestinationBase(BaseModel):
     """Storage Destination Schema -- used for setting defaults"""
 

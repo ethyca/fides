@@ -208,7 +208,8 @@ def get_messaging_status(
         MessagingConfigRequestBase.validate_details_schema(
             messaging_config.service_type, details
         )
-    except Exception:
+    except Exception as e:
+        logger.error(f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}")  # type: ignore
         return MessagingConfigStatusMessage(
             config_status=MessagingConfigStatus.not_configured,
             detail=f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration",  # type: ignore
@@ -226,10 +227,11 @@ def get_messaging_status(
             service_type=messaging_config.service_type,  # type: ignore
             secrets=secrets,
         )
-    except Exception as e:
+    except (ValueError, KeyError) as e:
+        logger.error(f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}")  # type: ignore
         return MessagingConfigStatusMessage(
             config_status=MessagingConfigStatus.not_configured,
-            detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {str(e)}",  # type: ignore
+            detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore
         )
 
     return MessagingConfigStatusMessage(
