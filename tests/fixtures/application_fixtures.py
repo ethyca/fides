@@ -1602,6 +1602,13 @@ def system(db: Session) -> System:
     return system
 
 
+@pytest.fixture(scope="function")
+def system_manager(db: Session, user, system) -> System:
+    user.set_as_system_manager(db, system)
+    yield user
+    user.remove_as_system_manager(db, system)
+
+
 @pytest.fixture
 def admin_user(db):
     user = FidesUser.create(

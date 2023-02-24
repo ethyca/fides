@@ -248,6 +248,7 @@ def perform_login(
             client_secret_btye_length,
             scopes=user.permissions.scopes,  # type: ignore
             roles=user.permissions.roles,  # type: ignore
+            systems=user.system_ids,  # type: ignore
             user_id=user.id,
         )
 

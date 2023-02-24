@@ -285,6 +285,10 @@ class System(Base, FidesBase):
     egress = Column(JSON)
     ingress = Column(JSON)
 
+    users = relationship(
+        "FidesUser", secondary="systemmanager", back_populates="systems"
+    )
+
 
 class SystemScans(Base):
     """
