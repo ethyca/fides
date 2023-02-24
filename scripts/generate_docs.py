@@ -165,23 +165,18 @@ def generate_config_docs(outfile_dir: str) -> None:
         convert_settings_to_toml_docs(settings_name, settings_schema)
         for settings_name, settings_schema in nested_settings.items()
     ]
-    nested_settings_docs: str = "\n".join(nested_settings_docs)
-
-    # Combine the docstrings
-    docs_list = [toplevel_docs, nested_settings_docs]
-    docs = "\n".join(docs_list)
+    docs: str = "\n".join([toplevel_docs] + nested_settings_docs)
 
     # Verify it is valid TOML before writing it out
     toml.loads(docs)
 
-    # Verify that there are no TODOs
     assert (
         "# TODO" not in docs
     ), "All fields require documentation, no description TODOs allowed!"
 
     with open(outfile_path, "w") as output_file:
         output_file.write(docs)
-        print(f"Exported configuration schema to: {outfile_path}")
+        print(f"Exported configuration file to: {outfile_path}")
 
     # Verify it is a valid Fides config file
     get_config(outfile_path)

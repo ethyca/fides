@@ -29,7 +29,7 @@ class UserSettings(FidesSettings):
         exclude=True,
     )
     analytics_opt_out: bool = Field(
-        default=False,
+        default=True,
         description="When set to true, prevents sending anonymous analytics data to Ethyca.",
     )
     encryption_key: str = Field(
