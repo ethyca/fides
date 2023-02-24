@@ -273,6 +273,7 @@ class TestPatchStorageConfig:
                     },
                     "key": "my_s3_bucket",
                     "download_format": "csv",
+                    "html_landing_page": None,
                     "is_default": False,
                 }
             ],
@@ -556,6 +557,7 @@ class TestGetStorageConfigs:
                         "naming": "request_id",
                     },
                     "download_format": "json",
+                    "html_landing_page": None,
                     "is_default": False,
                 }
             ],
@@ -612,6 +614,7 @@ class TestGetStorageConfig:
             },
             "key": "my_test_config",
             "download_format": "json",
+            "html_landing_page": None,
             "is_default": False,
         }
 
@@ -730,7 +733,7 @@ class TestGetDefaultStorageConfigs:
                         "bucket": "test_bucket",
                     },
                     "key": storage_config_default.key,
-                    "download_format": storage_config_default.format.value,
+                    "download_format": storage_config_default.download_format.value,
                     "is_default": True,
                 }
             ],
@@ -810,7 +813,7 @@ class TestGetDefaultStorageConfig:
                 "bucket": "test_bucket",
             },
             "key": storage_config_default.key,
-            "download_format": storage_config_default.format.value,
+            "download_format": storage_config_default.download_format.value,
             "is_default": True,
         }
 
@@ -1401,6 +1404,7 @@ class TestGetActiveDefaultStorageConfig:
             },
             "key": storage_config_default.key,
             "download_format": storage_config_default.download_format.value,
+            "html_landing_page": None,
             "is_default": True,
         }
 

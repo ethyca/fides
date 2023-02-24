@@ -50,9 +50,8 @@ def downgrade():
         "storageconfig",
         sa.Column(
             "format",
-            postgresql.ENUM("json", "csv", name="responseformat"),
-            server_default=sa.text("'json'::responseformat"),
-            autoincrement=False,
+            sa.Enum("json", "csv", name="responseformat"),
+            server_default=sa.text("json"),
             nullable=False,
         ),
     )
