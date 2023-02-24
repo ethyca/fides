@@ -734,6 +734,7 @@ class TestGetDefaultStorageConfigs:
                     },
                     "key": storage_config_default.key,
                     "download_format": storage_config_default.download_format.value,
+                    "html_landing_page": None,
                     "is_default": True,
                 }
             ],
@@ -814,6 +815,7 @@ class TestGetDefaultStorageConfig:
             },
             "key": storage_config_default.key,
             "download_format": storage_config_default.download_format.value,
+            "html_landing_page": None,
             "is_default": True,
         }
 
