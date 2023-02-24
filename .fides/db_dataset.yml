@@ -1470,8 +1470,11 @@ dataset:
     - name: details
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: format
+    - name: download_format
       data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: html_landing_page
+      data_categories: [ system.operations ]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: id
       data_categories: [system.operations]
