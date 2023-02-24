@@ -161,8 +161,9 @@ class StorageDestinationBase(BaseModel):
     @root_validator(pre=True)
     def maintain_backwards_compatibility(cls, values: Dict) -> Dict:
         """Ensures backwards compatibility after renaming `format` -> `download_format`"""
-        if values["format"]:
-            values["download_format"] = values["format"]
+        if values.get("format"):
+            values["download_format"] = values.get("format")
+            del values["format"]
         return values
 
     @validator("details", pre=True, always=True)
