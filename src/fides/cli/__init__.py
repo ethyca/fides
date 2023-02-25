@@ -1,4 +1,6 @@
-"""Contains the groups and setup for the CLI."""
+"""
+Entrypoint for the Fides command-line.
+"""
 from importlib.metadata import version
 from platform import system
 

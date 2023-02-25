@@ -1,5 +1,5 @@
 """
-Entrypoint for the Fides command-line.
+Reusable command-line arguments and options.
 """
 
 from typing import Callable
@@ -11,7 +11,11 @@ from fideslang import model_list
 def coverage_threshold_option(command: Callable) -> Callable:
     "Add a flag that assumes yes."
     command = click.option(
-        "--coverage-threshold", "-c", type=click.IntRange(0, 100), default=100
+        "--coverage-threshold",
+        "-c",
+        type=click.IntRange(0, 100),
+        default=100,
+        help="A coverage percentage below this will raise in error.",
     )(command)
     return command
 
@@ -39,7 +43,7 @@ def fides_key_option(command: Callable) -> Callable:
     command = click.option(
         "-k",
         "--fides-key",
-        help="The fides_key of the single policy that you wish to evaluate.",
+        help="A valid fides_key.",
         default="",
     )(command)
     return command

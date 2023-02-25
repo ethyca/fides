@@ -27,7 +27,7 @@ from fides.core import system as _system
 @click.pass_context
 def generate(ctx: click.Context) -> None:
     """
-    Generate fides resource types
+    Generate Fides objects.
     """
 
 
@@ -35,7 +35,7 @@ def generate(ctx: click.Context) -> None:
 @click.pass_context
 def generate_dataset(ctx: click.Context) -> None:
     """
-    Generate fides Dataset resources
+    Generate a Fides dataset(s).
     """
 
 
@@ -54,13 +54,7 @@ def generate_dataset_db(
     include_null: bool,
 ) -> None:
     """
-    Connect to a database directly via a SQLAlchemy-style connection string and
-    generate a dataset manifest file that consists of every schema/table/field.
-    Connection string can be supplied as an option or a credentials reference
-    to fides config.
-
-    This is a one-time operation that does not track the state of the database.
-    It will need to be run again if the database schema changes.
+    Generate a Fides dataset by walking a database and recording every schema/table/field.
     """
     actual_connection_string = handle_database_credentials_options(
         fides_config=ctx.obj["CONFIG"],
@@ -79,7 +73,7 @@ def generate_dataset_db(
 @click.pass_context
 def generate_dataset_gcp(ctx: click.Context) -> None:
     """
-    Generate fides Dataset resources for Google Cloud Platform
+    Generate a Fides dataset(s) for Google Cloud Platform.
     """
 
 
