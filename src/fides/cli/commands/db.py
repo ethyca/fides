@@ -11,7 +11,7 @@ from fides.core.utils import echo_red
 @click.pass_context
 def database(ctx: click.Context) -> None:
     """
-    Trigger actions to be run against the application database.
+    Run actions against the application database.
     """
 
 
