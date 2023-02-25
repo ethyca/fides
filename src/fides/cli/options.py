@@ -1,5 +1,5 @@
 """
-Contains all of the options/arguments used by the CLI commands.
+Entrypoint for the Fides command-line.
 """
 
 from typing import Callable
@@ -39,8 +39,8 @@ def fides_key_option(command: Callable) -> Callable:
     command = click.option(
         "-k",
         "--fides-key",
-        default="",
         help="The fides_key of the single policy that you wish to evaluate.",
+        default="",
     )(command)
     return command
 
@@ -48,9 +48,7 @@ def fides_key_option(command: Callable) -> Callable:
 def manifests_dir_argument(command: Callable) -> Callable:
     "Add the manifests_dir argument."
     command = click.argument(
-        "manifests_dir",
-        default=".fides/",
-        type=click.Path(exists=True),
+        "manifests_dir", type=click.Path(exists=True), default=".fides/"
     )(command)
     return command
 
@@ -58,7 +56,7 @@ def manifests_dir_argument(command: Callable) -> Callable:
 def dry_flag(command: Callable) -> Callable:
     "Add a flag that prevents side-effects."
     command = click.option(
-        "--dry", is_flag=True, help="Prevent the persistance of any changes."
+        "--dry", is_flag=True, help="Do not upload results to the Fides webserver."
     )(command)
     return command
 
@@ -90,7 +88,7 @@ def include_null_flag(command: Callable) -> Callable:
     command = click.option(
         "--include-null",
         is_flag=True,
-        help="Includes attributes that would otherwise be null.",
+        help="Includes null attributes.",
     )(command)
     return command
 
@@ -101,6 +99,7 @@ def organization_fides_key_option(command: Callable) -> Callable:
         "--org-key",
         "-k",
         default="default_organization",
+        show_default=True,
         help="The organization_fides_key you wish to export resources for.",
     )(command)
     return command
@@ -112,6 +111,7 @@ def output_directory_option(command: Callable) -> Callable:
         "--output-dir",
         "-d",
         default=".fides/",
+        show_default=True,
         help="The output directory for the data map to be exported to.",
     )(command)
     return command

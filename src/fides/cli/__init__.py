@@ -59,8 +59,9 @@ PACKAGE = "ethyca-fides"
     "--config-path",
     "-f",
     "config_path",
-    default="",
-    help="Path to a configuration file. Use 'fides view-config' to print the config. Not compatible with the 'fides webserver' subcommand.",
+    default=".fides/fides.toml",
+    show_default=True,
+    help="Path to a Fides config file.",
 )
 @click.option(
     "--local",
@@ -70,7 +71,11 @@ PACKAGE = "ethyca-fides"
 @click.pass_context
 def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     """
-    Command-line tool for the Fides privacy enginering platform.
+    __Command-line tool for the Fides privacy enginering platform.__
+
+    ---
+
+    _Note: The common MANIFESTS_DIR argument _always_ defaults to ".fides/" if not specified._
     """
 
     ctx.ensure_object(dict)

@@ -16,7 +16,7 @@ from fides.core import parse as _parse
 @click.pass_context
 def export(ctx: click.Context) -> None:
     """
-    Export fides resource types
+    Export Fides datamaps.
     """
 
 
@@ -31,7 +31,7 @@ def export_system(
     dry: bool,
 ) -> None:
     """
-    Export a system in a data map format.
+    Export a system in a datamap format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -55,7 +55,7 @@ def export_dataset(
     dry: bool,
 ) -> None:
     """
-    Export a dataset in a data map format.
+    Export a dataset in a datamap format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -79,7 +79,7 @@ def export_organization(
     dry: bool,
 ) -> None:
     """
-    Export an organization in a data map format.
+    Export an organization in a datamap format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -111,17 +111,9 @@ def export_datamap(
     csv: bool,
 ) -> None:
     """
-    Export a formatted data map to excel using the fides template.
+    Export a datamap using the standard Fides template.
 
     The data map is comprised of an Organization, Systems, and Datasets.
-
-    The default organization is used, however a custom one can be
-    passed if required.
-
-    A custom manifest directory can be provided for the output location.
-
-    The csv flag can be used to output data as csv, while the dry
-    flag can be used to return data to the console instead.
     """
     config = ctx.obj["CONFIG"]
     _export.export_datamap(

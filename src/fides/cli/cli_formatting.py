@@ -37,7 +37,7 @@ rich_click.STYLE_DEPRECATED = "red"
 rich_click.STYLE_HELPTEXT_FIRST_LINE = ""
 rich_click.STYLE_HELPTEXT = ""
 rich_click.STYLE_OPTION_HELP = ""
-rich_click.STYLE_OPTION_DEFAULT = "dim"
+rich_click.STYLE_OPTION_DEFAULT = "bold #8700af"
 rich_click.STYLE_OPTION_ENVVAR = "dim yellow"
 rich_click.STYLE_REQUIRED_SHORT = "red"
 rich_click.STYLE_REQUIRED_LONG = "dim red"
@@ -97,7 +97,7 @@ rich_click.APPEND_METAVARS_HELP = (
 rich_click.GROUP_ARGUMENTS_OPTIONS = (
     False  # Show arguments with options instead of in own panel
 )
-rich_click.USE_MARKDOWN = False  # Parse help strings as markdown
+rich_click.USE_MARKDOWN = True  # Parse help strings as markdown
 rich_click.USE_MARKDOWN_EMOJI = True  # Parse emoji codes in markdown :smile:
 rich_click.USE_RICH_MARKUP = (
     False  # Parse help strings for rich markup (eg. [red]my text[/])

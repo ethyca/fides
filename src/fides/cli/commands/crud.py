@@ -16,7 +16,7 @@ from fides.core.utils import echo_green
 @with_analytics
 def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Delete a resource on the server.
+    Delete a resource from the server.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
@@ -36,7 +36,7 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @with_analytics
 def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    View a resource from the server as a YAML object.
+    View an object from the server.
     """
     config = ctx.obj["CONFIG"]
     resource = get_server_resource(
@@ -56,7 +56,7 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
 @with_analytics
 def list_resources(ctx: click.Context, resource_type: str) -> None:
     """
-    Get a list of all resources of this type from the server and display them as YAML.
+    View all objects of a single type from the server.
     """
     config = ctx.obj["CONFIG"]
     resources = list_server_resources(
