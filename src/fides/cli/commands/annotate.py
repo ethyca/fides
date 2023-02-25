@@ -1,6 +1,6 @@
 """Contains the annotate group of CLI commands for fides."""
 
-import click
+import rich_click as click
 
 from fides.cli.utils import with_analytics
 from fides.core import annotate_dataset as _annotate_dataset

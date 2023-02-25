@@ -1,6 +1,6 @@
 """Contains the view group of the commands for fides."""
 
-import click
+import rich_click as click
 from toml import dumps as toml_dumps
 
 from fides.cli.utils import print_divider, with_analytics

@@ -2,7 +2,7 @@
 from importlib.metadata import version
 from platform import system
 
-import click
+import rich_click as click
 from fideslog.sdk.python.client import AnalyticsClient
 
 import fides
@@ -46,6 +46,11 @@ SERVER_CHECK_COMMAND_NAMES = [
 VERSION = fides.__version__
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
+
+click.rich_click.SHOW_ARGUMENTS = True
+click.rich_click.STYLE_ARGUMENT = "bold medium_spring_green"
+click.rich_click.STYLE_OPTION = "bold purple3"
+click.rich_click.STYLE_USAGE_COMMAND = "bold grey37"
 
 
 @click.group(

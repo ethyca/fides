@@ -1,5 +1,5 @@
 """Contains the export group of CLI commands for fides."""
-import click
+import rich_click as click
 
 from fides.cli.options import (
     dry_flag,

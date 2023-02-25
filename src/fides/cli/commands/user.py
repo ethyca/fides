@@ -1,5 +1,5 @@
 """Contains the user command group for the fides CLI."""
-import click
+import rich_click as click
 
 from fides.cli.options import (
     first_name_option,

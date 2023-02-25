@@ -1,5 +1,5 @@
 """Contains the db group of the commands for fides."""
-import click
+import rich_click as click
 
 from fides.cli.options import yes_flag
 from fides.cli.utils import handle_cli_response, with_analytics

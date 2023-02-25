@@ -1,5 +1,5 @@
 """Contains all of the CRUD-type CLI commands for fides."""
-import click
+import rich_click as click
 import yaml
 
 from fides.cli.options import fides_key_argument, resource_type_argument

@@ -1,6 +1,6 @@
 """Contains the scan group of the commands for fides."""
 
-import click
+import rich_click as click
 
 from fides.cli.options import (
     aws_access_key_id_option,

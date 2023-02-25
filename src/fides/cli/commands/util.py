@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 from subprocess import CalledProcessError
 
-import click
+import rich_click as click
 
 import fides
 from fides.cli.utils import (

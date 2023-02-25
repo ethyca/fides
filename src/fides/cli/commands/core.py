@@ -1,7 +1,7 @@
 """Contains all of the core CLI commands for fides."""
 from typing import Optional
 
-import click
+import rich_click as click
 
 from fides.cli.options import (
     dry_flag,
