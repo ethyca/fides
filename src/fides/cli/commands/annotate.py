@@ -35,7 +35,7 @@ def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool, validate: bool
 ) -> None:
     """
-    Interacitvely annotate datasets. The dataset file will be edited in-place.
+    Interactively annotate a dataset. The dataset file will be edited in-place.
     """
     config = ctx.obj["CONFIG"]
     _annotate_dataset.annotate_dataset(

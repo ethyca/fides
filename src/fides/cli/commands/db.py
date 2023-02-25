@@ -38,7 +38,7 @@ def db_init(ctx: click.Context) -> None:
 @with_analytics
 def db_reset(ctx: click.Context, yes: bool) -> None:
     """
-    Wipes all user-created data and resets the database back to its freshly initialized state.
+    Reset the database back to its initial state.
     """
     config = ctx.obj["CONFIG"]
     if yes:
