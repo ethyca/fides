@@ -19,6 +19,7 @@ from .commands.scan import scan
 from .commands.user import user
 from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
+from . import cli_formatting
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
@@ -47,11 +48,6 @@ VERSION = fides.__version__
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
 
-click.rich_click.SHOW_ARGUMENTS = True
-click.rich_click.STYLE_ARGUMENT = "bold medium_spring_green"
-click.rich_click.STYLE_OPTION = "bold purple3"
-click.rich_click.STYLE_USAGE_COMMAND = "bold grey37"
-
 
 @click.group(
     context_settings=CONTEXT_SETTINGS,
@@ -74,7 +70,7 @@ click.rich_click.STYLE_USAGE_COMMAND = "bold grey37"
 @click.pass_context
 def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     """
-    The parent group for the Fides CLI.
+    Command-line tool for the Fides privacy enginering platform.
     """
 
     ctx.ensure_object(dict)

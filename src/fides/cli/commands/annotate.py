@@ -10,7 +10,7 @@ from fides.core import annotate_dataset as _annotate_dataset
 @click.pass_context
 def annotate(ctx: click.Context) -> None:
     """
-    Annotate fides resource types
+    Interactively annotate Fides resources.
     """
 
 
@@ -35,7 +35,7 @@ def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool, validate: bool
 ) -> None:
     """
-    Guided flow for annotating datasets. The dataset file will be edited in-place.
+    Interacitvely annotate datasets. The dataset file will be edited in-place.
     """
     config = ctx.obj["CONFIG"]
     _annotate_dataset.annotate_dataset(

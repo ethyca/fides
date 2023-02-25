@@ -11,7 +11,7 @@ from fides.core.utils import echo_red
 @click.pass_context
 def database(ctx: click.Context) -> None:
     """
-    Database utility commands
+    Trigger actions to be run against the application database.
     """
 
 
@@ -20,7 +20,7 @@ def database(ctx: click.Context) -> None:
 @with_analytics
 def db_init(ctx: click.Context) -> None:
     """
-    Initialize the fides database.
+    Initialize the Fides database.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(

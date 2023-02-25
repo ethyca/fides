@@ -32,8 +32,8 @@ from fides.core.utils import echo_green
 @click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
 def init(ctx: click.Context, fides_directory_location: str) -> None:
     """
-    Initializes a fides instance, creating the default directory (`.fides/`) and
-    the configuration file (`fides.toml`) if necessary.
+    Initializes a Fides instance by creating the default directory and
+    configuration file if not present.
 
     Additionally, requests the ability to respectfully collect anonymous usage data.
     """
