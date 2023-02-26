@@ -9,6 +9,7 @@ import consentConfig from "./consent-config.json";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
+import { banner, getBannerOptions } from "./lib/consent-banner";
 import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
 import { getConsentCookie, makeDefaults } from "./lib/cookie";
@@ -28,6 +29,8 @@ const consent = getConsentCookie(defaults);
 const Fides = {
   consent,
 
+  banner,
+  getBannerOptions,
   gtm,
   meta,
   shopify,
