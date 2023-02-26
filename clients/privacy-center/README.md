@@ -94,6 +94,14 @@ To run the interactive test interface, run:
 npm run test
 ```
 
+For a fully-loaded development & test setup of both the Privacy Center and the
+Fides Consent library, run the following commands in three separate terminals:
+```bash
+npm run dev
+cd packages/fides-consent && npm run watch
+npm run cy:open
+```
+
 ## Deployment
 
 To deploy this site, fork this repository. Then, configure a smart hosting service such as Vercel or Netlify to deploy it, specifying the root directory for the client application as the `clients/privacy-center` directory (relative to the root of the repository).
