@@ -151,5 +151,5 @@ human_readable = "Recharge"
 [vend]
 config = "data/saas/config/vend_config.yml"
 dataset = "data/saas/dataset/vend_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/vend.svg"
 human_readable = "Vend"
