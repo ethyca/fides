@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "cbd35879-b646-4c71-9c80-92cff0dfab77",
-		"name": "Fidesops",
+		"_postman_id": "03d28ae1-a240-42f8-839e-92a4d43132ed",
+		"name": "Fides",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -4450,6 +4450,29 @@
 								"config",
 								"{{mailgun_config_key}}",
 								"secret"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": {{test_email}}\n}"
+						},
+						"url": {
+							"raw": "{{host}}/messaging/config/test",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"messaging",
+								"config",
+								"test"
 							]
 						}
 					},

@@ -2,7 +2,7 @@
 This script is used to seed the application database with example
 data for DSR processing.
 
-This script is only designed to be run from the Nox session 'nox -s test_env'.
+This script is only designed to be run from the Nox sessions 'nox -s fides_env(test)' or 'nox -s fides_env(dev)'.
 """
 
 from setup import constants, get_secret
@@ -35,11 +35,9 @@ create_user(
 )
 
 # Create an S3 storage config to store DSR results
-storage_key = constants.DEFAULT_STORAGE_KEY
 if get_secret("AWS_SECRETS")["access_key_id"]:
     print("AWS secrets provided, attempting to configure S3 storage...")
-    create_s3_storage(auth_header=auth_header, key=constants.S3_STORAGE_KEY)
-    storage_key = constants.S3_STORAGE_KEY
+    create_s3_storage(auth_header=auth_header)
 
 # Edit the default DSR policies to use for testing privacy requests
 # NOTE: We use the default policies to test the default privacy center
@@ -50,14 +48,12 @@ create_rule(
     auth_header=auth_header,
     policy_key=constants.DEFAULT_ACCESS_POLICY,
     rule_key=constants.DEFAULT_ACCESS_POLICY_RULE,
-    storage_key=storage_key,
     action_type="access",
 )
 create_rule(
     auth_header=auth_header,
     policy_key=constants.DEFAULT_ERASURE_POLICY,
     rule_key=constants.DEFAULT_ERASURE_POLICY_RULE,
-    storage_key=storage_key,
     action_type="erasure",
 )
 

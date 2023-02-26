@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from fides.core.config import get_config
 from fides.core.config.database_settings import DatabaseSettings
-from fides.lib.exceptions import MissingConfig
+from fides.core.config.security_settings import SecuritySettings
 
 REQUIRED_ENV_VARS = {
     "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
@@ -15,6 +15,24 @@ REQUIRED_ENV_VARS = {
     "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET": "fidesadminsecret",
     "FIDES__SECURITY__DRP_JWT_SECRET": "secret",
 }
+
+
+@pytest.mark.unit
+def test_get_config_verbose() -> None:
+    """Simple test to check the 'verbose' code path."""
+    config = get_config(verbose=True, config_path_override="fakefiledoesntexist.toml")
+    assert config
+
+
+@pytest.mark.unit
+class TestSecurityEnv:
+    def test_security_invalid(self):
+        """
+        Test that an exception is raised when an invalid Enum value is used.
+        """
+        with pytest.raises(ValueError):
+            SecuritySettings(env="invalid")
+
 
 # Unit
 @patch.dict(
@@ -26,8 +44,6 @@ REQUIRED_ENV_VARS = {
 def test_get_config(test_config_path: str) -> None:
     """Test that the actual config matches what the function returns."""
     config = get_config(test_config_path)
-    assert config.user.user_id == "1"
-    assert config.user.api_key == "test_api_key"
     assert config.database.user == "postgres"
     assert config.cli.server_url == "http://fides:8080"
     assert (
@@ -106,22 +122,19 @@ def test_get_config_cache() -> None:
 
     config = get_config()
     cache_info = get_config.cache_info()
-    assert config.user.user_id == "1"
-    assert config.user.api_key == "test_api_key"
+    assert config.user.encryption_key == "test_encryption_key"
     assert cache_info.hits == 0
     assert cache_info.misses == 1
 
     config = get_config()
     cache_info = get_config.cache_info()
-    assert config.user.user_id == "1"
-    assert config.user.api_key == "test_api_key"
+    assert config.user.encryption_key == "test_encryption_key"
     assert cache_info.hits == 1
     assert cache_info.misses == 1
 
     config = get_config("tests/ctl/test_config.toml")
     cache_info = get_config.cache_info()
-    assert config.user.user_id == "1"
-    assert config.user.api_key == "test_api_key"
+    assert config.user.encryption_key == "test_encryption_key"
     assert cache_info.hits == 1
     assert cache_info.misses == 2
 
@@ -129,7 +142,7 @@ def test_get_config_cache() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDES__USER__USER_ID": "2",
+        "FIDES__USER__ENCRYPTION_KEY": "test_key_one",
         "FIDES__CLI__SERVER_HOST": "test",
         "FIDES__CLI__SERVER_PORT": "8080",
         "FIDES__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test",
@@ -142,8 +155,7 @@ def test_config_from_env_vars() -> None:
     "Test building a config from env vars."
     config = get_config()
 
-    assert config.user.user_id == "2"
-    assert config.user.api_key == "test_api_key"
+    assert config.user.encryption_key == "test_key_one"
     assert config.cli.server_url == "http://test:8080"
     assert (
         config.credentials["postgres_1"]["connection_string"]
@@ -277,3 +289,61 @@ def test_config_log_level_invalid():
         with pytest.raises(ValidationError) as err:
             get_config()
         assert "Invalid LOG_LEVEL" in str(err.value)
+
+
+class TestBuildingDatabaseValues:
+    def test_validating_included_sqlalchemy_database_uri(self) -> None:
+        """
+        Test that injecting a pre-configured database uri is
+        correctly used as opposed to building a new one.
+        """
+        incorrect_value = "incorrecthost"
+        correct_value = "correcthosthost"
+        database_settings = DatabaseSettings(
+            server=incorrect_value,
+            sqlalchemy_database_uri=f"postgresql://postgres:fides@{correct_value}:5432/fides",
+        )
+        assert incorrect_value not in database_settings.sqlalchemy_database_uri
+        assert correct_value in database_settings.sqlalchemy_database_uri
+
+    def test_validating_included_sqlalchemy_test_database_uri(self) -> None:
+        """
+        Test that injecting a pre-configured test database uri is
+        correctly used as opposed to building a new one.
+        """
+        incorrect_value = "incorrecthost"
+        correct_value = "correcthosthost"
+        database_settings = DatabaseSettings(
+            server=incorrect_value,
+            sqlalchemy_test_database_uri=f"postgresql://postgres:fides@{correct_value}:5432/fides",
+        )
+        assert incorrect_value not in database_settings.sqlalchemy_test_database_uri
+        assert correct_value in database_settings.sqlalchemy_test_database_uri
+
+    def test_validating_included_sync_database_uri(self) -> None:
+        """
+        Test that injecting a pre-configured database uri is
+        correctly used as opposed to building a new one.
+        """
+        incorrect_value = "incorrecthost"
+        correct_value = "correcthosthost"
+        database_settings = DatabaseSettings(
+            server=incorrect_value,
+            sync_database_uri=f"postgresql://postgres:fides@{correct_value}:5432/fides",
+        )
+        assert incorrect_value not in database_settings.sync_database_uri
+        assert correct_value in database_settings.sync_database_uri
+
+    def test_validating_included_async_database_uri(self) -> None:
+        """
+        Test that injecting a pre-configured database uri is
+        correctly used as opposed to building a new one.
+        """
+        incorrect_value = "incorrecthost"
+        correct_value = "correcthosthost"
+        database_settings = DatabaseSettings(
+            server=incorrect_value,
+            async_database_uri=f"postgresql://postgres:fides@{correct_value}:5432/fides",
+        )
+        assert incorrect_value not in database_settings.async_database_uri
+        assert correct_value in database_settings.async_database_uri

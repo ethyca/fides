@@ -1,32 +1,40 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-
 from typing import Dict, Optional
 
-from pydantic import validator
+from pydantic import Field
 
-from fides.core.utils import generate_request_headers
+from fides.core.utils import create_auth_header, get_auth_header
 
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__USER__"
 
 
+def try_get_auth_header() -> Dict[str, str]:
+    """Try to get the auth header. If an error is thrown, return a default auth header instead."""
+    try:
+        return get_auth_header(verbose=False)
+    except SystemExit:
+        return create_auth_header("defaulttoken")
+
+
 class UserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
-    user_id: str = "1"
-    api_key: str = "test_api_key"
-    request_headers: Dict[str, str] = {}
-    analytics_opt_out: Optional[bool]
-    encryption_key: str = "test_encryption_key"
-
-    # Automatically generate the request_headers on object creation
-    @validator("request_headers", pre=True, always=True)
-    @classmethod
-    def get_request_headers(cls, value: Optional[Dict], values: Dict) -> Dict[str, str]:
-        return generate_request_headers(values["user_id"], values["api_key"])
+    auth_header: Dict[str, str] = Field(
+        default=try_get_auth_header(),
+        description="Authentication header built automatically from the credentials file.",
+        exclude=True,
+    )
+    analytics_opt_out: Optional[bool] = Field(
+        description="When set to true, prevents sending anonymous analytics data to Ethyca."
+    )
+    encryption_key: str = Field(
+        default="test_encryption_key",
+        description="An arbitrary string used to encrypt the user data stored in the database. Encryption is implemented using PGP.",
+    )
 
     class Config:
         env_prefix = ENV_PREFIX

@@ -14,6 +14,7 @@ export enum PrivacyRequestStatus {
   IN_PROCESSING = "in_processing",
   COMPLETE = "complete",
   PAUSED = "paused",
+  AWAITING_CONSENT_EMAIL_SEND = "awaiting_consent_email_send",
   CANCELED = "canceled",
   ERROR = "error",
 }

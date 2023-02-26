@@ -18,8 +18,7 @@ from fides.api.ops.task.graph_task import GraphTask
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.util.collection_util import Row
 from fides.lib.db.base_class import FidesBase
-
-from ..fixtures.application_fixtures import faker
+from tests.fixtures.application_fixtures import faker
 
 
 class MockResources(TaskResources):

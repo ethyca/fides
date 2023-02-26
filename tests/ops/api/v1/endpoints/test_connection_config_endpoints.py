@@ -33,7 +33,7 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.lib.models.client import ClientDetail
-from tests.ops.fixtures.application_fixtures import integration_secrets
+from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
 
@@ -1334,6 +1334,77 @@ class TestPutConnectionConfigSecrets:
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
+
+    def test_put_sovrn_connection_config_secrets(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        sovrn_email_connection_config,
+    ) -> None:
+        """Note: this test does not attempt to send an email, via use of verify query param."""
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{sovrn_email_connection_config.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "processor_address@example.com",
+            "recipient_email_address": "sovrn@example.com",
+            "advanced_settings": {
+                "identity_types": {
+                    "email": False,
+                    "phone_number": False,
+                    "cookie_ids": ["ljt_readerID"],
+                }
+            },
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {sovrn_email_connection_config.key}."
+        )
+        db.refresh(sovrn_email_connection_config)
+
+        assert sovrn_email_connection_config.secrets == {
+            "test_email_address": "processor_address@example.com",
+            "recipient_email_address": "sovrn@example.com",
+            "advanced_settings": {
+                "identity_types": {
+                    "email": False,
+                    "phone_number": False,
+                    "cookie_ids": ["ljt_readerID"],
+                },
+            },
+            "third_party_vendor_name": "Sovrn",
+        }
+        assert sovrn_email_connection_config.last_test_timestamp is None
+        assert sovrn_email_connection_config.last_test_succeeded is None
+
+    def test_put_sovrn_connection_config_secrets_missing(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        sovrn_email_connection_config,
+    ) -> None:
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{sovrn_email_connection_config.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "processor_address@example.com",
+            "recipient_email_address": "sovrn@example.com",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert resp.json()["detail"][0]["loc"] == ["advanced_settings"]
+        assert resp.json()["detail"][0]["msg"] == "field required"
 
     def test_put_connection_config_redshift_secrets(
         self,

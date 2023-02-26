@@ -1,15 +1,15 @@
 describe("Connectors", () => {
   beforeEach(() => {
     cy.login();
+    cy.intercept("GET", "/api/v1/connection*", {
+      fixture: "connectors/list.json",
+    }).as("getConnectors");
+    cy.intercept("GET", "/api/v1/connection_type*", {
+      fixture: "connectors/connection_types.json",
+    }).as("getConnectionTypes");
   });
   describe("Configuring connectors", () => {
     beforeEach(() => {
-      cy.intercept("GET", "/api/v1/connection*", {
-        fixture: "connectors/list.json",
-      }).as("getConnectors");
-      cy.intercept("GET", "/api/v1/connection_type*", {
-        fixture: "connectors/connection_types.json",
-      }).as("getConnectionTypes");
       cy.intercept("GET", "/api/v1/connection/postgres_connector", {
         fixture: "connectors/postgres_connector.json",
       }).as("getPostgresConnector");
@@ -126,6 +126,67 @@ describe("Connectors", () => {
       cy.getByTestId("tab-Dataset configuration").click();
       cy.wait("@getEmptyPostgresConnectorDatasetconfig");
       cy.getByTestId("dataset-selector-section").should("not.exist");
+    });
+  });
+
+  describe("Email connector", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/connection_type/sovrn/secret", {
+        fixture: "connectors/sovrn_secret.json",
+      }).as("getSovrnSecret");
+      cy.intercept("PATCH", "/api/v1/connection", {
+        fixture: "connectors/patch_connection.json",
+      }).as("patchSovrn");
+      cy.intercept("PUT", "/api/v1/connection/sovrn-test/secret*", {
+        fixture: "connectors/put_secret.json",
+      }).as("putSovrnSecret");
+    });
+
+    it("allows the user to add an email connector", () => {
+      cy.visit("/datastore-connection/new");
+      cy.getByTestId("select-dropdown-btn").click();
+      cy.getByTestId("select-dropdown-list").contains("Email connectors");
+      cy.getByTestId("select-dropdown-btn").click();
+      cy.getByTestId("sovrn-item").click();
+      cy.url().should("contain", "/new?step=2");
+
+      // fill out the form
+      const identifier = "sovrn-test";
+      const recipientEmailAddress = "sovrn-test";
+      cy.get("input").get(`[name='name']`).type(identifier);
+      cy.get("input").get(`[name='instance_key']`).type(identifier);
+      cy.get("input")
+        .get(`[name='recipient_email_address']`)
+        .type(recipientEmailAddress);
+      cy.get("button").contains("Save").click();
+      cy.wait("@patchSovrn").then((interception) => {
+        const { body } = interception.request;
+        expect(body).to.eql([
+          {
+            access: "write",
+            connection_type: "sovrn",
+            description: "",
+            disabled: false,
+            key: identifier,
+            name: identifier,
+          },
+        ]);
+      });
+      cy.wait("@putSovrnSecret").then((interception) => {
+        const { body } = interception.request;
+        expect(body).to.eql({
+          third_party_vendor_name: "Sovrn",
+          recipient_email_address: recipientEmailAddress,
+          test_email_address: "",
+          advanced_settings: {
+            identity_types: {
+              email: false,
+              phone_number: false,
+              cookie_ids: [],
+            },
+          },
+        });
+      });
     });
   });
 });

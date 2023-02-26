@@ -111,27 +111,10 @@ def create_config_file(
 
     Returns the config_path if successful.
     """
-    # TODO: These important constants should live elsewhere
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
     config_file_name = "fides.toml"
     config_path = f"{fides_dir_path}/{config_file_name}"
-
-    included_values = {
-        "database": {
-            "server",
-            "user",
-            "password",
-            "port",
-            "db",
-        },
-        "logging": {
-            "level",
-            "destination",
-            "serialization",
-        },
-        "cli": {"server_protocol", "server_host", "server_port"},
-    }
 
     # create the .fides dir if it doesn't exist
     if not os.path.exists(fides_dir_path):
@@ -143,7 +126,7 @@ def create_config_file(
     # create a fides.toml config file if it doesn't exist
     if not os.path.isfile(config_path):
         with open(config_path, "w", encoding="utf-8") as config_file:
-            config_dict = config.dict(include=included_values)  # type: ignore[arg-type]
+            config_dict = config.dict()  # type: ignore[arg-type]
             toml.dump(config_dict, config_file)
         echo(f"Created a fides config file: {config_path}")
     else:
