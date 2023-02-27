@@ -12,6 +12,7 @@ import { useFormikContext } from "formik";
 import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { sentenceCase } from "~/features/common/utils";
 import { initialDataCategories } from "~/features/plus/helpers";
 import {
   selectDataCategories,
@@ -133,9 +134,7 @@ const DataFlowsAccordionItem = ({ classifyDataFlows, type }: Props) => {
     <AccordionItem p={0} data-testid={`accordion-item-${type}`}>
       <AccordionItemContents
         headingLevel="h2"
-        title={`Connected ${
-          typeLabel[0].toLocaleUpperCase() + typeLabel.slice(1)
-        } Systems`}
+        title={`Connected ${sentenceCase(typeLabel)} Systems`}
       >
         {flows.map((flow, idx) => (
           <DataFlowAccordionItem
