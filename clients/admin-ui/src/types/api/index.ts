@@ -200,6 +200,7 @@ export type { ResourceFilter } from "./models/ResourceFilter";
 export { ResourceTypes } from "./models/ResourceTypes";
 export { ResponseFormat } from "./models/ResponseFormat";
 export type { ReviewPrivacyRequestIds } from "./models/ReviewPrivacyRequestIds";
+export { RoleRegistry } from "./models/RoleRegistry";
 export type { RowCountRequest } from "./models/RowCountRequest";
 export type { RuleCreate } from "./models/RuleCreate";
 export type { RuleResponse } from "./models/RuleResponse";

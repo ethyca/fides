@@ -37,7 +37,7 @@ const useUserForm = (profile: User, permissions: UserPermissions) => {
   if (isOwnProfile) {
     canUpdateUser = true;
   } else {
-    canUpdateUser = userPermissions
+    canUpdateUser = userPermissions?.scopes
       ? userPermissions.scopes.includes("user:update")
       : false;
   }

@@ -19,7 +19,7 @@ const PasswordManagement = ({ profileId }: Props) => {
   );
 
   const isOwnProfile = currentUser ? currentUser.id === profileId : false;
-  const canForceResetPassword = userPermissions
+  const canForceResetPassword = userPermissions?.scopes
     ? userPermissions.scopes.includes("user:password-reset")
     : false;
 

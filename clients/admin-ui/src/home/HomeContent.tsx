@@ -44,7 +44,7 @@ const HomeContent: React.FC = () => {
           .map((item) => {
             const { href } = resolveZoneLink({ href: item.href, router });
             return (
-              <Link data-testid={item.name} href={href} key={item.key} passHref>
+              <Link href={href} key={item.key} passHref>
                 <Flex
                   background={`${item.color}.50`}
                   borderRadius="8px"
@@ -59,6 +59,7 @@ const HomeContent: React.FC = () => {
                     borderColor: `${item.color}.500`,
                     cursor: "pointer",
                   }}
+                  data-testid={`tile-${item.name}`}
                 >
                   <Flex
                     alignItems="center"

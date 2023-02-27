@@ -60,8 +60,6 @@ export const userManagementSlice = createSlice({
 
 export const { setPage, setUsernameSearch } = userManagementSlice.actions;
 
-// export const selectThisUsersScopes = (state: RootState): ScopeRegistry[] =>
-
 export const { reducer } = userManagementSlice;
 
 // Helpers
