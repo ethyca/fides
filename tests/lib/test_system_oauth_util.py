@@ -242,7 +242,7 @@ class TestHasScopeAsSystemManager:
         )
 
     def test_system_manager_does_not_have_scopes_for_this_endpoint(
-        self,  system, system_manager
+        self, system, system_manager
     ):
         """
         Assert the current endpoint isn't covered by system manager scopes

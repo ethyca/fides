@@ -26,6 +26,7 @@ from fides.api.ctl.database.crud import (
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import (
     API_PREFIX,
+    CLI_SCOPE_PREFIX_MAPPING,
     forbid_if_default,
     forbid_if_editing_any_is_default,
     forbid_if_editing_is_default,
@@ -38,7 +39,7 @@ from fides.api.ctl.sql_models import (
 )
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.api.ops.api.v1 import scope_registry
+from fides.api.ops.api.v1.scope_registry import CREATE, DELETE, READ, UPDATE
 from fides.api.ops.schemas.dataset import validate_data_categories_against_db
 from fides.api.ops.util.oauth_util import verify_oauth_client_cli
 
@@ -83,7 +84,8 @@ for model_type, fides_model in model_map.items():
         status_code=status.HTTP_201_CREATED,
         dependencies=[
             Security(
-                verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_CREATE]
+                verify_oauth_client_cli,
+                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}"],
             )
         ],
         responses={
@@ -122,7 +124,10 @@ for model_type, fides_model in model_map.items():
     @router.get(
         "/",
         dependencies=[
-            Security(verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_READ])
+            Security(
+                verify_oauth_client_cli,
+                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
+            )
         ],
         response_model=List[fides_model],
         name="List",
@@ -138,7 +143,10 @@ for model_type, fides_model in model_map.items():
     @router.get(
         "/{fides_key}",
         dependencies=[
-            Security(verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_READ])
+            Security(
+                verify_oauth_client_cli,
+                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
+            )
         ],
         response_model=fides_model,
     )
@@ -160,7 +168,8 @@ for model_type, fides_model in model_map.items():
             response_model=fides_model,
             dependencies=[
                 Security(
-                    verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_UPDATE]
+                    verify_oauth_client_cli,
+                    scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{UPDATE}"],
                 )
             ],
             responses={
@@ -203,8 +212,8 @@ for model_type, fides_model in model_map.items():
             Security(
                 verify_oauth_client_cli,
                 scopes=[
-                    scope_registry.CLI_OBJECTS_CREATE,
-                    scope_registry.CLI_OBJECTS_UPDATE,
+                    f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}",
+                    f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{UPDATE}",
                 ],
             )
         ],
@@ -288,7 +297,8 @@ for model_type, fides_model in model_map.items():
             "/{fides_key}",
             dependencies=[
                 Security(
-                    verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_DELETE]
+                    verify_oauth_client_cli,
+                    scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{DELETE}"],
                 )
             ],
             responses={
