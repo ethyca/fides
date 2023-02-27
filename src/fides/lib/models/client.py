@@ -42,7 +42,7 @@ class ClientDetail(Base):
     salt = Column(String, nullable=False)
     scopes = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
     roles = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
-    systems = Column(ARRAY(String), nullable=True, server_default="{}", default=dict)
+    systems = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
     fides_key = Column(String, index=True, unique=True, nullable=True)
     user_id = Column(
         String, ForeignKey(FidesUser.id_field_path), nullable=True, unique=True

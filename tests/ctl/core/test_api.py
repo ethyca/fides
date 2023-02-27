@@ -1,7 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Integration tests for the API module."""
 from json import loads
-from typing import Dict
+from typing import Dict, List
 
 import pytest
 import requests
@@ -11,10 +11,21 @@ from starlette.testclient import TestClient
 
 from fides.api.ctl.database.crud import get_resource
 from fides.api.ctl.routes import health
-from fides.api.ctl.routes.util import API_PREFIX
+from fides.api.ctl.routes.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.api.ctl.sql_models import Dataset
+from fides.api.ops.api.v1.scope_registry import (
+    CREATE,
+    DELETE,
+    POLICY_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_CREATE,
+    PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_READ,
+    READ,
+    UPDATE,
+)
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
+from tests.conftest import generate_auth_header
 
 CONFIG = get_config()
 
@@ -60,18 +71,44 @@ def test_generate_resource_urls_with_id(test_config: FidesConfig) -> None:
 class TestCrud:
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_create(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        generate_auth_header,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
         print(manifest.json(exclude_none=True))
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
         print(result.text)
         assert result.status_code == 201
+
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_create_wrong_scope(
+        self,
+        generate_auth_header,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+    ) -> None:
+        manifest = resources_dict[endpoint]
+        print(manifest.json(exclude_none=True))
+        token_scopes: List[str] = [PRIVACY_REQUEST_CREATE]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            json_resource=manifest.json(exclude_none=True),
+            headers=auth_header,
+        )
+        assert result.status_code == 403
 
     async def test_create_dataset_data_categories_validated(
         self, test_config: FidesConfig, resources_dict: Dict
@@ -93,26 +130,67 @@ class TestCrud:
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
-    def test_api_ls(self, test_config: FidesConfig, endpoint: str) -> None:
+    def test_api_ls(
+        self, test_config: FidesConfig, endpoint: str, generate_auth_header
+    ) -> None:
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.ls(
             url=test_config.cli.server_url,
             resource_type=endpoint,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
         print(result.text)
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
-    def test_api_get(self, test_config: FidesConfig, endpoint: str) -> None:
+    def test_api_ls_wrong_scope(
+        self, test_config: FidesConfig, endpoint: str, generate_auth_header
+    ) -> None:
+        token_scopes: List[str] = [PRIVACY_REQUEST_READ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            headers=auth_header,
+        )
+        assert result.status_code == 403
+
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_get(
+        self, test_config: FidesConfig, endpoint: str, generate_auth_header
+    ) -> None:
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         existing_id = get_existing_key(test_config, endpoint)
         result = _api.get(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resource_id=existing_id,
         )
         print(result.text)
         assert result.status_code == 200
+
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_get_wrong_scope(
+        self, test_config: FidesConfig, endpoint: str, generate_auth_header
+    ) -> None:
+        token_scopes: List[str] = [PRIVACY_REQUEST_READ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
+        existing_id = get_existing_key(test_config, endpoint)
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            resource_id=existing_id,
+        )
+        print(result.text)
+        assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_sent_is_received(
@@ -140,17 +218,43 @@ class TestCrud:
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_update(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        generate_auth_header,
     ) -> None:
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
         manifest = resources_dict[endpoint]
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
         print(result.text)
         assert result.status_code == 200
+
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_update_wrong_scope(
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        generate_auth_header,
+    ) -> None:
+        token_scopes: List[str] = [POLICY_CREATE_OR_UPDATE]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        manifest = resources_dict[endpoint]
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            json_resource=manifest.json(exclude_none=True),
+        )
+        print(result.text)
+        assert result.status_code == 403
 
     async def test_update_dataset_data_categories_validated(
         self, test_config: FidesConfig, resources_dict: Dict
@@ -173,16 +277,48 @@ class TestCrud:
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_upsert(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        generate_auth_header,
     ) -> None:
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         manifest = resources_dict[endpoint]
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=[loads(manifest.json())],
         )
         assert result.status_code == 200
+
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_upsert_wrong_scope(
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        generate_auth_header,
+    ) -> None:
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+        ]  # Needs both create AND update
+        auth_header = generate_auth_header(scopes=token_scopes)
+
+        manifest = resources_dict[endpoint]
+        result = _api.upsert(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            resources=[loads(manifest.json())],
+        )
+        assert result.status_code == 403
 
     async def test_upsert_validates_resources_against_pydantic_model(
         self, test_config: FidesConfig, resources_dict: Dict, async_session
@@ -224,9 +360,16 @@ class TestCrud:
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
-    def test_api_delete(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+    def test_api_delete_wrong_scope(
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        generate_auth_header,
     ) -> None:
+        token_scopes: List[str] = [PRIVACY_REQUEST_DELETE]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         manifest = resources_dict[endpoint]
         resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
 
@@ -234,7 +377,30 @@ class TestCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=resource_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
+        )
+        print(result.text)
+        assert result.status_code == 403
+
+    @pytest.mark.parametrize("endpoint", model_list)
+    def test_api_delete(
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        generate_auth_header,
+    ) -> None:
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{DELETE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
+        manifest = resources_dict[endpoint]
+        resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
+
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=resource_key,
+            headers=auth_header,
         )
         print(result.text)
         assert result.status_code == 200
