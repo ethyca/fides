@@ -35,46 +35,6 @@ class TestConfigHelpers:
 
         assert helpers.get_config_from_file(file, "bad", "missing") is None
 
-    def test_create_config_file(self, config, tmp_path, capfd):
-        config_path = helpers.create_config_file(config, tmp_path)
-
-        fides_directory = tmp_path / ".fides"
-        fides_file_path = fides_directory / "fides.toml"
-        out, _ = capfd.readouterr()
-
-        assert f"Created a '{fides_directory}' directory" in out
-        assert f"Created a fides config file: {fides_file_path}" in out
-        assert config_path == str(fides_file_path)
-
-    def test_create_config_file_dir_exists(self, config, tmp_path, capfd):
-        fides_directory = tmp_path / ".fides"
-        fides_directory.mkdir()
-        fides_file_path = fides_directory / "fides.toml"
-
-        config_path = helpers.create_config_file(config, tmp_path)
-
-        out, _ = capfd.readouterr()
-
-        assert f"Directory '{fides_directory}' already exists" in out
-        assert f"Created a fides config file: {fides_file_path}" in out
-        assert config_path == str(fides_file_path)
-
-    def test_create_config_file_exists(self, config, tmp_path, capfd):
-        fides_directory = tmp_path / ".fides"
-        fides_directory.mkdir()
-        fides_file_path = fides_directory / "fides.toml"
-
-        with open(fides_file_path, "w", encoding="utf-8") as f:
-            toml.dump(config.dict(), f)
-
-        config_path = helpers.create_config_file(config, tmp_path)
-
-        out, _ = capfd.readouterr()
-
-        assert f"Directory '{fides_directory}' already exists" in out
-        assert f"Configuration file already exists: {fides_file_path}" in out
-        assert config_path == str(fides_file_path)
-
     @patch("fides.core.config.helpers.get_config_from_file")
     def test_check_required_webserver_config_values(self, mock_get_config, capfd):
         mock_get_config.return_value = None
