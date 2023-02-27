@@ -11,12 +11,11 @@ from py._path.local import LocalPath
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.cli import cli
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.user import get_user_permissions
 from fides.core.utils import get_auth_header, read_credentials_file
 from fides.lib.oauth.roles import ADMIN
 
-config = get_config()
 OKTA_URL = "https://dev-78908748.okta.com"
 
 
@@ -939,7 +938,7 @@ class TestUser:
 
         credentials = read_credentials_file(credentials_path)
         scopes, roles = get_user_permissions(
-            credentials.user_id, get_auth_header(), config.cli.server_url
+            credentials.user_id, get_auth_header(), CONFIG.cli.server_url
         )
         assert scopes == SCOPE_REGISTRY
         assert roles == [ADMIN]
@@ -978,9 +977,9 @@ class TestUser:
             env={"FIDES_CREDENTIALS_PATH": credentials_path},
         )
         scopes, roles = get_user_permissions(
-            config.security.oauth_root_client_id,
+            CONFIG.security.oauth_root_client_id,
             get_auth_header(),
-            config.cli.server_url,
+            CONFIG.cli.server_url,
         )
         assert scopes == SCOPE_REGISTRY
         assert roles == [ADMIN]

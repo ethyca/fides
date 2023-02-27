@@ -160,7 +160,7 @@ def get_permissions_command(server_url: str) -> None:
     auth_header = get_auth_header()
     scopes, roles = get_user_permissions(user_id, auth_header, server_url)
 
-    print("Permissions (Direct Scopes):")
+    print("Permissions (Directly-Assigned Scopes):")
     for scope in scopes:
         print(f"\t{scope}")
 
