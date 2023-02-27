@@ -5,11 +5,9 @@ import * as React from "react";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { selectUser } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import { resolveZoneLink } from "~/features/common/nav/zone-config";
-import { useGetUserPermissionsQuery } from "~/features/user-management";
-import { ScopeRegistry } from "~/types/api";
+import { selectThisUsersScopes } from "~/features/user-management";
 
 import { MODULE_CARD_ITEMS } from "./constants";
 import { configureTiles } from "./tile-config";
@@ -21,8 +19,7 @@ const HomeContent: React.FC = () => {
   const { connectionsCount, systemsCount, plus } = useFeatures();
   const hasConnections = connectionsCount > 0;
   const hasSystems = systemsCount > 0;
-  const user = useAppSelector(selectUser);
-  const { data: permissions } = useGetUserPermissionsQuery(user?.id ?? "");
+  const userScopes = useAppSelector(selectThisUsersScopes);
 
   const list = useMemo(
     () =>
@@ -31,9 +28,9 @@ const HomeContent: React.FC = () => {
         hasPlus: plus,
         hasConnections,
         hasSystems,
-        userScopes: permissions ? (permissions.scopes as ScopeRegistry[]) : [],
+        userScopes,
       }),
-    [hasConnections, hasSystems, plus, permissions]
+    [hasConnections, hasSystems, plus, userScopes]
   );
 
   return (
