@@ -11,6 +11,9 @@ from pydantic import BaseSettings
 
 from fides.core.config import FidesConfig, get_config
 
+CONFIG_DOCS_URL = "https://ethyca.github.io/fides/stable/config/"
+HELP_LINK = f"# For more info, please visit: {CONFIG_DOCS_URL}\n"
+
 
 def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
     """
@@ -27,7 +30,7 @@ def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
     nested_settings = {
         settings_name
         for settings_name, settings_info in config.schema()["properties"].items()
-        if not settings_info.get("type") and settings_info.get("type") != "object"
+        if not settings_info.get("type")
     }
 
     nested_settings_objects = {
@@ -70,13 +73,30 @@ def build_field_documentation(field_name: str, field_info: Dict[str, str]) -> st
         raise SystemExit(f"!Failed to parse field: {field_name}!")
 
 
-def build_title_header(title: str) -> str:
-    """Build a pretty, TOML-valid title header."""
+def build_section_header(title: str) -> str:
+    """Build a pretty, TOML-valid section header."""
     title_piece = f"#-- {title.upper()} --#\n"
     top_piece = f"#{'-' * (len(title_piece) - 3)}#\n"
     bottom_piece = f"#{'-' * 68}#\n"
     header = top_piece + title_piece + bottom_piece
     return header
+
+
+def convert_object_to_toml_docs(object_name: str, object_info: Dict[str, str]) -> str:
+    """
+    Takes a Pydantic field of type `object` and returns a formatted string with included metadata.
+
+    This is used to handle "special-case" top-level fields that aren't normal "settings" objects.
+    """
+    title_header = build_section_header(object_name)
+
+    # Build the Section docstring
+    settings_description = object_info["description"]
+    settings_docstring = f"[{object_name}] # {settings_description}\n" + HELP_LINK
+
+    # Build the field docstrings
+    full_docstring = title_header + settings_docstring
+    return full_docstring
 
 
 def convert_settings_to_toml_docs(settings_name: str, settings: BaseSettings) -> str:
@@ -88,7 +108,7 @@ def convert_settings_to_toml_docs(settings_name: str, settings: BaseSettings) ->
     """
     settings_schema = settings.schema()
     included_keys = set(settings.dict().keys())
-    title_header = build_title_header(settings_name)
+    title_header = build_section_header(settings_name)
 
     # Build the Section docstring
     settings_description = settings_schema["description"]
@@ -123,9 +143,22 @@ def generate_config_docs(
     Autogenerate the schema for the configuration file
     and format it nicely as valid TOML.
 
-    _Anything at the top-level of the config is ignored!_
+    _Any individual value at the top-level of the config is ignored!_
     """
 
+    # Create the docs for the special "object" fields
+    schema_properties: Dict[str, Dict] = config.schema()["properties"]
+    object_fields = {
+        settings_name: settings_info
+        for settings_name, settings_info in schema_properties.items()
+        if settings_info.get("type") == "object"
+    }
+    object_docs = [
+        convert_object_to_toml_docs(object_name, object_info)
+        for object_name, object_info in object_fields.items()
+    ]
+
+    # Create the docs for the nested settings objects
     settings: Dict[str, BaseSettings] = get_nested_settings(config)
     ordered_settings: Dict[str, BaseSettings] = {
         name: settings[name] for name in sorted(set(settings.keys()))
@@ -134,7 +167,9 @@ def generate_config_docs(
         convert_settings_to_toml_docs(settings_name, settings_schema)
         for settings_name, settings_schema in ordered_settings.items()
     ]
-    docs: str = "\n".join(nested_settings_docs)
+
+    # Combine all of the docs
+    docs: str = "\n".join(nested_settings_docs + object_docs)
 
     # Verify it is valid TOML before writing it out
     toml.loads(docs)

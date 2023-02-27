@@ -295,3 +295,15 @@ analytics_opt_out = true # boolean
 # An arbitrary string used to encrypt the user data stored in the
 # database. Encryption is implemented using PGP.
 encryption_key = "test_encryption_key" # string
+
+#------------#
+#-- CELERY --#
+#--------------------------------------------------------------------#
+[celery] # This section can be used to pass config vars to Celery directly.
+# For more info, please visit: https://ethyca.github.io/fides/stable/config/
+
+#-----------------#
+#-- CREDENTIALS --#
+#--------------------------------------------------------------------#
+[credentials] # This is a special section that is used to store arbitrary key/value pairs to be used as credentials.
+# For more info, please visit: https://ethyca.github.io/fides/stable/config/
