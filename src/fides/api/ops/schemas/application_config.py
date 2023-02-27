@@ -41,6 +41,9 @@ class NotificationApplicationConfig(BaseSchema):
     send_request_review_notification: Optional[bool]
     notification_service_type: Optional[str]
 
+    class Config:
+        extra = Extra.forbid
+
     @validator("notification_service_type", pre=True)
     @classmethod
     def validate_notification_service_type(cls, value: str) -> Optional[str]:
