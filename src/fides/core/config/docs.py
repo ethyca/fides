@@ -193,6 +193,7 @@ def create_config_file(config: FidesConfig, fides_directory_location: str = ".")
 
     Returns the config_path if successful.
     """
+    print(config.user.analytics_opt_out)
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
     config_file_name = "fides.toml"

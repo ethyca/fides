@@ -158,7 +158,10 @@ def request_analytics_consent(config: FidesConfig) -> FidesConfig:
     #     return config
 
     # Otherwise, ask for consent
-    config.user.analytics_opt_out = bool(input(OPT_OUT_PROMPT + "\n").lower() == "n")
+    print(OPT_OUT_COPY)
+    config.user.analytics_opt_out = not click.confirm(
+        "Opt-in to anonymous usage analytics?"
+    )
 
     # If we've not opted out, attempt to register the user if they are
     # currently connected to a Fides server

@@ -13,6 +13,7 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
+from fides.core.config.utils import replace_config_value
 from fides.core.config.docs import create_config_file
 from fides.core.deploy import (
     check_docker_version,
@@ -51,8 +52,17 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     config_path = create_config_file(
         config=config, fides_directory_location=fides_directory_location
     )
-    print_divider()
 
+    # Update the value in the config file if it differs from the default
+    if config.user.analytics_opt_out == False:
+        replace_config_value(
+            fides_directory_location=fides_directory_location,
+            key="analytics_opt_out",
+            old_value="true",
+            new_value="false",
+        )
+
+    print_divider()
 
     send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
     echo_green("fides initialization complete.")
