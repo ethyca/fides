@@ -251,16 +251,13 @@ async def test_vend_erasure_request_task(
         headers=headers,
         params={"type": "customers", "email": vend_erasure_identity_email},
     )
-    customer_id = response.json()['data'][0]['id']
+    customer_name = response.json()['data'][0]['name']
+    first_name = response.json()['data'][0]['first_name']
+    last_name = response.json()['data'][0]['last_name']
     response.json()['data'][0]['email'] == vend_erasure_identity_email
     
-    #sales
-    sales_response = requests.get(
-        url=f"{base_url}/api/2.0/search",
-        headers=headers,
-        params={"type": "sales", "customer_id": customer_id},
-    ) 
-   
-    assert sales_response.status_code == 200
+    assert customer_name == "MASKED MASKED"
+    assert first_name == "MASKED"
+    assert last_name == "MASKED"
 
     CONFIG.execution.masking_strict = masking_strict
