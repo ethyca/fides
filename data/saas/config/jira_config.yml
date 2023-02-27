@@ -7,8 +7,7 @@ saas_config:
 
   connector_params:
     - name: domain
-      default_value: ethycaconnectors.atlassian.net
-    - name: api_token
+    - name: api_key
 
   client_config:
     protocol: https
@@ -22,7 +21,7 @@ saas_config:
 
   test_request:
     method: GET
-    path: /rest/api/3/users/search
+    path: /rest/api/3/serverInfo
 
   endpoints:
     - name: customers

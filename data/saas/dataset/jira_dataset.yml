@@ -10,7 +10,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: accountId
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
               data_type: string
@@ -19,7 +19,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: emailAddress
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: avatarUrls
@@ -27,23 +27,23 @@ dataset:
               data_type: object
             fields:
               - name: 48x48
-                data_categories: [system.operations]
+                data_categories: [user.biometric]
                 fidesops_meta:
                   data_type: string
               - name: 24x24
-                data_categories: [system.operations]
+                data_categories: [user.biometric]
                 fidesops_meta:
                   data_type: string
               - name: 16x16
-                data_categories: [system.operations]
+                data_categories: [user.biometric]
                 fidesops_meta:
                   data_type: string
               - name: 32x32
-                data_categories: [system.operations]
+                data_categories: [user.biometric]
                 fidesops_meta:
                   data_type: string
           - name: displayName
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: active
@@ -55,6 +55,6 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: locale
-            data_categories: [system.operations]
+            data_categories: [user.location]
             fidesops_meta:
               data_type: string
