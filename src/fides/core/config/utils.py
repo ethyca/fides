@@ -9,7 +9,7 @@ def replace_config_value(
 ) -> None:
     """Use string replacment to update a value in the fides.toml"""
 
-    # This matches the logic used in `.docs`
+    # This matches the logic used in `docs.py`
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
     config_file_name = "fides.toml"

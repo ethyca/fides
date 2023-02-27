@@ -20,7 +20,6 @@ from fideslog.sdk.python.utils import (
     EMAIL_PROMPT,
     FIDESCTL_CLI,
     OPT_OUT_COPY,
-    OPT_OUT_PROMPT,
     ORGANIZATION_PROMPT,
     generate_client_id,
 )
@@ -42,7 +41,7 @@ from fides.core.config.credentials_settings import (
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.core.config.helpers import get_config_from_file, update_config_file
+from fides.core.config.helpers import get_config_from_file
 from fides.core.config.utils import get_dev_mode
 from fides.core.utils import check_response, echo_green, echo_red
 

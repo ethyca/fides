@@ -44,9 +44,9 @@ def format_value_for_toml(value: str, value_type: str) -> str:
     """Format the value into valid TOML."""
     if value_type == "string":
         return f'"{value}"'
-    elif value_type == "boolean":
+    if value_type == "boolean":
         return str(value).lower()
-    elif value_type == "array":
+    if value_type == "array":
         return "[]"
     return value
 

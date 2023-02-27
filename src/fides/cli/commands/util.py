@@ -1,22 +1,22 @@
 """Contains all of the Utility-type CLI commands for fides."""
 from datetime import datetime, timezone
 from subprocess import CalledProcessError
+from typing import Tuple
 
 import click
-from typing import Tuple
 
 import fides
 from fides.cli.utils import (
     FIDES_ASCII_ART,
-    request_analytics_consent,
     check_server,
     print_divider,
+    request_analytics_consent,
     send_init_analytics,
     with_analytics,
 )
-from fides.core.config.utils import replace_config_value
-from fides.core.config.docs import create_config_file
 from fides.core.config import FidesConfig
+from fides.core.config.docs import create_config_file
+from fides.core.config.utils import replace_config_value
 from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,
@@ -42,7 +42,7 @@ def create_and_update_config_file(
     )
 
     # Update the value in the config file if it differs from the default
-    if config.user.analytics_opt_out == False:
+    if not config.user.analytics_opt_out:
         replace_config_value(
             fides_directory_location=fides_directory_location,
             key="analytics_opt_out",
