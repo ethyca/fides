@@ -4,16 +4,15 @@ import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import DataTabs, { TabData } from "~/features/common/DataTabs";
+import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System } from "~/types/api";
 
-import DescribeSystemStep from "./DescribeSystemStep";
-import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
-import ReviewSystemStep from "./ReviewSystemStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
+import SystemFormTabs from "./SystemFormTabs";
+import SystemInformationForm from "./SystemInformationForm";
 import SystemRegisterSuccess from "./SystemRegisterSuccess";
 
-const STEPS = ["Describe", "Declare", "Review"];
+const STEPS = ["Describe", "Declare"];
 
 interface ConfigureStepsProps {
   steps: string[];
@@ -44,7 +43,7 @@ const ConfigureSteps = ({
   </Stack>
 );
 
-const ManualSystemFlow = () => {
+const EditSystemFlow = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -66,57 +65,11 @@ const ManualSystemFlow = () => {
     [currentStepIndex, dispatch]
   );
 
-  const TABS: TabData[] = [
-    {
-      label: STEPS[0],
-      content: (
-        <DescribeSystemStep onSuccess={handleSuccess} system={activeSystem} />
-      ),
-    },
-    {
-      label: STEPS[1],
-      content: activeSystem ? (
-        <PrivacyDeclarationStep
-          system={activeSystem as System}
-          onSuccess={handleSuccess}
-        />
-      ) : null,
-      isDisabled: !activeSystem,
-    },
-    {
-      label: STEPS[2],
-      content: activeSystem ? (
-        <ReviewSystemStep
-          system={activeSystem as System}
-          onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
-        />
-      ) : null,
-      isDisabled: !activeSystem,
-    },
-    {
-      label: STEPS[3],
-      content: activeSystem ? (
-        <SystemRegisterSuccess
-          system={activeSystem as System}
-          onAddNextSystem={goBack}
-        />
-      ) : null,
-      isDisabled: !activeSystem,
-    },
-  ];
-
   return (
     <>
       {navV2 && (
         <VStack alignItems="stretch" flex="1" gap="18px" maxWidth="70vw">
-          <DataTabs
-            data={TABS}
-            data-testid="settings"
-            flexGrow={1}
-            index={currentStepIndex}
-            isLazy
-            onChange={setCurrentStepIndex}
-          />
+          <SystemFormTabs />
         </VStack>
       )}
       {!navV2 && (
@@ -133,24 +86,16 @@ const ManualSystemFlow = () => {
           </GridItem>
           <GridItem w="75%">
             {currentStepIndex === 0 ? (
-              <DescribeSystemStep
+              <SystemInformationForm
                 onSuccess={handleSuccess}
                 system={activeSystem}
+                withHeader
               />
             ) : null}
             {currentStepIndex === 1 && activeSystem ? (
-              <PrivacyDeclarationStep
-                system={activeSystem}
-                onSuccess={handleSuccess}
-              />
+              <PrivacyDeclarationStep system={activeSystem} />
             ) : null}
             {currentStepIndex === 2 && activeSystem ? (
-              <ReviewSystemStep
-                system={activeSystem}
-                onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
-              />
-            ) : null}
-            {currentStepIndex === 3 && activeSystem ? (
               <SystemRegisterSuccess
                 system={activeSystem}
                 onAddNextSystem={goBack}
@@ -163,4 +108,4 @@ const ManualSystemFlow = () => {
   );
 };
 
-export default ManualSystemFlow;
+export default EditSystemFlow;

@@ -1676,7 +1676,7 @@ def create_privacy_request_func(
                     privacy_request_data.identity,
                     config_proxy.notifications.notification_service_type,
                 )
-            if not CONFIG.execution.require_manual_request_approval:
+            if not config_proxy.execution.require_manual_request_approval:
                 AuditLog.create(
                     db=db,
                     data={
