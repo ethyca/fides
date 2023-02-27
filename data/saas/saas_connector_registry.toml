@@ -175,7 +175,7 @@ human_readable = "Recharge"
 [jira]
 config = "data/saas/config/jira_config.yml"
 dataset = "data/saas/dataset/jira_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/jira.svg"
 human_readable = "Jira"
 
 [universal_analytics]
