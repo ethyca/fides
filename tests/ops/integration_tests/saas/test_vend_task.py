@@ -1,5 +1,4 @@
 import random
-import time
 
 import pytest
 import requests
@@ -111,19 +110,48 @@ async def test_vend_access_request_task(
         v[f"{dataset_name}:sales"],
         min_size=1,
         keys=[
-            "data",
-            "total_count",
-            "page_info",
+            "id",
+            "outlet_id",
+            "register_id",
+            "user_id",
+            "customer_id",
+            "invoice_number",
+            "source",
+            "source_id",
+            "complete_open_sequence_id",
+            "accounts_transaction_id",
+            "has_unsynced_on_account_payments",
+            "status",
+            "note",
+            "short_code",
+            "return_for",
+            "return_ids",
+            "total_loyalty",
+            "created_at",
+            "updated_at",
+            "sale_date",
+            "deleted_at",
+            "line_items",
+            "payments",
+            "adjustments",
+            "external_applications",
             "version",
+            "taxes",
+            "total_price",
+            "total_tax",
+            "receipt_number",
+            "total_price_incl",
         ],
     )
 
     # verify we only returned data for our identity email
-    assert v[f"{dataset_name}:customer"][0]["email"] == vend_identity_email
-    user_id = v[f"{dataset_name}:customer"][0]["id"]
-    
-    assert v[f"{dataset_name}:sales"][0]["data"][0]["customer_id"] == user_id
-    
+    customer = v[f"{dataset_name}:customer"][0]
+    assert customer["email"] == vend_identity_email
+    customer_id = customer["id"]
+
+    for sale in v[f"{dataset_name}:sales"]:
+        assert sale["customer_id"] == customer_id
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_vend
@@ -137,7 +165,7 @@ async def test_vend_erasure_request_task(
     vend_erasure_identity_email,
     vend_create_erasure_data,
 ) -> None:
-    """Full erasure request based on the Vendesk SaaS config"""
+    """Full erasure request based on the Vend SaaS config"""
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete
@@ -214,15 +242,42 @@ async def test_vend_erasure_request_task(
             "time_until_deletion",
         ],
     )
-    
+
     assert_rows_match(
         v[f"{dataset_name}:sales"],
         min_size=0,
         keys=[
-            "data",
-            "total_count",
-            "page_info",
+            "id",
+            "outlet_id",
+            "register_id",
+            "user_id",
+            "customer_id",
+            "invoice_number",
+            "source",
+            "source_id",
+            "complete_open_sequence_id",
+            "accounts_transaction_id",
+            "has_unsynced_on_account_payments",
+            "status",
+            "note",
+            "short_code",
+            "return_for",
+            "return_ids",
+            "total_loyalty",
+            "created_at",
+            "updated_at",
+            "sale_date",
+            "deleted_at",
+            "line_items",
+            "payments",
+            "adjustments",
+            "external_applications",
             "version",
+            "taxes",
+            "total_price",
+            "total_tax",
+            "receipt_number",
+            "total_price_incl",
         ],
     )
 
@@ -236,10 +291,7 @@ async def test_vend_erasure_request_task(
         db,
     )
 
-    assert x == {
-        f"{dataset_name}:customer": 1,
-        f"{dataset_name}:sales": 0
-    }
+    assert x == {f"{dataset_name}:customer": 1, f"{dataset_name}:sales": 0}
 
     vend_secrets = vend_connection_config.secrets
     headers = {"Authorization": f"Bearer {vend_secrets['token']}"}
@@ -251,13 +303,11 @@ async def test_vend_erasure_request_task(
         headers=headers,
         params={"type": "customers", "email": vend_erasure_identity_email},
     )
-    customer_name = response.json()['data'][0]['name']
-    first_name = response.json()['data'][0]['first_name']
-    last_name = response.json()['data'][0]['last_name']
-    response.json()['data'][0]['email'] == vend_erasure_identity_email
-    
-    assert customer_name == "MASKED MASKED"
-    assert first_name == "MASKED"
-    assert last_name == "MASKED"
+    customer = response.json()["data"][0]
+
+    assert customer["name"] == "MASKED MASKED"
+    assert customer["first_name"] == "MASKED"
+    assert customer["last_name"] == "MASKED"
+    assert customer["email"] == vend_erasure_identity_email
 
     CONFIG.execution.masking_strict = masking_strict

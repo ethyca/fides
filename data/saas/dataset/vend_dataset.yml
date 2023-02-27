@@ -161,7 +161,7 @@ dataset:
           - name: customer_group_ids
             data_categories: [system.operations]
             fidesops_meta:
-              data_type: 'string[]'
+              data_type: "string[]"
           - name: version
             data_categories: [system.operations]
             fidesops_meta:
@@ -170,255 +170,235 @@ dataset:
           - name: time_until_deletion
       - name: sales
         fields:
-          - name: data
+          - name: id
+            data_categories: [system.operations]
             fidesops_meta:
-              data_type: 'object[]'
+              data_type: string
+          - name: outlet_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: register_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: user_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+          - name: invoice_number
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: source
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: source_id
+          - name: complete_open_sequence_id
+          - name: accounts_transaction_id
+          - name: has_unsynced_on_account_payments
+          - name: status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: note
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: short_code
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: return_for
+          - name: return_ids
+          - name: total_loyalty
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: created_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: sale_date
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: deleted_at
+          - name: line_items
+            fidesops_meta:
+              data_type: "object[]"
             fields:
-              - name: '0'
+              - name: id
+                data_categories: [system.operations]
                 fidesops_meta:
-                  data_type: object
+                  data_type: string
+              - name: product_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: salesperson_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: tax_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: discount_total
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: discount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: price_total
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: price
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: cost_total
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: cost
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: tax_total
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: tax
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: quantity
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: loyalty_value
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: note
+              - name: price_set
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: status
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: sequence
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: gift_card_number
+              - name: tax_components
+                fidesops_meta:
+                  data_type: "object[]"
                 fields:
-                  - name: id
+                  - name: rate_id
                     data_categories: [system.operations]
                     fidesops_meta:
                       data_type: string
-                  - name: outlet_id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: register_id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: user_id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: customer_id
-                    data_categories: [user.unique_id]
-                    fidesops_meta:
-                      data_type: string
-                  - name: invoice_number
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: source
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: source_id
-                  - name: complete_open_sequence_id
-                  - name: accounts_transaction_id
-                  - name: has_unsynced_on_account_payments
-                  - name: status
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: note
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: short_code
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: return_for
-                  - name: return_ids
-                  - name: total_loyalty
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
-                  - name: created_at
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: updated_at
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: sale_date
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: deleted_at
-                  - name: line_items
-                    fidesops_meta:
-                      data_type: 'object[]'
-                    fields:
-                      - name: '0'
-                        fidesops_meta:
-                          data_type: object
-                        fields:
-                          - name: id
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: string
-                          - name: product_id
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: string
-                          - name: salesperson_id
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: string
-                          - name: tax_id
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: string
-                          - name: discount_total
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: discount
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: price_total
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: price
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: cost_total
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: cost
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: tax_total
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: tax
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: quantity
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: loyalty_value
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: note
-                          - name: price_set
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: boolean
-                          - name: status
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: string
-                          - name: sequence
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: gift_card_number
-                          - name: tax_components
-                            fidesops_meta:
-                              data_type: 'object[]'
-                            fields:
-                              - name: '0'
-                                fidesops_meta:
-                                  data_type: object
-                                fields:
-                                  - name: rate_id
-                                    data_categories: [system.operations]
-                                    fidesops_meta:
-                                      data_type: string
-                                  - name: total_tax
-                                    data_categories: [system.operations]
-                                    fidesops_meta:
-                                      data_type: integer
-                          - name: promotions
-                          - name: unit_loyalty_value
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: unit_cost
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: unit_discount
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: unit_price
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: unit_tax
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: total_cost
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: total_discount
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: total_loyalty_value
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: total_price
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: total_tax
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: is_return
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: boolean
-                  - name: payments
-                  - name: adjustments
-                  - name: external_applications
-                  - name: version
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
-                  - name: taxes
-                    fidesops_meta:
-                      data_type: 'object[]'
-                    fields:
-                      - name: '0'
-                        fidesops_meta:
-                          data_type: object
-                        fields:
-                          - name: amount
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: integer
-                          - name: id
-                            data_categories: [system.operations]
-                            fidesops_meta:
-                              data_type: string
-                  - name: total_price
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
                   - name: total_tax
                     data_categories: [system.operations]
                     fidesops_meta:
                       data_type: integer
-                  - name: receipt_number
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: total_price_incl
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
+              - name: promotions
+              - name: unit_loyalty_value
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: unit_cost
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: unit_discount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: unit_price
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: unit_tax
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: total_cost
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: total_discount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: total_loyalty_value
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: total_price
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: total_tax
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: is_return
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+          - name: payments
+          - name: adjustments
+          - name: external_applications
+          - name: version
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: taxes
+            fidesops_meta:
+              data_type: "object[]"
+            fields:
+              - name: amount
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: total_price
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: total_tax
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: receipt_number
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: total_price_incl
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
           - name: total_count
             data_categories: [system.operations]
             fidesops_meta:

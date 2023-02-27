@@ -59,14 +59,19 @@ saas_config:
               value: sales
             - name: customer_id
               value: <customer_id>
-          pagination:
-            strategy: cursor
-            configuration:
-              cursor_param: after
-              field: version
+            - name: page_size
+              value: 1000
+            - name: offset
+              value: 0
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: offset
+              increment_by: 1000
+          data_path: data
