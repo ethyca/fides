@@ -144,70 +144,41 @@ def register_user(config: FidesConfig, email: str, organization: str) -> None:
     )
 
 
-def check_and_update_analytics_config(
-    config: FidesConfig, config_path: str
-) -> FidesConfig:
+def request_analytics_consent(config: FidesConfig) -> FidesConfig:
     """
-    Verify that the analytics opt-out value is populated. If not,
-    prompt the user to opt-in to analytics and update the config
-    file with their preferences if needed.
+    Request the user's consent for analytics collection.
 
-    NOTE: This doesn't handle the case where we've collected consent for this
-    CLI instance, but are connected to a server for the first time that is
-    unregistered. This *should* be something we can detect and then
-    "re-prompt" the user for their email/org information, but right
-    now a lot of our test automation runs headless and this kind of
-    prompt can't be skipped otherwise.
+    This function should only be called when specifically wanting to ask
+    for the user's consent, otherwise it will ask repeatedly for consent
+    unless they've opted in.
     """
 
-    config_updates: Dict[str, Dict] = {}
-    if config.user.analytics_opt_out is None:
-        click.echo(OPT_OUT_COPY)
-        config.user.analytics_opt_out = bool(
-            input(OPT_OUT_PROMPT + "\n").lower() == "n"
-        )
+    # Check the analytics opt out env var
+    # if getenv("FIDES__USER__ANALYTICS_OPT_OUT", "true") != "false":
+    #     return config
 
-        config_updates.update(user={"analytics_opt_out": config.user.analytics_opt_out})
+    # Otherwise, ask for consent
+    config.user.analytics_opt_out = bool(input(OPT_OUT_PROMPT + "\n").lower() == "n")
 
-        # If we've not opted out, attempt to register the user if they are
-        # currently connected to a Fides server
-        if config.user.analytics_opt_out is False:
-            server_url = str(config.cli.server_url) or ""
-            try:
-                check_server_health(server_url, verbose=False)
-                should_attempt_registration = not is_user_registered(config)
-            except SystemExit:
-                should_attempt_registration = False
-
-            if should_attempt_registration:
-                email = input(EMAIL_PROMPT)
-                organization = input(ORGANIZATION_PROMPT)
-                if email and organization:
-                    register_user(config, email, organization)
-
-            # Either way, thank the user for their opt-in for analytics!
-            click.echo(CONFIRMATION_COPY)
-
-    # Update the analytics ID in the config file if necessary
-    is_analytics_id_config_empty = get_config_from_file(
-        config_path,
-        "cli",
-        "analytics_id",
-    ) in ("", None)
-    is_analytics_id_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
-    if (
-        not config.user.analytics_opt_out
-        and is_analytics_id_config_empty
-        and not is_analytics_id_env_var_set
-    ):
-        config_updates.update(cli={"analytics_id": config.cli.analytics_id})
-
-    if len(config_updates) > 0:
+    # If we've not opted out, attempt to register the user if they are
+    # currently connected to a Fides server
+    if not config.user.analytics_opt_out:
+        server_url = str(config.cli.server_url) or ""
         try:
-            update_config_file(config_updates, config_path)
-        except FileNotFoundError as err:
-            echo_red(f"Failed to update config file ({config_path}): {err.strerror}")
-            click.echo("Run 'fides init' to create a configuration file.")
+            check_server_health(server_url, verbose=False)
+            should_attempt_registration = not is_user_registered(config)
+        except SystemExit:
+            should_attempt_registration = False
+
+        if should_attempt_registration:
+            email = input(EMAIL_PROMPT)
+            organization = input(ORGANIZATION_PROMPT)
+            if email and organization:
+                register_user(config, email, organization)
+
+        # Either way, thank the user for their opt-in for analytics!
+        click.echo(CONFIRMATION_COPY)
+
     return config
 
 

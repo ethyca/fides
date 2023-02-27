@@ -7,7 +7,7 @@ import click
 import fides
 from fides.cli.utils import (
     FIDES_ASCII_ART,
-    check_and_update_analytics_config,
+    request_analytics_consent,
     check_server,
     print_divider,
     send_init_analytics,
@@ -44,14 +44,15 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
 
+    # request explicit consent for analytics collection
+    config = request_analytics_consent(config=config)
+
     # create the config file as needed
     config_path = create_config_file(
         config=config, fides_directory_location=fides_directory_location
     )
     print_divider()
 
-    # request explicit consent for analytics collection
-    check_and_update_analytics_config(config=config, config_path=config_path)
 
     send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
     echo_green("fides initialization complete.")
