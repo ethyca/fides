@@ -2,12 +2,12 @@ import { Divider, Heading } from "@fidesui/react";
 import React from "react";
 import { useSelector } from "react-redux";
 
-import { selectUser } from "../auth";
+import { selectUser } from "~/features/auth";
+import { useHasPermission } from "~/features/common/Restrict";
+import { ScopeRegistry } from "~/types/api";
+
 import { User, UserPermissions } from "./types";
-import {
-  useEditUserMutation,
-  useGetUserPermissionsQuery,
-} from "./user-management.slice";
+import { useEditUserMutation } from "./user-management.slice";
 import UserForm, { FormValues } from "./UserForm";
 
 const useUserForm = (profile: User, permissions: UserPermissions) => {
@@ -29,18 +29,8 @@ const useUserForm = (profile: User, permissions: UserPermissions) => {
   };
 
   const isOwnProfile = currentUser ? currentUser.id === profile.id : false;
-
-  let canUpdateUser = false;
-  const { data: userPermissions } = useGetUserPermissionsQuery(
-    currentUser?.id ?? ""
-  );
-  if (isOwnProfile) {
-    canUpdateUser = true;
-  } else {
-    canUpdateUser = userPermissions?.scopes
-      ? userPermissions.scopes.includes("user:update")
-      : false;
-  }
+  const hasUserUpdatePermission = useHasPermission([ScopeRegistry.USER_UPDATE]);
+  const canUpdateUser = isOwnProfile ? true : hasUserUpdatePermission;
 
   return {
     handleSubmit,
