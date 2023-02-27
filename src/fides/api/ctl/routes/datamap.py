@@ -21,7 +21,7 @@ from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ctl.utils.errors import DatabaseUnavailableError, NotFoundError
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.util.oauth_util import verify_oauth_client_cli
-from fides.core.export import build_joined_dataframe
+from fides.core.export import build_joined_dataframe, custom_columns
 from fides.core.export_helpers import DATAMAP_COLUMNS
 
 API_EXTRA_COLUMNS = {
@@ -48,7 +48,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
             "content": {
                 "application/json": {
                     "example": [
-                        DATAMAP_COLUMNS_API,
+                        Dict[str, str],
                         {
                             "system.name": "Demo Analytics System",
                             "system.data_responsibility_title": "Controller",
@@ -172,9 +172,11 @@ def format_datamap_values(joined_system_dataset_df: DataFrame) -> List[Dict[str,
     Formats the joined DataFrame to return the data as records.
     """
 
+    columns = {**DATAMAP_COLUMNS_API, **custom_columns}
+
     limited_columns_df = DataFrame(
         joined_system_dataset_df,
-        columns=list(DATAMAP_COLUMNS_API.keys()),
+        columns=list(columns.keys()),
     )
 
     return limited_columns_df.to_dict("records")

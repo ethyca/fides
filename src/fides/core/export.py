@@ -26,6 +26,8 @@ from fides.core.utils import echo_green, get_all_level_fields
 
 EMPTY_COLUMN_PLACEHOLDER = "N/A"
 
+custom_columns = {}
+
 
 def generate_dataset_records(
     server_dataset_list: List,
@@ -201,6 +203,7 @@ def generate_system_records(
                 key_string = f"system.{key}"
                 keys.append(key_string)
                 output_list[0] = tuple(keys)
+                custom_columns[key_string] = key
                 if isinstance(value, list):
                     system_custom_field_data[key_string] = ", ".join(value)
                 else:
