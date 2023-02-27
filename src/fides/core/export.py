@@ -170,7 +170,42 @@ def generate_system_records(
         )
     ]
 
+    system_custom_field_data = {}
+    known_fields = (
+        "fides_key",
+        "name",
+        "description",
+        "data_responsibility_title",
+        "administrating_department",
+        "third_country_transfers",
+        "system_dependencies",
+        "ingress",
+        "egress",
+        "privacy_declarations",
+        "data_protection_impact_assessment",
+        "registry_id",
+        "id",
+        "updated_at",
+        "joint_controller",
+        "created_at",
+        "organization_fides_key",
+        "meta",
+        "tags",
+        "fidesctl_meta",
+        "system_type",
+    )
     for system in server_resources["system"]:
+        for key, value in system.items():
+            if key not in known_fields:
+                keys = list(output_list[0])
+                key_string = f"system.{key}"
+                keys.append(key_string)
+                output_list[0] = tuple(keys)
+                if isinstance(value, list):
+                    system_custom_field_data[key_string] = ", ".join(value)
+                else:
+                    system_custom_field_data[key_string] = value
+
         third_country_list = ", ".join(system["third_country_transfers"] or [])
         system_dependencies = ", ".join(system["system_dependencies"] or [])
         system_ingress = ", ".join(
@@ -184,7 +219,7 @@ def generate_system_records(
                 system["data_protection_impact_assessment"]
             )
         )
-        if system["privacy_declarations"]:
+        if system.get("privacy_declarations"):
             for declaration in system["privacy_declarations"]:
                 data_use = formatted_data_uses[declaration["data_use"]]
                 data_categories = declaration["data_categories"] or []
@@ -195,8 +230,8 @@ def generate_system_records(
                 dataset_references = declaration["dataset_references"] or [
                     EMPTY_COLUMN_PLACEHOLDER
                 ]
-                cartesian_product_of_declaration = [
-                    (
+                cartesian_product_of_declaration_builder = [
+                    [
                         system["fides_key"],
                         system["name"],
                         system["description"],
@@ -222,11 +257,22 @@ def generate_system_records(
                         data_protection_impact_assessment["progress"],
                         data_protection_impact_assessment["link"],
                         dataset_reference,
-                    )
+                    ]
                     for category in data_categories
                     for subject in data_subjects
                     for dataset_reference in dataset_references
                 ]
+                cartesian_product_of_declaration = []
+                if system_custom_field_data:
+                    for _, v in system_custom_field_data.items():
+                        for product in cartesian_product_of_declaration_builder:
+                            product.append(v)
+                            cartesian_product_of_declaration.append(tuple(product))
+                else:
+                    cartesian_product_of_declaration = [
+                        tuple(x) for x in cartesian_product_of_declaration_builder
+                    ]
+
                 output_list += cartesian_product_of_declaration
         else:
             system_row = [
@@ -239,12 +285,18 @@ def generate_system_records(
                 system_dependencies,
                 system_ingress,
                 system_egress,
-                data_protection_impact_assessment["is_required"],
-                data_protection_impact_assessment["progress"],
-                data_protection_impact_assessment["link"],
             ]
-            num_privacy_declaration_fields = 12
-            privacy_declaration_start_index = 9
+            if system_custom_field_data:
+                for _, v in system_custom_field_data.items():
+                    system_row.append(v)
+            len_no_privacy = len(system_row)
+            system_row.append(data_protection_impact_assessment["is_required"])
+            system_row.append(data_protection_impact_assessment["progress"])
+            system_row.append(data_protection_impact_assessment["link"])
+            num_privacy_declaration_fields = 3
+            privacy_declaration_start_index = (
+                len_no_privacy - num_privacy_declaration_fields
+            )
             for i in range(num_privacy_declaration_fields):
                 system_row.insert(
                     i + privacy_declaration_start_index, EMPTY_COLUMN_PLACEHOLDER
