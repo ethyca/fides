@@ -1,23 +1,23 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import HTTPException
 from pydantic import validator
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.lib.oauth.schemas.user_permission import (
-    UserPermissionsCreate as UserPermissionsCreateLib,
-)
-from fides.lib.oauth.schemas.user_permission import (
-    UserPermissionsEdit as UserPermissionsEditLib,
-)
-from fides.lib.oauth.schemas.user_permission import (
-    UserPermissionsResponse as UserPermissionsResponseLib,
-)
+from fides.api.ops.schemas.base_class import BaseSchema
+from fides.lib.oauth.roles import RoleRegistry
 
 
-class UserPermissionsCreate(UserPermissionsCreateLib):
-    """Data required to create a FidesUserPermissions record"""
+class UserPermissionsCreate(BaseSchema):
+    """Data required to create a FidesUserPermissions record
+
+    Users will generally be assigned role(s) directly which are associated with many scopes,
+    but we also will continue to support the ability to be assigned specific individual scopes.
+    """
+
+    scopes: List[str] = []
+    roles: List[RoleRegistry] = []
 
     @validator("scopes")
     @classmethod
@@ -31,10 +31,22 @@ class UserPermissionsCreate(UserPermissionsCreateLib):
             )
         return scopes
 
+    class Config:
+        """So roles are strings when we add to the db"""
 
-class UserPermissionsEdit(UserPermissionsEditLib):
-    """Data required to edit a FidesUserPermissions record"""
+        use_enum_values = True
 
 
-class UserPermissionsResponse(UserPermissionsResponseLib):
-    """Response after creating, editing, or retrieving a FidesUserPermissions record"""
+class UserPermissionsEdit(UserPermissionsCreate):
+    """Data required to edit a FidesUserPermissions record."""
+
+    id: Optional[
+        str
+    ]  # I don't think this should be in the request body, so making it optional.
+
+
+class UserPermissionsResponse(UserPermissionsCreate):
+    """Response after creating, editing, or retrieving a FidesUserPermissions record."""
+
+    id: str
+    user_id: str
