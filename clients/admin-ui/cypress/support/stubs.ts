@@ -17,16 +17,16 @@ export const stubTaxonomyEntities = () => {
 };
 
 export const stubSystemCrud = () => {
-  cy.intercept("POST", "/api/v1/system", { fixture: "system.json" }).as(
+  cy.intercept("POST", "/api/v1/system", { fixture: "systems/system.json" }).as(
     "postSystem"
   );
-  cy.intercept("GET", "/api/v1/system/*", { fixture: "system.json" }).as(
-    "getSystem"
-  );
-  cy.intercept("PUT", "/api/v1/system*", { fixture: "system.json" }).as(
+  cy.intercept("GET", "/api/v1/system/*", {
+    fixture: "systems/system.json",
+  }).as("getSystem");
+  cy.intercept("PUT", "/api/v1/system*", { fixture: "systems/system.json" }).as(
     "putSystem"
   );
-  cy.fixture("system.json").then((system) => {
+  cy.fixture("systems/system.json").then((system) => {
     cy.intercept("DELETE", "/api/v1/system/*", {
       body: {
         message: "resource deleted",

@@ -23,7 +23,7 @@ from fides.core.config import CONFIG
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from tests.ops.conftest import generate_auth_header_for_user
+from tests.conftest import generate_auth_header_for_user
 
 
 class TestCreateUserPermissions:

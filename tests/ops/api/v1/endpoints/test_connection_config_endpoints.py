@@ -33,7 +33,7 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.lib.models.client import ClientDetail
-from tests.ops.fixtures.application_fixtures import integration_secrets
+from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
 
