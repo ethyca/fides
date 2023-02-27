@@ -70,6 +70,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.roles import ADMIN, VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -1599,3 +1600,59 @@ def system(db: Session) -> System:
         },
     )
     return system
+
+
+@pytest.fixture
+def admin_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_admin_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[ADMIN],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": [ADMIN]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def viewer_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
