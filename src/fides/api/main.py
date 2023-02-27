@@ -83,7 +83,8 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     health.router,
     validate.router,
     view.router,
-    system.router,
+    system.system_connections_router,
+    system.system_router,
 ]
 
 

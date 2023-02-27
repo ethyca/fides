@@ -13,11 +13,11 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_READ,
 )
 from fides.api.ops.util.oauth_util import (
-    _has_correct_scopes,
     _has_direct_scopes,
     _has_scope_via_role,
     get_root_client,
     has_permissions,
+    has_scope_subset,
     verify_oauth_client,
 )
 from fides.lib.cryptography.schemas.jwt import (
@@ -287,13 +287,13 @@ class TestVerifyOauthClientRoles:
 
 class TestHasCorrectScopes:
     def test_missing_scopes(self):
-        assert not _has_correct_scopes(
+        assert not has_scope_subset(
             user_scopes=[DATASET_CREATE_OR_UPDATE, USER_READ],
             endpoint_scopes=SecurityScopes([PRIVACY_REQUEST_READ]),
         )
 
     def test_has_correct_scopes(self):
-        assert _has_correct_scopes(
+        assert has_scope_subset(
             user_scopes=[DATASET_CREATE_OR_UPDATE, USER_READ, PRIVACY_REQUEST_READ],
             endpoint_scopes=SecurityScopes([PRIVACY_REQUEST_READ]),
         )

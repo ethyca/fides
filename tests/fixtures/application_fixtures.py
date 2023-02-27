@@ -1589,24 +1589,30 @@ def authenticated_fides_client(
 
 
 @pytest.fixture(scope="function")
-def system(db: Session) -> System:
-
-    system = System.create(
+def system_manager(db: Session, system) -> System:
+    user = FidesUser.create(
         db=db,
         data={
-            "fides_key": f"system_key-f{uuid4()}",
-            "name": f"system-{uuid4()}",
-            "description": "fixture-made-system",
+            "username": "test_system_manager_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
         },
     )
-    return system
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER],
+        user_id=user.id,
+        systems=[system.id],
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
 
-
-@pytest.fixture(scope="function")
-def system_manager(db: Session, user, system) -> System:
     user.set_as_system_manager(db, system)
     yield user
     user.remove_as_system_manager(db, system)
+    user.delete(db)
 
 
 @pytest.fixture

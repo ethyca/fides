@@ -1,7 +1,7 @@
 """system_managers
 
 Revision ID: 68a518a3c050
-Revises: 985d3756f908
+Revises: eb1e6ec39b83
 Create Date: 2023-02-23 21:52:56.225405
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "68a518a3c050"
-down_revision = "985d3756f908"
+down_revision = "eb1e6ec39b83"
 branch_labels = None
 depends_on = None
 

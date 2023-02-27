@@ -151,45 +151,51 @@ for model_type, fides_model in model_map.items():
         sql_model = sql_model_map[resource_type]
         return await get_resource(sql_model, fides_key, db)
 
-    @router.put(
-        "/",
-        response_model=fides_model,
-        dependencies=[
-            Security(
-                verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_UPDATE]
-            )
-        ],
-        responses={
-            status.HTTP_403_FORBIDDEN: {
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "detail": {
-                                "error": "user does not have permission to modify this resource",
-                                "resource_type": model_type,
-                                "fides_key": "example.key",
+    if (
+        model_type != "system"
+    ):  # System Update endpoint defined separately in /routes/system.py
+
+        @router.put(
+            "/",
+            response_model=fides_model,
+            dependencies=[
+                Security(
+                    verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_UPDATE]
+                )
+            ],
+            responses={
+                status.HTTP_403_FORBIDDEN: {
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "detail": {
+                                    "error": "user does not have permission to modify this resource",
+                                    "resource_type": model_type,
+                                    "fides_key": "example.key",
+                                }
                             }
                         }
                     }
-                }
+                },
             },
-        },
-    )
-    async def update(
-        resource: fides_model,
-        resource_type: str = get_resource_type(router),
-        db: AsyncSession = Depends(get_async_db),
-    ) -> Dict:
-        """
-        Update a resource by its fides_key.
+        )
+        async def update(
+            resource: fides_model,
+            resource_type: str = get_resource_type(router),
+            db: AsyncSession = Depends(get_async_db),
+        ) -> Dict:
+            """
+            Update a resource by its fides_key.
 
-        The `is_default` field cannot be updated and will respond
-        with a `403 Forbidden` if attempted.
-        """
-        sql_model = sql_model_map[resource_type]
-        await validate_data_categories(resource, db)
-        await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
-        return await update_resource(sql_model, resource.dict(), db)
+            The `is_default` field cannot be updated and will respond
+            with a `403 Forbidden` if attempted.
+            """
+            sql_model = sql_model_map[resource_type]
+            await validate_data_categories(resource, db)
+            await forbid_if_editing_is_default(
+                sql_model, resource.fides_key, resource, db
+            )
+            return await update_resource(sql_model, resource.dict(), db)
 
     @router.post(
         "/upsert",
@@ -274,50 +280,54 @@ for model_type, fides_model in model_map.items():
             "updated": result[1],
         }
 
-    @router.delete(
-        "/{fides_key}",
-        dependencies=[
-            Security(
-                verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_DELETE]
-            )
-        ],
-        responses={
-            status.HTTP_403_FORBIDDEN: {
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "detail": {
-                                "error": "user does not have permission to modify this resource",
-                                "resource_type": model_type,
-                                "fides_key": "example.key",
+    if (
+        model_type != "system"
+    ):  # System Delete endpoint defined separately in /routes/system.py
+
+        @router.delete(
+            "/{fides_key}",
+            dependencies=[
+                Security(
+                    verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_DELETE]
+                )
+            ],
+            responses={
+                status.HTTP_403_FORBIDDEN: {
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "detail": {
+                                    "error": "user does not have permission to modify this resource",
+                                    "resource_type": model_type,
+                                    "fides_key": "example.key",
+                                }
                             }
                         }
                     }
-                }
+                },
             },
-        },
-    )
-    async def delete(
-        fides_key: str,
-        resource_type: str = get_resource_type(router),
-        db: AsyncSession = Depends(get_async_db),
-    ) -> Dict:
-        """
-        Delete a resource by its fides_key.
-
-        Resources that have `is_default=True` cannot be deleted and will respond
-        with a `403 Forbidden`.
-        """
-        sql_model = sql_model_map[resource_type]
-        await forbid_if_default(sql_model, fides_key, db)
-        deleted_resource = await delete_resource(sql_model, fides_key, db)
-        # Convert the resource to a dict explicitly for the response
-        deleted_resource_dict = (
-            model_map[resource_type].from_orm(deleted_resource).dict()
         )
-        return {
-            "message": "resource deleted",
-            "resource": deleted_resource_dict,
-        }
+        async def delete(
+            fides_key: str,
+            resource_type: str = get_resource_type(router),
+            db: AsyncSession = Depends(get_async_db),
+        ) -> Dict:
+            """
+            Delete a resource by its fides_key.
+
+            Resources that have `is_default=True` cannot be deleted and will respond
+            with a `403 Forbidden`.
+            """
+            sql_model = sql_model_map[resource_type]
+            await forbid_if_default(sql_model, fides_key, db)
+            deleted_resource = await delete_resource(sql_model, fides_key, db)
+            # Convert the resource to a dict explicitly for the response
+            deleted_resource_dict = (
+                model_map[resource_type].from_orm(deleted_resource).dict()
+            )
+            return {
+                "message": "resource deleted",
+                "resource": deleted_resource_dict,
+            }
 
     routers += [router]
