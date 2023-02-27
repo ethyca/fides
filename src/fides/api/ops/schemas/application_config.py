@@ -57,7 +57,8 @@ class NotificationApplicationConfig(BaseSchema):
 
 
 class ExecutionApplicationConfig(BaseSchema):
-    subject_identity_verification_required: bool
+    subject_identity_verification_required: Optional[bool]
+    require_manual_request_approval: Optional[bool]
 
     class Config:
         extra = Extra.forbid
