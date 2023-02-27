@@ -4,7 +4,7 @@ from re import compile as regex
 from typing import Generator
 
 
-class InputStr(str):
+class SafeStr(str):
     """
     This class is designed to be used in place of the `str` type
     any place where user input is expected.
@@ -23,8 +23,8 @@ class InputStr(str):
         # HTML Escapes
         value = escape(value)
 
-        # Truncate to 500 characters
-        value = value[:500]
+        if len(value) > 500:
+            raise ValueError("Value must be 500 characters or less.")
 
         return value
 

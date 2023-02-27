@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import EmailStr, validator
 
-from fides.api.input_validation import PhoneNumber
+from fides.api.custom_types import PhoneNumber
 from fides.api.ops.models.policy import DrpAction
 from fides.api.ops.schemas.base_class import BaseSchema
 

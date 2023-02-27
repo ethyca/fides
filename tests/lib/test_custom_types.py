@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.input_validation import InputStr, PhoneNumber
+from fides.api.custom_types import SafeStr, PhoneNumber
 
 DANGEROUS_STRINGS = [
     "<svg onload=alert(1)>",
@@ -120,14 +120,14 @@ VALID_PHONE_NUMBER_LIST = ["+15551234567", "+15551049382910"]
 
 
 @pytest.mark.unit
-class TestInputStr:
+class TestSafeStr:
     @pytest.mark.parametrize("dangerous_string", DANGEROUS_STRINGS)
     def test_danger_list(self, dangerous_string: str) -> None:
         """
         Validate that whatever dangerous strings are being input,
         a sanitized/changed string is being passed back.
         """
-        result = InputStr.validate(dangerous_string)
+        result = SafeStr.validate(dangerous_string)
         assert result != dangerous_string
 
 
