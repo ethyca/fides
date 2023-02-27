@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from subprocess import CalledProcessError
 
 import click
+from typing import Tuple
 
 import fides
 from fides.cli.utils import (
@@ -15,6 +16,7 @@ from fides.cli.utils import (
 )
 from fides.core.config.utils import replace_config_value
 from fides.core.config.docs import create_config_file
+from fides.core.config import FidesConfig
 from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,
@@ -26,6 +28,28 @@ from fides.core.deploy import (
     teardown_application,
 )
 from fides.core.utils import echo_green
+
+
+def create_and_update_config_file(
+    config: FidesConfig, fides_directory_location: str = "."
+) -> Tuple[FidesConfig, str]:
+    # request explicit consent for analytics collection
+    config = request_analytics_consent(config=config)
+
+    # create the config file as needed
+    config_path = create_config_file(
+        config=config, fides_directory_location=fides_directory_location
+    )
+
+    # Update the value in the config file if it differs from the default
+    if config.user.analytics_opt_out == False:
+        replace_config_value(
+            fides_directory_location=fides_directory_location,
+            key="analytics_opt_out",
+            old_value="true",
+            new_value="false",
+        )
+    return (config, config_path)
 
 
 @click.command()
@@ -45,22 +69,9 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
 
-    # request explicit consent for analytics collection
-    config = request_analytics_consent(config=config)
-
-    # create the config file as needed
-    config_path = create_config_file(
-        config=config, fides_directory_location=fides_directory_location
+    config, config_path = create_and_update_config_file(
+        config, fides_directory_location
     )
-
-    # Update the value in the config file if it differs from the default
-    if config.user.analytics_opt_out == False:
-        replace_config_value(
-            fides_directory_location=fides_directory_location,
-            key="analytics_opt_out",
-            old_value="true",
-            new_value="false",
-        )
 
     print_divider()
 
@@ -157,8 +168,7 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
         # Deployment is ready! Perform the same steps as `fides init` to setup CLI
         if not no_init:
             echo_green("Deployment successful! Initializing fides...")
-            config_path = create_config_file(config=config)
-            check_and_update_analytics_config(config=config, config_path=config_path)
+            create_and_update_config_file(config=config)
         else:
             echo_green(
                 "Deployment successful! Skipping CLI initialization (run 'fides init' to initialize)"
