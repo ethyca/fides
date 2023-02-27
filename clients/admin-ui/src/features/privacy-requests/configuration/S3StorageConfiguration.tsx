@@ -20,11 +20,7 @@ interface SecretsStorageData {
   aws_secret_access_key: string;
 }
 
-const S3StorageConfiguration = ({
-  auth_method,
-  bucket,
-  format,
-}: StorageDetails) => {
+const S3StorageConfiguration = ({ auth_method, bucket, format }: any) => {
   const [authMethod, setAuthMethod] = useState("");
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();

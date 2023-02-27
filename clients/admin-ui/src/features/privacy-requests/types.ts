@@ -123,7 +123,9 @@ export interface StorageConfigResponse {
     send_request_completion_notification: boolean;
     send_request_receipt_notification: boolean;
     send_request_review_notification: boolean;
-    subject_identity_verification_required: boolean;
+  };
+  execution: {
+    subject_identity_verification_required: true;
   };
 }
 

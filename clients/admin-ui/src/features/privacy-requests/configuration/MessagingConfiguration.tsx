@@ -48,6 +48,8 @@ const MessagingConfiguration = () => {
         send_request_completion_notification: true,
         send_request_receipt_notification: true,
         send_request_review_notification: true,
+      },
+      execution: {
         subject_identity_verification_required: true,
       },
     });
