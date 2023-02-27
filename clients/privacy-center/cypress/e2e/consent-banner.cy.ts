@@ -38,6 +38,7 @@ describe("Consent banner", () => {
   Cypress.Commands.add("visitConsentDemo", (bannerOptions?: ConsentBannerOptions) => {
     cy.visit("/fides-consent-demo.html", {
       onBeforeLoad: (win) => {
+        // eslint-disable-next-line no-param-reassign
         win.fidesConsentBannerOptions = {
           ...testBannerOptions,
           ...bannerOptions,
@@ -108,10 +109,10 @@ describe("Consent banner", () => {
         //     </button>
         //   </div>
         // </div>
-        cy.get("div#fides-consent-banner.fides-consent-banner").within(banner => {
+        cy.get("div#fides-consent-banner.fides-consent-banner").within(() => {
           cy.get("div#fides-consent-banner-description.fides-consent-banner-description")
             .contains("This test website is overriding the banner description label.");
-          cy.get("div#fides-consent-banner-buttons.fides-consent-banner-buttons").within(buttonsDiv => {
+          cy.get("div#fides-consent-banner-buttons.fides-consent-banner-buttons").within(() => {
             cy.get("button#fides-consent-banner-button-tertiary.fides-consent-banner-button.fides-consent-banner-button-tertiary")
               .contains("Customize Test");
             cy.get("button#fides-consent-banner-button-secondary.fides-consent-banner-button.fides-consent-banner-button-secondary")
@@ -139,8 +140,8 @@ describe("Consent banner", () => {
           const cookieKeyConsent = JSON.parse(
             decodeURIComponent(cookie!.value)
           );
-          expect(cookieKeyConsent).property("data_sales").is.true;
-          expect(cookieKeyConsent).property("tracking").is.true;
+          expect(cookieKeyConsent).property("data_sales").is.eql(true);
+          expect(cookieKeyConsent).property("tracking").is.eql(true);
         })
         cy.contains("button", "Accept Test").should("not.be.visible");
       });
@@ -152,8 +153,8 @@ describe("Consent banner", () => {
           const cookieKeyConsent = JSON.parse(
             decodeURIComponent(cookie!.value)
           );
-          expect(cookieKeyConsent).property("data_sales").is.false;
-          expect(cookieKeyConsent).property("tracking").is.false;
+          expect(cookieKeyConsent).property("data_sales").is.eql(false);
+          expect(cookieKeyConsent).property("tracking").is.eql(false);
         })
       });
 
@@ -164,17 +165,17 @@ describe("Consent banner", () => {
 
       it.skip("should save the consent request to the Fides API", () => {
         // TODO: add tests for saving to API (ie PATCH /api/v1/consent-request/{id}/preferences...)
-        expect(false).to.be.true
+        expect(false).is.eql(true);
       });
 
       it.skip("should support option to display at top or bottom of page", () => {
         // TODO: add tests for top/bottom
-        expect(false).to.be.true
+        expect(false).is.eql(true);
       });
 
       it.skip("should support styling with CSS variables", () => {
         // TODO: add tests for CSS
-        expect(false).to.be.true
+        expect(false).is.eql(true);
       });
     });
 

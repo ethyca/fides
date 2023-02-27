@@ -45,74 +45,6 @@ export type UserGeolocation = {
   region?: string // "NY"
 }
 
-/**
- * Get the configured options for the consent banner 
- */
-export const getBannerOptions = (): ConsentBannerOptions => {
-  return _globalBannerOptions;
-};
-
-/**
- * Initialize the Fides Consent Banner, with optional extraOptions to override defaults.
- * 
- * (see the type definition of ConsentBannerOptions for what options are available)
- */
-export const initBanner = async (defaults: CookieKeyConsent, extraOptions?: ConsentBannerOptions): Promise<void> => {
-  // If the user provides any extra options, override the defaults
-  debugLog("Initializing Fides consent banner with consent cookie defaults...", defaults);
-  if (extraOptions !== undefined) {
-    if (typeof extraOptions !== "object") {
-      // eslint-disable-next-line no-console
-      console.error("Invalid 'extraOptions' arg for Fides.banner(), ignoring", extraOptions);
-    } else {
-      setBannerOptions({ ...getBannerOptions(), ...extraOptions });
-    }
-  }
-  const options: ConsentBannerOptions = getBannerOptions();
-
-  debugLog("Validating Fides consent banner options...", options);
-  if (!validateBannerOptions(options)) {
-    return;
-  }
-
-  if (options.isDisabled) {
-    debugLog("Fides consent banner is disabled, skipping banner initialization!");
-    return;
-  }
-
-  if (hasSavedConsentCookie()) {
-    debugLog("Fides consent cookie already exists, skipping banner initialization!");
-    return;
-  }
-
-  debugLog("Fides consent banner is enabled and consent cookie does not exist. Continuing...");
-
-  if (options.isGeolocationEnabled) {
-    debugLog("Fides consent banner geolocation is enabled. Getting user location...");
-    const location = await getLocation();
-
-    debugLog("Checking if Fides consent banner should be displayed for location:", location);
-    if (!isBannerEnabledForLocation(location)) {
-      debugLog("Fides consent banner is not enabled for location, skipping banner initialization!");
-      return;
-    }
-  } else {
-    debugLog("Fides consent banner geolocation is not enabled. Continuing...");
-  }
-
-  debugLog("Fides consent banner should be shown! Building banner elements & styles...");
-  const banner = buildBanner(defaults);
-  const styles = buildStyles();
-
-  debugLog("Adding Fides consent banner CSS & HTML into the DOM...");
-  document.head.appendChild(styles);
-  document.body.appendChild(banner);
-
-  // Show the banner after a small delay, to allow animation to occur
-  await setTimeout(() => showBanner(banner), 100);
-  debugLog("Fides consent banner is now showing!");
-};
-
 // Adapted from https://gist.github.com/henrik/1688572?permalink_comment_id=4317520#gistcomment-4317520o
 // (NOTE: Surprisingly, there's not really a list of these anywhere easily...?)
 const EU_COUNTRY_CODES = [
@@ -129,7 +61,7 @@ const EU_COUNTRY_CODES = [
   "IS",
   "LI",
   "NO",
-]
+];
 
 /**
  * Configuration options used for the consent banner. The default values (below)
@@ -140,7 +72,7 @@ const EU_COUNTRY_CODES = [
  * to make it seem safer and only export the getBannerOptions() one outside this
  * module.
  */
-let _globalBannerOptions: ConsentBannerOptions = {
+let globalBannerOptions: ConsentBannerOptions = {
   debug: false,
   geolocationApiUrl: "http://localhost:3000/location", // TODO: default?
   isDisabled: false,
@@ -156,13 +88,30 @@ let _globalBannerOptions: ConsentBannerOptions = {
 };
 
 /**
+ * Get the configured options for the consent banner 
+ */
+export const getBannerOptions = (): ConsentBannerOptions => globalBannerOptions;
+
+/**
+ * Wrapper around 'console.log' that only logs output when the 'debug' banner
+ * option is truthy
+ */
+type ConsoleLogParameters = Parameters<typeof console.log>
+const debugLog = (...args: ConsoleLogParameters): void => {
+  if (getBannerOptions().debug) {
+    // eslint-disable-next-line no-console
+    console.log(...args) // TODO: use console.debug instead?
+  }
+};
+
+/**
  * Change the consent banner options.
  * 
  * WARNING: If called after `banner()` has already ran, many of these options
  * will no longer take effect!
  */
 const setBannerOptions = (options: ConsentBannerOptions): void => {
-  _globalBannerOptions = options;
+  globalBannerOptions = options;
 };
 
 /**
@@ -177,6 +126,7 @@ const validateBannerOptions = (options: ConsentBannerOptions): boolean => {
 
   if (options.geolocationApiUrl) {
     try {
+      // eslint-disable-next-line no-new
       new URL(options.geolocationApiUrl);
     } catch (e) {
       debugLog("Invalid banner options: geolocationApiUrl is an invalid URL!", options);
@@ -190,12 +140,17 @@ const validateBannerOptions = (options: ConsentBannerOptions): boolean => {
   }
 
   if (typeof options.labels === "object") {
-    Object.entries(options.labels).forEach((value: [string, string], index: number) => {
+    let validLabels = true;
+    Object.entries(options.labels).forEach((value: [string, string]) => {
       if (typeof value[1] !== "string") {
         debugLog(`Invalid banner options: labels.${value[0]} is not a string!`);
-        return false;
+        validLabels = false;
       }
     });
+    
+    if (!validLabels) {
+      return false;
+    }
   }
 
   if (!options.privacyCenterUrl) {
@@ -205,6 +160,7 @@ const validateBannerOptions = (options: ConsentBannerOptions): boolean => {
 
   if (options.privacyCenterUrl) {
     try {
+      // eslint-disable-next-line no-new
       new URL(options.privacyCenterUrl);
     } catch (e) {
       debugLog("Invalid banner options: geolocationApiUrl is an invalid URL!", options);
@@ -214,18 +170,6 @@ const validateBannerOptions = (options: ConsentBannerOptions): boolean => {
 
   return true;
 }
-
-/**
- * Wrapper around 'console.log' that only logs output when the 'debug' banner
- * option is truthy
- */
-type ConsoleLogParameters = Parameters<typeof console.log>
-const debugLog = (...args: ConsoleLogParameters): void => {
-  if (getBannerOptions().debug) {
-    // eslint-disable-next-line no-console
-    console.log(...args) // TODO: use console.debug instead?
-  }
-};
 
 /**
  * Navigates to the Fides Privacy Center to manage consent settings
@@ -261,7 +205,7 @@ const getLocation = async (): Promise<UserGeolocation> => {
   }
 
   try {
-    let body = await response.json();
+    const body = await response.json();
     debugLog("Got location response from geolocation API, returning:", body);
     return body;
   } catch (e) {
@@ -290,15 +234,46 @@ const isBannerEnabledForLocation = (location?: UserGeolocation): boolean => {
     if (options.isEnabledCountries.includes(location.country)) {
       debugLog(`Country ${location.country} included in isEnabledCountries, banner must be shown. isBannerEnabledForLocation = true`);
       return true;
-    } else {
-      debugLog(`Country ${location.country} not included in isEnabledCountries, banner must be hidden. isBannerEnabledForLocation = false`);
-      return false;
     }
+    debugLog(`Country ${location.country} not included in isEnabledCountries, banner must be hidden. isBannerEnabledForLocation = false`);
+    return false;
   }
 
   debugLog("No location-specific rules matched, assume banner must be shown. isBannerEnabledForLocation = true");
   return true;
 }
+
+/**
+ * Builds a button DOM element with the given id, class name, and text label
+ */
+const buildButton = (id: string, className: string, label?: string, onClick?: (event: MouseEvent) => void): HTMLButtonElement => {
+  const button = document.createElement("button");
+  button.id = id;
+  button.innerHTML = label || "";
+  button.classList.add("fides-consent-banner-button");
+  button.classList.add(className);
+  button.addEventListener("click", (event) => {
+    debugLog(`Fides consent banner button clicked with id='${id}'`);
+    if (onClick !== undefined) {
+      onClick(event);
+    }
+  });
+  return button;
+};
+
+/**
+ * Show the banner
+ */
+const showBanner = (banner: HTMLDivElement) => {
+  banner.classList.remove("fides-consent-banner-hidden");
+};
+
+/**
+ * Hide the banner (probably because the user selected a consent option)
+ */
+const hideBanner = (banner: HTMLDivElement) => {
+  banner.classList.add("fides-consent-banner-hidden");
+};
 
 /**
  * Builds the DOM elements for the consent banner (container, buttons, etc.) and
@@ -339,7 +314,7 @@ const buildBanner = (defaults: CookieKeyConsent): HTMLDivElement => {
     "fides-consent-banner-button-secondary",
     "fides-consent-banner-button-secondary",
     options.labels?.secondaryButton,
-    (event) => {
+    () => {
       setConsentCookieRejectAll(defaults);
       hideBanner(banner);
       // TODO: save to Fides consent request API
@@ -352,7 +327,7 @@ const buildBanner = (defaults: CookieKeyConsent): HTMLDivElement => {
     "fides-consent-banner-button-primary",
     "fides-consent-banner-button-primary",
     options.labels?.primaryButton,
-    (event) => {
+    () => {
       setConsentCookieAcceptAll(defaults);
       hideBanner(banner);
       // TODO: save to Fides consent request API
@@ -369,43 +344,10 @@ const buildBanner = (defaults: CookieKeyConsent): HTMLDivElement => {
 };
 
 /**
- * Builds a button DOM element with the given id, class name, and text label
- */
-const buildButton = (id: string, className: string, label?: string, onClick?: (event: MouseEvent) => void): HTMLButtonElement => {
-  const options: ConsentBannerOptions = getBannerOptions();
-  const button = document.createElement("button");
-  button.id = id;
-  button.innerHTML = label || "";
-  button.classList.add("fides-consent-banner-button");
-  button.classList.add(className);
-  button.addEventListener("click", (event) => {
-    debugLog(`Fides consent banner button clicked with id='${id}'`);
-    if (onClick !== undefined) {
-      onClick(event);
-    }
-  });
-  return button;
-};
-
-/**
- * Show the banner
- */
-const showBanner = (banner: HTMLDivElement) => {
-  banner.classList.remove("fides-consent-banner-hidden");
-};
-
-/**
- * Hide the banner (probably because the user selected a consent option)
- */
-const hideBanner = (banner: HTMLDivElement) => {
-  banner.classList.add("fides-consent-banner-hidden");
-};
-
-/**
  * Default CSS styles for the banner
  */
 // TODO: move into a .css file and import
-const _defaultBannerStyle = `
+const globalBannerStyle = `
 :root {
   --fides-consent-banner-font-family: inherit;
   --fides-consent-banner-font-size: 16px;
@@ -545,6 +487,67 @@ button.fides-consent-banner-button.fides-consent-banner-button-tertiary:hover {
  */
 const buildStyles = (): Node => {
   const style = document.createElement("style");
-  style.innerHTML = _defaultBannerStyle;
+  style.innerHTML = globalBannerStyle;
   return style;
+};
+
+/**
+ * Initialize the Fides Consent Banner, with optional extraOptions to override defaults.
+ * 
+ * (see the type definition of ConsentBannerOptions for what options are available)
+ */
+export const initBanner = async (defaults: CookieKeyConsent, extraOptions?: ConsentBannerOptions): Promise<void> => {
+  // If the user provides any extra options, override the defaults
+  debugLog("Initializing Fides consent banner with consent cookie defaults...", defaults);
+  if (extraOptions !== undefined) {
+    if (typeof extraOptions !== "object") {
+      // eslint-disable-next-line no-console
+      console.error("Invalid 'extraOptions' arg for Fides.banner(), ignoring", extraOptions);
+    } else {
+      setBannerOptions({ ...getBannerOptions(), ...extraOptions });
+    }
+  }
+  const options: ConsentBannerOptions = getBannerOptions();
+
+  debugLog("Validating Fides consent banner options...", options);
+  if (!validateBannerOptions(options)) {
+    return;
+  }
+
+  if (options.isDisabled) {
+    debugLog("Fides consent banner is disabled, skipping banner initialization!");
+    return;
+  }
+
+  if (hasSavedConsentCookie()) {
+    debugLog("Fides consent cookie already exists, skipping banner initialization!");
+    return;
+  }
+
+  debugLog("Fides consent banner is enabled and consent cookie does not exist. Continuing...");
+
+  if (options.isGeolocationEnabled) {
+    debugLog("Fides consent banner geolocation is enabled. Getting user location...");
+    const location = await getLocation();
+
+    debugLog("Checking if Fides consent banner should be displayed for location:", location);
+    if (!isBannerEnabledForLocation(location)) {
+      debugLog("Fides consent banner is not enabled for location, skipping banner initialization!");
+      return;
+    }
+  } else {
+    debugLog("Fides consent banner geolocation is not enabled. Continuing...");
+  }
+
+  debugLog("Fides consent banner should be shown! Building banner elements & styles...");
+  const banner = buildBanner(defaults);
+  const styles = buildStyles();
+
+  debugLog("Adding Fides consent banner CSS & HTML into the DOM...");
+  document.head.appendChild(styles);
+  document.body.appendChild(banner);
+
+  // Show the banner after a small delay, to allow animation to occur
+  await setTimeout(() => showBanner(banner), 100);
+  debugLog("Fides consent banner is now showing!");
 };

@@ -30,9 +30,9 @@ const consent = getConsentCookie(defaults);
  * Create a wrapped `banner` function that injects the default consent settings
  * as an argument, so it can be used as Fides.banner()
  */
-const banner = async (extraOptions?: ConsentBannerOptions): Promise<void> => {
-  return initBanner.call(undefined, defaults, extraOptions);
-}
+const banner = async (
+  extraOptions?: ConsentBannerOptions
+): Promise<void> => initBanner.call(undefined, defaults, extraOptions);
 
 const Fides = {
   consent,
