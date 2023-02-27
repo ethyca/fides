@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Callable
 from uuid import uuid4
 
 import pytest
@@ -35,12 +36,17 @@ from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.roles import (
+    PRIVACY_REQUEST_MANAGER,
+    VIEWER_AND_PRIVACY_REQUEST_MANAGER,
+)
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.email_fixtures import *
@@ -655,3 +661,139 @@ def set_notification_service_type_mailgun(db):
 @pytest.fixture(scope="session")
 def config_proxy(db):
     return ConfigProxy(db)
+
+
+@pytest.fixture(scope="function")
+def oauth_role_client(db: Session) -> Generator:
+    """Return a client that has the admin role for authentication purposes"""
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        roles=[
+            ADMIN,
+            PRIVACY_REQUEST_MANAGER,
+            VIEWER,
+            VIEWER_AND_PRIVACY_REQUEST_MANAGER,
+        ],
+    )  # Intentionally adding all roles here so the client will always
+    # have a role that matches a role on a token for testing
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+
+
+def generate_role_header_for_user(user, roles) -> Dict[str, str]:
+    payload = {
+        JWE_PAYLOAD_ROLES: roles,
+        JWE_PAYLOAD_CLIENT_ID: user.client.id,
+        JWE_ISSUED_AT: datetime.now().isoformat(),
+    }
+    jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+    return {"Authorization": "Bearer " + jwe}
+
+
+@pytest.fixture(scope="function")
+def generate_role_header(oauth_role_client) -> Callable[[Any], Dict[str, str]]:
+    return _generate_auth_role_header(
+        oauth_role_client, CONFIG.security.app_encryption_key
+    )
+
+
+def _generate_auth_role_header(
+    oauth_role_client, app_encryption_key
+) -> Callable[[Any], Dict[str, str]]:
+    client_id = oauth_role_client.id
+
+    def _build_jwt(roles: List[str]) -> Dict[str, str]:
+        payload = {
+            JWE_PAYLOAD_ROLES: roles,
+            JWE_PAYLOAD_CLIENT_ID: client_id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        jwe = generate_jwe(json.dumps(payload), app_encryption_key)
+        return {"Authorization": "Bearer " + jwe}
+
+    return _build_jwt
+
+
+@pytest.fixture
+def admin_client(db):
+    """Return a client with an "admin" role for authentication purposes."""
+    client = ClientDetail(
+        hashed_secret="thisisatest", salt="thisisstillatest", scopes=[], roles=[ADMIN]
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+    client.delete(db)
+
+
+@pytest.fixture
+def viewer_client(db):
+    """Return a client with a "viewer" role for authentication purposes."""
+    client = ClientDetail(
+        hashed_secret="thisisatest", salt="thisisstillatest", scopes=[], roles=[VIEWER]
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+    client.delete(db)
+
+
+@pytest.fixture
+def admin_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_admin_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[ADMIN],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": [ADMIN]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def viewer_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
