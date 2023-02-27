@@ -9,7 +9,6 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NO
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.scope_registry import (
-    SCOPE_REGISTRY,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
@@ -55,12 +54,17 @@ def create_user_permissions(
     user_id: str,
     permissions: UserPermissionsCreate,
 ) -> FidesUserPermissions:
+    """Create user permissions with big picture roles and/or scopes."""
     user = validate_user_id(db, user_id)
     if user.permissions is not None:  # type: ignore[attr-defined]
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="This user already has permissions set.",
         )
+
+    if user.client:
+        # Just in case - this shouldn't happen in practice.
+        user.client.update(db=db, data=permissions.dict())
     logger.info("Created FidesUserPermission record")
     return FidesUserPermissions.create(
         db=db, data={"user_id": user_id, **permissions.dict()}
@@ -78,13 +82,21 @@ def update_user_permissions(
     user_id: str,
     permissions: UserPermissionsEdit,
 ) -> FidesUserPermissions:
+    """Update either a user's role(s) and/or scope(s).
+
+    Typically we'll assign roles to a user and they'll inherit the associated scopes,
+    but we're still supporting assigning scopes directly as well.
+    """
     user = validate_user_id(db, user_id)
     logger.info("Updated FidesUserPermission record")
+
     if user.client:
-        user.client.update(db=db, data={"scopes": permissions.scopes})
+        user.client.update(
+            db=db, data={"scopes": permissions.scopes, "roles": permissions.roles}
+        )
     return user.permissions.update(  # type: ignore[attr-defined]
         db=db,
-        data={"id": user.permissions.id, "user_id": user_id, **permissions.dict()},  # type: ignore[attr-defined]
+        data={"id": user.permissions.id, "user_id": user_id, "scopes": permissions.scopes, "roles": permissions.roles},  # type: ignore[attr-defined]
     )
 
 
@@ -107,7 +119,8 @@ async def get_user_permissions(
             return FidesUserPermissions(
                 id=CONFIG.security.oauth_root_client_id,
                 user_id=CONFIG.security.oauth_root_client_id,
-                scopes=SCOPE_REGISTRY,
+                scopes=CONFIG.security.root_user_scopes,
+                roles=CONFIG.security.root_user_roles,
             )
 
         logger.info("Retrieved FidesUserPermission record for current user")
