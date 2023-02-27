@@ -131,7 +131,7 @@ def export_dataset(
             print(record)
 
 
-def generate_system_records(
+def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many-branches
     server_resources: Dict[str, List],
 ) -> List[Tuple[str, ...]]:
     """

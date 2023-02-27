@@ -110,7 +110,12 @@ async def get_resource_with_custom_fields(
                         CustomField.custom_field_definition_id
                         == CustomFieldDefinition.id,
                     )
-                    .where(CustomField.resource_id == resource.fides_key)
+                    .where(
+                        (CustomField.resource_id == resource.fides_key)
+                        & (  # pylint: disable=singleton-comparison
+                            CustomFieldDefinition.active == True
+                        )
+                    )
                 )
                 result = await async_session.execute(query)
             except SQLAlchemyError:
