@@ -310,7 +310,7 @@ class TestGetConnections:
             {
                 "identifier": "manual_webhook",
                 "type": "manual",
-                "human_readable": "Manual Webhook",
+                "human_readable": "Manual Process",
                 "encoded_icon": None,
             }
         ]
