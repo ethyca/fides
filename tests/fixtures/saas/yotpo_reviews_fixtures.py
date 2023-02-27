@@ -203,7 +203,7 @@ def yotpo_reviews_erasure_data(
 
     # takes a while for this data to propagate, success from poll_for_existence doesn't
     # guarantee the data will be available for the actual test
-    sleep(180)
+    sleep(240)
 
 
 @pytest.fixture()
