@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.0.post0.dev34"
+    "version": "2.7.0.post0.dev35"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14157,13 +14157,14 @@
       },
       "ExecutionApplicationConfig": {
         "title": "ExecutionApplicationConfig",
-        "required": [
-          "subject_identity_verification_required"
-        ],
         "type": "object",
         "properties": {
           "subject_identity_verification_required": {
             "title": "Subject Identity Verification Required",
+            "type": "boolean"
+          },
+          "require_manual_request_approval": {
+            "title": "Require Manual Request Approval",
             "type": "boolean"
           }
         },
@@ -15235,6 +15236,7 @@
             "type": "string"
           }
         },
+        "additionalProperties": false,
         "description": "API model - configuration settings for data subject and/or data processor notifications"
       },
       "OktaConfig": {
