@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.0.post0.dev35"
+    "version": "2.7.0.post0.dev36"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -6989,7 +6989,7 @@
           "OAuth"
         ],
         "summary": "Create Client",
-        "description": "Creates a new client and returns the credentials",
+        "description": "Creates a new client and returns the credentials. Only direct scopes can be added to the client via this endpoint.",
         "operationId": "create_client_api_v1_oauth_client_post",
         "requestBody": {
           "content": {
@@ -7090,7 +7090,7 @@
           "OAuth"
         ],
         "summary": "Get Client Scopes",
-        "description": "Returns a list of the scopes associated with the client. Returns an empty list if client does not exist.",
+        "description": "Returns a list of the directly-assigned scopes associated with the client.\nDoes not return roles associated with the client.\nReturns an empty list if client does not exist.",
         "operationId": "get_client_scopes_api_v1_oauth_client__client_id__scope_get",
         "parameters": [
           {
@@ -7142,7 +7142,7 @@
           "OAuth"
         ],
         "summary": "Set Client Scopes",
-        "description": "Overwrites the client's scopes with those provided. Does nothing if the client doesn't exist",
+        "description": "Overwrites the client's directly-assigned scopes with those provided.\nRoles cannot be edited via this endpoint.\nDoes nothing if the client doesn't exist",
         "operationId": "set_client_scopes_api_v1_oauth_client__client_id__scope_put",
         "parameters": [
           {
@@ -7218,6 +7218,33 @@
                     "type": "string"
                   }
                 }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "scope:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/oauth/role": {
+      "get": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Read Roles To Scopes Mapping",
+        "description": "Returns a list of all roles and associated scopes available for assignment in the system",
+        "operationId": "read_roles_to_scopes_mapping_api_v1_oauth_role_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -11579,6 +11606,7 @@
           "User Permissions"
         ],
         "summary": "Update User Permissions",
+        "description": "Update either a user's role(s) and/or scope(s).\n\nTypically we'll assign roles to a user and they'll inherit the associated scopes,\nbut we're still supporting assigning scopes directly as well.",
         "operationId": "update_user_permissions_api_v1_user__user_id__permission_put",
         "parameters": [
           {
@@ -11636,6 +11664,7 @@
           "User Permissions"
         ],
         "summary": "Create User Permissions",
+        "description": "Create user permissions with big picture roles and/or scopes.",
         "operationId": "create_user_permissions_api_v1_user__user_id__permission_post",
         "parameters": [
           {
@@ -16806,6 +16835,16 @@
         },
         "description": "Pass in a list of privacy request ids"
       },
+      "RoleRegistry": {
+        "title": "RoleRegistry",
+        "enum": [
+          "admin",
+          "viewer_and_privacy_request_manager",
+          "viewer",
+          "privacy_request_manager"
+        ],
+        "description": "Enum of available roles"
+      },
       "RowCountRequest": {
         "title": "RowCountRequest",
         "required": [
@@ -17970,9 +18009,6 @@
       },
       "UserPermissionsCreate": {
         "title": "UserPermissionsCreate",
-        "required": [
-          "scopes"
-        ],
         "type": "object",
         "properties": {
           "scopes": {
@@ -17980,17 +18016,21 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "default": []
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleRegistry"
+            },
+            "default": []
           }
         },
-        "description": "Data required to create a FidesUserPermissions record"
+        "description": "Data required to create a FidesUserPermissions record\n\nUsers will generally be assigned role(s) directly which are associated with many scopes,\nbut we also will continue to support the ability to be assigned specific individual scopes."
       },
       "UserPermissionsEdit": {
         "title": "UserPermissionsEdit",
-        "required": [
-          "scopes",
-          "id"
-        ],
         "type": "object",
         "properties": {
           "scopes": {
@@ -17998,19 +18038,26 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "default": []
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleRegistry"
+            },
+            "default": []
           },
           "id": {
             "title": "Id",
             "type": "string"
           }
         },
-        "description": "Data required to edit a FidesUserPermissions record"
+        "description": "Data required to edit a FidesUserPermissions record."
       },
       "UserPermissionsResponse": {
         "title": "UserPermissionsResponse",
         "required": [
-          "scopes",
           "id",
           "user_id"
         ],
@@ -18021,7 +18068,15 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "default": []
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleRegistry"
+            },
+            "default": []
           },
           "id": {
             "title": "Id",
@@ -18032,7 +18087,7 @@
             "type": "string"
           }
         },
-        "description": "Response after creating, editing, or retrieving a FidesUserPermissions record"
+        "description": "Response after creating, editing, or retrieving a FidesUserPermissions record."
       },
       "UserResponse": {
         "title": "UserResponse",
