@@ -436,7 +436,7 @@ def _mailgun_dispatcher(
                 )
     except Exception as e:
         logger.error("Email failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"Email failed to send due to: {e}")
+        raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
 
 
 def _twilio_email_dispatcher(
