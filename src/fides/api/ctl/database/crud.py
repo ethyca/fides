@@ -149,8 +149,6 @@ async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Ba
                 query = select(sql_model)
                 result = await async_session.execute(query)
                 sql_resources = result.scalars().all()
-                print("LOOK AT ME!!!")
-                print(sql_resources)
             except SQLAlchemyError:
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).error(  # type: ignore[index]
