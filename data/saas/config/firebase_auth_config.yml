@@ -3,7 +3,7 @@ saas_config:
   name: Firebase Auth SaaS Config
   type: firebase_auth
   description: A sample schema representing the Firebase Auth connector for Fidesops
-  version: 0.0.1
+  version: 0.0.3
 
   connector_params:
     - name: domain
@@ -35,12 +35,18 @@ saas_config:
     - name: user
       requests:
         read:
-          request_override: firebase_auth_user_access
+          - request_override: firebase_auth_user_access
+            param_values:
+              - name: email
+                identity: email
+          - request_override: firebase_auth_user_access
+            param_values:
+              - name: phone_number
+                identity: phone_number
+        delete:
+          request_override: firebase_auth_user_delete
           param_values:
             - name: email
               identity: email
-        update:
-          request_override: firebase_auth_user_update
-          param_values:
-            - name: email
-              identity: email
+            - name: phone_number
+              identity: phone_number

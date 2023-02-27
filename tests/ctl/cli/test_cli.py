@@ -2,7 +2,6 @@
 import os
 from base64 import b64decode
 from json import dump, loads
-from pathlib import Path
 from typing import Generator
 
 import pytest
@@ -53,6 +52,17 @@ def test_webserver() -> None:
     without spinning up an additional instance.
     """
     from fides.api.main import start_webserver  # pylint: disable=unused-import
+
+    assert True
+
+
+@pytest.mark.unit
+def test_worker() -> None:
+    """
+    This is specifically meant to catch when the worker command breaks,
+    without spinning up an additional instance.
+    """
+    from fides.api.ops.worker import start_worker  # pylint: disable=unused-import
 
     assert True
 
@@ -865,6 +875,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test logging in as a user with a provided username and password."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             [
@@ -887,6 +898,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test creating a user with the current credentials."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             [
@@ -905,10 +917,11 @@ class TestUser:
         assert result.exit_code == 0
 
     @pytest.mark.unit
-    def test_user_permissions(
+    def test_user_permissions_valid(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test getting user permissions for the current user."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             ["-f", test_config_path, "user", "permissions"],
@@ -916,3 +929,17 @@ class TestUser:
         )
         print(result.output)
         assert result.exit_code == 0
+
+    @pytest.mark.unit
+    def test_user_permissions_not_found(
+        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
+    ) -> None:
+        """Test getting user permissions but the credentials file doesn't exit."""
+        print(credentials_path)
+        result = test_cli_runner.invoke(
+            cli,
+            ["-f", test_config_path, "user", "permissions"],
+            env={"FIDES_CREDENTIALS_PATH": "/root/notarealfile.credentials"},
+        )
+        print(result.output)
+        assert result.exit_code == 1

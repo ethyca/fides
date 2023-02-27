@@ -47,7 +47,12 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 
   return (
-    <Box width="100%" height={136} p="18px 16px 16px 16px">
+    <Box
+      width="100%"
+      height={136}
+      p="18px 16px 16px 16px"
+      data-testid={`connection-grid-item-${connectionData.name}`}
+    >
       <Flex justifyContent="center" alignItems="center">
         <ConnectionTypeLogo data={connectionData} />
         <Text

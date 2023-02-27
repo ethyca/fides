@@ -3,6 +3,7 @@ from __future__ import annotations
 from os.path import exists
 from typing import Dict, Iterable, List, Optional, Union
 
+from fideslang.models import Dataset
 from loguru import logger
 from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
@@ -19,7 +20,6 @@ from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
 )
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.util.saas_util import (
     load_config,
@@ -52,7 +52,7 @@ class ConnectorTemplate(BaseModel):
     @validator("dataset")
     def validate_dataset(cls, dataset: str) -> str:
         """Validates the dataset at the given path"""
-        FidesopsDataset(**load_dataset(dataset)[0])
+        Dataset(**load_dataset(dataset)[0])
         return dataset
 
     @validator("icon")
@@ -85,6 +85,7 @@ def create_connection_config_from_template_no_save(
     db: Session,
     template: ConnectorTemplate,
     template_values: SaasConnectionTemplateValues,
+    system_id: Optional[str] = None,
 ) -> ConnectionConfig:
     """Creates a SaaS connection config from a template without saving it."""
     # Load saas config from template and replace every instance of "<instance_fides_key>" with the fides_key
@@ -93,18 +94,20 @@ def create_connection_config_from_template_no_save(
         template.config, "<instance_fides_key>", template_values.instance_key
     )
 
+    data = {
+        "name": template_values.name,
+        "key": template_values.key,
+        "description": template_values.description,
+        "connection_type": ConnectionType.saas,
+        "access": AccessLevel.write,
+        "saas_config": config_from_template,
+    }
+
+    if system_id:
+        data["system_id"] = system_id
+
     # Create SaaS ConnectionConfig
-    connection_config = ConnectionConfig.create_without_saving(
-        db,
-        data={
-            "name": template_values.name,
-            "key": template_values.key,
-            "description": template_values.description,
-            "connection_type": ConnectionType.saas,
-            "access": AccessLevel.write,
-            "saas_config": config_from_template,
-        },
-    )
+    connection_config = ConnectionConfig.create_without_saving(db, data=data)
 
     return connection_config
 
@@ -129,9 +132,9 @@ def upsert_dataset_config_from_template(
     data = {
         "connection_config_id": connection_config.id,
         "fides_key": template_values.instance_key,
-        "dataset": dataset_from_template,
+        "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
     }
-    dataset_config = DatasetConfig.create_or_update(db, data=data)
+    dataset_config = DatasetConfig.upsert_with_ctl_dataset(db, data=data)
     return dataset_config
 
 

@@ -2,10 +2,18 @@
 import re
 from pathlib import Path
 from typing import Dict
+from unittest import mock
+from unittest.mock import Mock
 
 import pytest
+import requests
+from starlette.testclient import TestClient
 
-from fides.api.ctl.ui import generate_route_file_map, match_route
+from fides.api.ctl.ui import (
+    generate_route_file_map,
+    match_route,
+    path_is_in_ui_directory,
+)
 
 # Path segments of temporary files whose routes are tested.
 STATIC_FILES = (
@@ -63,3 +71,34 @@ def test_match_route(
 
     # Test example routes.
     assert match_route(route_file_map, route) == tmp_static / expected
+
+
+@pytest.mark.unit
+@mock.patch("fides.api.ctl.ui.get_path_to_admin_ui_file")
+@pytest.mark.parametrize(
+    "route, expected",
+    [
+        ("index.html", True),
+        ("//etc/passwd", False),
+        ("dataset/new.html", True),
+        ("//fides/example.env", False),
+    ],
+)
+def test_path_is_in_ui_directory(
+    mock_get_path_to_admin_ui_file: Mock, tmp_static: Path, route: str, expected: bool
+):
+    """Test various paths for if they are in the UI directory"""
+    mock_get_path_to_admin_ui_file.return_value = tmp_static
+    assert path_is_in_ui_directory(tmp_static / Path(route)) == expected
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("route, expected", [("/", 200), ("//etc/passwd", 404)])
+def test_check_file_within_ui_directory(
+    test_client: TestClient, route: str, expected: int
+):
+    """Test attempts at retrieving files outside the UI directory"""
+    # We use localhost:8080 here because otherwise TestClient will strip out
+    # the leading `//` for malicious paths
+    res = test_client.get(f"http://localhost:8080{route}")
+    assert res.status_code == expected

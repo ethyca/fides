@@ -1,7 +1,22 @@
-from fides.api.ops.tasks import _create_celery
-from fides.core.config import get_config
+# pylint: disable=protected-access
+import pytest
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+from sqlalchemy.pool import QueuePool
 
-CONFIG = get_config()
+from fides.api.ops.tasks import DatabaseTask, _create_celery
+from fides.core.config import CONFIG, get_config
+
+
+@pytest.fixture
+def mock_config_changed_db_engine_settings():
+    pool_size = CONFIG.database.task_engine_pool_size
+    CONFIG.database.task_engine_pool_size = pool_size + 5
+    max_overflow = CONFIG.database.task_engine_max_overflow
+    CONFIG.database.task_engine_max_overflow = max_overflow + 5
+    yield
+    CONFIG.database.task_engine_pool_size = pool_size
+    CONFIG.database.task_engine_max_overflow = max_overflow
 
 
 def test_create_task(celery_session_app, celery_session_worker):
@@ -17,7 +32,8 @@ def test_create_task(celery_session_app, celery_session_worker):
 
 
 def test_celery_default_config() -> None:
-    celery_app = _create_celery()
+    config = get_config()
+    celery_app = _create_celery(config)
     assert celery_app.conf["broker_url"] == CONFIG.redis.connection_url
     assert celery_app.conf["result_backend"] == CONFIG.redis.connection_url
     assert celery_app.conf["event_queue_prefix"] == "fides_worker"
@@ -26,9 +42,28 @@ def test_celery_default_config() -> None:
 
 def test_celery_config_override() -> None:
     config = get_config()
+
     config.celery["event_queue_prefix"] = "overridden_fides_worker"
     config.celery["task_default_queue"] = "overridden_fides"
 
     celery_app = _create_celery(config=config)
     assert celery_app.conf["event_queue_prefix"] == "overridden_fides_worker"
     assert celery_app.conf["task_default_queue"] == "overridden_fides"
+
+
+@pytest.mark.parametrize(
+    "config_fixture", [None, "mock_config_changed_db_engine_settings"]
+)
+def test_get_task_session(config_fixture, request):
+    if config_fixture is not None:
+        request.getfixturevalue(
+            config_fixture
+        )  # used to invoke config fixture if provided
+    pool_size = CONFIG.database.task_engine_pool_size
+    max_overflow = CONFIG.database.task_engine_max_overflow
+    t = DatabaseTask()
+    session: Session = t.get_new_session()
+    engine: Engine = session.get_bind()
+    pool: QueuePool = engine.pool
+    assert pool.size() == pool_size
+    assert pool._max_overflow == max_overflow

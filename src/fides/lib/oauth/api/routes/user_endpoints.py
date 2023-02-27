@@ -17,9 +17,15 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
+from fides.api.ops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    USER_CREATE,
+    USER_DELETE,
+    USER_READ,
+)
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import FidesConfig, get_config
-from fides.lib.models.client import ADMIN_UI_ROOT, ClientDetail
+from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api import urn_registry as urls
@@ -31,12 +37,6 @@ from fides.lib.oauth.schemas.user import (
     UserLogin,
     UserLoginResponse,
     UserResponse,
-)
-from fides.lib.oauth.scopes import (
-    PRIVACY_REQUEST_READ,
-    USER_CREATE,
-    USER_DELETE,
-    USER_READ,
 )
 
 router = APIRouter()
@@ -89,6 +89,7 @@ def create_user(
 @router.delete(
     urls.USER_DETAIL,
     status_code=HTTP_204_NO_CONTENT,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_DELETE])],
 )
 def delete_user(
     *,
@@ -107,13 +108,7 @@ def delete_user(
             status_code=HTTP_404_NOT_FOUND, detail=f"No user found with id {user_id}."
         )
 
-    if not (client.fides_key == ADMIN_UI_ROOT or client.user_id == user.id):
-        raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN,
-            detail="Users can only remove themselves, or be the Admin UI Root User.",
-        )
-
-    logger.info("Deleting user with id: '{}'.", user_id)
+    logger.info("User with id {} deleted by user with id {}", user_id, client.user_id)
 
     user.delete(db)
 

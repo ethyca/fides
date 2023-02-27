@@ -863,7 +863,7 @@ class TestCreatePolicies:
         assert resp.status_code == 422
         assert (
             json.loads(resp.text)["detail"][0]["msg"]
-            == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
+            == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: here*is*an*invalid*key"
         )
 
     def test_create_policy_already_exists(
@@ -945,6 +945,33 @@ class TestCreateRules:
         response_data = resp.json()["failed"]
         assert len(response_data) == 1
 
+    def test_create_rules_invalid_storage_destination(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+        storage_config,
+    ):
+
+        data = [
+            {
+                "name": "test access rule",
+                "action_type": ActionType.access.value,
+                "storage_destination_key": "invalid_storage_key",
+            }
+        ]
+        url = V1_URL_PREFIX + RULE_CREATE_URI.format(policy_key=policy.key)
+        auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
+        resp = api_client.patch(
+            url,
+            json=data,
+            headers=auth_header,
+        )
+
+        assert resp.status_code == 200
+        response_data = resp.json()["failed"]
+        assert len(response_data) == 1
+
     def test_create_rules_limit_exceeded(
         self, api_client: TestClient, generate_auth_header, url, storage_config
     ):
@@ -997,12 +1024,13 @@ class TestCreateRules:
         assert "key" in rule_data["storage_destination"]
         assert "secrets" not in rule_data["storage_destination"]
 
-    def test_create_access_rule_for_policy_no_storage_fails(
+    def test_create_access_rule_for_policy_no_storage_specified(
         self,
-        url,
         api_client: TestClient,
+        url,
         generate_auth_header,
         policy,
+        storage_config,
     ):
         data = [
             {
@@ -1010,16 +1038,22 @@ class TestCreateRules:
                 "action_type": ActionType.access.value,
             }
         ]
-
         auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
         resp = api_client.patch(
             url,
             json=data,
             headers=auth_header,
         )
+
         assert resp.status_code == 200
-        response_data = resp.json()["failed"]
+        response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        rule_data = response_data[0]
+        assert (
+            "storage_destination" not in rule_data
+            or rule_data["storage_destination"] is None
+        )
+        assert rule_data["name"] == "test access rule"
 
     def test_create_erasure_rule_for_policy(
         self,

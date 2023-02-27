@@ -9,12 +9,10 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import get_config
-from tests.ops.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exists
+from fides.core.config import CONFIG
+from tests.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
-
-CONFIG = get_config()
 
 
 @pytest.mark.integration_saas

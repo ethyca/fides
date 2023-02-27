@@ -7,15 +7,6 @@ Admin UI for managing Fides privacy requests. A web application built in Next.js
 1. In a new shell, `cd` into `clients/admin-ui`, then run `npm run dev`.
 1. Nav to `http://localhost:3000/` and log in using the created user. The `email` field is simply the `user` that was created, not a valid email address.
 
-## Testing Entire Request Flow
-
-1. Run the fides server with `nox -s dev`.
-2. Create a policy key through the API (using the Postman collection).
-3. Configure the `clients/privacy-center` application to use that policy by adding it to the appropriate request config in `config/config.json`.
-4. Run the Privacy Request center using `npm run dev`.
-5. Submit a privacy request through the Privacy Request center.
-6. View that request in the Admin UI and either approve or deny it.
-
 ## Unit test locations
 
 Unless otherwise specified below, all unit tests should be colocated in the directory with the file(s) they are testing, in a `__tests__` subfolder.
@@ -29,7 +20,6 @@ within [flags.json](./src/flags.json).
 
 You can toggle flags at runtime by opening the features panel, which can be accessed under the user menu in the top-right
 of the page header. These changes will be saved per-browser, per-environment, until you log out or reset them from the menu.
-
 
 ### Environments
 
@@ -47,8 +37,6 @@ running the app, for example:
 `NEXT_PUBLIC_APP_ENV=production npm run dev`
 
 Or you can configure the environment using `env.local` as described by the [Next.js docs](https://nextjs.org/docs/basic-features/environment-variables#loading-environment-variables).
-
-
 
 ## Preparing for production
 

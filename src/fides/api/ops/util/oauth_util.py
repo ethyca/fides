@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from functools import update_wrapper
+from types import FunctionType
+from typing import Callable
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
@@ -17,7 +20,7 @@ from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -29,7 +32,6 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
 from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 
-CONFIG = get_config()
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
 
@@ -38,6 +40,20 @@ JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 oauth2_scheme = OAuth2ClientCredentialsBearer(
     tokenUrl=(V1_URL_PREFIX + TOKEN),
 )
+
+
+def copy_func(source_function: Callable) -> Callable:
+    """Based on http://stackoverflow.com/a/6528148/190597 (Glenn Maynard)"""
+    target_function = FunctionType(
+        source_function.__code__,
+        source_function.__globals__,
+        name=source_function.__name__,
+        argdefs=source_function.__defaults__,
+        closure=source_function.__closure__,
+    )
+    target_function = update_wrapper(target_function, source_function)
+    target_function.__kwdefaults__ = source_function.__kwdefaults__
+    return target_function
 
 
 async def get_current_user(
@@ -115,6 +131,23 @@ def verify_callback_oauth(
     return webhook
 
 
+async def get_root_client(
+    db: Session = Depends(get_db), client_id: str = CONFIG.security.oauth_root_client_id
+) -> ClientDetail:
+    """
+    Gets the root_client directly.
+
+    This function is primarily used to let users bypass endpoint authorization
+    """
+    client = ClientDetail.get(
+        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
+    )
+    if not client:
+        logger.debug("Auth token belongs to an invalid client_id.")
+        raise AuthorizationError(detail="Not Authorized for this action")
+    return client
+
+
 async def verify_oauth_client(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
@@ -123,7 +156,10 @@ async def verify_oauth_client(
     """
     Verifies that the access token provided in the authorization header contains
     the necessary scopes specified by the caller. Yields a 403 forbidden error
-    if not
+    if not.
+
+    NOTE: This function may be overwritten in `main.py` when changing
+    the security environment.
     """
     if authorization is None:
         logger.debug("No authorization supplied.")
@@ -179,3 +215,8 @@ async def verify_oauth_client(
         logger.debug("Client no longer allowed to issue these scopes.")
         raise AuthorizationError(detail="Not Authorized for this action")
     return client
+
+
+# This is a workaround so that we can override CLI-related endpoints and
+# all other endpoints separately.
+verify_oauth_client_cli = copy_func(verify_oauth_client)

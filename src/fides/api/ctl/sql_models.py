@@ -4,25 +4,28 @@
 Contains all of the SqlAlchemy models for the Fides resources.
 """
 
+from enum import Enum as EnumType
 from typing import Dict
 
+from fideslang.models import Dataset as FideslangDataset
+from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
+from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
-    ARRAY,
-    BOOLEAN,
-    JSON,
-    Column,
+    ForeignKey,
     Integer,
     String,
     Text,
     TypeDecorator,
+    UniqueConstraint,
     cast,
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG
 from fides.lib.db.base import (  # type: ignore[attr-defined]
     Base,
     ClientDetail,
@@ -30,8 +33,6 @@ from fides.lib.db.base import (  # type: ignore[attr-defined]
     FidesUserPermissions,
 )
 from fides.lib.db.base_class import FidesBase as FideslibBase
-
-CONFIG: FidesConfig = get_config()
 
 
 class FidesBase(FideslibBase):
@@ -195,10 +196,20 @@ class Dataset(Base, FidesBase):
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(String)
     collections = Column(JSON)
-    fidesctl_meta = Column(JSON)
+    fides_meta = Column(JSON)
     joint_controller = Column(PGEncryptedString, nullable=True)
     retention = Column(String)
     third_country_transfers = Column(ARRAY(String))
+
+    @classmethod
+    def create_from_dataset_dict(cls, db: Session, dataset: dict) -> "Dataset":
+        """Add a method to create directly using a synchronous session"""
+        validated_dataset: FideslangDataset = FideslangDataset(**dataset)
+        ctl_dataset = cls(**validated_dataset.dict())
+        db.add(ctl_dataset)
+        db.commit()
+        db.refresh(ctl_dataset)
+        return ctl_dataset
 
 
 # Evaluation
@@ -313,3 +324,83 @@ models_with_default_field = [
     for _, sql_model in sql_model_map.items()
     if hasattr(sql_model, "is_default")
 ]
+
+
+class AllowedTypes(str, EnumType):
+    """Allowed types for custom field."""
+
+    string = "string"
+    string_list = "string[]"
+
+
+class ResourceTypes(str, EnumType):
+    """Resource types that can use custom fields."""
+
+    system = "system"
+    data_use = "data use"
+    data_category = "data category"
+    data_subject = "data subject"
+
+
+class CustomFieldValueList(Base):
+    """Allow-list definitions for custom metadata values"""
+
+    __tablename__ = "plus_custom_field_value_list"
+
+    name = Column(String, nullable=False)
+    description = Column(String)
+    allowed_values = Column(ARRAY(String))
+    custom_field_definition = relationship(
+        "CustomFieldDefinition",
+        back_populates="allow_list",
+    )
+
+    UniqueConstraint("name")
+
+
+class CustomFieldDefinition(Base):
+    """Defines custom metadata for resources."""
+
+    __tablename__ = "plus_custom_field_definition"
+
+    name = Column(String, index=True, nullable=False)
+    description = Column(String)
+    field_type = Column(
+        EnumColumn(AllowedTypes),
+        nullable=False,
+    )
+    allow_list_id = Column(String, ForeignKey(CustomFieldValueList.id), nullable=True)
+    resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
+    field_definition = Column(String, index=True)
+    custom_field = relationship(
+        "CustomField",
+        back_populates="custom_field_definition",
+        cascade="delete, delete-orphan",
+    )
+    allow_list = relationship(
+        "CustomFieldValueList",
+        back_populates="custom_field_definition",
+    )
+    active = Column(BOOLEAN, nullable=False, default=True)
+
+    UniqueConstraint("name", "resource_type")
+
+
+class CustomField(Base):
+    """Custom metadata for resources."""
+
+    __tablename__ = "plus_custom_field"
+
+    resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
+    resource_id = Column(String, index=True, nullable=False)
+    custom_field_definition_id = Column(
+        String, ForeignKey(CustomFieldDefinition.id), nullable=False
+    )
+    value = Column(ARRAY(String))
+
+    custom_field_definition = relationship(
+        "CustomFieldDefinition",
+        back_populates="custom_field",
+    )
+
+    UniqueConstraint("resource_type", "resource_id", "custom_field_definition_id")

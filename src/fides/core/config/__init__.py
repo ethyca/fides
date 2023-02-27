@@ -5,10 +5,11 @@ config sections into a single config object.
 
 from functools import lru_cache
 from os import getenv
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 import toml
 from loguru import logger as log
+from pydantic import Field
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
@@ -41,11 +42,26 @@ class FidesConfig(FidesSettings):
     """
 
     # Root Settings
-    test_mode: bool = get_test_mode()
-    is_test_mode: bool = test_mode
-    hot_reloading: bool = getenv("FIDES__HOT_RELOAD", "").lower() == "true"
-    dev_mode: bool = getenv("FIDES__DEV_MODE", "").lower() == "true"
-    oauth_instance: Optional[str] = getenv("FIDES__OAUTH_INSTANCE")
+    test_mode: bool = Field(
+        default=get_test_mode(),
+        description="Whether or not the application is being run in test mode.",
+        exclude=True,
+    )
+    hot_reloading: bool = Field(
+        default=getenv("FIDES__HOT_RELOAD", "").lower() == "true",
+        description="Whether or not to enable hot reloading for the webserver.",
+        exclude=True,
+    )
+    dev_mode: bool = Field(
+        default=getenv("FIDES__DEV_MODE", "").lower() == "true",
+        description="Similar to 'test_mode', enables certain features when true.",
+        exclude=True,
+    )
+    oauth_instance: Optional[str] = Field(
+        default=None,
+        description="A value that is prepended to the generated 'state' param in outbound OAuth2 authorization requests. Used during OAuth2 testing to associate callback responses back to this specific Fides instance.",
+        exclude=True,
+    )
 
     # Setting Subsections
     # These should match the `settings_map` in `build_config`
@@ -93,18 +109,23 @@ class FidesConfig(FidesSettings):
                 )
 
 
-def censor_config(config: FidesConfig) -> Dict[str, Any]:
+def censor_config(config: Union[FidesConfig, Dict[str, Any]]) -> Dict[str, Any]:
     """
     Returns a config that is safe to expose over the API. This function will
     strip out any keys not specified in the `CONFIG_KEY_ALLOWLIST` above.
     """
-    as_dict = config.dict()
+    if not isinstance(config, Dict):
+        as_dict = config.dict()
+    else:
+        as_dict = config
     filtered: Dict[str, Any] = {}
     for key, value in CONFIG_KEY_ALLOWLIST.items():
-        data = as_dict[key]
-        filtered[key] = {}
-        for field in value:
-            filtered[key][field] = data[field]
+        if key in as_dict:
+            data = as_dict[key]
+            filtered[key] = {}
+            for field in value:
+                if field in data:
+                    filtered[key][field] = data[field]
 
     return filtered
 
@@ -171,19 +192,23 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
     env_config_path = getenv(DEFAULT_CONFIG_PATH_ENV_VAR)
     config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
-    if verbose:
-        print(f"Loading config from: {config_path}")
 
     try:
         settings = toml.load(config_path)
         config = build_config(config_dict=settings)
+        if verbose:
+            print(f"Loaded config from: {config_path}")
         return config
     except FileNotFoundError:
-        print("No config file found.")
+        pass
     except IOError:
         echo_red(f"Error reading config file: {config_path}")
 
-    print("Using default configuration values.")
+    if verbose:  # pragma: no cover
+        print("Using default configuration values.")
     config = build_config(config_dict={})
 
     return config
+
+
+CONFIG = get_config()

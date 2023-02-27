@@ -1,13 +1,19 @@
 import copy
-import random
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pytest
 from bson import ObjectId
+from fideslang.models import Dataset
 
-from fides.api.ops.graph.config import Collection, Dataset, FieldAddress, ScalarField
+from fides.api.ops.graph.config import (
+    Collection,
+    FieldAddress,
+    GraphDataset,
+    ScalarField,
+)
 from fides.api.ops.graph.data_type import (
     IntTypeConverter,
     ObjectIdTypeConverter,
@@ -19,7 +25,6 @@ from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
@@ -48,9 +53,7 @@ async def test_combined_erasure_task(
     """Includes examples of mongo nested and array erasures"""
     policy = erasure_policy("A", "B")
     seed_email = postgres_inserts["customer"][0]["email"]
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
     )
@@ -141,9 +144,7 @@ async def test_combined_erasure_task(
         "mongo_test:rewards": 0,
     }
 
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
     rerun_access = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -256,9 +257,7 @@ async def test_combined_erasure_task(
 async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     policy = erasure_policy("A", "B")
     seed_email = mongo_inserts["customer"][0]["email"]
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
 
     dataset, graph = integration_db_mongo_graph(
         "mongo_test", integration_mongodb_config.key
@@ -299,7 +298,7 @@ async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config)
 async def test_dask_mongo_task(
     db, integration_mongodb_config: ConnectionConfig
 ) -> None:
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
 
     v = await graph_task.run_access_request(
         privacy_request,
@@ -338,7 +337,7 @@ async def test_composite_key_erasure(
     integration_mongodb_config: ConnectionConfig,
 ) -> None:
 
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     policy = erasure_policy("A")
     customer = Collection(
         name="customer",
@@ -378,7 +377,7 @@ async def test_composite_key_erasure(
         ],
     )
 
-    dataset = Dataset(
+    dataset = GraphDataset(
         name="mongo_test",
         collections=[customer, composite_pk_test],
         connection_key=integration_mongodb_config.key,
@@ -414,7 +413,7 @@ async def test_composite_key_erasure(
 
     # re-run access request. Description has been
     # nullified here.
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -437,7 +436,7 @@ async def test_access_erasure_type_conversion(
     """Retrieve data from the type_link table. This requires retrieving data from
     the employee foreign_id field, which is an object_id stored as a string, and
     converting it into an object_id to query against the type_link_test._id field."""
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     policy = erasure_policy("A")
     employee = Collection(
         name="employee",
@@ -473,7 +472,7 @@ async def test_access_erasure_type_conversion(
         ],
     )
 
-    dataset = Dataset(
+    dataset = GraphDataset(
         name="mongo_test",
         collections=[employee, type_link],
         connection_key=integration_mongodb_config.key,
@@ -521,9 +520,9 @@ async def test_object_querying_mongo(
 
     postgres_config = copy.copy(integration_postgres_config)
 
-    dataset_postgres = FidesopsDataset(**example_datasets[0])
+    dataset_postgres = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = FidesopsDataset(**example_datasets[1])
+    dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(
         dataset_mongo, integration_mongodb_config.key
     )
@@ -610,7 +609,7 @@ async def test_object_querying_mongo(
 async def test_get_cached_data_for_erasures(
     integration_postgres_config, integration_mongodb_config, policy, db
 ) -> None:
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
 
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
@@ -668,9 +667,9 @@ async def test_return_all_elements_config_access_request(
     """
     postgres_config = copy.copy(integration_postgres_config)
 
-    dataset_postgres = FidesopsDataset(**example_datasets[0])
+    dataset_postgres = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = FidesopsDataset(**example_datasets[1])
+    dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(
         dataset_mongo, integration_mongodb_config.key
     )
@@ -715,9 +714,7 @@ async def test_return_all_elements_config_erasure(
     """Includes examples of mongo nested and array erasures"""
     policy = erasure_policy("A", "B")
 
-    privacy_request = PrivacyRequest(
-        id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
-    )
+    privacy_request = PrivacyRequest(id=f"test_sql_erasure_task_{uuid4()}")
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
         integration_postgres_config, integration_mongodb_config
     )
@@ -793,9 +790,9 @@ async def test_array_querying_mongo(
 ):
     postgres_config = copy.copy(integration_postgres_config)
 
-    dataset_postgres = FidesopsDataset(**example_datasets[0])
+    dataset_postgres = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = FidesopsDataset(**example_datasets[1])
+    dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(
         dataset_mongo, integration_mongodb_config.key
     )
@@ -1046,7 +1043,7 @@ async def test_array_querying_mongo(
     ]
 
     # Run again with different email
-    privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
+    privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     access_request_results = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -1088,7 +1085,7 @@ class TestRetrievingDataMongo:
 
     @pytest.fixture
     def traversal_node(self, example_datasets, integration_mongodb_config):
-        dataset = FidesopsDataset(**example_datasets[1])
+        dataset = Dataset(**example_datasets[1])
         graph = convert_dataset_to_graph(dataset, integration_mongodb_config.key)
         customer_details_collection = None
         for collection in graph.collections:

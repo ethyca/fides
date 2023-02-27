@@ -44,7 +44,7 @@ def test_validate_success(
 
     response = test_client.post(
         test_config.cli.server_url + API_PREFIX + "/validate/",
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
         data=dumps(data),
     )
 
@@ -98,7 +98,7 @@ def test_validate_failure(
 
     response = test_client.post(
         test_config.cli.server_url + API_PREFIX + "/validate/",
-        headers=test_config.user.request_headers,
+        headers=test_config.user.auth_header,
         data=dumps(data),
     )
 

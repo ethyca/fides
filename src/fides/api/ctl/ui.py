@@ -8,13 +8,19 @@ from typing import Dict, Optional, Union
 
 from fastapi import Response
 from fastapi.responses import FileResponse
+from loguru import logger
 
 FIDES_DIRECTORY = "src/fides"
 ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
 
 
 def get_package_path() -> Optional[Path]:
-    """Returns a Path to the root directory of this package's installation, if it exists."""
+    """
+    Returns a Path to the root directory of this package's installation, if it exists.
+
+    If installed via `pip install -e` (like in Dockerfile's `dev` target), this may be /fides/src/fides
+    If installed via `pip install ethyca-fides`, this will be more like /usr/local/lib/python/site-packages/fides
+    """
     package_name = __package__.split(".", maxsplit=1)[0]
     spec = importlib.util.find_spec(package_name)
     if spec and spec.origin:
@@ -23,8 +29,12 @@ def get_package_path() -> Optional[Path]:
     return None
 
 
-def get_path_to_admin_ui_file(path: str) -> Optional[Path]:
-    """Return a path to a packaged admin UI file."""
+def get_path_to_admin_ui_file(path: str = "") -> Optional[Path]:
+    """
+    Return a path to a packaged admin UI file.
+
+    If no path is given, returns the path to the root of the UI directory
+    """
     package_path = get_package_path()
     if package_path is None:
         return None
@@ -41,14 +51,8 @@ def get_admin_index_as_response() -> Response:
 
 
 @lru_cache
-def get_local_file_map() -> Dict[re.Pattern, Path]:
-    """Get the Admin UI route map for the local build."""
-    return generate_route_file_map(Path(FIDES_DIRECTORY) / ADMIN_UI_DIRECTORY)
-
-
-@lru_cache
-def get_package_file_map() -> Dict[re.Pattern, Path]:
-    """Get the Admin UI route map from the installed package's static files."""
+def get_ui_file_map() -> Dict[re.Pattern, Path]:
+    """Get the Admin UI route map from its static files."""
     package_path = get_package_path()
     if package_path is None:
         return {}
@@ -125,6 +129,16 @@ def match_route(route_file_map: Dict[re.Pattern, Path], route: str) -> Optional[
 
     # If no static matches exist, fallback to the first match
     return sorted(matches)[0]
+
+
+def path_is_in_ui_directory(path: Path) -> bool:
+    """Checks if the path exists within the UI directory"""
+    ui_directory = get_path_to_admin_ui_file()
+    if not ui_directory:
+        logger.debug("Unable to locate UI directory")
+        return False
+
+    return ui_directory in path.parents
 
 
 def _is_dynamic_path(path: Path) -> bool:

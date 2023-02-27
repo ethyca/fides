@@ -52,15 +52,10 @@ from fides.api.ops.api.v1.urn_registry import (
 )
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import (
-    ActionType,
-    CurrentStep,
-    Policy,
-    Rule,
-    RuleTarget,
-)
+from fides.api.ops.models.policy import ActionType, CurrentStep, Policy
 from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -90,7 +85,7 @@ from fides.api.ops.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -100,7 +95,6 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 
-CONFIG = get_config()
 page_size = Params().size
 
 
@@ -1286,16 +1280,19 @@ class TestGetPrivacyRequests:
         csv_file = csv.DictReader(file, delimiter=",")
 
         first_row = next(csv_file)
-        assert parse(first_row["Time received"], ignoretz=True) == created_at
-        assert ast.literal_eval(first_row["Subject identity"]) == {
+        assert parse(first_row["Time Received"], ignoretz=True) == created_at
+        assert ast.literal_eval(first_row["Subject Identity"]) == {
             "email": TEST_EMAIL,
             "phone_number": TEST_PHONE,
+            "ga_client_id": None,
+            "ljt_readerID": None,
         }
-        assert first_row["Policy key"] == "example_access_request_policy"
-        assert first_row["Request status"] == "approved"
-        assert first_row["Reviewer"] == user.id
-        assert parse(first_row["Time approved/denied"], ignoretz=True) == reviewed_at
-        assert first_row["Denial reason"] == ""
+        assert first_row["Request Type"] == "access"
+        assert first_row["Status"] == "approved"
+        assert first_row["Reviewed By"] == user.id
+        assert parse(first_row["Time Approved/Denied"], ignoretz=True) == reviewed_at
+        assert first_row["Denial Reason"] == ""
+        assert first_row["Request ID"] == privacy_request.id
 
         privacy_request.delete(db)
 
@@ -1794,12 +1791,14 @@ class TestApprovePrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUEST_APPROVE
 
     @pytest.fixture(scope="function")
-    def privacy_request_review_notification_enabled(self):
+    def privacy_request_review_notification_enabled(self, db):
         """Enable request review notification"""
         original_value = CONFIG.notifications.send_request_review_notification
         CONFIG.notifications.send_request_review_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_review_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_approve_privacy_request_not_authenticated(self, url, api_client):
         response = api_client.patch(url)
@@ -2011,12 +2010,14 @@ class TestDenyPrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUEST_DENY
 
     @pytest.fixture(autouse=True, scope="function")
-    def privacy_request_review_notification_enabled(self):
+    def privacy_request_review_notification_enabled(self, db):
         """Enable request review notification"""
         original_value = CONFIG.notifications.send_request_review_notification
         CONFIG.notifications.send_request_review_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_review_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_deny_privacy_request_not_authenticated(self, url, api_client):
         response = api_client.patch(url)
@@ -2960,12 +2961,14 @@ class TestVerifyIdentity:
         )
 
     @pytest.fixture(scope="function")
-    def privacy_request_receipt_notification_enabled(self):
+    def privacy_request_receipt_notification_enabled(self, db):
         """Enable request receipt"""
         original_value = CONFIG.notifications.send_request_receipt_notification
         CONFIG.notifications.send_request_receipt_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_receipt_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_incorrect_privacy_request_status(self, api_client, url, privacy_request):
         request_body = {"code": self.code}
@@ -3243,12 +3246,14 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
     @pytest.fixture(scope="function")
-    def subject_identity_verification_required(self):
+    def subject_identity_verification_required(self, db):
         """Override autouse fixture to enable identity verification for tests"""
         original_value = CONFIG.execution.subject_identity_verification_required
         CONFIG.execution.subject_identity_verification_required = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.execution.subject_identity_verification_required = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_create_privacy_request_no_email_config(
         self,
@@ -3797,12 +3802,14 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
     @pytest.fixture(scope="function")
-    def privacy_request_receipt_notification_enabled(self):
+    def privacy_request_receipt_notification_enabled(self, db):
         """Enable request receipt notification"""
         original_value = CONFIG.notifications.send_request_receipt_notification
         CONFIG.notifications.send_request_receipt_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_receipt_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -3913,11 +3920,13 @@ class TestCreatePrivacyRequestAuthenticated:
         return f"{V1_URL_PREFIX}{PRIVACY_REQUEST_AUTHENTICATED}"
 
     @pytest.fixture
-    def verification_config(self):
+    def verification_config(self, db):
         original = CONFIG.execution.subject_identity_verification_required
         CONFIG.execution.subject_identity_verification_required = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.execution.subject_identity_verification_required = original
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"

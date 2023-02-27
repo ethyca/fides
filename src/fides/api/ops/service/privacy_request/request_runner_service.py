@@ -6,7 +6,7 @@ import requests
 from loguru import logger
 from pydantic import ValidationError
 from redis.exceptions import DataError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.api.v1.urn_registry import (
@@ -25,9 +25,9 @@ from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.config import CollectionAddress, GraphDataset
 from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import (
@@ -44,12 +44,19 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+    ExtendedConsentEmailSchema,
+)
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import FidesConnector
+from fides.api.ops.service.connectors.consent_email_connector import (
+    filter_user_identities_for_connector,
+    get_consent_email_connection_configs,
+)
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
@@ -62,6 +69,7 @@ from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import (
     get_cached_data_for_erasures,
     run_access_request,
+    run_consent_request,
     run_erasure,
 )
 from fides.api.ops.tasks import DatabaseTask, celery_app
@@ -74,12 +82,11 @@ from fides.api.ops.util.cache import (
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
-from fides.core.config import get_config
+from fides.core.config import CONFIG
+from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.db.session import get_db_session
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.schemas.base_class import BaseSchema
-
-CONFIG = get_config()
 
 
 class ManualWebhookResults(BaseSchema):
@@ -92,7 +99,6 @@ class ManualWebhookResults(BaseSchema):
 def get_access_manual_webhook_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> ManualWebhookResults:
-
     """Retrieves manually uploaded data for all AccessManualWebhooks and formats in a way
     to match automatically retrieved data (a list of rows). Also returns if execution should proceed.
 
@@ -101,7 +107,7 @@ def get_access_manual_webhook_inputs(
     manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
 
     if not policy.get_rules_for_action(action_type=ActionType.access):
-        # Don't fetch manual inputs if this is an erasure-only request
+        # Don't fetch manual inputs unless this policy has an access rule
         return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
 
     try:
@@ -196,10 +202,8 @@ def upload_access_results(  # pylint: disable=R0912
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
     ):
-        if not rule.storage_destination:
-            raise common_exceptions.RuleValidationError(
-                f"No storage destination configured on rule {rule.key}"
-            )
+        storage_destination = rule.get_storage_destination(session)
+
         target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
         filtered_results: Dict[
             str, List[Dict[str, Optional[Any]]]
@@ -225,7 +229,7 @@ def upload_access_results(  # pylint: disable=R0912
                 db=session,
                 request_id=privacy_request.id,
                 data=filtered_results,
-                storage_key=rule.storage_destination.key,  # type: ignore
+                storage_key=storage_destination.key,  # type: ignore
             )
             if download_url:
                 download_urls.append(download_url)
@@ -290,7 +294,7 @@ async def run_privacy_request(
     if from_step:
         logger.info("Resuming privacy request from checkpoint: '{}'", from_step)
 
-    with self.session as session:
+    with self.get_new_session() as session:
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
 
         privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
@@ -340,7 +344,10 @@ async def run_privacy_request(
             )
             access_result_urls: List[str] = []
 
-            if can_run_checkpoint(
+            if (
+                policy.get_rules_for_action(action_type=ActionType.access)
+                or policy.get_rules_for_action(action_type=ActionType.erasure)
+            ) and can_run_checkpoint(
                 request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
             ):
                 access_result: Dict[str, List[Row]] = await run_access_request(
@@ -379,6 +386,21 @@ async def run_privacy_request(
                     session=session,
                 )
 
+            if policy.get_rules_for_action(
+                action_type=ActionType.consent
+            ) and can_run_checkpoint(
+                request_checkpoint=CurrentStep.consent,
+                from_checkpoint=resume_step,
+            ):
+                await run_consent_request(
+                    privacy_request=privacy_request,
+                    policy=policy,
+                    graph=build_consent_dataset_graph(datasets),
+                    connection_configs=connection_configs,
+                    identity=identity_data,
+                    session=session,
+                )
+
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
             _log_warning(exc, CONFIG.dev_mode)
@@ -395,7 +417,9 @@ async def run_privacy_request(
             return
 
         # Send erasure requests via email to third parties where applicable
-        if can_run_checkpoint(
+        if policy.get_rules_for_action(
+            action_type=ActionType.erasure
+        ) and can_run_checkpoint(
             request_checkpoint=CurrentStep.erasure_email_post_send,
             from_checkpoint=resume_step,
         ):
@@ -415,15 +439,36 @@ async def run_privacy_request(
                 _log_exception(exc, CONFIG.dev_mode)
                 return
 
-        # Run post-execution webhooks
-        proceed = run_webhooks_and_report_status(
-            db=session,
-            privacy_request=privacy_request,
-            webhook_cls=PolicyPostWebhook,  # type: ignore
-        )
-        if not proceed:
+        # Check if privacy request needs consent emails sent
+        if (
+            policy.get_rules_for_action(action_type=ActionType.consent)
+            and can_run_checkpoint(
+                request_checkpoint=CurrentStep.consent_email_post_send,
+                from_checkpoint=resume_step,
+            )
+            and needs_consent_email_send(session, identity_data, privacy_request)
+        ):
+            privacy_request.pause_processing_for_consent_email_send(session)
+            logger.info(
+                "Privacy request '{}' exiting: awaiting consent email send.",
+                privacy_request.id,
+            )
             return
-        if CONFIG.notifications.send_request_completion_notification:
+
+        # Run post-execution webhooks
+        if can_run_checkpoint(
+            request_checkpoint=CurrentStep.post_webhooks,
+            from_checkpoint=resume_step,
+        ):
+            proceed = run_webhooks_and_report_status(
+                db=session,
+                privacy_request=privacy_request,
+                webhook_cls=PolicyPostWebhook,  # type: ignore
+            )
+            if not proceed:
+                return
+
+        if ConfigProxy(session).notifications.send_request_completion_notification:
             try:
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
@@ -451,6 +496,31 @@ async def run_privacy_request(
         privacy_request.save(db=session)
 
 
+def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
+    """
+    Build the starting DatasetGraph for consent requests.
+
+    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
+    """
+    consent_datasets: List[GraphDataset] = []
+
+    for dataset_config in datasets:
+        connection_type: ConnectionType = (
+            dataset_config.connection_config.connection_type  # type: ignore
+        )
+        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
+        if (
+            connection_type == ConnectionType.saas
+            and saas_config
+            and saas_config.get("consent_requests")
+        ):
+            consent_datasets.append(
+                dataset_config.get_dataset_with_stubbed_collection()
+            )
+
+    return DatasetGraph(*consent_datasets)
+
+
 def initiate_privacy_request_completion_email(
     session: Session,
     policy: Policy,
@@ -463,9 +533,13 @@ def initiate_privacy_request_completion_email(
     :param access_result_urls: list of urls generated by access request upload
     :param identity_data: Dict of identity data
     """
-    if not identity_data.get(ProvidedIdentityType.email.value):
+    config_proxy = ConfigProxy(session)
+    if not (
+        identity_data.get(ProvidedIdentityType.email.value)
+        or identity_data.get(ProvidedIdentityType.phone_number.value)
+    ):
         raise IdentityNotFoundException(
-            "Identity email was not found, so request completion email could not be sent."
+            "Identity email or phone number was not found, so request completion message could not be sent."
         )
     to_identity: Identity = Identity(
         email=identity_data.get(ProvidedIdentityType.email.value),
@@ -477,7 +551,7 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
             to_identity=to_identity,
-            service_type=CONFIG.notifications.notification_service_type,
+            service_type=config_proxy.notifications.notification_service_type,
             message_body_params=AccessRequestCompleteBodyParams(
                 download_links=access_result_urls
             ),
@@ -487,7 +561,7 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_identity=to_identity,
-            service_type=CONFIG.notifications.notification_service_type,
+            service_type=config_proxy.notifications.notification_service_type,
             message_body_params=None,
         )
 
@@ -601,3 +675,30 @@ def _retrieve_child_results(  # pylint: disable=R0911
         return None
 
     return results
+
+
+def needs_consent_email_send(
+    db: Session, user_identity: Dict[str, Any], privacy_request: PrivacyRequest
+) -> bool:
+    """
+    Returns True if the privacy request fulfills the requirements for consent email send:
+
+    1) Privacy request must have consent preferences saved
+    2) There must be consent email connections configured
+    3) The user must have identity data matching at least one of these connectors
+    """
+    if not privacy_request.consent_preferences:
+        return False
+
+    email_consent_connection_configs: Query = get_consent_email_connection_configs(db)
+
+    for connection_config in email_consent_connection_configs:
+        secrets: ExtendedConsentEmailSchema = ExtendedConsentEmailSchema(
+            **connection_config.secrets or {}
+        )
+        filtered_user_identities = filter_user_identities_for_connector(
+            secrets, user_identity
+        )
+        if filtered_user_identities:
+            return True
+    return False

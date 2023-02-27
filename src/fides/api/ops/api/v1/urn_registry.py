@@ -36,11 +36,20 @@ STORAGE_CONFIG = "/storage/config"
 STORAGE_SECRETS = "/storage/config/{config_key}/secret"
 STORAGE_BY_KEY = "/storage/config/{config_key}"
 STORAGE_UPLOAD = "/storage/{request_id}"
+STORAGE_DEFAULT = "/storage/default"
+STORAGE_ACTIVE_DEFAULT = "/storage/default/active"
+STORAGE_DEFAULT_SECRETS = "/storage/default/{storage_type}/secret"
+STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
 
 # Email URLs
 MESSAGING_CONFIG = "/messaging/config"
 MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
+MESSAGING_DEFAULT = "/messaging/default"
+MESSAGING_ACTIVE_DEFAULT = "/messaging/default/active"
+MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
+MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
+MESSAGING_TEST = "/messaging/config/test"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
@@ -110,7 +119,9 @@ ACCESS_MANUAL_WEBHOOK = CONNECTION_BY_KEY + "/access_manual_webhook"
 # Collection URLs
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 DATASETS = CONNECTION_BY_KEY + "/dataset"
+DATASET_CONFIGS = CONNECTION_BY_KEY + "/datasetconfig"
 DATASET_BY_KEY = CONNECTION_BY_KEY + "/dataset/{fides_key}"
+DATASETCONFIG_BY_KEY = CONNECTION_BY_KEY + "/datasetconfig/{fides_key}"
 
 # YAML Collection URLs
 YAML_DATASETS = YAML + DATASETS
@@ -120,11 +131,13 @@ SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
 
+SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 
 # User URLs
 USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
+USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
 
 # User Permission URLs
 USER_PERMISSIONS = "/user/{user_id}/permission"

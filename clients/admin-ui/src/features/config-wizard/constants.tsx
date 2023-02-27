@@ -15,34 +15,7 @@ export const STEPS = [
     number: 4,
     name: "Scan results",
   },
-  {
-    number: 5,
-    name: "Describe systems",
-  },
-  {
-    number: 6,
-    name: "View your data map",
-  },
 ];
-
-export const REVIEW_STEPS = 5;
-
-export const HORIZONTAL_STEPS = [
-  {
-    number: 1,
-    name: "Describe",
-  },
-  {
-    number: 2,
-    name: "Declare",
-  },
-  {
-    number: 3,
-    name: "Review",
-  },
-];
-
-export const iconButtonSize = 107;
 
 // When more links like these are introduced we should move them to a single file.
 export const DOCS_URL_AWS_PERMISSIONS =

@@ -5,11 +5,7 @@ from fides.api.ops.graph.traversal import *
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.task.graph_task import retry
 from fides.api.ops.task.task_resources import TaskResources
-from fides.core.config import get_config
-from tests.ops.task.traversal_data import integration_db_graph
-
-CONFIG = get_config()
-
+from fides.core.config import CONFIG
 from tests.ops.task.traversal_data import integration_db_graph
 
 t1 = Collection(
@@ -38,7 +34,7 @@ t3 = Collection(
     ],
 )
 graph = DatasetGraph(
-    Dataset(
+    GraphDataset(
         name="s1", collections=[t1, t2, t3], connection_key="mock_connection_config_key"
     )
 )
@@ -48,7 +44,7 @@ class TestNode:
     def test_node_eq(self) -> None:
         """two nodes are equal if they have the same collection address"""
         assert graph.nodes[CollectionAddress("s1", "t1")] == Node(
-            Dataset(
+            GraphDataset(
                 name="s1", collections=[], connection_key="mock_connection_config_key"
             ),
             Collection(name="t1", fields=[]),

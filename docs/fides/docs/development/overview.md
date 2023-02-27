@@ -25,6 +25,8 @@ There are a few different ways to develop Fides, they are listed below _in order
     1. You can and should run all of your various development commands from within this shell, such as `pytest`, `black`, etc.
 1. While it is possible to install all application dependencies and develop on the project without Docker, this is neither recommended nor tested.
 
+__NOTE__: When working with the CLI or `ctl` tests via an interactive shell, you will most likely need to authenticate with `fides user login`. Check the development `fides.toml` file for the root credentials.
+
 #### Issues
 
 - MSSQL: Known issues around connecting to MSSQL exist today for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).

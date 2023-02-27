@@ -33,7 +33,12 @@
     "icon_path": "/consent.svg",
     "title": "Manage your consent",
     "description": "Manage your consent preferences, including the option to select 'Do Not Sell My Personal Information'.",
+    "identity_inputs": {
+      "email": "required",
+      "phone": "optional"
+    },
     "cookieName": "fides_consent",
+    "policy_key": "default_consent_policy",
     "consentOptions": [
       {
         "fidesDataUseKey": "advertising",
@@ -42,7 +47,8 @@
         "url": "https://example.com/privacy#data-sales",
         "default": true,
         "highlight": false,
-        "cookieKeys": ["data_sales"]
+        "cookieKeys": ["data_sales"],
+        "executable": false
       },
       {
         "fidesDataUseKey": "advertising.first_party",
@@ -51,7 +57,8 @@
         "url": "https://example.com/privacy#email-marketing",
         "default": true,
         "highlight": false,
-        "cookieKeys": []
+        "cookieKeys": [],
+        "executable": false
       },
       {
         "fidesDataUseKey": "improve",
@@ -60,7 +67,8 @@
         "url": "https://example.com/privacy#analytics",
         "default": true,
         "highlight": false,
-        "cookieKeys": []
+        "cookieKeys": [],
+        "executable": false
       }
     ]
   }

@@ -1,4 +1,7 @@
 const path = require("path");
+const { validateConfig } = require("./scripts/validate-config.js");
+
+validateConfig();
 
 /** @type {import('next').NextConfig} */
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
@@ -18,7 +21,6 @@ const nextConfig = {
         "@emotion/react"
       ),
     });
-
     return config;
   },
 };

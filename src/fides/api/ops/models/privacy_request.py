@@ -62,7 +62,7 @@ from fides.api.ops.util.cache import (
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
 from fides.api.ops.util.identity_verification import IdentityVerificationMixin
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import hash_with_salt
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 from fides.lib.models.audit_log import AuditLog
@@ -70,15 +70,14 @@ from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.jwt import generate_jwe
 
-CONFIG = get_config()
-
-
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
     CurrentStep.pre_webhooks,
     CurrentStep.access,
     CurrentStep.erasure,
+    CurrentStep.consent,
     CurrentStep.erasure_email_post_send,
+    CurrentStep.consent_email_post_send,
     CurrentStep.post_webhooks,
 ]
 
@@ -128,6 +127,7 @@ class PrivacyRequestStatus(str, EnumType):
     in_processing = "in_processing"
     complete = "complete"
     paused = "paused"
+    awaiting_consent_email_send = "awaiting_consent_email_send"
     canceled = "canceled"
     error = "error"
 
@@ -139,7 +139,10 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()), CONFIG.security.app_encryption_key)
+    return generate_jwe(
+        json.dumps(jwe.dict()),
+        CONFIG.security.app_encryption_key,
+    )
 
 
 class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
@@ -190,6 +193,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
+    consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
@@ -223,6 +227,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
     due_date = Column(DateTime(timezone=True), nullable=True)
+    awaiting_consent_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
@@ -435,7 +440,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         actions: List[CheckpointActionRequired] = []
         for email_content in email_contents.values():
             if email_content:
-                actions.append(CheckpointActionRequired.parse_obj(email_content))
+                actions.append(
+                    _parse_cache_to_checkpoint_action_required(email_content)
+                )
         return actions
 
     def cache_paused_collection_details(
@@ -695,6 +702,13 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             },
         )
 
+    def pause_processing_for_consent_email_send(self, db: Session) -> None:
+        """Put the privacy request in a state of awaiting_consent_email_send"""
+        if self.awaiting_consent_email_send_at is None:
+            self.awaiting_consent_email_send_at = datetime.utcnow()
+        self.status = PrivacyRequestStatus.awaiting_consent_email_send
+        self.save(db=db)
+
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
         """Cancels a privacy request.  Currently should only cancel 'pending' tasks"""
         if self.canceled_at is None:
@@ -765,6 +779,8 @@ class ProvidedIdentityType(EnumType):
 
     email = "email"
     phone_number = "phone_number"
+    ga_client_id = "ga_client_id"
+    ljt_readerID = "ljt_readerID"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904
@@ -837,6 +853,10 @@ class Consent(Base):
     data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
+    has_gpc_flag = Column(Boolean, server_default="f", default=False, nullable=False)
+    conflicts_with_gpc = Column(
+        Boolean, server_default="f", default=False, nullable=False
+    )
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
 
@@ -854,6 +874,9 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         ProvidedIdentity,
         back_populates="consent_request",
     )
+
+    privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
+    privacy_request = relationship(PrivacyRequest)
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""
@@ -910,12 +933,11 @@ def get_action_required_details(
     performed to complete the request.
     """
     cache: FidesopsRedis = get_cache()
-    cached_stopped: Optional[CheckpointActionRequired] = cache.get_encoded_by_key(
-        cached_key
-    )
-    return (
-        CheckpointActionRequired.parse_obj(cached_stopped) if cached_stopped else None
-    )
+    cached_stopped: Optional[dict[str, Any]] = cache.get_encoded_by_key(cached_key)
+    if cached_stopped:
+        return _parse_cache_to_checkpoint_action_required(cached_stopped)
+
+    return None
 
 
 class ExecutionLogStatus(EnumType):
@@ -977,3 +999,26 @@ def can_run_checkpoint(
     return EXECUTION_CHECKPOINTS.index(
         request_checkpoint
     ) >= EXECUTION_CHECKPOINTS.index(from_checkpoint)
+
+
+def _parse_cache_to_checkpoint_action_required(
+    cache: dict[str, Any]
+) -> CheckpointActionRequired:
+    collection = (
+        CollectionAddress(
+            cache["collection"]["dataset"],
+            cache["collection"]["collection"],
+        )
+        if cache.get("collection")
+        else None
+    )
+    action_needed = (
+        [ManualAction(**action) for action in cache["action_needed"]]
+        if cache.get("action_needed")
+        else None
+    )
+    return CheckpointActionRequired(
+        step=cache["step"],
+        collection=collection,
+        action_needed=action_needed,
+    )

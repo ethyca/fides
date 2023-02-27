@@ -4,7 +4,7 @@ import enum
 from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
@@ -13,14 +13,13 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 from fides.lib.db.base_class import get_key_from_data
 from fides.lib.exceptions import KeyOrNameAlreadyExists
-
-CONFIG = get_config()
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -48,6 +47,7 @@ class ConnectionType(enum.Enum):
     bigquery = "bigquery"
     manual = "manual"  # Run as part of the traversal
     email = "email"
+    sovrn = "sovrn"
     manual_webhook = "manual_webhook"  # Run before the traversal
     timescale = "timescale"
     fides = "fides"
@@ -73,6 +73,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.manual_webhook.value: "Manual Webhook",
             ConnectionType.timescale.value: "TimescaleDB",
             ConnectionType.fides.value: "Fides Connector",
+            ConnectionType.sovrn.value: "Sovrn",
         }
         try:
             return readable_mapping[self.value]
@@ -123,6 +124,9 @@ class ConnectionConfig(Base):
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )
+    system_id = Column(
+        String, ForeignKey(System.id_field_path), nullable=True, index=True
     )
 
     access_manual_webhook = relationship(  # type: ignore[misc]

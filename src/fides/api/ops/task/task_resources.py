@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 
+from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -12,7 +13,6 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
@@ -184,7 +184,7 @@ class TaskResources:
             },
         )
 
-    def get_connector(self, key: FidesOpsKey) -> Any:
+    def get_connector(self, key: FidesKey) -> Any:
         """Create or return the client corresponding to the given ConnectionConfig key"""
         if key in self.connection_configs:
             return self.connections.get_connector(self.connection_configs[key])
