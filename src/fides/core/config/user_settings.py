@@ -21,7 +21,7 @@ def try_get_auth_header() -> Dict[str, str]:
 
 
 class UserSettings(FidesSettings):
-    """Class used to store values from the 'user' section of the config."""
+    """Configuration settings that apply to the current user as opposed to the entire application instance."""
 
     auth_header: Dict[str, str] = Field(
         default=try_get_auth_header(),

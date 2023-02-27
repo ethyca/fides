@@ -139,9 +139,10 @@ def generate_config_docs(
     # Verify it is valid TOML before writing it out
     toml.loads(docs)
 
-    # assert (
-    #     "# TODO" not in docs
-    # ), "All fields require documentation, no description TODOs allowed!"
+    if "# TODO" in docs:
+        raise SystemExit(
+            "All fields require documentation, no description TODOs allowed!"
+        )
 
     with open(outfile_path, "w", encoding="utf-8") as output_file:
         output_file.write(docs)

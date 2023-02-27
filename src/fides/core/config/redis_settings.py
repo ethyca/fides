@@ -19,7 +19,10 @@ class RedisSettings(FidesSettings):
         default=0,
         description="The application will use this index in the Redis cache to cache data.",
     )
-    decode_responses: bool = Field(default=True, description="TODO")
+    decode_responses: bool = Field(
+        default=True,
+        description="Whether or not to decode the values from Redis. Decodes using the `charset` configuration value.",
+    )
     default_ttl_seconds: int = Field(
         default=604800,
         description="The number of seconds for which data will live in Redis before automatically expiring.",

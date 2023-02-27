@@ -16,7 +16,7 @@ ENV_PREFIX = "FIDES__SECURITY__"
 
 
 class SecuritySettings(FidesSettings):
-    """Configuration settings for Security variables."""
+    """Configuration settings for application security."""
 
     aes_encryption_key_length: int = Field(
         default=16,
@@ -31,9 +31,12 @@ class SecuritySettings(FidesSettings):
     )
     cors_origins: List[str] = Field(
         default=[],
-        description="A list of pre-approved addresses of clients allowed to communicate with the Fides application server.",
+        description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
-    cors_origin_regex: Optional[Pattern] = Field(default=None, description="TODO")
+    cors_origin_regex: Optional[Pattern] = Field(
+        default=None,
+        description="A regex pattern used to programmatically approve client addresses for communication with the Fides webserver.",
+    )
     drp_jwt_secret: Optional[str] = Field(
         default=None,
         description="JWT secret by which passed-in identity is decrypted according to the HS256 algorithm.",
@@ -45,7 +48,10 @@ class SecuritySettings(FidesSettings):
         default="dev",
         description="The default, `dev`, does not apply authentication to endpoints typically used by the CLI. The other option, `prod`, requires authentication for _all_ endpoints that may contain sensitive information.",
     )
-    identity_verification_attempt_limit: int = Field(default=3, description="TODO")
+    identity_verification_attempt_limit: int = Field(
+        default=3,
+        description="The number of times identity verification will be attempted before raising an error.",
+    )
     oauth_root_client_id: str = Field(
         default="",
         description="The value used to identify the Fides application root API client.",

@@ -1,7 +1,7 @@
 #--------------#
 #-- ADMIN_UI --#
 #--------------------------------------------------------------------#
-[admin_ui] # Configuration settings for Analytics variables.
+[admin_ui] # Configuration settings for the Admin UI.
 
 # Toggle whether the Admin UI is served.
 enabled = true # boolean
@@ -9,7 +9,7 @@ enabled = true # boolean
 #---------#
 #-- CLI --#
 #--------------------------------------------------------------------#
-[cli] # Class used to store values from the 'cli' section of the config.
+[cli] # Configuration settings for the command-line appliation.
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -70,7 +70,7 @@ user = "defaultuser" # string
 #---------------#
 #-- EXECUTION --#
 #--------------------------------------------------------------------#
-[execution] # Configuration settings for execution.
+[execution] # Configuration settings for DSR execution.
 
 # If set to True, only use UPDATE requests to mask data. If False,
 # Fides will use any defined DELETE or GDPR DELETE endpoints to remove
@@ -100,7 +100,7 @@ task_retry_delay = 1 # integer
 #-------------#
 #-- LOGGING --#
 #--------------------------------------------------------------------#
-[logging] # Class used to store values from the 'logging' section of the config.
+[logging] # Configuration settings for application logging.
 
 # The output location for log files. Accepts any valid file path. If
 # left unset, log entries are printed to stdout and log files are not
@@ -123,7 +123,7 @@ log_pii = false # boolean
 #-------------------#
 #-- NOTIFICATIONS --#
 #--------------------------------------------------------------------#
-[notifications] # Configuration settings for data subject and/or data processor notifications
+[notifications] # Configuration settings for Data Subject and/or Data Processor notifications.
 
 # Sets the notification service type used to send notifications.
 # Accepts mailgun, twilio_sms, or twilio_email.
@@ -153,7 +153,8 @@ charset = "utf8" # string
 # The application will use this index in the Redis cache to cache data.
 db_index = 0 # integer
 
-# TODO
+# Whether or not to decode the values from Redis. Decodes using the
+# `charset` configuration value.
 decode_responses = true # boolean
 
 # The number of seconds for which data will live in Redis before
@@ -192,7 +193,7 @@ user = "" # string
 #--------------#
 #-- SECURITY --#
 #--------------------------------------------------------------------#
-[security] # Configuration settings for Security variables.
+[security] # Configuration settings for application security.
 
 # Length of desired encryption key when using Fides to generate a
 # random secure string used for AES encryption.
@@ -205,11 +206,12 @@ aes_gcm_nonce_length = 12 # integer
 # The key used to sign Fides API access tokens.
 app_encryption_key = "" # string
 
-# A list of pre-approved addresses of clients allowed to communicate
-# with the Fides application server.
+# A list of client addresses allowed to communicate with the Fides
+# webserver.
 cors_origins = [] # array
 
-# TODO
+# A regex pattern used to programmatically approve client addresses for
+# communication with the Fides webserver.
 cors_origin_regex = "" # string
 
 # JWT secret by which passed-in identity is decrypted according to the
@@ -225,7 +227,8 @@ encoding = "UTF-8" # string
 # information.
 env = "dev" # string
 
-# TODO
+# The number of times identity verification will be attempted before
+# raising an error.
 identity_verification_attempt_limit = 3 # integer
 
 # The value used to identify the Fides application root API client.
@@ -283,7 +286,7 @@ subject_request_download_link_ttl_seconds = 432000 # integer
 #----------#
 #-- USER --#
 #--------------------------------------------------------------------#
-[user] # Class used to store values from the 'user' section of the config.
+[user] # Configuration settings that apply to the current user as opposed to the entire application instance.
 
 # When set to true, prevents sending anonymous analytics data to
 # Ethyca.
