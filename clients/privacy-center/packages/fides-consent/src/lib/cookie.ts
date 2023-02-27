@@ -57,6 +57,11 @@ export const makeDefaults = ({
   return defaults;
 };
 
+export const hasSavedConsentCookie = (): boolean => {
+  const cookie = getCookie(CONSENT_COOKIE_NAME, CODEC);
+  return !!cookie;
+}
+
 export const getConsentCookie = (
   defaults: CookieKeyConsent
 ): CookieKeyConsent => {
@@ -106,4 +111,30 @@ export const setConsentCookie = (cookieKeyConsent: CookieKeyConsent) => {
     },
     CODEC
   );
+};
+
+export const setConsentCookieAcceptAll = (defaults: CookieKeyConsent): void => {
+  if (defaults === undefined) {
+    // eslint-disable-next-line no-console
+    console.error("Unable to set consent cookie to accept all: invalid defaults.");
+    return;
+  }
+
+  // Override all consent values to true and save the cookie
+  const entries: [string, boolean][] = Object.keys(defaults).map((key) => [key, true]);
+  const cookieKeyConsent = Object.fromEntries(entries);
+  setConsentCookie(cookieKeyConsent);
+};
+
+export const setConsentCookieRejectAll = (defaults: CookieKeyConsent): void => {
+  if (defaults === undefined) {
+    // eslint-disable-next-line no-console
+    console.error("Unable to set consent cookie to reject all: invalid defaults.");
+    return;
+  }
+
+  // Override all consent values to false and save the cookie
+  const entries: [string, boolean][] = Object.keys(defaults).map((key) => [key, false]);
+  const cookieKeyConsent = Object.fromEntries(entries);
+  setConsentCookie(cookieKeyConsent);
 };

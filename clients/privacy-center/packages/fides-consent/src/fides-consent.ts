@@ -9,7 +9,7 @@ import consentConfig from "./consent-config.json";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { banner, getBannerOptions } from "./lib/consent-banner";
+import { ConsentBannerOptions, getBannerOptions, initBanner } from "./lib/consent-banner";
 import { ConsentConfig } from "./lib/consent-config";
 import { getConsentContext } from "./lib/consent-context";
 import { getConsentCookie, makeDefaults } from "./lib/cookie";
@@ -25,6 +25,14 @@ const defaults = makeDefaults({
  * Immediately load the stored consent settings from the browser cookie.
  */
 const consent = getConsentCookie(defaults);
+
+/**
+ * Create a wrapped `banner` function that injects the default consent settings
+ * as an argument, so it can be used as Fides.banner()
+ */
+const banner = async (extraOptions?: ConsentBannerOptions): Promise<void> => {
+  return initBanner.call(undefined, defaults, extraOptions);
+}
 
 const Fides = {
   consent,
