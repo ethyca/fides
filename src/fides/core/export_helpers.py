@@ -147,8 +147,9 @@ def format_data_uses(data_uses: List[DataUse]) -> Dict[FidesKey, Dict[str, str]]
 
     formatted_data_uses = {}
     for data_use in data_uses:
+
         formatted_data_use = {
-            "name": data_use.name,
+            "name": data_use["name"],
         }
 
         for attribute in [
@@ -158,20 +159,20 @@ def format_data_uses(data_uses: List[DataUse]) -> Dict[FidesKey, Dict[str, str]]
             "legitimate_interest_impact_assessment",
             "legitimate_interest",
         ]:
-            attribute_value = getattr(data_use, attribute)
+            attribute_value = data_use.get(attribute)  # getattr(data_use, attribute)
             if attribute_value is None:
                 attribute_value = "N/A"
             elif isinstance(attribute_value, list):
                 attribute_value = ", ".join(attribute_value)
             elif attribute == "legitimate_interest":
                 if attribute_value is True:
-                    attribute_value = getattr(data_use, "name")
+                    attribute_value = data_use.get("name")  # getattr(data_use, "name")
                 else:
                     attribute_value = "N/A"
 
             formatted_data_use[attribute] = attribute_value
 
-        formatted_data_uses[data_use.fides_key] = formatted_data_use
+        formatted_data_uses[data_use["fides_key"]] = formatted_data_use
     return formatted_data_uses
 
 
@@ -196,7 +197,7 @@ def format_data_subjects(
     formatted_data_subjects: Dict[FidesKey, Dict[str, str]] = {}
 
     for data_subject in data_subjects:
-        data_subject_dict = data_subject.dict()
+        # data_subject_dict = data_subject.dict()
         formatted_data_subject = dict(
             zip(
                 formatted_data_subject_attributes_list,
@@ -208,19 +209,19 @@ def format_data_subjects(
         )
 
         # calculate and format data subject rights as applicable
-        if data_subject_dict["rights"]:
-            data_subject_dict["rights_available"] = calculate_data_subject_rights(
-                data_subject_dict["rights"]
+        if data_subject["rights"]:
+            data_subject["rights_available"] = calculate_data_subject_rights(
+                data_subject["rights"]
             )
         else:
-            data_subject_dict["rights_available"] = "No data subject rights listed"
+            data_subject["rights_available"] = "No data subject rights listed"
 
         formatted_data_subject = {
-            attribute: data_subject_dict.get(attribute) or "N/A"
+            attribute: data_subject.get(attribute) or "N/A"
             for attribute in formatted_data_subject_attributes_list
         }
 
-        formatted_data_subjects[data_subject.fides_key] = formatted_data_subject
+        formatted_data_subjects[data_subject["fides_key"]] = formatted_data_subject
 
     return formatted_data_subjects
 

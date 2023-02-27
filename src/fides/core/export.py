@@ -51,45 +51,45 @@ def generate_dataset_records(
     # using a set to preserve uniqueness of categories and qualifiers across fields
     unique_data_categories: set = set()
     for dataset in server_dataset_list:
-        dataset_name = dataset.name
-        dataset_description = dataset.description
-        dataset_fides_key = dataset.fides_key
-        dataset_retention = dataset.retention
+        dataset_name = dataset["name"]
+        dataset_description = dataset["description"]
+        dataset_fides_key = dataset["fides_key"]
+        dataset_retention = dataset["retention"]
         dataset_third_country_transfers = ", ".join(
-            dataset.third_country_transfers or []
+            dataset["third_country_transfers"] or []
         )
-        if dataset.data_categories:
+        if dataset["data_categories"]:
             dataset_rows = generate_data_category_rows(
                 dataset_name,
                 dataset_description,
-                dataset.data_qualifier,
-                dataset.data_categories,
+                dataset["data_qualifier"],
+                dataset["data_categories"],
                 dataset_retention,
                 dataset_third_country_transfers,
                 dataset_fides_key,
             )
             unique_data_categories = unique_data_categories.union(dataset_rows)
-        for collection in dataset.collections:
-            collection_retention = collection.retention or dataset_retention
-            if collection.data_categories:
+        for collection in dataset["collections"]:
+            collection_retention = collection["retention"] or dataset_retention
+            if collection["data_categories"]:
                 dataset_rows = generate_data_category_rows(
                     dataset_name,
                     dataset_description,
-                    collection.data_qualifier,
-                    collection.data_categories,
+                    collection["data_qualifier"],
+                    collection["data_categories"],
                     collection_retention,
                     dataset_third_country_transfers,
                     dataset_fides_key,
                 )
                 unique_data_categories = unique_data_categories.union(dataset_rows)
-            for field in get_all_level_fields(collection.fields):
-                if field.data_categories:
+            for field in get_all_level_fields(collection["fields"]):
+                if field["data_categories"]:
                     dataset_rows = generate_data_category_rows(
                         dataset_name,
                         dataset_description,
-                        field.data_qualifier,
-                        field.data_categories,
-                        field.retention or collection_retention,
+                        field["data_qualifier"],
+                        field["data_categories"],
+                        field["retention"] or collection_retention,
                         dataset_third_country_transfers,
                         dataset_fides_key,
                     )
@@ -171,40 +171,42 @@ def generate_system_records(
     ]
 
     for system in server_resources["system"]:
-        third_country_list = ", ".join(system.third_country_transfers or [])
-        system_dependencies = ", ".join(system.system_dependencies or [])
+        third_country_list = ", ".join(system["third_country_transfers"] or [])
+        system_dependencies = ", ".join(system["system_dependencies"] or [])
         system_ingress = ", ".join(
-            [ingress.fides_key for ingress in system.ingress or []]
+            [ingress["fides_key"] for ingress in system["ingress"] or []]
         )
-        system_egress = ", ".join([egress.fides_key for egress in system.egress or []])
+        system_egress = ", ".join(
+            [egress["fides_key"] for egress in system["egress"] or []]
+        )
         data_protection_impact_assessment = (
             get_formatted_data_protection_impact_assessment(
-                system.data_protection_impact_assessment.dict()
+                system["data_protection_impact_assessment"]
             )
         )
-        if system.privacy_declarations:
-            for declaration in system.privacy_declarations:
-                data_use = formatted_data_uses[declaration.data_use]
-                data_categories = declaration.data_categories or []
+        if system["privacy_declarations"]:
+            for declaration in system["privacy_declarations"]:
+                data_use = formatted_data_uses[declaration["data_use"]]
+                data_categories = declaration["data_categories"] or []
                 data_subjects = [
                     formatted_data_subjects[data_subject_fides_key]
-                    for data_subject_fides_key in declaration.data_subjects
+                    for data_subject_fides_key in declaration["data_subjects"]
                 ]
-                dataset_references = declaration.dataset_references or [
+                dataset_references = declaration["dataset_references"] or [
                     EMPTY_COLUMN_PLACEHOLDER
                 ]
                 cartesian_product_of_declaration = [
                     (
-                        system.fides_key,
-                        system.name,
-                        system.description,
-                        system.data_responsibility_title,
-                        system.administrating_department,
+                        system["fides_key"],
+                        system["name"],
+                        system["description"],
+                        system["data_responsibility_title"],
+                        system["administrating_department"],
                         third_country_list,
                         system_dependencies,
                         system_ingress,
                         system_egress,
-                        declaration.name,
+                        declaration["name"],
                         category,
                         data_use["name"],
                         data_use["legal_basis"],
@@ -215,7 +217,7 @@ def generate_system_records(
                         subject["name"],
                         subject["rights_available"],
                         subject["automated_decisions_or_profiling"],
-                        declaration.data_qualifier,
+                        declaration["data_qualifier"],
                         data_protection_impact_assessment["is_required"],
                         data_protection_impact_assessment["progress"],
                         data_protection_impact_assessment["link"],
@@ -228,11 +230,11 @@ def generate_system_records(
                 output_list += cartesian_product_of_declaration
         else:
             system_row = [
-                system.fides_key,
-                system.name,
-                system.description,
-                system.data_responsibility_title,
-                system.administrating_department,
+                system["fides_key"],
+                system["name"],
+                system["description"],
+                system["data_responsibility_title"],
+                system["administrating_department"],
                 third_country_list,
                 system_dependencies,
                 system_ingress,
@@ -460,7 +462,7 @@ def build_joined_dataframe(
     joined_df["system.link_to_processor_contract"] = ""
 
     joined_df["organization.link_to_security_policy"] = (
-        server_resource_dict["organization"][0].security_policy or ""
+        server_resource_dict["organization"][0]["security_policy"] or ""
     )
     joined_df["dataset.source_name"] = joined_df["dataset.name"]
 
