@@ -183,3 +183,15 @@ config = "data/saas/config/kustomer_config.yml"
 dataset = "data/saas/dataset/kustomer_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Kustomer"
+
+[yotpo_reviews]
+config = "data/saas/config/yotpo_reviews_config.yml"
+dataset = "data/saas/dataset/yotpo_reviews_dataset.yml"
+icon = "data/saas/icon/yotpo.svg"
+human_readable = "Yotpo Reviews"
+
+[yotpo_loyalty]
+config = "data/saas/config/yotpo_loyalty_config.yml"
+dataset = "data/saas/dataset/yotpo_loyalty_dataset.yml"
+icon = "data/saas/icon/yotpo.svg"
+human_readable = "Yotpo Loyalty & Referrals"
