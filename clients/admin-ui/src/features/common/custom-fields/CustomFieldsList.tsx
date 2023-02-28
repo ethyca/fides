@@ -1,6 +1,6 @@
 import { Center, Divider, Flex, Spinner, Text } from "@fidesui/react";
 import { Field, FieldInputProps, useFormikContext } from "formik";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { plusApi } from "~/features/plus/plus.slice";
@@ -22,7 +22,7 @@ export const CustomFieldsList = ({
 }: CustomFieldsListProps) => {
   const dispatch = useAppDispatch();
   const [selectedKey, setSelectedKey] = useState<string | undefined>();
-  const { values, setValues } = useFormikContext();
+  const { isSubmitting, setValues, values } = useFormikContext();
 
   const {
     idToAllowListWithOptions,
@@ -35,14 +35,15 @@ export const CustomFieldsList = ({
     resourceType,
   });
 
-  const handleReload = () => {
+  const handleReload = useCallback(() => {
     setValues({ ...(values as any) });
-  };
+  }, [setValues, values]);
 
   useEffect(() => {
     if (!isEnabled || !resourceFidesKey) {
       return;
     }
+    // Append the custom field selections to the Formik form
     if (selectedKey !== resourceFidesKey) {
       setSelectedKey(resourceFidesKey);
       dispatch(
@@ -68,6 +69,15 @@ export const CustomFieldsList = ({
       });
     }
   }, [dispatch, isEnabled, resourceFidesKey, selectedKey, setValues, values]);
+
+  useEffect(() => {
+    // Re-render the custom field selections after a Formik form submission
+    if (isSubmitting) {
+      setTimeout(() => {
+        handleReload();
+      });
+    }
+  }, [handleReload, isSubmitting, values]);
 
   if (!isEnabled) {
     return null;
@@ -97,49 +107,52 @@ export const CustomFieldsList = ({
             <Spinner />
           </Center>
         ) : (
-          <Flex flexDirection="column" gap="12px" paddingBottom="24px">
-            {sortedCustomFieldDefinitionIds.map((definitionId) => {
-              const customFieldDefinition =
-                idToCustomFieldDefinition.get(definitionId);
-              if (!customFieldDefinition) {
-                // This should never happen.
-                return null;
-              }
+          sortedCustomFieldDefinitionIds.length > 0 && (
+            <Flex flexDirection="column" gap="12px" paddingBottom="24px">
+              {sortedCustomFieldDefinitionIds.map((definitionId) => {
+                const customFieldDefinition =
+                  idToCustomFieldDefinition.get(definitionId);
+                if (!customFieldDefinition) {
+                  // This should never happen.
+                  return null;
+                }
 
-              const allowList = idToAllowListWithOptions.get(
-                customFieldDefinition.allow_list_id!
-              );
-              if (!allowList) {
-                // This would only happen if the field definitions load before
-                // the allow list data.
-                return null;
-              }
+                const allowList = idToAllowListWithOptions.get(
+                  customFieldDefinition.allow_list_id!
+                );
+                if (!allowList) {
+                  // This would only happen if the field definitions load before
+                  // the allow list data.
+                  return null;
+                }
 
-              const { options } = allowList;
-              const name = `definitionIdToCustomFieldValue.${customFieldDefinition.id}`;
+                const { options } = allowList;
+                const name = `definitionIdToCustomFieldValue.${customFieldDefinition.id}`;
 
-              return (
-                <Field key={definitionId} name={name}>
-                  {({
-                    field,
-                  }: {
-                    field: FieldInputProps<string | string[]>;
-                  }) => (
-                    <CustomSelect
-                      {...field}
-                      isClearable
-                      isMulti={
-                        customFieldDefinition.field_type !== AllowedTypes.STRING
-                      }
-                      label={customFieldDefinition.name}
-                      options={options}
-                      tooltip={customFieldDefinition.description}
-                    />
-                  )}
-                </Field>
-              );
-            })}
-          </Flex>
+                return (
+                  <Field key={definitionId} name={name}>
+                    {({
+                      field,
+                    }: {
+                      field: FieldInputProps<string | string[]>;
+                    }) => (
+                      <CustomSelect
+                        {...field}
+                        isClearable
+                        isMulti={
+                          customFieldDefinition.field_type !==
+                          AllowedTypes.STRING
+                        }
+                        label={customFieldDefinition.name}
+                        options={options}
+                        tooltip={customFieldDefinition.description}
+                      />
+                    )}
+                  </Field>
+                );
+              })}
+            </Flex>
+          )
         )}
       </Flex>
     </Flex>
