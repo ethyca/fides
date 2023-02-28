@@ -5,7 +5,7 @@ Exports various resources as data maps.
 from typing import Dict, List, Tuple
 
 import pandas as pd
-from fideslang.models import ContactDetails, FidesModel
+from fideslang.models import ContactDetails, DataFlow, FidesModel
 
 from fides.core.api_helpers import (
     get_server_resource,
@@ -237,16 +237,30 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         third_country_list = ", ".join(system["third_country_transfers"] or [])
         system_dependencies = ", ".join(system["system_dependencies"] or [])
         if system["ingress"]:
-            for ingress in system["ingress"]:
-                if not isinstance(ingress, dict):
-                    system["ingress"] = [x.dict() for x in ingress]
+            if isinstance(system["ingress"], DataFlow):
+                system["ingress"] = system["ingress"].dict()
+            elif isinstance(system["ingress"], list):
+                reformatted = []
+                for ingress in system["ingress"]:
+                    if isinstance(ingress, DataFlow):
+                        reformatted.append(ingress.dict())
+                    else:
+                        reformatted.append(ingress)
+                system["ingress"] = reformatted
         system_ingress = ", ".join(
             [ingress["fides_key"] for ingress in system["ingress"] or []]
         )
         if system["egress"]:
-            for egress in system["egress"]:
-                if not isinstance(egress, dict):
-                    system["egress"] = [x.dict() for x in egress]
+            if isinstance(system["egress"], DataFlow):
+                system["egress"] = system["egress"].dict()
+            elif isinstance(system["egress"], list):
+                reformatted = []
+                for ingress in system["egress"]:
+                    if isinstance(ingress, DataFlow):
+                        reformatted.append(ingress.dict())
+                    else:
+                        reformatted.append(ingress)
+                system["egress"] = reformatted
         system_egress = ", ".join(
             [egress["fides_key"] for egress in system["egress"] or []]
         )
@@ -426,9 +440,7 @@ def generate_contact_records(
         fields = tuple(ContactDetails().dict().keys())
 
         get_values = (
-            lambda x: tuple(x.dict().values())
-            if x
-            else tuple(ContactDetails().dict().values())
+            lambda x: tuple(x.values()) if x else tuple(ContactDetails().values())
         )
         controller = get_values(organization["controller"])
         data_protection_officer = get_values(organization["data_protection_officer"])
