@@ -3,6 +3,7 @@ from typing import Generator, List
 from uuid import uuid4
 
 import pytest
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl import sql_models
@@ -12,6 +13,7 @@ from fides.api.ctl.database.crud import (
     get_resource_with_custom_fields,
     list_resource,
 )
+from fides.api.ctl.utils.errors import QueryError
 from fides.core import api as _api
 from fides.core.config import FidesConfig
 from tests.ctl.types import FixtureRequest
@@ -135,3 +137,14 @@ async def test_get_resource_with_custom_field_no_custom_field(async_session):
     )
 
     assert result["name"] == system.name
+
+
+async def test_get_resource_with_custom_field_error(async_session, monkeypatch):
+    async def mock_execute(*args, **kwargs):
+        raise SQLAlchemyError
+
+    monkeypatch.setattr(
+        "fides.api.ctl.database.crud.AsyncSession.execute", mock_execute
+    )
+    with pytest.raises(QueryError):
+        await get_resource_with_custom_fields(sql_models.System, "ABC", async_session)
