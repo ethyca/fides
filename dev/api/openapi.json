@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.0.post0.dev37"
+    "version": "2.7.0.post0.dev38"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10290,6 +10290,39 @@
         ]
       }
     },
+    "/api/v1/storage/default/status": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Get Storage Status",
+        "description": "Determines the status of the active default storage config.\n\nIn order to be considered fully configured, the active default storage\nconfig MUST be an s3 storage config.",
+        "operationId": "get_storage_status_api_v1_storage_default_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageConfigStatusMessage"
+                },
+                "example": {
+                  "config_status": "configured",
+                  "detail": "Active default storage location of type s3 is fully configured"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "storage:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/storage/default": {
       "get": {
         "tags": [
@@ -10797,6 +10830,39 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MessagingConfigResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/default/status": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Get Messaging Status",
+        "description": "Determines the status of the active default messaging config",
+        "operationId": "get_messaging_status_api_v1_messaging_default_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingConfigStatusMessage"
+                },
+                "example": {
+                  "config_status": "configured",
+                  "detail": "Active default messaging service of type MAILGUN is fully configured"
                 }
               }
             }
@@ -15064,6 +15130,28 @@
         "additionalProperties": false,
         "description": "Messaging Config Response Schema"
       },
+      "MessagingConfigStatus": {
+        "title": "MessagingConfigStatus",
+        "enum": [
+          "configured",
+          "not configured"
+        ],
+        "description": "Enum for configuration statuses of a messaging config"
+      },
+      "MessagingConfigStatusMessage": {
+        "title": "MessagingConfigStatusMessage",
+        "type": "object",
+        "properties": {
+          "config_status": {
+            "$ref": "#/components/schemas/MessagingConfigStatus"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "description": "A schema for checking configuration status of message config."
+      },
       "MessagingConnectionTestStatus": {
         "title": "MessagingConnectionTestStatus",
         "enum": [
@@ -17416,6 +17504,28 @@
         "additionalProperties": false,
         "description": "A base template for all other Fides Schemas to inherit from."
       },
+      "StorageConfigStatus": {
+        "title": "StorageConfigStatus",
+        "enum": [
+          "configured",
+          "not configured"
+        ],
+        "description": "Enum for configuration statuses of a storage config"
+      },
+      "StorageConfigStatusMessage": {
+        "title": "StorageConfigStatusMessage",
+        "type": "object",
+        "properties": {
+          "config_status": {
+            "$ref": "#/components/schemas/StorageConfigStatus"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "description": "A schema for checking configuration status of storage config."
+      },
       "StorageDestination": {
         "title": "StorageDestination",
         "required": [
@@ -17829,7 +17939,7 @@
             "type": "string"
           }
         },
-        "description": "A schema for checking status of message config."
+        "description": "A schema for testing functionality of a messaging config."
       },
       "TestStatus": {
         "title": "TestStatus",
