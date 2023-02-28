@@ -20,17 +20,19 @@ def test_change_config() -> Generator:
 
 @pytest.mark.unit
 def test_replace_config_value(tmpdir: LocalPath) -> None:
-    test_file = "# test_value = false"
     config_dir = tmpdir / ".fides"
+    os.mkdir(config_dir)
     config_path = config_dir / "fides.toml"
+
     expected_result = "# test_value = true"
+    test_file = "# test_value = false"
 
     with open(config_path, "w") as config_file:
         config_file.write(test_file)
 
     replace_config_value(str(tmpdir), "test_value", "false", "true")
 
-    with open(config_path, "w") as config_file:
+    with open(config_path, "r") as config_file:
         actual_result = config_file.read()
 
     print(actual_result)
