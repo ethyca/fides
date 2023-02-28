@@ -440,7 +440,9 @@ def generate_contact_records(
         fields = tuple(ContactDetails().dict().keys())
 
         get_values = (
-            lambda x: tuple(x.values()) if x else tuple(ContactDetails().values())
+            lambda x: tuple(x.values())
+            if x
+            else tuple(ContactDetails().dict().values())
         )
         controller = get_values(organization["controller"])
         data_protection_officer = get_values(organization["data_protection_officer"])
