@@ -17,23 +17,11 @@ import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { CustomSelect } from "~/features/common/form/inputs";
 import {
-  selectDataSubjects,
-  useGetAllDataSubjectsQuery,
-} from "~/features/data-subjects/data-subject.slice";
-import {
-  selectDataUses,
-  useGetAllDataUsesQuery,
-} from "~/features/data-use/data-use.slice";
-import {
-  selectDataCategories,
-  useGetAllDataCategoriesQuery,
-} from "~/features/taxonomy/taxonomy.slice";
-import {
   DataCategory,
+  Dataset,
   DataSubject,
   DataUse,
   PrivacyDeclaration,
@@ -53,6 +41,7 @@ const defaultInitialValues: PrivacyDeclaration = {
   data_categories: [],
   data_subjects: [],
   data_use: "",
+  dataset_references: [],
 };
 
 type FormValues = typeof defaultInitialValues;
@@ -61,17 +50,26 @@ export interface DataProps {
   allDataCategories: DataCategory[];
   allDataUses: DataUse[];
   allDataSubjects: DataSubject[];
+  allDatasets?: Dataset[];
 }
 
 export const PrivacyDeclarationFormComponents = ({
   allDataUses,
   allDataCategories,
   allDataSubjects,
+  allDatasets,
   onDelete,
 }: DataProps & Pick<Props, "onDelete">) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
+
+  const datasetOptions = allDatasets
+    ? allDatasets.map((d) => ({
+        label: d.name ?? d.fides_key,
+        value: d.fides_key,
+      }))
+    : [];
 
   const handleDelete = async () => {
     await onDelete(initialValues);
@@ -116,6 +114,16 @@ export const PrivacyDeclarationFormComponents = ({
         isMulti
         variant="stacked"
       />
+      {allDatasets ? (
+        <CustomSelect
+          name="dataset_references"
+          label="Dataset references"
+          options={datasetOptions}
+          tooltip="Referenced Dataset fides keys used by the system."
+          isMulti
+          variant="stacked"
+        />
+      ) : null}
       <ButtonGroup size="sm" display="flex" justifyContent="space-between">
         <Button
           variant="outline"
@@ -145,25 +153,6 @@ export const PrivacyDeclarationFormComponents = ({
       />
     </Stack>
   );
-};
-
-/**
- * Set up subscriptions to all taxonomy resources
- */
-export const useTaxonomyData = () => {
-  // Query subscriptions:
-  const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
-  const { isLoading: isLoadingDataSubjects } = useGetAllDataSubjectsQuery();
-  const { isLoading: isLoadingDataUses } = useGetAllDataUsesQuery();
-
-  const allDataCategories = useAppSelector(selectDataCategories);
-  const allDataSubjects = useAppSelector(selectDataSubjects);
-  const allDataUses = useAppSelector(selectDataUses);
-
-  const isLoading =
-    isLoadingDataCategories || isLoadingDataSubjects || isLoadingDataUses;
-
-  return { allDataCategories, allDataSubjects, allDataUses, isLoading };
 };
 
 /**

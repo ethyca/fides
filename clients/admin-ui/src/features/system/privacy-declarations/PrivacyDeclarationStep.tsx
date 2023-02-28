@@ -9,7 +9,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { setActiveSystem, useUpdateSystemMutation } from "~/features/system";
 import { PrivacyDeclaration, System } from "~/types/api";
 
-import { useTaxonomyData } from "./PrivacyDeclarationForm";
+import { usePrivacyDeclarationData } from "./hooks";
 import PrivacyDeclarationManager from "./PrivacyDeclarationManager";
 
 interface Props {
@@ -20,7 +20,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
-  const { isLoading, ...dataProps } = useTaxonomyData();
+  const { isLoading, ...dataProps } = usePrivacyDeclarationData();
 
   const handleSave = async (
     updatedDeclarations: PrivacyDeclaration[],
