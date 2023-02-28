@@ -35,7 +35,7 @@ class SecuritySettings(FidesSettings):
     )
     cors_origin_regex: Optional[Pattern] = Field(
         default=None,
-        description="A regex pattern used to programmatically approve client addresses for communication with the Fides webserver.",
+        description="A regex pattern used to set the CORS origin allowlist.",
     )
     drp_jwt_secret: Optional[str] = Field(
         default=None,

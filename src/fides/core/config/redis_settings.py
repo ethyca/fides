@@ -21,7 +21,7 @@ class RedisSettings(FidesSettings):
     )
     decode_responses: bool = Field(
         default=True,
-        description="Whether or not to decode the values from Redis. Decodes using the `charset` configuration value.",
+        description="Whether or not to automatically decode the values fetched from Redis. Decodes using the `charset` configuration value.",
     )
     default_ttl_seconds: int = Field(
         default=604800,
