@@ -172,6 +172,12 @@ dataset = "data/saas/dataset/recharge_dataset.yml"
 icon = "data/saas/icon/recharge.svg"
 human_readable = "Recharge"
 
+[jira]
+config = "data/saas/config/jira_config.yml"
+dataset = "data/saas/dataset/jira_dataset.yml"
+icon = "data/saas/icon/jira.svg"
+human_readable = "Jira"
+
 [universal_analytics]
 config = "data/saas/config/universal_analytics_config.yml"
 dataset = "data/saas/dataset/universal_analytics_dataset.yml"

@@ -25,6 +25,7 @@ The types of changes are:
 * Added backend role-based permissions [#2671](https://github.com/ethyca/fides/pull/2671)
 * Access and erasure for Vend SaaS Connector [#1869](https://github.com/ethyca/fides/issues/1869)
 * Added endpoints for storage and messaging config setup status [#2690](https://github.com/ethyca/fides/pull/2690)
+* Access and erasure for Jira SaaS Connector [#1871](https://github.com/ethyca/fides/issues/1871)
 
 ### Changed
 
@@ -42,9 +43,6 @@ The types of changes are:
 * Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
 * Privacy Center
   * Typechecking and validation of the `config.json` will be checked for backwards-compatibility. [#2661](https://github.com/ethyca/fides/pull/2661)
-
-### Developer Experience
-
 * Combined conftest.py files [#2669](https://github.com/ethyca/fides/pull/2669)
 
 ### Fixed
