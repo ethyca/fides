@@ -361,7 +361,7 @@ export const privacyRequestApi = createApi({
     }),
     getActiveStorage: build.query<any, void>({
       query: () => ({
-        url: `storage/active/default`,
+        url: `storage/default/active`,
       }),
     }),
     getStorageDetails: build.query<any, ConfigStorageDetailsRequest>({
@@ -388,7 +388,7 @@ export const privacyRequestApi = createApi({
     }),
     getActiveMessagingProvider: build.query<any, void>({
       query: () => ({
-        url: `messaging/active/default`,
+        url: `messaging/default/active`,
       }),
     }),
     getMessagingConfigurationDetails: build.query<any, ConfigMessagingRequest>({
