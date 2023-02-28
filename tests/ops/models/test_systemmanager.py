@@ -70,3 +70,44 @@ class TestSystemManager:
 
     def test_system_ids_property(self, system_manager, system):
         assert system_manager.system_ids == [system.id]
+
+    def test_removing_system_removes_manager(
+        self, db: Session, user: FidesUser, system: System
+    ):
+        assert user.systems == []
+        assert system.users == []
+        assert user.client.systems == []
+
+        user.set_as_system_manager(db, system)
+        assert user.systems == [system]
+        assert system.users == [user]
+        assert user.client.systems == [system.id]
+
+        db.delete(system)
+        db.commit()
+        db.flush()
+
+        db.refresh(user)
+        assert user.systems == []
+        assert (
+            user.client.systems != []
+        )  # This isn't automatically cascade deleted, but the system doesn't exist either.
+
+    def test_removing_user_removes_manager(
+        self, db: Session, user: FidesUser, system: System
+    ):
+        assert user.systems == []
+        assert system.users == []
+        assert user.client.systems == []
+
+        user.set_as_system_manager(db, system)
+        assert user.systems == [system]
+        assert system.users == [user]
+        assert user.client.systems == [system.id]
+
+        db.delete(user)
+        db.commit()
+        db.flush()
+
+        db.refresh(system)
+        assert system.users == []

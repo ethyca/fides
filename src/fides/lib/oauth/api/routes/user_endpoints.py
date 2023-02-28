@@ -251,6 +251,12 @@ def perform_login(
             systems=user.system_ids,  # type: ignore
             user_id=user.id,
         )
+    else:
+        # Refresh the client just in case
+        client.scopes = user.permissions.scopes  # type: ignore
+        client.roles = user.permissions.roles  # type: ignore
+        client.systems = user.system_ids  # type: ignore
+        client.save(db)
 
     if not user.permissions.scopes and not user.permissions.roles and not user.systems:  # type: ignore
         logger.info("User needs scopes, roles, or systems to login.")

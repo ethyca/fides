@@ -94,14 +94,8 @@ def upgrade():
         ),
         sa.Column("user_id", sa.String(), nullable=False),
         sa.Column("system_id", sa.String(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["system_id"],
-            ["ctl_systems.id"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["user_id"],
-            ["fidesuser.id"],
-        ),
+        sa.ForeignKeyConstraint(["system_id"], ["ctl_systems.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["user_id"], ["fidesuser.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id", "user_id", "system_id"),
     )
     op.create_index(op.f("ix_systemmanager_id"), "systemmanager", ["id"], unique=False)

@@ -15,6 +15,7 @@ from toml import load as load_toml
 from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ctl.sql_models import System
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -1616,7 +1617,10 @@ def system_manager(db: Session, system) -> System:
 
     user.set_as_system_manager(db, system)
     yield user
-    user.remove_as_system_manager(db, system)
+    try:
+        user.remove_as_system_manager(db, system)
+    except SystemManagerException:
+        pass
     user.delete(db)
 
 

@@ -961,6 +961,45 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == system_manager.id
 
+    def test_login_after_system_deleted(
+        self, db, url, system_manager, api_client, system
+    ):
+        """Test that client is updated on login just in case.  A system delete doesn't update the client.
+        There could be other direct-db updates that didn't persist to the client.
+        """
+        assert system_manager.client
+        assert system_manager.client.systems == [system.id]
+        assert system_manager.system_ids == [system.id]
+
+        system_manager.permissions.roles = [VIEWER]
+        system_manager.save(db=db)
+
+        db.delete(system)
+        db.commit()
+
+        body = {
+            "username": system_manager.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(system_manager)
+        assert system_manager.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == system_manager.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == [VIEWER]  # Uses roles on existing client
+        assert token_data["systems"] == []
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == system_manager.id
+
     def test_login_with_no_permissions(self, db, url, viewer_user, api_client):
         viewer_user.permissions.roles = []
         viewer_user.permissions.scopes = []
