@@ -60,10 +60,16 @@ const NewDataset: NextPage = () => {
             Connect to a database
           </Button>
         </Box>
-        <Box w={{ base: "100%", lg: "50%" }}>
-          {generateMethod === "yaml" ? <DatasetYamlForm /> : null}
-          {generateMethod === "database" ? <DatabaseConnectForm /> : null}
-        </Box>
+        {generateMethod === "database" && (
+          <Box w={{ base: "100%", lg: "50%" }}>
+            <DatabaseConnectForm />
+          </Box>
+        )}
+        {generateMethod === "yaml" && (
+          <Box w={{ base: "100%" }}>
+            <DatasetYamlForm />
+          </Box>
+        )}
       </Stack>
     </Layout>
   );
