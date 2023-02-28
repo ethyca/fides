@@ -22,7 +22,6 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
 from fides.lib.oauth.roles import ADMIN, VIEWER
-from tests.conftest import generate_role_header, generate_role_header_for_user
 from tests.ops.api.v1.endpoints.test_connection_config_endpoints import (
     TestPatchConnections,
 )
@@ -366,6 +365,7 @@ class TestSystemDelete:
         auth_header = generate_system_manager_header([system.id])
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_200_OK
+        assert resp.json()["message"] == "resource deleted"
 
     def test_admin_role_gets_404_if_system_not_found(
         self,

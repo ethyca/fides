@@ -99,7 +99,6 @@ class TestCrud:
         endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
-        print(manifest.json(exclude_none=True))
         token_scopes: List[str] = [PRIVACY_REQUEST_CREATE]
         auth_header = generate_auth_header(scopes=token_scopes)
         result = _api.create(
@@ -189,7 +188,6 @@ class TestCrud:
             resource_type=endpoint,
             resource_id=existing_id,
         )
-        print(result.text)
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -253,7 +251,6 @@ class TestCrud:
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
-        print(result.text)
         assert result.status_code == 403
 
     async def test_update_dataset_data_categories_validated(
@@ -379,7 +376,6 @@ class TestCrud:
             resource_id=resource_key,
             headers=auth_header,
         )
-        print(result.text)
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -404,6 +400,8 @@ class TestCrud:
         )
         print(result.text)
         assert result.status_code == 200
+        resp = result.json()
+        assert resp["message"] == "resource deleted"
 
 
 @pytest.mark.integration
