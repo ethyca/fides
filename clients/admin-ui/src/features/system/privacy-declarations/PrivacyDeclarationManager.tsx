@@ -23,6 +23,7 @@ interface Props {
     privacyDeclarations: PrivacyDeclaration[],
     isDelete?: boolean
   ) => Promise<boolean>;
+  includeDeprecatedFields?: boolean;
 }
 
 const PrivacyDeclarationManager = ({

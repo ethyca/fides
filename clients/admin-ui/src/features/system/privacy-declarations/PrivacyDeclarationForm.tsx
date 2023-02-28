@@ -18,7 +18,7 @@ import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
-import { CustomSelect } from "~/features/common/form/inputs";
+import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import {
   DataCategory,
   Dataset,
@@ -59,7 +59,8 @@ export const PrivacyDeclarationFormComponents = ({
   allDataSubjects,
   allDatasets,
   onDelete,
-}: DataProps & Pick<Props, "onDelete">) => {
+  includeDeprecatedFields,
+}: DataProps & Pick<Props, "onDelete" | "includeDeprecatedFields">) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
@@ -92,6 +93,14 @@ export const PrivacyDeclarationFormComponents = ({
         variant="stacked"
         singleValueBlock
       />
+      {includeDeprecatedFields ? (
+        <CustomTextInput
+          id="name"
+          label="Privacy declaration name (deprecated)"
+          name="name"
+          variant="stacked"
+        />
+      ) : null}
       <CustomSelect
         name="data_categories"
         label="Data categories"
@@ -223,6 +232,7 @@ interface Props {
   ) => Promise<boolean>;
   onDelete: (declaration: PrivacyDeclaration) => Promise<boolean>;
   initialValues?: PrivacyDeclaration;
+  includeDeprecatedFields?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({
