@@ -56,6 +56,7 @@ The types of changes are:
 * Allow string dates to stay strings in cache decoding [#2695](https://github.com/ethyca/fides/pull/2695)
 * Admin UI
   * Remove Identifiability (Data Qualifier) from taxonomy editor [2684](https://github.com/ethyca/fides/pull/2684)
+* FE: Custom field selections binding issue on Taxonomy tabs [#2659](https://github.com/ethyca/fides/pull/2693/)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
