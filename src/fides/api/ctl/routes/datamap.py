@@ -48,7 +48,6 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
             "content": {
                 "application/json": {
                     "example": [
-                        Dict[str, Any],
                         {
                             "system.name": "Demo Analytics System",
                             "system.data_responsibility_title": "Controller",
