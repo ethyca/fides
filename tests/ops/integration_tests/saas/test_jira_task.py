@@ -143,6 +143,8 @@ async def test_jira_erasure_request_task(
     jira_secrets = jira_connection_config.secrets
     base_url = f"https://{jira_secrets['domain']}"
 
+    sleep(60)
+
     # user
     response = requests.get(
         url=f"{base_url}/rest/api/3/user/search",
@@ -152,6 +154,6 @@ async def test_jira_erasure_request_task(
         ),
     )
     # Since user is deleted, it won't return data
-    assert response.json() is None
+    assert response.json() == []
 
     CONFIG.execution.masking_strict = masking_strict

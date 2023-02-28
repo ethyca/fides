@@ -132,7 +132,7 @@ def jira_create_erasure_data(
             "name": "Ethyca Test Erasure",
             "emailAddress": jira_erasure_identity_email,
     }
-
+    
     users_response = requests.post(
         url=f"{base_url}/rest/api/3/user", 
         json=body,
@@ -142,7 +142,7 @@ def jira_create_erasure_data(
         )
     user = users_response.json()
 
-    sleep(60)
+    sleep(30)
 
     yield user
      
