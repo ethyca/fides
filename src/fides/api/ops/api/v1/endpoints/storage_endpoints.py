@@ -34,6 +34,7 @@ from fides.api.ops.api.v1.urn_registry import (
     STORAGE_DEFAULT_BY_TYPE,
     STORAGE_DEFAULT_SECRETS,
     STORAGE_SECRETS,
+    STORAGE_STATUS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
@@ -52,10 +53,15 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets import (
 )
 from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.ops.schemas.storage.storage import (
+    FULLY_CONFIGURED_STORAGE_TYPES,
     BulkPutStorageConfigResponse,
+    S3AuthMethod,
+    StorageConfigStatus,
+    StorageConfigStatusMessage,
     StorageDestination,
     StorageDestinationBase,
     StorageDestinationResponse,
+    StorageDetails,
     StorageType,
 )
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
@@ -329,6 +335,96 @@ def get_active_default_config(
             detail="No active default storage config found.",
         )
     return storage_config
+
+
+# this needs to come before other `/default/{storage_type}` routes so that `/status`
+# isn't picked up as a path param
+@router.get(
+    STORAGE_STATUS,
+    dependencies=[Security(verify_oauth_client, scopes=[STORAGE_READ])],
+    response_model=StorageConfigStatusMessage,
+    responses={
+        HTTP_200_OK: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "config_status": "configured",
+                        "detail": "Active default storage location of type s3 is fully configured",
+                    }
+                }
+            }
+        }
+    },
+)
+def get_storage_status(
+    *, db: Session = Depends(deps.get_db)
+) -> StorageConfigStatusMessage:
+    """
+    Determines the status of the active default storage config.
+
+    In order to be considered fully configured, the active default storage
+    config MUST be an s3 storage config.
+    """
+    logger.info("Determining active default storage config status")
+
+    # confirm an active default storage config is present
+    storage_config = get_active_default_storage_config(db)
+    if not storage_config:
+        return StorageConfigStatusMessage(
+            config_status=StorageConfigStatus.not_configured,
+            detail="No active default storage configuration found",
+        )
+
+    # at this point, we only treat the active default storage as fully configured
+    # if it is an s3 storage location. eventually we may need to adjust this when
+    # we support other object stores/storage destinations as valid for production.
+    if storage_config.type not in FULLY_CONFIGURED_STORAGE_TYPES:
+        return StorageConfigStatusMessage(
+            config_status=StorageConfigStatus.not_configured,
+            detail="Active default storage configuration is not one of the fully configured storage types",
+        )
+
+    try:
+        details = storage_config.details
+        StorageDestinationBase.validate_details(details, storage_config.type.value)  # type: ignore
+    except Exception as e:
+        logger.error(f"Invalid or unpopulated details on {storage_config.type.value} storage configuration: {Pii(str(e))}")  # type: ignore
+        return StorageConfigStatusMessage(
+            config_status=StorageConfigStatus.not_configured,
+            detail=f"Invalid or unpopulated details on {storage_config.type.value} storage configuration",  # type: ignore
+        )
+
+    # currently, secrets are only required for s3 storage with auth method `SECRET_KEYS`
+    secrets = storage_config.secrets
+    if _storage_config_requires_secrets(storage_config):
+        if not secrets:
+            return StorageConfigStatusMessage(
+                config_status=StorageConfigStatus.not_configured,
+                detail=f"No secrets found for {storage_config.type.value} storage configuration",  # type: ignore
+            )
+        try:
+            get_schema_for_secrets(
+                storage_type=storage_config.type,  # type: ignore
+                secrets=secrets,
+            )
+        except (ValueError, KeyError) as e:
+            logger.error(f"Invalid secrets found on {storage_config.type.value} storage configuration: {Pii(str(e))}")  # type: ignore
+            return StorageConfigStatusMessage(
+                config_status=StorageConfigStatus.not_configured,
+                detail=f"Invalid secrets found on {storage_config.type.value} storage configuration",  # type: ignore
+            )
+
+    return StorageConfigStatusMessage(
+        config_status=StorageConfigStatus.configured,
+        detail=f"Active default storage configuration of type {storage_config.type.value} is fully configured",  # type: ignore
+    )
+
+
+def _storage_config_requires_secrets(storage_config: StorageConfig) -> bool:
+    return (
+        storage_config.details.get(StorageDetails.AUTH_METHOD.value, None)
+        == S3AuthMethod.SECRET_KEYS.value
+    )
 
 
 @router.put(

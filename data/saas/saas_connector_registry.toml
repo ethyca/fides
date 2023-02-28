@@ -189,3 +189,9 @@ config = "data/saas/config/kustomer_config.yml"
 dataset = "data/saas/dataset/kustomer_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Kustomer"
+
+[vend]
+config = "data/saas/config/vend_config.yml"
+dataset = "data/saas/dataset/vend_dataset.yml"
+icon = "data/saas/icon/vend.svg"
+human_readable = "Vend"

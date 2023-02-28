@@ -51,6 +51,7 @@ class ExecutionSettingsProxy(ConfigProxyBase):
     prefix = "execution"
 
     subject_identity_verification_required: bool
+    require_manual_request_approval: bool
 
 
 class StorageSettingsProxy(ConfigProxyBase):
