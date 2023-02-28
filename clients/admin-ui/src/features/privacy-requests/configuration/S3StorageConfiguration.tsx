@@ -1,4 +1,4 @@
-import { Button, Divider, Heading, Stack } from "@fidesui/react";
+import { Box, Button, Divider, Heading, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -163,25 +163,27 @@ const S3StorageConfiguration = ({ auth_method, bucket, format }: any) => {
                       type="password"
                     />
                   </Stack>
-                  <Button
-                    onClick={() => handleReset()}
-                    mt={5}
-                    mr={2}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    mt={5}
-                    isDisabled={isSubmitting}
-                    type="submit"
-                    colorScheme="primary"
-                    size="sm"
-                    data-testid="save-btn"
-                  >
-                    Save
-                  </Button>
+                  <Box mt={10}>
+                    <Button
+                      onClick={() => handleReset()}
+                      mt={5}
+                      mr={2}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      mt={5}
+                      isDisabled={isSubmitting}
+                      type="submit"
+                      colorScheme="primary"
+                      size="sm"
+                      data-testid="save-btn"
+                    >
+                      Save
+                    </Button>
+                  </Box>
                 </Form>
               )}
             </Formik>

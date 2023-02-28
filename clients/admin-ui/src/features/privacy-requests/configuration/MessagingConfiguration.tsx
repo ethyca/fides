@@ -128,7 +128,7 @@ const MessagingConfiguration = () => {
             <Radio
               key="MAILGUN"
               value="MAILGUN"
-              data-testid="option-MAILGUN"
+              data-testid="option-mailgun"
               mr={5}
             >
               Mailgun email
@@ -136,14 +136,14 @@ const MessagingConfiguration = () => {
             <Radio
               key="TWILIO_EMAIL"
               value="TWILIO_EMAIL"
-              data-testid="option-TWILIO_EMAIL"
+              data-testid="option-twilio-email"
             >
               Twilio email
             </Radio>
             <Radio
               key="TWILIO_TEXT"
               value="TWILIO_TEXT"
-              data-testid="option-TWILIO_TEXT"
+              data-testid="option-twilio-sms"
             >
               Twilio sms
             </Radio>

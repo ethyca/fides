@@ -88,6 +88,7 @@ const MailgunEmailConfiguration = () => {
                   name="domain"
                   label="Domain"
                   placeholder="Enter domain"
+                  data-testid="option-twilio-domain"
                   isRequired
                 />
               </Stack>
@@ -117,7 +118,7 @@ const MailgunEmailConfiguration = () => {
       {configurationStep === "apiKey" ? (
         // TODO: configurationStep === "testConnection" will be set after https://github.com/ethyca/fides/issues/2237
         <>
-          <Divider />
+          <Divider mt={10} />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
             Security key
           </Heading>
@@ -134,23 +135,25 @@ const MailgunEmailConfiguration = () => {
                     type="password"
                     isRequired
                   />
-                  <Button
-                    onClick={handleReset}
-                    mr={2}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    isDisabled={isSubmitting}
-                    type="submit"
-                    colorScheme="primary"
-                    size="sm"
-                    data-testid="save-btn"
-                  >
-                    Save
-                  </Button>
+                  <Box mt={10}>
+                    <Button
+                      onClick={handleReset}
+                      mr={2}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      isDisabled={isSubmitting}
+                      type="submit"
+                      colorScheme="primary"
+                      size="sm"
+                      data-testid="save-btn"
+                    >
+                      Save
+                    </Button>
+                  </Box>
                 </Form>
               )}
             </Formik>

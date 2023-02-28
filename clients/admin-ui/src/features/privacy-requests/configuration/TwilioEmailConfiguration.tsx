@@ -113,7 +113,7 @@ const TwilioEmailConfiguration = () => {
       </Stack>
       {configurationStep === "configureTwilioEmailSecrets" ? (
         <>
-          <Divider />
+          <Divider mt={10} />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
             Security key
           </Heading>
@@ -132,23 +132,25 @@ const TwilioEmailConfiguration = () => {
                       isRequired
                     />
                   </Stack>
-                  <Button
-                    onClick={() => handleReset()}
-                    mr={2}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    isDisabled={isSubmitting}
-                    type="submit"
-                    colorScheme="primary"
-                    size="sm"
-                    data-testid="save-btn"
-                  >
-                    Save
-                  </Button>
+                  <Box mt={10}>
+                    <Button
+                      onClick={() => handleReset()}
+                      mr={2}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      isDisabled={isSubmitting}
+                      type="submit"
+                      colorScheme="primary"
+                      size="sm"
+                      data-testid="save-btn"
+                    >
+                      Save
+                    </Button>
+                  </Box>
                 </Form>
               )}
             </Formik>
