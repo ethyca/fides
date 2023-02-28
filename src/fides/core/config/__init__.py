@@ -196,14 +196,19 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     try:
         settings = toml.load(config_path)
         config = build_config(config_dict=settings)
-        print(f"Loaded config from: {config_path}")
+        if verbose:
+            print(f"Loaded config from: {config_path}")
         return config
     except FileNotFoundError:
         pass
     except IOError:
         echo_red(f"Error reading config file: {config_path}")
 
-    print("Using default configuration values.")
+    if verbose:  # pragma: no cover
+        print("Using default configuration values.")
     config = build_config(config_dict={})
 
     return config
+
+
+CONFIG = get_config()

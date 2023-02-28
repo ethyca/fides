@@ -37,6 +37,7 @@ const SystemsManagement = ({ systems }: Props) => {
           maxWidth="30vw"
           placeholder="Search system name or description"
           data-testid="system-search"
+          withIcon
         />
       </Box>
       <BorderGrid<System>

@@ -1,20 +1,39 @@
-import dask
+from typing import Any, Dict
+
 import pytest
 from bson import ObjectId
 
-from fides.api.ops.graph.config import CollectionAddress, FieldPath
+from fides.api.ops.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
+    Collection,
+    CollectionAddress,
+    FieldPath,
+    GraphDataset,
+)
 from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.ops.task.graph_task import (
     EMPTY_REQUEST,
+    GraphTask,
     TaskResources,
+    _evaluate_erasure_dependencies,
     build_affected_field_logs,
     collect_queries,
+    start_function,
+    update_erasure_mapping_from_cache,
 )
 
-from ..graph.graph_test_util import MockMongoTask, MockSqlTask, erasure_policy, field
+from ..graph.graph_test_util import (
+    MockMongoTask,
+    MockSqlTask,
+    collection,
+    erasure_policy,
+    field,
+    generate_field_list,
+)
 from .traversal_data import (
     combined_mongo_postgresql_graph,
     sample_traversal,
@@ -555,3 +574,88 @@ class TestBuildAffectedFieldLogs:
                 "data_categories": ["A"],
             }
         ]
+
+
+class TestUpdateErasureMappingFromCache:
+    @pytest.fixture(scope="function")
+    def task_resource(self, privacy_request, policy, db):
+        tr = TaskResources(privacy_request, policy, [], db)
+        tr.get_connector = lambda x: True
+        return tr
+
+    @pytest.fixture(scope="function")
+    def collect_tasks_fn(self, task_resource):
+        def collect_tasks_fn(
+            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
+        ) -> None:
+            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
+            if not tn.is_root_node():
+                data[tn.address] = GraphTask(tn, task_resource)
+
+        return collect_tasks_fn
+
+    @pytest.fixture(scope="function")
+    def dsk(self, collect_tasks_fn) -> Dict[str, Any]:
+        """
+        Creates a Dask graph representing a dataset containing three collections (ds_1, ds_2, ds_3)
+        where the erasure order is ds_3 -> ds_2 -> ds_1
+        """
+        t = [
+            GraphDataset(
+                name=f"dr_1",
+                collections=[
+                    Collection(name=f"ds_{i}", fields=generate_field_list(1))
+                    for i in range(1, 4)
+                ],
+                connection_key="mock_connection_config_key",
+            )
+        ]
+
+        # the collections are not dependent on each other for access
+        field(t, "dr_1", "ds_1", "f1").identity = "email"
+        field(t, "dr_1", "ds_2", "f1").identity = "email"
+        field(t, "dr_1", "ds_3", "f1").identity = "email"
+        collection(t, CollectionAddress("dr_1", "ds_2")).erase_after = [
+            CollectionAddress("dr_1", "ds_1")
+        ]
+        collection(t, CollectionAddress("dr_1", "ds_3")).erase_after = [
+            CollectionAddress("dr_1", "ds_2")
+        ]
+        graph: DatasetGraph = DatasetGraph(*t)
+        traversal: Traversal = Traversal(graph, {"email": {"test_user@example.com"}})
+        env: Dict[CollectionAddress, Any] = {}
+        traversal.traverse(env, collect_tasks_fn)
+        erasure_end_nodes = list(graph.nodes.keys())
+
+        # the [] and [[]] values don't matter for this test, we just need to verify that they are not modified
+        dsk: Dict[CollectionAddress, Any] = {
+            k: (
+                t.erasure_request,
+                [],
+                [[]],
+                *_evaluate_erasure_dependencies(t, erasure_end_nodes),
+            )
+            for k, t in env.items()
+        }
+        dsk[TERMINATOR_ADDRESS] = (lambda x: x, *erasure_end_nodes)
+        dsk[ROOT_COLLECTION_ADDRESS] = 0
+        return dsk
+
+    def test_update_erasure_mapping_from_cache_without_data(self, dsk, task_resource):
+        task_resource.get_all_cached_erasures = lambda: {}  # represents an empty cache
+        update_erasure_mapping_from_cache(dsk, task_resource)
+        (task, retrieved_data, input_list, *erasure_prereqs) = dsk[
+            CollectionAddress("dr_1", "ds_1")
+        ]
+        assert callable(task)
+        assert task.__name__ == "erasure_request"
+        assert retrieved_data == []
+        assert input_list == [[]]
+        assert erasure_prereqs == [ROOT_COLLECTION_ADDRESS]
+
+    def test_update_erasure_mapping_from_cache_with_data(self, dsk, task_resource):
+        task_resource.get_all_cached_erasures = lambda: {
+            "dr_1:ds_1": 1
+        }  # a cache with the results of the ds_1 collection erasure
+        update_erasure_mapping_from_cache(dsk, task_resource)
+        assert dsk[CollectionAddress("dr_1", "ds_1")] == 1

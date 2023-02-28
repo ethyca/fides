@@ -20,16 +20,13 @@ from fides.api.ops.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
     from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
     from fides.api.ops.schemas.saas.saas_config import ClientConfig
     from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
-
-
-CONFIG = get_config()
 
 
 class AuthenticatedClient:

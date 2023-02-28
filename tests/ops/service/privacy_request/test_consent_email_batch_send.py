@@ -30,7 +30,7 @@ from fides.api.ops.service.privacy_request.consent_email_batch_service import (
 )
 from fides.core.config import get_config
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from tests.ops.fixtures.application_fixtures import _create_privacy_request_for_policy
+from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 CONFIG = get_config()
 
@@ -271,6 +271,12 @@ class TestConsentEmailBatchSend:
         assert requeue_privacy_requests.called
 
         call_kwargs = send_single_consent_email.call_args.kwargs
+
+        user_consent_preferences = call_kwargs["user_consent_preferences"]
+        assert {"12345", "abcde"} == {
+            consent_pref.identities["ljt_readerID"]
+            for consent_pref in user_consent_preferences
+        }
 
         assert call_kwargs["user_consent_preferences"] == [
             ConsentPreferencesByUser(
