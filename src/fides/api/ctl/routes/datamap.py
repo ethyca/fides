@@ -1,7 +1,7 @@
 """
 Contains an endpoint for extracting a data map from the server
 """
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from fastapi import Depends, Response, Security, status
 from fideslang.parse import parse_dict
@@ -48,7 +48,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
             "content": {
                 "application/json": {
                     "example": [
-                        Dict[str, str],
+                        Dict[str, Any],
                         {
                             "system.name": "Demo Analytics System",
                             "system.data_responsibility_title": "Controller",
