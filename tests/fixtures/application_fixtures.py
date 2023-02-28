@@ -1605,6 +1605,11 @@ def system_manager(db: Session, system) -> System:
         user_id=user.id,
         systems=[system.id],
     )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": []}
+    )
+
     db.add(client)
     db.commit()
     db.refresh(client)

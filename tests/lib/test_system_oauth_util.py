@@ -270,36 +270,41 @@ class TestHasScopeAsSystemManager:
         )
 
 
-class GetSystemFromRequestBody:
+class TestGetSystemFromRequestBody:
     def test_get_system_from_request_body(self, db, system):
         system_schema = SystemSchema(
             fides_key=system.fides_key,
             system_type="Service",
             data_responsibility_title="Processor",
+            name="System Name",
+            privacy_declarations=[],
         )
 
         resp = _get_system_from_request_body(system_schema, db)
 
         assert resp.system == system
         assert resp.original_data == system_schema
-
-    def test_get_system_from_fides_key(self, db, system):
-        resp = _get_system_from_fides_key(system.fides_key, db)
-
-        assert resp.system == system
-        assert resp.original_data == system.fides_key
 
     def test_get_system_from_request_body_not_found(self, db):
         system_schema = SystemSchema(
             fides_key="unknown_fides_key",
             system_type="Service",
             data_responsibility_title="Processor",
+            name="System Name",
+            privacy_declarations=[],
         )
-
         resp = _get_system_from_request_body(system_schema, db)
 
         assert resp.system is None
         assert resp.original_data == system_schema
+
+
+class TestGetSystemFromFidesKey:
+    def test_get_system_from_fides_key(self, db, system):
+        resp = _get_system_from_fides_key(system.fides_key, db)
+
+        assert resp.system == system
+        assert resp.original_data == system.fides_key
 
     def test_get_system_from_fides_key_not_found(self, db):
         resp = _get_system_from_fides_key("unknown_fides_key", db)

@@ -250,7 +250,7 @@ SCOPE_DOCS = {
     DATASET_READ: "View datasets",
     ENCRYPTION_EXEC: "Encrypt data",
     EVALUATION_CREATE: "Create evaluation",
-    EVALUATION_READ: "Read evalustions",
+    EVALUATION_READ: "Read evaluations",
     EVALUATION_DELETE: "Delete evaluations",
     EVALUATION_UPDATE: "Update evaluations",
     FIDES_TAXONOMY_UPDATE: "Update default fides taxonomy description",

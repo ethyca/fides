@@ -931,6 +931,36 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == viewer_user.id
 
+    def test_login_with_systems_only(self, db, url, system_manager, api_client, system):
+        # Delete existing client for test purposes
+        system_manager.client.delete(db)
+        body = {
+            "username": system_manager.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        assert system_manager.client is None  # client does not exist
+        assert system_manager.permissions is not None
+        assert system_manager.system_ids == [system.id]
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(system_manager)
+        assert system_manager.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == system_manager.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == []  # Uses roles on existing client
+        assert token_data["systems"] == [system.id]
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == system_manager.id
+
     def test_login_with_no_permissions(self, db, url, viewer_user, api_client):
         viewer_user.permissions.roles = []
         viewer_user.permissions.scopes = []
