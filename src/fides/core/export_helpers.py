@@ -150,6 +150,9 @@ def format_data_uses(
     formatted_data_uses = {}
     for data_use in data_uses:
 
+        if not isinstance(data_use, dict):
+            data_use = data_use.dict()
+
         formatted_data_use = {
             "name": data_use["name"],
         }
@@ -224,7 +227,9 @@ def format_data_subjects(
     formatted_data_subjects: Dict[FidesKey, Dict[str, str]] = {}
 
     for data_subject in data_subjects:
-        # data_subject_dict = data_subject.dict()
+        if not isinstance(data_subject, dict):
+            data_subject = data_subject.dict()
+
         formatted_data_subject = dict(
             zip(
                 formatted_data_subject_attributes_list,
@@ -382,6 +387,8 @@ def get_formatted_data_protection_impact_assessment(
     data_protection_impact_assessment: dict,
 ) -> dict:
     "Replace None with N/A for consistent formatting of the data map"
+    if not isinstance(data_protection_impact_assessment, dict):
+        data_protection_impact_assessment = data_protection_impact_assessment.dict()
     return {
         key: ("N/A" if value is None else value)
         for key, value in data_protection_impact_assessment.items()

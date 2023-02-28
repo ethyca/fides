@@ -176,8 +176,6 @@ def format_datamap_values(
     Formats the joined DataFrame to return the data as records.
     """
 
-    print("HERE")
-    print(custom_columns)
     columns = {**DATAMAP_COLUMNS_API, **custom_columns}
 
     limited_columns_df = DataFrame(

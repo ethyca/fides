@@ -51,6 +51,9 @@ def generate_dataset_records(
     # using a set to preserve uniqueness of categories and qualifiers across fields
     unique_data_categories: set = set()
     for dataset in server_dataset_list:
+        if not isinstance(dataset, dict):
+            dataset = dataset.dict()
+
         dataset_name = dataset["name"]
         dataset_description = dataset["description"]
         dataset_fides_key = dataset["fides_key"]
@@ -206,6 +209,9 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         "system_type",
     )
     for system in server_resources["system"]:
+        if not isinstance(system, dict):
+            system = system.__dict__
+
         for key, value in system.items():
             if key not in known_fields:
                 keys = list(output_list[0])
@@ -220,9 +226,13 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
 
         third_country_list = ", ".join(system["third_country_transfers"] or [])
         system_dependencies = ", ".join(system["system_dependencies"] or [])
+        if system["ingress"] and not isinstance(system["ingress"], dict):
+            system["ingress"] = [x.dict() for x in system["ingress"]]
         system_ingress = ", ".join(
             [ingress["fides_key"] for ingress in system["ingress"] or []]
         )
+        if system["egress"] and not isinstance(system["egress"], dict):
+            system["egress"] = [x.dict() for x in system["egress"]]
         system_egress = ", ".join(
             [egress["fides_key"] for egress in system["egress"] or []]
         )
@@ -233,6 +243,9 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         )
         if system.get("privacy_declarations"):
             for declaration in system["privacy_declarations"]:
+                if not isinstance(declaration, dict):
+                    declaration = declaration.dict()
+
                 data_use = formatted_data_uses[declaration["data_use"]]
                 data_categories = declaration["data_categories"] or []
                 data_subjects = [
@@ -360,7 +373,7 @@ def export_system(
         url, "data_subject", list(set(data_subject_fides_keys)), headers
     )
 
-    output_list = generate_system_records(server_resources)
+    output_list, _ = generate_system_records(server_resources)
 
     if not dry:
         exported_filename = export_to_csv(output_list, resource_type, manifests_dir)
@@ -393,6 +406,9 @@ def generate_contact_records(
     # currently the output file will only truly support a single organization
     # need to better understand the use case for multiple and how to handle
     for organization in server_organization_list:
+        if not isinstance(organization, dict):
+            organization = organization.dict()
+
         fields = tuple(ContactDetails().dict().keys())
 
         get_values = (
@@ -400,9 +416,9 @@ def generate_contact_records(
             if x
             else tuple(ContactDetails().dict().values())
         )
-        controller = get_values(organization.controller)
-        data_protection_officer = get_values(organization.data_protection_officer)
-        representative = get_values(organization.representative)
+        controller = get_values(organization["controller"])
+        data_protection_officer = get_values(organization["data_protection_officer"])
+        representative = get_values(organization["representative"])
 
         contact_details = list(
             zip(
@@ -525,6 +541,11 @@ def build_joined_dataframe(
     joined_df["system.third_country_safeguards"] = ""
     joined_df["system.link_to_processor_contract"] = ""
 
+    if not isinstance(server_resource_dict["organization"][0], dict):
+        server_resource_dict["organization"][0] = server_resource_dict["organization"][
+            0
+        ].dict()
+
     joined_df["organization.link_to_security_policy"] = (
         server_resource_dict["organization"][0]["security_policy"] or ""
     )
@@ -580,7 +601,7 @@ def export_datamap(
         server_resource_dict[resource_type] = filtered_server_resources
 
     # transform the resources to join a system and referenced datasets
-    joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
+    joined_system_dataset_df, _ = build_joined_dataframe(server_resource_dict)
 
     if not dry and not to_csv:
         # build an organization dataframe if exporting to excel
