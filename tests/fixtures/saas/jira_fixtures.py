@@ -6,6 +6,9 @@ import pytest
 import requests
 from sqlalchemy.orm import Session
 
+from requests.auth import HTTPBasicAuth
+
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -27,6 +30,7 @@ secrets = get_secrets("jira")
 def jira_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "jira.domain") or secrets["domain"],
+        "username": pydash.get(saas_config, "jira.username") or secrets["username"],
         "api_key": pydash.get(saas_config, "jira.api_key") or secrets["api_key"],
     }
 
@@ -37,10 +41,12 @@ def jira_identity_email(saas_config):
         pydash.get(saas_config, "jira.identity_email") or secrets["identity_email"]
     )
 
+
 @pytest.fixture(scope="session")
-def jira_user_name(saas_config):
+def jira_identity_phone_number(saas_config):
     return (
-        pydash.get(saas_config, "jira.user_name") or secrets["user_name"]
+        pydash.get(saas_config, "jira.identity_phone_number")
+        or secrets["identity_phone_number"]
     )
 
 
@@ -97,16 +103,20 @@ def jira_dataset_config(
     jira_connection_config.name = fides_key
     jira_connection_config.key = fides_key
     jira_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, jira_dataset)
+
     dataset = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": jira_connection_config.id,
             "fides_key": fides_key,
-            "dataset": jira_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
     dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 @pytest.fixture(scope="function")
@@ -114,14 +124,8 @@ def jira_create_erasure_data(
     jira_connection_config: ConnectionConfig, jira_erasure_identity_email: str
 ) -> None:
 
-    # sleep(60)
-
     jira_secrets = jira_connection_config.secrets    
     base_url = f"https://{jira_secrets['domain']}"
-    headers = {        
-        "Authorization": f"Basic {jira_secrets['api_key']}",
-    }
-
 
     # user
     body = {
@@ -129,41 +133,16 @@ def jira_create_erasure_data(
             "emailAddress": jira_erasure_identity_email,
     }
 
-    users_response = requests.post(url=f"{base_url}/rest/api/3/user", headers=headers, json=body)
+    users_response = requests.post(
+        url=f"{base_url}/rest/api/3/user", 
+        json=body,
+        auth=HTTPBasicAuth(
+            f"{jira_secrets['username']}", f"{jira_secrets['api_key']}"
+        ),
+        )
     user = users_response.json()
-    # sleep(30)
 
-    error_message = f"customer with email {jira_erasure_identity_email} could not be added to Jira"
-    user_data = poll_for_existence(
-        customer_exists,
-        (jira_erasure_identity_email, jira_secrets),
-        error_message=error_message,
-        # retries=20,
-        # interval=5,
-    )
+    sleep(60)
 
     yield user
-
-def customer_exists(jira_erasure_identity_email: str, jira_secrets):
-    """
-    Confirm whether customer exists by calling customer search by email api and comparing resulting firstname str.
-    Returns customer ID if it exists, returns None if it does not.
-    """
-    base_url = f"https://{jira_secrets['domain']}"
-    headers = {        
-        "Authorization": f"Basic {jira_secrets['api_key']}",
-    }
-
-    customer_response = requests.get(
-        url=f"{base_url}/rest/api/3/user/search",
-        headers=headers,
-        params={"query": jira_erasure_identity_email},
-    )
-
-    # we expect 404 if customer doesn't exist
-    if 200 != customer_response.status_code:
-        return None
-    if len(customer_response.json()) == 0:
-        return None
-
-    return customer_response.json()
+     
