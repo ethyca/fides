@@ -16,7 +16,7 @@ from fides.core.utils import echo_green
 @with_analytics
 def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
-    Delete a resource from the server.
+    Delete an object from the server.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
@@ -25,7 +25,11 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
             resource_type=resource_type,
             resource_id=fides_key,
             headers=config.user.auth_header,
-        )
+        ),
+        verbose=False,
+    )
+    echo_green(
+        f"{resource_type.capitalize()} with fides_key '{fides_key}' successfully deleted."
     )
 
 
@@ -54,7 +58,10 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
 @click.pass_context
 @resource_type_argument
 @with_analytics
-def list_resources(ctx: click.Context, resource_type: str) -> None:
+@click.option(
+    "--verbose", "-v", is_flag=True, help="Displays the entire object list as YAML."
+)
+def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> None:
     """
     View all objects of a single type from the server.
     """
@@ -67,4 +74,11 @@ def list_resources(ctx: click.Context, resource_type: str) -> None:
         raw=True,
     )
     print_divider()
-    echo_green(yaml.dump({resource_type: resources}))
+    if verbose:
+        echo_green(yaml.dump({resource_type: resources}))
+    else:
+        sorted_fides_keys = sorted(
+            {resource["fides_key"] for resource in resources if resource}
+        )
+        formatted_fides_keys = "\n  ".join(sorted_fides_keys)
+        echo_green(f"{resource_type.capitalize()} list:\n  {formatted_fides_keys}")

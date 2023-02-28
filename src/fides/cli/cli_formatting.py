@@ -18,6 +18,9 @@ You can set a style attribute by adding one or more of the following words:
 - "frame" for framed text.
 - "encircle" for encircled text.
 - "overline" or "o" for overlined text.
+
+The list of valid colors is here:
+- https://rich.readthedocs.io/en/stable/appendix/colors.html
 """
 
 from rich_click import rich_click
