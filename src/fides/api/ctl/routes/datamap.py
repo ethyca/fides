@@ -102,7 +102,7 @@ async def export_datamap(
     organization_fides_key: str,
     response: Response,
     db: AsyncSession = Depends(get_async_db),
-) -> List[Dict[str, str]]:
+) -> List[Dict[str, Any]]:
     """
     An endpoint to return the data map for a given Organization.
 
