@@ -129,39 +129,6 @@ def gorgias_create_erasure_data(
     user = users_response.json()    
     user_id = user["id"]
 
-    # ticket
-    # ticket_data = {
-    #     "customer": {
-    #         "id": user_id,
-    #         "email": gorgias_erasure_identity_email
-    #     },
-    #     "messages": [
-    #         {
-    #             "sender": {
-    #                     "id": user_id,
-    #                     "email": gorgias_erasure_identity_email
-    #             },
-    #             "source": {
-    #                     "to": [
-    #                         {
-    #                             "name": "to_test",
-    #                             "address": "34545@email.com"
-    #                         }
-    #                     ],
-    #                     "from": {
-    #                         "name": "test",
-    #                         "address": gorgias_erasure_identity_email
-    #                     },
-    #                     "type": "email"
-    #             },
-    #             "channel": "twitter",
-    #             "from_agent": "true",
-    #             "via": "email"
-    #         }
-    #     ],
-    #     "status": "open",
-    #     "subject": "testing the tiket"
-    # }
     ticket_data = {
         "customer": {
             "id": user_id,
@@ -174,7 +141,7 @@ def gorgias_create_erasure_data(
                         "email": gorgias_erasure_identity_email
                 },
                 "channel": "twitter-direct-message",
-                "from_agent": "true",
+                "from_agent": "false",
                 "via": "instagram-ad-comment"
             }
         ],

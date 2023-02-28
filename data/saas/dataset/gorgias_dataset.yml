@@ -16,19 +16,19 @@ dataset:
             fidesops_meta:
               data_type: boolean
           - name: email
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: name
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: firstname
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: lastname
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: language
@@ -69,7 +69,7 @@ dataset:
                     fidesops_meta:
                       data_type: integer
                   - name: address
-                    data_categories: [system.operations]
+                    data_categories: [user.contact.address]
                     fidesops_meta:
                       data_type: string
                   - name: type
@@ -85,7 +85,7 @@ dataset:
                         fidesops_meta:
                           data_type: integer
                       - name: name
-                        data_categories: [system.operations]
+                        data_categories: [user.name]
                         fidesops_meta:
                           data_type: string
                   - name: customer
@@ -97,7 +97,7 @@ dataset:
                         fidesops_meta:
                           data_type: integer
                       - name: name
-                        data_categories: [system.operations]
+                        data_categories: [user.name]
                         fidesops_meta:
                           data_type: string
           - name: object
@@ -151,19 +151,19 @@ dataset:
                 fidesops_meta:
                   data_type: integer
               - name: email
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: firstname
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: lastname
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: meta
@@ -263,19 +263,19 @@ dataset:
                 fidesops_meta:
                   data_type: integer
               - name: email
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: firstname
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: lastname
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: meta

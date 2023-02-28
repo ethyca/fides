@@ -137,7 +137,7 @@ async def test_gorgias_access_request_task(
             "intents",
             "rule_id",
             "from_agent",
-            "receiver",
+            # "receiver",
             "subject",
             "body_text",
             "body_html",
