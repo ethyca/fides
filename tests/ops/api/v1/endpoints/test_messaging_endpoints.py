@@ -20,6 +20,7 @@ from fides.api.ops.api.v1.urn_registry import (
     MESSAGING_DEFAULT_BY_TYPE,
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
+    MESSAGING_STATUS,
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
@@ -27,6 +28,8 @@ from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.schemas.messaging.messaging import (
+    MessagingConfigStatus,
+    MessagingConfigStatusMessage,
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
@@ -1401,6 +1404,327 @@ class TestGetActiveDefaultMessagingConfig:
                 MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
         }
+
+
+class TestGetMessagingStatus:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + MESSAGING_STATUS
+
+    def test_get_messaging_status_not_authenticated(self, url, api_client: TestClient):
+        response = api_client.get(url)
+        assert 401 == response.status_code
+
+    def test_get_messaging_status_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header([MESSAGING_DELETE])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_messaging_status_none_set(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.not_configured
+        assert response.detail == "No active default messaging configuration found"
+
+    @pytest.mark.usefixtures("notification_service_type_none")
+    def test_get_messaging_status_app_setting_not_set(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        messaging_config,
+    ):
+        """
+        Even with `messaing_config` fixture creating a default messaging config,
+        we should still not get a successful status reading, since the
+        `notifications.notification_service_type` config property has not been set
+
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.not_configured
+        assert response.detail == "No active default messaging configuration found"
+
+    @pytest.fixture(scope="function")
+    def notification_service_type_mailgun(self, db):
+        """Set mailgun as the `notification_service_type` property"""
+        original_value = CONFIG.notifications.notification_service_type
+        CONFIG.notifications.notification_service_type = (
+            MessagingServiceType.MAILGUN.value
+        )
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.fixture(scope="function")
+    def notification_service_type_twilio_text(self, db):
+        """Set twilio_text as the `notification_service_type` property"""
+        original_value = CONFIG.notifications.notification_service_type
+        CONFIG.notifications.notification_service_type = (
+            MessagingServiceType.TWILIO_TEXT.value
+        )
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.fixture(scope="function")
+    def notification_service_type_twilio_email(self, db):
+        """Set twilio_email as the `notification_service_type` property"""
+        original_value = CONFIG.notifications.notification_service_type
+        CONFIG.notifications.notification_service_type = (
+            MessagingServiceType.TWILIO_EMAIL.value
+        )
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.fixture(scope="function")
+    def notification_service_type_none(self, db):
+        """Set the `notification_service_type` property to `None`"""
+        original_value = CONFIG.notifications.notification_service_type
+        CONFIG.notifications.notification_service_type = None
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.notification_service_type = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.mark.usefixtures("notification_service_type_twilio_text")
+    def test_get_messaging_status_app_setting_wrong_value(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        messaging_config,
+    ):
+        """
+        Even with `messaing_config` fixture creating a default messaging config,
+        we should still not get a successful status reading, since the
+        `notifications.notification_service_type` config property has been set to
+        a service type that is not mailgun
+
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.not_configured
+        assert response.detail == "No active default messaging configuration found"
+
+    @pytest.mark.usefixtures("notification_service_type_mailgun")
+    def test_get_messaging_status_app_setting_but_not_configured(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        Without `messaging_config` fixture creating a default messaging config,
+        but by setting the application setting for "notification_service_type" to mailgun,
+        we should get a failure, since we have no mailgun default configured.
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.not_configured
+        assert response.detail == "No active default messaging configuration found"
+
+    @pytest.mark.usefixtures("notification_service_type_mailgun", "messaging_config")
+    def test_get_messaging_status_secrets_not_present(
+        self,
+        url,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        If secrets aren't present on the mailgun config, we should get a failure
+        """
+        messaging_config = db.query(MessagingConfig).first()
+        messaging_config.secrets = {}
+        messaging_config.save(db)
+
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.not_configured
+        assert "No secrets found" in response.detail
+
+    @pytest.mark.usefixtures("notification_service_type_mailgun", "messaging_config")
+    def test_get_messaging_status_wrong_secrets(
+        self,
+        url,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        If non-mailgun secrets are somehow on the mailgun config, we should get a failure
+        """
+        messaging_config = db.query(MessagingConfig).first()
+        messaging_config.secrets = {
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "some_sid"
+        }
+        messaging_config.save(db)
+
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.not_configured
+        assert "Invalid secrets found" in response.detail
+
+    @pytest.mark.usefixtures("notification_service_type_mailgun", "messaging_config")
+    def test_get_messaging_status_details_not_present(
+        self,
+        url,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        If details aren't present on the mailgun config, we should get a failure
+        """
+        messaging_config = db.query(MessagingConfig).first()
+        messaging_config.details = {}
+        messaging_config.save(db)
+
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.not_configured
+        assert "Invalid or unpopulated details" in response.detail
+
+    @pytest.mark.usefixtures(
+        "notification_service_type_twilio_email", "messaging_config_twilio_email"
+    )
+    def test_get_messaging_status_details_not_present_twilio_email(
+        self,
+        url,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        If details aren't present on the twilio_email config, we should get a failure
+        """
+        messaging_config = db.query(MessagingConfig).first()
+        messaging_config.details = {}
+        messaging_config.save(db)
+
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.not_configured
+        assert "Invalid or unpopulated details" in response.detail
+
+    @pytest.mark.usefixtures("notification_service_type_mailgun", "messaging_config")
+    def test_get_messaging_status_details_wrong_values(
+        self,
+        url,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        If twilio_email details are on the mailgun config, we should get a failure
+        """
+        messaging_config = db.query(MessagingConfig).first()
+        messaging_config.details = {
+            MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "some_sample_email"
+        }
+        messaging_config.save(db)
+
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.not_configured
+        assert "Invalid or unpopulated details" in response.detail
+
+    @pytest.mark.usefixtures("notification_service_type_mailgun", "messaging_config")
+    def test_get_messaging_status(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        We should get back a successful response now that
+        we set mailgun as the notification_service_type via app setting
+        and the config has been added via fixture
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.configured
+        assert MessagingServiceType.MAILGUN.value in (response.detail)
+
+    @pytest.mark.usefixtures(
+        "notification_service_type_twilio_text", "messaging_config_twilio_sms"
+    )
+    def test_get_messaging_status_twilio_text(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        We should get back a successful response now that
+        we set mailgun as the notification_service_type via app setting
+        and the config has been added via fixture
+        """
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        response = MessagingConfigStatusMessage(**response.json())
+        assert response.config_status == MessagingConfigStatus.configured
+        assert MessagingServiceType.TWILIO_TEXT.value in (response.detail)
 
 
 class TestTestMesage:
