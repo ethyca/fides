@@ -47,7 +47,12 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
 @click.command()
 @click.pass_context
 @manifests_dir_argument
-@fides_key_option
+@click.option(
+    "--fides-key",
+    "-k",
+    help="The fides_key of a specific policy to evaluate.",
+    default="",
+)
 @click.option(
     "-m",
     "--message",
@@ -59,7 +64,11 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     is_flag=True,
     help="Validate that the objects in this evaluation produce a valid datamap.",
 )
-@dry_flag
+@click.option(
+    "--dry",
+    is_flag=True,
+    help="Do not upload objects or results to the Fides webserver.",
+)
 @with_analytics
 def evaluate(
     ctx: click.Context,
@@ -71,8 +80,6 @@ def evaluate(
 ) -> None:
     """
     Evaluate System-level Privacy Declarations against Organization-level Policy Rules.
-
-    All local objects are uploaded to the server _before_ evaluation.
     """
 
     config = ctx.obj["CONFIG"]
