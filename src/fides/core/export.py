@@ -145,7 +145,9 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
     formatted_data_uses, custom_data_uses = format_data_uses(
         server_resources["data_use"]
     )
-    formatted_data_subjects = format_data_subjects(server_resources["data_subject"])
+    formatted_data_subjects, custom_data_subjects = format_data_subjects(
+        server_resources["data_subject"]
+    )
     output_list: List[Tuple[str, ...]] = [
         (
             "system.fides_key",
@@ -180,6 +182,14 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         keys = list(output_list[0])
         for key, value in custom_data_uses.items():
             key_string = f"system.privacy_declaration.data_use.{key}"
+            custom_columns[key_string] = value
+            keys.append(key_string)
+            output_list[0] = tuple(keys)
+
+    if custom_data_subjects:
+        keys = list(output_list[0])
+        for key, value in custom_data_subjects.items():
+            key_string = f"system.privacy_declaration.data_subjects.{key}"
             custom_columns[key_string] = value
             keys.append(key_string)
             output_list[0] = tuple(keys)
@@ -226,13 +236,17 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
 
         third_country_list = ", ".join(system["third_country_transfers"] or [])
         system_dependencies = ", ".join(system["system_dependencies"] or [])
-        if system["ingress"] and not isinstance(system["ingress"], dict):
-            system["ingress"] = [x.dict() for x in system["ingress"]]
+        if system["ingress"]:
+            for ingress in system["ingress"]:
+                if not isinstance(ingress, dict):
+                    system["ingress"] = [x.dict() for x in ingress]
         system_ingress = ", ".join(
             [ingress["fides_key"] for ingress in system["ingress"] or []]
         )
-        if system["egress"] and not isinstance(system["egress"], dict):
-            system["egress"] = [x.dict() for x in system["egress"]]
+        if system["egress"]:
+            for egress in system["egress"]:
+                if not isinstance(egress, dict):
+                    system["egress"] = [x.dict() for x in egress]
         system_egress = ", ".join(
             [egress["fides_key"] for egress in system["egress"] or []]
         )

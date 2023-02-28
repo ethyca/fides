@@ -148,36 +148,34 @@ def format_data_uses(
     """
 
     formatted_data_uses = {}
+    custom_columns = {}
+    known_attributes = (
+        "legal_basis",
+        "special_category",
+        "recipients",
+        "legitimate_interest_impact_assessment",
+        "legitimate_interest",
+    )
+    excluded_attributes = (
+        "id",
+        "tags",
+        "description",
+        "updated_at",
+        "is_default",
+        "organization_fides_key",
+        "parent",
+        "created_at",
+        "name",
+        "parent_key",
+        "fides_key",
+    )
     for data_use in data_uses:
-
         if not isinstance(data_use, dict):
             data_use = data_use.dict()
 
         formatted_data_use = {
             "name": data_use["name"],
         }
-
-        custom_columns = {}
-        known_attributes = (
-            "legal_basis",
-            "special_category",
-            "recipients",
-            "legitimate_interest_impact_assessment",
-            "legitimate_interest",
-        )
-        excluded_attributes = (
-            "id",
-            "tags",
-            "description",
-            "updated_at",
-            "is_default",
-            "organization_fides_key",
-            "parent",
-            "created_at",
-            "name",
-            "parent_key",
-            "fides_key",
-        )
 
         for attribute in known_attributes:
             attribute_value = data_use.get(attribute)
@@ -208,7 +206,7 @@ def format_data_uses(
 
 def format_data_subjects(
     data_subjects: List[DataSubject],
-) -> Dict[FidesKey, Dict[str, str]]:
+) -> Tuple[Dict[FidesKey, Dict[str, str]], Dict[str, str]]:
     """
     This function formats data subjects from the server, returning the necessary values
     as a list of dicts.
@@ -225,6 +223,12 @@ def format_data_subjects(
     ]
 
     formatted_data_subjects: Dict[FidesKey, Dict[str, str]] = {}
+    excluded_attributes = (
+        "name",
+        "rights_available",
+        "automated_decisions_or_profiling",
+    )
+    custom_columns = {}
 
     for data_subject in data_subjects:
         if not isinstance(data_subject, dict):
@@ -253,9 +257,17 @@ def format_data_subjects(
             for attribute in formatted_data_subject_attributes_list
         }
 
+        for k, v in data_subject.items():
+            if k not in excluded_attributes:
+                custom_columns[k] = k
+                if isinstance(v, list):
+                    formatted_data_subject[k] = ", ".join(v)
+                else:
+                    formatted_data_subject[k] = v
+
         formatted_data_subjects[data_subject["fides_key"]] = formatted_data_subject
 
-    return formatted_data_subjects
+    return formatted_data_subjects, custom_columns
 
 
 def convert_tuple_to_string(values: Tuple[str, ...]) -> str:
