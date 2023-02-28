@@ -36,16 +36,16 @@ saas_config:
             - name: Authorization
               value: Basic <api_token>
           query_params:
-            - name: phone_number
-              value: <phoneNumber>
+            # - name: phone_number
+            #   value: <phoneNumber>
             - name: email
               value: <email>
           data_path: contacts
           param_values:
             - name: api_token
               connector_param: api_token
-            - name: phoneNumber
-              identity: phone_number
+            # - name: phoneNumber
+            #   identity: phone_number
             - name: email
               identity: email
         # update:
