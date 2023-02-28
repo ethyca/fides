@@ -1,18 +1,9 @@
+import { stubTaxonomyEntities } from "cypress/support/stubs";
+
 describe("Taxonomy management page", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/data_category", {
-      fixture: "data_categories.json",
-    }).as("getDataCategories");
-    cy.intercept("GET", "/api/v1/data_use", { fixture: "data_uses.json" }).as(
-      "getDataUses"
-    );
-    cy.intercept("GET", "/api/v1/data_subject", {
-      fixture: "data_subjects.json",
-    }).as("getDataSubjects");
-    cy.intercept("GET", "/api/v1/data_qualifier", {
-      fixture: "data_qualifiers.json",
-    }).as("getDataQualifiers");
+    stubTaxonomyEntities();
   });
 
   // TODO: Update Cypress test to reflect the nav bar 2.0
@@ -23,7 +14,6 @@ describe("Taxonomy management page", () => {
     cy.getByTestId("tab-Data Categories");
     cy.getByTestId("tab-Data Uses");
     cy.getByTestId("tab-Data Subjects");
-    cy.getByTestId("tab-Identifiability");
   });
 
   describe("Can view data", () => {
@@ -35,8 +25,6 @@ describe("Taxonomy management page", () => {
       cy.wait("@getDataUses");
       cy.getByTestId("tab-Data Subjects").click();
       cy.wait("@getDataSubjects");
-      cy.getByTestId("tab-Identifiability").click();
-      cy.wait("@getDataQualifiers");
       cy.getByTestId("tab-Data Categories").click();
       cy.wait("@getDataCategories");
     });
@@ -131,16 +119,6 @@ describe("Taxonomy management page", () => {
           parentKey: "",
           isParent: false,
           request: "@putDataSubject",
-        },
-        {
-          tab: "Identifiability",
-          name: "Aggregated Data",
-          key: "aggregated",
-          description:
-            "Statistical data that does not contain individually identifying information but includes information about groups of individuals that renders individual identification impossible.",
-          parentKey: "",
-          isParent: true,
-          request: "@putDataQualifier",
         },
       ];
       expectedTabValues.forEach((tabValue) => {
@@ -376,11 +354,6 @@ describe("Taxonomy management page", () => {
           name: "Data subject",
           request: "@postDataSubject",
         },
-        {
-          tab: "Identifiability",
-          name: "Data qualifier",
-          request: "@postDataQualifier",
-        },
       ];
       expectedTabValues.forEach((tabValue) => {
         cy.getByTestId(`tab-${tabValue.tab}`).click();
@@ -519,7 +492,6 @@ describe("Taxonomy management page", () => {
       const tabValues = [
         { tab: "Data Categories", request: "@deleteDataCategory" },
         { tab: "Data Uses", request: "@deleteDataUse" },
-        { tab: "Identifiability", request: "@deleteDataQualifier" },
       ];
       tabValues.forEach((tabValue) => {
         cy.getByTestId(`tab-${tabValue.tab}`).click();

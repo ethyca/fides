@@ -7,16 +7,16 @@ import pytest
 
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
-from fides.core.config import get_config
+from fides.core.config import CONFIG
+from tests.ops.graph.graph_test_util import generate_node
 
-CONFIG = get_config()
 privacy_request = PrivacyRequest(id="234544")
 
 
@@ -558,6 +558,54 @@ class TestSaaSQueryConfig:
             endpoints["mailing_lists"].requests.read,
         )
         assert len(prepared_requests) == 3
+
+    def test_skip_missing_param_values_read_request(self, policy):
+        """Test read requests with missing param values in body skipped instead of erroring if
+        skip_missing_param_values is set"""
+
+        config = SaaSQueryConfig(
+            generate_node("test_dataset", "test_collection", "test_field"),
+            {},
+            {},
+        )
+
+        read_request = SaaSRequest(  # Contrived request - we often don't have request bodies for read requests.
+            method="GET",
+            path="/api/0/user/",
+            body='{"email": "<email>"}',
+            param_values=[{"name": "email", "identity": "email"}],
+        )
+
+        # Base sanity check - one prepared request created, with email placeholder added to body
+        prepared_requests: List[SaaSRequestParams] = config.generate_requests(
+            {
+                "email": ["customer-1example.com"],
+            },
+            policy,
+            read_request,
+        )
+        assert len(prepared_requests) == 1
+
+        # Verify generate_requests errors because we don't have email placeholder to add to body
+        with pytest.raises(ValueError):
+            config.generate_requests(
+                {
+                    "phone_number": ["111-111-1111"],
+                },
+                policy,
+                read_request,
+            )
+
+        # Verify with skip_missing_param_values, we skip building a prepared request instead of erroring
+        read_request.skip_missing_param_values = True
+        prepared_requests: List[SaaSRequestParams] = config.generate_requests(
+            {
+                "phone_number": ["111-111-1111"],
+            },
+            policy,
+            read_request,
+        )
+        assert len(prepared_requests) == 0
 
 
 class TestGenerateProductList:

@@ -11,7 +11,7 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
 )
 from fides.api.ops.task import graph_task
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 from ..graph.graph_test_util import assert_rows_match
 from ..task.traversal_data import postgres_and_manual_nodes

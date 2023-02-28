@@ -22,15 +22,15 @@ import { RTKErrorResult } from "~/types/errors";
 
 import { parentKeyFromFidesKey } from "./helpers";
 import TaxonomyEntityTag from "./TaxonomyEntityTag";
-import { Labels, TaxonomyEntity } from "./types";
-
-export type FormValues = Partial<TaxonomyEntity> &
-  Pick<TaxonomyEntity, "fides_key">;
+import { FormValues, Labels, TaxonomyEntity } from "./types";
 
 interface Props {
   labels: Labels;
   onCancel: () => void;
-  onSubmit: (entity: TaxonomyEntity) => RTKResult<TaxonomyEntity>;
+  onSubmit: (
+    initialValues: FormValues,
+    newValues: FormValues
+  ) => RTKResult<TaxonomyEntity>;
   renderExtraFormFields?: (entity: FormValues) => ReactNode;
   initialValues: FormValues;
 }
@@ -55,27 +55,9 @@ const TaxonomyFormBase = ({
 
   const handleSubmit = async (newValues: FormValues) => {
     setFormError(null);
-    // parent_key and fides_keys are immutable
-    // parent_key also needs to be undefined, not an empty string, if there is no parent element
-    let payload: TaxonomyEntity;
-    if (isCreate) {
-      const parentKey = parentKeyFromFidesKey(newValues.fides_key);
-      payload = {
-        ...newValues,
-        parent_key: parentKey === "" ? undefined : parentKey,
-      };
-    } else {
-      payload = {
-        ...newValues,
-        parent_key:
-          initialValues.parent_key === ""
-            ? undefined
-            : initialValues.parent_key,
-        fides_key: initialValues.fides_key,
-      };
-    }
 
-    const result = await onSubmit(payload);
+    const result = await onSubmit(initialValues, newValues);
+
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {

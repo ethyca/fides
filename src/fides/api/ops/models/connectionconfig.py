@@ -16,12 +16,10 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 from fides.lib.db.base_class import get_key_from_data
 from fides.lib.exceptions import KeyOrNameAlreadyExists
-
-CONFIG = get_config()
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -49,6 +47,7 @@ class ConnectionType(enum.Enum):
     bigquery = "bigquery"
     manual = "manual"  # Run as part of the traversal
     email = "email"
+    sovrn = "sovrn"
     manual_webhook = "manual_webhook"  # Run before the traversal
     timescale = "timescale"
     fides = "fides"
@@ -74,6 +73,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.manual_webhook.value: "Manual Webhook",
             ConnectionType.timescale.value: "TimescaleDB",
             ConnectionType.fides.value: "Fides Connector",
+            ConnectionType.sovrn.value: "Sovrn",
         }
         try:
             return readable_mapping[self.value]

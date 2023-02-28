@@ -1,6 +1,5 @@
 import json
 from datetime import datetime, timedelta
-from typing import List
 
 import pytest
 from fastapi_pagination import Params
@@ -33,7 +32,7 @@ from fides.api.ops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -45,15 +44,15 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
-from tests.ops.conftest import generate_auth_header_for_user
+from fides.lib.oauth.roles import ADMIN, VIEWER
+from tests.conftest import generate_auth_header_for_user
 
-CONFIG = get_config()
 page_size = Params().size
 
 
 class TestCreateUser:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + USERS
 
     def test_create_user_not_authenticated(self, url, api_client):
@@ -67,7 +66,6 @@ class TestCreateUser:
 
     def test_create_user_bad_username(
         self,
-        db,
         api_client,
         generate_auth_header,
         url,
@@ -91,18 +89,15 @@ class TestCreateUser:
         auth_header = generate_auth_header([USER_CREATE])
 
         body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
-        user = FidesUser.create(db=db, data=body)
+        FidesUser.create(db=db, data=body)
 
         response = api_client.post(url, headers=auth_header, json=body)
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["detail"] == "Username already exists."
         assert HTTP_400_BAD_REQUEST == response.status_code
 
-        user.delete(db)
-
     def test_create_user_bad_password(
         self,
-        db,
         api_client,
         generate_auth_header,
         url,
@@ -113,7 +108,7 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "Password must have at least eight characters."
         )
 
@@ -121,7 +116,7 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "Password must have at least one number."
         )
 
@@ -129,7 +124,7 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "Password must have at least one capital letter."
         )
 
@@ -137,7 +132,7 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
+            response.json()["detail"][0]["msg"]
             == "Password must have at least one symbol."
         )
 
@@ -154,11 +149,10 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
 
         user = FidesUser.get_by(db, field="username", value=body["username"])
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        user.delete(db)
 
     def test_create_user_as_root(
         self,
@@ -173,11 +167,10 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
 
         user = FidesUser.get_by(db, field="username", value=body["username"])
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        user.delete(db)
 
     def test_create_user_with_name(
         self,
@@ -197,34 +190,69 @@ class TestCreateUser:
         response = api_client.post(url, headers=auth_header, json=body)
 
         user = FidesUser.get_by(db, field="username", value=body["username"])
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        user.delete(db)
+
+    def test_cannot_create_duplicate_user(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        response_body = response.json()
+        assert HTTP_201_CREATED == response.status_code
+        assert response_body == {"id": user.id}
+        assert user.permissions is not None
+
+        duplicate_body = {
+            "username": "TEST_USER",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body)
+        assert HTTP_400_BAD_REQUEST == response.status_code
+        assert response.json()["detail"] == "Username already exists."
+
+        duplicate_body_2 = {
+            "username": "TEST_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body_2)
+        assert HTTP_400_BAD_REQUEST == response.status_code
+        assert response.json()["detail"] == "Username already exists."
 
 
 class TestDeleteUser:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, user) -> str:
+    def url(self, user) -> str:
         return f"{V1_URL_PREFIX}{USERS}/{user.id}"
 
     def test_delete_user_not_authenticated(self, url, api_client):
         response = api_client.delete(url, headers={})
         assert HTTP_401_UNAUTHORIZED == response.status_code
 
-    def test_create_user_wrong_scope(self, url, api_client, generate_auth_header, db):
+    def test_create_user_wrong_scope(self, url, api_client, generate_auth_header):
         auth_header = generate_auth_header([STORAGE_READ])
         response = api_client.delete(url, headers=auth_header)
         assert HTTP_403_FORBIDDEN == response.status_code
 
-    def test_delete_nonexistent_user(self, api_client, db, generate_auth_header, user):
+    def test_delete_nonexistent_user(self, api_client, db, generate_auth_header):
         auth_header = generate_auth_header([USER_DELETE])
         url = f"{V1_URL_PREFIX}{USERS}/nonexistent_user"
         response = api_client.delete(url, headers=auth_header)
         assert HTTP_404_NOT_FOUND == response.status_code
 
-    def test_delete_self(self, api_client, db, generate_auth_header):
+    def test_delete_self(self, api_client, db):
         user = FidesUser.create(
             db=db,
             data={
@@ -277,7 +305,7 @@ class TestDeleteUser:
         )
         assert permissions_search is None
 
-    def test_delete_user(self, api_client, db, generate_auth_header):
+    def test_delete_user(self, api_client, db):
         user = FidesUser.create(
             db=db,
             data={
@@ -352,7 +380,7 @@ class TestDeleteUser:
         )
         assert permissions_search is None
 
-    def test_delete_user_as_root(self, api_client, db, generate_auth_header, user):
+    def test_delete_user_as_root(self, api_client, db, user):
         other_user = FidesUser.create(
             db=db,
             data={
@@ -411,12 +439,11 @@ class TestDeleteUser:
         # Admin client who made the request is not deleted
         admin_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)
         assert admin_client_search is not None
-        admin_client_search.delete(db)
 
 
 class TestGetUsers:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + USERS
 
     def test_get_users_not_authenticated(
@@ -438,32 +465,32 @@ class TestGetUsers:
         auth_header = generate_auth_header(scopes=[USER_READ])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 0
         assert response_body["total"] == 0
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
     def test_get_users(self, api_client: TestClient, generate_auth_header, url, db):
-        create_auth_header = generate_auth_header(scopes=[USER_CREATE])
-        saved_users: List[FidesUser] = []
         total_users = 25
-        for i in range(total_users):
-            body = {
-                "username": f"user{i}@example.com",
-                "password": str_to_b64_str("Password123!"),
-                "first_name": "Test",
-                "last_name": "User",
-            }
-            resp = api_client.post(url, headers=create_auth_header, json=body)
-            assert resp.status_code == HTTP_201_CREATED
-            user = FidesUser.get_by(db, field="username", value=body["username"])
-            saved_users.append(user)
+        password = str_to_b64_str("Password123!")
+        [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"user{i}",
+                    "password": password,
+                    "first_name": "Test",
+                    "last_name": "User",
+                },
+            )
+            for i in range(total_users)
+        ]
 
         get_auth_header = generate_auth_header(scopes=[USER_READ])
         resp = api_client.get(url, headers=get_auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == total_users
         assert response_body["total"] == total_users
         assert response_body["page"] == 1
@@ -476,30 +503,21 @@ class TestGetUsers:
         assert user_data["first_name"]
         assert user_data["last_name"]
 
-        for i in range(total_users):
-            saved_users[i].delete(db)
-
     def test_get_filtered_users(
         self, api_client: TestClient, generate_auth_header, url, db
     ):
-        create_auth_header = generate_auth_header(scopes=[USER_CREATE])
-        saved_users: List[FidesUser] = []
         total_users = 50
-        for i in range(total_users):
-            body = {
-                "username": f"user{i}@example.com",
-                "password": str_to_b64_str("Password123!"),
-            }
-            resp = api_client.post(url, headers=create_auth_header, json=body)
-            assert resp.status_code == HTTP_201_CREATED
-            user = FidesUser.get_by(db, field="username", value=body["username"])
-            saved_users.append(user)
+        password = str_to_b64_str("Password123!")
+        [
+            FidesUser.create(db=db, data={"username": f"user{i}", "password": password})
+            for i in range(total_users)
+        ]
 
         get_auth_header = generate_auth_header(scopes=[USER_READ])
 
         resp = api_client.get(f"{url}?username={15}", headers=get_auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 1
         assert response_body["total"] == 1
         assert response_body["page"] == 1
@@ -507,7 +525,7 @@ class TestGetUsers:
 
         resp = api_client.get(f"{url}?username={5}", headers=get_auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 5
         assert response_body["total"] == 5
         assert response_body["page"] == 1
@@ -515,23 +533,20 @@ class TestGetUsers:
 
         resp = api_client.get(f"{url}?username=not real user", headers=get_auth_header)
         assert resp.status_code == HTTP_200_OK
-        response_body = json.loads(resp.text)
+        response_body = resp.json()
         assert len(response_body["items"]) == 0
         assert response_body["total"] == 0
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-        for i in range(total_users):
-            saved_users[i].delete(db)
-
 
 class TestGetUser:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + USER_DETAIL
 
     @pytest.fixture(scope="function")
-    def url_no_id(self, oauth_client: ClientDetail) -> str:
+    def url_no_id(self) -> str:
         return V1_URL_PREFIX + USERS
 
     def test_get_user_not_authenticated(self, api_client: TestClient, url: str) -> None:
@@ -658,10 +673,7 @@ class TestUpdateUserPassword:
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
             f"{url_no_id}/{user.id}/reset-password",
             headers=auth_header,
@@ -691,10 +703,7 @@ class TestUpdateUserPassword:
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,
@@ -720,10 +729,7 @@ class TestUpdateUserPassword:
         OLD_PASSWORD = "oldpassword"
         NEW_PASSWORD = "newpassword"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
-        auth_header = generate_auth_header_for_user(
-            user=application_user,
-            scopes=[USER_PASSWORD_RESET],
-        )
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
             f"{url_no_id}/{application_user.id}/reset-password",
             headers=auth_header,
@@ -737,13 +743,95 @@ class TestUpdateUserPassword:
         application_user = application_user.refresh_from_db(db=db)
         assert application_user.credentials_valid(password=NEW_PASSWORD)
 
+    def test_force_update_different_user_password_without_scope(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        """A user without the proper scope cannot change another user's password"""
+        NEW_PASSWORD = "newpassword"
+        old_hashed_password = user.hashed_password
+
+        auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+        db.expunge(user)
+        user = user.refresh_from_db(db=db)
+        assert (
+            user.hashed_password == old_hashed_password
+        ), "Password changed on the user"
+
+    def test_force_update_different_user_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+    ) -> None:
+        """
+        A user with the right scope should be able to set a new password
+        for another user.
+        """
+        NEW_PASSWORD = "newpassword"
+        auth_header = generate_auth_header_for_user(
+            user=application_user, scopes=[USER_PASSWORD_RESET]
+        )
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+
+        assert resp.status_code == HTTP_200_OK
+        db.expunge(user)
+        user = user.refresh_from_db(db=db)
+        assert user.credentials_valid(password=NEW_PASSWORD)
+
+    def test_force_update_non_existent_user(
+        self,
+        api_client,
+        url_no_id,
+        application_user,
+    ) -> None:
+        """
+        Resetting on a user that does not exist should 404
+        """
+        NEW_PASSWORD = "newpassword"
+        auth_header = generate_auth_header_for_user(
+            user=application_user, scopes=[USER_PASSWORD_RESET]
+        )
+        # arbitrary id that isn't the user's
+        user_id = "fake_user_id"
+        resp = api_client.post(
+            f"{url_no_id}/{user_id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(NEW_PASSWORD),
+            },
+        )
+
+        assert resp.status_code == HTTP_404_NOT_FOUND
+
 
 class TestUserLogin:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + LOGIN
 
-    def test_user_does_not_exist(self, db, url, api_client):
+    def test_user_does_not_exist(self, url, api_client):
         body = {
             "username": "does not exist",
             "password": str_to_b64_str("idonotknowmypassword"),
@@ -751,7 +839,7 @@ class TestUserLogin:
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == HTTP_404_NOT_FOUND
 
-    def test_bad_login(self, db, url, user, api_client):
+    def test_bad_login(self, url, user, api_client):
         body = {
             "username": user.username,
             "password": str_to_b64_str("idonotknowmypassword"),
@@ -787,7 +875,75 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
 
+    def test_login_with_scopes(self, db, url, user, api_client):
+        # Delete existing client for test purposes
         user.client.delete(db)
+        body = {
+            "username": user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        assert user.client is None  # client does not exist
+        assert user.permissions is not None
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(user)
+        assert user.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == user.client.id
+        assert token_data["scopes"] == [
+            PRIVACY_REQUEST_READ
+        ]  # Uses scopes on existing client
+        assert token_data["roles"] == []
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == user.id
+
+    def test_login_with_roles(self, db, url, viewer_user, api_client):
+        # Delete existing client for test purposes
+        viewer_user.client.delete(db)
+        body = {
+            "username": viewer_user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        assert viewer_user.client is None  # client does not exist
+        assert viewer_user.permissions is not None
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(viewer_user)
+        assert viewer_user.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == viewer_user.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == [VIEWER]  # Uses roles on existing client
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == viewer_user.id
+
+    def test_login_with_no_permissions(self, db, url, viewer_user, api_client):
+        viewer_user.permissions.roles = []
+        viewer_user.permissions.scopes = []
+        viewer_user.save(db)  # Make sure user doesn't have roles or scopes
+
+        assert viewer_user.permissions is not None
+        body = {
+            "username": viewer_user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_403_FORBIDDEN
 
     def test_login_updates_last_login_date(self, db, url, user, api_client):
         body = {
@@ -801,7 +957,30 @@ class TestUserLogin:
         db.refresh(user)
         assert user.last_login_at is not None
 
-    def test_login_uses_existing_client(self, db, url, user, api_client):
+    def test_login_is_case_insensitive(
+        self, url, user, api_client, generate_auth_header
+    ):
+        body = {
+            "username": user.username.lower(),
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.post(V1_URL_PREFIX + LOGOUT, headers=auth_header, json={})
+        assert HTTP_204_NO_CONTENT == response.status_code
+
+        body = {
+            "username": user.username.upper(),
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+    def test_login_uses_existing_client_with_scopes(self, db, url, user, api_client):
         body = {
             "username": user.username,
             "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
@@ -828,13 +1007,59 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
 
+    def test_login_uses_existing_client_with_roles(self, url, admin_user, api_client):
+        body = {
+            "username": admin_user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        existing_client_id = admin_user.client.id
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        assert admin_user.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == existing_client_id
+        assert token_data["scopes"] == []
+        assert token_data["roles"] == [ADMIN]  # Uses roles on existing client
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == admin_user.id
+
+    def test_login_as_root_user(self, api_client, url):
+        body = {
+            "username": CONFIG.security.root_username,
+            "password": str_to_b64_str(CONFIG.security.root_password),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == CONFIG.security.oauth_root_client_id
+        assert token_data["scopes"] == SCOPE_REGISTRY  # Uses all scopes
+        assert token_data["roles"] == [ADMIN]  # Uses admin role
+
+        assert "user_data" in list(response.json().keys())
+        data = response.json()["user_data"]
+        assert data["username"] == CONFIG.security.root_username
+        assert data["id"] == CONFIG.security.oauth_root_client_id
+
 
 class TestUserLogout:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail) -> str:
+    def url(self) -> str:
         return V1_URL_PREFIX + LOGOUT
 
-    def test_malformed_token_ignored(self, db, url, api_client, user):
+    def test_malformed_token_ignored(self, url, api_client):
         auth_header = {"Authorization": "Bearer invalid"}
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == HTTP_204_NO_CONTENT
@@ -860,7 +1085,7 @@ class TestUserLogout:
         client_search = ClientDetail.get_by(db, field="id", value=client_id)
         assert client_search is None
 
-    def test_root_user_logout(self, db, url, api_client):
+    def test_root_user_logout(self, url, api_client):
         payload = {
             JWE_PAYLOAD_SCOPES: SCOPE_REGISTRY,
             JWE_PAYLOAD_CLIENT_ID: CONFIG.security.oauth_root_client_id,

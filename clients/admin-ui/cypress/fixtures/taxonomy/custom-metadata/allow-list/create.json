@@ -1,0 +1,6 @@
+{
+  "name": "Created list",
+  "description": null,
+  "allowed_values": ["allowed", "values"],
+  "id": "id-allow-list-created"
+}

@@ -146,12 +146,13 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
-from fides.core.config import get_config
+from fides.core.config import CONFIG
+from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
-CONFIG = get_config()
+
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
@@ -180,6 +181,7 @@ def get_privacy_request_or_error(
 def create_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
+    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
     data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
@@ -187,7 +189,7 @@ def create_privacy_request(
     or report failure and execute them within the Fidesops system.
     You cannot update privacy requests after they've been created.
     """
-    return _create_privacy_request(db, data, False)
+    return create_privacy_request_func(db, config_proxy, data, False)
 
 
 @router.post(
@@ -199,6 +201,7 @@ def create_privacy_request(
 def create_privacy_request_authenticated(
     *,
     db: Session = Depends(deps.get_db),
+    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
     data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
@@ -207,11 +210,13 @@ def create_privacy_request_authenticated(
     You cannot update privacy requests after they've been created.
     This route requires authentication instead of using verification codes.
     """
-    return _create_privacy_request(db, data, True)
+    return create_privacy_request_func(db, config_proxy, data, True)
 
 
 def _send_privacy_request_receipt_message_to_user(
-    policy: Optional[Policy], to_identity: Optional[Identity]
+    policy: Optional[Policy],
+    to_identity: Optional[Identity],
+    service_type: Optional[str],
 ) -> None:
     """Helper function to send request receipt message to the user"""
     if not to_identity:
@@ -239,7 +244,7 @@ def _send_privacy_request_receipt_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
-            "service_type": CONFIG.notifications.notification_service_type,
+            "service_type": service_type,
             "to_identity": to_identity.dict(),
         },
     )
@@ -254,13 +259,14 @@ def privacy_request_csv_download(
 
     csv_file.writerow(
         [
-            "Time received",
-            "Subject identity",
-            "Policy key",
-            "Request status",
-            "Reviewer",
-            "Time approved/denied",
-            "Denial reason",
+            "Status",
+            "Request Type",
+            "Subject Identity",
+            "Time Received",
+            "Reviewed By",
+            "Request ID",
+            "Time Approved/Denied",
+            "Denial Reason",
         ]
     )
     privacy_request_ids: List[str] = [r.id for r in privacy_request_query]
@@ -278,17 +284,20 @@ def privacy_request_csv_download(
             if pr.status == PrivacyRequestStatus.denied and pr.id in denial_audit_logs
             else None
         )
+
         csv_file.writerow(
             [
-                pr.created_at,
-                pr.get_persisted_identity().dict(),
-                pr.policy.key if pr.policy else None,
                 pr.status.value if pr.status else None,
+                pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
+                pr.get_persisted_identity().dict(),
+                pr.created_at,
                 pr.reviewed_by,
+                pr.id,
                 pr.reviewed_at,
                 denial_reason,
             ]
         )
+
     f.seek(0)
     response = StreamingResponse(f, media_type="text/csv")
     response.headers[
@@ -1147,6 +1156,7 @@ def _send_privacy_request_review_message_to_user(
     action_type: MessagingActionType,
     identity_data: Dict[str, Any],
     rejection_reason: Optional[str],
+    service_type: Optional[str],
 ) -> None:
     """Helper method to send review notification message to user, shared between approve and deny"""
     if not identity_data:
@@ -1170,7 +1180,7 @@ def _send_privacy_request_review_message_to_user(
                 if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                 else None,
             ).dict(),
-            "service_type": CONFIG.notifications.notification_service_type,
+            "service_type": service_type,
             "to_identity": to_identity.dict(),
         },
     )
@@ -1185,6 +1195,7 @@ def verify_identification_code(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
+    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
     provided_code: VerificationCode,
 ) -> PrivacyRequestResponse:
     """Verify the supplied identity verification code.
@@ -1201,9 +1212,11 @@ def verify_identification_code(
         policy: Optional[Policy] = Policy.get(
             db=db, object_id=privacy_request.policy_id
         )
-        if CONFIG.notifications.send_request_receipt_notification:
+        if config_proxy.notifications.send_request_receipt_notification:
             _send_privacy_request_receipt_message_to_user(
-                policy, privacy_request.get_persisted_identity()
+                policy,
+                privacy_request.get_persisted_identity(),
+                config_proxy.notifications.notification_service_type,
             )
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
@@ -1213,7 +1226,7 @@ def verify_identification_code(
 
     logger.info("Identity verified for {}.", privacy_request.id)
 
-    if not CONFIG.execution.require_manual_request_approval:
+    if not config_proxy.execution.require_manual_request_approval:
         AuditLog.create(
             db=db,
             data={
@@ -1236,6 +1249,7 @@ def verify_identification_code(
 def approve_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
+    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -1260,11 +1274,12 @@ def approve_privacy_request(
                 "message": "",
             },
         )
-        if CONFIG.notifications.send_request_review_notification:
+        if config_proxy.notifications.send_request_review_notification:
             _send_privacy_request_review_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
                 identity_data=privacy_request.get_cached_identity_data(),
                 rejection_reason=None,
+                service_type=config_proxy.notifications.notification_service_type,
             )
 
         queue_privacy_request(privacy_request_id=privacy_request.id)
@@ -1284,6 +1299,7 @@ def approve_privacy_request(
 def deny_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
+    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -1310,11 +1326,12 @@ def deny_privacy_request(
                 "message": privacy_requests.reason,
             },
         )
-        if CONFIG.notifications.send_request_review_notification:
+        if config_proxy.notifications.send_request_review_notification:
             _send_privacy_request_review_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
                 identity_data=privacy_request.get_cached_identity_data(),
                 rejection_reason=privacy_requests.reason,
+                service_type=config_proxy.notifications.notification_service_type,
             )
 
     return review_privacy_request(
@@ -1553,8 +1570,9 @@ def resume_privacy_request_from_requires_input(
     return privacy_request
 
 
-def _create_privacy_request(
+def create_privacy_request_func(
     db: Session,
+    config_proxy: ConfigProxy,
     data: conlist(PrivacyRequestCreate),  # type: ignore
     authenticated: bool = False,
 ) -> BulkPostPrivacyRequests:
@@ -1574,7 +1592,12 @@ def _create_privacy_request(
 
     logger.info("Starting creation for {} privacy requests", len(data))
 
-    optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
+    optional_fields = [
+        "external_id",
+        "started_processing_at",
+        "finished_processing_at",
+        "consent_preferences",
+    ]
     for privacy_request_data in data:
         if not any(privacy_request_data.identity.dict().values()):
             logger.warning(
@@ -1607,11 +1630,16 @@ def _create_privacy_request(
             continue
 
         kwargs = build_required_privacy_request_kwargs(
-            privacy_request_data.requested_at, policy.id
+            privacy_request_data.requested_at,
+            policy.id,
+            config_proxy.execution.subject_identity_verification_required,
         )
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)
             if attr is not None:
+                if field == "consent_preferences":
+                    attr = [consent.dict() for consent in attr]
+
                 kwargs[field] = attr
 
         try:
@@ -1632,7 +1660,7 @@ def _create_privacy_request(
 
             if (
                 not authenticated
-                and CONFIG.execution.subject_identity_verification_required
+                and config_proxy.execution.subject_identity_verification_required
             ):
                 send_verification_code_to_user(
                     db, privacy_request, privacy_request_data.identity
@@ -1641,12 +1669,14 @@ def _create_privacy_request(
                 continue  # Skip further processing for this privacy request
             if (
                 not authenticated
-                and CONFIG.notifications.send_request_receipt_notification
+                and config_proxy.notifications.send_request_receipt_notification
             ):
                 _send_privacy_request_receipt_message_to_user(
-                    policy, privacy_request_data.identity
+                    policy,
+                    privacy_request_data.identity,
+                    config_proxy.notifications.notification_service_type,
                 )
-            if not CONFIG.execution.require_manual_request_approval:
+            if not config_proxy.execution.require_manual_request_approval:
                 AuditLog.create(
                     db=db,
                     data={
@@ -1673,7 +1703,9 @@ def _create_privacy_request(
                 detail=exc.args[0],
             )
         except Exception as exc:
-            logger.error("Exception: {}", Pii(str(exc)))
+            as_string = Pii(str(exc))
+            error_cls = str(exc.__class__.__name__)
+            logger.error(f"Exception {error_cls}: {as_string}")
             failure = {
                 "message": "This record could not be added",
                 "data": kwargs,
@@ -1694,7 +1726,6 @@ def _process_privacy_request_restart(
     failed_collection: Optional[CollectionAddress],
     db: Session,
 ) -> PrivacyRequestResponse:
-
     logger.info(
         "Restarting failed privacy request '{}' from '{} step, 'collection '{}'",
         privacy_request.id,
