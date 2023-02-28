@@ -181,7 +181,7 @@ human_readable = "Jira"
 [delighted]
 config = "data/saas/config/delighted_config.yml"
 dataset = "data/saas/dataset/delighted_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/delighted.svg"
 human_readable = "Delighted"
 
 [universal_analytics]
