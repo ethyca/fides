@@ -93,7 +93,9 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     const iframe = document.getElementById("privacy-policy-iframe");
-    if (!iframe) return;
+    if (!iframe) { 
+        return;
+    }
     // @ts-expect-error
     iframe.contentWindow.addEventListener(
       "load",
@@ -174,6 +176,7 @@ const Home: NextPage = () => {
           id="privacy-policy-iframe"
           style={{ width: "100%" }}
           src="https://legal.snackpass.co/snackpass-privacy-policy"
+          title="Snackpass Privacy Policy"
         />
         <PrivacyRequestModal
           isOpen={isPrivacyModalOpen}
