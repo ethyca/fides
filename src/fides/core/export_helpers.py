@@ -138,7 +138,9 @@ def export_datamap_to_excel(
     return filename
 
 
-def format_data_uses(data_uses: List[DataUse]) -> Dict[FidesKey, Dict[str, str]]:
+def format_data_uses(
+    data_uses: List[DataUse],
+) -> Tuple[Dict[FidesKey, Dict[str, str]], Dict[str, str]]:
     """
     This function formats data uses for use when exporting,
     returning the necessary values as a dict. Formatting
@@ -152,28 +154,53 @@ def format_data_uses(data_uses: List[DataUse]) -> Dict[FidesKey, Dict[str, str]]
             "name": data_use["name"],
         }
 
-        for attribute in [
+        custom_columns = {}
+        known_attributes = (
             "legal_basis",
             "special_category",
             "recipients",
             "legitimate_interest_impact_assessment",
             "legitimate_interest",
-        ]:
-            attribute_value = data_use.get(attribute)  # getattr(data_use, attribute)
+        )
+        excluded_attributes = (
+            "id",
+            "tags",
+            "description",
+            "updated_at",
+            "is_default",
+            "organization_fides_key",
+            "parent",
+            "created_at",
+            "name",
+            "parent_key",
+            "fides_key",
+        )
+
+        for attribute in known_attributes:
+            attribute_value = data_use.get(attribute)
             if attribute_value is None:
                 attribute_value = "N/A"
             elif isinstance(attribute_value, list):
                 attribute_value = ", ".join(attribute_value)
             elif attribute == "legitimate_interest":
                 if attribute_value is True:
-                    attribute_value = data_use.get("name")  # getattr(data_use, "name")
+                    attribute_value = data_use.get("name")
                 else:
                     attribute_value = "N/A"
 
             formatted_data_use[attribute] = attribute_value
 
+        for k, v in data_use.items():
+            if k not in known_attributes and k not in excluded_attributes:
+                custom_columns[k] = k
+                if isinstance(v, list):
+                    formatted_data_use[k] = ", ".join(v)
+                else:
+                    formatted_data_use[k] = v
+
         formatted_data_uses[data_use["fides_key"]] = formatted_data_use
-    return formatted_data_uses
+
+    return formatted_data_uses, custom_columns
 
 
 def format_data_subjects(

@@ -21,7 +21,7 @@ from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ctl.utils.errors import DatabaseUnavailableError, NotFoundError
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.util.oauth_util import verify_oauth_client_cli
-from fides.core.export import build_joined_dataframe, custom_columns
+from fides.core.export import build_joined_dataframe
 from fides.core.export_helpers import DATAMAP_COLUMNS
 
 API_EXTRA_COLUMNS = {
@@ -158,20 +158,26 @@ async def export_datamap(
         )
         raise database_unavailable_error
 
-    joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
+    joined_system_dataset_df, custom_columns = build_joined_dataframe(
+        server_resource_dict
+    )
 
-    formatted_datamap = format_datamap_values(joined_system_dataset_df)
+    formatted_datamap = format_datamap_values(joined_system_dataset_df, custom_columns)
 
     # prepend column names
     formatted_datamap = [DATAMAP_COLUMNS_API] + formatted_datamap
     return formatted_datamap
 
 
-def format_datamap_values(joined_system_dataset_df: DataFrame) -> List[Dict[str, str]]:
+def format_datamap_values(
+    joined_system_dataset_df: DataFrame, custom_columns: Dict[str, str]
+) -> List[Dict[str, str]]:
     """
     Formats the joined DataFrame to return the data as records.
     """
 
+    print("HERE")
+    print(custom_columns)
     columns = {**DATAMAP_COLUMNS_API, **custom_columns}
 
     limited_columns_df = DataFrame(

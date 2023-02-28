@@ -26,8 +26,6 @@ from fides.core.utils import echo_green, get_all_level_fields
 
 EMPTY_COLUMN_PLACEHOLDER = "N/A"
 
-custom_columns = {}
-
 
 def generate_dataset_records(
     server_dataset_list: List,
@@ -133,14 +131,17 @@ def export_dataset(
 
 def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many-branches
     server_resources: Dict[str, List],
-) -> List[Tuple[str, ...]]:
+) -> Tuple[List[Tuple[str, ...]], Dict[str, str]]:
     """
     Takes a dictionary of resources from the server, returning a list of tuples
     to be used as records to be exported. The headers are defined
     as the first tuple in the result.
     """
 
-    formatted_data_uses = format_data_uses(server_resources["data_use"])
+    custom_columns = {}
+    formatted_data_uses, custom_data_uses = format_data_uses(
+        server_resources["data_use"]
+    )
     formatted_data_subjects = format_data_subjects(server_resources["data_subject"])
     output_list: List[Tuple[str, ...]] = [
         (
@@ -171,6 +172,14 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             "dataset.fides_key",
         )
     ]
+
+    if custom_data_uses:
+        keys = list(output_list[0])
+        for key, value in custom_data_uses.items():
+            key_string = f"system.privacy_declaration.data_use.{key}"
+            custom_columns[key_string] = value
+            keys.append(key_string)
+            output_list[0] = tuple(keys)
 
     system_custom_field_data = {}
     known_fields = (
@@ -309,7 +318,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             # also add n/a for the dataset reference
             output_list += [tuple(system_row)]
 
-    return output_list
+    return output_list, custom_columns
 
 
 def export_system(
@@ -446,7 +455,7 @@ def export_organization(
 
 def build_joined_dataframe(
     server_resource_dict: Dict[str, List],
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, Dict[str, str]]:
     """
     Return joined dataframes for datamap export
 
@@ -457,7 +466,7 @@ def build_joined_dataframe(
 
     # systems
 
-    system_output_list = generate_system_records(server_resource_dict)
+    system_output_list, custom_columns = generate_system_records(server_resource_dict)
     systems_df = pd.DataFrame.from_records(system_output_list)
     systems_df.columns = systems_df.iloc[0]
     systems_df = systems_df[1:]
@@ -521,7 +530,7 @@ def build_joined_dataframe(
     )
     joined_df["dataset.source_name"] = joined_df["dataset.name"]
 
-    return joined_df
+    return joined_df, custom_columns
 
 
 def export_datamap(
