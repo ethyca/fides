@@ -164,7 +164,7 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
 @click.pass_context
 def down(ctx: click.Context) -> None:
     """
-    Stops the sample project containers and removes all volumes.
+    Stops the sample project and removes all volumes.
     """
 
     check_docker_version()
