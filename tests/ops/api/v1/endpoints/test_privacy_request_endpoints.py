@@ -94,6 +94,7 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.roles import PRIVACY_REQUEST_MANAGER, VIEWER
 
 page_size = Params().size
 
@@ -592,6 +593,13 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
+
+    def test_get_privacy_requests_privacy_request_manager_role(
+        self, api_client: TestClient, generate_role_header, url
+    ):
+        auth_header = generate_role_header(roles=[PRIVACY_REQUEST_MANAGER])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
 
     def test_conflicting_query_params(
         self, api_client: TestClient, generate_auth_header, url
@@ -1810,6 +1818,27 @@ class TestApprovePrivacyRequest:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.patch(url, headers=auth_header)
         assert response.status_code == 403
+
+    def test_approve_privacy_request_viewer_role(
+        self, url, api_client, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[VIEWER])
+        response = api_client.patch(url, headers=auth_header)
+        assert response.status_code == 403
+
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_approve_privacy_request_privacy_request_manager_role(
+        self, _, url, api_client, generate_role_header, privacy_request, db
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+
+        auth_header = generate_role_header(roles=[PRIVACY_REQUEST_MANAGER])
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
