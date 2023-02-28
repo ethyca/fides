@@ -104,8 +104,7 @@ def test_system_records_to_export(
     the header row)
     """
 
-    output_list = export.generate_system_records(test_sample_system_taxonomy)
-    print(output_list)
+    output_list, _ = export.generate_system_records(test_sample_system_taxonomy)
     assert len(output_list) == 3
 
 
@@ -118,7 +117,7 @@ def test_system_records_to_export_sans_privacy_declaration(
     are returned properly (including the header row)
     """
     test_sample_system_taxonomy["system"][0].privacy_declarations = []
-    output_list = export.generate_system_records(test_sample_system_taxonomy)
+    output_list, _ = export.generate_system_records(test_sample_system_taxonomy)
     print(output_list)
     assert len(output_list) == 2
 
@@ -172,7 +171,7 @@ def test_joined_datamap_export_system_dataset_overlap(
     """
     sample_taxonomy: Dict = test_sample_system_taxonomy
     sample_taxonomy["dataset"] = test_sample_dataset_taxonomy
-    output_list = export.build_joined_dataframe(sample_taxonomy)
+    output_list, _ = export.build_joined_dataframe(sample_taxonomy)
     assert len(output_list) == 5
 
 
@@ -239,5 +238,5 @@ def test_joined_datamap_export_system_multiple_declarations_overlap(
     sample_taxonomy["data_subject"].append(new_data_subject)
     sample_taxonomy["system"][0].privacy_declarations.append(new_declaration)
     sample_taxonomy["dataset"] = []
-    output_list = export.build_joined_dataframe(sample_taxonomy)
+    output_list, _ = export.build_joined_dataframe(sample_taxonomy)
     assert len(output_list) == 4
