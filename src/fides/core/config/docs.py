@@ -12,7 +12,7 @@ from pydantic import BaseSettings
 from fides.core.config import FidesConfig, get_config
 
 CONFIG_DOCS_URL = "https://ethyca.github.io/fides/stable/config/"
-HELP_LINK = f"# For more info, please visit: {CONFIG_DOCS_URL}\n"
+HELP_LINK = f"# For more info, please visit: {CONFIG_DOCS_URL}"
 
 
 def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
@@ -92,7 +92,9 @@ def convert_object_to_toml_docs(object_name: str, object_info: Dict[str, str]) -
 
     # Build the Section docstring
     settings_description = object_info["description"]
-    settings_docstring = f"[{object_name}] # {settings_description}\n" + HELP_LINK
+    settings_docstring = (
+        f"[{object_name}] # {settings_description}\n{HELP_LINK}#{object_name}\n"
+    )
 
     # Build the field docstrings
     full_docstring = title_header + settings_docstring
@@ -136,6 +138,12 @@ def remove_excluded_fields(
     return without_excluded_fields
 
 
+def build_config_header() -> str:
+    """Build the header to be used at the top of the config file."""
+    config_header = f"# Fides Configuration File\n# Additional Documentation at : {CONFIG_DOCS_URL}\n\n"
+    return config_header
+
+
 def generate_config_docs(
     config: FidesConfig, outfile_path: str = ".fides/fides.toml"
 ) -> None:
@@ -169,7 +177,7 @@ def generate_config_docs(
     ]
 
     # Combine all of the docs
-    docs: str = "\n".join(nested_settings_docs + object_docs)
+    docs: str = build_config_header() + "\n".join(nested_settings_docs + object_docs)
 
     # Verify it is valid TOML before writing it out
     toml.loads(docs)
