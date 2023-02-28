@@ -35,6 +35,10 @@ export const CustomFieldsList = ({
     resourceType,
   });
 
+  const handleReload = () => {
+    setValues({ ...(values as any) });
+  };
+
   useEffect(() => {
     if (!isEnabled || !resourceFidesKey) {
       return;
@@ -87,7 +91,7 @@ export const CustomFieldsList = ({
             Custom fields
           </Text>
         </Flex>
-        <CustomFieldsModal resourceType={resourceType} />
+        <CustomFieldsModal reload={handleReload} resourceType={resourceType} />
         {isLoading ? (
           <Center>
             <Spinner />

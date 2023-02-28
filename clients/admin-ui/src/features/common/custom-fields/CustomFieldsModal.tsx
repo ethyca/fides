@@ -29,10 +29,12 @@ import { CustomFieldsButton } from "./CustomFieldsButton";
 import { Tab } from "./types";
 
 type CustomFieldsModalProps = {
+  reload?: () => void;
   resourceType: ResourceTypes;
 };
 
 const CustomFieldsModal: React.FC<CustomFieldsModalProps> = ({
+  reload,
   resourceType,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -87,6 +89,9 @@ const CustomFieldsModal: React.FC<CustomFieldsModalProps> = ({
 
   const handleSubmitComplete = () => {
     setIsSubmitting(false);
+    if (tabIndex === TabTypes.CHOOSE_FROM_LIBRARY && reload) {
+      reload();
+    }
   };
 
   const handleTabsChange = (index: number) => setTabIndex(index);
