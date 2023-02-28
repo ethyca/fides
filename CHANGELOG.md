@@ -23,7 +23,11 @@ The types of changes are:
 * Access and erasure support for Kustomer [#2520](https://github.com/ethyca/fides/pull/2520)
 * Added the `erase_after` field on collections to be able to set the order for erasures [#2619](https://github.com/ethyca/fides/pull/2619)
 * Add a toggle to filter the system classification to only return those with classification data [#2700](https://github.com/ethyca/fides/pull/2700)
-- Added backend role-based permissions [#2671](https://github.com/ethyca/fides/pull/2671)
+* Added backend role-based permissions [#2671](https://github.com/ethyca/fides/pull/2671)
+* Access and erasure for Vend SaaS Connector [#1869](https://github.com/ethyca/fides/issues/1869)
+* Added endpoints for storage and messaging config setup status [#2690](https://github.com/ethyca/fides/pull/2690)
+* Access and erasure for Jira SaaS Connector [#1871](https://github.com/ethyca/fides/issues/1871)
+* Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
 
 ### Changed
 
@@ -41,9 +45,6 @@ The types of changes are:
 * Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
 * Privacy Center
   * Typechecking and validation of the `config.json` will be checked for backwards-compatibility. [#2661](https://github.com/ethyca/fides/pull/2661)
-
-### Developer Experience
-
 * Combined conftest.py files [#2669](https://github.com/ethyca/fides/pull/2669)
 
 ### Fixed
