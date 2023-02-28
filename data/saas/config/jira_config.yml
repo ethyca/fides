@@ -8,12 +8,13 @@ saas_config:
   connector_params:
     - name: domain
     - name: username
-      description: This is an admin email that corresponds with the given API key. 
+      description: This is an admin email that corresponds with the given API key.
     - name: api_key
+      label: API Key
 
   client_config:
     protocol: https
-    host: ethycaconnectors.atlassian.net
+    host: <domain>
     authentication:
       strategy: basic
       configuration:
@@ -25,7 +26,7 @@ saas_config:
     path: /rest/api/3/users/search
 
   endpoints:
-    - name: customers
+    - name: customer
       requests:
         read:
           method: GET
@@ -41,10 +42,10 @@ saas_config:
           path: /rest/api/3/user
           query_params:
             - name: accountId
-              value: '<account_id>'
+              value: <account_id>
           param_values:
             - name: account_id
               references:
-              - dataset: <instance_fides_key>
-                field: customers.accountId
-                direction: from
+                - dataset: <instance_fides_key>
+                  field: customer.accountId
+                  direction: from

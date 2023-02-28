@@ -3,7 +3,7 @@ dataset:
     name: jira
     description: A sample dataset representing the Jira connector for Fides
     collections:
-      - name: customers
+      - name: customer
         fields:
           - name: self
             data_categories: [system.operations]

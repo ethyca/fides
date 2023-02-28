@@ -4,9 +4,8 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from sqlalchemy.orm import Session
-
 from requests.auth import HTTPBasicAuth
+from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.models.connectionconfig import (
@@ -20,8 +19,8 @@ from fides.api.ops.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.lib.cryptography import cryptographic_util
-from tests.ops.test_helpers.vault_client import get_secrets
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
+from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("jira")
 
@@ -37,9 +36,7 @@ def jira_secrets(saas_config):
 
 @pytest.fixture(scope="session")
 def jira_identity_email(saas_config):
-    return (
-        pydash.get(saas_config, "jira.identity_email") or secrets["identity_email"]
-    )
+    return pydash.get(saas_config, "jira.identity_email") or secrets["identity_email"]
 
 
 @pytest.fixture(scope="session")
@@ -74,9 +71,7 @@ def jira_dataset() -> Dict[str, Any]:
 
 
 @pytest.fixture(scope="function")
-def jira_connection_config(
-    db: Session, jira_config, jira_secrets
-) -> Generator:
+def jira_connection_config(db: Session, jira_config, jira_secrets) -> Generator:
     fides_key = jira_config["fides_key"]
     connection_config = ConnectionConfig.create(
         db=db,
@@ -124,25 +119,22 @@ def jira_create_erasure_data(
     jira_connection_config: ConnectionConfig, jira_erasure_identity_email: str
 ) -> None:
 
-    jira_secrets = jira_connection_config.secrets    
+    jira_secrets = jira_connection_config.secrets
     base_url = f"https://{jira_secrets['domain']}"
 
     # user
     body = {
-            "name": "Ethyca Test Erasure",
-            "emailAddress": jira_erasure_identity_email,
+        "name": "Ethyca Test Erasure",
+        "emailAddress": jira_erasure_identity_email,
     }
-    
+
     users_response = requests.post(
-        url=f"{base_url}/rest/api/3/user", 
+        url=f"{base_url}/rest/api/3/user",
         json=body,
-        auth=HTTPBasicAuth(
-            f"{jira_secrets['username']}", f"{jira_secrets['api_key']}"
-        ),
-        )
+        auth=(jira_secrets["username"], jira_secrets["api_key"]),
+    )
     user = users_response.json()
 
     sleep(30)
 
     yield user
-     
