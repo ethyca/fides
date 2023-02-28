@@ -245,7 +245,7 @@ def format_data_subjects(
         )
 
         # calculate and format data subject rights as applicable
-        if data_subject["rights"]:
+        if data_subject.get("rights"):
             data_subject["rights_available"] = calculate_data_subject_rights(
                 data_subject["rights"]
             )

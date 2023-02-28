@@ -234,9 +234,9 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 else:
                     system_custom_field_data[key_string] = value
 
-        third_country_list = ", ".join(system["third_country_transfers"] or [])
-        system_dependencies = ", ".join(system["system_dependencies"] or [])
-        if system["ingress"]:
+        third_country_list = ", ".join(system.get("third_country_transfers") or [])
+        system_dependencies = ", ".join(system.get("system_dependencies") or [])
+        if system.get("ingress"):
             if isinstance(system["ingress"], DataFlow):
                 system["ingress"] = system["ingress"].dict()
             elif isinstance(system["ingress"], list):
@@ -248,9 +248,9 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                         reformatted.append(ingress)
                 system["ingress"] = reformatted
         system_ingress = ", ".join(
-            [ingress["fides_key"] for ingress in system["ingress"] or []]
+            [ingress["fides_key"] for ingress in system.get("ingress") or []]
         )
-        if system["egress"]:
+        if system.get("egress"):
             if isinstance(system["egress"], DataFlow):
                 system["egress"] = system["egress"].dict()
             elif isinstance(system["egress"], list):
@@ -262,11 +262,11 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                         reformatted.append(ingress)
                 system["egress"] = reformatted
         system_egress = ", ".join(
-            [egress["fides_key"] for egress in system["egress"] or []]
+            [egress["fides_key"] for egress in system.get("egress") or []]
         )
         data_protection_impact_assessment = (
             get_formatted_data_protection_impact_assessment(
-                system["data_protection_impact_assessment"]
+                system.get("data_protection_impact_assessment", {})
             )
         )
         if system.get("privacy_declarations"):

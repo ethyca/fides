@@ -55,6 +55,51 @@ def test_sample_system_taxonomy() -> Generator[Dict, None, None]:
 
 
 @pytest.fixture()
+def test_sample_system_taxonomy_with_custom_fields():
+    data = {
+        "system": [
+            System(
+                fides_key="test_system",
+                system_type="test",
+                system_name="test system",
+                system_description="system used for testing exports",
+                privacy_declarations=[
+                    PrivacyDeclaration(
+                        name="privacy_declaration_1",
+                        data_categories=[
+                            "user.contact.email",
+                            "user.contact.name",
+                        ],
+                        data_use="provide.service",
+                        data_qualifier="aggregated.anonymized",
+                        data_subjects=["customer"],
+                        dataset_references=["test_dataset"],
+                    )
+                ],
+            ).dict(),
+        ],
+        "data_subject": [DataSubject(fides_key="customer", name="customer").dict()],
+        "data_use": [
+            DataUse(
+                fides_key="provide.service", name="System", parent_key="provide"
+            ).dict()
+        ],
+        "organization": [
+            Organization(
+                fides_key="default_organization",
+                security_policy="https://www.google.com/",
+            ).dict()
+        ],
+    }
+
+    data["system"][0]["custom_system_field"] = "custom system field"
+    data["data_subject"][0]["custom_data_subject"] = "custom data subject"
+    data["data_use"][0]["custom_data_use"] = "custom data use"
+
+    yield data
+
+
+@pytest.fixture()
 def test_sample_dataset_taxonomy() -> Generator:
     yield [
         Dataset(
@@ -105,6 +150,17 @@ def test_system_records_to_export(
     """
 
     output_list, _ = export.generate_system_records(test_sample_system_taxonomy)
+    assert len(output_list) == 3
+
+
+@pytest.mark.usefixtures("test_config")
+def test_system_records_to_export_with_custom_fields(
+    test_sample_system_taxonomy_with_custom_fields,
+):
+
+    output_list, _ = export.generate_system_records(
+        test_sample_system_taxonomy_with_custom_fields
+    )
     assert len(output_list) == 3
 
 
