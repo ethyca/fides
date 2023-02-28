@@ -8,7 +8,7 @@ db = "fides"
 
 [redis]
 host = "redis"
-password = "testpassword"
+password = "redispassword"
 port = 6379
 db_index = 0
 

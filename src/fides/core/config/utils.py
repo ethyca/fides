@@ -23,7 +23,6 @@ CONFIG_KEY_ALLOWLIST = {
         "user",
         "port",
         "db",
-        "test_db",
         "api_engine_pool_size",
         "api_engine_max_overflow",
         "task_engine_pool_size",
@@ -53,5 +52,9 @@ CONFIG_KEY_ALLOWLIST = {
         "task_retry_delay",
         "task_retry_backoff",
         "require_manual_request_approval",
+        "subject_identity_verification_required",
+    ],
+    "storage": [
+        "active_default_storage_type",
     ],
 }

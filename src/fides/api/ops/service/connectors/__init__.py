@@ -11,6 +11,12 @@ from fides.api.ops.models.connectionconfig import ConnectionType as ConnectionTy
 from fides.api.ops.service.connectors.base_connector import (
     BaseConnector as BaseConnector,
 )
+from fides.api.ops.service.connectors.consent_email_connector import (
+    GenericEmailConsentConnector as EmailConsentConnector,
+)
+from fides.api.ops.service.connectors.consent_email_connector import (
+    SovrnConsentConnector as SovrnConsentConnector,
+)
 from fides.api.ops.service.connectors.email_connector import (
     EmailConnector as EmailConnector,
 )
@@ -73,6 +79,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
     ConnectionType.timescale.value: TimescaleConnector,
     ConnectionType.fides.value: FidesConnector,
+    ConnectionType.sovrn.value: SovrnConsentConnector,
 }
 
 

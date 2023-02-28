@@ -3,7 +3,7 @@ Contains the code that sets up the API.
 """
 from datetime import datetime, timezone
 from logging import DEBUG, WARNING
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Pattern, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -53,6 +53,7 @@ from fides.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
@@ -61,16 +62,18 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 
 # pylint: disable=wildcard-import, unused-wildcard-import
+from fides.api.ops.service.privacy_request.consent_email_batch_service import (
+    initiate_scheduled_batch_consent_email_send,
+)
 from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
 from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_cli
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG
 from fides.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
-CONFIG: FidesConfig = get_config()
 VERSION = fides.__version__
 
 ROUTERS = crud.routers + [  # type: ignore[attr-defined]
@@ -85,13 +88,14 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
 
 
 def create_fides_app(
-    cors_origins: List[str] = CONFIG.security.cors_origins,
+    cors_origins: Union[str, List[str]] = CONFIG.security.cors_origins,
+    cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
     routers: List = ROUTERS,
     app_version: str = VERSION,
     api_prefix: str = API_PREFIX,
     request_rate_limit: str = CONFIG.security.request_rate_limit,
     rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
-    security_env: str = CONFIG.security.env.value,
+    security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
 
@@ -108,10 +112,11 @@ def create_fides_app(
         fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)
     fastapi_app.add_middleware(SlowAPIMiddleware)
 
-    if cors_origins:
+    if cors_origins or cors_origin_regex:
         fastapi_app.add_middleware(
             CORSMiddleware,
             allow_origins=[str(origin) for origin in cors_origins],
+            allow_origin_regex=cors_origin_regex,
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
@@ -215,13 +220,13 @@ async def prepare_and_log_request(
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
-
-    logger.warning(
+    logger.info(f"Starting Fides - v{VERSION}")
+    logger.info(
         "Startup configuration: reloading = {}, dev_mode = {}",
         CONFIG.hot_reloading,
         CONFIG.dev_mode,
     )
-    logger.warning("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
+    logger.info("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
 
     if CONFIG.logging.level == DEBUG:
         logger.warning(
@@ -240,6 +245,18 @@ async def setup_server() -> None:
     except Exception as e:
         logger.error("Error creating parent user: {}", str(e))
         raise FidesError(f"Error creating parent user: {str(e)}")
+
+    logger.info("Loading config settings into database...")
+    try:
+        db = get_api_session()
+        ApplicationConfig.update_config_set(db, CONFIG)
+    except Exception as e:
+        logger.error("Error occurred writing config settings to database: {}", str(e))
+        raise FidesError(
+            f"Error occurred writing config settings to database: {str(e)}"
+        )
+    finally:
+        db.close()
 
     logger.info("Validating SaaS connector templates...")
     try:
@@ -269,6 +286,8 @@ async def setup_server() -> None:
     if not scheduler.running:
         scheduler.start()
 
+    initiate_scheduled_batch_consent_email_send()
+
     logger.debug("Sending startup analytics events...")
     await send_analytics_event(
         AnalyticsEvent(
@@ -296,7 +315,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
     logger.bind(
         method=request.method,
         status_code=response.status_code,
-        handler_time=f"{handler_time.microseconds * 0.001}ms",
+        handler_time=f"{round(handler_time.microseconds * 0.001,3)}ms",
         path=request.url.path,
     ).info("Request received")
     return response

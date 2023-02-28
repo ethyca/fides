@@ -17,6 +17,7 @@ from fides.core.config.helpers import create_config_file
 from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,
+    check_virtualenv,
     print_deploy_success,
     pull_specific_docker_image,
     seed_example_data,
@@ -128,6 +129,7 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
     Starts the sample project via docker compose.
     """
 
+    check_virtualenv()
     check_docker_version()
     config = ctx.obj["CONFIG"]
     echo_green("Docker version is compatible, starting deploy...")

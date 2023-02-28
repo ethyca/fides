@@ -1,7 +1,7 @@
 """Contains the nox sessions for developing docs."""
 import nox
 
-from constants_nox import CI_ARGS, RUN
+from constants_nox import CI_ARGS, RUN_NO_DEPS
 from docker_nox import build
 
 
@@ -14,7 +14,7 @@ def docs_build(session: nox.Session, build_type: str) -> None:
     session.notify("teardown")
     if build_type == "local":
         build(session, "dev")
-    run_shell = (*RUN, "python", "scripts/generate_docs.py", "docs/fides/docs")
+    run_shell = (*RUN_NO_DEPS, "python", "scripts/generate_docs.py", "docs/fides/docs")
     session.run(*run_shell, external=True)
 
 

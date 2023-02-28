@@ -9,9 +9,8 @@ from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.util.oauth_util import verify_oauth_client_cli
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG
 
-CONFIG: FidesConfig = get_config()
 router = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 
 

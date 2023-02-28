@@ -15,12 +15,10 @@ from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.util.collection_util import Row
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.ops.task.graph_task import GraphTask
-
-CONFIG = get_config()
 
 
 async def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
