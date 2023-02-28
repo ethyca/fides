@@ -98,6 +98,7 @@ const Home: NextPage = () => {
     iframe.contentWindow.addEventListener(
       "load",
       () => {
+        // @ts-expect-error
         const doc = iframe.contentWindow.document;
         // @ts-expect-error
         iframe.height = doc.body.scrollHeight;
