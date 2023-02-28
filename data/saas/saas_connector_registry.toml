@@ -207,6 +207,7 @@ config = "data/saas/config/yotpo_loyalty_config.yml"
 dataset = "data/saas/dataset/yotpo_loyalty_dataset.yml"
 icon = "data/saas/icon/yotpo.svg"
 human_readable = "Yotpo Loyalty & Referrals"
+
 [vend]
 config = "data/saas/config/vend_config.yml"
 dataset = "data/saas/dataset/vend_dataset.yml"

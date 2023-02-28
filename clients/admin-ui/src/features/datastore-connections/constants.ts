@@ -51,7 +51,8 @@ export enum SaasType {
   UNIVERSAL_ANALYTICS = "universal_analytics",
   VEND = "vend",
   WUNDERKIND = "wunderkind",
-  YOTPO = "yotpo",
+  YOTPO_REVIEWS = "yotpo_reviews",
+  YOTPO_LOYALTY = "yotpo_loyalty",
   ZENDESK = "zendesk",
 }
 
@@ -115,7 +116,8 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   [SaasType.UNIVERSAL_ANALYTICS, "google_analytics.svg"],
   [SaasType.VEND, "vend.svg"],
   [SaasType.WUNDERKIND, "wunderkind.svg"],
-  [SaasType.YOTPO, "yotpo.svg"],
+  [SaasType.YOTPO_REVIEWS, "yotpo.svg"],
+  [SaasType.YOTPO_LOYALTY, "yotpo.svg"],
   [SaasType.ZENDESK, "zendesk.svg"],
 ]);
 
