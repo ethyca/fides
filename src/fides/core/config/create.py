@@ -3,13 +3,15 @@ This module auto-generates a documented config from the config source.
 """
 import os
 from textwrap import wrap
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 import toml
 from click import echo
 from pydantic import BaseSettings
 
 from fides.core.config import FidesConfig, get_config
+from fides.core.config.utils import replace_config_value
+from fides.cli.utils import request_analytics_consent
 
 CONFIG_DOCS_URL = "https://ethyca.github.io/fides/stable/config/"
 HELP_LINK = f"# For more info, please visit: {CONFIG_DOCS_URL}"
@@ -223,3 +225,27 @@ def create_config_file(config: FidesConfig, fides_directory_location: str = ".")
     echo("\thttps://ethyca.github.io/fides/config/")
 
     return config_path
+
+
+def create_and_update_config_file(
+    config: FidesConfig,
+    fides_directory_location: str = ".",
+    opt_in: bool = False,
+) -> Tuple[FidesConfig, str]:
+    # request explicit consent for analytics collection
+    config = request_analytics_consent(config=config, opt_in=opt_in)
+
+    # create the config file as needed
+    config_path = create_config_file(
+        config=config, fides_directory_location=fides_directory_location
+    )
+
+    # Update the value in the config file if it differs from the default
+    if not config.user.analytics_opt_out:
+        replace_config_value(
+            fides_directory_location=fides_directory_location,
+            key="analytics_opt_out",
+            old_value="true",
+            new_value="false",
+        )
+    return (config, config_path)

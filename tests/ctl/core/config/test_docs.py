@@ -3,7 +3,7 @@ import os
 import pytest
 import toml
 
-from fides.core.config import docs
+from fides.core.config import create
 
 
 @pytest.fixture()
@@ -22,7 +22,7 @@ class TestCreateConfigFile:
     def test_create_config_file(
         self, config, tmp_path, capfd, remove_fides_dir
     ) -> None:
-        config_path = docs.create_config_file(config, tmp_path)
+        config_path = create.create_config_file(config, tmp_path)
 
         fides_directory = tmp_path / ".fides"
         fides_file_path = fides_directory / "fides.toml"
@@ -39,7 +39,7 @@ class TestCreateConfigFile:
         fides_directory.mkdir()
         fides_file_path = fides_directory / "fides.toml"
 
-        config_path = docs.create_config_file(config, tmp_path)
+        config_path = create.create_config_file(config, tmp_path)
 
         out, _ = capfd.readouterr()
 
@@ -57,7 +57,7 @@ class TestCreateConfigFile:
         with open(fides_file_path, "w", encoding="utf-8") as f:
             toml.dump(config.dict(), f)
 
-        config_path = docs.create_config_file(config, tmp_path)
+        config_path = create.create_config_file(config, tmp_path)
 
         out, _ = capfd.readouterr()
 

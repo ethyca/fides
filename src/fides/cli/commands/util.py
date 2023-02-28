@@ -1,7 +1,6 @@
 """Contains all of the Utility-type CLI commands for fides."""
 from datetime import datetime, timezone
 from subprocess import CalledProcessError
-from typing import Tuple
 
 import click
 
@@ -10,13 +9,9 @@ from fides.cli.utils import (
     FIDES_ASCII_ART,
     check_server,
     print_divider,
-    request_analytics_consent,
     send_init_analytics,
     with_analytics,
 )
-from fides.core.config import FidesConfig
-from fides.core.config.docs import create_config_file
-from fides.core.config.utils import replace_config_value
 from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,
@@ -27,35 +22,17 @@ from fides.core.deploy import (
     start_application,
     teardown_application,
 )
+from fides.core.config.create import create_and_update_config_file
 from fides.core.utils import echo_green
-
-
-def create_and_update_config_file(
-    config: FidesConfig, fides_directory_location: str = "."
-) -> Tuple[FidesConfig, str]:
-    # request explicit consent for analytics collection
-    config = request_analytics_consent(config=config)
-
-    # create the config file as needed
-    config_path = create_config_file(
-        config=config, fides_directory_location=fides_directory_location
-    )
-
-    # Update the value in the config file if it differs from the default
-    if not config.user.analytics_opt_out:
-        replace_config_value(
-            fides_directory_location=fides_directory_location,
-            key="analytics_opt_out",
-            old_value="true",
-            new_value="false",
-        )
-    return (config, config_path)
 
 
 @click.command()
 @click.pass_context
 @click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
-def init(ctx: click.Context, fides_directory_location: str) -> None:
+@click.option(
+    "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
+)
+def init(ctx: click.Context, fides_directory_location: str, opt_in: bool) -> None:
     """
     Initializes a fides instance, creating the default directory (`.fides/`) and
     the configuration file (`fides.toml`) if necessary.
@@ -70,7 +47,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     click.echo("Initializing fides...")
 
     config, config_path = create_and_update_config_file(
-        config, fides_directory_location
+        config, fides_directory_location, opt_in=opt_in
     )
 
     print_divider()

@@ -36,6 +36,16 @@ def test_init(test_cli_runner: CliRunner) -> None:
     assert result.exit_code == 0
 
 
+@pytest.mark.integration
+def test_init_opt_in(test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["init", "--opt-in"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
 @pytest.mark.unit
 def test_view_config(test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
