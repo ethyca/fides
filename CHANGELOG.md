@@ -26,6 +26,7 @@ The types of changes are:
 * Access and erasure for Vend SaaS Connector [#1869](https://github.com/ethyca/fides/issues/1869)
 * Added endpoints for storage and messaging config setup status [#2690](https://github.com/ethyca/fides/pull/2690)
 * Access and erasure for Jira SaaS Connector [#1871](https://github.com/ethyca/fides/issues/1871)
+* Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
 
 ### Changed
 
