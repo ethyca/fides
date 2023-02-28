@@ -33,6 +33,11 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
     dispatch(setActiveClassifySystemFidesKey(system.fides_key));
   };
   const [hideEmpty, setHideEmpty] = useState(false);
+  const filteredSystems = hideEmpty
+    ? systems.filter(
+        (system) => classifyInstanceMap.get(system.fides_key)?.has_labels
+      )
+    : systems;
 
   return (
     <Stack>
@@ -50,7 +55,7 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
           </Tr>
         </Thead>
         <Tbody>
-          {systems.map((system) => {
+          {filteredSystems.map((system) => {
             const classifyInstance = classifyInstanceMap.get(system.fides_key);
             return (
               <Tr
@@ -59,7 +64,6 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
                 _hover={{ bg: "gray.50" }}
                 cursor="pointer"
                 onClick={() => handleClick(system)}
-                hidden={hideEmpty && !classifyInstance?.has_labels}
               >
                 <Td>
                   <SystemTableCell system={system} attribute="name" />
