@@ -1961,6 +1961,7 @@ class TestPrivacyRequestsEmailNotifications:
         run_privacy_request_task,
     ):
         upload_mock.return_value = "http://www.data-download-url"
+        download_time_in_days = "5"
         customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -1985,6 +1986,7 @@ class TestPrivacyRequestsEmailNotifications:
                     to_identity=identity,
                     service_type=MessagingServiceType.MAILGUN.value,
                     message_body_params=AccessRequestCompleteBodyParams(
+                        subject_request_download_time_in_days=download_time_in_days,
                         download_links=[upload_mock.return_value]
                     ),
                 ),
