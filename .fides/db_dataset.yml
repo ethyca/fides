@@ -139,29 +139,29 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  - name: client
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-      fields:
-        - name: id
-          data_categories:
-            - system.operations
-          data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        - name: created_at
-          data_categories:
-            - system.operations
-          data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        - name: updated_at
-          data_categories:
-            - system.operations
-          data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        - name: user_id
-          data_categories:
-            - system.operations
-          data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-        - name: system_id
-            data_categories:
-              - system.operations
-            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: systemmanager
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+      - name: id
+        data_categories:
+          - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: created_at
+        data_categories:
+          - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: updated_at
+        data_categories:
+          - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: user_id
+        data_categories:
+          - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      - name: system_id
+        data_categories:
+          - system.operations
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: cls_classification_detail
     description: 'A table to store results of classification runs'
     data_categories: null
