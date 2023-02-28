@@ -17,6 +17,7 @@ from fides.lib.cryptography.cryptographic_util import (
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.db.base_class import Base
@@ -25,6 +26,7 @@ from fides.lib.oauth.jwt import generate_jwe
 
 ADMIN_UI_ROOT = "admin_ui_root"
 DEFAULT_SCOPES: list[str] = []
+DEFAULT_ROLES: list[str] = []
 
 
 class ClientDetail(Base):
@@ -36,7 +38,8 @@ class ClientDetail(Base):
 
     hashed_secret = Column(String, nullable=False)
     salt = Column(String, nullable=False)
-    scopes = Column(ARRAY(String), nullable=False, default="{}")
+    scopes = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
+    roles = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
     fides_key = Column(String, index=True, unique=True, nullable=True)
     user_id = Column(
         String, ForeignKey(FidesUser.id_field_path), nullable=True, unique=True
@@ -53,6 +56,7 @@ class ClientDetail(Base):
         fides_key: str = None,
         user_id: str = None,
         encoding: str = "UTF-8",
+        roles: list[str] | None = None,
     ) -> tuple["ClientDetail", str]:
         """Creates a ClientDetail and returns that along with the unhashed secret
         so it can be returned to the user on create
@@ -63,6 +67,9 @@ class ClientDetail(Base):
 
         if not scopes:
             scopes = DEFAULT_SCOPES
+
+        if not roles:
+            roles = DEFAULT_ROLES
 
         salt = generate_salt()
         hashed_secret = hash_with_salt(
@@ -79,6 +86,7 @@ class ClientDetail(Base):
                 "scopes": scopes,
                 "fides_key": fides_key,
                 "user_id": user_id,
+                "roles": roles,
             },
         )
         return client, secret  # type: ignore
@@ -90,11 +98,12 @@ class ClientDetail(Base):
         *,
         object_id: Any,
         config: FidesConfig,
-        scopes: list[str] | None = None,
+        scopes: list[str] = [],
+        roles: list[str] = [],
     ) -> ClientDetail | None:
         """Fetch a database record via a client_id"""
         if object_id == config.security.oauth_root_client_id:
-            return _get_root_client_detail(config, scopes)
+            return _get_root_client_detail(config, scopes=scopes, roles=roles)
         return super().get(db, object_id=object_id)
 
     def create_access_code_jwe(self, encryption_key: str) -> str:
@@ -104,6 +113,7 @@ class ClientDetail(Base):
             JWE_PAYLOAD_CLIENT_ID: self.id,
             JWE_PAYLOAD_SCOPES: self.scopes,
             JWE_ISSUED_AT: datetime.now().isoformat(),
+            JWE_PAYLOAD_ROLES: self.roles,
         }
         return generate_jwe(json.dumps(payload), encryption_key)
 
@@ -119,22 +129,30 @@ class ClientDetail(Base):
 
 def _get_root_client_detail(
     config: FidesConfig,
-    scopes: list[str] | None,
+    scopes: list[str],
+    roles: list[str],
     encoding: str = "UTF-8",
 ) -> ClientDetail | None:
+    """
+    Return a root ClientDetail
+    """
+
     if not config.security.oauth_root_client_secret_hash:
         raise ValueError("A root client hash is required")
 
-    if scopes:
+    if scopes or roles:
         return ClientDetail(
             id=config.security.oauth_root_client_id,
             hashed_secret=config.security.oauth_root_client_secret_hash[0],
             salt=config.security.oauth_root_client_secret_hash[1].decode(encoding),
             scopes=scopes,
+            roles=roles,
         )
 
     return ClientDetail(
         id=config.security.oauth_root_client_id,
         hashed_secret=config.security.oauth_root_client_secret_hash[0],
         salt=config.security.oauth_root_client_secret_hash[1].decode(encoding),
+        scopes=DEFAULT_SCOPES,
+        roles=DEFAULT_ROLES,
     )

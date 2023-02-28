@@ -27,7 +27,10 @@ class TestPatchApplicationConfig:
                 "send_request_receipt_notification": True,
                 "send_request_review_notification": True,
             },
-            "execution": {"subject_identity_verification_required": True},
+            "execution": {
+                "subject_identity_verification_required": True,
+                "require_manual_request_approval": True,
+            },
         }
 
     def test_patch_application_config_unauthenticated(
@@ -383,7 +386,10 @@ class TestDeleteApplicationConfig:
                 "send_request_receipt_notification": True,
                 "send_request_review_notification": True,
             },
-            "execution": {"subject_identity_verification_required": True},
+            "execution": {
+                "subject_identity_verification_required": True,
+                "require_manual_request_approval": True,
+            },
         }
 
     def test_reset_application_config(

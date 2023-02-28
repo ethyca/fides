@@ -51,6 +51,7 @@ from fides.api.ops.schemas.storage.storage import (
     S3AuthMethod,
     StorageDetails,
     StorageSecrets,
+    StorageSecretsS3,
     StorageType,
 )
 from fides.api.ops.service.connectors.fides.fides_client import FidesClient
@@ -70,6 +71,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.roles import ADMIN, VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -200,6 +202,33 @@ def storage_config_default(db: Session) -> Generator:
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
                 StorageDetails.BUCKET.value: "test_bucket",
+            },
+            "format": ResponseFormat.json,
+        },
+    )
+    yield sc
+
+
+@pytest.fixture(scope="function")
+def storage_config_default_s3_secret_keys(db: Session) -> Generator:
+    """
+    Create and yield a default storage config, as defined by its
+    `is_default` flag being set to `True`. This is an s3 storage config.
+    """
+    sc = StorageConfig.create(
+        db=db,
+        data={
+            "name": default_storage_config_name(StorageType.s3.value),
+            "type": StorageType.s3,
+            "is_default": True,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.BUCKET.value: "test_bucket",
+            },
+            "secrets": {
+                StorageSecrets.AWS_ACCESS_KEY_ID.value: "access_key_id",
+                StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "secret_access_key",
             },
             "format": ResponseFormat.json,
         },
@@ -1599,3 +1628,59 @@ def system(db: Session) -> System:
         },
     )
     return system
+
+
+@pytest.fixture
+def admin_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_admin_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[ADMIN],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": [ADMIN]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def viewer_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
