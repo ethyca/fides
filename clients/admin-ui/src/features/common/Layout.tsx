@@ -1,10 +1,7 @@
-/* istanbul ignore file */
-/* tslint:disable */
-/* eslint-disable */
 import { Box, Flex } from "@fidesui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Header from "~/features/common/Header";
@@ -27,25 +24,31 @@ const Layout = ({
 }) => {
   const features = useFeatures();
   const router = useRouter();
-  const showConfigurationNotificationBanner = () => {
+  const [showNotificationBanner, setShowNotificationBanner] = useState(false);
+  const isValidNotificationRoute =
+    router.pathname === "/privacy-requests" ||
+    router.pathname === "/datastore-connection";
+  const skip = !(
+    features.flags.privacyRequestsConfiguration && isValidNotificationRoute
+  );
+
+  const { data: activeMessagingProvider } = useGetActiveMessagingProviderQuery(
+    undefined,
+    { skip }
+  );
+
+  const { data: activeStorage } = useGetActiveStorageQuery(undefined, {
+    skip,
+  });
+
+  useEffect(() => {
     if (
-      router.pathname === "/privacy-requests" ||
-      router.pathname === "/datastore-connection"
+      (!activeMessagingProvider || !activeStorage) &&
+      isValidNotificationRoute
     ) {
-      const { data: activeMessagingProvider } =
-        useGetActiveMessagingProviderQuery();
-
-      const { data: activeStorage } = useGetActiveStorageQuery();
-
-      if (
-        (!activeStorage || !activeMessagingProvider) &&
-        features.flags.privacyRequestsConfiguration
-      ) {
-        return true;
-      }
+      setShowNotificationBanner(true);
     }
-    return false;
-  };
+  }, [activeMessagingProvider, activeStorage, isValidNotificationRoute]);
 
   return (
     <div data-testid={title}>
@@ -64,7 +67,7 @@ const Layout = ({
               <NavSideBar />
             </Box>
             <Flex direction="column" flex={1} minWidth={0}>
-              {showConfigurationNotificationBanner() ? (
+              {showNotificationBanner ? (
                 <ConfigurationNotificationBanner />
               ) : null}
               {children}

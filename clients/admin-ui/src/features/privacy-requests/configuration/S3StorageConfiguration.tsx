@@ -11,16 +11,20 @@ import {
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 interface StorageDetails {
-  auth_method: string;
-  bucket: string;
-  format: string;
+  storageDetails: {
+    auth_method: string;
+    bucket: string;
+    format: string;
+  };
 }
 interface SecretsStorageData {
   aws_access_key_id: string;
   aws_secret_access_key: string;
 }
 
-const S3StorageConfiguration = ({ auth_method, bucket, format }: any) => {
+const S3StorageConfiguration = ({
+  storageDetails: { auth_method, bucket, format },
+}: StorageDetails) => {
   const [authMethod, setAuthMethod] = useState("");
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
@@ -30,9 +34,11 @@ const S3StorageConfiguration = ({ auth_method, bucket, format }: any) => {
 
   const initialValues = {
     type: "s3",
-    auth_method: auth_method ?? "",
-    bucket: bucket ?? "",
-    format: format ?? "",
+    storageDetails: {
+      auth_method: auth_method ?? "",
+      bucket: bucket ?? "",
+      format: format ?? "",
+    },
   };
 
   const initialSecretValues = {
@@ -46,16 +52,16 @@ const S3StorageConfiguration = ({ auth_method, bucket, format }: any) => {
     const result = await saveStorageDetails({
       type: "s3",
       details: {
-        auth_method: newValues.auth_method,
-        bucket: newValues.bucket,
+        auth_method: newValues.storageDetails.auth_method,
+        bucket: newValues.storageDetails.bucket,
       },
-      format: newValues.format,
+      format: newValues.storageDetails.format,
     });
 
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {
-      setAuthMethod(newValues.auth_method);
+      setAuthMethod(newValues.storageDetails.auth_method);
       successAlert(`S3 storage credentials successfully updated.`);
     }
   };
