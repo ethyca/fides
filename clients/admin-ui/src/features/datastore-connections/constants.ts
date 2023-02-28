@@ -32,6 +32,7 @@ export enum SaasType {
   FULLSTORY = "fullstory",
   GOOGLE_ANALYTICS = "google_analytics",
   HUBSPOT = "hubspot",
+  JIRA = "jira",
   MAILCHIMP = "mailchimp",
   MAILCHIMP_TRANSACTIONAL = "mailchimp_transactional",
   OUTREACH = "outreach",
@@ -47,6 +48,7 @@ export enum SaasType {
   STRIPE = "stripe",
   TWILIO_CONVERSATIONS = "twilio_conversations",
   UNIVERSAL_ANALYTICS = "universal_analytics",
+  VEND = "vend",
   WUNDERKIND = "wunderkind",
   ZENDESK = "zendesk",
 }
@@ -91,6 +93,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   [SaasType.FULLSTORY, "fullstory.svg"],
   [SaasType.GOOGLE_ANALYTICS, "google_analytics.svg"],
   [SaasType.HUBSPOT, "hubspot.svg"],
+  [SaasType.JIRA, "jira.svg"],
   [SaasType.MAILCHIMP, "mailchimp.svg"],
   [SaasType.MAILCHIMP_TRANSACTIONAL, "mandrill.svg"],
   [SaasType.OUTREACH, "outreach.svg"],
@@ -107,6 +110,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   [SaasType.STRIPE, "stripe.svg"],
   [SaasType.TWILIO_CONVERSATIONS, "twilio.svg"],
   [SaasType.UNIVERSAL_ANALYTICS, "google_analytics.svg"],
+  [SaasType.VEND, "vend.svg"],
   [SaasType.WUNDERKIND, "wunderkind.svg"],
   [SaasType.ZENDESK, "zendesk.svg"],
 ]);
