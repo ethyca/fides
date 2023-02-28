@@ -91,6 +91,26 @@ const Home: NextPage = () => {
     );
   }
 
+  useEffect(() => {
+    const iframe = document.getElementById("privacy-policy-iframe");
+    if (!iframe) return;
+    iframe.contentWindow.addEventListener(
+      "load",
+      () => {
+        const doc = iframe.contentWindow.document;
+        iframe.height = doc.body.scrollHeight;
+      },
+      true
+    );
+    iframe.contentWindow.addEventListener(
+      "resize",
+      () => {
+        iframe.height = iframe.contentWindow.document.body.scrollHeight + 40;
+      },
+      true
+    );
+  }, []);
+
   return (
     <div>
       <Head>
@@ -145,6 +165,11 @@ const Home: NextPage = () => {
             {content}
           </Flex>
         </Stack>
+          <iframe
+            id="privacy-policy-iframe"
+            style={{ width: "100%" }}
+            src="https://legal.snackpass.co/snackpass-privacy-policy"
+          />
         <PrivacyRequestModal
           isOpen={isPrivacyModalOpen}
           onClose={onPrivacyModalClose}
