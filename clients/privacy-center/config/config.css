@@ -5,15 +5,15 @@ Override basic theme colors by uncommenting and editing those below
 
 :root:root {
   /* Background color */
-  /* --chakra-colors-gray-50: #F7FAFC; */
+  --chakra-colors-gray-50: #ffffff;
   /* Header & highlight color */
-  /* --chakra-colors-gray-100: #EDF2F7; */
+  --chakra-colors-gray-100: #000000;
   /* Modal text color */
-  /* --chakra-colors-gray-500: #718096; */
+  --chakra-colors-gray-500: #282d32;
   /* Body text color */
-  /* --chakra-colors-gray-600: #4A5568; */
+  --chakra-colors-gray-600: #282d32;
   /* Primary button hover color */
-  /* --chakra-colors-primary-400: #464B83; */
+  --chakra-colors-primary-400: #464b83;
   /* Primary button color */
-  /* --chakra-colors-primary-800: #111439; */
+  --chakra-colors-primary-800: #111439;
 }
