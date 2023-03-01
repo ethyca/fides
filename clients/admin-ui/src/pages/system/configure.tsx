@@ -3,7 +3,7 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
-import ManualSystemFlow from "~/features/system/ManualSystemFlow";
+import EditSystemFlow from "~/features/system/EditSystemFlow";
 
 const ConfigureSystem: NextPage = () => (
   <Layout title="Systems">
@@ -20,7 +20,7 @@ const ConfigureSystem: NextPage = () => (
         </BreadcrumbItem>
       </Breadcrumb>
     </Box>
-    <ManualSystemFlow />
+    <EditSystemFlow />
   </Layout>
 );
 

@@ -21,6 +21,7 @@ RedisValue = Union[bytes, float, int, str]
 _connection = None
 
 ENCODED_BYTES_PREFIX = "quote_encoded_"
+ENCODED_DATE_PREFIX = "date_encoded_"
 ENCODED_MONGO_OBJECT_ID_PREFIX = "encoded_object_id_"
 
 
@@ -31,7 +32,7 @@ class CustomJSONEncoder(json.JSONEncoder):
         if isinstance(o, bytes):
             return f"{ENCODED_BYTES_PREFIX}{quote(o)}"
         if isinstance(o, (datetime, date)):
-            return o.isoformat()
+            return f"{ENCODED_DATE_PREFIX}{o.isoformat()}"
         if isinstance(o, ObjectId):
             return f"{ENCODED_MONGO_OBJECT_ID_PREFIX}{str(o)}"
         if isinstance(o, object):
@@ -47,17 +48,13 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
     for k, v in json_dict.items():
-        try:
-            json_dict[k] = datetime.fromisoformat(v)
-            continue
-        except (TypeError, ValueError):
-            pass
-
         if isinstance(v, str):
             # The mongodb objectids couldn't be directly json encoded so they are converted
             # to strings and prefixed with encoded_object_id in order to find during decodeint.
             if v.startswith(ENCODED_MONGO_OBJECT_ID_PREFIX):
                 json_dict[k] = ObjectId(v[18:])
+            if v.startswith(ENCODED_DATE_PREFIX):
+                json_dict[k] = datetime.fromisoformat(v[13:])
             # The bytes from secrets couldn't be directly json encoded so it is url
             # encode and prefixed with quite_encoded in order to find during decodeint.
             elif v.startswith(ENCODED_BYTES_PREFIX):

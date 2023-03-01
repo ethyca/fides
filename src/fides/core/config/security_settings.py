@@ -9,6 +9,7 @@ from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.lib.oauth.roles import ADMIN
 
 from .fides_settings import FidesSettings
 
@@ -95,6 +96,10 @@ class SecuritySettings(FidesSettings):
     root_user_scopes: List[str] = Field(
         default=SCOPE_REGISTRY,
         description="The list of scopes that are given to the root user.",
+    )
+    root_user_roles: List[str] = Field(
+        default=[ADMIN],
+        description="The list of roles that are given to the root user.",
     )
     root_password: Optional[str] = Field(
         default=None,
