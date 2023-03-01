@@ -41,6 +41,7 @@ The types of changes are:
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 * Redesigned the default/init config file to be auto-documented. Also updates the `fides init` logic and analytics consent logic [#2694](https://github.com/ethyca/fides/pull/2694)
 * Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
+* Update the CLI aesthetics & docstrings [#2703](https://github.com/ethyca/fides/pull/2703)
 
 ### Developer Experience
 
