@@ -34,7 +34,7 @@ const HomeContent: React.FC = () => {
   );
 
   return (
-    <Center px="36px">
+    <Center px="36px" data-testid="home-content">
       <SimpleGrid
         columns={list.length >= COLUMNS ? COLUMNS : list.length}
         spacing="24px"

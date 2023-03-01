@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { STORAGE_ROOT_KEY, USER_PRIVILEGES } from "~/constants";
+import { STORAGE_ROOT_KEY } from "~/constants";
 import { RoleRegistry, ScopeRegistry } from "~/types/api";
 
 Cypress.Commands.add("getByTestId", (selector, options) =>
@@ -28,11 +28,7 @@ Cypress.Commands.add("login", () => {
       );
     });
     cy.intercept("/api/v1/user/*/permission", {
-      body: {
-        id: body.user_data.id,
-        user_id: body.user_data.id,
-        scopes: USER_PRIVILEGES.map((up) => up.scope),
-      },
+      fixture: "user-management/permissions.json",
     }).as("getUserPermission");
   });
 });

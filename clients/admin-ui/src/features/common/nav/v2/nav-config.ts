@@ -124,6 +124,48 @@ export type NavGroup = {
   children: Array<NavGroupChild>;
 };
 
+/**
+ * If a group contains only routes that the user cannot access, return false.
+ * An empty list of scopes is a special case where any scope works.
+ */
+const navGroupInScope = (
+  group: NavConfigGroup,
+  userScopes: ScopeRegistry[]
+) => {
+  if (group.routes.filter((route) => route.scopes.length === 0).length === 0) {
+    const allScopesAcrossRoutes = group.routes.reduce((acc, route) => {
+      const { scopes } = route;
+      return [...acc, ...scopes];
+    }, [] as ScopeRegistry[]);
+    if (
+      allScopesAcrossRoutes.length &&
+      allScopesAcrossRoutes.filter((scope) => userScopes.includes(scope))
+        .length === 0
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
+ * If the user does not have any of the scopes listed in the route's requirements,
+ * return false. An empty list of scopes is a special case where any scope works.
+ */
+const navRouteInScope = (
+  route: NavConfigRoute,
+  userScopes: ScopeRegistry[]
+) => {
+  if (
+    route.scopes.length &&
+    route.scopes.filter((requiredScope) => userScopes.includes(requiredScope))
+      .length === 0
+  ) {
+    return false;
+  }
+  return true;
+};
+
 export const configureNavGroups = ({
   config,
   userScopes,
@@ -150,22 +192,8 @@ export const configureNavGroups = ({
       return;
     }
 
-    // Skip groups that contain only routes the user cannot access
-    // an empty scopes [] is a special case where everything should succeed
-    if (
-      group.routes.filter((route) => route.scopes.length === 0).length === 0
-    ) {
-      const allScopesAcrossRoutes = group.routes.reduce((acc, route) => {
-        const { scopes } = route;
-        return [...acc, ...scopes];
-      }, [] as ScopeRegistry[]);
-      if (
-        allScopesAcrossRoutes.length &&
-        allScopesAcrossRoutes.filter((scope) => userScopes.includes(scope))
-          .length === 0
-      ) {
-        return;
-      }
+    if (!navGroupInScope(group, userScopes)) {
+      return;
     }
 
     const navGroup: NavGroup = {
@@ -188,14 +216,7 @@ export const configureNavGroups = ({
         return;
       }
 
-      // If the user does not have any of the scopes listed in the route's requirements,
-      // exclude it from the group.
-      if (
-        route.scopes.length &&
-        route.scopes.filter((requiredScope) =>
-          userScopes.includes(requiredScope)
-        ).length === 0
-      ) {
+      if (!navRouteInScope(route, userScopes)) {
         return;
       }
 
@@ -241,4 +262,39 @@ export const findActiveNav = ({
     ...groupMatch,
     path: activePath,
   };
+};
+
+/**
+ * Similar to findActiveNav, but using NavConfig instead of a NavGroup
+ * This may not be needed once we remove the progressive nav, since then we can
+ * just check what navs are available (they would all be restricted by scope)
+ */
+export const canAccessRoute = ({
+  path,
+  userScopes,
+}: {
+  path: string;
+  userScopes: ScopeRegistry[];
+}) => {
+  let childMatch: NavConfigRoute | undefined;
+  const groupMatch = NAV_CONFIG.find((group) => {
+    childMatch = group.routes.find((child) =>
+      child.exact ? path === child.path : path.startsWith(child.path)
+    );
+    return childMatch;
+  });
+
+  if (!(groupMatch && childMatch)) {
+    return false;
+  }
+
+  // Special case of empty scopes
+  if (childMatch.scopes.length === 0) {
+    return true;
+  }
+
+  const scopeOverlaps = childMatch.scopes.filter((scope) =>
+    userScopes.includes(scope)
+  );
+  return scopeOverlaps.length > 0;
 };

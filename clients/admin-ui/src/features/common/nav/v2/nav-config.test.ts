@@ -2,7 +2,12 @@ import { describe, expect, it } from "@jest/globals";
 
 import { ScopeRegistry } from "~/types/api";
 
-import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
+import {
+  canAccessRoute,
+  configureNavGroups,
+  findActiveNav,
+  NAV_CONFIG,
+} from "./nav-config";
 
 describe("configureNavGroups", () => {
   it("only includes home and management by default", () => {
@@ -241,6 +246,46 @@ describe("findActiveNav", () => {
 
       expect(activeNav?.title).toEqual(expected.title);
       expect(activeNav?.path).toEqual(expected.path);
+    });
+  });
+
+  describe("canAccessRoute", () => {
+    const accessTestCases = [
+      {
+        path: "/",
+        expected: true,
+        userScopes: [],
+      },
+      {
+        path: "/add-systems",
+        expected: false,
+        userScopes: [],
+      },
+      {
+        path: "/add-systems",
+        expected: true,
+        userScopes: [ScopeRegistry.CLI_OBJECTS_CREATE],
+      },
+      {
+        path: "/privacy-requests",
+        expected: false,
+        userScopes: [ScopeRegistry.CLI_OBJECTS_CREATE],
+      },
+      {
+        path: "/privacy-requests",
+        expected: true,
+        userScopes: [ScopeRegistry.PRIVACY_REQUEST_READ],
+      },
+      {
+        path: "/privacy-requests?queryParam",
+        expected: true,
+        userScopes: [ScopeRegistry.PRIVACY_REQUEST_READ],
+      },
+    ];
+    accessTestCases.forEach(({ path, expected, userScopes }) => {
+      it(`${path} is scope restricted`, () => {
+        expect(canAccessRoute({ path, userScopes })).toBe(expected);
+      });
     });
   });
 });
