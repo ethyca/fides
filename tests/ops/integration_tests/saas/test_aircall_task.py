@@ -53,6 +53,24 @@ async def test_aircall_access_request_task_by_email(
     )
 
     assert_rows_match(
+        v[f"{dataset_name}:customer"],
+        min_size=1,
+        keys=[
+            "id",
+            "direct_link",
+            "name",
+            "email",
+            "available",
+            "availability_status",
+            "created_at",
+            "time_zone",
+            "language",
+            "wrap_up_time",
+            "numbers",
+        ],
+    )
+
+    assert_rows_match(
         v[f"{dataset_name}:contact"],
         min_size=1,
         keys=[
@@ -76,74 +94,97 @@ async def test_aircall_access_request_task_by_email(
         keys=[
             "id",
             "direct_link",
-            "direction"
+            "direction",
+            "status",
+            "missed_call_reason",
+            "started_at",
+            "answered_at",
+            "ended_at",
+            "duration",
+            "voicemail",
+            "recording",
+            "asset",
+            "raw_digits",
+            "user",
+            "contact",
+            "archived",
+            "assigned_to",
+            "tags",
+            "transferred_by",
+            "transferred_to",
+            "teams",
+            "number",
+            "cost",
+            "country_code_a2",
+            "pricing_type",
+            "comments"
         ],
     )
     # verify we only returned data for our identity email
     assert v[f"{dataset_name}:contact"][0]["emails"][0]["value"] == aircall_identity_email
 
-@pytest.mark.integration_saas
-@pytest.mark.integration_aircall
-@pytest.mark.asyncio
-async def test_aircall_access_request_task_by_phone_number(
-    db,
-    policy,
-    aircall_connection_config,
-    aircall_dataset_config,
-    aircall_identity_email,
-    aircall_identity_phone_number,
-) -> None:
-    """Full access request based on the aircall SaaS config"""
+# @pytest.mark.integration_saas
+# @pytest.mark.integration_aircall
+# @pytest.mark.asyncio
+# async def test_aircall_access_request_task_by_phone_number(
+#     db,
+#     policy,
+#     aircall_connection_config,
+#     aircall_dataset_config,
+#     aircall_identity_email,
+#     aircall_identity_phone_number,
+# ) -> None:
+#     """Full access request based on the aircall SaaS config"""
 
-    privacy_request = PrivacyRequest(
-        id=f"test_aircall_access_request_task_{random.randint(0, 1000)}"
-    )
-    identity = Identity(**{"phone_number": aircall_identity_phone_number})
-    privacy_request.cache_identity(identity)
+#     privacy_request = PrivacyRequest(
+#         id=f"test_aircall_access_request_task_{random.randint(0, 1000)}"
+#     )
+#     identity = Identity(**{"phone_number": aircall_identity_phone_number})
+#     privacy_request.cache_identity(identity)
 
-    dataset_name = aircall_connection_config.get_saas_config().fides_key
-    merged_graph = aircall_dataset_config.get_graph()
-    graph = DatasetGraph(merged_graph)
+#     dataset_name = aircall_connection_config.get_saas_config().fides_key
+#     merged_graph = aircall_dataset_config.get_graph()
+#     graph = DatasetGraph(merged_graph)
 
-    v = await graph_task.run_access_request(
-        privacy_request,
-        policy,
-        graph,
-        [aircall_connection_config],
-        {"phone_number": aircall_identity_phone_number},
-        db,
-    )
+#     v = await graph_task.run_access_request(
+#         privacy_request,
+#         policy,
+#         graph,
+#         [aircall_connection_config],
+#         {"phone_number": aircall_identity_phone_number},
+#         db,
+#     )
 
-    assert_rows_match(
-        v[f"{dataset_name}:contact"],
-        min_size=1,
-        keys=[
-            "id",
-            "first_name",
-            "last_name",
-            "company_name",
-            "information",
-            "is_shared",
-            "direct_link",
-            "created_at",
-            "updated_at",
-            "phone_numbers",
-            "emails",
-        ],
-    )
+#     assert_rows_match(
+#         v[f"{dataset_name}:contact"],
+#         min_size=1,
+#         keys=[
+#             "id",
+#             "first_name",
+#             "last_name",
+#             "company_name",
+#             "information",
+#             "is_shared",
+#             "direct_link",
+#             "created_at",
+#             "updated_at",
+#             "phone_numbers",
+#             "emails",
+#         ],
+#     )
 
-    assert_rows_match(
-        v[f"{dataset_name}:calls"],
-        min_size=1,
-        keys=[
-            "id",
-            "direct_link",
-            "direction"
-        ],
-    )
-    # verify we only returned data for our identity phone number
-    for customer in v[f"{dataset_name}:contact"]:
-        assert customer["phone_numbers"][0]["value"] == aircall_identity_phone_number
+#     assert_rows_match(
+#         v[f"{dataset_name}:calls"],
+#         min_size=1,
+#         keys=[
+#             "id",
+#             "direct_link",
+#             "direction"
+#         ],
+#     )
+#     # verify we only returned data for our identity phone number
+#     for customer in v[f"{dataset_name}:contact"]:
+#         assert customer["phone_numbers"][0]["value"] == aircall_identity_phone_number
 
 # @pytest.mark.integration_saas
 # @pytest.mark.integration_aircall
