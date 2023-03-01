@@ -32,6 +32,7 @@ The types of changes are:
   * Add flow for selecting system types when manually creating a system [#2530](https://github.com/ethyca/fides/pull/2530)
   * Updated forms for privacy declarations [#2648](https://github.com/ethyca/fides/pull/2648)
   * Delete flow for privacy declarations [#2664](https://github.com/ethyca/fides/pull/2664)
+  * Add framework to have UI elements respect the user's scopes [#2682](https://github.com/ethyca/fides/pull/2682)
 * Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 * Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
