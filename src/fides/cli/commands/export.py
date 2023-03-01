@@ -31,7 +31,7 @@ def export_system(
     dry: bool,
 ) -> None:
     """
-    Export a system in a datamap format.
+    Export systems in a datamap format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -55,7 +55,7 @@ def export_dataset(
     dry: bool,
 ) -> None:
     """
-    Export a dataset in a datamap format.
+    Export datasets in a datamap format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -79,7 +79,7 @@ def export_organization(
     dry: bool,
 ) -> None:
     """
-    Export an organization in a datamap format.
+    Export organizations in a datamap format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -113,7 +113,7 @@ def export_datamap(
     """
     Export a datamap using the standard Fides template.
 
-    The data map is comprised of an Organization, Systems, and Datasets.
+    The datamap is comprised of an Organization, Systems, and Datasets.
     """
     config = ctx.obj["CONFIG"]
     _export.export_datamap(

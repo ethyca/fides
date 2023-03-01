@@ -27,7 +27,7 @@ from fides.core import system as _system
 @click.pass_context
 def generate(ctx: click.Context) -> None:
     """
-    Generate Fides objects.
+    Programmatically generate Fides objects.
     """
 
 
@@ -35,7 +35,7 @@ def generate(ctx: click.Context) -> None:
 @click.pass_context
 def generate_dataset(ctx: click.Context) -> None:
     """
-    Generate a Fides dataset(s).
+    Generate Fides datasets.
     """
 
 
@@ -73,7 +73,7 @@ def generate_dataset_db(
 @click.pass_context
 def generate_dataset_gcp(ctx: click.Context) -> None:
     """
-    Generate a Fides dataset(s) for Google Cloud Platform.
+    Generate Fides datasets from Google Cloud Platform.
     """
 
 
@@ -94,13 +94,7 @@ def generate_dataset_bigquery(
     include_null: bool,
 ) -> None:
     """
-    Connect to a BigQuery dataset directly via a SQLAlchemy connection and
-    generate a dataset manifest file that consists of every schema/table/field.
-    A path to a google authorization keyfile can be supplied as an option, or a
-    credentials reference to fides config.
-
-    This is a one-time operation that does not track the state of the dataset.
-    It will need to be run again if the dataset schema changes.
+    Generate a dataset object from BigQuery using a SQLAlchemy connection string.
     """
 
     bigquery_config = handle_bigquery_config_options(
@@ -121,7 +115,7 @@ def generate_dataset_bigquery(
 @click.pass_context
 def generate_system(ctx: click.Context) -> None:
     """
-    Generate fides System resources
+    Generate Fides systems from .
     """
 
 
@@ -144,13 +138,8 @@ def generate_system_okta(
     org_key: str,
 ) -> None:
     """
-    Generates systems for your Okta applications. Connect to an Okta admin
-    account by providing an organization url and auth token or a credentials
-    reference to fides config. Auth token and organization url can also
-    be supplied by setting environment variables as defined by the okta python sdk.
-
-    This is a one-time operation that does not track the state of the okta resources.
-    It will need to be run again if the tracked resources change.
+    Generates systems from your Okta applications. Connects via
+    an Okta admin account.
     """
     config = ctx.obj["CONFIG"]
     okta_config = handle_okta_credentials_options(
@@ -193,12 +182,6 @@ def generate_system_aws(
     """
     Connect to an aws account and generate a system manifest file that consists of every
     tracked resource.
-    Credentials can be supplied as options, a credentials
-    reference to fides config, or boto3 environment configuration.
-    Tracked resources: [Redshift, RDS, DynamoDb, S3]
-
-    This is a one-time operation that does not track the state of the aws resources.
-    It will need to be run again if the tracked resources change.
     """
     config = ctx.obj["CONFIG"]
     aws_config = handle_aws_credentials_options(
