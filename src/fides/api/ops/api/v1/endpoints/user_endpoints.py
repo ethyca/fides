@@ -229,7 +229,6 @@ def update_system_manager(
     All systems the user manages are replaced with those in the request body.
     """
     user = validate_user_id(db, user_id)
-    logger.info("Updating systems for which user {} is system manager", user_id)
 
     if len(set(systems)) != len(systems):
         raise HTTPException(
@@ -243,6 +242,8 @@ def update_system_manager(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"Cannot add user {user_id} as system manager. System(s) not found.",
         )
+
+    logger.info("Updating systems for which user {} is system manager", user_id)
 
     # Adding new systems for which the user is not already a manager
     for system in retrieved_systems:
@@ -289,13 +290,18 @@ def get_user_system(
     """
     system: System = get_system_by_fides_key(db, system_key)
     user = validate_user_id(db, user_id)
-    logger.info("Getting systems for which user {} is system manager", user_id)
 
     if not system in user.systems:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"User {user_id} is not a manager of system {system.fides_key}",
         )
+
+    logger.info(
+        "Getting system {} for which user {} is system manager",
+        system.fides_key,
+        user_id,
+    )
 
     return system
 
