@@ -463,7 +463,16 @@ def _twilio_email_dispatcher(
                 MessagingServiceSecrets.TWILIO_API_KEY.value
             ]
         )
-        template_test = _get_template_id_if_exists(sg, EMAIL_TEMPLATE_NAME)
+
+        # the pagination via the client actually doesn't work
+        # in lieu of over-engineering this we can manually call
+        # the next page if/when we hit the limit here
+        response = sg.client.templates.get(
+            query_params={"generations": "dynamic", "page_size": 200}
+        )
+        template_test = _get_template_id_if_exists(
+            json.loads(response.body), EMAIL_TEMPLATE_NAME
+        )
 
         from_email = Email(
             messaging_config.details[MessagingServiceDetails.TWILIO_EMAIL_FROM.value]
@@ -541,20 +550,13 @@ def _twilio_sms_dispatcher(
 
 
 def _get_template_id_if_exists(
-    sg: sendgrid.SendGridAPIClient, template_name: str
+    templates_response: Dict[str, List], template_name: str
 ) -> Optional[str]:
     """
     Checks to see if a SendGrid template exists for Fides, returning the id if so
     """
 
-    # the pagination via the client actually doesn't work
-    # in lieu of over-engineering this we can manually call
-    # the next page if/when we hit the limit here
-    params = {"generations": "dynamic", "page_size": 200}
-    response = sg.client.templates.get(query_params=params)
-    response_body_dict = json.loads(response.body)
-
-    for template in response_body_dict["result"]:
+    for template in templates_response["result"]:
         if template["name"].lower() == template_name.lower():
             return template["id"]
     return None

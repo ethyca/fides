@@ -25,11 +25,38 @@ from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.messaging.message_dispatch_service import (
     _get_dispatcher_from_config_type,
+    _get_template_id_if_exists,
     _twilio_email_dispatcher,
     _twilio_sms_dispatcher,
     dispatch_message,
 )
 from fides.core.config import CONFIG
+
+
+@pytest.fixture
+def test_template_response_body():
+    yield {
+        "result": [
+            {
+                "id": "d-0507bb6d47cb46f38761f541b9cb8507",
+                "name": "fides",
+                "generation": "dynamic",
+                "updated_at": "2023-02-28 00:43:28",
+                "versions": [
+                    {
+                        "id": "2080ab46-ebd2-40fa-b595-01d3e94e2700",
+                        "template_id": "d-0507bb6d47cb46f38761f541b9cb8507",
+                        "active": 1,
+                        "name": "fides",
+                        "generate_plain_content": False,
+                        "subject": "DSR Testing",
+                        "updated_at": "2023-03-01 13:34:23",
+                        "editor": "design",
+                    }
+                ],
+            },
+        ]
+    }
 
 
 @pytest.mark.unit
@@ -428,6 +455,16 @@ class TestTwilioEmailDispatcher:
             )
 
         assert "No twilio email config details or secrets" in str(exc.value)
+
+    def test_template_found(self, test_template_response_body):
+        template_test = _get_template_id_if_exists(test_template_response_body, "fides")
+        assert template_test
+
+    def test_no_template_found(self, test_template_response_body):
+        template_test = _get_template_id_if_exists(
+            test_template_response_body, "not_fides"
+        )
+        assert template_test is None
 
 
 class TestTwilioSmsDispatcher:
