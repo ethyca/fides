@@ -1,6 +1,5 @@
 import os
-from functools import cache
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from hvac import Client
 from loguru import logger
