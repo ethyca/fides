@@ -8,6 +8,7 @@ from toml import dump, load
 
 from fides.core.config import FidesConfig
 from fides.core.config.helpers import update_config_file
+from fides.core.config.utils import replace_config_value
 
 
 @pytest.fixture
@@ -15,6 +16,27 @@ def test_change_config() -> Generator:
     """Create a dictionary to be used as an example config file"""
 
     yield {"cli": {"analytics_id": "initial_id"}}
+
+
+@pytest.mark.unit
+def test_replace_config_value(tmpdir: LocalPath) -> None:
+    config_dir = tmpdir / ".fides"
+    os.mkdir(config_dir)
+    config_path = config_dir / "fides.toml"
+
+    expected_result = "# test_value = true"
+    test_file = "# test_value = false"
+
+    with open(config_path, "w") as config_file:
+        config_file.write(test_file)
+
+    replace_config_value(str(tmpdir), "test_value", "false", "true")
+
+    with open(config_path, "r") as config_file:
+        actual_result = config_file.read()
+
+    print(actual_result)
+    assert actual_result == expected_result
 
 
 @pytest.mark.unit

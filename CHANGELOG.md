@@ -22,9 +22,14 @@ The types of changes are:
 * Add API support for messaging config properties [#2551](https://github.com/ethyca/fides/pull/2551)
 * Access and erasure support for Kustomer [#2520](https://github.com/ethyca/fides/pull/2520)
 * Added the `erase_after` field on collections to be able to set the order for erasures [#2619](https://github.com/ethyca/fides/pull/2619)
+* Add a toggle to filter the system classification to only return those with classification data [#2700](https://github.com/ethyca/fides/pull/2700)
 * Added backend role-based permissions [#2671](https://github.com/ethyca/fides/pull/2671)
 * Access and erasure for Vend SaaS Connector [#1869](https://github.com/ethyca/fides/issues/1869)
 * Added endpoints for storage and messaging config setup status [#2690](https://github.com/ethyca/fides/pull/2690)
+* Access and erasure for Jira SaaS Connector [#1871](https://github.com/ethyca/fides/issues/1871)
+* Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
+* Improve "Upload a new dataset YAML" [#1531](https://github.com/ethyca/fides/pull/2258)
+* Access and erasure support for Yotpo [#2708](https://github.com/ethyca/fides/pull/2708)
 
 ### Changed
 
@@ -33,8 +38,10 @@ The types of changes are:
   * Updated forms for privacy declarations [#2648](https://github.com/ethyca/fides/pull/2648)
   * Delete flow for privacy declarations [#2664](https://github.com/ethyca/fides/pull/2664)
   * Add framework to have UI elements respect the user's scopes [#2682](https://github.com/ethyca/fides/pull/2682)
+  * "Manual Webhook" has been renamed to "Manual Process". [#2717](https://github.com/ethyca/fides/pull/2717)
 * Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
+* Redesigned the default/init config file to be auto-documented. Also updates the `fides init` logic and analytics consent logic [#2694](https://github.com/ethyca/fides/pull/2694)
 * Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
 
 ### Developer Experience
@@ -43,9 +50,6 @@ The types of changes are:
 * Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
 * Privacy Center
   * Typechecking and validation of the `config.json` will be checked for backwards-compatibility. [#2661](https://github.com/ethyca/fides/pull/2661)
-
-### Developer Experience
-
 * Combined conftest.py files [#2669](https://github.com/ethyca/fides/pull/2669)
 
 ### Fixed
@@ -78,15 +82,9 @@ The types of changes are:
 
 ### Added
 
-<<<<<<< HEAD
-- Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
-- Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
-- Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
-=======
 * Added new Wunderkind Consent Saas Connector [#2600](https://github.com/ethyca/fides/pull/2600)
 * Added new Sovrn Email Consent Connector [#2543](https://github.com/ethyca/fides/pull/2543/)
 * Log Fides version at startup [#2566](https://github.com/ethyca/fides/pull/2566)
->>>>>>> main
 
 ### Changed
 
@@ -108,18 +106,10 @@ The types of changes are:
 
 ### Developer Experience
 
-<<<<<<< HEAD
-- Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
-- Set the security environment of the fides dev setup to `prod` instead of `dev` [#2588](https://github.com/ethyca/fides/pull/2588)
-- New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
-- Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
-- Change from `randomint` to `uuid` in mongodb tests to reduce flakiness. [#2591](https://github.com/ethyca/fides/pull/2591)
-=======
 * Added new Cypress E2E smoke tests [#2241](https://github.com/ethyca/fides/pull/2241)
 * New command `nox -s e2e_test` which will spin up the test environment and run true E2E Cypress tests against it [#2417](https://github.com/ethyca/fides/pull/2417)
 * Cypress E2E tests now run in CI and are reported to Cypress Cloud [#2417](https://github.com/ethyca/fides/pull/2417)
 * Change from `randomint` to `uuid` in mongodb tests to reduce flakiness. [#2591](https://github.com/ethyca/fides/pull/2591)
->>>>>>> main
 
 ### Removed
 
@@ -157,12 +147,6 @@ The types of changes are:
 
 - Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
 
-<<<<<<< HEAD
-### Added
-
-- Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
-=======
->>>>>>> main
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
@@ -175,27 +159,6 @@ The types of changes are:
 
 ### Added
 
-<<<<<<< HEAD
-- Added the `env` option to the `security` configuration options to allow for users to completely secure the API endpoints [#2267](https://github.com/ethyca/fides/pull/2267)
-- Unified Fides Resources
-  - Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
-  - Added new datasetconfig.ctl_dataset_id field to unify fides dataset resources [#2046](https://github.com/ethyca/fides/pull/2046)
-- Add new connection config routes that couple them with systems [#2249](https://github.com/ethyca/fides/pull/2249)
-- Add new select/deselect all permissions buttons [#2437](https://github.com/ethyca/fides/pull/2437)
-- Endpoints to allow a user with the `user:password-reset` scope to reset users' passwords. In addition, users no longer require a scope to edit their own passwords. [#2373](https://github.com/ethyca/fides/pull/2373)
-- New form to reset a user's password without knowing an old password [#2390](https://github.com/ethyca/fides/pull/2390)
-- Approve & deny buttons on the "Request details" page. [#2473](https://github.com/ethyca/fides/pull/2473)
-- Consent Propagation
-  - Add the ability to execute Consent Requests via the Privacy Request Execution layer [#2125](https://github.com/ethyca/fides/pull/2125)
-  - Add a Mailchimp Transactional Consent Connector [#2194](https://github.com/ethyca/fides/pull/2194)
-  - Allow defining a list of opt-in and/or opt-out requests in consent connectors [#2315](https://github.com/ethyca/fides/pull/2315)
-  - Add a Google Analytics Consent Connector for GA4 properties [#2302](https://github.com/ethyca/fides/pull/2302)
-  - Pass the GA Cookie from the Privacy Center [#2337](https://github.com/ethyca/fides/pull/2337)
-  - Rename "user_id" to more specific "ga_client_id" [#2356](https://github.com/ethyca/fides/pull/2356)
-  - Patch Google Analytics Consent Connector to delete by client_id [#2355](https://github.com/ethyca/fides/pull/2355)
-  - Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
-  - Adds a new Universal Analytics Connector that works with the UA Tracking Id
-=======
 * Added the `env` option to the `security` configuration options to allow for users to completely secure the API endpoints [#2267](https://github.com/ethyca/fides/pull/2267)
 * Unified Fides Resources
   * Added a dataset dropdown selector when configuring a connector to link an existing dataset to the connector configuration. [#2162](https://github.com/ethyca/fides/pull/2162)
@@ -216,7 +179,6 @@ The types of changes are:
   * Add a "skip_param_values option" to optionally skip when we are missing param values in the body [#2384](https://github.com/ethyca/fides/pull/2384)
   * Adds a new Universal Analytics Connector that works with the UA Tracking Id
 * Adds intake and storage of Global Privacy Control Signal props for Consent [#2599](https://github.com/ethyca/fides/pull/2599)
->>>>>>> main
 
 ### Changed
 
@@ -238,15 +200,9 @@ The types of changes are:
 
 ### Developer Experience
 
-<<<<<<< HEAD
-- `nox -s test_env` has been replaced with `nox -s "fides_env(dev)"`
-- New command `nox -s "fides_env(test)"` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
-- Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
-=======
 * `nox -s test_env` has been replaced with `nox -s "fides_env(dev)"`
 * New command `nox -s "fides_env(test)"` creates a complete test environment with seed data (similar to `fides_env(dev)`) but with the production fides image so the built UI can be accessed at `localhost:8080` [#2399](https://github.com/ethyca/fides/pull/2399)
 * Change from code climate to codecov for coverage reporting [#2402](https://github.com/ethyca/fides/pull/2402)
->>>>>>> main
 
 ### Fixed
 

@@ -6,7 +6,7 @@ ENV_PREFIX = "FIDES__EXECUTION__"
 
 
 class ExecutionSettings(FidesSettings):
-    """Configuration settings for execution."""
+    """Configuration settings for DSR execution."""
 
     masking_strict: bool = Field(
         default=True,
