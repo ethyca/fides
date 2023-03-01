@@ -16,7 +16,7 @@ from fides.core import parse as _parse
 @click.pass_context
 def export(ctx: click.Context) -> None:
     """
-    Export Fides datamaps.
+    Export Fides data maps.
     """
 
 
@@ -31,7 +31,7 @@ def export_system(
     dry: bool,
 ) -> None:
     """
-    Export systems in a datamap format.
+    Export systems in a data map format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -55,7 +55,7 @@ def export_dataset(
     dry: bool,
 ) -> None:
     """
-    Export datasets in a datamap format.
+    Export datasets in a data map format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -79,7 +79,7 @@ def export_organization(
     dry: bool,
 ) -> None:
     """
-    Export organizations in a datamap format.
+    Export organizations in a data map format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
@@ -92,7 +92,7 @@ def export_organization(
     )
 
 
-@export.command(name="datamap")
+@export.command(name="data map")
 @click.pass_context
 @output_directory_option
 @organization_fides_key_option
@@ -103,7 +103,7 @@ def export_organization(
     help="Export using csv format",
 )
 @with_analytics
-def export_datamap(
+def export_data map(
     ctx: click.Context,
     output_dir: str,
     org_key: str,
@@ -111,12 +111,12 @@ def export_datamap(
     csv: bool,
 ) -> None:
     """
-    Export a datamap using the standard Fides template.
+    Export a data map using the standard Fides template.
 
-    The datamap is comprised of an Organization, Systems, and Datasets.
+    The data map is comprised of an Organization, Systems, and Datasets.
     """
     config = ctx.obj["CONFIG"]
-    _export.export_datamap(
+    _export.export_data map(
         url=config.cli.server_url,
         headers=config.user.auth_header,
         organization_fides_key=org_key,

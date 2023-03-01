@@ -62,7 +62,7 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     "-a",
     "--audit",
     is_flag=True,
-    help="Validate that the objects in this evaluation produce a valid datamap.",
+    help="Validate that the objects in this evaluation produce a valid data map.",
 )
 @click.option(
     "--dry",
