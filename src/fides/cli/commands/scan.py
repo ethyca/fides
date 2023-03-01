@@ -28,7 +28,7 @@ from fides.core import system as _system
 @click.pass_context
 def scan(ctx: click.Context) -> None:
     """
-    Scan external resource coverage against fides resources
+    Scan and report on discrepancies between Fides resource files and real infrastructure.
     """
 
 
@@ -36,7 +36,7 @@ def scan(ctx: click.Context) -> None:
 @click.pass_context
 def scan_dataset(ctx: click.Context) -> None:
     """
-    Scan fides Dataset resources
+    Scan and report on Fides Dataset resources.
     """
 
 
@@ -55,15 +55,10 @@ def scan_dataset_db(
     coverage_threshold: int,
 ) -> None:
     """
-    Connect to a database directly via a SQLAlchemy-style connection string and
-    compare the database objects to existing datasets. Connection string can be
-    supplied as an option or a credentials reference to fides config.
+    Scan a database directly using a SQLAlchemy-style connection string.
 
-    If there are fields within the database that aren't listed and categorized
-    within one of the datasets, this counts as lacking coverage.
-
-    Outputs missing fields and has a non-zero exit if coverage is
-    under the stated threshold.
+    _If there are fields within the database that aren't listed and categorized
+    within one of the datasets, this counts as lacking coverage._
     """
     config = ctx.obj["CONFIG"]
     actual_connection_string = handle_database_credentials_options(
@@ -85,7 +80,7 @@ def scan_dataset_db(
 @click.pass_context
 def scan_system(ctx: click.Context) -> None:
     """
-    Scan fides System resources
+    Scan and report on Fides System resources.
     """
 
 
@@ -108,14 +103,7 @@ def scan_system_okta(
     coverage_threshold: int,
 ) -> None:
     """
-    Scans your existing systems and compares them to found Okta applications.
-    Connect to an Okta admin account by providing an organization url and
-    auth token or a credentials reference to fides config. Auth token and
-    organization url can also be supplied by setting environment variables
-    as defined by the okta python sdk.
-
-    Outputs missing resources and has a non-zero exit if coverage is
-    under the stated threshold.
+    Scan an Okta account and compare applications with annotated Fides Systems.
     """
 
     config = ctx.obj["CONFIG"]
@@ -154,13 +142,9 @@ def scan_system_aws(
     coverage_threshold: int,
 ) -> None:
     """
-    Connect to an aws account and compares tracked resources to existing systems.
-    Credentials can be supplied as options, a credentials reference to fides
-    config, or boto3 environment configuration.
-    Tracked resources: [Redshift, RDS, DynamoDb, S3]
+    Scan an AWS account and compare objects with annotated Fides Systems.
 
-    Outputs missing resources and has a non-zero exit if coverage is
-    under the stated threshold.
+    _Scannable resources: [Redshift, RDS, DynamoDb, S3]_
     """
     config = ctx.obj["CONFIG"]
     aws_config = handle_aws_credentials_options(

@@ -76,7 +76,9 @@ def status(ctx: click.Context) -> None:
 @click.option("--port", "-p", type=int, default=8080)
 def webserver(ctx: click.Context, port: int = 8080) -> None:
     """
-    Starts the fides API server using Uvicorn.
+    Start the Fides webserver.
+
+    _Requires Redis and Postgres to be configured and running_
     """
     # This has to be here to avoid a circular dependency
     from fides.api.main import start_webserver
@@ -89,7 +91,7 @@ def webserver(ctx: click.Context, port: int = 8080) -> None:
 @with_analytics
 def worker(ctx: click.Context) -> None:
     """
-    Starts a celery worker.
+    Start a Celery worker for the Fides webserver.
     """
     # This has to be here to avoid a circular dependency
     from fides.api.ops.worker import start_worker

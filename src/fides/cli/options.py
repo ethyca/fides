@@ -9,13 +9,13 @@ from fideslang import model_list
 
 
 def coverage_threshold_option(command: Callable) -> Callable:
-    "Add a flag that assumes yes."
+    """An option decorator that sets a required coverage percentage."""
     command = click.option(
         "--coverage-threshold",
         "-c",
         type=click.IntRange(0, 100),
         default=100,
-        help="A coverage percentage below this will raise in error.",
+        help="Set the coverage percentage for a passing scan.",
     )(command)
     return command
 
@@ -43,7 +43,6 @@ def fides_key_option(command: Callable) -> Callable:
     command = click.option(
         "-k",
         "--fides-key",
-        help="A valid fides_key.",
         default="",
     )(command)
     return command
@@ -60,7 +59,7 @@ def manifests_dir_argument(command: Callable) -> Callable:
 def dry_flag(command: Callable) -> Callable:
     "Add a flag that prevents side-effects."
     command = click.option(
-        "--dry", is_flag=True, help="Do not upload results to the Fides webserver"
+        "--dry", is_flag=True, help="Do not upload results to the Fides webserver."
     )(command)
     return command
 
@@ -71,7 +70,7 @@ def yes_flag(command: Callable) -> Callable:
         "--yes",
         "-y",
         is_flag=True,
-        help="Automatically responds 'yes' to any prompts.",
+        help="Automatically responds `yes` to any prompts.",
     )(command)
     return command
 
@@ -92,7 +91,7 @@ def include_null_flag(command: Callable) -> Callable:
     command = click.option(
         "--include-null",
         is_flag=True,
-        help="Includes null attributes.",
+        help="Include null attributes.",
     )(command)
     return command
 
@@ -104,7 +103,7 @@ def organization_fides_key_option(command: Callable) -> Callable:
         "-k",
         default="default_organization",
         show_default=True,
-        help="The organization_fides_key you wish to export resources for.",
+        help="The `organization_fides_key` of the `Organization` you want to specify.",
     )(command)
     return command
 
@@ -116,7 +115,7 @@ def output_directory_option(command: Callable) -> Callable:
         "-d",
         default=".fides/",
         show_default=True,
-        help="The output directory for the data map to be exported to.",
+        help="The output directory for the datamap to be exported to.",
     )(command)
     return command
 
@@ -126,7 +125,7 @@ def credentials_id_option(command: Callable) -> Callable:
     command = click.option(
         "--credentials-id",
         type=str,
-        help="Use credentials defined within fides config",
+        help="Use credentials keys defined within Fides config.",
     )(command)
     return command
 
@@ -136,7 +135,7 @@ def connection_string_option(command: Callable) -> Callable:
     command = click.option(
         "--connection-string",
         type=str,
-        help="Use connection string option to connect to a database",
+        help="Use the connection string option to connect to a database.",
     )(command)
     return command
 
@@ -146,7 +145,7 @@ def okta_org_url_option(command: Callable) -> Callable:
     command = click.option(
         "--org-url",
         type=str,
-        help="Use org url option to connect to okta. Requires options --org-url and --token",
+        help="Connect to Okta using an 'Org URL'. Requires options '--org-url' and '--token'.",
     )(command)
     return command
 
@@ -156,7 +155,7 @@ def okta_token_option(command: Callable) -> Callable:
     command = click.option(
         "--token",
         type=str,
-        help="Use token option to connect to okta. Requires options --org-url and --token",
+        help="Connect to Okta using a token. _Requires options `--org-url` and `--token`._",
     )(command)
     return command
 
@@ -166,7 +165,7 @@ def aws_access_key_id_option(command: Callable) -> Callable:
     command = click.option(
         "--access_key_id",
         type=str,
-        help="Use access key id option to connect to aws. Requires options --access_key_id, --secret_access_key and --region",
+        help="Connect to AWS using an `Access Key ID`. _Requires options `--access_key_id`, `--secret_access_key` & `--region`._",
     )(command)
     return command
 
@@ -176,7 +175,7 @@ def aws_secret_access_key_option(command: Callable) -> Callable:
     command = click.option(
         "--secret_access_key",
         type=str,
-        help="Use access key option to connect to aws. Requires options --access_key_id, --secret_access_key and --region",
+        help="Connect to AWS using an `Access Key`. _Requires options `--access_key_id`, `--secret_access_key` & `--region`._",
     )(command)
     return command
 
@@ -186,7 +185,7 @@ def aws_region_option(command: Callable) -> Callable:
     command = click.option(
         "--region",
         type=str,
-        help="Use region option to connect to aws. Requires options --access_key_id, --secret_access_key and --region",
+        help="Connec to AWS using a specific `Region`. _Requires options `--access_key_id`, `--secret_access_key` & `--region`._",
     )(command)
     return command
 
