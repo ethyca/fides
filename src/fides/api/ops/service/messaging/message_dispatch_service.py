@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import requests
 import sendgrid
 from loguru import logger
-from sendgrid.helpers.mail import Content, Email, Mail, To
+from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
@@ -45,6 +45,7 @@ from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
 EMAIL_JOIN_STRING = ", "
+EMAIL_TEMPLATE_NAME = "fides"
 
 
 def check_and_dispatch_error_notifications(db: Session) -> None:
@@ -378,7 +379,7 @@ def _mailgun_dispatcher(
     try:
         # Check if a fides template exists
         template_test = requests.get(
-            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/templates/fides",
+            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/templates/{EMAIL_TEMPLATE_NAME}",
             auth=(
                 "api",
                 messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],
@@ -392,7 +393,7 @@ def _mailgun_dispatcher(
         }
 
         if template_test.status_code == 200:
-            data["template"] = "fides"
+            data["template"] = EMAIL_TEMPLATE_NAME
             data["h:X-Mailgun-Variables"] = json.dumps(
                 {"fides_email_body": message.body}
             )
@@ -456,18 +457,27 @@ def _twilio_email_dispatcher(
         )
 
     try:
+
         sg = sendgrid.SendGridAPIClient(
             api_key=messaging_config.secrets[
                 MessagingServiceSecrets.TWILIO_API_KEY.value
             ]
         )
+        template_test = _get_template_id_if_exists(sg, EMAIL_TEMPLATE_NAME)
+
         from_email = Email(
             messaging_config.details[MessagingServiceDetails.TWILIO_EMAIL_FROM.value]
         )
         to_email = To(to.strip())
         subject = message.subject
-        content = Content("text/html", message.body)
-        mail = Mail(from_email, to_email, subject, content)
+        if template_test:
+            personalization = Personalization()
+            personalization.dynamic_template_data = {"fides_email_body": message.body}
+            template_id = TemplateId(template_test)
+            mail = Mail(from_email, to_email, personalization, template_id)
+        else:
+            content = Content("text/html", message.body)
+            mail = Mail(from_email, to_email, subject, content)
         response = sg.client.mail.send.post(request_body=mail.get())
         if response.status_code >= 400:
             logger.error(
@@ -526,3 +536,22 @@ def _twilio_sms_dispatcher(
     except TwilioRestException as e:
         logger.error("Twilio SMS failed to send: {}", Pii(str(e)))
         raise MessageDispatchException(f"Twilio SMS failed to send due to: {Pii(e)}")
+
+
+def _get_template_id_if_exists(
+    sg: sendgrid.SendGridAPIClient, template_name: str
+) -> Optional[str]:
+    """
+    Checks to see if a SendGrid template exists for Fides, returning the id if so
+    """
+
+    params = {"generations": "legacy,dynamic", "page_size": 18}
+
+    response = sg.client.templates.get(query_params=params)
+
+    response_body_dict = json.loads(response.body)
+
+    for template in response_body_dict["result"]:
+        if template["name"].lower() == template_name.lower():
+            return template["id"]
+    return None
