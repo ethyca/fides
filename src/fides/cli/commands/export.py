@@ -103,7 +103,7 @@ def export_organization(
     help="Export using csv format",
 )
 @with_analytics
-def export_data map(
+def export_datamap(
     ctx: click.Context,
     output_dir: str,
     org_key: str,
@@ -116,7 +116,7 @@ def export_data map(
     The data map is comprised of an Organization, Systems, and Datasets.
     """
     config = ctx.obj["CONFIG"]
-    _export.export_data map(
+    _export.export_datamap(
         url=config.cli.server_url,
         headers=config.user.auth_header,
         organization_fides_key=org_key,
