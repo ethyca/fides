@@ -11,6 +11,8 @@ from fides.api.ops.util.system_manager_oauth_util import (
     _get_system_from_fides_key,
     _get_system_from_request_body,
     _has_scope_as_system_manager,
+    get_system_fides_key,
+    get_system_schema,
     verify_oauth_client_for_system_from_request_body,
 )
 from fides.core.config import CONFIG
@@ -311,3 +313,28 @@ class TestGetSystemFromFidesKey:
 
         assert resp.system is None
         assert resp.original_data == "unknown_fides_key"
+
+
+class TestSystemOauthOverrides:
+    async def test_get_system_schema_in_dev_mode(self):
+        """
+        Tests the system override used in dev mode just returns
+        the system schema as-is, bypassing authentication
+        """
+        system_schema = SystemSchema(
+            fides_key="unknown_fides_key",
+            system_type="Service",
+            data_responsibility_title="Processor",
+            name="System Name",
+            privacy_declarations=[],
+        )
+        resp = await get_system_schema(system_schema)
+        assert resp == system_schema
+
+    async def test_get_system_fides_key(self):
+        """
+        Tests the system override used in dev mode just returns
+        the fides_key schema as-is, bypassing authentication
+        """
+        resp = await get_system_fides_key("system_fides_key")
+        assert resp == "system_fides_key"
