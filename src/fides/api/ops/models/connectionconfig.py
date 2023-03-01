@@ -70,7 +70,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.manual.value: "Manual Connector",
             ConnectionType.email.value: "Email Connector",
-            ConnectionType.manual_webhook.value: "Manual Webhook",
+            ConnectionType.manual_webhook.value: "Manual Process",
             ConnectionType.timescale.value: "TimescaleDB",
             ConnectionType.fides.value: "Fides Connector",
             ConnectionType.sovrn.value: "Sovrn",
