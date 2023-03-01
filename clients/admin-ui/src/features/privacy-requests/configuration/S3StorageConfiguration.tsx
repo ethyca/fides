@@ -34,11 +34,9 @@ const S3StorageConfiguration = ({
 
   const initialValues = {
     type: "s3",
-    storageDetails: {
-      auth_method: auth_method ?? "",
-      bucket: bucket ?? "",
-      format: format ?? "",
-    },
+    auth_method: auth_method ?? "",
+    bucket: bucket ?? "",
+    format: format ?? "",
   };
 
   const initialSecretValues = {
@@ -47,21 +45,21 @@ const S3StorageConfiguration = ({
   };
 
   const handleSubmitStorageConfiguration = async (
-    newValues: StorageDetails
+    newValues: StorageDetails["storageDetails"]
   ) => {
     const result = await saveStorageDetails({
       type: "s3",
       details: {
-        auth_method: newValues.storageDetails.auth_method,
-        bucket: newValues.storageDetails.bucket,
+        auth_method: newValues.auth_method,
+        bucket: newValues.bucket,
       },
-      format: newValues.storageDetails.format,
+      format: newValues.format,
     });
 
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {
-      setAuthMethod(newValues.storageDetails.auth_method);
+      setAuthMethod(newValues.auth_method);
       successAlert(`S3 storage credentials successfully updated.`);
     }
   };
@@ -114,11 +112,7 @@ const S3StorageConfiguration = ({
                   ]}
                   isRequired
                 />
-                <CustomTextInput
-                  name="bucket"
-                  label="Bucket"
-                  placeholder="Optional"
-                />
+                <CustomTextInput name="bucket" label="Bucket" isRequired />
               </Stack>
 
               <Button

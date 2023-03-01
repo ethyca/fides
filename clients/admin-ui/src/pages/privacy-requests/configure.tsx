@@ -50,8 +50,7 @@ const ConfigurePrivacyRequests: NextPage = () => (
           </Heading>
           Fides supports email (Mailgun & Twilio) and SMS (Twilio) server
           configurations for sending processing notices to privacy request
-          subjects. You&apos;ll need to set up config variables to send out
-          messages from Fides. Configure your settings here.
+          subjects. Configure your settings here.
         </LinkBox>
       </NextLink>
       <NextLink href="/privacy-requests/configure/storage" passHref>

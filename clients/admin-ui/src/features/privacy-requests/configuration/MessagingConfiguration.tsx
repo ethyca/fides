@@ -131,21 +131,21 @@ const MessagingConfiguration = () => {
               data-testid="option-mailgun"
               mr={5}
             >
-              Mailgun email
+              Mailgun Email
             </Radio>
             <Radio
               key="TWILIO_EMAIL"
               value="TWILIO_EMAIL"
               data-testid="option-twilio-email"
             >
-              Twilio email
+              Twilio Email
             </Radio>
             <Radio
               key="TWILIO_TEXT"
               value="TWILIO_TEXT"
               data-testid="option-twilio-sms"
             >
-              Twilio sms
+              Twilio SMS
             </Radio>
           </Stack>
         </RadioGroup>
