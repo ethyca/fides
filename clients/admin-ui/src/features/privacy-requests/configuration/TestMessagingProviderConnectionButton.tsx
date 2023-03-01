@@ -1,9 +1,10 @@
-import { Button, Divider, Heading, Stack } from "@fidesui/react";
+import { Box, Button, Divider, Heading, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { messagingProviders } from "~/features/privacy-requests/constants";
 import { useCreateTestConnectionMessageMutation } from "~/features/privacy-requests/privacy-requests.slice";
 
 const TestMessagingProviderConnectionButton = (messagingDetails: any) => {
@@ -12,60 +13,94 @@ const TestMessagingProviderConnectionButton = (messagingDetails: any) => {
   const [createTestConnectionMessage] =
     useCreateTestConnectionMessageMutation();
 
-  const initialEmailValue = {
-    email: messagingDetails?.email ?? "",
+  const emailProvider =
+    messagingDetails.messagingDetails.service_type ===
+      messagingProviders.twilio_email ||
+    messagingDetails.messagingDetails.service_type ===
+      messagingProviders.mailgun;
+
+  const SMSProvider =
+    messagingDetails.messagingDetails.service_type ===
+    messagingProviders.twilio_text;
+
+  const initialValues = {
+    email: "",
+    phone: "",
   };
 
-  const handleTestConnection = async () => {
-    const result = await createTestConnectionMessage({
-      // test
-    });
+  const handleTestConnection = async (value: {
+    email: string;
+    phone: string;
+  }) => {
+    if (emailProvider) {
+      const result = await createTestConnectionMessage({
+        email: value.email,
+      });
 
-    if (isErrorResult(result)) {
-      handleError(result.error);
-    } else {
-      successAlert(`Test message successfully sent.`);
+      if (isErrorResult(result)) {
+        handleError(result.error);
+      } else {
+        successAlert(`Test message successfully sent.`);
+      }
     }
-    // I can enter a test identifier (Email or SMS) based on the messaging service type.
-    // I can click on test the configuration to send a test message.
+    if (SMSProvider) {
+      result = await createTestConnectionMessage({
+        phone_number: value.phone,
+      });
+
+      if (isErrorResult(result)) {
+        handleError(result.error);
+      } else {
+        successAlert(`Test message successfully sent.`);
+      }
+    }
   };
 
   return (
     <>
-      <Divider />
-      <Heading fontSize="md" fontWeight="semibold" mt={10}>
+      <Divider mt={10} />
+      <Heading fontSize="md" fontWeight="semibold" mt={10} mb={5}>
         Test connection
       </Heading>
       <Stack>
-        <Formik
-          initialValues={initialEmailValue}
-          onSubmit={handleTestConnection}
-        >
+        <Formik initialValues={initialValues} onSubmit={handleTestConnection}>
           {({ isSubmitting, resetForm }) => (
             <Form>
-              {/* Should this input be phone number if coming from SMS path or is it always an email? */}
-              <CustomTextInput
-                name="email"
-                label="Email"
-                placeholder="youremail@domain.com"
-              />
-              <Button
-                onClick={() => resetForm()}
-                mr={2}
-                size="sm"
-                variant="outline"
-              >
-                Cancel
-              </Button>
-              <Button
-                isDisabled={isSubmitting}
-                type="submit"
-                colorScheme="primary"
-                size="sm"
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
+              {emailProvider ? (
+                <CustomTextInput
+                  name="email"
+                  label="Email"
+                  placeholder="youremail@domain.com"
+                  isRequired
+                />
+              ) : null}
+              {SMSProvider ? (
+                <CustomTextInput
+                  name="phone"
+                  label="Phone"
+                  placeholder="+10000000000"
+                  isRequired
+                />
+              ) : null}
+              <Box mt={10}>
+                <Button
+                  onClick={() => resetForm()}
+                  mr={2}
+                  size="sm"
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  isDisabled={isSubmitting}
+                  type="submit"
+                  colorScheme="primary"
+                  size="sm"
+                  data-testid="save-btn"
+                >
+                  Save
+                </Button>
+              </Box>
             </Form>
           )}
         </Formik>

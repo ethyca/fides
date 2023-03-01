@@ -40,6 +40,7 @@ const TwilioEmailConfiguration = () => {
       successAlert(
         `Twilio email successfully updated. You can now enter your security key.`
       );
+      setConfigurationStep("configureTwilioEmailSecrets");
     }
   };
 
