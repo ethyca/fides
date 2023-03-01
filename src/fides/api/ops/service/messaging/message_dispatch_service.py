@@ -471,10 +471,12 @@ def _twilio_email_dispatcher(
         to_email = To(to.strip())
         subject = message.subject
         if template_test:
+            mail = Mail(from_email=from_email, subject=subject)
+            mail.template_id = TemplateId(template_test)
             personalization = Personalization()
             personalization.dynamic_template_data = {"fides_email_body": message.body}
-            template_id = TemplateId(template_test)
-            mail = Mail(from_email, to_email, personalization, template_id)
+            personalization.add_email(to_email)
+            mail.add_personalization(personalization)
         else:
             content = Content("text/html", message.body)
             mail = Mail(from_email, to_email, subject, content)
@@ -545,7 +547,7 @@ def _get_template_id_if_exists(
     Checks to see if a SendGrid template exists for Fides, returning the id if so
     """
 
-    params = {"generations": "legacy,dynamic", "page_size": 18}
+    params = {"generations": "dynamic", "page_size": 18}
 
     response = sg.client.templates.get(query_params=params)
 
