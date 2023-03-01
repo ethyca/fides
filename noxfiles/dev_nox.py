@@ -9,6 +9,7 @@ from constants_nox import (
     COMPOSE_SERVICE_NAME,
     EXEC,
     EXEC_IT,
+    LOGIN,
     RUN_CYPRESS_TESTS,
     START_APP,
     START_APP_REMOTE_DEBUG,
@@ -170,6 +171,8 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     session.run(
         *START_TEST_ENV, "fides-ui", "fides-pc", external=True, env=test_env_vars
     )
+    session.log("Logging in...")
+    session.run(*LOGIN, external=True)
 
     session.log(
         "Running example setup scripts for DSR Automation tests... (scripts/load_examples.py)"
