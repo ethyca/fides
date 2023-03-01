@@ -13,14 +13,22 @@ You may configure the appearance of this web application at build time by modify
   - Title
   - Description
   - Icon
+  - Policy key
 - Whether consent management is enabled
-- Consent management options:
-  - The Fides Data Use that the user may consent to
-  - Descriptive information for the type of consent
-  - The default consent state (opt in/out)
-  - The cookie keys that will be available to
-    [fides-consent.js](./packages/fides-consent/README.md), which can be used to access a user's
-    consent choices on outside of the Privacy Center. 
+- Consent options:
+  - Personally Identifying Information a user must submit
+  - Title
+  - Description
+  - Icon
+  - Which consent management options are present, and each option's:
+    - The Fides Data Use that the user may consent to
+    - Descriptive information for the type of consent
+    - The default consent state (opt in/out):
+      - This can be a single boolean which will apply when the user has not modified their consent.
+      - Or this can be an object with consent values that depend on the user's consent context, such as whether they are using Global Privacy Control. See [fides-consent](./packages/fides-consent/README.md#consent-context) for details.
+    - The cookie keys that will be available to
+      [fides-consent.js](./packages/fides-consent/README.md), which can be used to access a user's consent choices on outside of the Privacy Center.
+    - Whether the user's consent choice should be propagated to any configured third party services (executable). Note that currently, only one option may be marked `executable` at a time.
 
 You can also add any CSS you'd like to the page by adding it to the `config.css` file inside the `config` directory.
 

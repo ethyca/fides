@@ -38,10 +38,14 @@ const featuresSlice = createSlice({
         value: ValueFor<FlagConfig, FN>;
       }>
     ) {
-      const flagEnv = draftState.flags[payload.flag] ?? {
-        ...FLAG_CONFIG[payload.flag],
-      };
+      const { development, test, production } =
+        draftState.flags[payload.flag] ?? FLAG_CONFIG[payload.flag];
 
+      const flagEnv = {
+        development,
+        test,
+        production,
+      };
       flagEnv[payload.env ?? "development"] = payload.value;
 
       draftState.flags[payload.flag] = flagEnv;

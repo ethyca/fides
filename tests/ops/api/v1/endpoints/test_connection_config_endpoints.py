@@ -33,6 +33,8 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.roles import ADMIN, PRIVACY_REQUEST_MANAGER, VIEWER
+from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
 
@@ -80,6 +82,35 @@ class TestPatchConnections:
         auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
+
+    def test_patch_connections_viewer_role(
+        self, api_client: TestClient, generate_role_header, url, payload
+    ) -> None:
+        auth_header = generate_role_header(roles=[VIEWER])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_patch_connections_privacy_request_manager_role(
+        self, api_client: TestClient, generate_role_header, url, payload
+    ) -> None:
+        auth_header = generate_role_header(roles=[PRIVACY_REQUEST_MANAGER])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_patch_connection_admin_role(
+        self, url, api_client, db: Session, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[ADMIN])
+        payload = [
+            {
+                "name": "My Post-Execution Webhook",
+                "key": "webhook_key",
+                "connection_type": "https",
+                "access": "read",
+            }
+        ]
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
 
     def test_patch_http_connection(
         self, url, api_client, db: Session, generate_auth_header
@@ -307,9 +338,7 @@ class TestPatchConnections:
             == "ensure this value has at most 50 items"
         )
 
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
-    )
+    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
     def test_disable_manual_webhook(
         self,
         mock_queue,
@@ -644,7 +673,7 @@ class TestPatchConnections:
 
         call_args = mocked_prepare_and_log_request._mock_call_args[0]
 
-        assert call_args[0] == "PATCH: http://testserver/api/v1/connection"
+        assert call_args[0] == f"PATCH: http://testserver{url}"
         assert call_args[1] == "testserver"
         assert call_args[2] == 200
         assert isinstance(call_args[3], datetime)
@@ -995,6 +1024,66 @@ class TestGetConnections:
         assert len(ordered) == 3
         assert ordered[0].key == items[0]["key"]
 
+    def test_orphaned_connections_filter(
+        self, db, api_client: TestClient, generate_auth_header, url, system
+    ):
+        configs = []
+        total_orphaned_configs = 10
+        for i in range(0, total_orphaned_configs):
+            data = {
+                "name": str(uuid4()),
+                "key": f"my_postgres_db_{i}_orphaned_read_config",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.read,
+                "secrets": integration_secrets["postgres_example"],
+                "description": "Read-only connection config",
+            }
+
+            configs.append(
+                ConnectionConfig.create(
+                    db=db,
+                    data=data,
+                )
+            )
+
+        total_non_orphaned_configs = 12
+        for i in range(0, total_non_orphaned_configs):
+            data = {
+                "name": str(uuid4()),
+                "key": f"my_postgres_db_{i}_non_orphaned_read_config",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.read,
+                "secrets": integration_secrets["postgres_example"],
+                "description": "Read-only connection config",
+            }
+            data["system_id"] = system.id
+
+            configs.append(
+                ConnectionConfig.create(
+                    db=db,
+                    data=data,
+                )
+            )
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        assert (
+            len(resp.json()["items"])
+            == total_orphaned_configs + total_non_orphaned_configs
+        )
+
+        resp = api_client.get(url + "?orphaned_from_system=True", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == total_orphaned_configs
+
+        resp = api_client.get(url + "?orphaned_from_system=False", headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["items"]) == total_non_orphaned_configs
+
+        for config in configs:
+            config.delete(db)
+
 
 class TestGetConnection:
     @pytest.fixture(scope="function")
@@ -1098,9 +1187,7 @@ class TestDeleteConnection:
             is None
         )
 
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
-    )
+    @mock.patch("fides.api.ops.util.connection_util.queue_privacy_request")
     def test_delete_manual_webhook_connection_config(
         self,
         mock_queue,
@@ -1277,6 +1364,77 @@ class TestPutConnectionConfigSecrets:
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
+
+    def test_put_sovrn_connection_config_secrets(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        sovrn_email_connection_config,
+    ) -> None:
+        """Note: this test does not attempt to send an email, via use of verify query param."""
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{sovrn_email_connection_config.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "processor_address@example.com",
+            "recipient_email_address": "sovrn@example.com",
+            "advanced_settings": {
+                "identity_types": {
+                    "email": False,
+                    "phone_number": False,
+                    "cookie_ids": ["ljt_readerID"],
+                }
+            },
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {sovrn_email_connection_config.key}."
+        )
+        db.refresh(sovrn_email_connection_config)
+
+        assert sovrn_email_connection_config.secrets == {
+            "test_email_address": "processor_address@example.com",
+            "recipient_email_address": "sovrn@example.com",
+            "advanced_settings": {
+                "identity_types": {
+                    "email": False,
+                    "phone_number": False,
+                    "cookie_ids": ["ljt_readerID"],
+                },
+            },
+            "third_party_vendor_name": "Sovrn",
+        }
+        assert sovrn_email_connection_config.last_test_timestamp is None
+        assert sovrn_email_connection_config.last_test_succeeded is None
+
+    def test_put_sovrn_connection_config_secrets_missing(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        sovrn_email_connection_config,
+    ) -> None:
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{sovrn_email_connection_config.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "processor_address@example.com",
+            "recipient_email_address": "sovrn@example.com",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert resp.json()["detail"][0]["loc"] == ["advanced_settings"]
+        assert resp.json()["detail"][0]["msg"] == "field required"
 
     def test_put_connection_config_redshift_secrets(
         self,

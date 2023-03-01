@@ -162,10 +162,13 @@ async def upsert_resources(
                     )
                 )
 
+                excluded = dict(insert_stmt.excluded.items())  # type: ignore[attr-defined]
+                excluded.pop("id", None)  # If updating, don't update the "id"
+
                 result = await async_session.execute(
                     insert_stmt.on_conflict_do_update(
                         index_elements=["fides_key"],
-                        set_=insert_stmt.excluded,
+                        set_=excluded,
                     )
                 )
 

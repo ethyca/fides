@@ -1,5 +1,6 @@
 import { Box, Tooltip } from "@fidesui/react";
 
+import { getTopClassification } from "~/features/dataset/helpers";
 import IdentifiabilityTag from "~/features/taxonomy/IdentifiabilityTag";
 import TaxonomyEntityTag from "~/features/taxonomy/TaxonomyEntityTag";
 import { ClassifyField, DatasetField } from "~/types/api";
@@ -29,20 +30,25 @@ const DatasetFieldCell = ({
   }
 
   if (attribute === "data_categories") {
-    const classifiedCategories = (classifyField?.classifications ?? []).map(
-      ({ label }) => label
-    );
+    const topClassification =
+      classifyField !== undefined
+        ? getTopClassification(classifyField)
+        : undefined;
+
+    const classifiedCategory =
+      topClassification !== undefined ? [topClassification.label] : [];
+
     const assignedCategories = field.data_categories ?? [];
     // Only show the classified categories if none have been directly assigned to the dataset.
     const categories =
-      assignedCategories.length > 0 ? assignedCategories : classifiedCategories;
+      assignedCategories.length > 0 ? assignedCategories : classifiedCategory;
 
     return (
       <Tooltip
         placement="right"
         label={
           // TODO: Related to #724, the design wants this to be clickable but our tooltip doesn't support that.
-          categories === classifiedCategories
+          categories === classifiedCategory
             ? "Fides has generated these data categories for you. You can override them by modifying the field."
             : ""
         }

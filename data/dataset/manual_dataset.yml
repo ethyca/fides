@@ -7,22 +7,22 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               primary_key: true
           - name: authorized_user
             data_categories: [user]
-            fidesops_meta:
+            fides_meta:
               data_type: string
           - name: customer_id
             data_categories: [user]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: postgres_example_test_dataset
                   field: customer.id
                   direction: from
           - name: payment_card_id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               references:
                 - dataset: postgres_example_test_dataset
                   field: payment_card.id
@@ -31,10 +31,10 @@ dataset:
         fields:
           - name: box_id
             data_categories: [user]
-            fidesops_meta:
+            fides_meta:
               primary_key: true
           - name: email
             data_categories: [user.contact.email]
-            fidesops_meta:
+            fides_meta:
               identity: email
               data_type: string

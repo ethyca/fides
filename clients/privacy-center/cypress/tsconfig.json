@@ -4,7 +4,8 @@
     "jsx": "react",
     "target": "es5",
     "lib": ["es5", "dom"],
-    "types": ["cypress", "node"]
+    "types": ["cypress", "cypress-wait-until", "node"]
   },
-  "include": ["**/*.ts", "**/*.tsx", "../cypress.config.ts"]
+  "include": ["**/*.ts", "**/*.tsx", "../cypress.config.ts"],
+  "exclude": []
 }

@@ -38,6 +38,33 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: applicationconfig
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: api_set
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: config_set
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: single_row
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: auditlog
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
@@ -93,6 +120,10 @@ dataset:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: scopes
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: roles
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -430,7 +461,7 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: fidesctl_meta
+    - name: fides_meta
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -587,6 +618,10 @@ dataset:
     - name: scopes
       data_categories:
       - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: roles
+      data_categories:
+        - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: updated_at
       data_categories:
@@ -974,6 +1009,10 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: system_id
+      description: 'The identifier of the system to locate this data within'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: consent
     description: 'A database table used to map consent preference to identities'
     data_categories: []
@@ -993,6 +1032,12 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: opt_in
       data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: has_gpc_flag
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: conflicts_with_gpc
+      data_categories: [ system.operations ]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: provided_identity_id
       data_categories: [system.operations]
@@ -1018,6 +1063,10 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: privacy_request_id
+      description: 'An optional link to the privacy request if one was created to propagate request preferences'
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: datasetconfig
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1025,10 +1074,10 @@ dataset:
     - name: connection_config_id
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: created_at
-      data_categories: [system.operations]
+    - name: ctl_dataset_id
+      data_categories: [ system.operations ]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: dataset
+    - name: created_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: fides_key
@@ -1279,6 +1328,12 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: consent_preferences
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: awaiting_consent_email_send_at
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: privacyrequesterror
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1421,6 +1476,9 @@ dataset:
     - name: id
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: is_default
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: key
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1434,6 +1492,106 @@ dataset:
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: plus_custom_field_value_list
+    description: 'Table used to store allowed custom list values for custom metadata'
+    data_categories: null
+    fields:
+    - name: created_at
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: name
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: description
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: allowed_values
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: plus_custom_field
+    description: 'Table used to store custom fields for resources'
+    data_categories: null
+    fields:
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: custom_field_definition_id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: resource_id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: resource_type
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: value
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: allow_list_id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: description
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: field_definition
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: field_type
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: plus_custom_field_definition
+    description: 'Table used to store custom field definitions for resources'
+    data_categories: null
+    fields:
+    - name: id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: custom_field_definition_id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: allow_list_id
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: description
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: field_definition
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: field_type
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: name
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: resource_type
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: active
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: plus_system_scans

@@ -1,5 +1,4 @@
-import { chunk } from "@chakra-ui/utils";
-import { Box, SimpleGrid } from "@fidesui/react";
+import { Box, chunk, SimpleGrid } from "@fidesui/react";
 import PaginationFooter from "common/PaginationFooter";
 import React from "react";
 import { useDispatch } from "react-redux";

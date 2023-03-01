@@ -1,10 +1,23 @@
-import { Divider, Flex, Heading, HStack, Text } from "@fidesui/react";
-import DaysLeftTag from "common/DaysLeftTag";
-import { PrivacyRequestEntity } from "privacy-requests/types";
+import {
+  Box,
+  ButtonGroup,
+  Divider,
+  Flex,
+  Heading,
+  HStack,
+  Tag,
+  Text,
+} from "@fidesui/react";
 
-import ClipboardButton from "../common/ClipboardButton";
-import RequestStatusBadge from "../common/RequestStatusBadge";
-import RequestType from "../common/RequestType";
+import ClipboardButton from "~/features/common/ClipboardButton";
+import DaysLeftTag from "~/features/common/DaysLeftTag";
+import RequestStatusBadge from "~/features/common/RequestStatusBadge";
+import RequestType from "~/features/common/RequestType";
+import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
+
+import ApproveButton from "./buttons/ApproveButton";
+import DenyButton from "./buttons/DenyButton";
 import ReprocessButton from "./buttons/ReprocessButton";
 
 type RequestDetailsProps = {
@@ -41,7 +54,19 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Request Type:
         </Text>
-        <RequestType rules={policy.rules} />
+        <Box mr={1} mb={4}>
+          <RequestType rules={policy.rules} />
+        </Box>
+      </Flex>
+      <Flex>
+        <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+          Policy key:
+        </Text>
+        <Box>
+          <Tag color="white" bg="primary.400" fontWeight="medium" fontSize="sm">
+            {subjectRequest.policy.key}
+          </Tag>
+        </Box>
       </Flex>
       <Flex alignItems="flex-start">
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
@@ -49,14 +74,29 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Text>
         <HStack spacing="16px">
           <RequestStatusBadge status={status} />
-          {status === "error" && (
-            <ReprocessButton
-              buttonProps={{ size: "xs" }}
-              subjectRequest={subjectRequest}
-            />
-          )}
+          <ButtonGroup isAttached variant="outline" borderRadius="md">
+            {status === "error" && (
+              <ReprocessButton
+                buttonProps={{ size: "xs" }}
+                subjectRequest={subjectRequest}
+              />
+            )}
 
-          <DaysLeftTag daysLeft={subjectRequest.days_left} includeText />
+            {status === "pending" && (
+              <>
+                <ApproveButton subjectRequest={subjectRequest}>
+                  Approve
+                </ApproveButton>
+                <DenyButton subjectRequest={subjectRequest}>Deny</DenyButton>
+              </>
+            )}
+          </ButtonGroup>
+
+          <DaysLeftTag
+            daysLeft={subjectRequest.days_left}
+            includeText
+            status={subjectRequest.status as ApiPrivacyRequestStatus}
+          />
         </HStack>
       </Flex>
     </>

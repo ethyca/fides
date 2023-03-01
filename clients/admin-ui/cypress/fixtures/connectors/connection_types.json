@@ -1,0 +1,73 @@
+{
+  "items": [
+    {
+      "identifier": "bigquery",
+      "type": "database",
+      "human_readable": "BigQuery",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "mariadb",
+      "type": "database",
+      "human_readable": "MariaDB",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "mongodb",
+      "type": "database",
+      "human_readable": "MongoDB",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "mssql",
+      "type": "database",
+      "human_readable": "Microsoft SQL Server",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "mysql",
+      "type": "database",
+      "human_readable": "MySQL",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "postgres",
+      "type": "database",
+      "human_readable": "PostgreSQL",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "redshift",
+      "type": "database",
+      "human_readable": "Amazon Redshift",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "snowflake",
+      "type": "database",
+      "human_readable": "Snowflake",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "timescale",
+      "type": "database",
+      "human_readable": "TimescaleDB",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "manual_webhook",
+      "type": "manual",
+      "human_readable": "Manual Webhook",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "sovrn",
+      "type": "email",
+      "human_readable": "Sovrn",
+      "encoded_icon": null
+    }
+  ],
+  "total": 10,
+  "page": 1,
+  "size": 50
+}

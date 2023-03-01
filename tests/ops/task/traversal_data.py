@@ -1,10 +1,12 @@
 from typing import Optional, Tuple
 
+from fideslang.validation import FidesKey
+
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
-    Dataset,
     FieldAddress,
+    GraphDataset,
     ObjectField,
     ScalarField,
 )
@@ -19,7 +21,6 @@ from fides.api.ops.graph.data_type import (
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.graph.traversal import Traversal
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 str_converter = DataType.string.value
 bool_converter = DataType.boolean.value
@@ -28,8 +29,8 @@ int_converter = DataType.integer.value
 
 
 def integration_db_mongo_graph(
-    db_name: str, connection_key: FidesOpsKey
-) -> Tuple[Dataset, DatasetGraph]:
+    db_name: str, connection_key: FidesKey
+) -> Tuple[GraphDataset, DatasetGraph]:
     dataset = integration_db_dataset(db_name, connection_key)
     for coll in dataset.collections:
         id_field = next(f for f in coll.fields if f.name == "id")
@@ -46,7 +47,7 @@ def integration_db_mongo_graph(
 
 def combined_mongo_postgresql_graph(
     postgres_config: ConnectionConfig, mongo_config: ConnectionConfig
-) -> Tuple[Dataset, Dataset]:
+) -> Tuple[GraphDataset, GraphDataset]:
     postgres_dataset = integration_db_dataset("postgres_example", postgres_config.key)
 
     mongo_addresses = Collection(
@@ -496,7 +497,7 @@ def combined_mongo_postgresql_graph(
         after=set(),
     )
 
-    mongo_dataset = Dataset(
+    mongo_dataset = GraphDataset(
         name="mongo_test",
         collections=[
             mongo_addresses,
@@ -516,8 +517,8 @@ def combined_mongo_postgresql_graph(
     return mongo_dataset, postgres_dataset
 
 
-def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
-    """Manual dataset depending on upstream postgres collection and pointing to a node in a downstream
+def manual_graph_dataset(db_name: str, postgres_db_name) -> GraphDataset:
+    """Manual GraphDataset depending on upstream postgres collection and pointing to a node in a downstream
     postgres collection"""
     filing_cabinet = Collection(
         name="filing_cabinet",
@@ -554,7 +555,7 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
             ),
         ],
     )
-    return Dataset(
+    return GraphDataset(
         name=db_name,
         collections=[filing_cabinet, storage_unit],
         connection_key=db_name,
@@ -563,11 +564,11 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
 
 def postgres_and_manual_nodes(postgres_db_name: str, manual_db_name: str):
     postgres_db = integration_db_dataset(postgres_db_name, postgres_db_name)
-    manual_db = manual_dataset(manual_db_name, postgres_db_name)
+    manual_db = manual_graph_dataset(manual_db_name, postgres_db_name)
     return DatasetGraph(postgres_db, manual_db)
 
 
-def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset:
+def integration_db_dataset(db_name: str, connection_key: FidesKey) -> GraphDataset:
     """A traversal that maps tables in the postgresql test database"""
     customers = Collection(
         name="customer",
@@ -632,7 +633,7 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
             ),
         ],
     )
-    return Dataset(
+    return GraphDataset(
         name=db_name,
         collections=[customers, addresses, orders, payment_cards],
         connection_key=connection_key,
@@ -640,7 +641,7 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
 
 
 def integration_db_graph(
-    db_name: str, connection_key: Optional[FidesOpsKey] = None
+    db_name: str, connection_key: Optional[FidesKey] = None
 ) -> DatasetGraph:
     """A traversal that maps tables in the postgresql test database"""
     if not connection_key:
@@ -682,7 +683,9 @@ def traversal_paired_dependency() -> Traversal:
         grouped_inputs={"project", "organization", "email"},
     )
 
-    mysql = Dataset(name="mysql", collections=[projects, users], connection_key="mysql")
+    mysql = GraphDataset(
+        name="mysql", collections=[projects, users], connection_key="mysql"
+    )
 
     graph = DatasetGraph(mysql)
     identity = {"email": "email@gmail.com"}
@@ -747,11 +750,13 @@ def sample_traversal() -> Traversal:
             ScalarField(name="name"),
         ],
     )
-    mysql = Dataset(
+    mysql = GraphDataset(
         name="mysql", collections=[customers, addresses, users], connection_key="mysql"
     )
-    postgres = Dataset(name="postgres", collections=[orders], connection_key="postgres")
-    mssql = Dataset(name="mssql", collections=[addresses], connection_key="mssql")
+    postgres = GraphDataset(
+        name="postgres", collections=[orders], connection_key="postgres"
+    )
+    mssql = GraphDataset(name="mssql", collections=[addresses], connection_key="mssql")
 
     graph = DatasetGraph(mysql, postgres, mssql)
     identity = {"email": "email@gmail.com", "user_id": "1"}

@@ -10,6 +10,12 @@ dataset = "data/saas/dataset/auth0_dataset.yml"
 icon = "data/saas/icon/auth0.svg"
 human_readable = "Auth0"
 
+[braintree]
+config = "data/saas/config/braintree_config.yml"
+dataset = "data/saas/dataset/braintree_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Braintree"
+
 [datadog]
 config = "data/saas/config/datadog_config.yml"
 dataset = "data/saas/dataset/datadog_dataset.yml"
@@ -21,6 +27,12 @@ config = "data/saas/config/doordash_config.yml"
 dataset = "data/saas/dataset/doordash_dataset.yml"
 icon = "data/saas/icon/doordash.svg"
 human_readable = "Doordash"
+
+[friendbuy_nextgen]
+config = "data/saas/config/friendbuy_nextgen_config.yml"
+dataset = "data/saas/dataset/friendbuy_nextgen_dataset.yml"
+icon = "data/saas/icon/friendbuy.svg"
+human_readable = "Friendbuy Nextgen"
 
 [fullstory]
 config = "data/saas/config/fullstory_config.yml"
@@ -37,8 +49,14 @@ human_readable = "Firebase Auth"
 [friendbuy]
 config = "data/saas/config/friendbuy_config.yml"
 dataset = "data/saas/dataset/friendbuy_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/friendbuy.svg"
 human_readable = "Friendbuy"
+
+[google_analytics]
+config = "data/saas/config/google_analytics_config.yml"
+dataset = "data/saas/dataset/google_analytics_dataset.yml"
+icon = "data/saas/icon/google_analytics.svg"
+human_readable = "Google Analytics 4"
 
 [hubspot]
 config = "data/saas/config/hubspot_config.yml"
@@ -51,6 +69,12 @@ config = "data/saas/config/mailchimp_config.yml"
 dataset = "data/saas/dataset/mailchimp_dataset.yml"
 icon = "data/saas/icon/mailchimp.svg"
 human_readable = "Mailchimp"
+
+[mailchimp_transactional]
+config = "data/saas/config/mailchimp_transactional_config.yml"
+dataset = "data/saas/dataset/mailchimp_transactional_dataset.yml"
+icon = "data/saas/icon/mandrill.svg"
+human_readable = "Mailchimp Transactional (Mandrill)"
 
 [outreach]
 config = "data/saas/config/outreach_config.yml"
@@ -106,6 +130,12 @@ dataset = "data/saas/dataset/twilio_conversations_dataset.yml"
 icon = "data/saas/icon/twilio.svg"
 human_readable = "Twilio Conversations"
 
+[wunderkind]
+config = "data/saas/config/wunderkind_config.yml"
+dataset = "data/saas/dataset/wunderkind_dataset.yml"
+icon = "data/saas/icon/wunderkind.svg"
+human_readable = "Wunderkind"
+
 [zendesk]
 config = "data/saas/config/zendesk_config.yml"
 dataset = "data/saas/dataset/zendesk_dataset.yml"
@@ -139,5 +169,47 @@ human_readable = "Slack Enterprise"
 [recharge]
 config = "data/saas/config/recharge_config.yml"
 dataset = "data/saas/dataset/recharge_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/recharge.svg"
 human_readable = "Recharge"
+
+[jira]
+config = "data/saas/config/jira_config.yml"
+dataset = "data/saas/dataset/jira_dataset.yml"
+icon = "data/saas/icon/jira.svg"
+human_readable = "Jira"
+
+[delighted]
+config = "data/saas/config/delighted_config.yml"
+dataset = "data/saas/dataset/delighted_dataset.yml"
+icon = "data/saas/icon/delighted.svg"
+human_readable = "Delighted"
+
+[universal_analytics]
+config = "data/saas/config/universal_analytics_config.yml"
+dataset = "data/saas/dataset/universal_analytics_dataset.yml"
+icon = "data/saas/icon/google_analytics.svg"
+human_readable = "Universal Analytics"
+
+[kustomer]
+config = "data/saas/config/kustomer_config.yml"
+dataset = "data/saas/dataset/kustomer_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Kustomer"
+
+[yotpo_reviews]
+config = "data/saas/config/yotpo_reviews_config.yml"
+dataset = "data/saas/dataset/yotpo_reviews_dataset.yml"
+icon = "data/saas/icon/yotpo.svg"
+human_readable = "Yotpo Reviews"
+
+[yotpo_loyalty]
+config = "data/saas/config/yotpo_loyalty_config.yml"
+dataset = "data/saas/dataset/yotpo_loyalty_dataset.yml"
+icon = "data/saas/icon/yotpo.svg"
+human_readable = "Yotpo Loyalty & Referrals"
+
+[vend]
+config = "data/saas/config/vend_config.yml"
+dataset = "data/saas/dataset/vend_dataset.yml"
+icon = "data/saas/icon/vend.svg"
+human_readable = "Vend"

@@ -1,6 +1,8 @@
 import { Box, FormControl, FormLabel, Switch, Text } from "@fidesui/react";
 
-import { FLAG_NAMES } from "./features.slice";
+import { camelToSentenceCase } from "~/features/common/utils";
+
+import { FLAG_CONFIG, FLAG_NAMES } from "./features.slice";
 import { FlagValue } from "./types";
 
 export const FlagControl = ({
@@ -27,7 +29,9 @@ export const FlagControl = ({
   return (
     <FormControl display="contents">
       <Box>
-        <FormLabel htmlFor={`flag-${flag}`}>{flag}</FormLabel>
+        <FormLabel htmlFor={`flag-${flag}`} title={flag}>
+          {camelToSentenceCase(flag)}
+        </FormLabel>
       </Box>
 
       <Box>
@@ -42,6 +46,10 @@ export const FlagControl = ({
             })
           }
         />
+      </Box>
+
+      <Box>
+        <Text>{FLAG_CONFIG[flag].description}</Text>
       </Box>
     </FormControl>
   );

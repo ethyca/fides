@@ -1,5 +1,5 @@
 import { Box, Button, ButtonProps, forwardRef, Text } from "@fidesui/react";
-import { useState } from "react";
+import { ForwardedRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -15,11 +15,12 @@ import { PrivacyRequestEntity } from "../types";
 
 type ReprocessButtonProps = {
   buttonProps?: ButtonProps;
+  handleBlur?: (ref: ForwardedRef<any>) => void;
   subjectRequest?: PrivacyRequestEntity;
 };
 
 const ReprocessButton = forwardRef(
-  ({ buttonProps, subjectRequest }: ReprocessButtonProps, ref) => {
+  ({ buttonProps, handleBlur, subjectRequest }: ReprocessButtonProps, ref) => {
     const dispatch = useAppDispatch();
     const [isReprocessing, setIsReprocessing] = useState(false);
     const { errorAlert, successAlert } = useAlert();
@@ -76,6 +77,10 @@ const ReprocessButton = forwardRef(
         successAlert(`Privacy request is now being reprocessed.`);
       }
       setIsReprocessing(false);
+
+      if (handleBlur) {
+        handleBlur(ref);
+      }
     };
 
     return (

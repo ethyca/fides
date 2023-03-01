@@ -19,7 +19,7 @@ import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/700.css";
 
-import { ChakraProvider } from "@chakra-ui/react";
+import { FidesProvider } from "@fidesui/react";
 import { EnhancedStore } from "@reduxjs/toolkit";
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
@@ -28,7 +28,7 @@ import { mount, MountOptions, MountReturn } from "cypress/react";
 import * as React from "react";
 import { Provider } from "react-redux";
 
-import { AppState, makeStore } from "~/app/store";
+import { makeStore, RootState } from "~/app/store";
 import theme from "~/theme";
 
 // Augment the Cypress namespace to include type definitions for
@@ -45,7 +45,7 @@ declare global {
        */
       mount(
         component: React.ReactNode,
-        options?: MountOptions & { reduxStore?: EnhancedStore<AppState> }
+        options?: MountOptions & { reduxStore?: EnhancedStore<RootState> }
       ): Cypress.Chainable<MountReturn>;
     }
   }
@@ -56,7 +56,7 @@ declare global {
  */
 Cypress.Commands.add("mount", (component, options = {}) => {
   const { reduxStore = makeStore(), ...mountOptions } = options;
-  const wrapChakra = React.createElement(ChakraProvider, { theme }, component);
+  const wrapChakra = React.createElement(FidesProvider, { theme }, component);
   const wrapRedux = React.createElement(
     Provider,
     { store: reduxStore },

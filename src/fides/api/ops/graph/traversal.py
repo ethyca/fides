@@ -10,10 +10,10 @@ from fides.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     Collection,
     CollectionAddress,
-    Dataset,
     Field,
     FieldAddress,
     FieldPath,
+    GraphDataset,
 )
 from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
 from fides.api.ops.util.collection_util import Row, append
@@ -168,7 +168,10 @@ def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
     have no actual corresponding collection dataset"""
     ds: Collection = Collection(name=address.collection, fields=[])
     node = Node(
-        Dataset(name=address.dataset, collections=[ds], connection_key="__IGNORE__"), ds
+        GraphDataset(
+            name=address.dataset, collections=[ds], connection_key="__IGNORE__"
+        ),
+        ds,
     )
     return TraversalNode(node)
 

@@ -14,22 +14,26 @@ def get_db_engine(
     *,
     config: FidesConfig | None = None,
     database_uri: str | URL | None = None,
+    pool_size: int = 50,
+    max_overflow: int = 50,
 ) -> Engine:
     """Return a database engine.
 
     If the TESTING environment var is set the database engine returned will be
     connected to the test DB.
     """
-    if config is None and database_uri is None:
+    if not config and not database_uri:
         raise ValueError("Either a config or database_uri is required")
 
-    if database_uri is None and config is not None:
+    if not database_uri and config:
         # Don't override any database_uri explicitly passed in
-        if config.is_test_mode:
+        if config.test_mode:
             database_uri = config.database.sqlalchemy_test_database_uri
         else:
             database_uri = config.database.sqlalchemy_database_uri
-    return create_engine(database_uri, pool_pre_ping=True)
+    return create_engine(
+        database_uri, pool_pre_ping=True, pool_size=pool_size, max_overflow=max_overflow
+    )
 
 
 def get_db_session(

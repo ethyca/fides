@@ -1,20 +1,12 @@
-export type ConsentItem = {
-  fidesDataUseKey: string;
-  name: string;
-  description: string;
-  highlight: boolean;
-  url: string;
-  defaultValue: boolean;
-  consentValue?: boolean;
-  cookieKeys?: string[];
+export type FidesKeyToConsent = {
+  [fidesKey: string]: boolean | undefined;
 };
 
-export type ApiUserConsent = {
-  data_use: string;
-  data_use_description?: string;
-  opt_in: boolean;
-};
-
-export type ApiUserConsents = {
-  consent?: ApiUserConsent[];
-};
+export enum GpcStatus {
+  /** GPC is not relevant for the consent option. */
+  NONE = "none",
+  /** GPC is enabled and consent matches the configured default. */
+  APPLIED = "applied",
+  /** GPC is enabled but consent has been set to override the configured default. */
+  OVERRIDDEN = "overridden",
+}

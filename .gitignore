@@ -2,6 +2,8 @@
 
 # frontend
 ui-build/
+coverage/
+cc-test-reporter
 
 ## generic files to ignore
 *~
@@ -23,8 +25,7 @@ tmp/*
 # docs
 docs/fides/site/
 docs/fides/docs/api/openapi.json
-docs/fidesops/docs/api/openapi.json
-docs/fidesops/site
+docs/fides/docs/config/fides.toml
 
 # python specific
 *.pyc

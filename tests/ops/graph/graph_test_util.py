@@ -1,6 +1,7 @@
 import random
 from typing import Iterable
 
+from fideslang.validation import FidesKey
 from sqlalchemy.engine import Engine
 
 from fides.api.ops.graph.config import *
@@ -17,15 +18,14 @@ from fides.api.ops.task.graph_task import GraphTask
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.util.collection_util import Row
 from fides.lib.db.base_class import FidesBase
-
-from ..fixtures.application_fixtures import faker
+from tests.fixtures.application_fixtures import faker
 
 
 class MockResources(TaskResources):
     def __init__(self, request: PrivacyRequest):
         super().__init__(request, Policy(), [])
 
-    def get_connector(self, key: FidesOpsKey) -> Any:
+    def get_connector(self, key: FidesKey) -> Any:
         return MockSqlConnector()
 
 
@@ -123,7 +123,7 @@ def generate_field_list(num_fields: int) -> List[ScalarField]:
 
 def generate_node(dr_name: str, ds_name: str, *field_names: str) -> Node:
     ds = Collection(name=ds_name, fields=[ScalarField(name=s) for s in field_names])
-    dr = Dataset(
+    dr = GraphDataset(
         name=dr_name,
         collections=[ds],
         connection_key=f"mock_connection_config_key_{dr_name}",
@@ -131,9 +131,9 @@ def generate_node(dr_name: str, ds_name: str, *field_names: str) -> Node:
     return Node(dr, ds)
 
 
-def field(dataresources: List[Dataset], *address: str) -> ScalarField:
+def field(dataresources: List[GraphDataset], *address: str) -> ScalarField:
     """Test util to access a particular field - can access a nested field one level deep"""
-    dr: Dataset = next(dr for dr in dataresources if dr.name == address[0])
+    dr: GraphDataset = next(dr for dr in dataresources if dr.name == address[0])
     ds: Collection = next(ds for ds in dr.collections if ds.name == address[1])
 
     try:
@@ -148,12 +148,16 @@ def field(dataresources: List[Dataset], *address: str) -> ScalarField:
     return df
 
 
-def collection(dataresources: List[Dataset], address: CollectionAddress) -> Collection:
-    dr: Dataset = next(dr for dr in dataresources if dr.name == address.dataset)
+def collection(
+    dataresources: List[GraphDataset], address: CollectionAddress
+) -> Collection:
+    dr: GraphDataset = next(dr for dr in dataresources if dr.name == address.dataset)
     return next(ds for ds in dr.collections if ds.name == address.collection)
 
 
-def dataresource(dataresources: List[Dataset], address: DatasetAddress) -> Dataset:
+def dataresource(
+    dataresources: List[GraphDataset], address: DatasetAddress
+) -> GraphDataset:
     return next(dr for dr in dataresources if dr.name == address)
 
 
@@ -168,7 +172,7 @@ def outgoing_edges(traversal: Traversal, node_address: CollectionAddress) -> Set
 
 
 def generate_traversal(
-    seed: Dict[str, Any], *dataresources: Dataset
+    seed: Dict[str, Any], *dataresources: GraphDataset
 ) -> Tuple[Dict[str, Any], List[CollectionAddress]]:
     graph = DatasetGraph(*dataresources)
     traversal = Traversal(graph, seed)
@@ -195,9 +199,9 @@ def generate_traversal_order(
 
 
 # --------------- generated graphs -------------
-def generate_graph_resources(num_nodes: int) -> List[Dataset]:
+def generate_graph_resources(num_nodes: int) -> List[GraphDataset]:
     return [
-        Dataset(
+        GraphDataset(
             name=f"dr_{i}",
             collections=[Collection(name=f"ds_{i}", fields=generate_field_list(3))],
             connection_key=f"mock_connection_config_key_{i}",
@@ -208,9 +212,9 @@ def generate_graph_resources(num_nodes: int) -> List[Dataset]:
 
 def generate_binary_tree_resources(
     num_levels: int, branching_factor: int = 2
-) -> List[Dataset]:
+) -> List[GraphDataset]:
     """Generate a multi-level binary tree for testing"""
-    root = Dataset(
+    root = GraphDataset(
         name=f"root",
         collections=[Collection(name=f"ds", fields=generate_field_list(3))],
         connection_key=f"mock_connection_config_key_root",
@@ -225,7 +229,7 @@ def generate_binary_tree_resources(
         next_dr_name, next_ds_name = next_node.name, next_node.collections[0].name
         for j in range(branching_factor):
             next_child_key = (f"{next_dr_name}.{j}", f"{next_ds_name}.{j}", "f1")
-            next_child = Dataset(
+            next_child = GraphDataset(
                 name=next_child_key[0],
                 collections=[
                     Collection(name=next_child_key[1], fields=generate_field_list(3))
@@ -242,10 +246,10 @@ def generate_binary_tree_resources(
     return resources
 
 
-def generate_fully_connected_resources(size: int) -> List[Dataset]:
+def generate_fully_connected_resources(size: int) -> List[GraphDataset]:
     """Generate a fully connected graph of resources"""
 
-    def connect(r1: Dataset, r2: Dataset) -> None:
+    def connect(r1: GraphDataset, r2: GraphDataset) -> None:
         field(
             [r1], r1.name, r1.collections[0].name, random.choice(["f1", "f2", "f3"])
         ).references.append(

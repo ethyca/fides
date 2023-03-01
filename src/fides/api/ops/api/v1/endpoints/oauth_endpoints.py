@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
@@ -27,6 +27,7 @@ from fides.api.ops.api.v1.urn_registry import (
     CLIENT_BY_ID,
     CLIENT_SCOPE,
     OAUTH_CALLBACK,
+    ROLE,
     SCOPE,
     TOKEN,
     V1_URL_PREFIX,
@@ -47,17 +48,15 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_authori
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.lib.oauth.schemas.oauth import (
     AccessToken,
     OAuth2ClientCredentialsRequestForm,
 )
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
-
-
-CONFIG = get_config()
 
 
 @router.post(
@@ -83,9 +82,13 @@ async def acquire_access_token(
     else:
         raise AuthenticationFailure(detail="Authentication Failure")
 
-    # scopes param is only used if client is root client, otherwise we use the client's associated scopes
+    # scopes/roles params are only used if client is root client, otherwise we use the client's associated scopes and/or roles
     client_detail = ClientDetail.get(
-        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
+        db,
+        object_id=client_id,
+        config=CONFIG,
+        scopes=CONFIG.security.root_user_scopes,
+        roles=CONFIG.security.root_user_roles,
     )
 
     if client_detail is None:
@@ -112,7 +115,7 @@ def create_client(
     db: Session = Depends(get_db),
     scopes: List[str] = Body([]),
 ) -> ClientCreatedResponse:
-    """Creates a new client and returns the credentials"""
+    """Creates a new client and returns the credentials. Only direct scopes can be added to the client via this endpoint."""
     logger.info("Creating new client")
     if not all(scope in SCOPE_REGISTRY for scope in scopes):
         raise HTTPException(
@@ -148,13 +151,15 @@ def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     response_model=List[str],
 )
 def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str]:
-    """Returns a list of the scopes associated with the client. Returns an empty list if client does not exist."""
+    """Returns a list of the directly-assigned scopes associated with the client.
+    Does not return roles associated with the client.
+    Returns an empty list if client does not exist."""
     client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
     if not client:
         return []
 
     logger.info("Getting client scopes")
-    return client.scopes
+    return client.scopes or []
 
 
 @router.put(
@@ -167,7 +172,9 @@ def set_client_scopes(
     scopes: List[str],
     db: Session = Depends(get_db),
 ) -> None:
-    """Overwrites the client's scopes with those provided. Does nothing if the client doesn't exist"""
+    """Overwrites the client's directly-assigned scopes with those provided.
+    Roles cannot be edited via this endpoint.
+    Does nothing if the client doesn't exist"""
     client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
     if not client:
         return
@@ -191,6 +198,16 @@ def read_scopes() -> List[str]:
     """Returns a list of all scopes available for assignment in the system"""
     logger.info("Getting all available scopes")
     return SCOPE_REGISTRY
+
+
+@router.get(
+    ROLE,
+    dependencies=[Security(verify_oauth_client, scopes=[SCOPE_READ])],
+)
+def read_roles_to_scopes_mapping() -> Dict[str, List]:
+    """Returns a list of all roles and associated scopes available for assignment in the system"""
+    logger.info("Getting all available roles")
+    return ROLES_TO_SCOPES_MAPPING
 
 
 @router.get(OAUTH_CALLBACK, response_model=None)

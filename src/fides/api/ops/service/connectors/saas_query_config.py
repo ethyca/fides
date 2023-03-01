@@ -5,6 +5,7 @@ from itertools import product
 from typing import Any, Dict, List, Literal, Optional, TypeVar
 
 import pydash
+from fideslang.models import FidesDatasetReference
 from loguru import logger
 
 from fides.api.ops.common_exceptions import FidesopsException
@@ -12,7 +13,6 @@ from fides.api.ops.graph.config import ScalarField
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.query_config import QueryConfig
@@ -23,11 +23,10 @@ from fides.api.ops.util.saas_util import (
     FIDESOPS_GROUPED_INPUTS,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
+    get_identity,
     unflatten_dict,
 )
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 T = TypeVar("T")
 
@@ -85,7 +84,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             if any(
                 param_value
                 for param_value in request.param_values or []
-                if param_value.identity == self._get_identity()
+                if param_value.identity == get_identity(self.privacy_request)
             )
         ]
 
@@ -186,32 +185,24 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 input_data, filtered_secrets, grouped_inputs
             )
             for param_value_map in param_value_maps:
-                request_params.append(
-                    self.generate_query(
-                        {name: [value] for name, value in param_value_map.items()},
-                        policy,
+                try:
+                    request_params.append(
+                        self.generate_query(
+                            {name: [value] for name, value in param_value_map.items()},
+                            policy,
+                        )
                     )
-                )
+                except ValueError as exc:
+                    if read_request.skip_missing_param_values:
+                        logger.info(
+                            "Skipping optional read request on node {}: {}",
+                            self.node.address.value,
+                            exc,
+                        )
+                        continue
+                    raise exc
 
         return request_params
-
-    def _get_identity(self) -> Optional[str]:
-        """
-        Returns a single identity or raises an exception if more than one identity is defined
-        """
-
-        identities: List[str] = []
-        if self.privacy_request:
-            identity_data: Dict[
-                str, Any
-            ] = self.privacy_request.get_cached_identity_data()
-            # filters out keys where associated value is None or empty str
-            identities = list({k for k, v in identity_data.items() if v})
-            if len(identities) > 1:
-                raise FidesopsException(
-                    "Only one identity can be specified for SaaS connector traversal"
-                )
-        return identities[0] if identities else None
 
     def _filtered_secrets(self, current_request: SaaSRequest) -> Dict[str, Any]:
         """Return a filtered map of secrets used by the request"""
@@ -331,6 +322,24 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return self.generate_update_request_params(param_values, current_request)
 
+    def generate_consent_stmt(
+        self,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        consent_request: SaaSRequest,
+    ) -> SaaSRequestParams:
+        """
+        Prepares SaaSRequestParams with the info needed to make an opt-out or opt-in http request.
+        Shares a lot of code with generate_update_stmt, except there is no row data being operated on,
+        so our row is an empty dict.
+        """
+
+        param_values: Dict[str, Any] = self.generate_update_param_values(
+            {}, policy, privacy_request, consent_request
+        )
+
+        return self.generate_update_request_params(param_values, consent_request)
+
     def generate_update_param_values(  # pylint: disable=R0914
         self,
         row: Row,
@@ -363,10 +372,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 # however, `references` in update requests can, currently, only reference
                 # the same collection the same collection, and so it is highly unlikely
                 # that this would be an external reference at this point.
-                reference: FidesopsDatasetReference = (
-                    SaaSConfig.resolve_param_reference(
-                        param_value.references[0], self.secrets
-                    )
+                reference: FidesDatasetReference = SaaSConfig.resolve_param_reference(
+                    param_value.references[0], self.secrets
                 )
                 param_values[param_value.name] = pydash.get(
                     collection_values, reference.field
@@ -408,10 +415,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return param_values
 
     def generate_update_request_params(
-        self, param_values: dict[str, Any], masking_request: SaaSRequest
+        self, param_values: dict[str, Any], update_request: SaaSRequest
     ) -> SaaSRequestParams:
         """
-        A utility that, based on the provided param values and masking request,
+        A utility that, based on the provided param values and update request,
         generates the `SaaSRequestParams` that are to be used in request execution
         """
 
@@ -425,11 +432,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, masking_request, param_values  # type: ignore
+            self.action, self.collection_name, update_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for {}", masking_request.path)
-
+        logger.info("Populated request params for {}", update_request.path)
         return saas_request_params
 
     def all_value_map(self, row: Row) -> Dict[str, Any]:

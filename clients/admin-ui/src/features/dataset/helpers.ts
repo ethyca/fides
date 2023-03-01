@@ -1,7 +1,9 @@
 import produce from "immer";
 
 import {
+  Classification,
   ClassifyDataset,
+  ClassifyField,
   Dataset,
   DatasetCollection,
   DatasetField,
@@ -65,13 +67,26 @@ export const getUpdatedDatasetFromField = (
   );
 };
 
+export const getTopClassification = (
+  classifyField: ClassifyField
+): Classification =>
+  classifyField.classifications.reduce((maxClassification, next) => {
+    if (
+      (maxClassification.aggregated_score ?? 0) < (next.aggregated_score ?? 0)
+    ) {
+      return next;
+    }
+    return maxClassification;
+  });
+
 /**
  * Returns a new dataset object with the top-scoring classification results filling in data
  * categories that were left blank on the dataset. Uses immer to efficiently modify a draft object.
  */
 export const getUpdatedDatasetFromClassifyDataset = (
   dataset: Dataset,
-  classifyDataset: ClassifyDataset
+  classifyDataset: ClassifyDataset,
+  activeCollection: string | undefined
 ): Dataset =>
   produce(dataset, (draftDataset) => {
     const classifyCollectionMap = new Map(
@@ -82,6 +97,11 @@ export const getUpdatedDatasetFromClassifyDataset = (
       const classifyCollection = classifyCollectionMap.get(
         draftCollection.name
       );
+
+      if (activeCollection && classifyCollection?.name !== activeCollection) {
+        return;
+      }
+
       const classifyFieldMap = new Map(
         classifyCollection?.fields?.map((f) => [f.name, f])
       );
@@ -99,17 +119,7 @@ export const getUpdatedDatasetFromClassifyDataset = (
           return;
         }
 
-        const topClassification = classifyField.classifications.reduce(
-          (maxClassification, next) => {
-            if (
-              (maxClassification.aggregated_score ?? 0) <
-              (next.aggregated_score ?? 0)
-            ) {
-              return next;
-            }
-            return maxClassification;
-          }
-        );
+        const topClassification = getTopClassification(classifyField);
 
         draftField.data_categories = [topClassification.label];
       });

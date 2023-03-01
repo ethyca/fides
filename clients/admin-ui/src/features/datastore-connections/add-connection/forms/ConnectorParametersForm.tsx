@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-import { isNumeric } from "@chakra-ui/utils";
 import {
   Button,
   ButtonGroup,
@@ -9,6 +7,7 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
+  isNumeric,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -35,6 +34,7 @@ import {
   DatabaseConnectorParametersFormFields,
   SaasConnectorParametersFormFields,
 } from "../types";
+import { fillInDefaults } from "./helpers";
 
 const FIDESOPS_DATASET_REFERENCE = "#/definitions/FidesopsDatasetReference";
 
@@ -52,6 +52,10 @@ type ConnectorParametersFormProps = {
    * Parent callback when Test Connection is clicked
    */
   onTestConnectionClick: (value: any) => void;
+  /**
+   * Text for the test button. Defaults to "Test connection"
+   */
+  testButtonLabel?: string;
 };
 
 const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
@@ -60,6 +64,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
+  testButtonLabel = "Test connection",
 }) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
@@ -188,32 +193,16 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   );
 
   const getInitialValues = () => {
+    const initialValues = { ...defaultValues };
     if (connection?.key) {
-      defaultValues.name = connection.name;
-      defaultValues.description = connection.description as string;
-      defaultValues.instance_key =
+      initialValues.name = connection.name;
+      initialValues.description = connection.description as string;
+      initialValues.instance_key =
         connection.connection_type === ConnectionType.SAAS
           ? (connection.saas_config?.fides_key as string)
           : connection.key;
-      Object.entries(data.properties).forEach((key) => {
-        // eslint-disable-next-line no-nested-ternary
-        defaultValues[key[0]] = key[1].default
-          ? key[1].default
-          : key[1].type === "integer"
-          ? 0
-          : "";
-      });
-    } else {
-      Object.entries(data.properties).forEach((key) => {
-        // eslint-disable-next-line no-nested-ternary
-        defaultValues[key[0]] = key[1].default
-          ? key[1].default
-          : key[1].type === "integer"
-          ? 0
-          : "";
-      });
     }
-    return defaultValues;
+    return fillInDefaults(initialValues, data);
   };
 
   const handleSubmit = (values: any, actions: any) => {
@@ -286,6 +275,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                         connectionOption!.human_readable
                       } connection`}
                       size="sm"
+                      data-testid="input-name"
                     />
                     <FormErrorMessage>{props.errors.name}</FormErrorMessage>
                   </VStack>
@@ -364,9 +354,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               )}
             </Field>
             {/* Dynamic connector secret fields */}
-            {Object.entries(data.properties).map(([key, item]) =>
-              getFormField(key, item)
-            )}
+            {Object.entries(data.properties).map(([key, item]) => {
+              if (key === "advanced_settings") {
+                // TODO: advanced settings
+                return null;
+              }
+              return getFormField(key, item);
+            })}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
                 colorScheme="gray.700"
@@ -376,7 +370,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 onClick={handleTestConnectionClick}
                 variant="outline"
               >
-                Test connection
+                {testButtonLabel}
               </Button>
               <Button
                 bg="primary.800"

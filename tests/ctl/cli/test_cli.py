@@ -2,7 +2,6 @@
 import os
 from base64 import b64decode
 from json import dump, loads
-from pathlib import Path
 from typing import Generator
 
 import pytest
@@ -10,7 +9,12 @@ from click.testing import CliRunner
 from git.repo import Repo
 from py._path.local import LocalPath
 
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.cli import cli
+from fides.core.config import CONFIG
+from fides.core.user import get_user_permissions
+from fides.core.utils import get_auth_header, read_credentials_file
+from fides.lib.oauth.roles import ADMIN
 
 OKTA_URL = "https://dev-78908748.okta.com"
 
@@ -37,6 +41,16 @@ def test_init(test_cli_runner: CliRunner) -> None:
     assert result.exit_code == 0
 
 
+@pytest.mark.integration
+def test_init_opt_in(test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["init", "--opt-in"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
 @pytest.mark.unit
 def test_view_config(test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
@@ -53,6 +67,17 @@ def test_webserver() -> None:
     without spinning up an additional instance.
     """
     from fides.api.main import start_webserver  # pylint: disable=unused-import
+
+    assert True
+
+
+@pytest.mark.unit
+def test_worker() -> None:
+    """
+    This is specifically meant to catch when the worker command breaks,
+    without spinning up an additional instance.
+    """
+    from fides.api.ops.worker import start_worker  # pylint: disable=unused-import
 
     assert True
 
@@ -865,6 +890,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test logging in as a user with a provided username and password."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             [
@@ -887,6 +913,7 @@ class TestUser:
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test creating a user with the current credentials."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             [
@@ -904,11 +931,34 @@ class TestUser:
         print(result.output)
         assert result.exit_code == 0
 
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "user",
+                "login",
+                "-u",
+                "newuser",
+                "-p",
+                "Newpassword1!",
+            ],
+            env={"FIDES_CREDENTIALS_PATH": credentials_path},
+        )
+
+        credentials = read_credentials_file(credentials_path)
+        scopes, roles = get_user_permissions(
+            credentials.user_id, get_auth_header(), CONFIG.cli.server_url
+        )
+        assert scopes == SCOPE_REGISTRY
+        assert roles == [ADMIN]
+
     @pytest.mark.unit
-    def test_user_permissions(
+    def test_user_permissions_valid(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
         """Test getting user permissions for the current user."""
+        print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
             ["-f", test_config_path, "user", "permissions"],
@@ -916,3 +966,44 @@ class TestUser:
         )
         print(result.output)
         assert result.exit_code == 0
+
+    @pytest.mark.unit
+    def test_get_user_permissions(
+        self, test_config_path, test_cli_runner, credentials_path
+    ) -> None:
+        """Test getting user permissions"""
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "user",
+                "login",
+                "-u",
+                "root_user",
+                "-p",
+                "Testpassword1!",
+            ],
+            env={"FIDES_CREDENTIALS_PATH": credentials_path},
+        )
+        scopes, roles = get_user_permissions(
+            CONFIG.security.oauth_root_client_id,
+            get_auth_header(),
+            CONFIG.cli.server_url,
+        )
+        assert scopes == SCOPE_REGISTRY
+        assert roles == [ADMIN]
+
+    @pytest.mark.unit
+    def test_user_permissions_not_found(
+        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
+    ) -> None:
+        """Test getting user permissions but the credentials file doesn't exit."""
+        print(credentials_path)
+        result = test_cli_runner.invoke(
+            cli,
+            ["-f", test_config_path, "user", "permissions"],
+            env={"FIDES_CREDENTIALS_PATH": "/root/notarealfile.credentials"},
+        )
+        print(result.output)
+        assert result.exit_code == 1

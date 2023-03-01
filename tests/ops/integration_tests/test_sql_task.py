@@ -5,13 +5,14 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
+from fideslang import Dataset
 from sqlalchemy import text
 
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
-    Dataset,
     FieldAddress,
+    GraphDataset,
     ScalarField,
 )
 from fides.api.ops.graph.data_type import DataType, StringTypeConverter
@@ -21,12 +22,11 @@ from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
 from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.ops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 from ..graph.graph_test_util import (
     assert_rows_match,
@@ -39,8 +39,6 @@ from ..task.traversal_data import (
     integration_db_graph,
     str_converter,
 )
-
-CONFIG = get_config()
 
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
@@ -174,7 +172,7 @@ async def test_composite_key_erasure(
         ],
     )
 
-    dataset = Dataset(
+    dataset = GraphDataset(
         name="postgres_example",
         collections=[customer, composite_pk_test],
         connection_key=integration_postgres_config.key,
@@ -741,7 +739,7 @@ async def test_filter_on_data_categories(
         },
     )
 
-    dataset = FidesopsDataset(**example_datasets[0])
+    dataset = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
     dataset_graph = DatasetGraph(*[graph])
 
@@ -892,7 +890,7 @@ async def test_access_erasure_type_conversion(
         ],
     )
 
-    dataset = Dataset(
+    dataset = GraphDataset(
         name="postgres_example",
         collections=[employee, type_link],
         connection_key=integration_postgres_config.key,
@@ -940,7 +938,7 @@ class TestRetrievingData:
 
     @pytest.fixture
     def traversal_node(self, example_datasets, integration_postgres_config):
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         node = Node(graph, graph.collections[1])  # customer collection
         traversal_node = TraversalNode(node)
@@ -1064,7 +1062,7 @@ class TestRetryIntegration:
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
 
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         dataset_graph = DatasetGraph(*[graph])
 
@@ -1117,7 +1115,7 @@ class TestRetryIntegration:
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
 
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         dataset_graph = DatasetGraph(*[graph])
 
