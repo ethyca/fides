@@ -5,8 +5,15 @@ from typing import Dict, List
 
 import pytest
 import requests
-from fideslang import DEFAULT_TAXONOMY, model_list, parse
+from fideslang import DEFAULT_TAXONOMY, model_list, models, parse
+from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+)
 from starlette.testclient import TestClient
 
 from fides.api.ctl.database.crud import get_resource
@@ -21,11 +28,14 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_READ,
     READ,
+    SYSTEM_DELETE,
+    SYSTEM_UPDATE,
     UPDATE,
 )
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
-from tests.conftest import generate_auth_header
+from fides.lib.oauth.api.urn_registry import V1_URL_PREFIX
+from fides.lib.oauth.roles import ADMIN, VIEWER
 
 CONFIG = get_config()
 
@@ -402,6 +412,298 @@ class TestCrud:
         assert result.status_code == 200
         resp = result.json()
         assert resp["message"] == "resource deleted"
+
+
+@pytest.mark.unit
+class TestSystemUpdate:
+
+    updated_system_name = "Updated System Name"
+
+    @pytest.fixture(scope="function")
+    def system_update_request_body(self, system) -> SystemSchema:
+        return SystemSchema(
+            organization_fides_key=1,
+            registryId=1,
+            fides_key=system.fides_key,
+            system_type="SYSTEM",
+            name=self.updated_system_name,
+            description="Test Policy",
+            privacy_declarations=[
+                models.PrivacyDeclaration(
+                    name="declaration-name",
+                    data_categories=[],
+                    data_use="provide",
+                    data_subjects=[],
+                    data_qualifier="aggregated_data",
+                    dataset_references=[],
+                )
+            ],
+            system_dependencies=[],
+        )
+
+    def test_system_update_not_authenticated(
+        self, test_config, system_update_request_body
+    ):
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers={},
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_system_update_no_direct_scope(
+        self,
+        test_config,
+        generate_auth_header,
+        system_update_request_body,
+        db,
+        system,
+    ):
+        auth_header = generate_auth_header(scopes=[POLICY_CREATE_OR_UPDATE])
+
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_403_FORBIDDEN
+
+        db.refresh(system)
+        assert system.name != self.updated_system_name
+
+    async def test_system_update_has_direct_scope(
+        self, generate_auth_header, system, db, test_config, system_update_request_body
+    ):
+        assert system.name != self.updated_system_name
+        auth_header = generate_auth_header(scopes=[SYSTEM_UPDATE])
+
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_200_OK
+        assert result.json()["name"] == self.updated_system_name
+
+        db.refresh(system)
+        assert system.name == self.updated_system_name
+
+    def test_system_update_no_encompassing_role(
+        self,
+        test_config,
+        system_update_request_body,
+        system,
+        db,
+        generate_role_header,
+    ):
+        auth_header = generate_role_header(roles=[VIEWER])
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_403_FORBIDDEN
+
+        db.refresh(system)
+        assert system.name != self.updated_system_name
+
+    def test_system_update_has_role_that_can_update_all_systems(
+        self,
+        test_config,
+        system_update_request_body,
+        system,
+        db,
+        generate_role_header,
+    ):
+        assert system.name != self.updated_system_name
+        auth_header = generate_role_header(roles=[ADMIN])
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json()["name"] == self.updated_system_name
+
+        db.refresh(system)
+        assert system.name == self.updated_system_name
+
+    def test_system_update_as_system_manager(
+        self,
+        test_config,
+        system_update_request_body,
+        system,
+        db,
+        generate_system_manager_header,
+    ):
+        assert system.name != self.updated_system_name
+
+        auth_header = generate_system_manager_header([system.id])
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json()["name"] == self.updated_system_name
+
+        db.refresh(system)
+        assert system.name == self.updated_system_name
+
+    def test_system_update_as_system_manager_403_if_not_found(
+        self,
+        test_config,
+        system_update_request_body,
+        system,
+        generate_system_manager_header,
+    ):
+        auth_header = generate_system_manager_header([system.id])
+        system_update_request_body.fides_key = "system-does-not-exist"
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_403_FORBIDDEN
+
+    def test_system_update_as_admin_404_if_not_found(
+        self,
+        test_config,
+        system_update_request_body,
+        generate_role_header,
+    ):
+        auth_header = generate_role_header(roles=[ADMIN])
+        system_update_request_body.fides_key = "system-does-not-exist"
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_404_NOT_FOUND
+
+
+@pytest.mark.unit
+class TestSystemDelete:
+    @pytest.fixture(scope="function")
+    def url(self, system) -> str:
+        return V1_URL_PREFIX + f"/system/{system.fides_key}"
+
+    def test_system_delete_not_authenticated(self, test_config, system):
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
+            headers={},
+        )
+        assert result.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_system_delete_no_direct_scope(
+        self,
+        test_config,
+        url,
+        system,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_UPDATE])
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
+            headers=auth_header,
+        )
+
+        assert result.status_code == HTTP_403_FORBIDDEN
+
+    def test_system_delete_has_direct_scope(
+        self, test_config, generate_auth_header, system
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
+            headers=auth_header,
+        )
+
+        assert result.status_code == HTTP_200_OK
+
+    def test_system_delete_no_encompassing_role(
+        self, test_config, generate_role_header, system
+    ):
+        auth_header = generate_role_header(roles=[VIEWER])
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
+            headers=auth_header,
+        )
+        assert result.status_code == HTTP_403_FORBIDDEN
+
+    def test_system_delete_has_role_that_can_delete_systems(
+        self,
+        test_config,
+        system,
+        generate_role_header,
+    ):
+        auth_header = generate_role_header(roles=[ADMIN])
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
+            headers=auth_header,
+        )
+        assert result.status_code == HTTP_200_OK
+
+    def test_system_delete_as_system_manager(
+        self,
+        test_config,
+        system,
+        generate_system_manager_header,
+    ):
+        auth_header = generate_system_manager_header([system.id])
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
+            headers=auth_header,
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json()["message"] == "resource deleted"
+
+    def test_admin_role_gets_404_if_system_not_found(
+        self,
+        test_config,
+        generate_role_header,
+    ):
+        auth_header = generate_role_header(roles=[ADMIN])
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id="bad_fides_key",
+            headers=auth_header,
+        )
+        assert result.status_code == HTTP_404_NOT_FOUND
+
+    def test_system_manager_gets_403_if_system_not_found(
+        self, test_config, system, generate_system_manager_header
+    ):
+        auth_header = generate_system_manager_header([system.id])
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id="bad_fides_key",
+            headers=auth_header,
+        )
+        assert result.status_code == HTTP_403_FORBIDDEN
 
 
 @pytest.mark.integration
