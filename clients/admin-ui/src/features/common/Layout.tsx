@@ -1,7 +1,7 @@
 import { Box, Flex } from "@fidesui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Header from "~/features/common/Header";
@@ -24,7 +24,6 @@ const Layout = ({
 }) => {
   const features = useFeatures();
   const router = useRouter();
-  const [showNotificationBanner, setShowNotificationBanner] = useState(false);
   const isValidNotificationRoute =
     router.pathname === "/privacy-requests" ||
     router.pathname === "/datastore-connection";
@@ -41,14 +40,8 @@ const Layout = ({
     skip,
   });
 
-  useEffect(() => {
-    if (
-      (!activeMessagingProvider || !activeStorage) &&
-      isValidNotificationRoute
-    ) {
-      setShowNotificationBanner(true);
-    }
-  }, [activeMessagingProvider, activeStorage, isValidNotificationRoute]);
+  const showNotificationBanner =
+    (!activeMessagingProvider || !activeStorage) && isValidNotificationRoute;
 
   return (
     <div data-testid={title}>

@@ -19,6 +19,7 @@ import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateConfigurationSettingsMutation,
   useCreateStorageMutation,
+  useGetActiveStorageQuery,
   useGetStorageDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
@@ -29,6 +30,7 @@ const StorageConfiguration = () => {
   const { handleError } = useAPIHelper();
   const [storageValue, setStorageValue] = useState("");
 
+  const { data: activeStorage } = useGetActiveStorageQuery();
   const { data: storageDetails } = useGetStorageDetailsQuery({
     type: storageValue,
   });
@@ -36,16 +38,10 @@ const StorageConfiguration = () => {
   const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
 
   useEffect(() => {
-    if (storageDetails) {
-      const activeStorageValueType = storageDetails?.items?.find(
-        (item: any) => item.is_default === true
-      );
-
-      if (activeStorageValueType) {
-        setStorageValue(activeStorageValueType.type);
-      }
+    if (activeStorage) {
+      setStorageValue(activeStorage.type);
     }
-  }, [storageDetails]);
+  }, [activeStorage]);
 
   const handleChange = async (value: string) => {
     if (value === storageTypes.local) {

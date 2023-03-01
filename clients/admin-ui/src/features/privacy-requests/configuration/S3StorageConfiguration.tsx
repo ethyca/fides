@@ -102,6 +102,7 @@ const S3StorageConfiguration = ({
                     { label: "json", value: "json" },
                     { label: "csv", value: "csv" },
                   ]}
+                  data-testid="format"
                   isRequired
                 />
                 <CustomSelect
@@ -111,9 +112,15 @@ const S3StorageConfiguration = ({
                     { label: "secret_keys", value: "secret_keys" },
                     { label: "automatic", value: "automatic" },
                   ]}
+                  data-testid="auth_method"
                   isRequired
                 />
-                <CustomTextInput name="bucket" label="Bucket" isRequired />
+                <CustomTextInput
+                  data-testid="bucket"
+                  name="bucket"
+                  label="Bucket"
+                  isRequired
+                />
               </Stack>
 
               <Button

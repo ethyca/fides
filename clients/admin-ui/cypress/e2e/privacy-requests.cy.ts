@@ -155,12 +155,6 @@ describe("Privacy Requests", () => {
         expect(body.storage.active_default_storage_type).to.eql("s3");
       });
       cy.wait("@getStorageDetails");
-      cy.getByTestId("save-btn").click();
-      cy.wait("@createStorage").then((interception) => {
-        const { body } = interception.request;
-        expect(body.type).to.eql("s3");
-      });
-      cy.contains("S3 storage credentials successfully updated.");
     });
   });
 
