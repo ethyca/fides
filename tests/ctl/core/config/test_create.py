@@ -8,8 +8,8 @@ from fides.core.config import FidesConfig
 from fides.core.config.create import (
     build_field_documentation,
     create_and_update_config_file,
-    validate_generated_config,
     create_config_file,
+    validate_generated_config,
 )
 
 

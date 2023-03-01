@@ -12,6 +12,7 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
+from fides.core.config.create import create_and_update_config_file
 from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,
@@ -22,7 +23,6 @@ from fides.core.deploy import (
     start_application,
     teardown_application,
 )
-from fides.core.config.create import create_and_update_config_file
 from fides.core.utils import echo_green
 
 
