@@ -87,7 +87,7 @@ task_always_eager = true
 
 ### Credentials
 
-The credentials section uses custom keys which can be referenced in specific commands that take the --credentials-id option. For example, a command that uses a credential might look like `fides scan dataset db --credentials-id app_postgres`. The credential object itself will be validated at the time of use depending on what type of credential is required. For instance if fides scan system okta is used, it will expect the object to contain orgUrl and token key/value pairs. In the case of a typical database like postgres, it will only expect a connection_string. The following is an example of what a credentials section might look like in a given deployment with various applications:
+The credentials section uses custom keys which can be referenced in specific commands that take the --credentials-id option. For example, a command that uses a credential might look like `fides scan dataset db --credentials-id app_postgres`. The credential object itself will be validated at the time of use depending on what type of credential is required. For instance if `fides scan system okta` is used, it will expect the object to contain orgUrl and token key/value pairs. In the case of a typical database like postgres, it will only expect a connection_string. The following is an example of what a credentials section might look like in a given deployment with various applications:
 
 ```toml title="Example Credentials Section"
 [credentials]

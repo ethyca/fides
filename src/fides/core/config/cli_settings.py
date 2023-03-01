@@ -11,7 +11,7 @@ ENV_PREFIX = "FIDES__CLI__"
 
 
 class CLISettings(FidesSettings):
-    """Configuration settings for the command-line appliation."""
+    """Configuration settings for the command-line application."""
 
     analytics_id: str = Field(
         default=generate_client_id(FIDESCTL_CLI),
