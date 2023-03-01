@@ -39,8 +39,8 @@ const RequestSubmitted: React.FC<RequestSubmittedProps> = ({
 
     <ModalBody>
       <Text fontSize="sm" color="gray.500" mb={4}>
-        Thanks for your {action.policy_key} Request. A member of our team will
-        review and be in contact with you shortly.
+        We have received your request. A member of our team will review and be
+        in contact with you shortly.
       </Text>
     </ModalBody>
 
