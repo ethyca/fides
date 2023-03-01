@@ -9,7 +9,7 @@ import toml
 from click import echo
 from pydantic import BaseSettings
 
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import FidesConfig, build_config
 from fides.core.config.utils import replace_config_value
 from fides.cli.utils import request_analytics_consent
 
@@ -146,6 +146,16 @@ def build_config_header() -> str:
     return config_header
 
 
+def validate_generated_config(config_docs: str) -> None:
+    """Run a few checks on the generated configuration docs."""
+    toml_docs = toml.loads(config_docs)
+    build_config(toml_docs)
+    if "# TODO" in config_docs:
+        raise ValueError(
+            "All fields require documentation, no description TODOs allowed!"
+        )
+
+
 def generate_config_docs(
     config: FidesConfig, outfile_path: str = ".fides/fides.toml"
 ) -> None:
@@ -181,20 +191,12 @@ def generate_config_docs(
     # Combine all of the docs
     docs: str = build_config_header() + "\n".join(nested_settings_docs + object_docs)
 
-    # Verify it is valid TOML before writing it out
-    toml.loads(docs)
-
-    if "# TODO" in docs:
-        raise SystemExit(
-            "All fields require documentation, no description TODOs allowed!"
-        )
+    # Verify it is a valid Fides config file
+    validate_generated_config(docs)
 
     with open(outfile_path, "w", encoding="utf-8") as output_file:
         output_file.write(docs)
         print(f"Exported configuration file to: {outfile_path}")
-
-    # Verify it is a valid Fides config file
-    get_config(outfile_path)
 
 
 def create_config_file(config: FidesConfig, fides_directory_location: str = ".") -> str:

@@ -152,9 +152,11 @@ def request_analytics_consent(config: FidesConfig, opt_in: bool = False) -> Fide
     unless they've opted in.
     """
 
-    # Check the analytics opt out env var
-    # if getenv("FIDES__USER__ANALYTICS_OPT_OUT", "true") != "false":
-    #     return config
+    analytics_env_var = getenv("FIDES__USER__ANALYTICS_OPT_OUT")
+    if analytics_env_var and analytics_env_var.lower() != "false":
+        return config
+    elif analytics_env_var and analytics_env_var.lower() == "true":
+        opt_in = True
 
     # Otherwise, ask for consent
     print(OPT_OUT_COPY)
