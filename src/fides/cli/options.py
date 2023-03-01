@@ -60,7 +60,7 @@ def manifests_dir_argument(command: Callable) -> Callable:
 def dry_flag(command: Callable) -> Callable:
     "Add a flag that prevents side-effects."
     command = click.option(
-        "--dry", is_flag=True, help="Do not upload results to the Fides webserver."
+        "--dry", is_flag=True, help="Do not upload results to the Fides webserver"
     )(command)
     return command
 

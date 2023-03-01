@@ -131,7 +131,7 @@ def evaluate(
 @with_analytics
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
-    Parses and validates all Fides objects located in the configured directory or passed in via an argument.
+    Parse all Fides objects located in the supplied directory.
     """
     taxonomy = _parse.parse(manifests_dir=manifests_dir)
     if verbose:

@@ -28,16 +28,14 @@ from fides.core.utils import echo_green
 
 @click.command()
 @click.pass_context
-@click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
+@click.argument("fides_dir", default=".", type=click.Path(exists=True))
 @click.option(
     "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
 )
-def init(ctx: click.Context, fides_directory_location: str, opt_in: bool) -> None:
+def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
     """
     Initializes a Fides instance by creating the default directory and
     configuration file if not present.
-
-    Additionally, requests the ability to respectfully collect anonymous usage data.
     """
 
     executed_at = datetime.now(timezone.utc)
@@ -47,7 +45,7 @@ def init(ctx: click.Context, fides_directory_location: str, opt_in: bool) -> Non
     click.echo("Initializing fides...")
 
     config, config_path = create_and_update_config_file(
-        config, fides_directory_location, opt_in=opt_in
+        config, fides_dir, opt_in=opt_in
     )
 
     print_divider()
@@ -61,7 +59,7 @@ def init(ctx: click.Context, fides_directory_location: str, opt_in: bool) -> Non
 @with_analytics
 def status(ctx: click.Context) -> None:
     """
-    Sends a request to the fides API healthcheck endpoint and prints the response.
+    Check Fides server availability.
     """
     config = ctx.obj["CONFIG"]
     cli_version = fides.__version__
