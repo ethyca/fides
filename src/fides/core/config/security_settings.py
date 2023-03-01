@@ -9,6 +9,7 @@ from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.lib.oauth.roles import ADMIN
 
 from .fides_settings import FidesSettings
 
@@ -16,7 +17,7 @@ ENV_PREFIX = "FIDES__SECURITY__"
 
 
 class SecuritySettings(FidesSettings):
-    """Configuration settings for Security variables."""
+    """Configuration settings for application security."""
 
     aes_encryption_key_length: int = Field(
         default=16,
@@ -29,11 +30,14 @@ class SecuritySettings(FidesSettings):
     app_encryption_key: str = Field(
         default="", description="The key used to sign Fides API access tokens."
     )
-    cors_origins: Union[str, List[str]] = Field(
+    cors_origins: List[str] = Field(
         default=[],
-        description="A list of pre-approved addresses of clients allowed to communicate with the Fides application server.",
+        description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
-    cors_origin_regex: Optional[Pattern] = Field(default=None, description="TODO")
+    cors_origin_regex: Optional[Pattern] = Field(
+        default=None,
+        description="A regex pattern used to set the CORS origin allowlist.",
+    )
     drp_jwt_secret: Optional[str] = Field(
         default=None,
         description="JWT secret by which passed-in identity is decrypted according to the HS256 algorithm.",
@@ -45,7 +49,10 @@ class SecuritySettings(FidesSettings):
         default="dev",
         description="The default, `dev`, does not apply authentication to endpoints typically used by the CLI. The other option, `prod`, requires authentication for _all_ endpoints that may contain sensitive information.",
     )
-    identity_verification_attempt_limit: int = Field(default=3, description="")
+    identity_verification_attempt_limit: int = Field(
+        default=3,
+        description="The number of times identity verification will be attempted before raising an error.",
+    )
     oauth_root_client_id: str = Field(
         default="",
         description="The value used to identify the Fides application root API client.",
@@ -89,6 +96,10 @@ class SecuritySettings(FidesSettings):
     root_user_scopes: List[str] = Field(
         default=SCOPE_REGISTRY,
         description="The list of scopes that are given to the root user.",
+    )
+    root_user_roles: List[str] = Field(
+        default=[ADMIN],
+        description="The list of roles that are given to the root user.",
     )
     root_password: Optional[str] = Field(
         default=None,

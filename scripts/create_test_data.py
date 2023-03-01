@@ -161,6 +161,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
             "hashed_secret": "autoseededdata",
             "salt": "autoseededdata",
             "scopes": [],
+            "roles": [],
         },
     )
 

@@ -13,7 +13,7 @@ ENV_PREFIX = "FIDES__LOGGING__"
 
 
 class LoggingSettings(FidesSettings):
-    """Class used to store values from the 'logging' section of the config."""
+    """Configuration settings for application logging."""
 
     # Logging
     destination: str = Field(

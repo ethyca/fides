@@ -1,11 +1,13 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+import os
+from unittest.mock import patch
+
 import click
 import pytest
 from requests_mock import Mocker
 
 import fides.cli.utils as utils
-from fides.api.ctl.routes.util import API_PREFIX
-from fides.core.config import FidesConfig
+from fides.core.config import FidesConfig, get_config
 from tests.ctl.conftest import orig_requests_get
 
 

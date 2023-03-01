@@ -7,13 +7,12 @@ import rich_click as click
 import fides
 from fides.cli.utils import (
     FIDES_ASCII_ART,
-    check_and_update_analytics_config,
     check_server,
     print_divider,
     send_init_analytics,
     with_analytics,
 )
-from fides.core.config.helpers import create_config_file
+from fides.core.config.create import create_and_update_config_file
 from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,
@@ -30,7 +29,10 @@ from fides.core.utils import echo_green
 @click.command()
 @click.pass_context
 @click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
-def init(ctx: click.Context, fides_directory_location: str) -> None:
+@click.option(
+    "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
+)
+def init(ctx: click.Context, fides_directory_location: str, opt_in: bool) -> None:
     """
     Initializes a Fides instance by creating the default directory and
     configuration file if not present.
@@ -44,14 +46,11 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
 
-    # create the config file as needed
-    config_path = create_config_file(
-        config=config, fides_directory_location=fides_directory_location
+    config, config_path = create_and_update_config_file(
+        config, fides_directory_location, opt_in=opt_in
     )
-    print_divider()
 
-    # request explicit consent for analytics collection
-    check_and_update_analytics_config(config=config, config_path=config_path)
+    print_divider()
 
     send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
     echo_green("fides initialization complete.")
@@ -146,8 +145,7 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
         # Deployment is ready! Perform the same steps as `fides init` to setup CLI
         if not no_init:
             echo_green("Deployment successful! Initializing fides...")
-            config_path = create_config_file(config=config)
-            check_and_update_analytics_config(config=config, config_path=config_path)
+            create_and_update_config_file(config=config)
         else:
             echo_green(
                 "Deployment successful! Skipping CLI initialization (run 'fides init' to initialize)"
