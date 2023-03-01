@@ -67,8 +67,12 @@ class FidesConfig(FidesSettings):
     # These should match the `settings_map` in `build_config`
     admin_ui: AdminUISettings
     cli: CLISettings
-    celery: Dict
-    credentials: Dict
+    celery: Dict = Field(
+        description="This section can be used to pass config vars to Celery directly.",
+    )
+    credentials: Dict = Field(
+        description="This is a special section that is used to store arbitrary key/value pairs to be used as credentials."
+    )
     database: DatabaseSettings
     execution: ExecutionSettings
     logging: LoggingSettings

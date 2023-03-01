@@ -21,6 +21,9 @@ def test_delighted_connection_test(delighted_connection_config) -> None:
     get_connector(delighted_connection_config).test_connection()
 
 
+@pytest.mark.integration_saas
+@pytest.mark.integration_delighted
+@pytest.mark.asyncio
 async def test_delighted_access_request_task(
     db,
     policy,

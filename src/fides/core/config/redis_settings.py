@@ -15,11 +15,14 @@ class RedisSettings(FidesSettings):
         default="utf8",
         description="Character set to use for Redis, defaults to 'utf8'. Not recommended to change.",
     )
-    db_index: Optional[int] = Field(
-        default=None,
+    db_index: int = Field(
+        default=0,
         description="The application will use this index in the Redis cache to cache data.",
     )
-    decode_responses: bool = Field(default=True, description="TODO")
+    decode_responses: bool = Field(
+        default=True,
+        description="Whether or not to automatically decode the values fetched from Redis. Decodes using the `charset` configuration value.",
+    )
     default_ttl_seconds: int = Field(
         default=604800,
         description="The number of seconds for which data will live in Redis before automatically expiring.",
