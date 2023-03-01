@@ -66,7 +66,7 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
     View all objects of a single type from the server.
     """
     config = ctx.obj["CONFIG"]
-    resources: Dict = list_server_resources(
+    resources = list_server_resources(
         url=config.cli.server_url,
         resource_type=resource_type,
         headers=config.user.auth_header,
