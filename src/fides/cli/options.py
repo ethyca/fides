@@ -115,7 +115,7 @@ def output_directory_option(command: Callable) -> Callable:
         "-d",
         default=".fides/",
         show_default=True,
-        help="The output directory for the data map to be exported to.",
+        help="The output directory for the datamap to be exported to.",
     )(command)
     return command
 

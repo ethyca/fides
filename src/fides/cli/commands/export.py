@@ -92,7 +92,7 @@ def export_organization(
     )
 
 
-@export.command(name="data map")
+@export.command(name="datamap")
 @click.pass_context
 @output_directory_option
 @organization_fides_key_option
