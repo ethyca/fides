@@ -547,10 +547,11 @@ def _get_template_id_if_exists(
     Checks to see if a SendGrid template exists for Fides, returning the id if so
     """
 
-    params = {"generations": "dynamic", "page_size": 18}
-
+    # the pagination via the client actually doesn't work
+    # in lieu of over-engineering this we can manually call
+    # the next page if/when we hit the limit here
+    params = {"generations": "dynamic", "page_size": 200}
     response = sg.client.templates.get(query_params=params)
-
     response_body_dict = json.loads(response.body)
 
     for template in response_body_dict["result"]:
