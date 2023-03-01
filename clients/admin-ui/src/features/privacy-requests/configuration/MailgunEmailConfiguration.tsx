@@ -12,6 +12,8 @@ import {
   useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
+import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
+
 type ConnectionStep = "" | "apiKey" | "testConnection";
 
 const MailgunEmailConfiguration = () => {
@@ -60,6 +62,7 @@ const MailgunEmailConfiguration = () => {
       handleError(result.error);
     } else {
       successAlert(`Mailgun security key successfully updated.`);
+      setConfigurationStep("testConnection");
     }
   };
 
@@ -116,8 +119,8 @@ const MailgunEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {configurationStep === "apiKey" ? (
-        // TODO: configurationStep === "testConnection" will be set after https://github.com/ethyca/fides/issues/2237
+      {configurationStep === "apiKey" ||
+      configurationStep === "testConnection" ? (
         <>
           <Divider mt={10} />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
@@ -160,6 +163,11 @@ const MailgunEmailConfiguration = () => {
             </Formik>
           </Stack>
         </>
+      ) : null}
+      {configurationStep === "testConnection" ? (
+        <TestMessagingProviderConnectionButton
+          messagingDetails={messagingDetails}
+        />
       ) : null}
     </Box>
   );
