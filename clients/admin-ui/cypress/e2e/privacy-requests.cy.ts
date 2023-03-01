@@ -12,7 +12,7 @@ describe("Privacy Requests", () => {
     stubPrivacyRequestsConfigurationCrud();
   });
 
-  describe.skip("The requests table", () => {
+  describe("The requests table", () => {
     beforeEach(() => {
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
@@ -91,7 +91,7 @@ describe("Privacy Requests", () => {
     });
   });
 
-  describe.skip("The request details page", () => {
+  describe("The request details page", () => {
     beforeEach(() => {
       cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
         cy.visit(`/privacy-requests/${privacyRequest.id}`);
