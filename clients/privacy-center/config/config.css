@@ -16,4 +16,10 @@ Override basic theme colors by uncommenting and editing those below
   --chakra-colors-primary-400: #464b83;
   /* Primary button color */
   --chakra-colors-primary-800: #111439;
+  overflow: hidden;
+}
+
+iframe {
+  height: 100vh;
+  width: 100vw;
 }

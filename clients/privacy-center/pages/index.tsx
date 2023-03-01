@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { Flex, Heading, Text, Stack, Image, useToast } from "@fidesui/react";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 
@@ -18,6 +19,7 @@ import PrivacyCard from "~/components/PrivacyCard";
 import ConsentCard from "~/components/ConsentCard";
 
 const Home: NextPage = () => {
+  const router = useRouter();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const toast = useToast();
@@ -64,7 +66,15 @@ const Home: NextPage = () => {
     }
   }, [getIdVerificationConfigQuery, setIsVerificationRequired, toast]);
 
-  const content: any = [];
+  const content: any = [
+    <ConsentCard
+      key="policyCard"
+      title="Privacy Policy"
+      iconPath="edit.svg"
+      description="View our privacy policy"
+      onOpen={() => router.push("policy")}
+    />,
+  ];
 
   config.actions.forEach((action) => {
     content.push(
@@ -91,37 +101,10 @@ const Home: NextPage = () => {
     );
   }
 
-  useEffect(() => {
-    const iframe = document.getElementById("privacy-policy-iframe");
-    if (!iframe) { 
-        return;
-    }
-    // @ts-expect-error
-    iframe.contentWindow.addEventListener(
-      "load",
-      () => {
-        // @ts-expect-error
-        const doc = iframe.contentWindow.document;
-        // @ts-expect-error
-        iframe.height = doc.body.scrollHeight;
-      },
-      true
-    );
-    // @ts-expect-error
-    iframe.contentWindow.addEventListener(
-      "resize",
-      () => {
-        // @ts-expect-error
-        iframe.height = iframe.contentWindow.document.body.scrollHeight + 40;
-      },
-      true
-    );
-  }, []);
-
   return (
     <div>
       <Head>
-        <title>Privacy Center</title>
+        <title>Snackpass Privacy Center</title>
         <meta name="description" content="Privacy Center" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -172,12 +155,6 @@ const Home: NextPage = () => {
             {content}
           </Flex>
         </Stack>
-        <iframe
-          id="privacy-policy-iframe"
-          style={{ width: "100%" }}
-          src="https://legal.snackpass.co/snackpass-privacy-policy"
-          title="Snackpass Privacy Policy"
-        />
         <PrivacyRequestModal
           isOpen={isPrivacyModalOpen}
           onClose={onPrivacyModalClose}
