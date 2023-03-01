@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
@@ -33,7 +34,7 @@ const S3StorageConfiguration = ({
   const { successAlert } = useAlert();
 
   const initialValues = {
-    type: "s3",
+    type: storageTypes.s3,
     auth_method: auth_method ?? "",
     bucket: bucket ?? "",
     format: format ?? "",
@@ -48,7 +49,7 @@ const S3StorageConfiguration = ({
     newValues: StorageDetails["storageDetails"]
   ) => {
     const result = await saveStorageDetails({
-      type: "s3",
+      type: storageTypes.s3,
       details: {
         auth_method: newValues.auth_method,
         bucket: newValues.bucket,
@@ -70,7 +71,7 @@ const S3StorageConfiguration = ({
         aws_access_key_id: newValues.aws_access_key_id,
         aws_secret_access_key: newValues.aws_secret_access_key,
       },
-      type: "s3",
+      type: storageTypes.s3,
     });
 
     if (isErrorResult(result)) {

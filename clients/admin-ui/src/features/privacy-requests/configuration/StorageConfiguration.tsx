@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
+import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateConfigurationSettingsMutation,
   useCreateStorageMutation,
@@ -47,7 +48,7 @@ const StorageConfiguration = () => {
   }, [storageDetails]);
 
   const handleChange = async (value: string) => {
-    if (value === "local") {
+    if (value === storageTypes.local) {
       const storageDetailsResult = await saveStorageType({
         type: value,
         details: {},

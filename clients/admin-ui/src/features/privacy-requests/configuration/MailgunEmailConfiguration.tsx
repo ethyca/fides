@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { messagingProviders } from "~/features/privacy-requests/constants";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
@@ -19,7 +20,7 @@ const MailgunEmailConfiguration = () => {
     useState<ConnectionStep>("");
   const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "MAILGUN",
+    type: messagingProviders.mailgun,
   });
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
@@ -28,7 +29,7 @@ const MailgunEmailConfiguration = () => {
 
   const handleMailgunConfiguration = async (value: { domain: string }) => {
     const result = await createMessagingConfiguration({
-      service_type: "MAILGUN",
+      service_type: messagingProviders.mailgun,
       details: {
         is_eu_domain: "false",
         domain: value.domain,
@@ -52,7 +53,7 @@ const MailgunEmailConfiguration = () => {
       details: {
         mailgun_api_key: value.api_key,
       },
-      service_type: "MAILGUN",
+      service_type: messagingProviders.mailgun,
     });
 
     if (isErrorResult(result)) {

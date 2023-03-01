@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
+import { messagingProviders } from "~/features/privacy-requests/constants";
 import {
   useCreateConfigurationSettingsMutation,
   useCreateMessagingConfigurationMutation,
@@ -56,11 +57,11 @@ const MessagingConfiguration = () => {
 
     if (isErrorResult(result)) {
       handleError(result.error);
-    } else if (value !== "TWILIO_TEXT") {
+    } else if (value !== messagingProviders.twilio_text) {
       setMessagingValue(value);
     } else {
       const twilioTextResult = await createMessagingConfiguration({
-        service_type: "TWILIO_TEXT",
+        service_type: messagingProviders.twilio_text,
       });
 
       if (isErrorResult(twilioTextResult)) {
@@ -126,34 +127,38 @@ const MessagingConfiguration = () => {
         >
           <Stack direction="row">
             <Radio
-              key="MAILGUN"
-              value="MAILGUN"
+              key={messagingProviders.mailgun}
+              value={messagingProviders.mailgun}
               data-testid="option-mailgun"
               mr={5}
             >
               Mailgun Email
             </Radio>
             <Radio
-              key="TWILIO_EMAIL"
-              value="TWILIO_EMAIL"
+              key={messagingProviders.twilio_email}
+              value={messagingProviders.twilio_email}
               data-testid="option-twilio-email"
             >
               Twilio Email
             </Radio>
             <Radio
-              key="TWILIO_TEXT"
-              value="TWILIO_TEXT"
+              key={messagingProviders.twilio_text}
+              value={messagingProviders.twilio_text}
               data-testid="option-twilio-sms"
             >
               Twilio SMS
             </Radio>
           </Stack>
         </RadioGroup>
-        {messagingValue === "MAILGUN" ? <MailgunEmailConfiguration /> : null}
-        {messagingValue === "TWILIO_EMAIL" ? (
+        {messagingValue === messagingProviders.mailgun ? (
+          <MailgunEmailConfiguration />
+        ) : null}
+        {messagingValue === messagingProviders.twilio_email ? (
           <TwilioEmailConfiguration />
         ) : null}
-        {messagingValue === "TWILIO_TEXT" ? <TwilioSMSConfiguration /> : null}
+        {messagingValue === messagingProviders.twilio_text ? (
+          <TwilioSMSConfiguration />
+        ) : null}
       </Box>
     </Layout>
   );

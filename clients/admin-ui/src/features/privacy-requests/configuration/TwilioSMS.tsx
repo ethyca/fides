@@ -4,6 +4,7 @@ import { Form, Formik } from "formik";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { messagingProviders } from "~/features/privacy-requests/constants";
 import { useCreateMessagingConfigurationSecretsMutation } from "~/features/privacy-requests/privacy-requests.slice";
 
 const TwilioSMSConfiguration = () => {
@@ -25,7 +26,7 @@ const TwilioSMSConfiguration = () => {
         twilio_messaging_service_sid: value.messaging_service_sid,
         twilio_sender_phone_number: value.phone,
       },
-      service_type: "TWILIO_TEXT",
+      service_type: messagingProviders.twilio_text,
     });
 
     if (isErrorResult(result)) {

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { messagingProviders } from "~/features/privacy-requests/constants";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
@@ -16,7 +17,7 @@ const TwilioEmailConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "TWILIO_EMAIL",
+    type: messagingProviders.twilio_email,
   });
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
@@ -25,7 +26,7 @@ const TwilioEmailConfiguration = () => {
 
   const handleTwilioEmailConfiguration = async (value: { email: string }) => {
     const result = await createMessagingConfiguration({
-      service_type: "TWILIO_EMAIL",
+      service_type: messagingProviders.twilio_email,
       details: {
         twilio_email_from: value.email,
       },
@@ -48,7 +49,7 @@ const TwilioEmailConfiguration = () => {
       details: {
         twilio_api_key: value.api_key,
       },
-      service_type: "TWILIO_EMAIL",
+      service_type: messagingProviders.twilio_email,
     });
 
     if (isErrorResult(result)) {
