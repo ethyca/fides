@@ -6,7 +6,7 @@ from fides.cli.options import fides_key_argument, resource_type_argument
 from fides.cli.utils import handle_cli_response, print_divider, with_analytics
 from fides.core import api as _api
 from fides.core.api_helpers import get_server_resource, list_server_resources
-from fides.core.utils import echo_green
+from fides.core.utils import echo_green, echo_red
 
 
 @click.command()
@@ -66,7 +66,7 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
     View all objects of a single type from the server.
     """
     config = ctx.obj["CONFIG"]
-    resources = list_server_resources(
+    resources: Dict = list_server_resources(
         url=config.cli.server_url,
         resource_type=resource_type,
         headers=config.user.auth_header,
@@ -77,8 +77,11 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
     if verbose:
         echo_green(yaml.dump({resource_type: resources}))
     else:
-        sorted_fides_keys = sorted(
-            {resource["fides_key"] for resource in resources if resource}
-        )
-        formatted_fides_keys = "\n  ".join(sorted_fides_keys)
-        echo_green(f"{resource_type.capitalize()} list:\n  {formatted_fides_keys}")
+        if resources:
+            sorted_fides_keys = sorted(
+                {resource["fides_key"] for resource in resources if resource}
+            )
+            formatted_fides_keys = "\n  ".join(sorted_fides_keys)
+            echo_green(f"{resource_type.capitalize()} list:\n  {formatted_fides_keys}")
+        else:
+            echo_red(f"No {resource_type.capitalize()} resources found!")

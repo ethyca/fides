@@ -10,8 +10,8 @@ from os import getenv
 from platform import system
 from typing import Any, Callable, Dict, Optional, Union
 
-import rich_click as click
 import requests
+import rich_click as click
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError

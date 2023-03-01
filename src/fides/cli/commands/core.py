@@ -3,12 +3,7 @@ from typing import Optional
 
 import rich_click as click
 
-from fides.cli.options import (
-    dry_flag,
-    fides_key_option,
-    manifests_dir_argument,
-    verbose_flag,
-)
+from fides.cli.options import dry_flag, manifests_dir_argument, verbose_flag
 from fides.cli.utils import pretty_echo, print_divider, with_analytics
 from fides.core import audit as _audit
 from fides.core import evaluate as _evaluate

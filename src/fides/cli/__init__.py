@@ -11,6 +11,7 @@ import fides
 from fides.cli.utils import check_server
 from fides.core.config import get_config
 
+from . import cli_formatting
 from .commands.annotate import annotate
 from .commands.core import evaluate, parse, pull, push
 from .commands.crud import delete, get_resource, list_resources
@@ -21,7 +22,6 @@ from .commands.scan import scan
 from .commands.user import user
 from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
-from . import cli_formatting
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
