@@ -31,8 +31,8 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
 from fides.api.ops.util.connection_util import patch_connection_configs
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.api.ops.util.system_manager_oauth_util import (
-    verify_oauth_client_for_system_from_fides_key,
-    verify_oauth_client_for_system_from_request_body,
+    verify_oauth_client_for_system_from_fides_key_cli,
+    verify_oauth_client_for_system_from_request_body_cli,
 )
 
 system_router = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
@@ -113,7 +113,7 @@ def patch_connections(
 )
 async def update(
     resource: SystemSchema = Security(
-        verify_oauth_client_for_system_from_request_body,
+        verify_oauth_client_for_system_from_request_body_cli,
         scopes=[scope_registry.SYSTEM_UPDATE],
     ),  # Security dependency defined here instead of the path operation decorator so we have access to the request body
     # to be able to look up the system as well as return a value
@@ -146,7 +146,7 @@ async def update(
 )
 async def delete(
     fides_key: str = Security(
-        verify_oauth_client_for_system_from_fides_key,
+        verify_oauth_client_for_system_from_fides_key_cli,
         scopes=[scope_registry.SYSTEM_DELETE],
     ),  # Security dependency defined here instead of the path operation decorator so we have access to the fides_key
     # to retrieve the System and also return a value
