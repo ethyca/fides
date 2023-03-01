@@ -44,6 +44,7 @@ def {{ connector_id }}_erasure_data(
 @pytest.fixture
 def {{ connector_id }}_runner(
     db,
+    cache,
     {{ connector_id }}_secrets,
 ) -> ConnectorRunner:
-    return ConnectorRunner(db, {{ connector_id }}_secrets, "{{ connector_id }}")
+    return ConnectorRunner(db, cache, "{{ connector_id }}", {{ connector_id }}_secrets)
