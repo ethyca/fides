@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.api.deps import get_db
 from fides.api.ops.util.oauth_util import (
+    copy_func,
     extract_token_and_load_client,
     has_permissions,
     has_scope_subset,
@@ -183,3 +184,27 @@ def _has_scope_as_system_manager(
         return False
 
     return True
+
+
+# This is a workaround so that we can override CLI-related endpoints and
+# all other endpoints separately.
+verify_oauth_client_for_system_from_request_body_cli = copy_func(
+    verify_oauth_client_for_system_from_request_body
+)
+verify_oauth_client_for_system_from_fides_key_cli = copy_func(
+    verify_oauth_client_for_system_from_fides_key
+)
+
+
+async def get_system_schema(system_data: SystemSchema) -> SystemSchema:
+    """
+    Return system request body directly.  An override to bypass authentication for updating systems in dev mode.
+    """
+    return system_data
+
+
+async def get_system_fides_key(fides_key: str) -> str:
+    """
+    Return system fides_key path parameter directly.  An override to bypass authentication for deleting systems in dev mode.
+    """
+    return fides_key
