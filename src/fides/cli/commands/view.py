@@ -1,9 +1,10 @@
 """Contains the view group of the commands for fides."""
 
 import rich_click as click
-from toml import dumps as toml_dumps
+from toml import dumps
 
 from fides.cli.utils import print_divider, with_analytics
+from fides.core.utils import echo_red, get_credentials_path, read_credentials_file
 
 
 @click.group(name="view")
@@ -27,7 +28,7 @@ def view_config(
     ctx: click.Context, section: str = "", exclude_unset: bool = False
 ) -> None:
     """
-    Prints the configuration values being used.
+    Prints the configuration values being used as a 'toml' file.
     """
     config = ctx.obj["CONFIG"]
     config_dict = config.dict(exclude_unset=exclude_unset)
@@ -35,4 +36,22 @@ def view_config(
         config_dict = config_dict[section]
 
     print_divider()
-    print(toml_dumps(config_dict))
+    print(dumps(config_dict))
+
+
+@view.command(name="credentials")
+@click.pass_context
+@with_analytics
+def view_credentials(ctx: click.Context) -> None:
+    """
+    Prints the credentials file.
+    """
+    credentials_path = get_credentials_path()
+    try:
+        credentials = read_credentials_file(credentials_path)
+    except FileNotFoundError:
+        echo_red(f"No credentials file found at path: {credentials_path}")
+        raise SystemExit(1)
+
+    print_divider()
+    print(dumps(credentials.dict()))
