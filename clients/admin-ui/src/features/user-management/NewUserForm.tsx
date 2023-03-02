@@ -1,9 +1,9 @@
-import { Divider, Heading } from "@fidesui/react";
 import { utf8ToB64 } from "common/utils";
 import React from "react";
 
 import { useCreateUserMutation } from "./user-management.slice";
-import UserForm, { FormValues } from "./UserForm";
+import { FormValues } from "./UserForm";
+import UserManagementTabs from "./UserManagementTabs";
 
 const NewUserForm = () => {
   const [createUser] = useCreateUserMutation();
@@ -16,11 +16,7 @@ const NewUserForm = () => {
   return (
     <div>
       <main>
-        <Heading mb={4} fontSize="xl" colorScheme="primary">
-          Profile
-        </Heading>
-        <Divider mb={7} />
-        <UserForm onSubmit={handleSubmit} />
+        <UserManagementTabs onSubmit={handleSubmit} />
       </main>
     </div>
   );

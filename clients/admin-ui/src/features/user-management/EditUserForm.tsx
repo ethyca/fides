@@ -1,4 +1,3 @@
-import { Divider, Heading } from "@fidesui/react";
 import React from "react";
 import { useSelector } from "react-redux";
 
@@ -8,7 +7,8 @@ import {
   useEditUserMutation,
   useGetUserPermissionsQuery,
 } from "./user-management.slice";
-import UserForm, { FormValues } from "./UserForm";
+import { FormValues } from "./UserForm";
+import UserManagementTabs from "./UserManagementTabs";
 
 const useUserForm = (profile: User, permissions: UserPermissions) => {
   const currentUser = useSelector(selectUser);
@@ -61,11 +61,7 @@ const EditUserForm = ({ user, permissions }: Props) => {
   return (
     <div>
       <main>
-        <Heading mb={4} fontSize="xl" colorScheme="primary">
-          Profile
-        </Heading>
-        <Divider mb={7} />
-        <UserForm
+        <UserManagementTabs
           onSubmit={handleSubmit}
           initialValues={initialValues}
           canEditNames={canUpdateUser}

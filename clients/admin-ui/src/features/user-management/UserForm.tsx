@@ -1,24 +1,16 @@
-import {
-  Box,
-  Button,
-  Checkbox,
-  Divider,
-  Heading,
-  Stack,
-  Text,
-} from "@fidesui/react";
+import { Box, Button, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useAPIHelper } from "common/hooks";
-import { Form, Formik, FormikProps } from "formik";
+import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useMemo } from "react";
 import * as Yup from "yup";
 
-import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "~/constants";
+import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
+import { successToastParams } from "~/features/common/toast";
 
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
@@ -44,7 +36,7 @@ const ValidationSchema = Yup.object().shape({
   scopes: Yup.array().of(Yup.string()),
 });
 
-interface Props {
+export interface Props {
   onSubmit: (values: FormValues) => Promise<
     | {
         data: User | UserCreateResponse;
@@ -65,6 +57,7 @@ const UserForm = ({
   canChangePassword,
 }: Props) => {
   const router = useRouter();
+  const toast = useToast();
   const { handleError } = useAPIHelper();
   const profileId = Array.isArray(router.query.id)
     ? router.query.id[0]
@@ -91,31 +84,12 @@ const UserForm = ({
       userWithPrivileges
     );
     if (!("error" in updateUserPermissionsResult)) {
-      router.push(USER_MANAGEMENT_ROUTE);
+      toast(successToastParams(`User ${isNewUser ? "created" : "updated"}`));
     }
   };
   const validationSchema = canChangePassword
     ? ValidationSchema
     : ValidationSchema.omit(["password"]);
-
-  const scopes = useMemo(
-    () => USER_PRIVILEGES.map((policy) => policy.scope),
-    []
-  );
-
-  const selectAllPermissions = useCallback(
-    (formikHelpers: FormikProps<FormValues>) => {
-      formikHelpers.setFieldValue("scopes", [...scopes]);
-    },
-    [scopes]
-  );
-
-  const deselectAllPermissions = useCallback(
-    (formikHelpers: FormikProps<FormValues>) => {
-      formikHelpers.setFieldValue("scopes", [requiredPermission]);
-    },
-    []
-  );
 
   return (
     <Formik
@@ -123,117 +97,47 @@ const UserForm = ({
       initialValues={initialValues ?? defaultInitialValues}
       validationSchema={validationSchema}
     >
-      {(formik) => (
-        <Form>
-          <Box maxW={["xs", "xs", "100%"]} width="100%">
-            <Stack mb={8} spacing={6}>
-              <Stack mb={8} spacing={6} maxWidth="40%">
-                <CustomTextInput
-                  name="username"
-                  label="Username"
-                  placeholder="Enter new username"
-                />
-                <CustomTextInput
-                  name="first_name"
-                  label="First Name"
-                  placeholder="Enter first name of user"
-                  disabled={nameDisabled}
-                />
-                <CustomTextInput
-                  name="last_name"
-                  label="Last Name"
-                  placeholder="Enter last name of user"
-                  disabled={nameDisabled}
-                />
-                <PasswordManagement profileId={profileId} />
-              </Stack>
-              <Divider mb={7} mt={7} />
-              <Heading fontSize="xl" colorScheme="primary">
-                Permissions
-              </Heading>
-              <Text>Select permissions to assign to this user</Text>
-              <Box>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  mr={3}
-                  onClick={() => {
-                    selectAllPermissions(formik);
-                  }}
-                >
-                  Select all
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    deselectAllPermissions(formik);
-                  }}
-                >
-                  Deselect all
-                </Button>
-              </Box>
-              <Text>To apply the changes, click &apos;Save&apos; below.</Text>
-              <Divider mb={2} mt={2} />
-              <Stack spacing={[1, 5]} direction="column">
-                {USER_PRIVILEGES.map((policy) => {
-                  const isChecked =
-                    formik.values.scopes.indexOf(policy.scope) >= 0;
-                  return (
-                    <Checkbox
-                      colorScheme="purple"
-                      key={policy.privilege}
-                      onChange={() => {
-                        if (!isChecked) {
-                          formik.setFieldValue(`scopes`, [
-                            ...formik.values.scopes,
-                            policy.scope,
-                          ]);
-                        } else {
-                          formik.setFieldValue(
-                            "scopes",
-                            formik.values.scopes.filter(
-                              (scope) => scope !== policy.scope
-                            )
-                          );
-                        }
-                      }}
-                      id={`scopes-${policy.privilege}`}
-                      name="scopes"
-                      isChecked={isChecked}
-                      value={
-                        policy.scope === requiredPermission
-                          ? undefined
-                          : policy.scope
-                      }
-                      isDisabled={policy.scope === requiredPermission}
-                      isReadOnly={policy.scope === requiredPermission}
-                    >
-                      {policy.privilege}
-                    </Checkbox>
-                  );
-                })}
-              </Stack>
+      <Form>
+        <Box maxW={["xs", "xs", "100%"]} width="100%">
+          <Stack mb={8} spacing={6}>
+            <Stack mb={8} spacing={6} maxWidth="40%">
+              <CustomTextInput
+                name="username"
+                label="Username"
+                placeholder="Enter new username"
+              />
+              <CustomTextInput
+                name="first_name"
+                label="First Name"
+                placeholder="Enter first name of user"
+                disabled={nameDisabled}
+              />
+              <CustomTextInput
+                name="last_name"
+                label="Last Name"
+                placeholder="Enter last name of user"
+                disabled={nameDisabled}
+              />
+              <PasswordManagement profileId={profileId} />
             </Stack>
-            <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-              <Button variant="outline" mr={3} size="sm">
-                Cancel
-              </Button>
-            </NextLink>
-            <Button
-              type="submit"
-              bg="primary.800"
-              _hover={{ bg: "primary.400" }}
-              _active={{ bg: "primary.500" }}
-              colorScheme="primary"
-              size="sm"
-            >
-              Save
+          </Stack>
+          <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
+            <Button variant="outline" mr={3} size="sm">
+              Cancel
             </Button>
-          </Box>
-        </Form>
-      )}
+          </NextLink>
+          <Button
+            type="submit"
+            bg="primary.800"
+            _hover={{ bg: "primary.400" }}
+            _active={{ bg: "primary.500" }}
+            colorScheme="primary"
+            size="sm"
+          >
+            Save
+          </Button>
+        </Box>
+      </Form>
     </Formik>
   );
 };
