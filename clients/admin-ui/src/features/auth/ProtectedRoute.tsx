@@ -57,7 +57,12 @@ const ProtectedRoute = ({
   children,
   redirectUrl = LOGIN_ROUTE,
 }: ProtectedRouteProps) => {
-  const { authenticated } = useProtectedRoute(redirectUrl);
+  const { authenticated, hasAccess } = useProtectedRoute(redirectUrl);
+
+  // Prevents the children from "flashing" on the screen before the hasAccess redirect
+  if (!hasAccess) {
+    return null;
+  }
 
   // Silly type error: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/18051
   // eslint-disable-next-line react/jsx-no-useless-fragment
