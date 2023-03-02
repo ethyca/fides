@@ -123,7 +123,9 @@ def deploy(ctx: click.Context) -> None:
     is_flag=True,
     help="Disable the initialization of the Fides CLI, to run in headless mode.",
 )
-def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None:
+def up(
+    ctx: click.Context, no_pull: bool = False, no_init: bool = False
+) -> None:  # pragma: no cover
     """
     Starts a sample project via docker compose.
     """

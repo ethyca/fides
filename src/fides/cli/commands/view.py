@@ -28,7 +28,9 @@ def view_config(
     ctx: click.Context, section: str = "", exclude_unset: bool = False
 ) -> None:
     """
-    Prints the configuration values being used as a `toml` file.
+    Prints the configuration values being used for this command-line instance.
+
+    _Note: To see the configuration values being used by the webserver, `GET` the `/api/v1/config` endpoint._
     """
     config = ctx.obj["CONFIG"]
     config_dict = config.dict(exclude_unset=exclude_unset)
