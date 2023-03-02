@@ -2,8 +2,7 @@ from typing import Dict
 from unittest import mock
 
 import pytest
-from httpx import AsyncClient
-from requests import HTTPError, Session
+from httpx import AsyncClient, Client, HTTPStatusError
 
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
@@ -17,8 +16,8 @@ class MockResponse:
     A class to mock Fides API responses
     """
 
-    def __init__(self, ok, json_data):
-        self.ok = ok
+    def __init__(self, raise_for_status, json_data):
+        self.raise_for_status = raise_for_status
         self.json_data = json_data
 
     def json(self):
@@ -43,9 +42,9 @@ class TestFidesClientUnit:
     """
 
     @mock.patch(
-        "requests.post",
+        "httpx.post",
         side_effect=[
-            MockResponse(True, {"token_data": {"access_token": SAMPLE_TOKEN}})
+            MockResponse(lambda: None, {"token_data": {"access_token": SAMPLE_TOKEN}})
         ],
     )
     def test_authenticated_request(self, mock_login, test_fides_client: FidesClient):
@@ -88,9 +87,9 @@ class TestFidesClientUnit:
         assert "No token" in str(exc)
 
     @mock.patch(
-        "requests.post",
+        "httpx.post",
         side_effect=[
-            MockResponse(True, {"token_data": {"access_token": SAMPLE_TOKEN}})
+            MockResponse(lambda: None, {"token_data": {"access_token": SAMPLE_TOKEN}})
         ],
     )
     def test_authenticated_request_parameters(
@@ -301,7 +300,7 @@ class TestFidesClientIntegration:
         # so that we don't call `create_client()`, which performs
         # login as part of initialization
 
-        with pytest.raises(HTTPError):
+        with pytest.raises(HTTPStatusError):
             test_fides_client_bad_credentials.login()
         assert test_fides_client_bad_credentials.token is None
 
@@ -317,7 +316,7 @@ class TestFidesClientIntegration:
         Test that properly configured fides client can create and execute a valid access privacy request
         Inspired by `test_privacy_request_endpoints.TestCreatePrivacyRequest`
         """
-        monkeypatch.setattr(Session, "send", api_client.send)
+        monkeypatch.setattr(Client, "send", api_client.send)
 
         pr_id = authenticated_fides_client.create_privacy_request(
             external_id="test_external_id",
@@ -339,14 +338,14 @@ class TestFidesClientIntegration:
         privacy request ID specified. This acts as a basic test to
         validate we can successfully hit authenticated endpoints.
         """
-        monkeypatch.setattr(Session, "send", api_client.send)
+        monkeypatch.setattr(Client, "send", api_client.send)
         statuses = authenticated_fides_client.request_status()
         assert len(statuses) == 0
 
     def test_request_status_privacy_request(
         self, authenticated_fides_client: FidesClient, policy, monkeypatch, api_client
     ):
-        monkeypatch.setattr(Session, "send", api_client.send)
+        monkeypatch.setattr(Client, "send", api_client.send)
 
         pr_id = authenticated_fides_client.create_privacy_request(
             external_id="test_external_id",

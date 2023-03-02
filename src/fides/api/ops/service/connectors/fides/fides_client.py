@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-import requests
+import httpx
 from httpx import AsyncClient
 from loguru import logger
-from requests import PreparedRequest, Request, RequestException, Session
+from httpx import Request, RequestError, Client, HTTPStatusError
 
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ops.api.v1 import urn_registry as urls
@@ -41,7 +41,7 @@ class FidesClient:
         username: str,
         password: str,
     ):
-        self.session = Session()
+        self.session = Client(timeout=5.0)
         self.uri = uri
         self.username = username
         self.password = password
@@ -55,21 +55,22 @@ class FidesClient:
             self.username,
         )
         try:
-            response = requests.post(
+            response = httpx.post(
                 f"{self.uri}{urls.V1_URL_PREFIX}{urls.LOGIN}", json=ul.dict()
             )
-        except RequestException as e:
+        except RequestError as e:
             logger.error("Error logging in on remote Fides {}: {}", self.uri, str(e))
             raise e
 
-        if response.ok:
+        try:
+            response.raise_for_status()
             self.token = response.json()["token_data"]["access_token"]
             logger.info(
                 "Successfully logged in to remote fides {} with username '{}'",
                 self.uri,
                 self.username,
             )
-        else:
+        except HTTPStatusError:
             logger.error("Error logging in on remote Fides {}", self.uri)
             response.raise_for_status()
 
@@ -81,21 +82,21 @@ class FidesClient:
         query_params: Optional[Dict[str, Any]] = {},
         data: Optional[Any] = None,
         json: Optional[Any] = None,
-    ) -> PreparedRequest:
+    ) -> Request:
 
         if not self.token:
             raise FidesError(
                 f"Unable to create authenticated request. No token for Fides connector for server {self.uri}"
             )
 
-        req: PreparedRequest = Request(
+        req: Request = self.session.build_request(
             method=method,
             url=f"{self.uri}{path}",
             headers=headers,
             params=query_params,
             data=data,
             json=json,
-        ).prepare()
+        )
         req.headers["Authorization"] = f"Bearer {self.token}"
         return req
 
@@ -117,15 +118,19 @@ class FidesClient:
             external_id,
             self.uri,
         )
-        request: PreparedRequest = self.authenticated_request(
+        request: Request = self.authenticated_request(
             method="POST",
             path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUEST_AUTHENTICATED,
             json=[pr.dict()],
         )
         response = self.session.send(request)
-        if not response.ok:
+
+        try:
+            response.raise_for_status()
+        except HTTPStatusError:
             logger.error("Error creating privacy request on remote Fides {}", self.uri)
             response.raise_for_status()
+
         if response.json()["failed"]:
             # TODO better handle errored state here?
             raise FidesError(
@@ -199,7 +204,7 @@ class FidesClient:
             f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} is in an unknown state. Look at the remote Fides for more information."
         )
 
-    def request_status(self, privacy_request_id: str = None) -> List[Dict[str, Any]]:
+    def request_status(self, privacy_request_id: str = "") -> List[Dict[str, Any]]:
         """
         Return privacy request object that tracks its status
         """
@@ -215,15 +220,18 @@ class FidesClient:
                 self.uri,
             )
 
-        request: PreparedRequest = self.authenticated_request(
+        request: Request = self.authenticated_request(
             method="GET",
             path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUESTS,
             query_params={"request_id": privacy_request_id}
             if privacy_request_id
             else None,
         )
-        response = self.session.send(request, timeout=5)
-        if not response.ok:
+        response = self.session.send(request)
+
+        try:
+            response.raise_for_status()
+        except HTTPStatusError:
             logger.error(
                 "Error retrieving status of privacy request [{}] on remote Fides {}",
                 privacy_request_id,
@@ -266,7 +274,7 @@ class FidesClient:
                 headers={"Authorization": f"Bearer {self.token}"},
             )
             response = self.session.send(request)
-        except requests.exceptions.HTTPError as e:
+        except HTTPStatusError as e:
             logger.error(
                 "Error retrieving data from child server for privacy request {}: {}",
                 privacy_request_id,
