@@ -57,7 +57,13 @@
     {
       "identifier": "manual_webhook",
       "type": "manual",
-      "human_readable": "Manual Webhook",
+      "human_readable": "Manual Process",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "sovrn",
+      "type": "email",
+      "human_readable": "Sovrn",
       "encoded_icon": null
     }
   ],

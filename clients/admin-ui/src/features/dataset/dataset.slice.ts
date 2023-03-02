@@ -153,6 +153,13 @@ export const { reducer } = datasetSlice;
 
 const selectDataset = (state: RootState) => state.dataset;
 
+const emptyDatasets: Dataset[] = [];
+export const selectAllDatasets: (state: RootState) => Dataset[] =
+  createSelector(
+    datasetApi.endpoints.getAllDatasets.select(),
+    ({ data }) => data ?? emptyDatasets
+  );
+
 export const selectActiveDatasetFidesKey = createSelector(
   selectDataset,
   (state) => state.activeDatasetFidesKey

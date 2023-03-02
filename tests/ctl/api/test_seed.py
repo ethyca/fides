@@ -7,10 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fides.api.ctl.database import seed
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.core import api as _api
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG, FidesConfig
 from fides.lib.models.fides_user import FidesUser
-
-CONFIG = get_config()
 
 
 @pytest.fixture(scope="function", name="data_category")
@@ -25,7 +23,7 @@ def fixture_data_category(test_config: FidesConfig) -> Generator:
         url=test_config.cli.server_url,
         resource_type="data_category",
         resource_id=fides_key,
-        headers=test_config.user.auth_header,
+        headers=CONFIG.user.auth_header,
     )
 
 
@@ -200,7 +198,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             data_category.fides_key,
-            headers=test_config.user.auth_header,
+            headers=CONFIG.user.auth_header,
         )
         assert result.status_code == 404
 
@@ -214,7 +212,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             data_category.fides_key,
-            headers=test_config.user.auth_header,
+            headers=CONFIG.user.auth_header,
         )
         assert result.status_code == 200
 
@@ -232,7 +230,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             json_resource=default_category.json(),
-            headers=test_config.user.auth_header,
+            headers=CONFIG.user.auth_header,
         )
         assert result.status_code == 200
 
@@ -241,7 +239,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             default_category.fides_key,
-            headers=test_config.user.auth_header,
+            headers=CONFIG.user.auth_header,
         )
         assert result.json()["description"] == new_description
 
@@ -259,7 +257,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             json_resource=data_category.json(),
-            headers=test_config.user.auth_header,
+            headers=CONFIG.user.auth_header,
         )
 
         await seed.load_default_resources(async_session)
@@ -268,7 +266,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             data_category.fides_key,
-            headers=test_config.user.auth_header,
+            headers=CONFIG.user.auth_header,
         )
         assert result.status_code == 200
 

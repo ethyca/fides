@@ -17,8 +17,15 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
+from fides.api.ops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_READ,
+    USER_CREATE,
+    USER_DELETE,
+    USER_READ,
+)
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import FidesConfig, get_config
+from fides.lib.exceptions import AuthorizationError
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
@@ -31,12 +38,6 @@ from fides.lib.oauth.schemas.user import (
     UserLogin,
     UserLoginResponse,
     UserResponse,
-)
-from fides.lib.oauth.scopes import (
-    PRIVACY_REQUEST_READ,
-    USER_CREATE,
-    USER_DELETE,
-    USER_READ,
 )
 
 router = APIRouter()
@@ -81,7 +82,11 @@ def create_user(
     user = FidesUser.create(db=db, data=user_data.dict())
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+        db=db,
+        data={
+            "user_id": user.id,
+            "scopes": [PRIVACY_REQUEST_READ],
+        },  # TODO - Change this to Viewer Role by default?
     )
     return user
 
@@ -175,6 +180,7 @@ def user_login(
             object_id=config.security.oauth_root_client_id,
             config=config,
             scopes=config.security.root_user_scopes,
+            roles=config.security.root_user_roles,
         )
 
         if not client_check:
@@ -241,8 +247,13 @@ def perform_login(
             client_id_byte_length,
             client_secret_btye_length,
             scopes=user.permissions.scopes,  # type: ignore
+            roles=user.permissions.roles,  # type: ignore
             user_id=user.id,
         )
+
+    if not user.permissions.scopes and not user.permissions.roles:  # type: ignore
+        logger.info("User needs scopes and/or roles to login.")
+        raise AuthorizationError(detail="Not Authorized for this action")
 
     user.last_login_at = datetime.utcnow()
     user.save(db)

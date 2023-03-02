@@ -18,6 +18,7 @@ import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
 import { baseApi } from "~/features/common/api.slice";
 import { reducer as configReducer } from "~/features/common/config.slice";
+import { reducer as consentReducer } from "~/features/consent/consent.slice";
 
 /**
  * To prevent the "redux-persist failed to create sync storage. falling back to noop storage"
@@ -44,6 +45,7 @@ const storage =
 const reducer = {
   [baseApi.reducerPath]: baseApi.reducer,
   config: configReducer,
+  consent: consentReducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;

@@ -32,7 +32,7 @@ from fides.api.ops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -44,9 +44,9 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
-from tests.ops.conftest import generate_auth_header_for_user
+from fides.lib.oauth.roles import ADMIN, VIEWER
+from tests.conftest import generate_auth_header_for_user
 
-CONFIG = get_config()
 page_size = Params().size
 
 
@@ -194,6 +194,42 @@ class TestCreateUser:
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
+
+    def test_cannot_create_duplicate_user(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        response_body = response.json()
+        assert HTTP_201_CREATED == response.status_code
+        assert response_body == {"id": user.id}
+        assert user.permissions is not None
+
+        duplicate_body = {
+            "username": "TEST_USER",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body)
+        assert HTTP_400_BAD_REQUEST == response.status_code
+        assert response.json()["detail"] == "Username already exists."
+
+        duplicate_body_2 = {
+            "username": "TEST_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body_2)
+        assert HTTP_400_BAD_REQUEST == response.status_code
+        assert response.json()["detail"] == "Username already exists."
 
 
 class TestDeleteUser:
@@ -795,7 +831,7 @@ class TestUserLogin:
     def url(self) -> str:
         return V1_URL_PREFIX + LOGIN
 
-    def test_user_does_not_exist(self, db, url, api_client):
+    def test_user_does_not_exist(self, url, api_client):
         body = {
             "username": "does not exist",
             "password": str_to_b64_str("idonotknowmypassword"),
@@ -803,7 +839,7 @@ class TestUserLogin:
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == HTTP_404_NOT_FOUND
 
-    def test_bad_login(self, db, url, user, api_client):
+    def test_bad_login(self, url, user, api_client):
         body = {
             "username": user.username,
             "password": str_to_b64_str("idonotknowmypassword"),
@@ -839,6 +875,76 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
 
+    def test_login_with_scopes(self, db, url, user, api_client):
+        # Delete existing client for test purposes
+        user.client.delete(db)
+        body = {
+            "username": user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        assert user.client is None  # client does not exist
+        assert user.permissions is not None
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(user)
+        assert user.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == user.client.id
+        assert token_data["scopes"] == [
+            PRIVACY_REQUEST_READ
+        ]  # Uses scopes on existing client
+        assert token_data["roles"] == []
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == user.id
+
+    def test_login_with_roles(self, db, url, viewer_user, api_client):
+        # Delete existing client for test purposes
+        viewer_user.client.delete(db)
+        body = {
+            "username": viewer_user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        assert viewer_user.client is None  # client does not exist
+        assert viewer_user.permissions is not None
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(viewer_user)
+        assert viewer_user.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == viewer_user.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == [VIEWER]  # Uses roles on existing client
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == viewer_user.id
+
+    def test_login_with_no_permissions(self, db, url, viewer_user, api_client):
+        viewer_user.permissions.roles = []
+        viewer_user.permissions.scopes = []
+        viewer_user.save(db)  # Make sure user doesn't have roles or scopes
+
+        assert viewer_user.permissions is not None
+        body = {
+            "username": viewer_user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_403_FORBIDDEN
+
     def test_login_updates_last_login_date(self, db, url, user, api_client):
         body = {
             "username": user.username,
@@ -851,7 +957,30 @@ class TestUserLogin:
         db.refresh(user)
         assert user.last_login_at is not None
 
-    def test_login_uses_existing_client(self, db, url, user, api_client):
+    def test_login_is_case_insensitive(
+        self, url, user, api_client, generate_auth_header
+    ):
+        body = {
+            "username": user.username.lower(),
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.post(V1_URL_PREFIX + LOGOUT, headers=auth_header, json={})
+        assert HTTP_204_NO_CONTENT == response.status_code
+
+        body = {
+            "username": user.username.upper(),
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+    def test_login_uses_existing_client_with_scopes(self, db, url, user, api_client):
         body = {
             "username": user.username,
             "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
@@ -877,6 +1006,52 @@ class TestUserLogin:
 
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
+
+    def test_login_uses_existing_client_with_roles(self, url, admin_user, api_client):
+        body = {
+            "username": admin_user.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        existing_client_id = admin_user.client.id
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        assert admin_user.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == existing_client_id
+        assert token_data["scopes"] == []
+        assert token_data["roles"] == [ADMIN]  # Uses roles on existing client
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == admin_user.id
+
+    def test_login_as_root_user(self, api_client, url):
+        body = {
+            "username": CONFIG.security.root_username,
+            "password": str_to_b64_str(CONFIG.security.root_password),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == CONFIG.security.oauth_root_client_id
+        assert token_data["scopes"] == SCOPE_REGISTRY  # Uses all scopes
+        assert token_data["roles"] == [ADMIN]  # Uses admin role
+
+        assert "user_data" in list(response.json().keys())
+        data = response.json()["user_data"]
+        assert data["username"] == CONFIG.security.root_username
+        assert data["id"] == CONFIG.security.oauth_root_client_id
 
 
 class TestUserLogout:

@@ -20,24 +20,24 @@ from fides.api.ops.api.v1.urn_registry import (
     CLIENT_BY_ID,
     CLIENT_SCOPE,
     OAUTH_CALLBACK,
+    ROLE,
     SCOPE,
     TOKEN,
     V1_URL_PREFIX,
 )
 from fides.api.ops.common_exceptions import OAuth2TokenException
 from fides.api.ops.models.authentication_request import AuthenticationRequest
-from fides.core.api import get
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
-
-CONFIG = get_config()
+from fides.lib.oauth.roles import ADMIN
 
 
 class TestCreateClient:
@@ -425,18 +425,14 @@ class TestAcquireAccessToken:
         response = api_client.post(url, data=data)
         jwt = json.loads(response.text).get("access_token")
         assert 200 == response.status_code
-        assert (
-            data["client_id"]
-            == json.loads(extract_payload(jwt, CONFIG.security.app_encryption_key))[
-                JWE_PAYLOAD_CLIENT_ID
-            ]
+
+        extracted_token = json.loads(
+            extract_payload(jwt, CONFIG.security.app_encryption_key)
         )
-        assert (
-            json.loads(extract_payload(jwt, CONFIG.security.app_encryption_key))[
-                JWE_PAYLOAD_SCOPES
-            ]
-            == SCOPE_REGISTRY
-        )
+        assert data["client_id"] == extracted_token[JWE_PAYLOAD_CLIENT_ID]
+        assert extracted_token[JWE_PAYLOAD_SCOPES] == SCOPE_REGISTRY
+
+        assert extracted_token[JWE_PAYLOAD_ROLES] == [ADMIN]
 
     def test_get_access_token(self, db, url, api_client):
         new_client, secret = ClientDetail.create_client_and_secret(
@@ -538,3 +534,43 @@ class TestCallback:
         assert response.json() == {"detail": "Unable to retrieve access token."}
 
         authentication_request.delete(db)
+
+
+class TestReadRoleMapping:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client) -> str:
+        return V1_URL_PREFIX + ROLE
+
+    def test_get_roles_not_authenticated(self, api_client: TestClient, url):
+        response = api_client.get(url)
+        assert response.status_code == 401
+
+    def test_get_roles_wrong_scope(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_get_role_scope_mapping(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([SCOPE_READ])
+
+        response = api_client.get(url, headers=auth_header)
+        response_body = json.loads(response.text)
+
+        assert 200 == response.status_code
+        assert set(response_body["admin"]) == set(SCOPE_REGISTRY)
+        assert set(response_body.keys()) == {
+            "admin",
+            "viewer_and_privacy_request_manager",
+            "privacy_request_manager",
+            "viewer",
+        }

@@ -11,7 +11,8 @@ nav:
   - Fides:
       - What is Fides?: index.md
       - API: api/index.md
-      - CLI: cli.md
+      - CLI: cli/index.md
+      - Configuration: config/index.md
       - Community:
           - Github, Slack, and Discord: community/overview.md
           - Community Hints and Tips: community/hints_tips.md
@@ -66,7 +67,8 @@ theme:
 markdown_extensions:
   - attr_list
   - pymdownx.superfences
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      base_path: 'docs/'
   - pymdownx.inlinehilite
   - pymdownx.tabbed
   - admonition

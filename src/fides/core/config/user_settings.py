@@ -1,21 +1,41 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
+from typing import Dict
 
-from typing import Dict, Optional
+from pydantic import Field
+
+from fides.core.utils import create_auth_header, get_auth_header
 
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__USER__"
 
 
-class UserSettings(FidesSettings):
-    """Class used to store values from the 'user' section of the config."""
+def try_get_auth_header() -> Dict[str, str]:
+    """Try to get the auth header. If an error is thrown, return a default auth header instead."""
+    try:
+        return get_auth_header(verbose=False)
+    except SystemExit:
+        return create_auth_header("defaulttoken")
 
-    # Auth headers are set when the CLI is initiated.
-    auth_header: Optional[Dict[str, str]]
-    analytics_opt_out: Optional[bool]
-    encryption_key: str = "test_encryption_key"
+
+class UserSettings(FidesSettings):
+    """Configuration settings that apply to the current user as opposed to the entire application instance."""
+
+    auth_header: Dict[str, str] = Field(
+        default=try_get_auth_header(),
+        description="Authentication header built automatically from the credentials file.",
+        exclude=True,
+    )
+    analytics_opt_out: bool = Field(
+        default=True,
+        description="When set to true, prevents sending privacy-respecting anonymous analytics data to Ethyca.",
+    )
+    encryption_key: str = Field(
+        default="test_encryption_key",
+        description="An arbitrary string used to encrypt the user data stored in the database. Encryption is implemented using PGP.",
+    )
 
     class Config:
         env_prefix = ENV_PREFIX

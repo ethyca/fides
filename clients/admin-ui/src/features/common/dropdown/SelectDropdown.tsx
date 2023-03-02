@@ -96,11 +96,12 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
           bg: "none",
         }}
         {...menuButtonProps}
+        data-testid="select-dropdown-btn"
       >
         <Text isTruncated>{selectedText ?? label}</Text>
       </MenuButton>
       {isOpen ? (
-        <MenuList lineHeight="1rem" p="0">
+        <MenuList lineHeight="1rem" p="0" data-testid="select-dropdown-list">
           {hasClear && (
             <Flex
               borderBottom="1px"

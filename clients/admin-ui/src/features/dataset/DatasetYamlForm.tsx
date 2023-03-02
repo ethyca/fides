@@ -1,10 +1,23 @@
-import { useToast } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Divider,
+  Flex,
+  useToast,
+  VStack,
+} from "@fidesui/react";
+import yaml, { YAMLException } from "js-yaml";
 import { useRouter } from "next/router";
+import { useRef, useState } from "react";
 
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { Editor, isYamlException } from "~/features/common/yaml/helpers";
+import YamlError from "~/features/common/yaml/YamlError";
 import { Dataset } from "~/types/api";
 
-import { successToastParams } from "../common/toast";
-import YamlForm from "../YamlForm";
 import {
   setActiveDatasetFidesKey,
   useCreateDatasetMutation,
@@ -23,23 +36,51 @@ export function isDatasetArray(value: unknown): value is NestedDataset {
   );
 }
 
-const DESCRIPTION =
-  "Get started creating your first dataset by pasting your dataset yaml below! You may have received this yaml from a colleague or your Ethyca developer support engineer.";
-
 const DatasetYamlForm = () => {
   const [createDataset] = useCreateDatasetMutation();
-  const toast = useToast();
+  const [isEmptyState, setIsEmptyState] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTouched, setIsTouched] = useState(false);
+  const monacoRef = useRef(null);
   const router = useRouter();
+  const toast = useToast();
+  const { errorAlert } = useAlert();
+  const [yamlError, setYamlError] = useState(
+    undefined as unknown as YAMLException
+  );
 
-  const handleCreate = async (yaml: unknown) => {
-    let dataset;
-    if (isDatasetArray(yaml)) {
-      [dataset] = yaml.dataset;
-    } else {
-      dataset = yaml;
+  const validate = (value: string) => {
+    yaml.load(value, { json: true });
+    setYamlError(undefined as unknown as YAMLException);
+  };
+
+  const handleChange = (value: string | undefined) => {
+    try {
+      setIsTouched(true);
+      validate(value as string);
+      setIsEmptyState(!!(!value || value.trim() === ""));
+    } catch (error) {
+      if (isYamlException(error)) {
+        setYamlError(error);
+      } else {
+        errorAlert("Could not parse the supplied YAML");
+      }
     }
+  };
 
+  const handleCreate = async (value: unknown) => {
+    let dataset;
+    if (isDatasetArray(value)) {
+      [dataset] = value.dataset;
+    } else {
+      dataset = value;
+    }
     return createDataset(dataset);
+  };
+
+  const handleMount = (editor: any) => {
+    monacoRef.current = editor;
+    (monacoRef.current as any).focus();
   };
 
   const handleSuccess = (newDataset: Dataset) => {
@@ -48,13 +89,74 @@ const DatasetYamlForm = () => {
     router.push(`/dataset/${newDataset.fides_key}`);
   };
 
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    const value = (monacoRef.current as any).getValue();
+    const yamlDoc = yaml.load(value, { json: true });
+    const result = await handleCreate(yamlDoc);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else if ("data" in result) {
+      handleSuccess(result.data);
+    }
+    setIsSubmitting(false);
+  };
+
   return (
-    <YamlForm<Dataset>
-      description={DESCRIPTION}
-      submitButtonText="Create dataset"
-      onCreate={handleCreate}
-      onSuccess={handleSuccess}
-    />
+    <Flex gap="97px">
+      <Box w="75%">
+        <Box color="gray.700" fontSize="14px" mb={4}>
+          Get started creating your first dataset by pasting your dataset yaml
+          below! You may have received this yaml from a colleague or your Ethyca
+          developer support engineer.
+        </Box>
+        <VStack align="stretch">
+          <Divider color="gray.100" />
+          <Editor
+            defaultLanguage="yaml"
+            height="calc(100vh - 515px)"
+            onChange={handleChange}
+            onMount={handleMount}
+            options={{
+              fontFamily: "Menlo",
+              fontSize: 13,
+              minimap: {
+                enabled: true,
+              },
+            }}
+            theme="light"
+          />
+          <Divider color="gray.100" />
+          <ButtonGroup
+            mt="24px !important"
+            size="sm"
+            spacing="8px"
+            variant="outline"
+          >
+            <Button
+              bg="primary.800"
+              color="white"
+              isDisabled={isEmptyState || !!yamlError || isSubmitting}
+              isLoading={isSubmitting}
+              loadingText="Saving Yaml system"
+              onClick={handleSubmit}
+              size="sm"
+              variant="solid"
+              type="submit"
+              _active={{ bg: "primary.500" }}
+              _hover={{ bg: "primary.400" }}
+            >
+              Create dataset
+            </Button>
+          </ButtonGroup>
+        </VStack>
+      </Box>
+      <Box>
+        {isTouched && (isEmptyState || yamlError) && (
+          <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />
+        )}
+      </Box>
+    </Flex>
   );
 };
 
