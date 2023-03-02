@@ -72,7 +72,7 @@ PACKAGE = "ethyca-fides"
 @click.pass_context
 def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     """
-    __Command-line tool for the Fides privacy enginering platform.__
+    __Command-line tool for the Fides privacy engineering platform.__
 
     ---
 
@@ -82,7 +82,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     ctx.ensure_object(dict)
     config = get_config(config_path, verbose=True)
 
-    # Dyanmically add commands to the CLI
+    # Dynamically add commands to the CLI
     cli.commands = LOCAL_COMMAND_DICT
 
     if not (local or config.cli.local_mode):

@@ -115,7 +115,7 @@ def generate_dataset_bigquery(
 @click.pass_context
 def generate_system(ctx: click.Context) -> None:
     """
-    Generate Fides systems from .
+    Generate Fides systems.
     """
 
 

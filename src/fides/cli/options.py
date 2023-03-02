@@ -145,7 +145,7 @@ def okta_org_url_option(command: Callable) -> Callable:
     command = click.option(
         "--org-url",
         type=str,
-        help="Connect to Okta using an 'Org URL'. Requires options '--org-url' and '--token'.",
+        help="Connect to Okta using an 'Org URL'. _Requires options `--org-url` & `--token`._",
     )(command)
     return command
 
@@ -185,7 +185,7 @@ def aws_region_option(command: Callable) -> Callable:
     command = click.option(
         "--region",
         type=str,
-        help="Connec to AWS using a specific `Region`. _Requires options `--access_key_id`, `--secret_access_key` & `--region`._",
+        help="Connect to AWS using a specific `Region`. _Requires options `--access_key_id`, `--secret_access_key` & `--region`._",
     )(command)
     return command
 
