@@ -153,6 +153,10 @@ class ConnectorRunner:
             self.db,
         )
 
+        # verify we returned at least one row for each collection in the dataset
+        for collection in self.dataset["collections"]:
+            assert len(access_results[f"{fides_key}:{collection['name']}"])
+
         erasure_results = await graph_task.run_erasure(
             privacy_request,
             erasure_policy,
@@ -210,6 +214,10 @@ class ConnectorRunner:
             identities,
             self.db,
         )
+
+        # verify we returned at least one row for each collection in the dataset
+        for collection in self.dataset["collections"]:
+            assert len(access_results[f"{fides_key}:{collection['name']}"])
 
         erasure_results = await graph_task.run_erasure(
             privacy_request,

@@ -81,7 +81,7 @@ def init_saas_connector(session: nox.Session) -> None:
 
     # render fixtures file
     fixtures_template = environment.get_template("new_fixtures.jinja")
-    filename = f"tests/ops/fixtures/{variable_map['connector_id']}_fixtures.py"
+    filename = f"tests/fixtures/saas/{variable_map['connector_id']}_fixtures.py"
     contents = fixtures_template.render(variable_map)
     with open(filename, mode="w", encoding="utf-8") as fixtures:
         fixtures.write(contents)
