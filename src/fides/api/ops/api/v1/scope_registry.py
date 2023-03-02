@@ -7,6 +7,7 @@ The format for defining a scope is:
 
 `SCOPE_REGISTRY` is intended as a comprehensive list of all available scopes.
 """
+from enum import Enum
 
 AUTHORIZE = "authorize"
 CLI_OBJECTS = "cli-objects"
@@ -228,3 +229,8 @@ SCOPE_DOCS = {
 }
 
 SCOPE_REGISTRY = list(SCOPE_DOCS.keys())
+
+
+ScopeRegistryEnum = Enum(  # type: ignore[misc]
+    "ScopeRegistryEnum", {scope: scope for scope in SCOPE_REGISTRY}  # type: ignore
+)
