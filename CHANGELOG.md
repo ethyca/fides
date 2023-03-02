@@ -58,6 +58,7 @@ The types of changes are:
 * Allow string dates to stay strings in cache decoding [#2695](https://github.com/ethyca/fides/pull/2695)
 * Admin UI
   * Remove Identifiability (Data Qualifier) from taxonomy editor [2684](https://github.com/ethyca/fides/pull/2684)
+* Fix Privacy Request Status when submitting a consent request when identity verification is required [#2736](https://github.com/ethyca/fides/pull/2736)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
