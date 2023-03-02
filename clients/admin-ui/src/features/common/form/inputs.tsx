@@ -80,7 +80,12 @@ const TextInput = ({
 
   return (
     <InputGroup size="sm" mr="2">
-      <Input {...props} type={type} pr={isPassword ? "10" : "3"} />
+      <Input
+        {...props}
+        type={type}
+        pr={isPassword ? "10" : "3"}
+        background="white"
+      />
       {isPassword ? (
         <InputRightElement pr="2">
           <IconButton
@@ -120,6 +125,29 @@ const ErrorMessage = ({
   );
 };
 
+export interface Option {
+  value: string;
+  label: string;
+}
+interface SelectProps {
+  label: string;
+  labelProps?: FormLabelProps;
+  tooltip?: string;
+  options: Option[];
+  isDisabled?: boolean;
+  isSearchable?: boolean;
+  isClearable?: boolean;
+  isRequired?: boolean;
+  size?: Size;
+  isMulti?: boolean;
+  variant?: Variant;
+  menuPosition?: MenuPosition;
+  /**
+   * If true, when isMulti=false, the selected value will be rendered as a block,
+   * similar to how the multi values are rendered
+   */
+  singleValueBlock?: boolean;
+}
 const SelectInput = ({
   options,
   fieldName,
@@ -127,11 +155,12 @@ const SelectInput = ({
   isSearchable,
   isClearable,
   isMulti = false,
+  singleValueBlock,
   isDisabled = false,
   menuPosition = "absolute",
 }: { fieldName: string; isMulti?: boolean } & Omit<SelectProps, "label">) => {
   const [initialField] = useField(fieldName);
-  const field = { ...initialField, value: initialField.value ?? [] };
+  const field = { ...initialField, value: initialField.value ?? "" };
   const selected = isMulti
     ? options.filter((o) => field.value.indexOf(o.value) >= 0)
     : options.find((o) => o.value === field.value) || null;
@@ -175,7 +204,12 @@ const SelectInput = ({
       size={size}
       classNamePrefix="custom-select"
       chakraStyles={{
-        container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+        container: (provided) => ({
+          ...provided,
+          mr: 2,
+          flexGrow: 1,
+          backgroundColor: "white",
+        }),
         dropdownIndicator: (provided) => ({
           ...provided,
           bg: "transparent",
@@ -191,6 +225,16 @@ const SelectInput = ({
           background: "primary.400",
           color: "white",
         }),
+        singleValue: singleValueBlock
+          ? (provided) => ({
+              ...provided,
+              background: "primary.400",
+              color: "white",
+              borderRadius: ".375rem",
+              fontSize: ".75rem",
+              paddingX: ".5rem",
+            })
+          : undefined,
       }}
       components={components}
       isSearchable={isSearchable}
@@ -199,6 +243,89 @@ const SelectInput = ({
       isMulti={isMulti}
       isDisabled={isDisabled}
       menuPosition={menuPosition}
+    />
+  );
+};
+
+interface CreatableSelectProps extends SelectProps {
+  /** Do not render the dropdown menu */
+  disableMenu?: boolean;
+}
+const CreatableSelectInput = ({
+  options,
+  fieldName,
+  size,
+  isSearchable,
+  isClearable,
+  isMulti,
+  disableMenu,
+}: { fieldName: string } & Omit<CreatableSelectProps, "label">) => {
+  const [initialField] = useField(fieldName);
+  const value: string[] | string = initialField.value ?? [];
+  const field = { ...initialField, value };
+  const selected = Array.isArray(field.value)
+    ? field.value.map((v) => ({ label: v, value: v }))
+    : { label: field.value, value: field.value };
+
+  const { setFieldValue, touched, setTouched } = useFormikContext();
+
+  const handleChangeMulti = (newValue: MultiValue<Option>) => {
+    setFieldValue(
+      field.name,
+      newValue.map((v) => v.value)
+    );
+  };
+  const handleChangeSingle = (newValue: SingleValue<Option>) => {
+    if (newValue) {
+      field.onChange(field.name)(newValue.value);
+    } else {
+      field.onChange(field.name)("");
+    }
+  };
+
+  const handleChange = (newValue: MultiValue<Option> | SingleValue<Option>) =>
+    isMulti
+      ? handleChangeMulti(newValue as MultiValue<Option>)
+      : handleChangeSingle(newValue as SingleValue<Option>);
+
+  const components = disableMenu
+    ? { Menu: () => null, DropdownIndicator: () => null }
+    : undefined;
+
+  return (
+    <CreatableSelect
+      options={options}
+      onBlur={(e) => {
+        setTouched({ ...touched, [field.name]: true });
+        field.onBlur(e);
+      }}
+      onChange={handleChange}
+      name={fieldName}
+      value={selected}
+      size={size}
+      classNamePrefix="custom-creatable-select"
+      chakraStyles={{
+        container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+        dropdownIndicator: (provided) => ({
+          ...provided,
+          background: "white",
+        }),
+        multiValue: (provided) => ({
+          ...provided,
+          background: "primary.400",
+          color: "white",
+        }),
+        multiValueRemove: (provided) => ({
+          ...provided,
+          display: "none",
+          visibility: "hidden",
+        }),
+      }}
+      components={components}
+      isSearchable={isSearchable}
+      isClearable={isClearable}
+      instanceId={`creatable-select-${fieldName}`}
+      isMulti={isMulti}
     />
   );
 };
@@ -268,23 +395,6 @@ export const CustomTextInput = ({
   );
 };
 
-export interface Option {
-  value: string;
-  label: string;
-}
-interface SelectProps {
-  label: string;
-  labelProps?: FormLabelProps;
-  tooltip?: string;
-  options: Option[];
-  isDisabled?: boolean;
-  isRequired?: boolean;
-  isSearchable?: boolean;
-  isClearable?: boolean;
-  size?: Size;
-  isMulti?: boolean;
-  menuPosition?: MenuPosition;
-}
 export const CustomSelect = ({
   label,
   labelProps,
@@ -297,8 +407,9 @@ export const CustomSelect = ({
   size = "sm",
   isMulti,
   variant = "inline",
+  singleValueBlock,
   ...props
-}: SelectProps & StringField & { variant?: Variant }) => {
+}: SelectProps & StringField) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
   if (variant === "inline") {
@@ -320,6 +431,7 @@ export const CustomSelect = ({
               isSearchable={isSearchable === undefined ? isMulti : isSearchable}
               isClearable={isClearable}
               isMulti={isMulti}
+              singleValueBlock={singleValueBlock}
               isDisabled={isDisabled}
               menuPosition={props.menuPosition}
             />
@@ -338,12 +450,18 @@ export const CustomSelect = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
-          <Label htmlFor={props.id || props.name} my={0} {...labelProps}>
+          <Label
+            htmlFor={props.id || props.name}
+            fontSize="sm"
+            my={0}
+            mr={1}
+            {...labelProps}
+          >
             {label}
           </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <Box width="100%">
+        <Box width="100%" data-testid={`input-${field.name}`}>
           <SelectInput
             options={options}
             fieldName={field.name}
@@ -351,6 +469,7 @@ export const CustomSelect = ({
             isSearchable={isSearchable === undefined ? isMulti : isSearchable}
             isClearable={isClearable}
             isMulti={isMulti}
+            singleValueBlock={singleValueBlock}
             isDisabled={isDisabled}
             menuPosition={props.menuPosition}
           />
@@ -365,140 +484,71 @@ export const CustomSelect = ({
   );
 };
 
-export const CustomCreatableSingleSelect = ({
+export const CustomCreatableSelect = ({
   label,
-  isSearchable,
-  options,
-  ...props
-}: SelectProps & StringField) => {
-  const [initialField, meta] = useField(props);
-  const field = { ...initialField, value: initialField.value ?? "" };
-  const isInvalid = !!(meta.touched && meta.error);
-  const selected = { label: field.value, value: field.value };
-
-  const { touched, setTouched } = useFormikContext();
-
-  return (
-    <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr">
-        <Label htmlFor={props.id || props.name}>{label}</Label>
-
-        <Box data-testid={`input-${field.name}`}>
-          <CreatableSelect
-            options={options}
-            onBlur={(e) => {
-              setTouched({ ...touched, [field.name]: true });
-              field.onBlur(e);
-            }}
-            onChange={(newValue) => {
-              if (newValue) {
-                field.onChange(props.name)(newValue.value);
-              } else {
-                field.onChange(props.name)("");
-              }
-            }}
-            name={props.name}
-            value={selected}
-            chakraStyles={{
-              dropdownIndicator: (provided) => ({
-                ...provided,
-                background: "white",
-              }),
-              multiValue: (provided) => ({
-                ...provided,
-                background: "primary.400",
-                color: "white",
-              }),
-              multiValueRemove: (provided) => ({
-                ...provided,
-                display: "none",
-                visibility: "hidden",
-              }),
-            }}
-          />
-        </Box>
-      </Grid>
-      <ErrorMessage
-        isInvalid={isInvalid}
-        message={meta.error}
-        fieldName={field.name}
-      />
-    </FormControl>
-  );
-};
-
-export const CustomCreatableMultiSelect = ({
-  label,
-  isSearchable,
-  isClearable,
+  isSearchable = true,
   options,
   size = "sm",
   tooltip,
+  variant = "inline",
   ...props
-}: SelectProps & StringArrayField) => {
+}: CreatableSelectProps & StringArrayField) => {
   const [initialField, meta] = useField(props);
   const field = { ...initialField, value: initialField.value ?? [] };
   const isInvalid = !!(meta.touched && meta.error);
-  const selected = field.value.map((v) => ({ label: v, value: v }));
-  const { setFieldValue, touched, setTouched } = useFormikContext();
 
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Grid templateColumns="1fr 3fr">
+          <Label htmlFor={props.id || props.name}>{label}</Label>
+          <Box
+            display="flex"
+            alignItems="center"
+            data-testid={`input-${field.name}`}
+          >
+            <CreatableSelectInput
+              fieldName={field.name}
+              options={options}
+              size={size}
+              isSearchable={isSearchable}
+              {...props}
+            />
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Box>
+        </Grid>
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </FormControl>
+    );
+  }
   return (
     <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr">
-        <Label htmlFor={props.id || props.name}>{label}</Label>
-        <Box
-          display="flex"
-          alignItems="center"
-          data-testid={`input-${field.name}`}
-        >
-          <CreatableSelect
-            data-testid={`input-${field.name}`}
-            name={props.name}
-            chakraStyles={{
-              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
-              dropdownIndicator: (provided) => ({
-                ...provided,
-                background: "white",
-              }),
-              multiValue: (provided) => ({
-                ...provided,
-                background: "primary.400",
-                color: "white",
-              }),
-              multiValueRemove: (provided) => ({
-                ...provided,
-                display: "none",
-                visibility: "hidden",
-              }),
-            }}
-            components={{
-              Menu: () => null,
-              DropdownIndicator: () => null,
-            }}
-            isClearable={isClearable}
-            isMulti
-            options={options}
-            value={selected}
-            onBlur={(e) => {
-              setTouched({ ...touched, [field.name]: true });
-              field.onBlur(e);
-            }}
-            onChange={(newValue) => {
-              setFieldValue(
-                field.name,
-                newValue.map((v) => v.value)
-              );
-            }}
-            size={size}
-          />
+      <VStack alignItems="start">
+        <Flex alignItems="center">
+          <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
+            {label}
+          </Label>
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Flex>
+        <Box width="100%">
+          <CreatableSelectInput
+            fieldName={field.name}
+            options={options}
+            size={size}
+            isSearchable={isSearchable}
+            {...props}
+          />
         </Box>
-      </Grid>
-      <ErrorMessage
-        isInvalid={isInvalid}
-        message={meta.error}
-        fieldName={field.name}
-      />
+        <ErrorMessage
+          isInvalid={isInvalid}
+          message={meta.error}
+          fieldName={field.name}
+        />
+      </VStack>
     </FormControl>
   );
 };

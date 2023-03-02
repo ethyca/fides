@@ -1,4 +1,5 @@
 import { Box, Heading, SimpleGrid, Stack, Text } from "@fidesui/react";
+import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
 import {
@@ -27,6 +28,7 @@ const SectionTitle = ({ children }: { children: string }) => (
 
 const AddSystem = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   return (
     <Stack spacing={9} data-testid="add-systems">
@@ -49,14 +51,14 @@ const AddSystem = () => {
       </Stack>
       <Box data-testid="manual-options">
         <SectionTitle>Manually add systems</SectionTitle>
-        <SimpleGrid columns={{ sm: 2, md: 3 }} spacing="4">
+        <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing="4">
           <SystemOption
             label="Add a system"
             icon={<ManualSetupIcon boxSize={8} />}
             description="Manually add a system for services not covered by automated scanners"
             onClick={() => {
-              dispatch(changeStep(5));
               dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
+              router.push("/add-systems/new");
             }}
             data-testid="manual-btn"
           />
@@ -65,7 +67,7 @@ const AddSystem = () => {
 
       <Box data-testid="automated-options">
         <SectionTitle>Automated infrastructure scanning</SectionTitle>
-        <SimpleGrid columns={{ sm: 2, md: 3 }} spacing="4">
+        <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing="4">
           <SystemOption
             label="Scan your infrastructure (AWS)"
             description="Automatically discover new systems in your AWS infrastructure"
