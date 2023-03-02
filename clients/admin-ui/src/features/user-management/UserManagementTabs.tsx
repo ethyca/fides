@@ -1,35 +1,25 @@
-import { useState } from "react";
+import { Box } from "@fidesui/react";
 
+import { useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
 
-import { isErrorResult } from "../common/helpers";
 import PermissionsForm from "./PermissionsForm";
-import UserForm, {
-  type FormValues,
-  type Props as UserFormProps,
-} from "./UserForm";
+import { selectActiveUserId } from "./user-management.slice";
+import UserForm, { type Props as UserFormProps } from "./UserForm";
 
 const UserManagementTabs = ({
   onSubmit,
   initialValues,
   ...props
 }: UserFormProps) => {
-  const [isNewUser, setIsNewUser] = useState(!initialValues);
-
-  const handleSubmit = async (values: FormValues) => {
-    const result = await onSubmit(values);
-    if (!isErrorResult(result)) {
-      setIsNewUser(false);
-    }
-    return result;
-  };
+  const activeUserId = useAppSelector(selectActiveUserId);
 
   const tabs: TabData[] = [
     {
       label: "Profile",
       content: (
         <UserForm
-          onSubmit={handleSubmit}
+          onSubmit={onSubmit}
           initialValues={initialValues}
           {...props}
         />
@@ -37,8 +27,12 @@ const UserManagementTabs = ({
     },
     {
       label: "Permissions",
-      content: <PermissionsForm />,
-      isDisabled: isNewUser,
+      content: (
+        <Box w={{ base: "100%", md: "65%", xl: "50%" }}>
+          <PermissionsForm />
+        </Box>
+      ),
+      isDisabled: !activeUserId,
     },
   ];
 

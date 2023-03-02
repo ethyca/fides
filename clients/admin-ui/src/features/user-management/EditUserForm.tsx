@@ -5,12 +5,12 @@ import { selectUser } from "~/features/auth";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistry } from "~/types/api";
 
-import { User, UserPermissions } from "./types";
+import { User } from "./types";
 import { useEditUserMutation } from "./user-management.slice";
 import { FormValues } from "./UserForm";
 import UserManagementTabs from "./UserManagementTabs";
 
-const useUserForm = (profile: User, permissions: UserPermissions) => {
+const useUserForm = (profile: User) => {
   const currentUser = useSelector(selectUser);
   const [editUser] = useEditUserMutation();
 
@@ -19,7 +19,6 @@ const useUserForm = (profile: User, permissions: UserPermissions) => {
     first_name: profile.first_name ?? "",
     last_name: profile.last_name ?? "",
     password: "",
-    roles: permissions.roles ?? [],
     id: profile.id,
   };
 
@@ -42,11 +41,10 @@ const useUserForm = (profile: User, permissions: UserPermissions) => {
 
 interface Props {
   user: User;
-  permissions: UserPermissions;
 }
-const EditUserForm = ({ user, permissions }: Props) => {
+const EditUserForm = ({ user }: Props) => {
   const { isOwnProfile, handleSubmit, canUpdateUser, initialValues } =
-    useUserForm(user, permissions);
+    useUserForm(user);
 
   return (
     <div>

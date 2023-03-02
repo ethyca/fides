@@ -8,17 +8,13 @@ import { ScopeRegistry } from "~/types/api";
 
 import NewPasswordModal from "./NewPasswordModal";
 import UpdatePasswordModal from "./UpdatePasswordModal";
+import { selectActiveUserId } from "./user-management.slice";
 
-interface Props {
-  profileId?: string;
-}
-const PasswordManagement = ({ profileId }: Props) => {
-  const isNewUser = profileId == null;
-  const currentUser = useAppSelector(selectUser);
+const PasswordManagement = () => {
+  const activeUserId = useAppSelector(selectActiveUserId);
+  const loggedInUser = useAppSelector(selectUser);
 
-  const isOwnProfile = currentUser ? currentUser.id === profileId : false;
-
-  if (isNewUser) {
+  if (!activeUserId) {
     return (
       <CustomTextInput
         name="password"
@@ -29,16 +25,13 @@ const PasswordManagement = ({ profileId }: Props) => {
       />
     );
   }
-
-  if (!profileId) {
-    return null;
-  }
+  const isOwnProfile = loggedInUser ? loggedInUser.id === activeUserId : false;
 
   return (
     <HStack>
-      {isOwnProfile ? <UpdatePasswordModal id={profileId} /> : null}
+      {isOwnProfile ? <UpdatePasswordModal id={activeUserId} /> : null}
       <Restrict scopes={[ScopeRegistry.USER_PASSWORD_RESET]}>
-        <NewPasswordModal id={profileId} />
+        <NewPasswordModal id={activeUserId} />
       </Restrict>
     </HStack>
   );

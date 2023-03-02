@@ -4,24 +4,23 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useAPIHelper } from "common/hooks";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
-import { useRouter } from "next/router";
 import * as Yup from "yup";
 
+import { useAppSelector } from "~/app/hooks";
 import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { successToastParams } from "~/features/common/toast";
-import { RoleRegistry } from "~/types/api";
 
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
+import { selectActiveUserId, setActiveUserId } from "./user-management.slice";
 
 const defaultInitialValues = {
   username: "",
   first_name: "",
   last_name: "",
   password: "",
-  roles: [] as RoleRegistry[],
 };
 
 export type FormValues = typeof defaultInitialValues;
@@ -31,7 +30,6 @@ const ValidationSchema = Yup.object().shape({
   first_name: Yup.string().label("First name"),
   last_name: Yup.string().label("Last name"),
   password: passwordValidation.label("Password"),
-  roles: Yup.array().of(Yup.string()),
 });
 
 export interface Props {
@@ -54,13 +52,12 @@ const UserForm = ({
   canEditNames,
   canChangePassword,
 }: Props) => {
-  const router = useRouter();
   const toast = useToast();
+
   const { handleError } = useAPIHelper();
-  const profileId = Array.isArray(router.query.id)
-    ? router.query.id[0]
-    : router.query.id;
-  const isNewUser = profileId == null;
+  const activeUserId = useAppSelector(selectActiveUserId);
+
+  const isNewUser = !activeUserId;
   const nameDisabled = isNewUser ? false : !canEditNames;
 
   const handleSubmit = async (values: FormValues) => {
@@ -71,6 +68,7 @@ const UserForm = ({
       return;
     }
     toast(successToastParams(`User ${isNewUser ? "created" : "updated"}`));
+    setActiveUserId(result.data.id);
   };
   const validationSchema = canChangePassword
     ? ValidationSchema
@@ -103,7 +101,7 @@ const UserForm = ({
                 placeholder="Enter last name of user"
                 disabled={nameDisabled}
               />
-              <PasswordManagement profileId={profileId} />
+              <PasswordManagement />
             </Stack>
             <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
               <Button variant="outline" mr={3} size="sm">

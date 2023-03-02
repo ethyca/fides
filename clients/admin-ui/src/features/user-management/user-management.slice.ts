@@ -27,6 +27,7 @@ export interface UserManagementState {
   size: number;
   username: string;
   token: string | null;
+  activeUserId?: User["id"];
 }
 
 const initialState: UserManagementState = {
@@ -55,10 +56,18 @@ export const userManagementSlice = createSlice({
       page: initialState.page,
       size: action.payload,
     }),
+    setActiveUserId: (
+      state,
+      action: PayloadAction<User["id"] | undefined>
+    ) => ({
+      ...state,
+      activeUserId: action.payload,
+    }),
   },
 });
 
-export const { setPage, setUsernameSearch } = userManagementSlice.actions;
+export const { setPage, setUsernameSearch, setActiveUserId } =
+  userManagementSlice.actions;
 
 export const { reducer } = userManagementSlice;
 
@@ -167,6 +176,13 @@ export const selectUserFilters = (state: RootState): UsersListParams => ({
   size: state.userManagement.size,
   username: state.userManagement.username,
 });
+
+const selectUserManagement = (state: RootState) => state.userManagement;
+
+export const selectActiveUserId = createSelector(
+  selectUserManagement,
+  (state) => state.activeUserId
+);
 
 const emptyScopes: ScopeRegistry[] = [];
 export const selectThisUsersScopes = createSelector(
