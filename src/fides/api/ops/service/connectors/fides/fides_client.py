@@ -39,8 +39,12 @@ class FidesClient:
         uri: str,
         username: str,
         password: str,
+        connection_read_timeout: float,
     ):
-        self.session = Client(timeout=5.0)
+        # only the read timeout should need to be overriden
+        # since this client may have a blocking call for privacy request execution
+        self.session = Client(timeout=httpx.Timeout(5.0, read=connection_read_timeout))
+
         self.uri = uri
         self.username = username
         self.password = password
