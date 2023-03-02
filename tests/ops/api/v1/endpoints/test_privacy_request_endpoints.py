@@ -77,8 +77,6 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.policy import PolicyResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.task import graph_task
-from fides.api.ops.task.graph_task import run_access_request
-from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 from fides.api.ops.util.cache import (
     get_encryption_cache_key,
