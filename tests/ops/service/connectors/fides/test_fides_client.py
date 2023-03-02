@@ -68,7 +68,7 @@ class TestFidesClientUnit:
         )
         assert request.method == "GET"
         assert request.url == test_fides_client.uri + "/testpath"
-        assert len(request.headers) == 2
+        assert len(request.headers) == 7
         assert "another_header" in request.headers
         assert request.headers["another_header"] == "header_value"
         assert "Authorization" in request.headers
