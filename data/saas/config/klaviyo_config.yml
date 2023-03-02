@@ -51,12 +51,12 @@ saas_config:
               value: '2023-02-03'
           body: |
             {
-            "data": {
-            "type": "data-privacy-deletion-job",
-            "attributes": {
-            "profile_id": "<profiles_id>"
-            }
-            }
+              "data": {
+                "type": "data-privacy-deletion-job",
+                "attributes": {
+                  "profile_id": "<profiles_id>"
+                }
+              }
             }
           param_values:
             - name: profiles_id
