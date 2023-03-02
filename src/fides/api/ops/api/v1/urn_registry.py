@@ -39,8 +39,10 @@ STORAGE_BY_KEY = "/storage/config/{config_key}"
 STORAGE_UPLOAD = "/storage/{request_id}"
 STORAGE_DEFAULT = "/storage/default"
 STORAGE_ACTIVE_DEFAULT = "/storage/default/active"
+STORAGE_STATUS = "/storage/default/status"
 STORAGE_DEFAULT_SECRETS = "/storage/default/{storage_type}/secret"
 STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
+
 
 # Email URLs
 MESSAGING_CONFIG = "/messaging/config"
@@ -48,6 +50,7 @@ MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
 MESSAGING_DEFAULT = "/messaging/default"
 MESSAGING_ACTIVE_DEFAULT = "/messaging/default/active"
+MESSAGING_STATUS = "/messaging/default/status"
 MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
 MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
 MESSAGING_TEST = "/messaging/config/test"

@@ -8,7 +8,7 @@ ENV_PREFIX = "FIDES__NOTIFICATIONS__"
 
 
 class NotificationSettings(FidesSettings):
-    """Configuration settings for data subject and/or data processor notifications"""
+    """Configuration settings for Data Subject and/or Data Processor notifications."""
 
     notification_service_type: Optional[str] = Field(
         default=None,

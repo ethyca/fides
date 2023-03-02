@@ -8,6 +8,8 @@ The format for defining a scope is:
 `SCOPE_REGISTRY` is intended as a comprehensive list of all available scopes.
 """
 
+from enum import Enum
+
 AUTHORIZE = "authorize"
 CLI_OBJECTS = "cli-objects"
 CLIENT = "client"
@@ -321,3 +323,8 @@ SCOPE_DOCS = {
 }
 
 SCOPE_REGISTRY = list(SCOPE_DOCS.keys())
+
+_SCOPE_REGISTRY_DICT = {key: key for key in SCOPE_REGISTRY}
+# mypy doesn't like taking the dictionary to generate the enum
+# https://github.com/python/mypy/issues/5317
+SCOPE_REGISTRY_ENUM = Enum("ScopeRegistry", _SCOPE_REGISTRY_DICT)  # type: ignore
