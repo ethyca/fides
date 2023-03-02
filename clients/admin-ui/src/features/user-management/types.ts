@@ -43,7 +43,7 @@ export interface UserPasswordResetParams extends UserPasswordReset {
 export interface UserPermissionsEditParams {
   // This is the Id of the User, not the the Id field of the UserPermissions model.
   user_id: string;
-  scopes: UserPermissionsEdit["scopes"];
+  payload: UserPermissionsEdit;
 }
 
 export interface UserPrivileges {

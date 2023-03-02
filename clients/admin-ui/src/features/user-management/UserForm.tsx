@@ -11,19 +11,17 @@ import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { successToastParams } from "~/features/common/toast";
+import { RoleRegistry } from "~/types/api";
 
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
-import { useUpdateUserPermissionsMutation } from "./user-management.slice";
-
-const requiredPermission = "privacy-request:read";
 
 const defaultInitialValues = {
   username: "",
   first_name: "",
   last_name: "",
   password: "",
-  scopes: [requiredPermission],
+  roles: [] as RoleRegistry[],
 };
 
 export type FormValues = typeof defaultInitialValues;
@@ -33,7 +31,7 @@ const ValidationSchema = Yup.object().shape({
   first_name: Yup.string().label("First name"),
   last_name: Yup.string().label("Last name"),
   password: passwordValidation.label("Password"),
-  scopes: Yup.array().of(Yup.string()),
+  roles: Yup.array().of(Yup.string()),
 });
 
 export interface Props {
@@ -64,7 +62,6 @@ const UserForm = ({
     : router.query.id;
   const isNewUser = profileId == null;
   const nameDisabled = isNewUser ? false : !canEditNames;
-  const [updateUserPermissions] = useUpdateUserPermissionsMutation();
 
   const handleSubmit = async (values: FormValues) => {
     // first either update or create the user
@@ -73,19 +70,7 @@ const UserForm = ({
       handleError(result.error);
       return;
     }
-
-    // then issue a separate call to update their permissions
-    const { data } = result;
-    const userWithPrivileges = {
-      user_id: data.id,
-      scopes: [...new Set([...values.scopes, requiredPermission])],
-    };
-    const updateUserPermissionsResult = await updateUserPermissions(
-      userWithPrivileges
-    );
-    if (!("error" in updateUserPermissionsResult)) {
-      toast(successToastParams(`User ${isNewUser ? "created" : "updated"}`));
-    }
+    toast(successToastParams(`User ${isNewUser ? "created" : "updated"}`));
   };
   const validationSchema = canChangePassword
     ? ValidationSchema
@@ -97,9 +82,9 @@ const UserForm = ({
       initialValues={initialValues ?? defaultInitialValues}
       validationSchema={validationSchema}
     >
-      <Form>
-        <Box maxW={["xs", "xs", "100%"]} width="100%">
-          <Stack mb={8} spacing={6}>
+      {({ dirty, isSubmitting, isValid }) => (
+        <Form>
+          <Box maxW={["xs", "xs", "100%"]} width="100%">
             <Stack mb={8} spacing={6} maxWidth="40%">
               <CustomTextInput
                 name="username"
@@ -120,24 +105,26 @@ const UserForm = ({
               />
               <PasswordManagement profileId={profileId} />
             </Stack>
-          </Stack>
-          <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-            <Button variant="outline" mr={3} size="sm">
-              Cancel
+            <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
+              <Button variant="outline" mr={3} size="sm">
+                Cancel
+              </Button>
+            </NextLink>
+            <Button
+              type="submit"
+              bg="primary.800"
+              _hover={{ bg: "primary.400" }}
+              _active={{ bg: "primary.500" }}
+              colorScheme="primary"
+              size="sm"
+              disabled={!dirty || !isValid}
+              isLoading={isSubmitting}
+            >
+              Save
             </Button>
-          </NextLink>
-          <Button
-            type="submit"
-            bg="primary.800"
-            _hover={{ bg: "primary.400" }}
-            _active={{ bg: "primary.500" }}
-            colorScheme="primary"
-            size="sm"
-          >
-            Save
-          </Button>
-        </Box>
-      </Form>
+          </Box>
+        </Form>
+      )}
     </Formik>
   );
 };

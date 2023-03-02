@@ -115,25 +115,6 @@ export const userApi = createApi({
         body: patch,
       }),
       invalidatesTags: ["User"],
-      // For optimistic updates
-      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          // @ts-ignore
-          userApi.util.updateQueryData("getUserById", id, (draft) => {
-            Object.assign(draft, patch);
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-          /**
-           * Alternatively, on failure you can invalidate the corresponding cache tags
-           * to trigger a re-fetch:
-           * dispatch(api.util.invalidateTags(['User']))
-           */
-        }
-      },
     }),
     updateUserPassword: build.mutation<UserResponse, UserPasswordResetParams>({
       query: ({ id, old_password, new_password }) => ({
@@ -163,10 +144,10 @@ export const userApi = createApi({
       UserPermissions,
       UserPermissionsEditParams
     >({
-      query: ({ user_id, scopes }) => ({
+      query: ({ user_id, payload }) => ({
         url: `user/${user_id}/permission`,
         method: "PUT",
-        body: { id: user_id, scopes },
+        body: payload,
       }),
       invalidatesTags: ["User"],
     }),
