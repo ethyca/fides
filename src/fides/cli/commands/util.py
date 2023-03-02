@@ -138,7 +138,9 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
 
     try:
         check_fides_uploads_dir()
+        print("> Starting application...")
         start_application()
+        print("> Seeding data...")
         seed_example_data()
         click.clear()
 

@@ -61,14 +61,13 @@ PACKAGE = "ethyca-fides"
     "--config-path",
     "-f",
     "config_path",
-    default=".fides/fides.toml",
     show_default=True,
-    help="Path to a Fides config file.",
+    help="Path to a Fides config file. _Defaults to `.fides/fides.toml`._",
 )
 @click.option(
     "--local",
     is_flag=True,
-    help="Run in 'local_mode'. This mode doesn't make API calls and can be used without the API server/database.",
+    help="Run in `local_mode`. This mode doesn't make API calls and can be used without the API server/database.",
 )
 @click.pass_context
 def cli(ctx: click.Context, config_path: str, local: bool) -> None:
