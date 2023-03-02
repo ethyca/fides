@@ -62,15 +62,14 @@ class FidesClient:
             logger.error("Error logging in on remote Fides {}: {}", self.uri, str(e))
             raise e
 
-        try:
-            response.raise_for_status()
+        if response.is_success:
             self.token = response.json()["token_data"]["access_token"]
             logger.info(
                 "Successfully logged in to remote fides {} with username '{}'",
                 self.uri,
                 self.username,
             )
-        except HTTPStatusError:
+        else:
             logger.error("Error logging in on remote Fides {}", self.uri)
             response.raise_for_status()
 
@@ -125,9 +124,7 @@ class FidesClient:
         )
         response = self.session.send(request)
 
-        try:
-            response.raise_for_status()
-        except HTTPStatusError:
+        if not response.is_success:
             logger.error("Error creating privacy request on remote Fides {}", self.uri)
             response.raise_for_status()
 
@@ -229,9 +226,7 @@ class FidesClient:
         )
         response = self.session.send(request)
 
-        try:
-            response.raise_for_status()
-        except HTTPStatusError:
+        if not response.is_success:
             logger.error(
                 "Error retrieving status of privacy request [{}] on remote Fides {}",
                 privacy_request_id,

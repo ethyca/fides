@@ -16,8 +16,8 @@ class MockResponse:
     A class to mock Fides API responses
     """
 
-    def __init__(self, raise_for_status, json_data):
-        self.raise_for_status = raise_for_status
+    def __init__(self, is_success, json_data):
+        self.is_success = is_success
         self.json_data = json_data
 
     def json(self):
@@ -44,7 +44,7 @@ class TestFidesClientUnit:
     @mock.patch(
         "httpx.post",
         side_effect=[
-            MockResponse(lambda: None, {"token_data": {"access_token": SAMPLE_TOKEN}})
+            MockResponse(True, {"token_data": {"access_token": SAMPLE_TOKEN}})
         ],
     )
     def test_authenticated_request(self, mock_login, test_fides_client: FidesClient):
@@ -89,7 +89,7 @@ class TestFidesClientUnit:
     @mock.patch(
         "httpx.post",
         side_effect=[
-            MockResponse(lambda: None, {"token_data": {"access_token": SAMPLE_TOKEN}})
+            MockResponse(True, {"token_data": {"access_token": SAMPLE_TOKEN}})
         ],
     )
     def test_authenticated_request_parameters(
@@ -125,7 +125,7 @@ class TestFidesClientUnit:
             request.url
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
-        assert request.body == "key1=value1&key2=value2"
+        assert request.content == "key1=value1&key2=value2"
 
         # test form data passed as dict
         request = test_fides_client.authenticated_request(
