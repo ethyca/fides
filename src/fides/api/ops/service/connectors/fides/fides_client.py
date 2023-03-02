@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 import httpx
-from httpx import AsyncClient
+from httpx import AsyncClient, Client, HTTPStatusError, Request, RequestError
 from loguru import logger
-from httpx import Request, RequestError, Client, HTTPStatusError
 
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ops.api.v1 import urn_registry as urls
