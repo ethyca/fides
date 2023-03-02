@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.7.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.7.1...main)
 
 ### Added
 
@@ -59,6 +59,12 @@ The types of changes are:
 * Admin UI
   * Remove Identifiability (Data Qualifier) from taxonomy editor [2684](https://github.com/ethyca/fides/pull/2684)
 * Fix Privacy Request Status when submitting a consent request when identity verification is required [#2736](https://github.com/ethyca/fides/pull/2736)
+
+## [2.7.1](https://github.com/ethyca/fides/compare/2.7.0...2.7.1)
+
+### Fixed
+
+* Fix error with the classify dataset feature flag not writing the dataset to the server [#2675](https://github.com/ethyca/fides/pull/2675)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
