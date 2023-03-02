@@ -479,16 +479,10 @@ def _twilio_email_dispatcher(
         )
         to_email = To(to.strip())
         subject = message.subject
-        if template_test:
-            mail = Mail(from_email=from_email, subject=subject)
-            mail.template_id = TemplateId(template_test)
-            personalization = Personalization()
-            personalization.dynamic_template_data = {"fides_email_body": message.body}
-            personalization.add_email(to_email)
-            mail.add_personalization(personalization)
-        else:
-            content = Content("text/html", message.body)
-            mail = Mail(from_email, to_email, subject, content)
+        mail = _compose_twilio_mail(
+            from_email, to_email, subject, message.body, template_test
+        )
+
         response = sg.client.mail.send.post(request_body=mail.get())
         if response.status_code >= 400:
             logger.error(
@@ -560,3 +554,27 @@ def _get_template_id_if_exists(
         if template["name"].lower() == template_name.lower():
             return template["id"]
     return None
+
+
+def _compose_twilio_mail(
+    from_email: Email,
+    to_email: To,
+    subject: str,
+    message_body: str,
+    template_test: Optional[str] = None,
+) -> Mail:
+    """
+    Returns the Mail object to send, if a template is passed composes the Mail
+    appropriately with the template ID and paramaterized message body.
+    """
+    if template_test:
+        mail = Mail(from_email=from_email, subject=subject)
+        mail.template_id = TemplateId(template_test)
+        personalization = Personalization()
+        personalization.dynamic_template_data = {"fides_email_body": message_body}
+        personalization.add_email(to_email)
+        mail.add_personalization(personalization)
+    else:
+        content = Content("text/html", message_body)
+        mail = Mail(from_email, to_email, subject, content)
+    return mail

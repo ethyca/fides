@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 import requests_mock
+from sendgrid.helpers.mail import Email, To
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import MessageDispatchException
@@ -24,6 +25,8 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.messaging.message_dispatch_service import (
+    EMAIL_TEMPLATE_NAME,
+    _compose_twilio_mail,
     _get_dispatcher_from_config_type,
     _get_template_id_if_exists,
     _twilio_email_dispatcher,
@@ -57,6 +60,11 @@ def test_template_response_body():
             },
         ]
     }
+
+
+@pytest.fixture
+def test_message_body():
+    yield "This is a test DSR message body"
 
 
 @pytest.mark.unit
@@ -457,14 +465,36 @@ class TestTwilioEmailDispatcher:
         assert "No twilio email config details or secrets" in str(exc.value)
 
     def test_template_found(self, test_template_response_body):
-        template_test = _get_template_id_if_exists(test_template_response_body, "fides")
+        template_test = _get_template_id_if_exists(
+            test_template_response_body, EMAIL_TEMPLATE_NAME
+        )
         assert template_test
 
     def test_no_template_found(self, test_template_response_body):
         template_test = _get_template_id_if_exists(
-            test_template_response_body, "not_fides"
+            test_template_response_body, f"not_{EMAIL_TEMPLATE_NAME}"
         )
         assert template_test is None
+
+    def test_templated_mail(self, test_message_body):
+        mail = _compose_twilio_mail(
+            Email("test@test.com"),
+            To("test@test.com"),
+            "Test DSR EMail",
+            test_message_body,
+            "test_template",
+        )
+        assert "template_id" in mail.get()
+
+    def test_non_templated_mail(self, test_message_body):
+        mail = _compose_twilio_mail(
+            Email("test@test.com"),
+            To("test@test.com"),
+            "Test DSR EMail",
+            test_message_body,
+            template_test=None,
+        )
+        assert "template_id" not in mail.get()
 
 
 class TestTwilioSmsDispatcher:
