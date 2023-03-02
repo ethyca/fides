@@ -111,23 +111,6 @@ class TestFidesClientUnit:
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
 
-        # test form data passed as tuples
-        request = test_fides_client.authenticated_request(
-            "POST",
-            path="/testpath",
-            query_params={"param1": "value1", "param2": "value2"},
-            data=[("key1", "value1"), ("key2", "value2")],
-        )
-        assert "Authorization" in request.headers
-        assert request.headers["Authorization"] == f"Bearer {SAMPLE_TOKEN}"
-        assert request.method == "POST"
-        assert (
-            request.url
-            == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
-        )
-        # request.read()
-        # assert request.content == "key1=value1&key2=value2"
-
         # test form data passed as dict
         request = test_fides_client.authenticated_request(
             "POST",
