@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "03d28ae1-a240-42f8-839e-92a4d43132ed",
-		"name": "Fidesops",
+		"name": "Fides",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -1419,6 +1419,35 @@
 							"path": [
 								"storage",
 								"config"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Storage Config Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/storage/default/status",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"storage",
+								"default",
+								"status"
 							]
 						}
 					},
@@ -4473,6 +4502,42 @@
 								"messaging",
 								"config",
 								"test"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messaging Config Status",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/messaging/default/status",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"messaging",
+								"default",
+								"status"
 							]
 						}
 					},

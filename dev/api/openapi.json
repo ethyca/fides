@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.1"
+    "version": "2.7.0.post0.dev76"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5174,6 +5174,34 @@
           }
         ]
       },
+      "delete": {
+        "tags": [
+          "Config"
+        ],
+        "summary": "Reset Settings",
+        "description": "Resets the global application settings record.\n\nOnly the \"api-set\" values are cleared, \"config-set\" values are\nnot updated via any API calls",
+        "operationId": "reset_settings_api_v1_config_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Reset Settings Api V1 Config Delete",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "config:update"
+            ]
+          }
+        ]
+      },
       "patch": {
         "tags": [
           "Config"
@@ -6961,7 +6989,7 @@
           "OAuth"
         ],
         "summary": "Create Client",
-        "description": "Creates a new client and returns the credentials",
+        "description": "Creates a new client and returns the credentials. Only direct scopes can be added to the client via this endpoint.",
         "operationId": "create_client_api_v1_oauth_client_post",
         "requestBody": {
           "content": {
@@ -7062,7 +7090,7 @@
           "OAuth"
         ],
         "summary": "Get Client Scopes",
-        "description": "Returns a list of the scopes associated with the client. Returns an empty list if client does not exist.",
+        "description": "Returns a list of the directly-assigned scopes associated with the client.\nDoes not return roles associated with the client.\nReturns an empty list if client does not exist.",
         "operationId": "get_client_scopes_api_v1_oauth_client__client_id__scope_get",
         "parameters": [
           {
@@ -7114,7 +7142,7 @@
           "OAuth"
         ],
         "summary": "Set Client Scopes",
-        "description": "Overwrites the client's scopes with those provided. Does nothing if the client doesn't exist",
+        "description": "Overwrites the client's directly-assigned scopes with those provided.\nRoles cannot be edited via this endpoint.\nDoes nothing if the client doesn't exist",
         "operationId": "set_client_scopes_api_v1_oauth_client__client_id__scope_put",
         "parameters": [
           {
@@ -7190,6 +7218,33 @@
                     "type": "string"
                   }
                 }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "scope:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/oauth/role": {
+      "get": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Read Roles To Scopes Mapping",
+        "description": "Returns a list of all roles and associated scopes available for assignment in the system",
+        "operationId": "read_roles_to_scopes_mapping_api_v1_oauth_role_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -10206,6 +10261,68 @@
         ]
       }
     },
+    "/api/v1/storage/default/active": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Get Active Default Config",
+        "description": "Retrieves the active default storage config.",
+        "operationId": "get_active_default_config_api_v1_storage_default_active_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageDestinationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "storage:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/storage/default/status": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Get Storage Status",
+        "description": "Determines the status of the active default storage config.\n\nIn order to be considered fully configured, the active default storage\nconfig MUST be an s3 storage config.",
+        "operationId": "get_storage_status_api_v1_storage_default_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageConfigStatusMessage"
+                },
+                "example": {
+                  "config_status": "configured",
+                  "detail": "Active default storage location of type s3 is fully configured"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "storage:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/storage/default": {
       "get": {
         "tags": [
@@ -10421,35 +10538,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "storage:read"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/storage/active/default": {
-      "get": {
-        "tags": [
-          "Storage"
-        ],
-        "summary": "Get Active Default Config",
-        "description": "Retrieves the active default storage config.",
-        "operationId": "get_active_default_config_api_v1_storage_active_default_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorageDestinationResponse"
                 }
               }
             }
@@ -10727,6 +10815,186 @@
         ]
       }
     },
+    "/api/v1/messaging/default/active": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Get Active Default Config",
+        "description": "Retrieves the active default messaging config.",
+        "operationId": "get_active_default_config_api_v1_messaging_default_active_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/default/status": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Get Messaging Status",
+        "description": "Determines the status of the active default messaging config",
+        "operationId": "get_messaging_status_api_v1_messaging_default_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingConfigStatusMessage"
+                },
+                "example": {
+                  "config_status": "configured",
+                  "detail": "Active default messaging service of type MAILGUN is fully configured"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/default": {
+      "put": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Put Default Config",
+        "description": "Updates default messaging config for given service type.",
+        "operationId": "put_default_config_api_v1_messaging_default_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessagingConfigRequestBase"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/default/{service_type}/secret": {
+      "put": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Put Default Config Secrets",
+        "operationId": "put_default_config_secrets_api_v1_messaging_default__service_type__secret_put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MessagingServiceType"
+            },
+            "name": "service_type",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Unvalidated Messaging Secrets",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MessagingSecretsMailgunDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingSecretsTwilioSMSDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingSecretsTwilioEmailDocs"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestMessagingStatusMessage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/messaging/config/{config_key}/secret": {
       "put": {
         "tags": [
@@ -10794,6 +11062,55 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "messaging:create_or_update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/messaging/default/{service_type}": {
+      "get": {
+        "tags": [
+          "messaging"
+        ],
+        "summary": "Get Default Config By Type",
+        "description": "Retrieves default config for messaging service by type.",
+        "operationId": "get_default_config_by_type_api_v1_messaging_default__service_type__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MessagingServiceType"
+            },
+            "name": "service_type",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "messaging:read"
             ]
           }
         ]
@@ -11355,6 +11672,7 @@
           "User Permissions"
         ],
         "summary": "Update User Permissions",
+        "description": "Update either a user's role(s) and/or scope(s).\n\nTypically we'll assign roles to a user and they'll inherit the associated scopes,\nbut we're still supporting assigning scopes directly as well.",
         "operationId": "update_user_permissions_api_v1_user__user_id__permission_put",
         "parameters": [
           {
@@ -11412,6 +11730,7 @@
           "User Permissions"
         ],
         "summary": "Create User Permissions",
+        "description": "Create user permissions with big picture roles and/or scopes.",
         "operationId": "create_user_permissions_api_v1_user__user_id__permission_post",
         "parameters": [
           {
@@ -12002,13 +12321,16 @@
       },
       "ApplicationConfig": {
         "title": "ApplicationConfig",
-        "required": [
-          "storage"
-        ],
         "type": "object",
         "properties": {
           "storage": {
             "$ref": "#/components/schemas/StorageApplicationConfig"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/NotificationApplicationConfig"
+          },
+          "execution": {
+            "$ref": "#/components/schemas/ExecutionApplicationConfig"
           }
         },
         "additionalProperties": false,
@@ -12621,6 +12943,16 @@
           "opt_in": {
             "title": "Opt In",
             "type": "boolean"
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean",
+            "default": false
+          },
+          "conflicts_with_gpc": {
+            "title": "Conflicts With Gpc",
+            "type": "boolean",
+            "default": false
           }
         },
         "description": "Schema for consent."
@@ -13817,6 +14149,14 @@
               "type": "string"
             },
             "default": []
+          },
+          "erase_after": {
+            "title": "Erase After",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
           }
         },
         "description": "A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"
@@ -13909,6 +14249,22 @@
           }
         },
         "description": "Schema for the combined ExecutionLogs and Audit Logs\nassociated with a PrivacyRequest"
+      },
+      "ExecutionApplicationConfig": {
+        "title": "ExecutionApplicationConfig",
+        "type": "object",
+        "properties": {
+          "subject_identity_verification_required": {
+            "title": "Subject Identity Verification Required",
+            "type": "boolean"
+          },
+          "require_manual_request_approval": {
+            "title": "Require Manual Request Approval",
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A base template for all other Fides Schemas to inherit from."
       },
       "ExecutionLogDetailResponse": {
         "title": "ExecutionLogDetailResponse",
@@ -14681,11 +15037,25 @@
       "MessagingConfigRequest": {
         "title": "MessagingConfigRequest",
         "required": [
-          "name",
-          "service_type"
+          "service_type",
+          "name"
         ],
         "type": "object",
         "properties": {
+          "service_type": {
+            "$ref": "#/components/schemas/MessagingServiceType"
+          },
+          "details": {
+            "title": "Details",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              }
+            ]
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -14694,7 +15064,18 @@
             "title": "Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
-          },
+          }
+        },
+        "additionalProperties": false,
+        "description": "Messaging Config Request Schema"
+      },
+      "MessagingConfigRequestBase": {
+        "title": "MessagingConfigRequestBase",
+        "required": [
+          "service_type"
+        ],
+        "type": "object",
+        "properties": {
           "service_type": {
             "$ref": "#/components/schemas/MessagingServiceType"
           },
@@ -14710,17 +15091,32 @@
             ]
           }
         },
-        "description": "Messaging Config Request Schema"
+        "additionalProperties": false,
+        "description": "Base model shared by messaging config requests to provide validation on request inputs"
       },
       "MessagingConfigResponse": {
         "title": "MessagingConfigResponse",
         "required": [
+          "service_type",
           "name",
-          "key",
-          "service_type"
+          "key"
         ],
         "type": "object",
         "properties": {
+          "service_type": {
+            "$ref": "#/components/schemas/MessagingServiceType"
+          },
+          "details": {
+            "title": "Details",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              }
+            ]
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -14729,16 +15125,32 @@
             "title": "Key",
             "pattern": "^[a-zA-Z0-9_.<>-]+$",
             "type": "string"
-          },
-          "service_type": {
-            "$ref": "#/components/schemas/MessagingServiceType"
-          },
-          "details": {
-            "title": "Details",
-            "type": "object"
           }
         },
+        "additionalProperties": false,
         "description": "Messaging Config Response Schema"
+      },
+      "MessagingConfigStatus": {
+        "title": "MessagingConfigStatus",
+        "enum": [
+          "configured",
+          "not configured"
+        ],
+        "description": "Enum for configuration statuses of a messaging config"
+      },
+      "MessagingConfigStatusMessage": {
+        "title": "MessagingConfigStatusMessage",
+        "type": "object",
+        "properties": {
+          "config_status": {
+            "$ref": "#/components/schemas/MessagingConfigStatus"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "description": "A schema for checking configuration status of message config."
       },
       "MessagingConnectionTestStatus": {
         "title": "MessagingConnectionTestStatus",
@@ -14919,6 +15331,30 @@
         },
         "additionalProperties": false,
         "description": "MySQL Secrets Schema for API Docs"
+      },
+      "NotificationApplicationConfig": {
+        "title": "NotificationApplicationConfig",
+        "type": "object",
+        "properties": {
+          "send_request_completion_notification": {
+            "title": "Send Request Completion Notification",
+            "type": "boolean"
+          },
+          "send_request_receipt_notification": {
+            "title": "Send Request Receipt Notification",
+            "type": "boolean"
+          },
+          "send_request_review_notification": {
+            "title": "Send Request Review Notification",
+            "type": "boolean"
+          },
+          "notification_service_type": {
+            "title": "Notification Service Type",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "API model - configuration settings for data subject and/or data processor notifications"
       },
       "OktaConfig": {
         "title": "OktaConfig",
@@ -16487,6 +16923,16 @@
         },
         "description": "Pass in a list of privacy request ids"
       },
+      "RoleRegistry": {
+        "title": "RoleRegistry",
+        "enum": [
+          "admin",
+          "viewer_and_privacy_request_manager",
+          "viewer",
+          "privacy_request_manager"
+        ],
+        "description": "Enum of available roles"
+      },
       "RowCountRequest": {
         "title": "RowCountRequest",
         "required": [
@@ -17052,11 +17498,33 @@
         "type": "object",
         "properties": {
           "active_default_storage_type": {
-            "$ref": "#/components/schemas/StorageType"
+            "$ref": "#/components/schemas/StorageTypeApiAccepted"
           }
         },
         "additionalProperties": false,
         "description": "A base template for all other Fides Schemas to inherit from."
+      },
+      "StorageConfigStatus": {
+        "title": "StorageConfigStatus",
+        "enum": [
+          "configured",
+          "not configured"
+        ],
+        "description": "Enum for configuration statuses of a storage config"
+      },
+      "StorageConfigStatusMessage": {
+        "title": "StorageConfigStatusMessage",
+        "type": "object",
+        "properties": {
+          "config_status": {
+            "$ref": "#/components/schemas/StorageConfigStatus"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "description": "A schema for checking configuration status of storage config."
       },
       "StorageDestination": {
         "title": "StorageDestination",
@@ -17246,6 +17714,14 @@
           "local"
         ],
         "description": "Enum for storage destination types"
+      },
+      "StorageTypeApiAccepted": {
+        "title": "StorageTypeApiAccepted",
+        "enum": [
+          "s3",
+          "local"
+        ],
+        "description": "Enum for storage destination types accepted in API updates"
       },
       "Strategy": {
         "title": "Strategy",
@@ -17463,7 +17939,7 @@
             "type": "string"
           }
         },
-        "description": "A schema for checking status of message config."
+        "description": "A schema for testing functionality of a messaging config."
       },
       "TestStatus": {
         "title": "TestStatus",
@@ -17643,9 +18119,6 @@
       },
       "UserPermissionsCreate": {
         "title": "UserPermissionsCreate",
-        "required": [
-          "scopes"
-        ],
         "type": "object",
         "properties": {
           "scopes": {
@@ -17653,17 +18126,21 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "default": []
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleRegistry"
+            },
+            "default": []
           }
         },
-        "description": "Data required to create a FidesUserPermissions record"
+        "description": "Data required to create a FidesUserPermissions record\n\nUsers will generally be assigned role(s) directly which are associated with many scopes,\nbut we also will continue to support the ability to be assigned specific individual scopes."
       },
       "UserPermissionsEdit": {
         "title": "UserPermissionsEdit",
-        "required": [
-          "scopes",
-          "id"
-        ],
         "type": "object",
         "properties": {
           "scopes": {
@@ -17671,19 +18148,26 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "default": []
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleRegistry"
+            },
+            "default": []
           },
           "id": {
             "title": "Id",
             "type": "string"
           }
         },
-        "description": "Data required to edit a FidesUserPermissions record"
+        "description": "Data required to edit a FidesUserPermissions record."
       },
       "UserPermissionsResponse": {
         "title": "UserPermissionsResponse",
         "required": [
-          "scopes",
           "id",
           "user_id"
         ],
@@ -17694,7 +18178,15 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "default": []
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleRegistry"
+            },
+            "default": []
           },
           "id": {
             "title": "Id",
@@ -17705,7 +18197,7 @@
             "type": "string"
           }
         },
-        "description": "Response after creating, editing, or retrieving a FidesUserPermissions record"
+        "description": "Response after creating, editing, or retrieving a FidesUserPermissions record."
       },
       "UserResponse": {
         "title": "UserResponse",
