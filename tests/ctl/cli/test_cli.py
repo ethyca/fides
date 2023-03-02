@@ -232,7 +232,9 @@ class TestCRUD:
     def test_ls_verbose(
         self, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
-        result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
+        result = test_cli_runner.invoke(
+            cli, ["-f", test_config_path, "ls", "system", "--verbose"]
+        )
         print(result.output)
         assert result.exit_code == 0
 
