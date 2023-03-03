@@ -47,7 +47,7 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
-from fides.lib.oauth.roles import ADMIN, VIEWER
+from fides.lib.oauth.roles import OWNER, VIEWER
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
@@ -440,8 +440,8 @@ class TestDeleteUser:
         assert permissions_search is None
 
         # Admin client who made the request is not deleted
-        admin_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)
-        assert admin_client_search is not None
+        owner_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)
+        assert owner_client_search is not None
 
 
 class TestGetUsers:
@@ -1079,17 +1079,17 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
 
-    def test_login_uses_existing_client_with_roles(self, url, admin_user, api_client):
+    def test_login_uses_existing_client_with_roles(self, url, owner_user, api_client):
         body = {
-            "username": admin_user.username,
+            "username": owner_user.username,
             "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
         }
 
-        existing_client_id = admin_user.client.id
+        existing_client_id = owner_user.client.id
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == HTTP_200_OK
 
-        assert admin_user.client is not None
+        assert owner_user.client is not None
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
         token_data = json.loads(
@@ -1097,10 +1097,10 @@ class TestUserLogin:
         )
         assert token_data["client-id"] == existing_client_id
         assert token_data["scopes"] == []
-        assert token_data["roles"] == [ADMIN]  # Uses roles on existing client
+        assert token_data["roles"] == [OWNER]  # Uses roles on existing client
 
         assert "user_data" in list(response.json().keys())
-        assert response.json()["user_data"]["id"] == admin_user.id
+        assert response.json()["user_data"]["id"] == owner_user.id
 
     def test_login_as_root_user(self, api_client, url):
         body = {
@@ -1118,7 +1118,7 @@ class TestUserLogin:
         )
         assert token_data["client-id"] == CONFIG.security.oauth_root_client_id
         assert token_data["scopes"] == SCOPE_REGISTRY  # Uses all scopes
-        assert token_data["roles"] == [ADMIN]  # Uses admin role
+        assert token_data["roles"] == [OWNER]  # Uses owner role
 
         assert "user_data" in list(response.json().keys())
         data = response.json()["user_data"]

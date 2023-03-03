@@ -21,7 +21,7 @@ from fides.api.ops.api.v1.scope_registry import (
     CLIENT_UPDATE,
     SCOPE_READ,
     SCOPE_REGISTRY,
-    SCOPE_REGISTRY_ENUM,
+    ScopeRegistryEnum,
 )
 from fides.api.ops.api.v1.urn_registry import (
     CLIENT,
@@ -193,7 +193,7 @@ def set_client_scopes(
 @router.get(
     SCOPE,
     dependencies=[Security(verify_oauth_client, scopes=[SCOPE_READ])],
-    response_model=List[SCOPE_REGISTRY_ENUM],
+    response_model=List[ScopeRegistryEnum],
 )
 def read_scopes() -> List[str]:
     """Returns a list of all scopes available for assignment in the system"""

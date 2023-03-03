@@ -11,6 +11,8 @@ from fides.api.ops.util.system_manager_oauth_util import (
     _get_system_from_fides_key,
     _get_system_from_request_body,
     _has_scope_as_system_manager,
+    get_system_fides_key,
+    get_system_schema,
     verify_oauth_client_for_system_from_request_body,
 )
 from fides.core.config import CONFIG
@@ -22,7 +24,7 @@ from fides.lib.cryptography.schemas.jwt import (
 )
 from fides.lib.exceptions import AuthorizationError
 from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import ADMIN, VIEWER
+from fides.lib.oauth.roles import OWNER, VIEWER
 
 
 class TestHasSystemPermissions:
@@ -34,16 +36,16 @@ class TestHasSystemPermissions:
     as well.  As long as you have the right scope, you can work with the given resource.
     """
 
-    async def test_admin_role_can_always_update_system(self, admin_user, db, system):
+    async def test_owner_role_can_always_update_system(self, owner_user, db, system):
         payload = {
-            JWE_PAYLOAD_ROLES: [ADMIN],
-            JWE_PAYLOAD_CLIENT_ID: admin_user.client.id,
+            JWE_PAYLOAD_ROLES: [OWNER],
+            JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         token = generate_jwe(
             json.dumps(payload),
             CONFIG.security.app_encryption_key,
-        )  # Note token doesn't have system on it, but the user is an admin
+        )  # Note token doesn't have system on it, but the user is an owner
 
         response = await verify_oauth_client_for_system_from_request_body(
             security_scopes=SecurityScopes(scopes=[SYSTEM_UPDATE]),
@@ -311,3 +313,28 @@ class TestGetSystemFromFidesKey:
 
         assert resp.system is None
         assert resp.original_data == "unknown_fides_key"
+
+
+class TestSystemOauthOverrides:
+    async def test_get_system_schema_in_dev_mode(self):
+        """
+        Tests the system override used in dev mode just returns
+        the system schema as-is, bypassing authentication
+        """
+        system_schema = SystemSchema(
+            fides_key="unknown_fides_key",
+            system_type="Service",
+            data_responsibility_title="Processor",
+            name="System Name",
+            privacy_declarations=[],
+        )
+        resp = await get_system_schema(system_schema)
+        assert resp == system_schema
+
+    async def test_get_system_fides_key(self):
+        """
+        Tests the system override used in dev mode just returns
+        the fides_key schema as-is, bypassing authentication
+        """
+        resp = await get_system_fides_key("system_fides_key")
+        assert resp == "system_fides_key"

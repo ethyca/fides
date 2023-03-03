@@ -302,9 +302,9 @@ SCOPE_DOCS = {
     SYSTEM_READ: "Read systems",
     SYSTEM_DELETE: "Delete systems",
     SYSTEM_UPDATE: "Update systems",
-    SYSTEM_MANAGER_READ: "Read systems users can manager",
-    SYSTEM_MANAGER_DELETE: "Delete systems user can manager",
-    SYSTEM_MANAGER_UPDATE: "Update systems user can manager",
+    SYSTEM_MANAGER_READ: "Read systems users can manage",
+    SYSTEM_MANAGER_DELETE: "Delete systems user can manage",
+    SYSTEM_MANAGER_UPDATE: "Update systems user can manage",
     TAXONOMY_CREATE: "Create local taxonomy",
     TAXONOMY_DELETE: "Delete local taxonomy",
     TAXONOMY_UPDATE: "Update local taxonomy",
@@ -324,7 +324,8 @@ SCOPE_DOCS = {
 
 SCOPE_REGISTRY = list(SCOPE_DOCS.keys())
 
-_SCOPE_REGISTRY_DICT = {key: key for key in SCOPE_REGISTRY}
 # mypy doesn't like taking the dictionary to generate the enum
 # https://github.com/python/mypy/issues/5317
-SCOPE_REGISTRY_ENUM = Enum("ScopeRegistry", _SCOPE_REGISTRY_DICT)  # type: ignore
+ScopeRegistryEnum = Enum(  # type: ignore[misc]
+    "ScopeRegistryEnum", {scope: scope for scope in SCOPE_REGISTRY}  # type: ignore
+)
