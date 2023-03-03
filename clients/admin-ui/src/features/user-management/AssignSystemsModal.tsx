@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   ButtonGroup,
@@ -102,7 +103,17 @@ const AssignSystemsModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
       <ModalContent p={8} data-testid="confirmation-modal">
-        <ModalHeader fontWeight="medium">Assign systems</ModalHeader>
+        <ModalHeader
+          fontWeight="medium"
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Text>Assign systems</Text>
+          <Badge bg="green.500" color="white" px={1}>
+            Assigned to {initialManagedSystems.length} systems
+          </Badge>
+        </ModalHeader>
         <ModalBody>
           {emptySystems ? (
             <Text>No systems found</Text>
