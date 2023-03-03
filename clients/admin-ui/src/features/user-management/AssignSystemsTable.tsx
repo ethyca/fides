@@ -16,12 +16,17 @@ import { System } from "~/types/api";
 import {
   selectActiveUserId,
   selectActiveUsersManagedSystems,
+  useGetUserManagedSystemsQuery,
   useRemoveUserManagedSystemMutation,
 } from "./user-management.slice";
 
 export const AssignSystemsDeleteTable = () => {
-  const assignedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const activeUserId = useAppSelector(selectActiveUserId);
+  useGetUserManagedSystemsQuery(activeUserId as string, {
+    skip: !activeUserId,
+  });
+  const assignedSystems = useAppSelector(selectActiveUsersManagedSystems);
+
   const [removeUserManagedSystemTrigger] = useRemoveUserManagedSystemMutation();
   const handleDelete = async (system: System) => {
     // TODO: the designs don't have this, but we probably want a confirmation modal
@@ -62,6 +67,7 @@ export const AssignSystemsDeleteTable = () => {
                 icon={<TrashCanSolidIcon />}
                 size="xs"
                 onClick={() => handleDelete(system)}
+                data-testid="unassign-btn"
               />
             </Td>
           </Tr>
@@ -119,6 +125,7 @@ const AssignSystemsTable = ({
                 <Switch
                   isChecked={isAssigned}
                   onChange={() => handleToggle(system)}
+                  data-testid="assign-switch"
                 />
               </Td>
             </Tr>

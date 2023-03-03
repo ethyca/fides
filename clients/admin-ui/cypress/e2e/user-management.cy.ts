@@ -177,4 +177,179 @@ describe("User management", () => {
       cy.getByTestId("toast-success-msg");
     });
   });
+
+  describe("Permission assignment", () => {
+    beforeEach(() => {
+      cy.intercept("PUT", "/api/v1/user/*/permission", { body: {} }).as(
+        "updatePermission"
+      );
+    });
+
+    it("can assign a role to a user", () => {
+      cy.visit(`/user-management/profile/${USER_1_ID}`);
+      cy.getByTestId("tab-Permissions").click();
+      cy.getByTestId("selected").contains("Owner");
+
+      cy.getByTestId("role-option-Viewer").click();
+      cy.getByTestId("selected").contains("Viewer");
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@updatePermission").then((interception) => {
+        const { body } = interception.request;
+        expect(body.roles).to.eql(["viewer"]);
+      });
+    });
+    describe("system managers", () => {
+      const systems = [
+        "fidesctl_system",
+        "demo_analytics_system",
+        "demo_marketing_system",
+      ];
+
+      beforeEach(() => {
+        cy.intercept("/api/v1/user/*/system-manager", {
+          fixture: "systems/systems.json",
+        }).as("getUserManagedSystems");
+        cy.intercept("PUT", "/api/v1/user/*/system-manager", {
+          fixture: "systems/systems.json",
+        }).as("updateUserManagedSystems");
+        cy.intercept("DELETE", "/api/v1/user/*/system-manager/*", {
+          body: {},
+        }).as("removeUserManagedSystem");
+        cy.intercept("GET", "/api/v1/system", {
+          fixture: "systems/systems.json",
+        }).as("getSystems");
+      });
+
+      describe("in role option", () => {
+        beforeEach(() => {
+          cy.visit(`/user-management/profile/${USER_1_ID}`);
+          cy.getByTestId("tab-Permissions").click();
+          cy.wait("@getSystems");
+          cy.wait("@getUserManagedSystems");
+          cy.getByTestId("assign-systems-delete-table");
+        });
+        it("shows assigned systems in the role option", () => {
+          systems.forEach((system) => {
+            cy.getByTestId(`row-${system}`);
+          });
+        });
+
+        it("can remove systems via the role option", () => {
+          cy.getByTestId("row-fidesctl_system").within(() => {
+            cy.getByTestId("unassign-btn").click();
+          });
+          cy.wait("@removeUserManagedSystem").then((interception) => {
+            const { url } = interception.request;
+            expect(url).contains("fidesctl_system");
+          });
+        });
+      });
+
+      describe("in modal", () => {
+        beforeEach(() => {
+          cy.visit(`/user-management/profile/${USER_1_ID}`);
+          cy.getByTestId("tab-Permissions").click();
+
+          cy.getByTestId("assign-systems-btn").click();
+          cy.wait("@getSystems");
+          cy.wait("@getUserManagedSystems");
+        });
+
+        it("can toggle one system", () => {
+          cy.getByTestId("row-fidesctl_system").within(() => {
+            cy.getByTestId("assign-switch").click();
+          });
+
+          // the select all toggle should no longer be selected
+          cy.getByTestId("assign-all-systems-toggle").within(() => {
+            cy.get("span").should("not.have.attr", "data-checked");
+          });
+          cy.getByTestId("confirm-btn").click();
+          cy.wait("@updateUserManagedSystems").then((interception) => {
+            const { body } = interception.request;
+            expect(body).to.eql([
+              "demo_analytics_system",
+              "demo_marketing_system",
+            ]);
+          });
+        });
+
+        it("can use the select all toggle to unassign systems", () => {
+          cy.getByTestId("assign-all-systems-toggle").within(() => {
+            cy.get("span").should("have.attr", "data-checked");
+          });
+          // all toggles in every row should be checked
+
+          systems.forEach((fidesKey) => {
+            cy.getByTestId(`row-${fidesKey}`).within(() => {
+              cy.getByTestId("assign-switch").within(() => {
+                cy.get("span").should("have.attr", "data-checked");
+              });
+            });
+          });
+
+          cy.getByTestId("assign-all-systems-toggle").click();
+          // all toggles in every row should be unchecked
+          systems.forEach((fidesKey) => {
+            cy.getByTestId(`row-${fidesKey}`).within(() => {
+              cy.getByTestId("assign-switch").within(() => {
+                cy.get("span").should("not.have.attr", "data-checked");
+              });
+            });
+          });
+
+          cy.getByTestId("confirm-btn").click();
+          cy.wait("@updateUserManagedSystems").then((interception) => {
+            const { body } = interception.request;
+            expect(body).to.eql([]);
+          });
+        });
+
+        it("can search while respecting the all toggle", () => {
+          cy.getByTestId("assign-systems-modal-body").within(() => {
+            cy.getByTestId("system-search").type("demo");
+            cy.getByTestId("row-fidesctl_system").should("not.exist");
+
+            // toggling "all systems" when we are filtered should only toggle the filtered ones
+            cy.getByTestId("assign-all-systems-toggle").click();
+            ["demo_marketing_system", "demo_analytics_system"].forEach(
+              (fidesKey) => {
+                cy.getByTestId(`row-${fidesKey}`).within(() => {
+                  cy.getByTestId("assign-switch").within(() => {
+                    cy.get("span").should("not.have.attr", "data-checked");
+                  });
+                });
+              }
+            );
+
+            // the one that was not in the search should not have been affected
+            cy.getByTestId("system-search").clear();
+            cy.getByTestId(`row-fidesctl_system`).within(() => {
+              cy.getByTestId("assign-switch").within(() => {
+                cy.get("span").should("have.attr", "data-checked");
+              });
+            });
+            cy.getByTestId("assign-all-systems-toggle").within(() => {
+              cy.get("span").should("not.have.attr", "data-checked");
+            });
+
+            // now do the reverse: toggle on while filtered
+            // toggle everyone off by clicking on the all toggle twice
+            cy.getByTestId("assign-all-systems-toggle").click();
+            cy.getByTestId("assign-all-systems-toggle").click();
+
+            cy.getByTestId("system-search").type("demo");
+            cy.getByTestId("assign-all-systems-toggle").click();
+            cy.getByTestId("system-search").clear();
+            cy.getByTestId(`row-fidesctl_system`).within(() => {
+              cy.getByTestId("assign-switch").within(() => {
+                cy.get("span").should("not.have.attr", "data-checked");
+              });
+            });
+          });
+        });
+      });
+    });
+  });
 });

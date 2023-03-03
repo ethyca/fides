@@ -90,7 +90,10 @@ const AssignSystemsModal = ({
     if (checked && allSystems) {
       setAssignedSystems(filteredSystems);
     } else {
-      setAssignedSystems([]);
+      const notFilteredSystems = allSystems
+        ? allSystems.filter((system) => !filteredSystems.includes(system))
+        : [];
+      setAssignedSystems(notFilteredSystems);
     }
   };
 
@@ -114,7 +117,7 @@ const AssignSystemsModal = ({
             Assigned to {initialManagedSystems.length} systems
           </Badge>
         </ModalHeader>
-        <ModalBody>
+        <ModalBody data-testid="assign-systems-modal-body">
           {emptySystems ? (
             <Text>No systems found</Text>
           ) : (
@@ -137,6 +140,7 @@ const AssignSystemsModal = ({
                       id="assign-all-systems"
                       isChecked={allSystemsAssigned}
                       onChange={handleToggleAllSystems}
+                      data-testid="assign-all-systems-toggle"
                     />
                   </FormControl>
                 </Box>

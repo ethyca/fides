@@ -118,6 +118,7 @@ const PermissionsForm = () => {
                 type="submit"
                 isLoading={isSubmitting}
                 disabled={!dirty}
+                data-testid="save-btn"
               >
                 Save
               </Button>

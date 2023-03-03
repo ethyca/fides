@@ -42,6 +42,7 @@ const RoleOption = ({ label, roleKey, isSelected }: Props) => {
         backgroundColor="gray.50"
         aria-selected="true"
         spacing={4}
+        data-testid="selected"
       >
         <Flex alignItems="center" justifyContent="space-between">
           <Text fontSize="md" fontWeight="semibold">
@@ -60,6 +61,7 @@ const RoleOption = ({ label, roleKey, isSelected }: Props) => {
           size="xs"
           width="fit-content"
           onClick={assignSystemsModal.onOpen}
+          data-testid="assign-systems-btn"
         >
           Assign systems +
         </Button>
@@ -83,6 +85,7 @@ const RoleOption = ({ label, roleKey, isSelected }: Props) => {
       variant="outline"
       height="inherit"
       p={4}
+      data-testid={`role-option-${label}`}
     >
       {label}
     </Button>
