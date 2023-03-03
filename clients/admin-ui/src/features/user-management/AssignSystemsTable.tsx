@@ -12,12 +12,7 @@ const AssignSystemsTable = ({
   onChange: (systems: System[]) => void;
 }) => {
   const handleToggle = (system: System) => {
-    const alreadyAssigned =
-      assignedSystems.filter(
-        (assignedSystem) => assignedSystem.fides_key === system.fides_key
-      ).length > 0;
-
-    if (alreadyAssigned) {
+    if (assignedSystems.includes(system)) {
       onChange(
         assignedSystems.filter(
           (assignedSystem) => assignedSystem.fides_key !== system.fides_key
@@ -37,18 +32,24 @@ const AssignSystemsTable = ({
         </Tr>
       </Thead>
       <Tbody>
-        {allSystems.map((system) => (
-          <Tr
-            key={system.fides_key}
-            _hover={{ bg: "gray.50" }}
-            data-testid={`row-${system.fides_key}`}
-          >
-            <Td>{system.name}</Td>
-            <Td>
-              <Switch onChange={() => handleToggle(system)} />
-            </Td>
-          </Tr>
-        ))}
+        {allSystems.map((system) => {
+          const isAssigned = assignedSystems.includes(system);
+          return (
+            <Tr
+              key={system.fides_key}
+              _hover={{ bg: "gray.50" }}
+              data-testid={`row-${system.fides_key}`}
+            >
+              <Td>{system.name}</Td>
+              <Td>
+                <Switch
+                  isChecked={isAssigned}
+                  onChange={() => handleToggle(system)}
+                />
+              </Td>
+            </Tr>
+          );
+        })}
       </Tbody>
     </Table>
   );

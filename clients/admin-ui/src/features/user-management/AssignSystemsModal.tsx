@@ -16,7 +16,7 @@ import {
   Switch,
   Text,
 } from "@fidesui/react";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 import SearchBar from "~/features/common/SearchBar";
 import { useGetAllSystemsQuery } from "~/features/system";
@@ -34,6 +34,18 @@ const AssignSystemsModal = ({
   const handleAssign = () => {};
 
   const emptySystems = !allSystems || allSystems.length === 0;
+  const allSystemsAssigned = assignedSystems.length === allSystems?.length;
+
+  console.log({ assignedSystems });
+
+  const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
+    const { checked } = event.target;
+    if (checked && allSystems) {
+      setAssignedSystems(allSystems);
+    } else {
+      setAssignedSystems([]);
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
@@ -58,7 +70,12 @@ const AssignSystemsModal = ({
                     >
                       Assign all systems
                     </FormLabel>
-                    <Switch size="sm" id="assign-all-systems" />
+                    <Switch
+                      size="sm"
+                      id="assign-all-systems"
+                      isChecked={allSystemsAssigned}
+                      onChange={handleToggleAllSystems}
+                    />
                   </FormControl>
                 </Box>
               </Flex>
