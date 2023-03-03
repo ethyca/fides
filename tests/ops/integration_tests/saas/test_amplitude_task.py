@@ -147,29 +147,5 @@ async def test_amplitude_erasure_request_task(
         f"{dataset_name}:user_activity": 1
     }
 
-    # amplitude_secrets = amplitude_connection_config.secrets
-    # base_url = f"https://{amplitude_secrets['identity_domain']}"
     
-    # headers = {
-    #     "Authorization" : "Basic {amplitude_secrets['authorization_key']}"
-    # }
-
-    # # user
-    # response = requests.get(
-    #     url=f"{base_url}/v2/users",
-    #     auth=auth,
-    #     params={"email": amplitude_erasure_identity_email},
-    # )
-    # # Since user is deleted, it won't be available so response is 404
-    # assert response.status_code == 404
-
-    # for ticket in v[f"{dataset_name}:tickets"]:
-    #     ticket_id = ticket["id"]
-    #     response = requests.get(
-    #         url=f"{base_url}/v2/tickets/{ticket_id}.json",
-    #         auth=auth,
-    #     )
-    #     # Since ticket is deleted, it won't be available so response is 404
-    #     assert response.status_code == 404
-
     CONFIG.execution.masking_strict = masking_strict
