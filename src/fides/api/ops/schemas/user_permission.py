@@ -2,9 +2,9 @@ from typing import List, Optional
 
 from pydantic import validator
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY, SCOPE_REGISTRY_ENUM
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY, ScopeRegistryEnum
 from fides.api.ops.schemas.base_class import BaseSchema
-from fides.lib.oauth.roles import RoleRegistry
+from fides.lib.oauth.roles import RoleRegistryEnum
 
 
 class UserPermissionsCreate(BaseSchema):
@@ -14,8 +14,8 @@ class UserPermissionsCreate(BaseSchema):
     but we also will continue to support the ability to be assigned specific individual scopes.
     """
 
-    scopes: List[SCOPE_REGISTRY_ENUM] = []
-    roles: List[RoleRegistry] = []
+    scopes: List[ScopeRegistryEnum] = []
+    roles: List[RoleRegistryEnum] = []
 
     class Config:
         """So roles are strings when we add to the db"""
@@ -36,22 +36,22 @@ class UserPermissionsResponse(UserPermissionsCreate):
 
     id: str
     user_id: str
-    scopes: List[SCOPE_REGISTRY_ENUM]
-    total_scopes: List[SCOPE_REGISTRY_ENUM]
+    scopes: List[ScopeRegistryEnum]
+    total_scopes: List[ScopeRegistryEnum]
 
     class Config:
         use_enum_values = True
 
     @validator("scopes", pre=True)
     def validate_obsolete_scopes(
-        cls, scopes: List[SCOPE_REGISTRY_ENUM]
-    ) -> List[SCOPE_REGISTRY_ENUM]:
+        cls, scopes: List[ScopeRegistryEnum]
+    ) -> List[ScopeRegistryEnum]:
         """Filter out obsolete scopes if the scope registry has changed"""
         return [scope for scope in scopes or [] if scope in SCOPE_REGISTRY]
 
     @validator("total_scopes", pre=True)
     def validate_obsolete_total_scopes(
-        cls, total_scopes: List[SCOPE_REGISTRY_ENUM]
-    ) -> List[SCOPE_REGISTRY_ENUM]:
+        cls, total_scopes: List[ScopeRegistryEnum]
+    ) -> List[ScopeRegistryEnum]:
         """Filter out obsolete total scopes if the scope registry has changed"""
         return [scope for scope in total_scopes or [] if scope in SCOPE_REGISTRY]

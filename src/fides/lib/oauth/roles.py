@@ -39,7 +39,7 @@ VIEWER = "viewer"
 VIEWER_AND_APPROVER = "viewer_and_approver"
 
 
-class RoleRegistry(Enum):
+class RoleRegistryEnum(Enum):
     """Enum of available roles
 
     Owner - Full admin
