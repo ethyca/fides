@@ -40,6 +40,7 @@ depending on the preceding scan
 const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Name", attribute: "name" },
   { name: "Domains", attribute: "tags" },
+  { name: "Cookies", attribute: "meta" },
 ];
 
 const ScanResults = () => {
