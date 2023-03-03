@@ -15,6 +15,7 @@ import { RoleRegistry } from "~/types/api";
 
 import QuestionTooltip from "../common/QuestionTooltip";
 import AssignSystemsModal from "./AssignSystemsModal";
+import { AssignSystemsDeleteTable } from "./AssignSystemsTable";
 import { type FormValues } from "./PermissionsForm";
 
 interface Props {
@@ -62,10 +63,15 @@ const RoleOption = ({ label, roleKey, isSelected }: Props) => {
         >
           Assign systems +
         </Button>
-        <AssignSystemsModal
-          isOpen={assignSystemsModal.isOpen}
-          onClose={assignSystemsModal.onClose}
-        />
+        <AssignSystemsDeleteTable />
+        {/* By conditionally rendering the modal, we force it to reset its state
+        whenever it opens */}
+        {assignSystemsModal.isOpen ? (
+          <AssignSystemsModal
+            isOpen={assignSystemsModal.isOpen}
+            onClose={assignSystemsModal.onClose}
+          />
+        ) : null}
       </Stack>
     );
   }

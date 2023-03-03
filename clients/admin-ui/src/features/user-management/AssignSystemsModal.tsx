@@ -15,28 +15,66 @@ import {
   Stack,
   Switch,
   Text,
+  useToast,
 } from "@fidesui/react";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import SearchBar from "~/features/common/SearchBar";
 import { useGetAllSystemsQuery } from "~/features/system";
 import { System } from "~/types/api";
 
+import { getErrorMessage, isErrorResult } from "../common/helpers";
+import { errorToastParams, successToastParams } from "../common/toast";
 import AssignSystemsTable from "./AssignSystemsTable";
+import {
+  selectActiveUserId,
+  selectActiveUsersManagedSystems,
+  useGetUserManagedSystemsQuery,
+  useUpdateUserManagedSystemsMutation,
+} from "./user-management.slice";
 
 const AssignSystemsModal = ({
   isOpen,
   onClose,
 }: Pick<ModalProps, "isOpen" | "onClose">) => {
+  const activeUserId = useAppSelector(selectActiveUserId);
   const { data: allSystems } = useGetAllSystemsQuery();
+  useGetUserManagedSystemsQuery(activeUserId as string, {
+    skip: !activeUserId,
+  });
+  const [updateUserManagedSystemsTrigger, { isLoading: isSubmitting }] =
+    useUpdateUserManagedSystemsMutation();
   const [searchFilter, setSearchFilter] = useState("");
-  const [assignedSystems, setAssignedSystems] = useState<System[]>([]);
-  const handleAssign = () => {};
+  const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
+  const [assignedSystems, setAssignedSystems] = useState<System[]>(
+    initialManagedSystems
+  );
+  const toast = useToast();
+
+  useEffect(() => {
+    setAssignedSystems(initialManagedSystems);
+  }, [initialManagedSystems]);
+
+  const handleAssign = async () => {
+    if (!activeUserId) {
+      return;
+    }
+    const fidesKeys = assignedSystems.map((s) => s.fides_key);
+    const result = await updateUserManagedSystemsTrigger({
+      userId: activeUserId,
+      fidesKeys,
+    });
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+      return;
+    }
+    toast(successToastParams("Updated users permissions"));
+    onClose();
+  };
 
   const emptySystems = !allSystems || allSystems.length === 0;
   const allSystemsAssigned = assignedSystems.length === allSystems?.length;
-
-  console.log({ assignedSystems });
 
   const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
@@ -109,6 +147,7 @@ const AssignSystemsModal = ({
                 colorScheme="primary"
                 onClick={handleAssign}
                 data-testid="confirm-btn"
+                isLoading={isSubmitting}
               >
                 Confirm
               </Button>

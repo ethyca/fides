@@ -6,7 +6,7 @@ import { utf8ToB64 } from "common/utils";
 import type { RootState } from "~/app/store";
 import { BASE_URL } from "~/constants";
 import { selectToken, selectUser } from "~/features/auth";
-import { ScopeRegistry, UserForcePasswordReset } from "~/types/api";
+import { ScopeRegistry, System, UserForcePasswordReset } from "~/types/api";
 
 import {
   User,
@@ -92,7 +92,7 @@ export const userApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["User"],
+  tagTypes: ["User", "Managed Systems"],
   endpoints: (build) => ({
     getAllUsers: build.query<UsersResponse, UsersListParams>({
       query: (filters) => ({
@@ -168,6 +168,39 @@ export const userApi = createApi({
       // Invalidates all queries that subscribe to this User `id` only
       invalidatesTags: ["User"],
     }),
+
+    // Data steward endpoints
+    getUserManagedSystems: build.query<System[], string>({
+      query: (id) => ({ url: `user/${id}/system-manager` }),
+      providesTags: (result, error, arg) => [
+        { type: "Managed Systems" as const, id: arg },
+      ],
+    }),
+    updateUserManagedSystems: build.mutation<
+      System[],
+      { fidesKeys: string[]; userId: string }
+    >({
+      query: ({ userId, fidesKeys }) => ({
+        url: `user/${userId}/system-manager`,
+        method: "PUT",
+        body: fidesKeys,
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Managed Systems" as const, id: arg.userId },
+      ],
+    }),
+    removeUserManagedSystem: build.mutation<
+      void,
+      { userId: string; systemKey: string }
+    >({
+      query: ({ userId, systemKey }) => ({
+        url: `user/${userId}/system-manager/${systemKey}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Managed Systems" as const, id: arg.userId },
+      ],
+    }),
   }),
 });
 
@@ -200,6 +233,21 @@ export const selectThisUsersScopes = createSelector(
   }
 );
 
+const emptyManagedSystems: System[] = [];
+export const selectActiveUsersManagedSystems = createSelector(
+  [(RootState) => RootState, selectActiveUserId],
+  (RootState, activeUserId) => {
+    if (!activeUserId) {
+      return emptyManagedSystems;
+    }
+    const systems =
+      userApi.endpoints.getUserManagedSystems.select(activeUserId)(
+        RootState
+      ).data;
+    return systems ?? emptyManagedSystems;
+  }
+);
+
 export const {
   useGetAllUsersQuery,
   useGetUserByIdQuery,
@@ -210,4 +258,8 @@ export const {
   useUpdateUserPermissionsMutation,
   useGetUserPermissionsQuery,
   useForceResetUserPasswordMutation,
+
+  useGetUserManagedSystemsQuery,
+  useUpdateUserManagedSystemsMutation,
+  useRemoveUserManagedSystemMutation,
 } = userApi;
