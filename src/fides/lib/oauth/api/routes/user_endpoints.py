@@ -259,7 +259,7 @@ def perform_login(
         client.save(db)
 
     if not user.permissions.scopes and not user.permissions.roles and not user.systems:  # type: ignore
-        logger.info("User needs scopes, roles, or systems to login.")
+        logger.warning("User {} needs scopes, roles, or systems to login.", user.id)
         raise AuthorizationError(detail="Not Authorized for this action")
 
     user.last_login_at = datetime.utcnow()
