@@ -23,7 +23,7 @@ from fides.core.config import CONFIG
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import OWNER, VIEWER, ROLES_TO_SCOPES_MAPPING
+from fides.lib.oauth.roles import OWNER, ROLES_TO_SCOPES_MAPPING, VIEWER
 from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
 
