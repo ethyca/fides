@@ -257,15 +257,18 @@ describe("User management", () => {
         });
 
         it("can toggle one system", () => {
-          cy.getByTestId("row-fidesctl_system").within(() => {
-            cy.getByTestId("assign-switch").click();
-          });
+          cy.getByTestId("assign-systems-modal-body").within(() => {
+            cy.getByTestId("row-fidesctl_system").within(() => {
+              cy.getByTestId("assign-switch").click();
+            });
 
-          // the select all toggle should no longer be selected
-          cy.getByTestId("assign-all-systems-toggle").within(() => {
-            cy.get("span").should("not.have.attr", "data-checked");
+            // the select all toggle should no longer be selected
+            cy.getByTestId("assign-all-systems-toggle").within(() => {
+              cy.get("span").should("not.have.attr", "data-checked");
+            });
           });
           cy.getByTestId("confirm-btn").click();
+
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql([
@@ -291,10 +294,12 @@ describe("User management", () => {
 
           cy.getByTestId("assign-all-systems-toggle").click();
           // all toggles in every row should be unchecked
-          systems.forEach((fidesKey) => {
-            cy.getByTestId(`row-${fidesKey}`).within(() => {
-              cy.getByTestId("assign-switch").within(() => {
-                cy.get("span").should("not.have.attr", "data-checked");
+          cy.getByTestId("assign-systems-modal-body").within(() => {
+            systems.forEach((fidesKey) => {
+              cy.getByTestId(`row-${fidesKey}`).within(() => {
+                cy.getByTestId("assign-switch").within(() => {
+                  cy.get("span").should("not.have.attr", "data-checked");
+                });
               });
             });
           });
