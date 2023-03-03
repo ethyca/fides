@@ -22,7 +22,7 @@ class TestPatchApplicationConfig:
         return {
             "storage": {"active_default_storage_type": StorageType.s3.value},
             "notifications": {
-                "notification_service_type": "TWILIO_TEXT",
+                "notification_service_type": "twilio_text",
                 "send_request_completion_notification": True,
                 "send_request_receipt_notification": True,
                 "send_request_review_notification": True,
@@ -173,7 +173,7 @@ class TestPatchApplicationConfig:
         updated_payload = {
             "execution": {"subject_identity_verification_required": False},
             "notifications": {
-                "notification_service_type": "MAILGUN",
+                "notification_service_type": "mailgun",
                 "send_request_completion_notification": False,
             },
         }
@@ -190,7 +190,7 @@ class TestPatchApplicationConfig:
             is False
         )
         assert (
-            response_settings["notifications"]["notification_service_type"] == "MAILGUN"
+            response_settings["notifications"]["notification_service_type"] == "mailgun"
         )
         assert (
             response_settings["notifications"]["send_request_completion_notification"]
@@ -211,7 +211,7 @@ class TestPatchApplicationConfig:
         )
         assert (
             db_settings.api_set["notifications"]["notification_service_type"]
-            == "MAILGUN"
+            == "mailgun"
         )
         assert (
             db_settings.api_set["notifications"]["send_request_completion_notification"]
@@ -368,7 +368,7 @@ class TestGetApplicationConfigApiSet:
             response_settings["notifications"]["notification_service_type"]
             == payload_single_notification_property["notifications"][
                 "notification_service_type"
-            ].upper()
+            ]
         )
 
 
@@ -382,7 +382,7 @@ class TestDeleteApplicationConfig:
         return {
             "storage": {"active_default_storage_type": StorageType.s3.value},
             "notifications": {
-                "notification_service_type": "TWILIO_TEXT",
+                "notification_service_type": "twilio_text",
                 "send_request_completion_notification": True,
                 "send_request_receipt_notification": True,
                 "send_request_review_notification": True,

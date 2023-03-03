@@ -267,7 +267,7 @@ def messaging_config(db: Session) -> Generator:
         data={
             "name": name,
             "key": "my_mailgun_messaging_config",
-            "service_type": MessagingServiceType.MAILGUN,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {
                 MessagingServiceDetails.API_VERSION.value: "v3",
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
@@ -293,7 +293,7 @@ def messaging_config_twilio_email(db: Session) -> Generator:
         data={
             "name": name,
             "key": "my_twilio_email_config",
-            "service_type": MessagingServiceType.TWILIO_EMAIL,
+            "service_type": MessagingServiceType.twilio_email.value,
         },
     )
     messaging_config.set_secrets(
@@ -314,7 +314,7 @@ def messaging_config_twilio_sms(db: Session) -> Generator:
         data={
             "name": name,
             "key": "my_twilio_sms_config",
-            "service_type": MessagingServiceType.TWILIO_TEXT,
+            "service_type": MessagingServiceType.twilio_text.value,
         },
     )
     messaging_config.set_secrets(
@@ -336,7 +336,7 @@ def messaging_config_mailchimp_transactional(db: Session) -> Generator:
         data={
             "name": str(uuid4()),
             "key": "my_mailchimp_transactional_messaging_config",
-            "service_type": MessagingServiceType.MAILCHIMP_TRANSACTIONAL,
+            "service_type": MessagingServiceType.mailchimp_transactional,
             "details": {
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
                 MessagingServiceDetails.EMAIL_FROM.value: "test@example.com",
@@ -1630,7 +1630,7 @@ def test_fides_client(
         fides_connector_example_secrets["uri"],
         fides_connector_example_secrets["username"],
         fides_connector_example_secrets["password"],
-        fides_connector_example_secrets["polling_timeout"]
+        fides_connector_example_secrets["polling_timeout"],
     )
 
 
