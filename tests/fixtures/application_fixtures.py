@@ -71,7 +71,6 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import OWNER, VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging

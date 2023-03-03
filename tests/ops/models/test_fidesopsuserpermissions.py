@@ -7,7 +7,7 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import ADMIN, ROLES_TO_SCOPES_MAPPING, VIEWER
+from fides.lib.oauth.roles import ROLES_TO_SCOPES_MAPPING, VIEWER
 
 
 class TestFidesUserPermissions:
