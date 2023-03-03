@@ -30,9 +30,17 @@ describe("Routes", () => {
       cy.visit("/datastore-connection");
       cy.wait("@getConnectors");
       cy.getByTestId("connection-grid");
+      cy.visit("/privacy-requests/configure");
+      cy.getByTestId("privacy-requests-configure");
     });
 
-    // TODO: add one for contributor
+    // This doesn't work right now due needing a fix for `exact` in the `nav-config` helpers
+    // This is the same issue as https://github.com/ethyca/fides/issues/2731
+    it.skip("contributors can not access configuration", () => {
+      cy.assumeRole(RoleRegistryEnum.CONTRIBUTOR);
+      cy.visit("/privacy-requests/configure");
+      cy.getByTestId("home-content");
+    });
 
     it("viewers and/or approvers can only access limited routes", () => {
       [

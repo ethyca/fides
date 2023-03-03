@@ -56,7 +56,8 @@ describe("configureNavGroups", () => {
       config: NAV_CONFIG,
       hasSystems: true,
       userScopes: [
-        ScopeRegistryEnum.CLI_OBJECTS_CREATE,
+        ScopeRegistryEnum.SYSTEM_CREATE,
+        ScopeRegistryEnum.DATASET_CREATE_OR_UPDATE,
         ScopeRegistryEnum.CLI_OBJECTS_READ,
       ],
     });
@@ -84,9 +85,10 @@ describe("configureNavGroups", () => {
       hasPlus: true,
       userScopes: [
         ScopeRegistryEnum.DATAMAP_READ,
-        ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-        ScopeRegistryEnum.CLI_OBJECTS_READ,
+        ScopeRegistryEnum.SYSTEM_CREATE,
+        ScopeRegistryEnum.DATASET_CREATE_OR_UPDATE,
         ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
+        ScopeRegistryEnum.CLI_OBJECTS_READ,
       ],
     });
 
@@ -163,7 +165,8 @@ describe("configureNavGroups", () => {
         hasSystems: true,
         userScopes: [
           ScopeRegistryEnum.DATAMAP_READ,
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
+          ScopeRegistryEnum.SYSTEM_CREATE,
+          ScopeRegistryEnum.DATASET_CREATE_OR_UPDATE,
           ScopeRegistryEnum.CLI_OBJECTS_READ,
         ],
       });
@@ -194,8 +197,10 @@ describe("findActiveNav", () => {
     hasConnections: true,
     userScopes: [
       ScopeRegistryEnum.DATAMAP_READ,
-      ScopeRegistryEnum.CLI_OBJECTS_CREATE,
       ScopeRegistryEnum.CLI_OBJECTS_READ,
+      ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
+      ScopeRegistryEnum.SYSTEM_CREATE,
+      ScopeRegistryEnum.DATASET_CREATE_OR_UPDATE,
       ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
     ],
   });
@@ -264,7 +269,7 @@ describe("findActiveNav", () => {
       {
         path: "/add-systems",
         expected: true,
-        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
+        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
       },
       {
         path: "/privacy-requests",

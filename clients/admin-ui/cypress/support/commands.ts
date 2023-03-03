@@ -40,7 +40,7 @@ Cypress.Commands.add("assumeRole", (role) => {
       body: {
         id: 123,
         user_id: 123,
-        scopes,
+        total_scopes: scopes,
       },
     }).as("getUserPermission");
   });

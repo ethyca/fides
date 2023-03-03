@@ -34,7 +34,12 @@ const ConfigurePrivacyRequests: NextPage = () => (
     <Heading mb={5} fontSize="2xl" fontWeight="semibold">
       Configure your privacy requests
     </Heading>
-    <Box display="flex" alignItems="center" mb={5}>
+    <Box
+      display="flex"
+      alignItems="center"
+      mb={5}
+      data-testid="privacy-requests-configure"
+    >
       <NextLink href="/privacy-requests/configure/messaging" passHref>
         <LinkBox
           p="5"

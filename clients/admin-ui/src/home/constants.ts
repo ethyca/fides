@@ -43,7 +43,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     name: "Add systems",
     sortOrder: 1,
     title: "AS",
-    scopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
+    scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
   },
   {
     color: "purple",
@@ -78,7 +78,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     name: "Review privacy requests",
     sortOrder: 4,
     title: "RP",
-    scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_CREATE],
+    scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW],
     requiresConnections: true,
   },
 ];

@@ -68,17 +68,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Add systems",
         path: "/add-systems",
         scopes: [
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
+          ScopeRegistryEnum.SYSTEM_CREATE,
+          ScopeRegistryEnum.SYSTEM_UPDATE,
         ],
       },
       {
         title: "Manage datasets",
         path: "/dataset",
-        scopes: [
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
-        ],
+        scopes: [ScopeRegistryEnum.DATASET_CREATE_OR_UPDATE],
       },
       {
         title: "Classify systems",
