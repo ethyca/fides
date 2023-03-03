@@ -23,7 +23,7 @@ from fides.core.config import CONFIG
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import ADMIN, ROLES_TO_SCOPES_MAPPING, VIEWER
+from fides.lib.oauth.roles import OWNER, VIEWER
 from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
 
@@ -202,7 +202,7 @@ class TestCreateUserPermissions:
         db.add(client)
         db.commit()
 
-        body = {"user_id": user.id, "roles": [ADMIN]}
+        body = {"user_id": user.id, "roles": [OWNER]}
         response = api_client.post(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
@@ -211,9 +211,9 @@ class TestCreateUserPermissions:
         assert HTTP_201_CREATED == response.status_code
         assert response_body["id"] == permissions.id
         assert permissions.scopes == []
-        assert permissions.roles == [ADMIN]
+        assert permissions.roles == [OWNER]
         db.refresh(client)
-        assert client.roles == [ADMIN]
+        assert client.roles == [OWNER]
         user.delete(db)
 
 
@@ -414,7 +414,7 @@ class TestEditUserPermissions:
             user_id=user.id,
         )
 
-        body = {"id": permissions.id, "roles": [ADMIN]}
+        body = {"id": permissions.id, "roles": [OWNER]}
         response = api_client.put(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
@@ -423,15 +423,15 @@ class TestEditUserPermissions:
         assert (
             response_body["scopes"] == []
         ), "Scopes removed as they were not specified in the request"
-        assert response_body["roles"] == [ADMIN]
+        assert response_body["roles"] == [OWNER]
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
         assert client.scopes == []
-        assert client.roles == [ADMIN]
+        assert client.roles == [OWNER]
 
         db.refresh(permissions)
         assert permissions.scopes == []
-        assert permissions.roles == [ADMIN]
+        assert permissions.roles == [OWNER]
 
         user.delete(db)
 
@@ -615,7 +615,7 @@ class TestGetUserPermissions:
         assert response_body["id"] == oauth_root_client.id
         assert response_body["user_id"] == oauth_root_client.id
         assert response_body["scopes"] == SCOPE_REGISTRY
-        assert response_body["roles"] == [ADMIN]
+        assert response_body["roles"] == [OWNER]
         assert response_body["total_scopes"] == sorted(SCOPE_REGISTRY)
 
     def test_get_root_user_permissions_by_non_root_user(
@@ -694,12 +694,12 @@ class TestGetUserPermissions:
         )
         assert response.status_code == 403
 
-    def test_get_other_user_roles_as_admin(self, db, api_client, auth_user, admin_user):
+    def test_get_other_user_roles_as_owner(self, db, api_client, auth_user, owner_user):
         FidesUserPermissions.create(
             db=db, data={"user_id": auth_user.id, "roles": [VIEWER]}
         )
 
-        auth_header = generate_role_header_for_user(admin_user, roles=[ADMIN])
+        auth_header = generate_role_header_for_user(owner_user, roles=[OWNER])
 
         response = api_client.get(
             f"{V1_URL_PREFIX}/user/{auth_user.id}/permission",

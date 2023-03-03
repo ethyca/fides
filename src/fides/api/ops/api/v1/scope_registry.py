@@ -7,6 +7,7 @@ The format for defining a scope is:
 
 `SCOPE_REGISTRY` is intended as a comprehensive list of all available scopes.
 """
+
 from enum import Enum
 
 AUTHORIZE = "authorize"
@@ -230,7 +231,8 @@ SCOPE_DOCS = {
 
 SCOPE_REGISTRY = list(SCOPE_DOCS.keys())
 
-
-ScopeRegistryEnum = Enum(  # type: ignore[misc]
+# mypy doesn't like taking the dictionary to generate the enum
+# https://github.com/python/mypy/issues/5317
+SCOPE_REGISTRY_ENUM = Enum(  # type: ignore[misc]
     "ScopeRegistryEnum", {scope: scope for scope in SCOPE_REGISTRY}  # type: ignore
 )
