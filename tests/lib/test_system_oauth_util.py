@@ -24,7 +24,7 @@ from fides.lib.cryptography.schemas.jwt import (
 )
 from fides.lib.exceptions import AuthorizationError
 from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import ADMIN, VIEWER
+from fides.lib.oauth.roles import OWNER, VIEWER
 
 
 class TestHasSystemPermissions:
@@ -36,16 +36,16 @@ class TestHasSystemPermissions:
     as well.  As long as you have the right scope, you can work with the given resource.
     """
 
-    async def test_admin_role_can_always_update_system(self, admin_user, db, system):
+    async def test_owner_role_can_always_update_system(self, owner_user, db, system):
         payload = {
-            JWE_PAYLOAD_ROLES: [ADMIN],
-            JWE_PAYLOAD_CLIENT_ID: admin_user.client.id,
+            JWE_PAYLOAD_ROLES: [OWNER],
+            JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         token = generate_jwe(
             json.dumps(payload),
             CONFIG.security.app_encryption_key,
-        )  # Note token doesn't have system on it, but the user is an admin
+        )  # Note token doesn't have system on it, but the user is an owner
 
         response = await verify_oauth_client_for_system_from_request_body(
             security_scopes=SecurityScopes(scopes=[SYSTEM_UPDATE]),
