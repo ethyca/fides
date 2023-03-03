@@ -1,16 +1,16 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { ScopeRegistry } from "~/types/api";
+import { ScopeRegistryEnum } from "~/types/api";
 
 import { MODULE_CARD_ITEMS } from "./constants";
 import { configureTiles } from "./tile-config";
 
 const ALL_SCOPES_FOR_TILES = [
-  ScopeRegistry.DATAMAP_READ,
-  ScopeRegistry.PRIVACY_REQUEST_CREATE,
-  ScopeRegistry.CONNECTION_CREATE_OR_UPDATE,
-  ScopeRegistry.CLI_OBJECTS_READ,
-  ScopeRegistry.CLI_OBJECTS_CREATE,
+  ScopeRegistryEnum.DATAMAP_READ,
+  ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+  ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
+  ScopeRegistryEnum.CLI_OBJECTS_READ,
+  ScopeRegistryEnum.CLI_OBJECTS_CREATE,
 ];
 
 describe("configureTiles", () => {
@@ -91,7 +91,7 @@ describe("configureTiles", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
         // irrelevant scope
-        userScopes: [ScopeRegistry.DATABASE_RESET],
+        userScopes: [ScopeRegistryEnum.DATABASE_RESET],
       });
       expect(tiles.length).toEqual(0);
     });
@@ -99,7 +99,7 @@ describe("configureTiles", () => {
     it("conditionally shows add systems based on scope", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
-        userScopes: [ScopeRegistry.CLI_OBJECTS_CREATE],
+        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
       });
       expect(tiles.map((t) => t.name)).toEqual(["Add systems"]);
     });
@@ -107,7 +107,7 @@ describe("configureTiles", () => {
     it("conditionally shows configure privacy requests", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
-        userScopes: [ScopeRegistry.CONNECTION_CREATE_OR_UPDATE],
+        userScopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
       });
       expect(tiles.map((t) => t.name)).toEqual(["Configure privacy requests"]);
     });
@@ -117,7 +117,7 @@ describe("configureTiles", () => {
         config: MODULE_CARD_ITEMS,
         hasPlus: true,
         hasSystems: true,
-        userScopes: [ScopeRegistry.DATAMAP_READ],
+        userScopes: [ScopeRegistryEnum.DATAMAP_READ],
       });
       expect(tiles.map((t) => t.name)).toEqual(["View data map"]);
     });
@@ -126,7 +126,7 @@ describe("configureTiles", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
         hasConnections: true,
-        userScopes: [ScopeRegistry.PRIVACY_REQUEST_CREATE],
+        userScopes: [ScopeRegistryEnum.PRIVACY_REQUEST_CREATE],
       });
       expect(tiles.map((t) => t.name)).toEqual(["Review privacy requests"]);
     });
@@ -136,8 +136,8 @@ describe("configureTiles", () => {
         config: MODULE_CARD_ITEMS,
         hasConnections: true,
         userScopes: [
-          ScopeRegistry.PRIVACY_REQUEST_CREATE,
-          ScopeRegistry.CONNECTION_CREATE_OR_UPDATE,
+          ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+          ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
         ],
       });
       expect(tiles.map((t) => t.name)).toEqual([

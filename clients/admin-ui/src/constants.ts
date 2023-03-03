@@ -20,107 +20,107 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
   },
   {
     privilege: "Approve privacy requests",
-    scope: "privacy-request:review",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_RESUME,
   },
   {
     privilege: "Resume privacy requests",
-    scope: "privacy-request:resume",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_RESUME,
   },
   {
     privilege: "View connections",
-    scope: "connection:read",
+    scope: ScopeRegistryEnum.CONNECTION_READ,
   },
   {
     privilege: "Create or update connections",
-    scope: "connection:create_or_update",
+    scope: ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
   },
   {
     privilege: "Instantiate connections",
-    scope: "connection:instantiate",
+    scope: ScopeRegistryEnum.CONNECTION_INSTANTIATE,
   },
   {
     privilege: "Read connection types",
-    scope: "connection_type:read",
+    scope: ScopeRegistryEnum.CONNECTION_TYPE_READ,
   },
   {
     privilege: "Delete connections",
-    scope: "connection:delete",
+    scope: ScopeRegistryEnum.CONNECTION_DELETE,
   },
   {
     privilege: "View user consent preferences",
-    scope: "consent:read",
+    scope: ScopeRegistryEnum.CONSENT_READ,
   },
   {
     privilege: "View datasets",
-    scope: "dataset:read",
+    scope: ScopeRegistryEnum.DATASET_READ,
   },
   {
     privilege: "Create or update datasets",
-    scope: "dataset:create_or_update",
+    scope: ScopeRegistryEnum.DATASET_CREATE_OR_UPDATE,
   },
   {
     privilege: "Delete datasets",
-    scope: "dataset:delete",
+    scope: ScopeRegistryEnum.DATASET_DELETE,
   },
   {
     privilege: "View policies",
-    scope: "policy:read",
+    scope: ScopeRegistryEnum.POLICY_READ,
   },
   {
     privilege: "Create policies",
-    scope: "policy:create_or_update",
+    scope: ScopeRegistryEnum.POLICY_CREATE_OR_UPDATE,
   },
   {
     privilege: "View users",
-    scope: "user:read",
+    scope: ScopeRegistryEnum.USER_READ,
   },
   {
     privilege: "Create users",
-    scope: "user:create",
+    scope: ScopeRegistryEnum.USER_CREATE,
   },
   {
     privilege: "Update users",
-    scope: "user:update",
+    scope: ScopeRegistryEnum.USER_UPDATE,
   },
   {
     privilege: "Delete users",
-    scope: "user:delete",
+    scope: ScopeRegistryEnum.USER_DELETE,
   },
   {
     privilege: "Reset another user's password",
-    scope: "user:password-reset",
+    scope: ScopeRegistryEnum.USER_PASSWORD_RESET,
   },
   {
     privilege: "Assign user permissions",
-    scope: "user-permission:create",
+    scope: ScopeRegistryEnum.USER_PERMISSION_CREATE,
   },
   {
     privilege: "Update user permissions",
-    scope: "user-permission:update",
+    scope: ScopeRegistryEnum.USER_PERMISSION_UPDATE,
   },
   {
     privilege: "Read user permissions",
-    scope: "user-permission:read",
+    scope: ScopeRegistryEnum.USER_PERMISSION_READ,
   },
   {
     privilege: "Upload privacy request data",
-    scope: "privacy-request:upload_data",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_UPLOAD_DATA,
   },
   {
     privilege: "View privacy request data",
-    scope: "privacy-request:view_data",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_VIEW_DATA,
   },
   {
     privilege: "Create manual processes",
-    scope: "webhook:create_or_update",
+    scope: ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
   },
   {
     privilege: "Read manual processes",
-    scope: "webhook:read",
+    scope: ScopeRegistryEnum.WEBHOOK_READ,
   },
   {
     privilege: "Delete manual processes",
-    scope: "webhook:delete",
+    scope: ScopeRegistryEnum.WEBHOOK_DELETE,
   },
 ];
 
