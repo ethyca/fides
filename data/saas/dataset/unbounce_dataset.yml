@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: unbounce
-    description: A sample dataset representing the Unbounce connector for Fides
+    name: unbounce_new
+    description: A sample dataset representing the Unbounce_new connector for Fides
     collections:
       - name: lead
         fields:
@@ -18,136 +18,27 @@ dataset:
               data_type: object
             fields:
               - name: cookies
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: ubvs
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: ubvt
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
           - name: form_data
             fidesops_meta:
               data_type: object
             fields:
               - name: email
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
-                  data_type: 'string[]'
+                  data_type: string
               - name: last_name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
-                  data_type: 'string[]'
+                  data_type: string
               - name: first_name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
-                  data_type: 'string[]'
-              - name: phone_number
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: 'string[]'
-              - name: type_of_appointment
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: 'string[]'
+                  data_type: string
           - name: page_id
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: variant_id
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: submitter_ip
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: metadata
-            fidesops_meta:
-              data_type: object
-            fields:
-              - name: documentation
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: location
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: related
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: page
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: sub_account
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-      - name: all_leads
-        fields:
-          - name: created_at
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: id
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: extra_data
-            fidesops_meta:
-              data_type: object
-            fields:
-              - name: cookies
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: ubvs
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: ubvt
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-          - name: form_data
-            fidesops_meta:
-              data_type: object
-            fields:
-              - name: email
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: 'string[]'
-              - name: last_name
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: 'string[]'
-              - name: first_name
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: 'string[]'
-              - name: phone_number
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: 'string[]'
-              - name: type_of_appointment
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: 'string[]'
-          - name: page_id
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: variant_id
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: submitter_ip
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string

@@ -1,14 +1,14 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Unbounce SaaS Config
-  type: unbounce
-  description: A sample schema representing the Unbounce connector for Fides
+  name: Unbounce_new SaaS Config
+  type: unbounce_new
+  description: A sample schema representing the Unbounce_new connector for Fides
   version: 0.1.0
 
   connector_params:
     - name: domain
     - name: api_key
-    - name: page_id
+    - name: lead_id
 
   client_config:
     protocol: https
@@ -31,21 +31,9 @@ saas_config:
       requests:
         read:
           method: GET
-          path: /leads/<all_leads_id>
+          path: /leads/<lead_id>
           param_values:
-            - name: all_leads_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: all_leads.id
-                  direction: from
-    - name: all_leads
-      requests:
-        read:
-          method: GET
-          path: /pages/<page_id>/leads
-          data_path: leads
-          param_values:
-            - name: page_id
-              connector_param: page_id
+            - name: lead_id
+              connector_param: lead_id
             - name: placeholder
               identity: email
