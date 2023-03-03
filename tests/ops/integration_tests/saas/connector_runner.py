@@ -125,46 +125,8 @@ class ConnectorRunner:
         masking_strict = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = True
 
-        fides_key = self.connection_config.key
-        privacy_request = PrivacyRequest(
-            id=f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
-        )
-        identity = Identity(**identities)
-        privacy_request.cache_identity(identity)
-
-        # cache external dataset data
-        if self.erasure_external_references:
-            self.cache.set_encoded_object(
-                f"{privacy_request.id}__access_request__{self.connector_type}_external_dataset:{self.connector_type}_external_collection",
-                [self.erasure_external_references],
-            )
-
-        graph_list = [self.dataset_config.get_graph()]
-        connection_config_list = [self.connection_config]
-        _process_external_references(self.db, graph_list, connection_config_list)
-        dataset_graph = DatasetGraph(*graph_list)
-
-        access_results = await graph_task.run_access_request(
-            privacy_request,
-            access_policy,
-            dataset_graph,
-            connection_config_list,
-            identities,
-            self.db,
-        )
-
-        # verify we returned at least one row for each collection in the dataset
-        for collection in self.dataset["collections"]:
-            assert len(access_results[f"{fides_key}:{collection['name']}"])
-
-        erasure_results = await graph_task.run_erasure(
-            privacy_request,
-            erasure_policy,
-            dataset_graph,
-            connection_config_list,
-            identities,
-            get_cached_data_for_erasures(privacy_request.id),
-            self.db,
+        access_results, erasure_results = await self._base_erasure_request(
+            access_policy, erasure_policy, identities
         )
 
         # reset masking_strict value
@@ -187,6 +149,21 @@ class ConnectorRunner:
         masking_strict = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = False
 
+        access_results, erasure_results = await self._base_erasure_request(
+            access_policy, erasure_policy, identities
+        )
+
+        # reset masking_strict value
+        CONFIG.execution.masking_strict = masking_strict
+        return access_results, erasure_results
+
+    async def _base_erasure_request(
+        self,
+        access_policy: Policy,
+        erasure_policy: Policy,
+        identities: Dict[str, Any],
+    ) -> Tuple[Dict, Dict]:
+
         fides_key = self.connection_config.key
         privacy_request = PrivacyRequest(
             id=f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
@@ -229,8 +206,6 @@ class ConnectorRunner:
             self.db,
         )
 
-        # reset masking_strict value
-        CONFIG.execution.masking_strict = masking_strict
         return access_results, erasure_results
 
 

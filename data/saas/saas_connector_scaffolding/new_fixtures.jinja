@@ -34,6 +34,16 @@ def {{ connector_id }}_erasure_identity_email() -> str:
 
 
 @pytest.fixture
+def {{ connector_id }}_external_references() -> Dict[str, Any]:
+    return {}
+
+
+@pytest.fixture
+def {{ connector_id }}_erasure_external_references() -> Dict[str, Any]:
+    return {}
+
+
+@pytest.fixture
 def {{ connector_id }}_erasure_data(
     {{ connector_id }}_erasure_identity_email: str,
 ) -> Generator:
@@ -46,5 +56,14 @@ def {{ connector_id }}_runner(
     db,
     cache,
     {{ connector_id }}_secrets,
+    {{ connector_id }}_external_references,
+    {{ connector_id }}_erasure_external_references,
 ) -> ConnectorRunner:
-    return ConnectorRunner(db, cache, "{{ connector_id }}", {{ connector_id }}_secrets)
+    return ConnectorRunner(
+        db,
+        cache,
+        "{{ connector_id }}",
+        {{ connector_id }}_secrets,
+        external_references={{ connector_id }}_external_references,
+        erasure_external_references={{ connector_id }}_erasure_external_references,
+    )

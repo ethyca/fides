@@ -69,8 +69,13 @@ def init_saas_connector(session: nox.Session) -> None:
     variable_map = {"connector_name": connector_name, "connector_id": connector_id}
 
     # create empty config and dataset files
-    open(f"data/saas/config/{variable_map['connector_id']}_config.yml", "w")
-    open(f"data/saas/dataset/{variable_map['connector_id']}_dataset.yml", "w")
+    try:
+        open(f"data/saas/config/{variable_map['connector_id']}_config.yml", "x")
+        open(f"data/saas/dataset/{variable_map['connector_id']}_dataset.yml", "x")
+    except FileExistsError:
+        session.error(
+            f"Files for {session.posargs[0]} already exist, skipping initialization"
+        )
 
     # location of Jinja templates
     from jinja2 import Environment, FileSystemLoader
