@@ -20,6 +20,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     SMS_MESSAGING_SERVICES,
     SUPPORTED_MESSAGING_SERVICE_SECRETS,
     MessagingMethod,
+    MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsTwilioSMS,
@@ -55,6 +56,7 @@ def get_schema_for_secrets(
     """
     try:
         schema = {
+            MessagingServiceType.MAILCHIMP_TRANSACTIONAL: MessagingServiceSecretsMailchimpTransactional,
             MessagingServiceType.MAILGUN: MessagingServiceSecretsMailgun,
             MessagingServiceType.TWILIO_TEXT: MessagingServiceSecretsTwilioSMS,
             MessagingServiceType.TWILIO_EMAIL: MessagingServiceSecretsTwilioEmail,
