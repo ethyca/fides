@@ -44,6 +44,7 @@ The types of changes are:
 * Redesigned the default/init config file to be auto-documented. Also updates the `fides init` logic and analytics consent logic [#2694](https://github.com/ethyca/fides/pull/2694)
 * Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
 * Updates Roles->Scopes Mapping [#2744](https://github.com/ethyca/fides/pull/2744)
+* Return user scopes as an enum, as well as total scopes [#2741](https://github.com/ethyca/fides/pull/2741)
 
 ### Developer Experience
 
