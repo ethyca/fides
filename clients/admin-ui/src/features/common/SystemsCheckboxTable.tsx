@@ -65,13 +65,12 @@ export const SystemTableCell = ({
     return <>{domains}</>;
   }
 
-  if (attribute === "meta"){
-    let cookies = ""
-    if(system.meta){
-
+  if (attribute === "meta") {
+    let cookies = "";
+    if (system.meta) {
       cookies = Object.keys(system.meta).join(", ");
     }
-    return <>{cookies}</>
+    return <>{cookies}</>;
   }
 
   return <>{resolvePath(system, attribute)}</>;
