@@ -328,6 +328,30 @@ def messaging_config_twilio_sms(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def messaging_config_mailchimp_transactional(db: Session) -> Generator:
+    messaging_config = MessagingConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_mailchimp_transactional_messaging_config",
+            "service_type": MessagingServiceType.MAILCHIMP_TRANSACTIONAL,
+            "details": {
+                MessagingServiceDetails.DOMAIN.value: "some.domain",
+                MessagingServiceDetails.EMAIL_FROM.value: "test@example.com",
+            },
+        },
+    )
+    messaging_config.set_secrets(
+        db=db,
+        messaging_secrets={
+            MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value: "12984r70298r"
+        },
+    )
+    yield messaging_config
+    messaging_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def https_connection_config(db: Session) -> Generator:
     name = str(uuid4())
     connection_config = ConnectionConfig.create(
@@ -653,7 +677,6 @@ def erasure_policy_string_rewrite_long(
 def erasure_policy_two_rules(
     db: Session, oauth_client: ClientDetail, erasure_policy: Policy
 ) -> Generator:
-
     second_erasure_rule = Rule.create(
         db=db,
         data={
@@ -1618,7 +1641,6 @@ def authenticated_fides_client(
 
 @pytest.fixture(scope="function")
 def system(db: Session) -> System:
-
     system = System.create(
         db=db,
         data={
