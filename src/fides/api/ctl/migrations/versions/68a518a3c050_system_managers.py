@@ -4,7 +4,7 @@ Also includes a data migration to add new scopes to fidesuserpermission.scopes a
 have cli-objects:-* scopes as we're making these scopes more granular.
 
 Revision ID: 68a518a3c050
-Revises: eb1e6ec39b83
+Revises: 9f38dad37628
 Create Date: 2023-02-23 21:52:56.225405
 
 """
@@ -19,7 +19,7 @@ from sqlalchemy.engine import ResultProxy
 from sqlalchemy.sql.elements import TextClause
 
 revision = "68a518a3c050"
-down_revision = "eb1e6ec39b83"
+down_revision = "9f38dad37628"
 branch_labels = None
 depends_on = None
 

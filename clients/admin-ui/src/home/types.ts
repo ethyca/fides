@@ -1,13 +1,18 @@
-export type ModuleCard = {
-  backgroundColor: string;
+import { ScopeRegistry } from "~/types/api";
+
+type ModuleCard = {
   description: string;
-  descriptionColor: string;
-  hoverBorderColor: string;
   href: string;
   key: number;
   name: string;
-  nameColor: string;
   sortOrder: number;
   title: string;
-  titleColor: string;
+  color: string;
 };
+
+export interface ModuleCardConfig extends ModuleCard {
+  requiresSystems?: boolean;
+  requiresConnections?: boolean;
+  requiresPlus?: boolean;
+  scopes: ScopeRegistry[];
+}

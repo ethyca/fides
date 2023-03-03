@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.ops.common_exceptions import SystemManagerException
 
-# Intentionally importing SystemManager here
+# Intentionally importing SystemManager here to build the FidesUser.systems relationship
 from fides.api.ops.models.system_manager import (  # type: ignore[unused-import]
     SystemManager,
 )

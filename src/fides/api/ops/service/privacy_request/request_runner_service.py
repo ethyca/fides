@@ -553,7 +553,9 @@ def initiate_privacy_request_completion_email(
             to_identity=to_identity,
             service_type=config_proxy.notifications.notification_service_type,
             message_body_params=AccessRequestCompleteBodyParams(
-                download_links=access_result_urls
+                download_links=access_result_urls,
+                subject_request_download_time_in_days=CONFIG.security.subject_request_download_link_ttl_seconds
+                / 86400,
             ),
         )
     if policy.get_rules_for_action(action_type=ActionType.erasure):

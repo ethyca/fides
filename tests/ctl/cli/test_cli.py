@@ -14,7 +14,7 @@ from fides.cli import cli
 from fides.core.config import CONFIG
 from fides.core.user import get_user_permissions
 from fides.core.utils import get_auth_header, read_credentials_file
-from fides.lib.oauth.roles import ADMIN
+from fides.lib.oauth.roles import OWNER
 
 OKTA_URL = "https://dev-78908748.okta.com"
 
@@ -36,6 +36,16 @@ def test_cli_runner() -> Generator:
 def test_init(test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["init"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_init_opt_in(test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["init", "--opt-in"],
     )
     print(result.output)
     assert result.exit_code == 0
@@ -941,7 +951,7 @@ class TestUser:
             credentials.user_id, get_auth_header(), CONFIG.cli.server_url
         )
         assert scopes == SCOPE_REGISTRY
-        assert roles == [ADMIN]
+        assert roles == [OWNER]
 
     @pytest.mark.unit
     def test_user_permissions_valid(
@@ -982,7 +992,7 @@ class TestUser:
             CONFIG.cli.server_url,
         )
         assert scopes == SCOPE_REGISTRY
-        assert roles == [ADMIN]
+        assert roles == [OWNER]
 
     @pytest.mark.unit
     def test_user_permissions_not_found(

@@ -1,7 +1,7 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import Dict, Optional
+from typing import Dict
 
 from pydantic import Field
 
@@ -21,15 +21,16 @@ def try_get_auth_header() -> Dict[str, str]:
 
 
 class UserSettings(FidesSettings):
-    """Class used to store values from the 'user' section of the config."""
+    """Configuration settings that apply to the current user as opposed to the entire application instance."""
 
     auth_header: Dict[str, str] = Field(
         default=try_get_auth_header(),
         description="Authentication header built automatically from the credentials file.",
         exclude=True,
     )
-    analytics_opt_out: Optional[bool] = Field(
-        description="When set to true, prevents sending anonymous analytics data to Ethyca."
+    analytics_opt_out: bool = Field(
+        default=True,
+        description="When set to true, prevents sending privacy-respecting anonymous analytics data to Ethyca.",
     )
     encryption_key: str = Field(
         default="test_encryption_key",
