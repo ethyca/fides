@@ -56,6 +56,9 @@ describe("System management page", () => {
       beforeEach(() => {
         stubTaxonomyEntities();
         stubSystemCrud();
+        cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
+          "getDatasets"
+        );
         cy.intercept("GET", "/api/v1/connection_type*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
@@ -128,7 +131,12 @@ describe("System management page", () => {
           // Fill in the privacy declaration form
           cy.getByTestId("tab-Data uses").click();
           cy.getByTestId("add-btn").click();
-          cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+          cy.wait([
+            "@getDataCategories",
+            "@getDataSubjects",
+            "@getDataUses",
+            "@getDatasets",
+          ]);
           cy.getByTestId("new-declaration-form");
           const declaration = system.privacy_declarations[0];
           cy.getByTestId("input-data_use").click();
@@ -141,6 +149,10 @@ describe("System management page", () => {
           declaration.data_subjects.forEach((ds) => {
             cy.getByTestId("input-data_subjects").type(`${ds}{enter}`);
           });
+          cy.getByTestId("input-dataset_references").click();
+          cy.getByTestId("input-dataset_references").within(() => {
+            cy.contains("Demo Users Dataset 2").click();
+          });
 
           cy.getByTestId("save-btn").click();
           cy.wait("@putSystem").then((interception) => {
@@ -150,6 +162,7 @@ describe("System management page", () => {
               data_use: declaration.data_use,
               data_categories: declaration.data_categories,
               data_subjects: declaration.data_subjects,
+              dataset_references: ["demo_users_dataset_2"],
             });
           });
           cy.getByTestId("new-declaration-form").within(() => {

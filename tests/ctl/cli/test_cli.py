@@ -14,7 +14,7 @@ from fides.cli import cli
 from fides.core.config import CONFIG
 from fides.core.user import get_user_permissions
 from fides.core.utils import get_auth_header, read_credentials_file
-from fides.lib.oauth.roles import ADMIN
+from fides.lib.oauth.roles import OWNER
 
 OKTA_URL = "https://dev-78908748.okta.com"
 
@@ -951,7 +951,7 @@ class TestUser:
             credentials.user_id, get_auth_header(), CONFIG.cli.server_url
         )
         assert scopes == SCOPE_REGISTRY
-        assert roles == [ADMIN]
+        assert roles == [OWNER]
 
     @pytest.mark.unit
     def test_user_permissions_valid(
@@ -992,7 +992,7 @@ class TestUser:
             CONFIG.cli.server_url,
         )
         assert scopes == SCOPE_REGISTRY
-        assert roles == [ADMIN]
+        assert roles == [OWNER]
 
     @pytest.mark.unit
     def test_user_permissions_not_found(

@@ -1633,6 +1633,7 @@ def create_privacy_request_func(
             privacy_request_data.requested_at,
             policy.id,
             config_proxy.execution.subject_identity_verification_required,
+            authenticated,
         )
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)

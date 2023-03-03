@@ -27,15 +27,13 @@ secrets = get_secrets("vend")
 def vend_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "vend.domain") or secrets["domain"],
-        "token": pydash.get(saas_config, "vend.token") or secrets["token"]
+        "token": pydash.get(saas_config, "vend.token") or secrets["token"],
     }
 
 
 @pytest.fixture(scope="session")
 def vend_identity_email(saas_config):
-    return (
-        pydash.get(saas_config, "vend.identity_email") or secrets["identity_email"]
-    )
+    return pydash.get(saas_config, "vend.identity_email") or secrets["identity_email"]
 
 
 @pytest.fixture(scope="function")
@@ -60,10 +58,9 @@ def vend_dataset() -> Dict[str, Any]:
         "vend_instance",
     )[0]
 
+
 @pytest.fixture(scope="function")
-def vend_connection_config(
-    db: Session, vend_config, vend_secrets
-) -> Generator:
+def vend_connection_config(db: Session, vend_config, vend_secrets) -> Generator:
     fides_key = vend_config["fides_key"]
     connection_config = ConnectionConfig.create(
         db=db,
@@ -78,6 +75,7 @@ def vend_connection_config(
     )
     yield connection_config
     connection_config.delete(db)
+
 
 @pytest.fixture
 def vend_dataset_config(
@@ -121,13 +119,15 @@ def vend_create_erasure_data(
         "first_name": "Ethyca",
         "last_name": "Test Erasure",
         "email": vend_erasure_identity_email,
-        "do_not_email": "true"
+        "do_not_email": "true",
     }
 
-    customers_response = requests.post(url=f"{base_url}/api/2.0/customers", headers=headers, json=body)
+    customers_response = requests.post(
+        url=f"{base_url}/api/2.0/customers", headers=headers, json=body
+    )
     customer = customers_response.json()
 
-    # there is no endpoint to create a sale so we cannot test it 
+    # there is no endpoint to create a sale so we cannot test it
     sleep(60)
 
     yield customer

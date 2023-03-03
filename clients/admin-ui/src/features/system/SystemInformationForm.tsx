@@ -35,6 +35,7 @@ import SystemInformationFormExtension from "~/features/system/SystemInformationF
 import { ResourceTypes, System } from "~/types/api";
 
 const ValidationSchema = Yup.object().shape({
+  name: Yup.string().required().label("System name"),
   fides_key: Yup.string().required().label("System key"),
 });
 
