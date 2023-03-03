@@ -1,3 +1,4 @@
+import { useAppSelector } from "~/app/hooks";
 import { useGetHealthQuery } from "~/features/common/health.slice";
 import {
   INITIAL_CONNECTIONS_FILTERS,
@@ -5,12 +6,14 @@ import {
 } from "~/features/datastore-connections/datastore-connection.slice";
 import { useGetHealthQuery as useGetPlusHealthQuery } from "~/features/plus/plus.slice";
 import { useGetAllSystemsQuery } from "~/features/system/system.slice";
+import { selectThisUsersScopes } from "~/features/user-management";
 
 const useCommonSubscriptions = () => {
   useGetHealthQuery();
   useGetPlusHealthQuery();
   useGetAllSystemsQuery();
   useGetAllDatastoreConnectionsQuery(INITIAL_CONNECTIONS_FILTERS);
+  useAppSelector(selectThisUsersScopes);
 };
 
 /**

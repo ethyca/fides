@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.7.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.7.1...main)
 
 ### Added
 
@@ -37,10 +37,13 @@ The types of changes are:
   * Add flow for selecting system types when manually creating a system [#2530](https://github.com/ethyca/fides/pull/2530)
   * Updated forms for privacy declarations [#2648](https://github.com/ethyca/fides/pull/2648)
   * Delete flow for privacy declarations [#2664](https://github.com/ethyca/fides/pull/2664)
+  * Add framework to have UI elements respect the user's scopes [#2682](https://github.com/ethyca/fides/pull/2682)
+  * "Manual Webhook" has been renamed to "Manual Process". [#2717](https://github.com/ethyca/fides/pull/2717)
 * Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 * Redesigned the default/init config file to be auto-documented. Also updates the `fides init` logic and analytics consent logic [#2694](https://github.com/ethyca/fides/pull/2694)
 * Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
+* Updates Roles->Scopes Mapping [#2744](https://github.com/ethyca/fides/pull/2744)
 
 ### Developer Experience
 
@@ -57,6 +60,13 @@ The types of changes are:
 * Allow string dates to stay strings in cache decoding [#2695](https://github.com/ethyca/fides/pull/2695)
 * Admin UI
   * Remove Identifiability (Data Qualifier) from taxonomy editor [2684](https://github.com/ethyca/fides/pull/2684)
+* Fix Privacy Request Status when submitting a consent request when identity verification is required [#2736](https://github.com/ethyca/fides/pull/2736)
+
+## [2.7.1](https://github.com/ethyca/fides/compare/2.7.0...2.7.1)
+
+### Fixed
+
+* Fix error with the classify dataset feature flag not writing the dataset to the server [#2675](https://github.com/ethyca/fides/pull/2675)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
