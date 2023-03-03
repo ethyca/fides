@@ -344,13 +344,57 @@ def _get_dispatcher_from_config_type(
     message_service_type: MessagingServiceType,
 ) -> Optional[Callable[[MessagingConfig, Any, Optional[str]], None]]:
     """Determines which dispatcher to use based on message service type"""
-    if message_service_type == MessagingServiceType.MAILGUN:
-        return _mailgun_dispatcher
-    if message_service_type == MessagingServiceType.TWILIO_TEXT:
-        return _twilio_sms_dispatcher
-    if message_service_type == MessagingServiceType.TWILIO_EMAIL:
-        return _twilio_email_dispatcher
-    return None
+    handler = {
+        MessagingServiceType.MAILGUN: _mailgun_dispatcher,
+        MessagingServiceType.MAILCHIMP_TRANSACTIONAL: _mailchimp_transactional_dispatcher,
+        MessagingServiceType.TWILIO_TEXT: _twilio_sms_dispatcher,
+        MessagingServiceType.TWILIO_EMAIL: _twilio_email_dispatcher,
+    }
+    return handler.get(message_service_type)
+
+
+def _mailchimp_transactional_dispatcher(
+    messaging_config: MessagingConfig,
+    message: EmailForActionType,
+    to: Optional[str],
+) -> None:
+    """Dispatches email using Mailchimp Transactional"""
+    if not to:
+        logger.error("Message failed to send. No email identity supplied.")
+        raise MessageDispatchException("No email identity supplied.")
+
+    if not messaging_config.details or not messaging_config.secrets:
+        logger.error(
+            "Message failed to send. No mailgun config details or secrets supplied."
+        )
+        raise MessageDispatchException("No mailgun config details or secrets supplied.")
+
+    email_from = messaging_config.details[
+        MessagingServiceDetails.TWILIO_EMAIL_FROM.value
+    ]
+    data = {
+        "key": messaging_config.secrets[
+            MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
+        ],
+        "message": {
+            "from_email": email_from,
+            "subject": message.subject,
+            "text": message.body,
+            "to": [{"email": to.strip(), "type": "to"}],
+        },
+    }
+
+    url = "https://mandrillapp.com/api/1.0/messages/send"
+    response = requests.post(
+        url,
+        headers={"Content-Type": "application/json"},
+        json=json.dumps(data),
+    )
+    if not response.ok:
+        logger.error("Email failed to send with status code: %s", response.status_code)
+        raise MessageDispatchException(
+            f"Email failed to send with status code {response.status_code}"
+        )
 
 
 def _mailgun_dispatcher(
@@ -358,15 +402,17 @@ def _mailgun_dispatcher(
     message: EmailForActionType,
     to: Optional[str],
 ) -> None:
-    """Dispatches email using mailgun"""
+    """Dispatches email using Mailgun"""
     if not to:
         logger.error("Message failed to send. No email identity supplied.")
         raise MessageDispatchException("No email identity supplied.")
+
     if not messaging_config.details or not messaging_config.secrets:
         logger.error(
             "Message failed to send. No mailgun config details or secrets supplied."
         )
         raise MessageDispatchException("No mailgun config details or secrets supplied.")
+
     base_url = (
         "https://api.mailgun.net"
         if messaging_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value] is False
