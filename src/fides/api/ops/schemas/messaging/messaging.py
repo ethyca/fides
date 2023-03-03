@@ -181,6 +181,18 @@ class MessagingServiceDetails(Enum):
     TWILIO_EMAIL_FROM = "twilio_email_from"
 
 
+class MessagingServiceDetailsMailchimpTransactional(BaseModel):
+    """The details required to represent a Mailchimp Transactional email configuration."""
+
+    domain: str
+    email_from: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
+
+
 class MessagingServiceDetailsMailgun(BaseModel):
     """The details required to represent a Mailgun email configuration."""
 
