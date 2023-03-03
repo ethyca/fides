@@ -1,4 +1,6 @@
 """Contains various utility-related nox sessions."""
+from pathlib import Path
+
 import nox
 
 from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, TEST_ENV_COMPOSE_FILE
@@ -70,9 +72,13 @@ def init_saas_connector(session: nox.Session) -> None:
 
     # create empty config and dataset files
     try:
-        open(f"data/saas/config/{variable_map['connector_id']}_config.yml", "x")
-        open(f"data/saas/dataset/{variable_map['connector_id']}_dataset.yml", "x")
-    except FileExistsError:
+        Path(f"data/saas/config/{variable_map['connector_id']}_config.yml").touch(
+            exist_ok=False
+        )
+        Path(f"data/saas/dataset/{variable_map['connector_id']}_dataset.yml").touch(
+            exist_ok=False
+        )
+    except Exception:
         session.error(
             f"Files for {session.posargs[0]} already exist, skipping initialization"
         )
