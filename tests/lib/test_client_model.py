@@ -19,7 +19,7 @@ from fides.lib.cryptography.schemas.jwt import (
 )
 from fides.lib.models.client import ClientDetail, _get_root_client_detail
 from fides.lib.oauth.oauth_util import extract_payload
-from fides.lib.oauth.roles import ADMIN, VIEWER
+from fides.lib.oauth.roles import OWNER, VIEWER
 
 
 def test_create_client_and_secret(db, config):
@@ -140,14 +140,14 @@ def test_get_client_with_scopes(db, oauth_client, config):
     assert oauth_client.hashed_secret == "thisisatest"
 
 
-def test_get_client_with_roles(db, admin_client, config):
-    client = ClientDetail.get(db, object_id=admin_client.id, config=config)
+def test_get_client_with_roles(db, owner_client, config):
+    client = ClientDetail.get(db, object_id=owner_client.id, config=config)
     assert client
-    assert client.id == admin_client.id
+    assert client.id == owner_client.id
     assert client.scopes == []
-    assert client.roles == [ADMIN]
+    assert client.roles == [OWNER]
+    assert owner_client.hashed_secret == "thisisatest"
     assert client.systems == []
-    assert admin_client.hashed_secret == "thisisatest"
 
 
 def test_get_client_with_systems(db, system_manager_client, config, system):
@@ -161,12 +161,12 @@ def test_get_client_with_systems(db, system_manager_client, config, system):
 
 def test_get_client_root_client(db, config):
     client = ClientDetail.get(
-        db, object_id="fidesadmin", config=config, scopes=SCOPE_REGISTRY, roles=[ADMIN]
+        db, object_id="fidesadmin", config=config, scopes=SCOPE_REGISTRY, roles=[OWNER]
     )
     assert client
     assert client.id == config.security.oauth_root_client_id
     assert client.scopes == SCOPE_REGISTRY
-    assert client.roles == [ADMIN]
+    assert client.roles == [OWNER]
     assert client.systems == []
 
 
@@ -212,16 +212,16 @@ def test_client_create_access_code_jwe(oauth_client, config):
     assert token_data[JWE_PAYLOAD_SYSTEMS] == []
 
 
-def test_client_create_access_code_jwe_admin_client(admin_client, config):
+def test_client_create_access_code_jwe_owner_client(owner_client, config):
 
-    jwe = admin_client.create_access_code_jwe(config.security.app_encryption_key)
+    jwe = owner_client.create_access_code_jwe(config.security.app_encryption_key)
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
 
-    assert token_data[JWE_PAYLOAD_CLIENT_ID] == admin_client.id
+    assert token_data[JWE_PAYLOAD_CLIENT_ID] == owner_client.id
     assert token_data[JWE_PAYLOAD_SCOPES] == []
     assert token_data[JWE_ISSUED_AT] is not None
-    assert token_data[JWE_PAYLOAD_ROLES] == [ADMIN]
+    assert token_data[JWE_PAYLOAD_ROLES] == [OWNER]
     assert token_data[JWE_PAYLOAD_SYSTEMS] == []
 
 

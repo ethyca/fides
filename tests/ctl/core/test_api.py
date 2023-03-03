@@ -35,7 +35,7 @@ from fides.api.ops.api.v1.scope_registry import (
 from fides.core import api as _api
 from fides.core.config import FidesConfig, get_config
 from fides.lib.oauth.api.urn_registry import V1_URL_PREFIX
-from fides.lib.oauth.roles import ADMIN, VIEWER
+from fides.lib.oauth.roles import OWNER, VIEWER
 
 CONFIG = get_config()
 
@@ -522,7 +522,7 @@ class TestSystemUpdate:
         generate_role_header,
     ):
         assert system.name != self.updated_system_name
-        auth_header = generate_role_header(roles=[ADMIN])
+        auth_header = generate_role_header(roles=[OWNER])
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -575,13 +575,13 @@ class TestSystemUpdate:
         )
         assert result.status_code == HTTP_403_FORBIDDEN
 
-    def test_system_update_as_admin_404_if_not_found(
+    def test_system_update_as_owner_404_if_not_found(
         self,
         test_config,
         system_update_request_body,
         generate_role_header,
     ):
-        auth_header = generate_role_header(roles=[ADMIN])
+        auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.fides_key = "system-does-not-exist"
         result = _api.update(
             url=test_config.cli.server_url,
@@ -657,7 +657,7 @@ class TestSystemDelete:
         system,
         generate_role_header,
     ):
-        auth_header = generate_role_header(roles=[ADMIN])
+        auth_header = generate_role_header(roles=[OWNER])
         result = _api.delete(
             url=test_config.cli.server_url,
             resource_type="system",
@@ -685,12 +685,12 @@ class TestSystemDelete:
         assert result.json()["message"] == "resource deleted"
         assert result.json()["resource"]["fides_key"] == system.fides_key
 
-    def test_admin_role_gets_404_if_system_not_found(
+    def test_owner_role_gets_404_if_system_not_found(
         self,
         test_config,
         generate_role_header,
     ):
-        auth_header = generate_role_header(roles=[ADMIN])
+        auth_header = generate_role_header(roles=[OWNER])
         result = _api.delete(
             url=test_config.cli.server_url,
             resource_type="system",

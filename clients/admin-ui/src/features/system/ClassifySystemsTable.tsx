@@ -1,4 +1,16 @@
-import { Stack, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import {
+  Flex,
+  Stack,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@fidesui/react";
+import ClassifyResultsToggle from "common/ClassifyResultsToggle";
+import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { SystemTableCell } from "~/features/common/SystemsCheckboxTable";
@@ -20,9 +32,21 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
   const handleClick = (system: System) => {
     dispatch(setActiveClassifySystemFidesKey(system.fides_key));
   };
+  const [hideEmpty, setHideEmpty] = useState(false);
+  const filteredSystems = hideEmpty
+    ? systems.filter(
+        (system) => classifyInstanceMap.get(system.fides_key)?.has_labels
+      )
+    : systems;
 
   return (
     <Stack>
+      <Flex flexShrink={0} alignItems="center">
+        <Text fontSize="xs" mr={2} size="sm">
+          Only Show Findings
+        </Text>
+        <ClassifyResultsToggle hideEmpty={hideEmpty} onChange={setHideEmpty} />
+      </Flex>
       <Table size="sm" data-testid="systems-classify-table">
         <Thead>
           <Tr>
@@ -31,7 +55,7 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
           </Tr>
         </Thead>
         <Tbody>
-          {systems.map((system) => {
+          {filteredSystems.map((system) => {
             const classifyInstance = classifyInstanceMap.get(system.fides_key);
             return (
               <Tr

@@ -45,8 +45,11 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.roles import (
-    PRIVACY_REQUEST_MANAGER,
-    VIEWER_AND_PRIVACY_REQUEST_MANAGER,
+    APPROVER,
+    CONTRIBUTOR,
+    OWNER,
+    VIEWER,
+    VIEWER_AND_APPROVER,
 )
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
@@ -666,16 +669,14 @@ def config_proxy(db):
 
 @pytest.fixture(scope="function")
 def oauth_role_client(db: Session) -> Generator:
-    """Return a client that has the admin role for authentication purposes"""
+    """Return a client that has all roles for authentication purposes
+    This is not a typical state but this client will then work with any
+    roles a token is given
+    """
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        roles=[
-            ADMIN,
-            PRIVACY_REQUEST_MANAGER,
-            VIEWER,
-            VIEWER_AND_PRIVACY_REQUEST_MANAGER,
-        ],
+        roles=[OWNER, APPROVER, VIEWER, VIEWER_AND_APPROVER, CONTRIBUTOR],
     )  # Intentionally adding all roles here so the client will always
     # have a role that matches a role on a token for testing
     db.add(client)
@@ -761,10 +762,10 @@ def _generate_system_manager_header(
 
 
 @pytest.fixture
-def admin_client(db):
-    """Return a client with an "admin" role for authentication purposes."""
+def owner_client(db):
+    """Return a client with an "owner" role for authentication purposes."""
     client = ClientDetail(
-        hashed_secret="thisisatest", salt="thisisstillatest", scopes=[], roles=[ADMIN]
+        hashed_secret="thisisatest", salt="thisisstillatest", scopes=[], roles=[OWNER]
     )
     db.add(client)
     db.commit()
@@ -787,11 +788,11 @@ def viewer_client(db):
 
 
 @pytest.fixture
-def admin_user(db):
+def owner_user(db):
     user = FidesUser.create(
         db=db,
         data={
-            "username": "test_fides_admin_user",
+            "username": "test_fides_owner_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
         },
     )
@@ -799,12 +800,12 @@ def admin_user(db):
         hashed_secret="thisisatest",
         salt="thisisstillatest",
         scopes=[],
-        roles=[ADMIN],
+        roles=[OWNER],
         user_id=user.id,
     )
 
     FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [ADMIN]}
+        db=db, data={"user_id": user.id, "scopes": [], "roles": [OWNER]}
     )
 
     db.add(client)

@@ -1,11 +1,19 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
+import { ScopeRegistry } from "~/types/api";
+
+import {
+  canAccessRoute,
+  configureNavGroups,
+  findActiveNav,
+  NAV_CONFIG,
+} from "./nav-config";
 
 describe("configureNavGroups", () => {
   it("only includes home and management by default", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
+      userScopes: [],
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -15,11 +23,7 @@ describe("configureNavGroups", () => {
 
     expect(navGroups[1]).toMatchObject({
       title: "Management",
-      children: [
-        { title: "Taxonomy", path: "/taxonomy" },
-        { title: "Users", path: "/user-management" },
-        { title: "About Fides", path: "/management/about" },
-      ],
+      children: [{ title: "About Fides", path: "/management/about" }],
     });
   });
 
@@ -27,6 +31,10 @@ describe("configureNavGroups", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
       hasConnections: true,
+      userScopes: [
+        ScopeRegistry.PRIVACY_REQUEST_READ,
+        ScopeRegistry.CONNECTION_CREATE_OR_UPDATE,
+      ],
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -47,6 +55,10 @@ describe("configureNavGroups", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
       hasSystems: true,
+      userScopes: [
+        ScopeRegistry.CLI_OBJECTS_CREATE,
+        ScopeRegistry.CLI_OBJECTS_READ,
+      ],
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -69,8 +81,13 @@ describe("configureNavGroups", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
       hasSystems: true,
-
       hasPlus: true,
+      userScopes: [
+        ScopeRegistry.DATAMAP_READ,
+        ScopeRegistry.CLI_OBJECTS_CREATE,
+        ScopeRegistry.CLI_OBJECTS_READ,
+        ScopeRegistry.CLI_OBJECTS_UPDATE,
+      ],
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -90,6 +107,83 @@ describe("configureNavGroups", () => {
       ],
     });
   });
+  describe("configure by scopes", () => {
+    it("does not render paths the user does not have scopes for", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        hasSystems: true,
+        userScopes: [ScopeRegistry.CLI_OBJECTS_READ],
+      });
+
+      expect(navGroups[0]).toMatchObject({
+        title: "Home",
+        children: [{ title: "Home", path: "/" }],
+      });
+
+      expect(navGroups[1]).toMatchObject({
+        title: "Data map",
+        children: [{ title: "View systems", path: "/system" }],
+      });
+    });
+
+    it("only shows minimal nav when user has the wrong scopes", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        // entirely irrelevant scope in this case
+        userScopes: [ScopeRegistry.DATABASE_RESET],
+      });
+
+      expect(navGroups[0]).toMatchObject({
+        title: "Home",
+        children: [{ title: "Home", path: "/" }],
+      });
+
+      expect(navGroups[1]).toMatchObject({
+        title: "Management",
+        children: [{ title: "About Fides", path: "/management/about" }],
+      });
+    });
+
+    it("conditionally shows request manager using scopes", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        hasSystems: true,
+        hasConnections: true,
+        userScopes: [ScopeRegistry.PRIVACY_REQUEST_READ],
+      });
+      expect(navGroups[1]).toMatchObject({
+        title: "Privacy requests",
+        children: [{ title: "Request manager", path: "/privacy-requests" }],
+      });
+    });
+
+    it("does not show /datamap if plus is not enabled but user has the scope", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        hasSystems: true,
+        userScopes: [
+          ScopeRegistry.DATAMAP_READ,
+          ScopeRegistry.CLI_OBJECTS_CREATE,
+          ScopeRegistry.CLI_OBJECTS_READ,
+        ],
+      });
+
+      expect(navGroups[0]).toMatchObject({
+        title: "Home",
+        children: [{ title: "Home", path: "/" }],
+      });
+
+      // The data map should _not_ include the actual "/datamap".
+      expect(navGroups[1]).toMatchObject({
+        title: "Data map",
+        children: [
+          { title: "View systems", path: "/system" },
+          { title: "Add systems", path: "/add-systems" },
+          { title: "Manage datasets", path: "/dataset" },
+        ],
+      });
+    });
+  });
 });
 
 describe("findActiveNav", () => {
@@ -98,6 +192,12 @@ describe("findActiveNav", () => {
     hasPlus: true,
     hasSystems: true,
     hasConnections: true,
+    userScopes: [
+      ScopeRegistry.DATAMAP_READ,
+      ScopeRegistry.CLI_OBJECTS_CREATE,
+      ScopeRegistry.CLI_OBJECTS_READ,
+      ScopeRegistry.CONNECTION_CREATE_OR_UPDATE,
+    ],
   });
 
   const testCases = [
@@ -146,6 +246,46 @@ describe("findActiveNav", () => {
 
       expect(activeNav?.title).toEqual(expected.title);
       expect(activeNav?.path).toEqual(expected.path);
+    });
+  });
+
+  describe("canAccessRoute", () => {
+    const accessTestCases = [
+      {
+        path: "/",
+        expected: true,
+        userScopes: [],
+      },
+      {
+        path: "/add-systems",
+        expected: false,
+        userScopes: [],
+      },
+      {
+        path: "/add-systems",
+        expected: true,
+        userScopes: [ScopeRegistry.CLI_OBJECTS_CREATE],
+      },
+      {
+        path: "/privacy-requests",
+        expected: false,
+        userScopes: [ScopeRegistry.CLI_OBJECTS_CREATE],
+      },
+      {
+        path: "/privacy-requests",
+        expected: true,
+        userScopes: [ScopeRegistry.PRIVACY_REQUEST_READ],
+      },
+      {
+        path: "/privacy-requests?queryParam",
+        expected: true,
+        userScopes: [ScopeRegistry.PRIVACY_REQUEST_READ],
+      },
+    ];
+    accessTestCases.forEach(({ path, expected, userScopes }) => {
+      it(`${path} is scope restricted`, () => {
+        expect(canAccessRoute({ path, userScopes })).toBe(expected);
+      });
     });
   });
 });
