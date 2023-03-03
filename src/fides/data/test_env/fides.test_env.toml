@@ -29,7 +29,7 @@ task_retry_delay = 1
 task_retry_backoff = 1
 require_manual_request_approval = true
 subject_identity_verification_required = false
-masking_strict = true
+masking_strict = false
 
 [cli]
 server_host = "localhost"
