@@ -224,9 +224,18 @@ def format_data_subjects(
 
     formatted_data_subjects: Dict[FidesKey, Dict[str, str]] = {}
     excluded_attributes = (
-        "name",
-        "rights_available",
+        "tags",
+        "id",
+        "description",
+        "updated_at",
         "automated_decisions_or_profiling",
+        "fides_key",
+        "organization_fides_key",
+        "name",
+        "created_at",
+        "rights",
+        "is_default",
+        "rights_available",
     )
     custom_columns = {}
 
