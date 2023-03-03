@@ -284,10 +284,12 @@ describe("User management", () => {
           });
           // all toggles in every row should be checked
 
-          systems.forEach((fidesKey) => {
-            cy.getByTestId(`row-${fidesKey}`).within(() => {
-              cy.getByTestId("assign-switch").within(() => {
-                cy.get("span").should("have.attr", "data-checked");
+          cy.getByTestId("assign-systems-modal-body").within(() => {
+            systems.forEach((fidesKey) => {
+              cy.getByTestId(`row-${fidesKey}`).within(() => {
+                cy.getByTestId("assign-switch").within(() => {
+                  cy.get("span").should("have.attr", "data-checked");
+                });
               });
             });
           });
