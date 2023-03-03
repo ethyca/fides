@@ -10,51 +10,56 @@ from fides.api.ops.api.v1.scope_registry import (
     CONSENT_READ,
     DATAMAP_READ,
     DATASET_READ,
+    MESSAGING_CREATE_OR_UPDATE,
+    MESSAGING_DELETE,
     MESSAGING_READ,
     POLICY_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,
-    PRIVACY_REQUEST_CREATE,
-    PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
-    PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
     RULE_READ,
     SAAS_CONFIG_READ,
     SCOPE_READ,
     SCOPE_REGISTRY,
+    STORAGE_CREATE_OR_UPDATE,
+    STORAGE_DELETE,
     STORAGE_READ,
     USER_READ,
     WEBHOOK_READ,
 )
 
-PRIVACY_REQUEST_MANAGER = "privacy_request_manager"
+APPROVER = "approver"
+CONTRIBUTOR = "contributor"
+OWNER = "owner"
 VIEWER = "viewer"
-VIEWER_AND_PRIVACY_REQUEST_MANAGER = "viewer_and_privacy_request_manager"
-ADMIN = "admin"
+VIEWER_AND_APPROVER = "viewer_and_approver"
 
 
 class RoleRegistry(Enum):
-    """Enum of available roles"""
+    """Enum of available roles
 
-    admin = ADMIN
-    viewer_and_privacy_request_manager = VIEWER_AND_PRIVACY_REQUEST_MANAGER
+    Owner - Full admin
+    Viewer - Can view everything
+    Approver - Limited viewer but can approve Privacy Requests
+    Viewer + Approver = Full View and can approve Privacy Requests
+    Contributor - Can't configure storage and messaging
+    """
+
+    owner = OWNER
+    viewer_approver = VIEWER_AND_APPROVER
     viewer = VIEWER
-    privacy_request_manager = PRIVACY_REQUEST_MANAGER
+    approver = APPROVER
+    contributor = CONTRIBUTOR
 
 
-privacy_request_manager_scopes = [
-    PRIVACY_REQUEST_CREATE,
+approver_scopes = [
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
-    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_NOTIFICATIONS_READ,
-    PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
 ]
@@ -81,13 +86,20 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ
     USER_READ,
 ]
 
+not_contributor_scopes = [
+    STORAGE_CREATE_OR_UPDATE,
+    STORAGE_DELETE,
+    MESSAGING_CREATE_OR_UPDATE,
+    MESSAGING_DELETE,
+    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+]
+
 ROLES_TO_SCOPES_MAPPING: Dict[str, List] = {
-    ADMIN: sorted(SCOPE_REGISTRY),
-    VIEWER_AND_PRIVACY_REQUEST_MANAGER: sorted(
-        list(set(viewer_scopes + privacy_request_manager_scopes))
-    ),
+    OWNER: sorted(SCOPE_REGISTRY),
+    VIEWER_AND_APPROVER: sorted(list(set(viewer_scopes + approver_scopes))),
     VIEWER: sorted(viewer_scopes),
-    PRIVACY_REQUEST_MANAGER: sorted(privacy_request_manager_scopes),
+    APPROVER: sorted(approver_scopes),
+    CONTRIBUTOR: sorted(list(set(SCOPE_REGISTRY) - set(not_contributor_scopes))),
 }
 
 

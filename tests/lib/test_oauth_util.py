@@ -29,7 +29,7 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.exceptions import AuthorizationError
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
-from fides.lib.oauth.roles import ADMIN, VIEWER
+from fides.lib.oauth.roles import OWNER, VIEWER, ROLES_TO_SCOPES_MAPPING
 
 
 @pytest.fixture
@@ -205,11 +205,11 @@ class TestVerifyOauthClientRoles:
         )
         assert client == user.client
 
-    async def test_verify_oauth_client_roles(self, db, config, admin_user):
+    async def test_verify_oauth_client_roles(self, db, config, owner_user):
         """Test token has the correct role and the client also has the matching role"""
         payload = {
-            JWE_PAYLOAD_ROLES: [ADMIN],
-            JWE_PAYLOAD_CLIENT_ID: admin_user.client.id,
+            JWE_PAYLOAD_ROLES: [OWNER],
+            JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         token = generate_jwe(
@@ -221,12 +221,12 @@ class TestVerifyOauthClientRoles:
             token,
             db=db,
         )
-        assert client == admin_user.client
+        assert client == owner_user.client
 
     async def test_no_roles_on_client(self, db, config, user):
         """Test token has the correct role but that role is not on the client"""
         payload = {
-            JWE_PAYLOAD_ROLES: [ADMIN],
+            JWE_PAYLOAD_ROLES: [OWNER],
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -244,7 +244,7 @@ class TestVerifyOauthClientRoles:
     async def test_no_roles_on_client_but_has_scopes_coverage(self, db, config, user):
         """Test roles on token are outdated but token still has scopes coverage"""
         payload = {
-            JWE_PAYLOAD_ROLES: [ADMIN],
+            JWE_PAYLOAD_ROLES: [OWNER],
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
             JWE_PAYLOAD_SCOPES: [USER_READ],
@@ -366,7 +366,7 @@ class TestHasScopeViaRole:
 
     def test_has_adequate_role_but_client_outdated(self, viewer_client):
         token_data = {
-            JWE_PAYLOAD_ROLES: [ADMIN],
+            JWE_PAYLOAD_ROLES: [OWNER],
         }
         assert not _has_scope_via_role(
             token_data=token_data,
@@ -374,13 +374,13 @@ class TestHasScopeViaRole:
             endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
         )
 
-    def test_has_adequate_role_and_token_valid(self, admin_client):
+    def test_has_adequate_role_and_token_valid(self, owner_client):
         token_data = {
-            JWE_PAYLOAD_ROLES: [ADMIN],
+            JWE_PAYLOAD_ROLES: [OWNER],
         }
         assert _has_scope_via_role(
             token_data=token_data,
-            client=admin_client,
+            client=owner_client,
             endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
         )
 
@@ -414,31 +414,31 @@ class TestHasPermissions:
             endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
         )
 
-    def test_has_scope_via_role(self, admin_client):
+    def test_has_scope_via_role(self, owner_client):
         token_data = {
-            JWE_PAYLOAD_ROLES: [ADMIN],
+            JWE_PAYLOAD_ROLES: [OWNER],
         }
         assert not _has_direct_scopes(
             token_data,
-            admin_client,
+            owner_client,
             endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
         )
         assert _has_scope_via_role(
             token_data,
-            admin_client,
+            owner_client,
             endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
         )
 
         assert has_permissions(
             token_data,
-            admin_client,
+            owner_client,
             endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
         )
 
     async def test_has_scope_directly_and_via_role(self):
         root_client = await get_root_client()
         token_data = {
-            JWE_PAYLOAD_ROLES: [ADMIN],
+            JWE_PAYLOAD_ROLES: [OWNER],
             JWE_PAYLOAD_SCOPES: [DATASET_CREATE_OR_UPDATE, USER_READ],
         }
         assert _has_direct_scopes(
@@ -480,3 +480,9 @@ class TestHasPermissions:
             root_client,
             endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
         )
+
+
+class TestRolesToScopesMapping:
+
+    def test_contributor_role(self):
+        ROLES_TO_SCOPES_MAPPING[]
