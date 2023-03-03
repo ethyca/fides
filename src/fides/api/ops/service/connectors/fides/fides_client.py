@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 import httpx
-from httpx import AsyncClient, Client, HTTPStatusError, Request, RequestError
+from httpx import AsyncClient, Client, HTTPStatusError, Request, RequestError, Timeout
 from loguru import logger
 
 from fides.api.ctl.utils.errors import FidesError
@@ -31,7 +31,7 @@ COMPLETION_STATUSES = [
 
 class FidesClient:
     """
-    A helper client class to broker communications between Fides servers.
+    A helper client to broker communications between Fides servers.
     """
 
     def __init__(
@@ -39,11 +39,11 @@ class FidesClient:
         uri: str,
         username: str,
         password: str,
-        connection_read_timeout: float,
+        connection_read_timeout: float = 30.0,
     ):
-        # only the read timeout should need to be overriden
-        # since this client may have a blocking call for privacy request execution
-        self.session = Client(timeout=httpx.Timeout(5.0, read=connection_read_timeout))
+        # Enable setting a custom `read` timeout
+        # to account for privacy request executions
+        self.session = Client(timeout=Timeout(5.0, read=connection_read_timeout))
 
         self.uri = uri
         self.username = username
