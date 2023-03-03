@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.1.post0.dev80"
+    "version": "2.7.1.post0.dev81"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -7214,7 +7214,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ScopeRegistry"
+                    "$ref": "#/components/schemas/ScopeRegistryEnum"
                   }
                 }
               }
@@ -16922,8 +16922,8 @@
         },
         "description": "Pass in a list of privacy request ids"
       },
-      "RoleRegistry": {
-        "title": "RoleRegistry",
+      "RoleRegistryEnum": {
+        "title": "RoleRegistryEnum",
         "enum": [
           "owner",
           "viewer_and_approver",
@@ -17397,8 +17397,8 @@
         },
         "description": "Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"
       },
-      "ScopeRegistry": {
-        "title": "ScopeRegistry",
+      "ScopeRegistryEnum": {
+        "title": "ScopeRegistryEnum",
         "enum": [
           "config:read",
           "config:update",
@@ -18200,17 +18200,16 @@
         "type": "object",
         "properties": {
           "scopes": {
-            "title": "Scopes",
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ScopeRegistryEnum"
             },
             "default": []
           },
           "roles": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RoleRegistry"
+              "$ref": "#/components/schemas/RoleRegistryEnum"
             },
             "default": []
           }
@@ -18222,17 +18221,16 @@
         "type": "object",
         "properties": {
           "scopes": {
-            "title": "Scopes",
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ScopeRegistryEnum"
             },
             "default": []
           },
           "roles": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RoleRegistry"
+              "$ref": "#/components/schemas/RoleRegistryEnum"
             },
             "default": []
           },
@@ -18246,23 +18244,23 @@
       "UserPermissionsResponse": {
         "title": "UserPermissionsResponse",
         "required": [
+          "scopes",
           "id",
-          "user_id"
+          "user_id",
+          "total_scopes"
         ],
         "type": "object",
         "properties": {
           "scopes": {
-            "title": "Scopes",
             "type": "array",
             "items": {
-              "type": "string"
-            },
-            "default": []
+              "$ref": "#/components/schemas/ScopeRegistryEnum"
+            }
           },
           "roles": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RoleRegistry"
+              "$ref": "#/components/schemas/RoleRegistryEnum"
             },
             "default": []
           },
@@ -18273,6 +18271,12 @@
           "user_id": {
             "title": "User Id",
             "type": "string"
+          },
+          "total_scopes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScopeRegistryEnum"
+            }
           }
         },
         "description": "Response after creating, editing, or retrieving a FidesUserPermissions record."
