@@ -17,11 +17,12 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import SearchBar from "~/features/common/SearchBar";
 import { useGetAllSystemsQuery } from "~/features/system";
+import { SEARCH_FILTER } from "~/features/system/SystemsManagement";
 import { System } from "~/types/api";
 
 import { getErrorMessage, isErrorResult } from "../common/helpers";
@@ -74,16 +75,28 @@ const AssignSystemsModal = ({
   };
 
   const emptySystems = !allSystems || allSystems.length === 0;
-  const allSystemsAssigned = assignedSystems.length === allSystems?.length;
+
+  const filteredSystems = useMemo(() => {
+    if (!allSystems) {
+      return [];
+    }
+
+    return allSystems.filter((s) => SEARCH_FILTER(s, searchFilter));
+  }, [allSystems, searchFilter]);
 
   const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
     if (checked && allSystems) {
-      setAssignedSystems(allSystems);
+      setAssignedSystems(filteredSystems);
     } else {
       setAssignedSystems([]);
     }
   };
+
+  const allSystemsAssigned = useMemo(() => {
+    const assignedSet = new Set(assignedSystems.map((s) => s.fides_key));
+    return filteredSystems.every((item) => assignedSet.has(item.fides_key));
+  }, [filteredSystems, assignedSystems]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
@@ -125,7 +138,7 @@ const AssignSystemsModal = ({
                 withIcon
               />
               <AssignSystemsTable
-                allSystems={allSystems}
+                allSystems={filteredSystems}
                 assignedSystems={assignedSystems}
                 onChange={setAssignedSystems}
               />
