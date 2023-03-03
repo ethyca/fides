@@ -1,4 +1,4 @@
-import { Box, Button, Stack, useToast } from "@fidesui/react";
+import { Button, ButtonGroup, Stack, Text, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useAPIHelper } from "common/hooks";
@@ -82,7 +82,10 @@ const UserForm = ({
     >
       {({ dirty, isSubmitting, isValid }) => (
         <Form>
-          <Box maxW={["xs", "xs", "100%"]} width="100%">
+          <Stack maxW={["xs", "xs", "100%"]} width="100%" spacing={7}>
+            <Text fontSize="sm" fontWeight="semibold">
+              Profile
+            </Text>
             <Stack mb={8} spacing={6} maxWidth="40%">
               <CustomTextInput
                 name="username"
@@ -103,24 +106,25 @@ const UserForm = ({
               />
               <PasswordManagement />
             </Stack>
-            <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-              <Button variant="outline" mr={3} size="sm">
-                Cancel
+            <ButtonGroup size="sm">
+              <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
+                <Button variant="outline" mr={3}>
+                  Cancel
+                </Button>
+              </NextLink>
+              <Button
+                type="submit"
+                bg="primary.800"
+                _hover={{ bg: "primary.400" }}
+                _active={{ bg: "primary.500" }}
+                colorScheme="primary"
+                disabled={!dirty || !isValid}
+                isLoading={isSubmitting}
+              >
+                Save
               </Button>
-            </NextLink>
-            <Button
-              type="submit"
-              bg="primary.800"
-              _hover={{ bg: "primary.400" }}
-              _active={{ bg: "primary.500" }}
-              colorScheme="primary"
-              size="sm"
-              disabled={!dirty || !isValid}
-              isLoading={isSubmitting}
-            >
-              Save
-            </Button>
-          </Box>
+            </ButtonGroup>
+          </Stack>
         </Form>
       )}
     </Formik>

@@ -7,12 +7,14 @@ import {
   GreenCheckCircleIcon,
   Stack,
   Text,
+  useDisclosure,
 } from "@fidesui/react";
 import { useFormikContext } from "formik";
 
 import { RoleRegistry } from "~/types/api";
 
 import QuestionTooltip from "../common/QuestionTooltip";
+import AssignSystemsModal from "./AssignSystemsModal";
 import { type FormValues } from "./PermissionsForm";
 
 interface Props {
@@ -23,6 +25,7 @@ interface Props {
 
 const RoleOption = ({ label, roleKey, isSelected }: Props) => {
   const { setFieldValue } = useFormikContext<FormValues>();
+  const assignSystemsModal = useDisclosure();
 
   const handleClick = () => {
     setFieldValue("roles", [roleKey]);
@@ -51,9 +54,18 @@ const RoleOption = ({ label, roleKey, isSelected }: Props) => {
           </Text>
           <QuestionTooltip label="TODO" />
         </Flex>
-        <Button colorScheme="primary" size="xs" width="fit-content">
+        <Button
+          colorScheme="primary"
+          size="xs"
+          width="fit-content"
+          onClick={assignSystemsModal.onOpen}
+        >
           Assign systems +
         </Button>
+        <AssignSystemsModal
+          isOpen={assignSystemsModal.isOpen}
+          onClose={assignSystemsModal.onClose}
+        />
       </Stack>
     );
   }
