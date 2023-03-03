@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.1.post0.dev79"
+    "version": "2.7.1.post0.dev80"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -16925,12 +16925,13 @@
       "RoleRegistry": {
         "title": "RoleRegistry",
         "enum": [
-          "admin",
-          "viewer_and_privacy_request_manager",
+          "owner",
+          "viewer_and_approver",
           "viewer",
-          "privacy_request_manager"
+          "approver",
+          "contributor"
         ],
-        "description": "Enum of available roles"
+        "description": "Enum of available roles\n\nOwner - Full admin\nViewer - Can view everything\nApprover - Limited viewer but can approve Privacy Requests\nViewer + Approver = Full View and can approve Privacy Requests\nContributor - Can't configure storage and messaging"
       },
       "RowCountRequest": {
         "title": "RowCountRequest",
