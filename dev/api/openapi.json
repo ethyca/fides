@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.1.post0.dev78"
+    "version": "2.7.1.post0.dev79"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -7212,10 +7212,9 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Read Scopes Api V1 Oauth Scope Get",
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/ScopeRegistry"
                   }
                 }
               }
@@ -17396,6 +17395,84 @@
           }
         },
         "description": "Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"
+      },
+      "ScopeRegistry": {
+        "title": "ScopeRegistry",
+        "enum": [
+          "config:read",
+          "config:update",
+          "cli-objects:create",
+          "cli-objects:read",
+          "cli-objects:update",
+          "cli-objects:delete",
+          "client:create",
+          "client:delete",
+          "client:read",
+          "client:update",
+          "connection:create_or_update",
+          "connection:delete",
+          "connection:read",
+          "connection:authorize",
+          "connection_type:read",
+          "consent:read",
+          "database:reset",
+          "datamap:read",
+          "dataset:create_or_update",
+          "dataset:delete",
+          "dataset:read",
+          "encryption:exec",
+          "fides_taxonomy:update",
+          "generate:exec",
+          "messaging:create_or_update",
+          "messaging:delete",
+          "messaging:read",
+          "organization:create",
+          "organization:delete",
+          "organization:update",
+          "policy:create_or_update",
+          "policy:delete",
+          "policy:read",
+          "privacy-request:create",
+          "privacy-request:resume",
+          "privacy-request:delete",
+          "privacy-request-notifications:create_or_update",
+          "privacy-request-notifications:read",
+          "privacy-request:read",
+          "privacy-request:review",
+          "privacy-request:transfer",
+          "privacy-request:upload_data",
+          "privacy-request:view_data",
+          "rule:create_or_update",
+          "rule:delete",
+          "rule:read",
+          "saas_config:create_or_update",
+          "saas_config:delete",
+          "saas_config:read",
+          "connection:instantiate",
+          "scope:read",
+          "storage:create_or_update",
+          "storage:delete",
+          "storage:read",
+          "system:create",
+          "system:delete",
+          "system:update",
+          "taxonomy:create",
+          "taxonomy:delete",
+          "taxonomy:update",
+          "user:create",
+          "user:update",
+          "user:delete",
+          "user:read",
+          "user:password-reset",
+          "user-permission:create",
+          "user-permission:update",
+          "user-permission:read",
+          "validate:exec",
+          "webhook:create_or_update",
+          "webhook:delete",
+          "webhook:read"
+        ],
+        "description": "An enumeration."
       },
       "SnowflakeDocsSchema": {
         "title": "SnowflakeDocsSchema",
