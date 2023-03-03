@@ -167,9 +167,9 @@ def dispatch_message(
     logger.info(
         "Retrieving appropriate dispatcher for email service: {}", messaging_service
     )
-    dispatcher: Optional[
-        Callable[[MessagingConfig, Any, Optional[str]], None]
-    ] = _get_dispatcher_from_config_type(message_service_type=messaging_service)
+    dispatcher: Optional[Callable] = _get_dispatcher_from_config_type(
+        message_service_type=messaging_service
+    )
     if not dispatcher:
         logger.error(
             "Dispatcher has not been implemented for message service type: {}",
@@ -342,7 +342,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
 
 def _get_dispatcher_from_config_type(
     message_service_type: MessagingServiceType,
-) -> Optional[function]:
+) -> Optional[Callable]:
     """Determines which dispatcher to use based on message service type"""
     handler = {
         MessagingServiceType.MAILGUN: _mailgun_dispatcher,
