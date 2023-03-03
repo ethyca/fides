@@ -1,12 +1,22 @@
 import { utf8ToB64 } from "common/utils";
-import React from "react";
+import React, { useEffect } from "react";
 
-import { useCreateUserMutation } from "./user-management.slice";
+import { useAppDispatch } from "~/app/hooks";
+
+import {
+  setActiveUserId,
+  useCreateUserMutation,
+} from "./user-management.slice";
 import { FormValues } from "./UserForm";
 import UserManagementTabs from "./UserManagementTabs";
 
 const NewUserForm = () => {
   const [createUser] = useCreateUserMutation();
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setActiveUserId(undefined));
+  }, [dispatch]);
 
   const handleSubmit = (values: FormValues) => {
     const b64Password = utf8ToB64(values.password);

@@ -6,7 +6,7 @@ import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import * as Yup from "yup";
 
-import { useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
@@ -53,6 +53,7 @@ const UserForm = ({
   canChangePassword,
 }: Props) => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
 
   const { handleError } = useAPIHelper();
   const activeUserId = useAppSelector(selectActiveUserId);
@@ -68,7 +69,7 @@ const UserForm = ({
       return;
     }
     toast(successToastParams(`User ${isNewUser ? "created" : "updated"}`));
-    setActiveUserId(result.data.id);
+    dispatch(setActiveUserId(result.data.id));
   };
   const validationSchema = canChangePassword
     ? ValidationSchema
