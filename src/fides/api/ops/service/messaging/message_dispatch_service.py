@@ -342,7 +342,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
 
 def _get_dispatcher_from_config_type(
     message_service_type: MessagingServiceType,
-) -> Optional[Callable[[MessagingConfig, Any, Optional[str]], None]]:
+) -> Optional[function]:
     """Determines which dispatcher to use based on message service type"""
     handler = {
         MessagingServiceType.MAILGUN: _mailgun_dispatcher,
