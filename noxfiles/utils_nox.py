@@ -88,9 +88,14 @@ def init_saas_connector(session: nox.Session) -> None:
     fixtures_template = environment.get_template("new_fixtures.jinja")
     filename = f"tests/fixtures/saas/{variable_map['connector_id']}_fixtures.py"
     contents = fixtures_template.render(variable_map)
-    with open(filename, mode="w", encoding="utf-8") as fixtures:
-        fixtures.write(contents)
-        fixtures.close()
+    try:
+        with open(filename, mode="x", encoding="utf-8") as fixtures:
+            fixtures.write(contents)
+            fixtures.close()
+    except FileExistsError:
+        session.error(
+            f"Files for {session.posargs[0]} already exist, skipping initialization"
+        )
 
     # render tests file
     test_template = environment.get_template("test_new_task.jinja")
@@ -98,6 +103,11 @@ def init_saas_connector(session: nox.Session) -> None:
         f"tests/ops/integration_tests/saas/test_{variable_map['connector_id']}_task.py"
     )
     contents = test_template.render(variable_map)
-    with open(filename, mode="w", encoding="utf-8") as tests:
-        tests.write(contents)
-        tests.close()
+    try:
+        with open(filename, mode="x", encoding="utf-8") as tests:
+            tests.write(contents)
+            tests.close()
+    except FileExistsError:
+        session.error(
+            f"Files for {session.posargs[0]} already exist, skipping initialization"
+        )
