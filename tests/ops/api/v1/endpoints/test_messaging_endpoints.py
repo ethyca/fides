@@ -142,7 +142,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "value is not a valid enumeration member; permitted: 'MAILGUN', 'TWILIO_TEXT', 'TWILIO_EMAIL'"
+            == "value is not a valid enumeration member; permitted: 'MAILCHIMP_TRANSACTIONAL', 'MAILGUN', 'TWILIO_TEXT', 'TWILIO_EMAIL'"
         )
 
     def test_post_email_config_with_no_key(
