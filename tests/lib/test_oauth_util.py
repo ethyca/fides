@@ -9,7 +9,9 @@ from fastapi.security import SecurityScopes
 from fides.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
+    SCOPE_REGISTRY,
     USER_DELETE,
+    USER_PERMISSION_READ,
     USER_READ,
 )
 from fides.api.ops.util.oauth_util import (
@@ -29,7 +31,15 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.exceptions import AuthorizationError
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
-from fides.lib.oauth.roles import OWNER, VIEWER, ROLES_TO_SCOPES_MAPPING
+from fides.lib.oauth.roles import (
+    APPROVER,
+    CONTRIBUTOR,
+    OWNER,
+    ROLES_TO_SCOPES_MAPPING,
+    VIEWER,
+    VIEWER_AND_APPROVER,
+    not_contributor_scopes,
+)
 
 
 @pytest.fixture
@@ -483,6 +493,25 @@ class TestHasPermissions:
 
 
 class TestRolesToScopesMapping:
-
     def test_contributor_role(self):
-        ROLES_TO_SCOPES_MAPPING[]
+        for scope in not_contributor_scopes:  # Sanity check
+            assert not scope in ROLES_TO_SCOPES_MAPPING[CONTRIBUTOR]
+
+    def test_owner_role(self):
+        assert set(SCOPE_REGISTRY) == set(ROLES_TO_SCOPES_MAPPING[OWNER])
+
+    def test_viewer_role(self):
+        assert USER_PERMISSION_READ not in ROLES_TO_SCOPES_MAPPING[VIEWER]
+        for scope in ROLES_TO_SCOPES_MAPPING[VIEWER]:
+            assert not "create" in scope
+            assert not "update" in scope
+            assert not "delete" in scope
+
+    def test_approver_roles(self):
+        approver_scopes = set(ROLES_TO_SCOPES_MAPPING[APPROVER])
+        assert approver_scopes.issubset(
+            set(ROLES_TO_SCOPES_MAPPING[VIEWER_AND_APPROVER])
+        )
+        assert not ROLES_TO_SCOPES_MAPPING[VIEWER_AND_APPROVER].issubset(
+            set(approver_scopes)
+        )
