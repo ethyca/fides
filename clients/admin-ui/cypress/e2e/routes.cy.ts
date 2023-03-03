@@ -1,6 +1,6 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { RoleRegistry } from "~/types/api";
+import { RoleRegistryEnum } from "~/types/api";
 
 describe("Routes", () => {
   beforeEach(() => {
@@ -20,7 +20,7 @@ describe("Routes", () => {
     });
 
     it("admins can access many routes", () => {
-      cy.assumeRole(RoleRegistry.ADMIN);
+      cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.visit("/");
       cy.visit("/add-systems");
       cy.wait("@getSystems");
@@ -32,11 +32,13 @@ describe("Routes", () => {
       cy.getByTestId("connection-grid");
     });
 
+    // TODO: add one for contributor
+
     it("viewers and/or approvers can only access limited routes", () => {
       [
-        RoleRegistry.VIEWER,
-        RoleRegistry.PRIVACY_REQUEST_MANAGER,
-        RoleRegistry.VIEWER_AND_PRIVACY_REQUEST_MANAGER,
+        RoleRegistryEnum.VIEWER,
+        RoleRegistryEnum.APPROVER,
+        RoleRegistryEnum.VIEWER_AND_APPROVER,
       ].forEach((role) => {
         cy.assumeRole(role);
         // cannot access /add-systems

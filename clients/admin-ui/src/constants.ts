@@ -1,5 +1,7 @@
 import { UserPrivileges } from "user-management/types";
 
+import { ScopeRegistryEnum } from "./types/api";
+
 export const BASE_API_URN = "/api/v1";
 const API_URL = process.env.NEXT_PUBLIC_FIDESOPS_API
   ? process.env.NEXT_PUBLIC_FIDESOPS_API
@@ -14,7 +16,7 @@ export const STORAGE_ROOT_KEY = "persist:root";
 export const USER_PRIVILEGES: UserPrivileges[] = [
   {
     privilege: "View privacy requests",
-    scope: "privacy-request:read",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_READ,
   },
   {
     privilege: "Approve privacy requests",

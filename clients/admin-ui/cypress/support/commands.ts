@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import { STORAGE_ROOT_KEY } from "~/constants";
-import { RoleRegistry, ScopeRegistry } from "~/types/api";
+import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 Cypress.Commands.add("getByTestId", (selector, options) =>
   cy.get(`[data-testid='${selector}']`, options)
@@ -35,7 +35,7 @@ Cypress.Commands.add("login", () => {
 
 Cypress.Commands.add("assumeRole", (role) => {
   cy.fixture("scopes/roles-to-scopes.json").then((mapping) => {
-    const scopes: ScopeRegistry[] = mapping[role];
+    const scopes: ScopeRegistryEnum[] = mapping[role];
     cy.intercept("/api/v1/user/*/permission", {
       body: {
         id: 123,
@@ -82,9 +82,9 @@ declare global {
       login(): void;
       /**
        * Stub a user with the scopes associated with a role
-       * @example cy.assumeRole(RoleRegistry.ADMIN)
+       * @example cy.assumeRole(RoleRegistryEnum.ADMIN)
        */
-      assumeRole(role: RoleRegistry): void;
+      assumeRole(role: RoleRegistryEnum): void;
     }
   }
 }
