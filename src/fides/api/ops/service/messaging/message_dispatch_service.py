@@ -372,9 +372,7 @@ def _mailchimp_transactional_dispatcher(
         )
         raise MessageDispatchException("No mailgun config details or secrets supplied.")
 
-    email_from = messaging_config.details[
-        MessagingServiceDetails.TWILIO_EMAIL_FROM.value
-    ]
+    email_from = messaging_config.details[MessagingServiceDetails.EMAIL_FROM.value]
     data = {
         "key": messaging_config.secrets[
             MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value

@@ -12,7 +12,7 @@ class NotificationSettings(FidesSettings):
 
     notification_service_type: Optional[str] = Field(
         default=None,
-        description="Sets the notification service type used to send notifications. Accepts mailgun, twilio_sms, or twilio_email.",
+        description="Sets the notification service type used to send notifications. Accepts mailchimp_transactional, mailgun, twilio_sms, or twilio_email.",
     )
     send_request_completion_notification: bool = Field(
         default=False,

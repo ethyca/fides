@@ -42,6 +42,7 @@ class MessagingServiceType(Enum):
 
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
+    MessagingServiceType.MAILCHIMP_TRANSACTIONAL.value,
     MessagingServiceType.MAILGUN.value,
     MessagingServiceType.TWILIO_EMAIL.value,
 )
