@@ -4,17 +4,12 @@ import { Form, Formik } from "formik";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
-import {
-  useCreateMessagingConfigurationSecretsMutation,
-  useGetMessagingConfigurationDetailsQuery,
-} from "~/features/privacy-requests/privacy-requests.slice";
+import { messagingProviders } from "~/features/privacy-requests/constants";
+import { useCreateMessagingConfigurationSecretsMutation } from "~/features/privacy-requests/privacy-requests.slice";
 
 const TwilioSMSConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
-  const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "twilio_text",
-  });
   const [createMessagingConfigurationSecrets] =
     useCreateMessagingConfigurationSecretsMutation();
 
@@ -25,10 +20,13 @@ const TwilioSMSConfiguration = () => {
     phone: string;
   }) => {
     const result = await createMessagingConfigurationSecrets({
-      twilio_account_sid: value.account_sid,
-      twilio_auth_token: value.auth_token,
-      twilio_messaging_service_sid: value.messaging_service_sid,
-      twilio_sender_phone_number: value.phone,
+      details: {
+        twilio_account_sid: value.account_sid,
+        twilio_auth_token: value.auth_token,
+        twilio_messaging_service_sid: value.messaging_service_sid,
+        twilio_sender_phone_number: value.phone,
+      },
+      service_type: messagingProviders.twilio_text,
     });
 
     if (isErrorResult(result)) {
@@ -39,10 +37,10 @@ const TwilioSMSConfiguration = () => {
   };
 
   const initialValues = {
-    account_sid: messagingDetails?.twilio_account_sid ?? "",
-    auth_token: messagingDetails?.twilio_auth_token ?? "",
-    messaging_service_sid: messagingDetails?.twilio_messaging_service_sid ?? "",
-    phone: messagingDetails?.twilio_sender_phone_number ?? "",
+    account_sid: "",
+    auth_token: "",
+    messaging_service_sid: "",
+    phone: "",
   };
 
   return (
@@ -54,20 +52,23 @@ const TwilioSMSConfiguration = () => {
         <Formik
           initialValues={initialValues}
           onSubmit={handleTwilioTextConfigurationSecrets}
+          enableReinitialize
         >
-          {({ isSubmitting, resetForm }) => (
+          {({ isSubmitting, handleReset }) => (
             <Form>
               <Stack mt={5} spacing={5}>
                 <CustomTextInput
                   name="account_sid"
                   label="Account SID"
                   placeholder="Enter account SID"
+                  isRequired
                 />
                 <CustomTextInput
                   name="auth_token"
                   label="Auth token"
                   placeholder="Enter auth token"
                   type="password"
+                  isRequired
                 />
                 <CustomTextInput
                   name="messaging_service_sid"
@@ -82,7 +83,7 @@ const TwilioSMSConfiguration = () => {
               </Stack>
               <Box mt={10}>
                 <Button
-                  onClick={() => resetForm()}
+                  onClick={() => handleReset()}
                   mr={2}
                   size="sm"
                   variant="outline"

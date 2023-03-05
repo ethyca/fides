@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { messagingProviders } from "~/features/privacy-requests/constants";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
@@ -16,7 +17,7 @@ const TwilioEmailConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "twilio_email",
+    type: messagingProviders.twilio_email,
   });
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
@@ -25,7 +26,7 @@ const TwilioEmailConfiguration = () => {
 
   const handleTwilioEmailConfiguration = async (value: { email: string }) => {
     const result = await createMessagingConfiguration({
-      type: "twilio_email",
+      service_type: messagingProviders.twilio_email,
       details: {
         twilio_email_from: value.email,
       },
@@ -45,7 +46,10 @@ const TwilioEmailConfiguration = () => {
     api_key: string;
   }) => {
     const result = await createMessagingConfigurationSecrets({
-      twilio_api_key: value.api_key,
+      details: {
+        twilio_api_key: value.api_key,
+      },
+      service_type: messagingProviders.twilio_email,
     });
 
     if (isErrorResult(result)) {
@@ -57,11 +61,11 @@ const TwilioEmailConfiguration = () => {
   };
 
   const initialValues = {
-    email: messagingDetails?.email ?? "",
+    email: messagingDetails?.details.twilio_email_from ?? "",
   };
 
   const initialAPIKeyValues = {
-    api_key: messagingDetails?.key ?? "",
+    api_key: "",
   };
 
   return (
@@ -73,19 +77,21 @@ const TwilioEmailConfiguration = () => {
         <Formik
           initialValues={initialValues}
           onSubmit={handleTwilioEmailConfiguration}
+          enableReinitialize
         >
-          {({ isSubmitting, resetForm }) => (
+          {({ isSubmitting, handleReset }) => (
             <Form>
               <Stack mt={5} spacing={5}>
                 <CustomTextInput
                   name="email"
                   label="Email"
                   placeholder="Enter email"
+                  isRequired
                 />
               </Stack>
               <Box mt={10}>
                 <Button
-                  onClick={() => resetForm()}
+                  onClick={() => handleReset()}
                   mr={2}
                   size="sm"
                   variant="outline"
@@ -108,7 +114,7 @@ const TwilioEmailConfiguration = () => {
       </Stack>
       {configurationStep === "configureTwilioEmailSecrets" ? (
         <>
-          <Divider />
+          <Divider mt={10} />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
             Security key
           </Heading>
@@ -117,32 +123,35 @@ const TwilioEmailConfiguration = () => {
               initialValues={initialAPIKeyValues}
               onSubmit={handleTwilioEmailConfigurationSecrets}
             >
-              {({ isSubmitting, resetForm }) => (
+              {({ isSubmitting, handleReset }) => (
                 <Form>
                   <Stack mt={5} spacing={5}>
                     <CustomTextInput
-                      name="api-key"
+                      name="api_key"
                       label="API key"
                       type="password"
+                      isRequired
                     />
                   </Stack>
-                  <Button
-                    onClick={() => resetForm()}
-                    mr={2}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    isDisabled={isSubmitting}
-                    type="submit"
-                    colorScheme="primary"
-                    size="sm"
-                    data-testid="save-btn"
-                  >
-                    Save
-                  </Button>
+                  <Box mt={10}>
+                    <Button
+                      onClick={() => handleReset()}
+                      mr={2}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      isDisabled={isSubmitting}
+                      type="submit"
+                      colorScheme="primary"
+                      size="sm"
+                      data-testid="save-btn"
+                    >
+                      Save
+                    </Button>
+                  </Box>
                 </Form>
               )}
             </Formik>
