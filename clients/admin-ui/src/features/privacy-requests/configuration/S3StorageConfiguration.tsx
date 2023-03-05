@@ -11,29 +11,28 @@ import {
   useCreateStorageSecretsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
-interface StorageDetails {
-  storageDetails:{
+interface SavedStorageDetails {
+  storageDetails: {
     details: {
       auth_method: string;
       bucket: string;
-      max_retries: number;
-      naming: string;
     };
     format: string;
-    is_default: boolean;
-    key: string;
-    name: string;
-    type: string;
-  }
+  };
 }
-
+interface StorageDetails {
+  storageDetails: {
+    auth_method: string;
+    bucket: string;
+    format: string;
+  };
+}
 interface SecretsStorageData {
   aws_access_key_id: string;
   aws_secret_access_key: string;
 }
 
-const S3StorageConfiguration = (
-  {storageDetails} : StorageDetails) => {
+const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
   const [authMethod, setAuthMethod] = useState("");
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
@@ -43,9 +42,9 @@ const S3StorageConfiguration = (
 
   const initialValues = {
     type: storageTypes.s3,
-    auth_method: storageDetails.details.auth_method ?? "",
-    bucket: storageDetails.details.bucket ?? "",
-    format: storageDetails.format ?? "",
+    auth_method: storageDetails?.details?.auth_method ?? "",
+    bucket: storageDetails?.details?.bucket ?? "",
+    format: storageDetails?.format ?? "",
   };
 
   const initialSecretValues = {
