@@ -34,6 +34,7 @@ export const CUSTOM_LABEL_STYLES: FormLabelProps = {
 };
 
 type CustomInputProps = {
+  customLabelProps?: FormLabelProps;
   disabled?: boolean;
   displayHelpIcon?: boolean;
   helpIconVisibility?: boolean;
@@ -43,6 +44,7 @@ type CustomInputProps = {
 };
 
 const CustomInput = ({
+  customLabelProps,
   disabled = false,
   displayHelpIcon = true,
   helpIconVisibility = false,
@@ -62,7 +64,10 @@ const CustomInput = ({
       isInvalid={!!(meta.error && meta.touched)}
     >
       {label && (
-        <FormLabel htmlFor={props.id || props.name} {...CUSTOM_LABEL_STYLES}>
+        <FormLabel
+          htmlFor={props.id || props.name}
+          {...(customLabelProps || CUSTOM_LABEL_STYLES)}
+        >
           {label}
         </FormLabel>
       )}
