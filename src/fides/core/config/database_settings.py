@@ -14,7 +14,7 @@ ENV_PREFIX = "FIDES__DATABASE__"
 
 
 class DatabaseSettings(FidesSettings):
-    """Configuration settings for Postgres."""
+    """Configuration settings for the application database."""
 
     api_engine_pool_size: int = Field(
         default=50,

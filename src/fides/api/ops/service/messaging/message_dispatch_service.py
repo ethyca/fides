@@ -41,6 +41,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
 EMAIL_JOIN_STRING = ", "
@@ -216,15 +217,19 @@ def _build_sms(  # pylint: disable=too-many-return-statements
             return f"The following requests have been received: {separator.join(body_params.request_types)}"
         return f"Your {body_params.request_types[0]} request has been received"
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
+        # Converting the expiration time to days
+        subject_request_download_time_in_days = (
+            CONFIG.security.subject_request_download_link_ttl_seconds / 86400
+        )
         if len(body_params.download_links) > 1:
             return (
                 "Your data access has been completed and can be downloaded at the following links. "
-                "For security purposes, these secret links will expire in 24 hours: "
+                f"For security purposes, these secret links will expire in {subject_request_download_time_in_days} days: "
                 f"{separator.join(body_params.download_links)}"
             )
         return (
             f"Your data access has been completed and can be downloaded at {body_params.download_links[0]}. "
-            f"For security purposes, this secret link will expire in 24 hours."
+            f"For security purposes, this secret link will expire in {subject_request_download_time_in_days} days."
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return "Your privacy request for deletion has been completed."

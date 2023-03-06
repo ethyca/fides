@@ -93,7 +93,10 @@ async def create_drp_privacy_request(
         )
 
     privacy_request_kwargs: Dict[str, Any] = build_required_privacy_request_kwargs(
-        None, policy.id, config_proxy.execution.subject_identity_verification_required
+        None,
+        policy.id,
+        config_proxy.execution.subject_identity_verification_required,
+        authenticated=False,
     )
 
     try:

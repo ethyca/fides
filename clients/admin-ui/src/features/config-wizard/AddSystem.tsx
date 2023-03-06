@@ -51,7 +51,7 @@ const AddSystem = () => {
       </Stack>
       <Box data-testid="manual-options">
         <SectionTitle>Manually add systems</SectionTitle>
-        <SimpleGrid columns={{ sm: 2, md: 3 }} spacing="4">
+        <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing="4">
           <SystemOption
             label="Add a system"
             icon={<ManualSetupIcon boxSize={8} />}
@@ -67,7 +67,7 @@ const AddSystem = () => {
 
       <Box data-testid="automated-options">
         <SectionTitle>Automated infrastructure scanning</SectionTitle>
-        <SimpleGrid columns={{ sm: 2, md: 3 }} spacing="4">
+        <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing="4">
           <SystemOption
             label="Scan your infrastructure (AWS)"
             description="Automatically discover new systems in your AWS infrastructure"

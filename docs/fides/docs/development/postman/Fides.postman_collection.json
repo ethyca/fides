@@ -1425,6 +1425,35 @@
 					"response": []
 				},
 				{
+					"name": "Get Storage Config Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/storage/default/status",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"storage",
+								"default",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get Storage Config Detail",
 					"request": {
 						"auth": {
@@ -4473,6 +4502,42 @@
 								"messaging",
 								"config",
 								"test"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Messaging Config Status",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{host}}/messaging/default/status",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"messaging",
+								"default",
+								"status"
 							]
 						}
 					},
