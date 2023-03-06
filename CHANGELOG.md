@@ -31,6 +31,7 @@ The types of changes are:
 * Improve "Upload a new dataset YAML" [#1531](https://github.com/ethyca/fides/pull/2258)
 * Access and erasure support for Yotpo [#2708](https://github.com/ethyca/fides/pull/2708)
 * Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)
+* Added ConnectorRunner to simplify SaaS connector testing [#1795](https://github.com/ethyca/fides/pull/1795)
 
 ### Changed
 

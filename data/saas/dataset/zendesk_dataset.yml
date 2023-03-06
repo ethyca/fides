@@ -1,9 +1,9 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Zendesk Dataset
-    description: A sample dataset representing the Zendesk connector for Fidesops
+    description: A sample dataset representing the Zendesk connector for Fides
     collections:
-      - name: users
+      - name: user
         fields:
           - name: id
             data_categories: [system.operations]
