@@ -1,5 +1,5 @@
 """Contains the db group of the commands for fides."""
-import click
+import rich_click as click
 
 from fides.cli.options import yes_flag
 from fides.cli.utils import handle_cli_response, with_analytics
@@ -11,7 +11,7 @@ from fides.core.utils import echo_red
 @click.pass_context
 def database(ctx: click.Context) -> None:
     """
-    Database utility commands
+    Run actions against the application database.
     """
 
 
@@ -20,7 +20,7 @@ def database(ctx: click.Context) -> None:
 @with_analytics
 def db_init(ctx: click.Context) -> None:
     """
-    Initialize the fides database.
+    Initialize the Fides database.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(
@@ -38,7 +38,7 @@ def db_init(ctx: click.Context) -> None:
 @with_analytics
 def db_reset(ctx: click.Context, yes: bool) -> None:
     """
-    Wipes all user-created data and resets the database back to its freshly initialized state.
+    Reset the database back to its initial state.
     """
     config = ctx.obj["CONFIG"]
     if yes:

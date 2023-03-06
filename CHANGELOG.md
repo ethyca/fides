@@ -30,6 +30,7 @@ The types of changes are:
 * Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
 * Improve "Upload a new dataset YAML" [#1531](https://github.com/ethyca/fides/pull/2258)
 * Access and erasure support for Yotpo [#2708](https://github.com/ethyca/fides/pull/2708)
+* Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)
 * Added ConnectorRunner to simplify SaaS connector testing [#1795](https://github.com/ethyca/fides/pull/1795)
 
 ### Changed
@@ -44,7 +45,9 @@ The types of changes are:
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
 * Redesigned the default/init config file to be auto-documented. Also updates the `fides init` logic and analytics consent logic [#2694](https://github.com/ethyca/fides/pull/2694)
 * Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
+* Update the CLI aesthetics & docstrings [#2703](https://github.com/ethyca/fides/pull/2703)
 * Updates Roles->Scopes Mapping [#2744](https://github.com/ethyca/fides/pull/2744)
+* Return user scopes as an enum, as well as total scopes [#2741](https://github.com/ethyca/fides/pull/2741)
 
 ### Developer Experience
 

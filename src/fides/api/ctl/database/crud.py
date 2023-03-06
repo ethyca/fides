@@ -2,7 +2,7 @@
 Contains all of the generic CRUD endpoints that can be
 generated programmatically for each resource.
 """
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from loguru import logger as log
 from sqlalchemy import column
@@ -14,6 +14,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
+    CustomField,
+    CustomFieldDefinition,
+)
 from fides.api.ctl.utils import errors
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
@@ -82,6 +86,59 @@ async def get_resource(
                 raise not_found_error
 
             return sql_resource
+
+
+async def get_resource_with_custom_fields(
+    sql_model: Base, fides_key: str, async_session: AsyncSession
+) -> Dict[str, Any]:
+    """Get a resource from the databse by its FidesKey including it's custom fields.
+
+    Returns a dictionary of that resource.
+    """
+    resource = await get_resource(sql_model, fides_key, async_session)
+    resource_dict = resource.__dict__
+    resource_dict.pop("_sa_instance_state", None)
+
+    with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
+        async with async_session.begin():
+            try:
+                log.debug("Fetching custom fields for resource")
+                query = (
+                    select(CustomFieldDefinition.name, CustomField.value)
+                    .join(
+                        CustomField,
+                        CustomField.custom_field_definition_id
+                        == CustomFieldDefinition.id,
+                    )
+                    .where(
+                        (CustomField.resource_id == resource.fides_key)
+                        & (  # pylint: disable=singleton-comparison
+                            CustomFieldDefinition.active == True
+                        )
+                    )
+                )
+                result = await async_session.execute(query)
+            except SQLAlchemyError:
+                sa_error = errors.QueryError()
+                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                    "Failed to fetch custom fields"
+                )
+                raise sa_error
+
+            custom_fields = result.mappings().all()
+
+    if not custom_fields:
+        return resource_dict
+
+    for field in custom_fields:
+        if field["name"] in resource_dict:
+            resource_dict[
+                field["name"]
+            ] = f"{resource_dict[field['name']]}, {', '.join(field['value'])}"
+        else:
+            resource_dict[field["name"]] = ", ".join(field["value"])
+
+    return resource_dict
 
 
 async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Base]:
@@ -216,7 +273,6 @@ async def delete_resource(
                 else:
                     log.debug("Deleting resource")
                     query = _delete(sql_model).where(sql_model.fides_key == fides_key)
-                print(query)
                 await async_session.execute(query)
             except SQLAlchemyError:
                 error = errors.QueryError()

@@ -43,7 +43,13 @@ from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import APPROVER, CONTRIBUTOR, VIEWER_AND_APPROVER
+from fides.lib.oauth.roles import (
+    APPROVER,
+    CONTRIBUTOR,
+    OWNER,
+    VIEWER,
+    VIEWER_AND_APPROVER,
+)
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.email_fixtures import *

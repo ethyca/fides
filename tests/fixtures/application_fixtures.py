@@ -71,7 +71,6 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import OWNER, VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -127,6 +126,9 @@ integration_secrets = {
         "uri": pydash.get(integration_config, "fides_example.uri"),
         "username": pydash.get(integration_config, "fides_example.username"),
         "password": pydash.get(integration_config, "fides_example.password"),
+        "polling_timeout": pydash.get(
+            integration_config, "fides_example.polling_timeout"
+        ),
     },
 }
 
@@ -1605,6 +1607,7 @@ def test_fides_client(
         fides_connector_example_secrets["uri"],
         fides_connector_example_secrets["username"],
         fides_connector_example_secrets["password"],
+        fides_connector_example_secrets["polling_timeout"]
     )
 
 

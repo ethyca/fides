@@ -4,9 +4,7 @@ import requests
 from loguru import logger
 
 from fides.api.ops.api.v1 import urn_registry as urls
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.core.config import CONFIG
-from fides.lib.oauth.roles import OWNER
 
 from . import constants
 

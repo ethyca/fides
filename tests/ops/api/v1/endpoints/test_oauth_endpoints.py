@@ -501,7 +501,7 @@ class TestCallback:
         response = api_client.get(
             callback_url, params={"code": "abc", "state": "new_request"}
         )
-        assert response.ok
+        response.raise_for_status()
         get_access_token_mock.assert_called_once()
 
         authentication_request.delete(db)
