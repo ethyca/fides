@@ -43,6 +43,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             IMAGE_NAME,
         )
         session.run(*start_command, external=True)
+        session.run(*LOGIN, external=True)
         run_command = (
             "docker",
             "exec",
