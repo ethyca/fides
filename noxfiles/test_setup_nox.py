@@ -39,7 +39,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "-f",
             INTEGRATION_COMPOSE_FILE,
             "up",
-            "-d",
+            "--wait",
             IMAGE_NAME,
         )
         session.run(*start_command, external=True)

@@ -195,7 +195,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
@@ -232,7 +232,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
@@ -263,7 +263,7 @@ jobs:
   External-SaaS-Connectors:
     needs: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     permissions:
