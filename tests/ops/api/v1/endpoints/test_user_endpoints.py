@@ -1348,9 +1348,50 @@ class TestGetSystemsUserManages:
     def test_get_systems_managed_by_user_wrong_scope(
         self, api_client: TestClient, generate_auth_header, url
     ):
+        # Note no user attached to this client, so it can't check to see
+        # if the user is accessing itself
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_get_systems_managed_by_self(
+        self, api_client: TestClient, url, user, system, db
+    ) -> None:
+        """User can view their own systems even if they don't necessarily have the correct scopes"""
+        user.set_as_system_manager(db, system)
+        auth_header = generate_auth_header_for_user(user, [])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        assert len(resp.json()) == 1
+        assert resp.json()[0]["fides_key"] == system.fides_key
+
+    def test_get_systems_managed_by_other_user(
+        self, api_client: TestClient, url, user, system, db
+    ) -> None:
+        """User need read system manager permissions to be able to view someone else's systems"""
+        user.set_as_system_manager(db, system)
+        another_user = FidesUser.create(
+            db=db,
+            data={
+                "username": "another_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            },
+        )
+        client = ClientDetail(
+            hashed_secret="thisisatest",
+            salt="thisisstillatest",
+            scopes=SCOPE_REGISTRY,
+            user_id=another_user.id,
+        )
+        db.add(client)
+        db.commit()
+
+        auth_header = generate_auth_header_for_user(another_user, [])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+        client.delete(db=db)
+        another_user.delete(db)
 
     def test_get_systems_managed_by_user_not_found(
         self, api_client: TestClient, generate_auth_header, url
@@ -1375,7 +1416,7 @@ class TestGetSystemsUserManages:
     ) -> None:
         user.set_as_system_manager(db, system)
         auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
-        resp = api_client.get(url, headers=auth_header, json=["bad_fides_key"])
+        resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_200_OK
         assert len(resp.json()) == 1
         assert resp.json()[0]["fides_key"] == system.fides_key
@@ -1395,9 +1436,49 @@ class TestGetSpecificSystemUserManages:
     def test_get_system_managed_by_user_wrong_scope(
         self, api_client: TestClient, generate_auth_header, url
     ):
+        # Note that no user is attached to this client so we can't check
+        # to see if the user is accessing its own systems
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_get_system_managed_by_self(
+        self, api_client: TestClient, url, user, system, db
+    ) -> None:
+        """User can view their own systems even if they don't necessarily have the correct scopes"""
+        user.set_as_system_manager(db, system)
+        auth_header = generate_auth_header_for_user(user, [])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        assert resp.json()["fides_key"] == system.fides_key
+
+    def test_get_system_managed_by_other_user(
+        self, api_client: TestClient, url, user, system, db
+    ) -> None:
+        """User need read system manager permissions to be able to view someone else's systems"""
+        user.set_as_system_manager(db, system)
+        another_user = FidesUser.create(
+            db=db,
+            data={
+                "username": "another_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            },
+        )
+        client = ClientDetail(
+            hashed_secret="thisisatest",
+            salt="thisisstillatest",
+            scopes=SCOPE_REGISTRY,
+            user_id=another_user.id,
+        )
+        db.add(client)
+        db.commit()
+
+        auth_header = generate_auth_header_for_user(another_user, [])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+        client.delete(db=db)
+        another_user.delete(db)
 
     def test_get_system_managed_by_user_not_found(
         self, api_client: TestClient, generate_auth_header, url, system

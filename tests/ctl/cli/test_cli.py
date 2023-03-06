@@ -12,9 +12,9 @@ from py._path.local import LocalPath
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.cli import cli
 from fides.core.config import CONFIG
-from fides.core.user import get_user_permissions
+from fides.core.user import get_systems_managed_by_user, get_user_permissions
 from fides.core.utils import get_auth_header, read_credentials_file
-from fides.lib.oauth.roles import OWNER
+from fides.lib.oauth.roles import OWNER, VIEWER
 
 OKTA_URL = "https://dev-78908748.okta.com"
 
@@ -968,7 +968,7 @@ class TestUser:
         assert result.exit_code == 0
 
     @pytest.mark.unit
-    def test_get_user_permissions(
+    def test_get_self_user_permissions(
         self, test_config_path, test_cli_runner, credentials_path
     ) -> None:
         """Test getting user permissions"""
@@ -993,6 +993,66 @@ class TestUser:
         )
         assert scopes == SCOPE_REGISTRY
         assert roles == [OWNER]
+
+    @pytest.mark.unit
+    def test_get_self_user_systems(
+        self, test_config_path, test_cli_runner, credentials_path
+    ) -> None:
+        """Test getting user permissions"""
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "user",
+                "login",
+                "-u",
+                "root_user",
+                "-p",
+                "Testpassword1!",
+            ],
+            env={"FIDES_CREDENTIALS_PATH": credentials_path},
+        )
+        systems = get_systems_managed_by_user(
+            CONFIG.security.oauth_root_client_id,
+            get_auth_header(),
+            CONFIG.cli.server_url,
+        )
+        assert systems == []
+
+    @pytest.mark.unit
+    def test_get_other_user_perms_and_systems(
+        self, test_config_path, test_cli_runner, credentials_path, system_manager
+    ) -> None:
+        """Test getting another user's permissions and systems"""
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "user",
+                "login",
+                "-u",
+                "root_user",
+                "-p",
+                "Testpassword1!",
+            ],
+            env={"FIDES_CREDENTIALS_PATH": credentials_path},
+        )
+        scopes, roles = get_user_permissions(
+            system_manager.id,
+            get_auth_header(),
+            CONFIG.cli.server_url,
+        )
+        assert scopes == []
+        assert roles == []
+
+        systems = get_systems_managed_by_user(
+            system_manager.id,
+            get_auth_header(),
+            CONFIG.cli.server_url,
+        )
+        assert systems == [system_manager.systems[0].fides_key]
 
     @pytest.mark.unit
     def test_user_permissions_not_found(

@@ -218,7 +218,7 @@ def user_logout(
     dependencies=[Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_UPDATE])],
     response_model=List[SystemSchema],
 )
-def update_system_manager(
+def update_managed_systems(
     *,
     db: Session = Depends(deps.get_db),
     user_id: str,
@@ -260,36 +260,63 @@ def update_system_manager(
 
 @router.get(
     urls.SYSTEM_MANAGER,
-    dependencies=[Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ])],
     response_model=List[SystemSchema],
 )
-def get_user_systems(
+async def get_managed_systems(
     *,
     db: Session = Depends(deps.get_db),
+    authorization: str = Security(oauth2_scheme),
+    current_user: FidesUser = Depends(get_current_user),
     user_id: str,
 ) -> List[SystemSchema]:
     """
     Endpoint to retrieve all the systems for which a user is "system manager".
     """
-    user = validate_user_id(db, user_id)
-    logger.info("Getting systems for which user {} is system manager", user_id)
+    # A user is able to retrieve their own systems
+    if current_user and current_user.id == user_id:
+        logger.info(
+            "Retrieving current user's {} systems for which they are system manager",
+            user_id,
+        )
+        return current_user.systems
 
+    # User must have a specific scope to be able to read another user's systems
+    user = validate_user_id(db, user_id)
+    await verify_oauth_client(
+        security_scopes=Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ]),
+        authorization=authorization,
+        db=db,
+    )
+    logger.info("Getting systems for which user {} is system manager", user_id)
     return user.systems
 
 
 @router.get(
     urls.SYSTEM_MANAGER_DETAIL,
-    dependencies=[Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ])],
     response_model=SystemSchema,
 )
-def get_user_system(
-    *, db: Session = Depends(deps.get_db), user_id: str, system_key: FidesKey
+async def get_managed_system_details(
+    *,
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(deps.get_db),
+    user_id: str,
+    system_key: FidesKey,
+    current_user: FidesUser = Depends(get_current_user),
 ) -> SystemSchema:
     """
     Endpoint to retrieve a single system managed by the given user.
     """
     system: System = get_system_by_fides_key(db, system_key)
-    user = validate_user_id(db, user_id)
+
+    if current_user and current_user.id == user_id:
+        user = current_user
+    else:
+        await verify_oauth_client(
+            security_scopes=Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ]),
+            authorization=authorization,
+            db=db,
+        )
+        user = validate_user_id(db, user_id)
 
     if not system in user.systems:
         raise HTTPException(
