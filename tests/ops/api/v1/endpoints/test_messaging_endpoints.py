@@ -586,6 +586,48 @@ class TestPutMessagingConfigSecretTwilioEmail:
         )
 
 
+class TestPutMessagingConfigSecretMailchimpTransactional:
+    @pytest.fixture(scope="function")
+    def url(self, messaging_config_mailchimp_transactional) -> str:
+        return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
+            config_key=messaging_config_mailchimp_transactional.key
+        )
+
+    def test_put_config_secrets(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        messaging_config_mailchimp_transactional,
+    ):
+        key = "key-123456789"
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json={
+                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value: key,
+            },
+        )
+        assert 200 == response.status_code
+
+        db.refresh(messaging_config_mailchimp_transactional)
+
+        assert json.loads(response.text) == {
+            "msg": f"Secrets updated for MessagingConfig with key: {messaging_config_mailchimp_transactional.key}.",
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert (
+            messaging_config_mailchimp_transactional.secrets[
+                MessagingServiceSecrets.TWILIO_API_KEY.value
+            ]
+            == key
+        )
+
+
 class TestPutMessagingConfigSecretTwilioSms:
     @pytest.fixture(scope="function")
     def url(self, messaging_config_twilio_sms) -> str:
@@ -744,7 +786,12 @@ class TestGetMessagingConfigs:
         assert 403 == response.status_code
 
     def test_get_configs(
-        self, db, api_client: TestClient, url, generate_auth_header, messaging_config
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        messaging_config,
     ):
         auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(url, headers=auth_header)
@@ -800,7 +847,11 @@ class TestGetMessagingConfig:
         assert 404 == response.status_code
 
     def test_get_config(
-        self, url, api_client: TestClient, generate_auth_header, messaging_config
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        messaging_config,
     ):
         auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(url, headers=auth_header)
