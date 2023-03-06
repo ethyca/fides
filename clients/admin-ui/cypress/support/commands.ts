@@ -82,7 +82,7 @@ declare global {
       login(): void;
       /**
        * Stub a user with the scopes associated with a role
-       * @example cy.assumeRole(RoleRegistryEnum.ADMIN)
+       * @example cy.assumeRole(RoleRegistryEnum.OWNER)
        */
       assumeRole(role: RoleRegistryEnum): void;
     }

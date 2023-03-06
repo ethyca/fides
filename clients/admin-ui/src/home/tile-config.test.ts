@@ -10,7 +10,7 @@ const ALL_SCOPES_FOR_TILES = [
   ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW,
   ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
   ScopeRegistryEnum.CLI_OBJECTS_READ,
-  ScopeRegistryEnum.SYSTEM_CREATE,
+  ScopeRegistryEnum.CLI_OBJECTS_CREATE,
 ];
 
 describe("configureTiles", () => {
@@ -99,7 +99,7 @@ describe("configureTiles", () => {
     it("conditionally shows add systems based on scope", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
-        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
       });
       expect(tiles.map((t) => t.name)).toEqual(["Add systems"]);
     });

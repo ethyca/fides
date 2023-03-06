@@ -20,7 +20,7 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
   },
   {
     privilege: "Approve privacy requests",
-    scope: ScopeRegistryEnum.PRIVACY_REQUEST_RESUME,
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW,
   },
   {
     privilege: "Resume privacy requests",

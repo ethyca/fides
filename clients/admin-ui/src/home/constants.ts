@@ -43,7 +43,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     name: "Add systems",
     sortOrder: 1,
     title: "AS",
-    scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+    scopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
   },
   {
     color: "purple",
