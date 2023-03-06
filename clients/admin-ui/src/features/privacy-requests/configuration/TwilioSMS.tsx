@@ -117,7 +117,9 @@ const TwilioSMSConfiguration = () => {
       </Stack>
       {configurationStep === "testConnection" ? (
         <TestMessagingProviderConnectionButton
-          messagingDetails={messagingDetails}
+          messagingDetails={
+            messagingDetails || { service_type: messagingProviders.twilio_text }
+          }
         />
       ) : null}
     </Box>
