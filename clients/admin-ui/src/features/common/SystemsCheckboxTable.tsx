@@ -66,12 +66,24 @@ export const SystemTableCell = ({
   }
 
   if (attribute === "meta"){
-    let cookies = ""
+    let cookies = []
     if(system.meta){
 
-      cookies = Object.keys(system.meta).join(", ");
+      cookies = Object.keys(system.meta)
     }
-    return <>{cookies}</>
+    return <Table size="sm" variant="unstyled" sx={{
+      tableLayout: "fixed"
+    }}>
+      <Tbody>
+      {cookies.map((cookie)=>(
+        <Tr key={cookie} >
+          <Td>{cookie}</Td>
+          <Td>{system.meta[cookie]["PURPOSE"] ? system.meta[cookie]["PURPOSE"] : "-"}</Td>
+          <Td>{system.meta[cookie]["EXPIRATION"] ? system.meta[cookie]["EXPIRATION"] : "-"}</Td>
+        </Tr>
+      ))}
+      </Tbody>
+    </Table>
   }
 
   return <>{resolvePath(system, attribute)}</>;
@@ -112,14 +124,11 @@ export const SystemsCheckboxTable = ({
   if (columns.length === 0) {
     return <Text>No columns selected to display</Text>;
   }
-
+  const widths = ["20%", "20%", "calc(60% - 15px)"]
   return (
     <Table
       size="sm"
       /* https://github.com/chakra-ui/chakra-ui/issues/6822 */
-      sx={{
-        tableLayout: "fixed",
-      }}
     >
       <Thead {...tableHeadProps}>
         <Tr>
@@ -131,8 +140,8 @@ export const SystemsCheckboxTable = ({
               onChange={handleChangeAll}
             />
           </Th>
-          {columns.map((c) => (
-            <Th key={c.attribute}>{c.name}</Th>
+          {columns.map((c, i) => (
+            <Th width={widths[i]} key={c.attribute}>{c.name}</Th>
           ))}
         </Tr>
       </Thead>
