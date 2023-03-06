@@ -304,7 +304,11 @@ class MessagingConfigBase(BaseModel):
 
     service_type: MessagingServiceType
     details: Optional[
-        Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
+        Union[
+            MessagingServiceDetailsMailchimpTransactional,
+            MessagingServiceDetailsMailgun,
+            MessagingServiceDetailsTwilioEmail,
+        ]
     ]
 
     class Config:
