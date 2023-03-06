@@ -372,29 +372,46 @@ def _mailchimp_transactional_dispatcher(
         )
         raise MessageDispatchException("No mailgun config details or secrets supplied.")
 
-    email_from = messaging_config.details[MessagingServiceDetails.EMAIL_FROM.value]
-    data = {
-        "key": messaging_config.secrets[
-            MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
-        ],
-        "message": {
-            "from_email": email_from,
-            "subject": message.subject,
-            "text": message.body,
-            "to": [{"email": to.strip(), "type": "to"}],
-        },
-    }
+    from_email = messaging_config.details[MessagingServiceDetails.EMAIL_FROM.value]
+    data = json.dumps(
+        {
+            "key": messaging_config.secrets[
+                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
+            ],
+            "message": {
+                "from_email": from_email,
+                "subject": message.subject,
+                "text": message.body,
+                # On Mailchimp Transactional's free plan `to` must be an email of the same
+                # domain as `from_email`
+                "to": [{"email": to.strip(), "type": "to"}],
+            },
+        }
+    )
 
-    url = "https://mandrillapp.com/api/1.0/messages/send"
     response = requests.post(
-        url,
+        "https://mandrillapp.com/api/1.0/messages/send",
         headers={"Content-Type": "application/json"},
-        json=json.dumps(data),
+        data=data,
     )
     if not response.ok:
-        logger.error("Email failed to send with status code: %s", response.status_code)
+        logger.error("Email failed to send with status code: %s" % response.status_code)
         raise MessageDispatchException(
             f"Email failed to send with status code {response.status_code}"
+        )
+
+    send_data = response.json()[0]
+    email_rejected = send_data.get("status", "rejected") == "rejected"
+    if email_rejected:
+        reason = send_data.get("reject_reason", "Fides Error")
+        explanations = {
+            "soft-bounce": "A temporary error occured with the target inbox. For example, this inbox could be full. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
+            "hard-bounce": "A permanent error occured with the target inbox. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
+            "recipient-domain-mismatch": f"You are not authorised to send email to this domain from {from_email}.",
+        }
+        explanation = explanations.get(reason, "")
+        raise MessageDispatchException(
+            f"Verification email unable to send due to reason: {reason}. {explanation}"
         )
 
 
