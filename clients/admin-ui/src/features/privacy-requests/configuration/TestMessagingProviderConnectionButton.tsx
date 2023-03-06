@@ -7,7 +7,19 @@ import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import { messagingProviders } from "~/features/privacy-requests/constants";
 import { useCreateTestConnectionMessageMutation } from "~/features/privacy-requests/privacy-requests.slice";
 
-const TestMessagingProviderConnectionButton = ({ messagingDetails }: any) => {
+interface MessagingDetails {
+  messagingDetails: {
+    details: {
+      api_version: string;
+      domain: string;
+      is_eu_domain: boolean;
+    };
+    key: string;
+    name: string;
+    service_type: string;
+  }
+}
+const TestMessagingProviderConnectionButton = ({ messagingDetails }: MessagingDetails) => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [createTestConnectionMessage] =
