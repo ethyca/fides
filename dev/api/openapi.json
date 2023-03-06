@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.1.post0.dev97"
+    "version": "2.7.1.post0.dev98"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -298,7 +298,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 Data Category  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -375,7 +378,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 Data Category Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 data_category(s)",
                   "inserted": 0,
@@ -724,7 +730,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 Data Qualifier  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -801,7 +810,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 Data Qualifier Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 data_qualifier(s)",
                   "inserted": 0,
@@ -1150,7 +1162,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 Data Subject  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -1227,7 +1242,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 Data Subject Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 data_subject(s)",
                   "inserted": 0,
@@ -1576,7 +1594,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 Data Use  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -1653,7 +1674,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 Data Use Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 data_use(s)",
                   "inserted": 0,
@@ -2002,7 +2026,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 Dataset  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -2079,7 +2106,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 Dataset Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 dataset(s)",
                   "inserted": 0,
@@ -2428,7 +2458,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 Organization  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -2505,7 +2538,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 Organization Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 organization(s)",
                   "inserted": 0,
@@ -2854,7 +2890,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 Policy  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -2931,7 +2970,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 Policy Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 policy(s)",
                   "inserted": 0,
@@ -3280,7 +3322,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 Registry  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -3357,7 +3402,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 Registry Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 registry(s)",
                   "inserted": 0,
@@ -3706,7 +3754,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 System  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -3783,7 +3834,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 System Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 system(s)",
                   "inserted": 0,
@@ -4132,7 +4186,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Delete Api V1 Evaluation  Fides Key  Delete",
+                  "type": "object"
+                }
               }
             }
           },
@@ -4209,7 +4266,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Upsert Api V1 Evaluation Upsert Post",
+                  "type": "object"
+                },
                 "example": {
                   "message": "Upserted 3 evaluation(s)",
                   "inserted": 0,
@@ -4289,7 +4349,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Db Action Api V1 Admin Db  Action  Post",
+                  "type": "object"
+                }
               }
             }
           },
@@ -4337,7 +4400,16 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {},
+                "schema": {
+                  "title": "Response Export Datamap Api V1 Datamap  Organization Fides Key  Get",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                },
                 "example": [
                   {
                     "dataset.name": "Fides Dataset",
@@ -5355,7 +5427,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Get Connection Type Secret Schema Api V1 Connection Type  Connection Type  Secret Get",
+                  "type": "object"
+                }
               }
             }
           },
@@ -7243,7 +7318,14 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "title": "Response Read Roles To Scopes Mapping Api V1 Oauth Role Get",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {}
+                  }
+                }
               }
             }
           }
@@ -11576,7 +11658,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
               }
             }
           },
