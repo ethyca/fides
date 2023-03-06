@@ -114,7 +114,8 @@ const TwilioEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {configurationStep === "configureTwilioEmailSecrets" || configurationStep === "testConnection" ? (
+      {configurationStep === "configureTwilioEmailSecrets" ||
+      configurationStep === "testConnection" ? (
         <>
           <Divider mt={10} />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
