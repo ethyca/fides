@@ -166,7 +166,9 @@ const MailgunEmailConfiguration = () => {
       ) : null}
       {configurationStep === "testConnection" ? (
         <TestMessagingProviderConnectionButton
-          messagingDetails={messagingDetails}
+          messagingDetails={
+            messagingDetails || { service_type: messagingProviders.mailgun }
+          }
         />
       ) : null}
     </Box>
