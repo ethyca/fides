@@ -1,7 +1,7 @@
 """
 Contains an endpoint for extracting a data map from the server
 """
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from fastapi import Depends, Response, Security, status
 from fideslang.parse import parse_dict
@@ -9,7 +9,11 @@ from loguru import logger as log
 from pandas import DataFrame
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fides.api.ctl.database.crud import get_resource, list_resource
+from fides.api.ctl.database.crud import (
+    get_resource,
+    get_resource_with_custom_fields,
+    list_resource,
+)
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
@@ -44,7 +48,6 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
             "content": {
                 "application/json": {
                     "example": [
-                        DATAMAP_COLUMNS_API,
                         {
                             "system.name": "Demo Analytics System",
                             "system.data_responsibility_title": "Controller",
@@ -98,7 +101,7 @@ async def export_datamap(
     organization_fides_key: str,
     response: Response,
     db: AsyncSession = Depends(get_async_db),
-) -> List[Dict[str, str]]:
+) -> List[Dict[str, Any]]:
     """
     An endpoint to return the data map for a given Organization.
 
@@ -133,7 +136,18 @@ async def export_datamap(
                 for resource in server_resources
                 if resource.organization_fides_key == organization_fides_key
             ]
+
             server_resource_dict[resource_type] = filtered_server_resources
+
+        for k, v in server_resource_dict.items():
+            values = []
+            for value in v:
+                with_custom_fields = await get_resource_with_custom_fields(
+                    sql_model_map[k], value.fides_key, db
+                )
+                values.append(with_custom_fields)
+            server_resource_dict[k] = values
+
     except DatabaseUnavailableError:
         database_unavailable_error = DatabaseUnavailableError(
             error_message="Database unavailable"
@@ -143,23 +157,29 @@ async def export_datamap(
         )
         raise database_unavailable_error
 
-    joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
+    joined_system_dataset_df, custom_columns = build_joined_dataframe(
+        server_resource_dict
+    )
 
-    formatted_datamap = format_datamap_values(joined_system_dataset_df)
+    formatted_datamap = format_datamap_values(joined_system_dataset_df, custom_columns)
 
     # prepend column names
     formatted_datamap = [DATAMAP_COLUMNS_API] + formatted_datamap
     return formatted_datamap
 
 
-def format_datamap_values(joined_system_dataset_df: DataFrame) -> List[Dict[str, str]]:
+def format_datamap_values(
+    joined_system_dataset_df: DataFrame, custom_columns: Dict[str, str]
+) -> List[Dict[str, str]]:
     """
     Formats the joined DataFrame to return the data as records.
     """
 
+    columns = {**DATAMAP_COLUMNS_API, **custom_columns}
+
     limited_columns_df = DataFrame(
         joined_system_dataset_df,
-        columns=list(DATAMAP_COLUMNS_API.keys()),
+        columns=list(columns.keys()),
     )
 
     return limited_columns_df.to_dict("records")

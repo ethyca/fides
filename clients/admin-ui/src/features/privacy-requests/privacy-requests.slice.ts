@@ -383,7 +383,7 @@ export const privacyRequestApi = createApi({
       query: (params) => ({
         url: `storage/default/${params.type}/secret`,
         method: "PUT",
-        body: params,
+        body: params.details,
       }),
     }),
     getActiveMessagingProvider: build.query<any, void>({
@@ -401,7 +401,7 @@ export const privacyRequestApi = createApi({
       ConfigMessagingDetailsRequest
     >({
       query: (params) => ({
-        url: `messaging/default/${params.type}`,
+        url: `messaging/default`,
         method: "PUT",
         body: params,
       }),
@@ -411,8 +411,15 @@ export const privacyRequestApi = createApi({
       ConfigMessagingSecretsRequest
     >({
       query: (params) => ({
-        url: `messaging/default/${params.type}/secret`,
+        url: `messaging/default/${params.service_type}/secret`,
         method: "PUT",
+        body: params.details,
+      }),
+    }),
+    createTestConnectionMessage: build.mutation<any, any>({
+      query: (params) => ({
+        url: `messaging/config/test`,
+        method: "POST",
         body: params,
       }),
     }),
@@ -449,4 +456,5 @@ export const {
   useGetActiveStorageQuery,
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
+  useCreateTestConnectionMessageMutation,
 } = privacyRequestApi;

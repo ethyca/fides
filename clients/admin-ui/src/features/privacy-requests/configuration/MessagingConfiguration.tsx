@@ -10,14 +10,16 @@ import {
   Text,
 } from "@fidesui/react";
 import NextLink from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
+import { messagingProviders } from "~/features/privacy-requests/constants";
 import {
   useCreateConfigurationSettingsMutation,
   useCreateMessagingConfigurationMutation,
+  useGetActiveMessagingProviderQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
@@ -31,34 +33,41 @@ const MessagingConfiguration = () => {
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
   const [saveActiveConfiguration] = useCreateConfigurationSettingsMutation();
+  const { data: activeMessagingProvider } =
+    useGetActiveMessagingProviderQuery();
+
+  useEffect(() => {
+    if (activeMessagingProvider) {
+      setMessagingValue(activeMessagingProvider?.service_type);
+    }
+  }, [activeMessagingProvider]);
 
   const handleChange = async (value: string) => {
     const result = await saveActiveConfiguration({
-      fides: {
-        notifications: {
-          notification_service_type: value,
-          send_request_completion_notification: true,
-          send_request_receipt_notification: true,
-          send_request_review_notification: true,
-          subject_identity_verification_required: true,
-        },
+      notifications: {
+        notification_service_type: value,
+        send_request_completion_notification: true,
+        send_request_receipt_notification: true,
+        send_request_review_notification: true,
+      },
+      execution: {
+        subject_identity_verification_required: true,
       },
     });
 
     if (isErrorResult(result)) {
       handleError(result.error);
-    } else if (value !== "twilio_text") {
-      successAlert(`Configured storage type successfully.`);
+    } else if (value !== messagingProviders.twilio_text) {
       setMessagingValue(value);
     } else {
       const twilioTextResult = await createMessagingConfiguration({
-        type: "twilio_text",
+        service_type: messagingProviders.twilio_text,
       });
 
       if (isErrorResult(twilioTextResult)) {
         handleError(twilioTextResult.error);
       } else {
-        successAlert(`Configure messaging provider saved successfully.`);
+        successAlert(`Messaging provider saved successfully.`);
         setMessagingValue(value);
       }
     }
@@ -118,36 +127,38 @@ const MessagingConfiguration = () => {
         >
           <Stack direction="row">
             <Radio
-              key="mailgun-email"
-              value="mailgun-email"
-              data-testid="option-mailgun-email"
+              key={messagingProviders.mailgun}
+              value={messagingProviders.mailgun}
+              data-testid="option-mailgun"
               mr={5}
             >
-              Mailgun email
+              Mailgun Email
             </Radio>
             <Radio
-              key="twilio-email"
-              value="twilio-email"
+              key={messagingProviders.twilio_email}
+              value={messagingProviders.twilio_email}
               data-testid="option-twilio-email"
             >
-              Twilio email
+              Twilio Email
             </Radio>
             <Radio
-              key="twilio-text"
-              value="twilio-text"
-              data-testid="option-twilio-text"
+              key={messagingProviders.twilio_text}
+              value={messagingProviders.twilio_text}
+              data-testid="option-twilio-sms"
             >
-              Twilio sms
+              Twilio SMS
             </Radio>
           </Stack>
         </RadioGroup>
-        {messagingValue === "mailgun-email" ? (
+        {messagingValue === messagingProviders.mailgun ? (
           <MailgunEmailConfiguration />
         ) : null}
-        {messagingValue === "twilio-email" ? (
+        {messagingValue === messagingProviders.twilio_email ? (
           <TwilioEmailConfiguration />
         ) : null}
-        {messagingValue === "twilio-text" ? <TwilioSMSConfiguration /> : null}
+        {messagingValue === messagingProviders.twilio_text ? (
+          <TwilioSMSConfiguration />
+        ) : null}
       </Box>
     </Layout>
   );

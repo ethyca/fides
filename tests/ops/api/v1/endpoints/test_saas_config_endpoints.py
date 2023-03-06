@@ -450,5 +450,5 @@ class TestAuthorizeConnection:
         authorization_url_mock.return_value = authorization_url
         auth_header = generate_auth_header([CONNECTION_AUTHORIZE])
         response = api_client.get(authorize_url, headers=auth_header)
-        assert response.ok
+        response.raise_for_status()
         assert response.text == f'"{authorization_url}"'

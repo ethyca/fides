@@ -45,7 +45,10 @@
         "name": "Data Sales or Sharing",
         "description": "We may use some of your personal information for behavioral advertising purposes, which may be interpreted as 'Data Sales' or 'Data Sharing' under regulations such as CCPA, CPRA, VCDPA, etc.",
         "url": "https://example.com/privacy#data-sales",
-        "default": true,
+        "default": {
+          "value": true,
+          "globalPrivacyControl": false
+        },
         "highlight": false,
         "cookieKeys": ["data_sales"],
         "executable": false
@@ -55,7 +58,10 @@
         "name": "Email Marketing",
         "description": "We may use some of your personal information to contact you about our products & services.",
         "url": "https://example.com/privacy#email-marketing",
-        "default": true,
+        "default": {
+          "value": true,
+          "globalPrivacyControl": false
+        },
         "highlight": false,
         "cookieKeys": [],
         "executable": false

@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.7.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.7.1...main)
 
 ### Added
 
@@ -31,6 +31,7 @@ The types of changes are:
 * Improve "Upload a new dataset YAML" [#1531](https://github.com/ethyca/fides/pull/2258)
 * Access and erasure support for Yotpo [#2708](https://github.com/ethyca/fides/pull/2708)
 * Custom Field Library Tab [#527](https://github.com/ethyca/fides/pull/2693)
+* Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)
 
 ### Changed
 
@@ -38,9 +39,15 @@ The types of changes are:
   * Add flow for selecting system types when manually creating a system [#2530](https://github.com/ethyca/fides/pull/2530)
   * Updated forms for privacy declarations [#2648](https://github.com/ethyca/fides/pull/2648)
   * Delete flow for privacy declarations [#2664](https://github.com/ethyca/fides/pull/2664)
+  * Add framework to have UI elements respect the user's scopes [#2682](https://github.com/ethyca/fides/pull/2682)
+  * "Manual Webhook" has been renamed to "Manual Process". [#2717](https://github.com/ethyca/fides/pull/2717)
 * Convert all config values to Pydantic `Field` objects [#2613](https://github.com/ethyca/fides/pull/2613)
 * Add warning to 'fides deploy' when installed outside of a virtual environment [#2641](https://github.com/ethyca/fides/pull/2641)
+* Redesigned the default/init config file to be auto-documented. Also updates the `fides init` logic and analytics consent logic [#2694](https://github.com/ethyca/fides/pull/2694)
 * Change how config creation/import is handled across the application [#2622](https://github.com/ethyca/fides/pull/2622)
+* Update the CLI aesthetics & docstrings [#2703](https://github.com/ethyca/fides/pull/2703)
+* Updates Roles->Scopes Mapping [#2744](https://github.com/ethyca/fides/pull/2744)
+* Return user scopes as an enum, as well as total scopes [#2741](https://github.com/ethyca/fides/pull/2741)
 
 ### Developer Experience
 
@@ -48,9 +55,6 @@ The types of changes are:
 * Removed unexpected default Redis password [#2666](https://github.com/ethyca/fides/pull/2666)
 * Privacy Center
   * Typechecking and validation of the `config.json` will be checked for backwards-compatibility. [#2661](https://github.com/ethyca/fides/pull/2661)
-
-### Developer Experience
-
 * Combined conftest.py files [#2669](https://github.com/ethyca/fides/pull/2669)
 
 ### Fixed
@@ -61,6 +65,11 @@ The types of changes are:
 * Admin UI
   * Remove Identifiability (Data Qualifier) from taxonomy editor [2684](https://github.com/ethyca/fides/pull/2684)
 * FE: Custom field selections binding issue on Taxonomy tabs [#2659](https://github.com/ethyca/fides/pull/2693/)
+* Fix Privacy Request Status when submitting a consent request when identity verification is required [#2736](https://github.com/ethyca/fides/pull/2736)
+
+## [2.7.1](https://github.com/ethyca/fides/compare/2.7.0...2.7.1)
+
+* Fix error with the classify dataset feature flag not writing the dataset to the server [#2675](https://github.com/ethyca/fides/pull/2675)
 
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 

@@ -1,12 +1,10 @@
 from typing import List, Optional
 
-from fastapi import HTTPException
 from pydantic import validator
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY, ScopeRegistryEnum
 from fides.api.ops.schemas.base_class import BaseSchema
-from fides.lib.oauth.roles import RoleRegistry
+from fides.lib.oauth.roles import RoleRegistryEnum
 
 
 class UserPermissionsCreate(BaseSchema):
@@ -16,20 +14,8 @@ class UserPermissionsCreate(BaseSchema):
     but we also will continue to support the ability to be assigned specific individual scopes.
     """
 
-    scopes: List[str] = []
-    roles: List[RoleRegistry] = []
-
-    @validator("scopes")
-    @classmethod
-    def validate_scopes(cls, scopes: List[str]) -> List[str]:
-        """Validates that all incoming scopes are valid"""
-        diff = set(scopes).difference(set(SCOPE_REGISTRY))
-        if len(diff) > 0:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Invalid Scope(s) {diff}. Scopes must be one of {SCOPE_REGISTRY}.",
-            )
-        return scopes
+    scopes: List[ScopeRegistryEnum] = []
+    roles: List[RoleRegistryEnum] = []
 
     class Config:
         """So roles are strings when we add to the db"""
@@ -50,3 +36,22 @@ class UserPermissionsResponse(UserPermissionsCreate):
 
     id: str
     user_id: str
+    scopes: List[ScopeRegistryEnum]
+    total_scopes: List[ScopeRegistryEnum]
+
+    class Config:
+        use_enum_values = True
+
+    @validator("scopes", pre=True)
+    def validate_obsolete_scopes(
+        cls, scopes: List[ScopeRegistryEnum]
+    ) -> List[ScopeRegistryEnum]:
+        """Filter out obsolete scopes if the scope registry has changed"""
+        return [scope for scope in scopes or [] if scope in SCOPE_REGISTRY]
+
+    @validator("total_scopes", pre=True)
+    def validate_obsolete_total_scopes(
+        cls, total_scopes: List[ScopeRegistryEnum]
+    ) -> List[ScopeRegistryEnum]:
+        """Filter out obsolete total scopes if the scope registry has changed"""
+        return [scope for scope in total_scopes or [] if scope in SCOPE_REGISTRY]

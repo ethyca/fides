@@ -77,8 +77,6 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.policy import PolicyResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.task import graph_task
-from fides.api.ops.task.graph_task import run_access_request
-from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 from fides.api.ops.util.cache import (
     get_encryption_cache_key,
@@ -94,7 +92,7 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import PRIVACY_REQUEST_MANAGER, VIEWER
+from fides.lib.oauth.roles import APPROVER, VIEWER
 
 page_size = Params().size
 
@@ -594,10 +592,10 @@ class TestGetPrivacyRequests:
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_get_privacy_requests_privacy_request_manager_role(
+    def test_get_privacy_requests_approver_role(
         self, api_client: TestClient, generate_role_header, url
     ):
-        auth_header = generate_role_header(roles=[PRIVACY_REQUEST_MANAGER])
+        auth_header = generate_role_header(roles=[APPROVER])
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
 
@@ -1534,7 +1532,8 @@ class TestGetPrivacyRequests:
         api_client.post(url, json=data)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        resp = api_client.get(
+        resp = api_client.request(
+            "GET",
             f"{url}?sort_direction=asc&sort_field=due_date",
             json=data,
             headers=auth_header,
@@ -1544,7 +1543,8 @@ class TestGetPrivacyRequests:
         for i, request in enumerate(asc_response_data):
             assert request["days_left"] == days_left_values[i]
 
-        resp = api_client.get(
+        resp = api_client.request(
+            "GET",
             f"{url}?sort_direction=desc&sort_field=due_date",
             json=data,
             headers=auth_header,
@@ -1829,13 +1829,13 @@ class TestApprovePrivacyRequest:
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_approve_privacy_request_privacy_request_manager_role(
+    def test_approve_privacy_request_approver_role(
         self, _, url, api_client, generate_role_header, privacy_request, db
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
 
-        auth_header = generate_role_header(roles=[PRIVACY_REQUEST_MANAGER])
+        auth_header = generate_role_header(roles=[APPROVER])
         body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200

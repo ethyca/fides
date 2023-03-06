@@ -80,7 +80,12 @@ const TextInput = ({
 
   return (
     <InputGroup size="sm" mr="2">
-      <Input {...props} type={type} pr={isPassword ? "10" : "3"} />
+      <Input
+        {...props}
+        type={type}
+        pr={isPassword ? "10" : "3"}
+        background="white"
+      />
       {isPassword ? (
         <InputRightElement pr="2">
           <IconButton

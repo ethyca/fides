@@ -39,10 +39,11 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "-f",
             INTEGRATION_COMPOSE_FILE,
             "up",
-            "-d",
+            "--wait",
             IMAGE_NAME,
         )
         session.run(*start_command, external=True)
+        session.run(*LOGIN, external=True)
         run_command = (
             "docker",
             "exec",
@@ -60,7 +61,6 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "OKTA_CLIENT_TOKEN",
             "-e",
             "BIGQUERY_CONFIG",
-            "--rm",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
@@ -123,7 +123,6 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "BIGQUERY_KEYFILE_CREDS",
             "-e",
             "BIGQUERY_DATASET",
-            "--rm",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
@@ -154,7 +153,6 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "VAULT_NAMESPACE",
             "-e",
             "VAULT_TOKEN",
-            "--rm",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",

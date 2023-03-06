@@ -4,7 +4,7 @@ from .fides_settings import FidesSettings
 
 
 class AdminUISettings(FidesSettings):
-    """Configuration settings for Analytics variables."""
+    """Configuration settings for the Admin UI."""
 
     enabled: bool = Field(
         default=True, description="Toggle whether the Admin UI is served."

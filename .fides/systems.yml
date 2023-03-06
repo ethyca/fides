@@ -28,7 +28,7 @@ system:
           - fides_db
 
   # System Info
-  - fides_key: privacy_request_fullfillment
+  - fides_key: privacy_request_fulfillment
     name: Fides Privacy Request Fulfillment
     organization_fides_key: default_organization
     description: Privacy request fufillment.
