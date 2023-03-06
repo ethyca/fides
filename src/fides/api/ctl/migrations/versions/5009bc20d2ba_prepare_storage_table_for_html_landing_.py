@@ -1,7 +1,7 @@
 """prepare storage table for html landing page
 
 Revision ID: 5009bc20d2ba
-Revises: d65bbc647083
+Revises: eb1e6ec39b83
 Create Date: 2023-02-23 17:23:46.568232
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "5009bc20d2ba"
-down_revision = "d65bbc647083"
+down_revision = "eb1e6ec39b83"
 branch_labels = None
 depends_on = None
 
