@@ -44,7 +44,7 @@ const TestMessagingProviderConnectionButton = (messagingDetails: any) => {
       }
     }
     if (SMSProvider) {
-      result = await createTestConnectionMessage({
+      const result = await createTestConnectionMessage({
         phone_number: value.phone,
       });
 
