@@ -36,7 +36,7 @@ pyyaml>=5,<6
 redis==3.5.3
 rich-click==1.6.1
 sendgrid==6.9.7
-slowapi==0.1.5
+slowapi==0.1.7
 snowflake-sqlalchemy==1.4.3
 sqlalchemy[asyncio]==1.4.27
 sqlalchemy-citext==1.8.0
