@@ -2,10 +2,18 @@ from typing import Union
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
 from fides.api.ops.schemas.messaging.messaging import (
+    MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsTwilioSMS,
 )
+
+
+class MessagingServiceSecretsMailchimpTransactionalDocs(
+    MessagingServiceSecretsMailchimpTransactional,
+    NoValidationSchema,
+):
+    """The secrets required to connect Mailchimp Transactional, for documentation"""
 
 
 class MessagingSecretsMailgunDocs(MessagingServiceSecretsMailgun, NoValidationSchema):
@@ -25,6 +33,7 @@ class MessagingSecretsTwilioEmailDocs(
 
 
 possible_messaging_secrets = Union[
+    MessagingServiceSecretsMailchimpTransactionalDocs,
     MessagingSecretsMailgunDocs,
     MessagingSecretsTwilioSMSDocs,
     MessagingSecretsTwilioEmailDocs,
