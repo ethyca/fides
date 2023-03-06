@@ -64,6 +64,16 @@ class TestPostMessagingConfig:
         }
 
     @pytest.fixture(scope="function")
+    def payload_mailchimp_transactional(self):
+        return {
+            "name": "mailchimp_transactional_email",
+            "service_type": MessagingServiceType.MAILCHIMP_TRANSACTIONAL.value,
+            "details": {
+                MessagingServiceDetails.EMAIL_FROM.value: "user@example.com",
+            },
+        }
+
+    @pytest.fixture(scope="function")
     def payload_twilio_sms(self):
         return {
             "name": "twilio_sms",
@@ -254,6 +264,39 @@ class TestPostMessagingConfig:
         assert (
             f"Key (service_type)=(MAILGUN) already exists" in response.json()["detail"]
         )
+
+    def test_post_mailgun_transactional_config(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload_mailchimp_transactional,
+        url,
+        generate_auth_header,
+    ):
+        key = "mailchimp_transactional_messaging_config"
+        payload_mailchimp_transactional["key"] = key
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json=payload_mailchimp_transactional,
+        )
+        assert 200 == response.status_code
+
+        response_body = json.loads(response.text)
+        email_config = db.query(MessagingConfig).filter_by(key=key)[0]
+
+        expected_response = {
+            "key": key,
+            "name": "twilio_email",
+            "service_type": MessagingServiceType.TWILIO_EMAIL.value,
+            "details": {
+                MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "test@email.com"
+            },
+        }
+        assert expected_response == response_body
+        email_config.delete(db)
 
     def test_post_twilio_email_config(
         self,
