@@ -416,6 +416,13 @@ export const privacyRequestApi = createApi({
         body: params.details,
       }),
     }),
+    createTestConnectionMessage: build.mutation<any, any>({
+      query: (params) => ({
+        url: `messaging/config/test`,
+        method: "POST",
+        body: params,
+      }),
+    }),
     uploadManualWebhookData: build.mutation<
       any,
       PatchUploadManualWebhookDataRequest
@@ -449,4 +456,5 @@ export const {
   useGetActiveStorageQuery,
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
+  useCreateTestConnectionMessageMutation,
 } = privacyRequestApi;

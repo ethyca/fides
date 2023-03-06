@@ -12,6 +12,8 @@ import {
   useGetMessagingConfigurationDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
+import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
+
 const TwilioEmailConfiguration = () => {
   const [configurationStep, setConfigurationStep] = useState("");
   const { successAlert } = useAlert();
@@ -56,7 +58,7 @@ const TwilioEmailConfiguration = () => {
       handleError(result.error);
     } else {
       successAlert(`Twilio email secrets successfully updated.`);
-      setConfigurationStep("configureTwilioEmailSecrets");
+      setConfigurationStep("testConnection");
     }
   };
 
@@ -112,7 +114,8 @@ const TwilioEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {configurationStep === "configureTwilioEmailSecrets" ? (
+      {configurationStep === "configureTwilioEmailSecrets" ||
+      configurationStep === "testConnection" ? (
         <>
           <Divider mt={10} />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
@@ -157,6 +160,11 @@ const TwilioEmailConfiguration = () => {
             </Formik>
           </Stack>
         </>
+      ) : null}
+      {configurationStep === "testConnection" ? (
+        <TestMessagingProviderConnectionButton
+          messagingDetails={messagingDetails}
+        />
       ) : null}
     </Box>
   );
