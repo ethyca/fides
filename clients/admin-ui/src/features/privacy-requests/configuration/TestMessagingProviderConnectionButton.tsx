@@ -7,21 +7,18 @@ import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import { messagingProviders } from "~/features/privacy-requests/constants";
 import { useCreateTestConnectionMessageMutation } from "~/features/privacy-requests/privacy-requests.slice";
 
-const TestMessagingProviderConnectionButton = ({messagingDetails}: any) => {
+const TestMessagingProviderConnectionButton = ({ messagingDetails }: any) => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [createTestConnectionMessage] =
     useCreateTestConnectionMessageMutation();
 
   const emailProvider =
-    messagingDetails.service_type ===
-      messagingProviders.twilio_email ||
-    messagingDetails.service_type ===
-      messagingProviders.mailgun;
+    messagingDetails.service_type === messagingProviders.twilio_email ||
+    messagingDetails.service_type === messagingProviders.mailgun;
 
   const SMSProvider =
-    messagingDetails.service_type ===
-    messagingProviders.twilio_text;
+    messagingDetails.service_type === messagingProviders.twilio_text;
 
   const initialValues = {
     email: "",
