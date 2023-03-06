@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
-import { useFeatures } from "~/features/common/features";
 import {
   reset,
   selectConnectionTypeState,
@@ -32,9 +31,6 @@ const EditConnection: React.FC = () => {
     undefined as unknown as ConnectorParameterOption
   );
   const [selectedItem, setSelectedItem] = useState("");
-  const {
-    flags: { navV2 },
-  } = useFeatures();
 
   const getTabs = useMemo(
     () => () => {
@@ -114,32 +110,9 @@ const EditConnection: React.FC = () => {
         </Box>
       </Heading>
       <Breadcrumb steps={[STEPS[0], STEPS[2]]} />
-      {navV2 && (
-        <VStack alignItems="stretch" flex="1" gap="18px">
-          <DataTabs data={getTabs()} flexGrow={1} isLazy />
-        </VStack>
-      )}
-      {!navV2 && (
-        <Flex flex="1" gap="18px">
-          <ConfigurationSettingsNav
-            menuOptions={connector?.options || []}
-            onChange={handleNavChange}
-            selectedItem={selectedItem || ""}
-          />
-          {(() => {
-            switch (selectedItem || "") {
-              case ConfigurationSettings.CONNECTOR_PARAMETERS:
-                return <ConnectorParameters />;
-              case ConfigurationSettings.DATASET_CONFIGURATION:
-                return <DatasetConfiguration />;
-              case ConfigurationSettings.DSR_CUSTOMIZATION:
-                return <DSRCustomization />;
-              default:
-                return null;
-            }
-          })()}
-        </Flex>
-      )}
+      <VStack alignItems="stretch" flex="1" gap="18px">
+        <DataTabs data={getTabs()} flexGrow={1} isLazy />
+      </VStack>
     </>
   ) : null;
 };

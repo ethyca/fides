@@ -1,7 +1,6 @@
 import { Box, Button, CloseSolidIcon, Divider, Stack } from "@fidesui/react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features";
 
 import AddSystem from "./AddSystem";
 import AuthenticateScanner from "./AuthenticateScanner";
@@ -12,7 +11,6 @@ import ScanResults from "./ScanResults";
 const ConfigWizardWalkthrough = () => {
   const dispatch = useAppDispatch();
   const step = useAppSelector(selectStep);
-  const features = useFeatures();
 
   const handleCancelSetup = () => {
     dispatch(reset());
@@ -20,22 +18,6 @@ const ConfigWizardWalkthrough = () => {
 
   return (
     <>
-      {!features.flags.navV2 && (
-        <>
-          <Box bg="white">
-            <Button
-              bg="transparent"
-              fontWeight="500"
-              m={2}
-              ml={6}
-              onClick={handleCancelSetup}
-            >
-              <CloseSolidIcon width="17px" /> Cancel setup
-            </Button>
-          </Box>
-          <Divider orientation="horizontal" />
-        </>
-      )}
       <Stack
         direction={["column", "row"]}
         bg="white"

@@ -15,7 +15,6 @@ import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
-import { useFeatures } from "~/features/common/features";
 import { SystemType } from "~/types/api";
 
 import Breadcrumb from "./Breadcrumb";
@@ -41,9 +40,6 @@ const ConfigureConnector: React.FC = () => {
     (o) => o.type === connectionOption?.type
   );
   const [selectedItem, setSelectedItem] = useState(connector?.options[0]);
-  const {
-    flags: { navV2 },
-  } = useFeatures();
 
   const handleConnectionCreated = () => {
     setCanRedirect(true);
@@ -145,43 +141,16 @@ const ConfigureConnector: React.FC = () => {
   return (
     <>
       <Breadcrumb steps={steps} />
-      {navV2 && (
-        <VStack alignItems="stretch" gap="18px">
-          <DataTabs
-            data={getTabs()}
-            flexGrow={1}
-            index={connector?.options.findIndex(
-              (option) => option === selectedItem
-            )}
-            isLazy
-          />
-        </VStack>
-      )}
-      {!navV2 && (
-        <Flex flex="1" gap="18px">
-          <ConfigurationSettingsNav
-            menuOptions={connector?.options || []}
-            onChange={handleNavChange}
-            selectedItem={selectedItem || ""}
-          />
-          {(() => {
-            switch (selectedItem || "") {
-              case ConfigurationSettings.CONNECTOR_PARAMETERS:
-                return (
-                  <ConnectorParameters
-                    onConnectionCreated={handleConnectionCreated}
-                  />
-                );
-              case ConfigurationSettings.DATASET_CONFIGURATION:
-                return <DatasetConfiguration />;
-              case ConfigurationSettings.DSR_CUSTOMIZATION:
-                return <DSRCustomization />;
-              default:
-                return null;
-            }
-          })()}
-        </Flex>
-      )}
+      <VStack alignItems="stretch" gap="18px">
+        <DataTabs
+          data={getTabs()}
+          flexGrow={1}
+          index={connector?.options.findIndex(
+            (option) => option === selectedItem
+          )}
+          isLazy
+        />
+      </VStack>
     </>
   );
 };
