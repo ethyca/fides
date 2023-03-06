@@ -37,7 +37,7 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
-from fides.lib.oauth.roles import ADMIN
+from fides.lib.oauth.roles import OWNER
 
 
 class TestCreateClient:
@@ -432,7 +432,7 @@ class TestAcquireAccessToken:
         assert data["client_id"] == extracted_token[JWE_PAYLOAD_CLIENT_ID]
         assert extracted_token[JWE_PAYLOAD_SCOPES] == SCOPE_REGISTRY
 
-        assert extracted_token[JWE_PAYLOAD_ROLES] == [ADMIN]
+        assert extracted_token[JWE_PAYLOAD_ROLES] == [OWNER]
 
     def test_get_access_token(self, db, url, api_client):
         new_client, secret = ClientDetail.create_client_and_secret(
@@ -567,10 +567,11 @@ class TestReadRoleMapping:
         response_body = json.loads(response.text)
 
         assert 200 == response.status_code
-        assert set(response_body["admin"]) == set(SCOPE_REGISTRY)
+        assert set(response_body["owner"]) == set(SCOPE_REGISTRY)
         assert set(response_body.keys()) == {
-            "admin",
-            "viewer_and_privacy_request_manager",
-            "privacy_request_manager",
+            "owner",
+            "viewer_and_approver",
+            "approver",
             "viewer",
+            "contributor",
         }

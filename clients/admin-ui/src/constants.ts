@@ -109,15 +109,15 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "privacy-request:view_data",
   },
   {
-    privilege: "Create manual webhooks",
+    privilege: "Create manual processes",
     scope: "webhook:create_or_update",
   },
   {
-    privilege: "Read manual webhooks",
+    privilege: "Read manual processes",
     scope: "webhook:read",
   },
   {
-    privilege: "Delete manual webhooks",
+    privilege: "Delete manual processes",
     scope: "webhook:delete",
   },
 ];

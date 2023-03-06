@@ -41,7 +41,7 @@ const SystemOption = ({
       whiteSpace="break-spaces"
       textAlign="left"
     >
-      <Box as="span" display="flex" alignItems="center">
+      <Box as="span" display="flex" alignItems="center" mb={2}>
         {icon}
         <Text fontWeight="semibold" color="gray.700" as="span" ml={3}>
           {label}

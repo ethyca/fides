@@ -22,7 +22,7 @@ const PrivacyRequestsContainer: React.FC = () => {
 
   return (
     <>
-      <Flex>
+      <Flex data-testid="privacy-requests">
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
           Privacy Requests
         </Heading>

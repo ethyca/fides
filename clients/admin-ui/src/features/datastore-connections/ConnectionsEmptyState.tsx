@@ -11,6 +11,7 @@ const ConnectionsEmptyState: React.FC = () => (
     justifyContent="center"
     alignItems="center"
     flexDirection="column"
+    data-testid="connections-empty-state"
   >
     <Text
       color="black"

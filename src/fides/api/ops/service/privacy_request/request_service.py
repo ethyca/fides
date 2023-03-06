@@ -22,6 +22,7 @@ def build_required_privacy_request_kwargs(
     requested_at: Optional[datetime],
     policy_id: str,
     verification_required: bool,
+    authenticated: bool,
 ) -> Dict[str, Any]:
     """Build kwargs required for creating privacy request
 
@@ -30,7 +31,7 @@ def build_required_privacy_request_kwargs(
     """
     status = (
         PrivacyRequestStatus.identity_unverified
-        if verification_required
+        if verification_required and not authenticated
         else PrivacyRequestStatus.pending
     )
     return {
