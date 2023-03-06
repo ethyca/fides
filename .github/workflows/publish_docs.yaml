@@ -32,14 +32,11 @@ jobs:
       - name: Install Docs Requirements
         run: pip install -r docs/fides/requirements.txt
 
-      - name: Install fides
-        run: pip install -e ./[all]
-
       - name: Checkout the gh-pages branches
         run: git fetch origin gh-pages --depth=1
 
       - name: Build docs # Replace this with the `generate_docs` job
-        run: nox -s "docs_build(local)"
+        run: nox -s generate_docs
 
       # This is required by "mike"
       - name: Set the Git Username & Email

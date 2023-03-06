@@ -1,27 +1,14 @@
 """Contains the nox sessions for developing docs."""
 import nox
 
-from constants_nox import CI_ARGS, RUN_NO_DEPS
-from docker_nox import build
-
-
-@nox.session()
-@nox.parametrize(
-    "build_type", [nox.param("local", id="local"), nox.param("ci", id="ci")]
-)
-def docs_build(session: nox.Session, build_type: str) -> None:
-    """Build docs from the source code."""
-    session.notify("teardown")
-    if build_type == "local":
-        build(session, "dev")
-    run_shell = (*RUN_NO_DEPS, "python", "scripts/generate_docs.py", "docs/fides/docs")
-    session.run(*run_shell, external=True)
+from constants_nox import CI_ARGS
+from ci_nox import generate_docs
 
 
 @nox.session()
 def docs_serve(session: nox.Session) -> None:
     """Serve the docs."""
-    docs_build(session, "local")
+    generate_docs(session)
     session.notify("teardown")
     session.run("docker", "compose", "build", "docs", external=True)
     run_shell = (
@@ -42,7 +29,7 @@ def docs_serve(session: nox.Session) -> None:
 @nox.session()
 def docs_check(session: nox.Session) -> None:
     """Check that the docs can build."""
-    docs_build(session, "ci")
+    generate_docs(session)
     session.notify("teardown")
     session.run("docker", "compose", "build", "docs", external=True)
     run_shell = (
