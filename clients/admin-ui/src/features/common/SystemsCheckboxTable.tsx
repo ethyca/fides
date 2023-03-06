@@ -33,6 +33,11 @@ import { System } from "~/types/api";
 export const resolvePath = (object: Record<string, any>, path: string) =>
   path.split(".").reduce((o, p) => (o ? o[p] : undefined), object);
 
+type SystemMeta = {
+  PURPOSE: string;
+  EXPIRATION: string;
+};
+
 // This component is used within a Chakra Td element. Chakra requires a
 // JSX.Element in that context, so all returns in this component need to be wrapped in a fragment.
 /* eslint-disable react/jsx-no-useless-fragment */
@@ -65,25 +70,39 @@ export const SystemTableCell = ({
     return <>{domains}</>;
   }
 
-  if (attribute === "meta"){
-    let cookies = []
-    if(system.meta){
-
-      cookies = Object.keys(system.meta)
+  if (attribute === "meta") {
+    let cookies: string[] = [];
+    if (system.meta) {
+      cookies = Object.keys(system.meta);
+      return (
+        <Table
+          size="sm"
+          variant="unstyled"
+          sx={{
+            tableLayout: "fixed",
+          }}
+        >
+          <Tbody>
+            {cookies.map((cookie) => {
+              // @ts-ignore
+              const systemMeta = system.meta[cookie] as unknown as SystemMeta;
+              const purpose = systemMeta.PURPOSE ? systemMeta.PURPOSE : "-";
+              const expiration = systemMeta.EXPIRATION
+                ? systemMeta.EXPIRATION
+                : "-";
+              return (
+                <Tr key={cookie}>
+                  <Td>{cookie}</Td>
+                  <Td>{purpose}</Td>
+                  <Td>{expiration}</Td>
+                </Tr>
+              );
+            })}
+          </Tbody>
+        </Table>
+      );
     }
-    return <Table size="sm" variant="unstyled" sx={{
-      tableLayout: "fixed"
-    }}>
-      <Tbody>
-      {cookies.map((cookie)=>(
-        <Tr key={cookie} >
-          <Td>{cookie}</Td>
-          <Td>{system.meta[cookie]["PURPOSE"] ? system.meta[cookie]["PURPOSE"] : "-"}</Td>
-          <Td>{system.meta[cookie]["EXPIRATION"] ? system.meta[cookie]["EXPIRATION"] : "-"}</Td>
-        </Tr>
-      ))}
-      </Tbody>
-    </Table>
+    return null;
   }
 
   return <>{resolvePath(system, attribute)}</>;
@@ -124,7 +143,7 @@ export const SystemsCheckboxTable = ({
   if (columns.length === 0) {
     return <Text>No columns selected to display</Text>;
   }
-  const widths = ["20%", "20%", "calc(60% - 15px)"]
+  const widths = ["20%", "20%", "calc(60% - 15px)"];
   return (
     <Table
       size="sm"
@@ -141,7 +160,9 @@ export const SystemsCheckboxTable = ({
             />
           </Th>
           {columns.map((c, i) => (
-            <Th width={widths[i]} key={c.attribute}>{c.name}</Th>
+            <Th width={widths[i]} key={c.attribute}>
+              {c.name}
+            </Th>
           ))}
         </Tr>
       </Thead>
