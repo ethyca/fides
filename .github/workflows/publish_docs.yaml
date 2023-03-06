@@ -38,7 +38,7 @@ jobs:
       - name: Checkout the gh-pages branches
         run: git fetch origin gh-pages --depth=1
 
-      - name: Build docs
+      - name: Build docs # Replace this with the `generate_docs` job
         run: nox -s "docs_build(local)"
 
       # This is required by "mike"
