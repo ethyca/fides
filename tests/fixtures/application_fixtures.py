@@ -126,6 +126,9 @@ integration_secrets = {
         "uri": pydash.get(integration_config, "fides_example.uri"),
         "username": pydash.get(integration_config, "fides_example.username"),
         "password": pydash.get(integration_config, "fides_example.password"),
+        "polling_timeout": pydash.get(
+            integration_config, "fides_example.polling_timeout"
+        ),
     },
 }
 
@@ -1604,6 +1607,7 @@ def test_fides_client(
         fides_connector_example_secrets["uri"],
         fides_connector_example_secrets["username"],
         fides_connector_example_secrets["password"],
+        fides_connector_example_secrets["polling_timeout"]
     )
 
 

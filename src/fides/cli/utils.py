@@ -72,6 +72,12 @@ def check_server_health(server_url: str, verbose: bool = True) -> requests.Respo
     return health_response
 
 
+def compare_application_versions(server_version: str, cli_version: str) -> bool:
+    """Normalize and compare application versions."""
+    normalize_version = lambda v: str(v).replace(".dirty", "", 1)
+    return normalize_version(server_version) == normalize_version(cli_version)
+
+
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""
 
@@ -82,8 +88,7 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         raise SystemExit(1)
 
     server_version = health_response.json()["version"]
-    normalize_version = lambda v: str(v).replace(".dirty", "", 1)
-    if normalize_version(server_version) == normalize_version(cli_version):
+    if compare_application_versions(server_version, cli_version):
         if not quiet:
             echo_green(
                 "Server is reachable and the client/server application versions match."

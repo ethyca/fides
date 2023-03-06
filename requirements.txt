@@ -7,7 +7,7 @@ colorama>=0.4.3
 cryptography==38.0.3
 dask==2022.9.2
 deepdiff==5.8.1
-fastapi[all]==0.82.0
+fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]~= 0.10.0
 fideslang==1.3.3

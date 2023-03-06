@@ -1532,7 +1532,8 @@ class TestGetPrivacyRequests:
         api_client.post(url, json=data)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        resp = api_client.get(
+        resp = api_client.request(
+            "GET",
             f"{url}?sort_direction=asc&sort_field=due_date",
             json=data,
             headers=auth_header,
@@ -1542,7 +1543,8 @@ class TestGetPrivacyRequests:
         for i, request in enumerate(asc_response_data):
             assert request["days_left"] == days_left_values[i]
 
-        resp = api_client.get(
+        resp = api_client.request(
+            "GET",
             f"{url}?sort_direction=desc&sort_field=due_date",
             json=data,
             headers=auth_header,
