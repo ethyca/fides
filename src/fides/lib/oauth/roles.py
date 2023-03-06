@@ -37,6 +37,7 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
+    SYSTEM_MANAGER_READ,
     SYSTEM_READ,
     USER_READ,
     WEBHOOK_READ,
@@ -102,6 +103,7 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ
     SYSTEM_READ,
     MESSAGING_READ,
     WEBHOOK_READ,
+    SYSTEM_MANAGER_READ,
     SAAS_CONFIG_READ,
     USER_READ,
 ]

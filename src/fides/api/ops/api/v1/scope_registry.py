@@ -51,6 +51,7 @@ SAAS_CONFIG = "saas_config"
 SCOPE = "scope"
 STORAGE = "storage"
 SYSTEM = "system"
+SYSTEM_MANAGER = "system_manager"
 TAXONOMY = "taxonomy"
 TRANSFER = "transfer"
 UPDATE = "update"
@@ -184,6 +185,11 @@ SYSTEM_READ = f"{SYSTEM}:{READ}"
 SYSTEM_UPDATE = f"{SYSTEM}:{UPDATE}"
 SYSTEM_DELETE = f"{SYSTEM}:{DELETE}"
 
+
+SYSTEM_MANAGER_READ = f"{SYSTEM_MANAGER}:{READ}"
+SYSTEM_MANAGER_UPDATE = f"{SYSTEM_MANAGER}:{UPDATE}"
+SYSTEM_MANAGER_DELETE = f"{SYSTEM_MANAGER}:{DELETE}"
+
 TAXONOMY_CREATE = f"{TAXONOMY}:{CREATE}"
 TAXONOMY_UPDATE = f"{TAXONOMY}:{UPDATE}"
 TAXONOMY_DELETE = f"{TAXONOMY}:{DELETE}"
@@ -296,6 +302,9 @@ SCOPE_DOCS = {
     SYSTEM_READ: "Read systems",
     SYSTEM_DELETE: "Delete systems",
     SYSTEM_UPDATE: "Update systems",
+    SYSTEM_MANAGER_READ: "Read systems users can manage",
+    SYSTEM_MANAGER_DELETE: "Delete systems user can manage",
+    SYSTEM_MANAGER_UPDATE: "Update systems user can manage",
     TAXONOMY_CREATE: "Create local taxonomy",
     TAXONOMY_DELETE: "Delete local taxonomy",
     TAXONOMY_UPDATE: "Update local taxonomy",
