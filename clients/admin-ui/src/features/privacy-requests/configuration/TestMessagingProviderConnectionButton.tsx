@@ -17,9 +17,11 @@ interface MessagingDetails {
     key: string;
     name: string;
     service_type: string;
-  }
+  };
 }
-const TestMessagingProviderConnectionButton = ({ messagingDetails }: MessagingDetails) => {
+const TestMessagingProviderConnectionButton = ({
+  messagingDetails,
+}: MessagingDetails) => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [createTestConnectionMessage] =
