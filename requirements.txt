@@ -27,7 +27,7 @@ passlib[bcrypt]==1.7.4
 plotly==5.13.1
 psycopg2-binary==2.9.5
 pydantic<1.10.2
-pydash==5.1.1
+pydash==6.0.2
 PyJWT==2.4.0
 pymongo==3.13.0
 PyMySQL==1.0.2
