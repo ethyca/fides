@@ -185,7 +185,6 @@ class MessagingServiceDetails(Enum):
 class MessagingServiceDetailsMailchimpTransactional(BaseModel):
     """The details required to represent a Mailchimp Transactional email configuration."""
 
-    domain: str
     email_from: str
 
     class Config:
