@@ -56,9 +56,7 @@ const Layout = ({
           <NavSideBar />
         </Box>
         <Flex direction="column" flex={1} minWidth={0}>
-          {showNotificationBanner ? (
-            <ConfigurationNotificationBanner />
-          ) : null}
+          {showNotificationBanner ? <ConfigurationNotificationBanner /> : null}
           {children}
         </Flex>
       </Flex>

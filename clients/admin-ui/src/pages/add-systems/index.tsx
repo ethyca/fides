@@ -3,9 +3,7 @@ import { useEffect } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
-import {
-  changeStep,
-} from "~/features/config-wizard/config-wizard.slice";
+import { changeStep } from "~/features/config-wizard/config-wizard.slice";
 import ConfigWizardWalkthrough from "~/features/config-wizard/ConfigWizardWalkthrough";
 
 const ConfigWizard: NextPage = () => {

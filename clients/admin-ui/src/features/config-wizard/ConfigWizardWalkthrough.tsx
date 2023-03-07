@@ -12,12 +12,7 @@ const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
 
   return (
-    <Stack
-      direction={["column", "row"]}
-      bg="white"
-      height="100vh"
-      width="100%"
-    >
+    <Stack direction={["column", "row"]} bg="white" height="100vh" width="100%">
       <Box display="flex" justifyContent="center" w="100%">
         {step === 1 ? <OrganizationInfoForm /> : null}
         {step === 2 ? <AddSystem /> : null}
