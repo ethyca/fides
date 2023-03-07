@@ -193,7 +193,7 @@ human_readable = "Universal Analytics"
 [onesignal]
 config = "data/saas/config/onesignal_config.yml"
 dataset = "data/saas/dataset/onesignal_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/onesignal.svg"
 human_readable = "Onesignal"
 
 [kustomer]
