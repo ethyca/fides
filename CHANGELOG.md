@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.7.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.8.0...main)
+
+## [2.8.0](https://github.com/ethyca/fides/compare/2.7.1...2.8.0)
 
 ### Added
 
@@ -33,6 +35,7 @@ The types of changes are:
 * Custom Field Library Tab [#527](https://github.com/ethyca/fides/pull/2693)
 * Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)
 * Added ConnectorRunner to simplify SaaS connector testing [#1795](https://github.com/ethyca/fides/pull/1795)
+* Adds support for Mailchimp Transactional as a messaging config [#2742](https://github.com/ethyca/fides/pull/2742)
 
 ### Changed
 
@@ -49,6 +52,7 @@ The types of changes are:
 * Update the CLI aesthetics & docstrings [#2703](https://github.com/ethyca/fides/pull/2703)
 * Updates Roles->Scopes Mapping [#2744](https://github.com/ethyca/fides/pull/2744)
 * Return user scopes as an enum, as well as total scopes [#2741](https://github.com/ethyca/fides/pull/2741)
+* Update `MessagingServiceType` enum to be lowercased throughout [#2746](https://github.com/ethyca/fides/pull/2746)
 
 ### Developer Experience
 
