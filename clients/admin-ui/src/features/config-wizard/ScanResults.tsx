@@ -73,7 +73,10 @@ const ScanResults = () => {
   };
 
   const confirmRegisterSelectedSystems = async () => {
-    const response = await upsertSystems(selectedSystems);
+    const updatedSystems = selectedSystems.map((system)=> {
+      return {...system, meta: {}}
+    })
+    const response = await upsertSystems(updatedSystems);
 
     if (isErrorResult(response)) {
       return handleError(response.error);
