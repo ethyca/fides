@@ -23,6 +23,8 @@ class MessagingMethod(Enum):
 class MessagingServiceType(Enum):
     """Enum for messaging service type. Upper-cased in the database"""
 
+    MAILCHIMP_TRANSACTIONAL = "MAILCHIMP_TRANSACTIONAL"
+
     MAILGUN = "MAILGUN"
 
     TWILIO_TEXT = "TWILIO_TEXT"
@@ -40,6 +42,7 @@ class MessagingServiceType(Enum):
 
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
+    MessagingServiceType.MAILCHIMP_TRANSACTIONAL.value,
     MessagingServiceType.MAILGUN.value,
     MessagingServiceType.TWILIO_EMAIL.value,
 )
@@ -167,13 +170,27 @@ class EmailForActionType(BaseModel):
 class MessagingServiceDetails(Enum):
     """Enum for messaging service details"""
 
+    # Generic
+    DOMAIN = "domain"
+    EMAIL_FROM = "email_from"
+
     # Mailgun
     IS_EU_DOMAIN = "is_eu_domain"
     API_VERSION = "api_version"
-    DOMAIN = "domain"
 
     # Twilio Email
     TWILIO_EMAIL_FROM = "twilio_email_from"
+
+
+class MessagingServiceDetailsMailchimpTransactional(BaseModel):
+    """The details required to represent a Mailchimp Transactional email configuration."""
+
+    email_from: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
 
 
 class MessagingServiceDetailsMailgun(BaseModel):
@@ -203,6 +220,9 @@ class MessagingServiceDetailsTwilioEmail(BaseModel):
 class MessagingServiceSecrets(Enum):
     """Enum for message service secrets"""
 
+    # Mailchimp Transactional
+    MAILCHIMP_TRANSACTIONAL_API_KEY = "mailchimp_transactional_api_key"
+
     # Mailgun
     MAILGUN_API_KEY = "mailgun_api_key"
 
@@ -216,8 +236,19 @@ class MessagingServiceSecrets(Enum):
     TWILIO_API_KEY = "twilio_api_key"
 
 
+class MessagingServiceSecretsMailchimpTransactional(BaseModel):
+    """The secrets required to connect to Mailchimp Transactional."""
+
+    mailchimp_transactional_api_key: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
+
+
 class MessagingServiceSecretsMailgun(BaseModel):
-    """The secrets required to connect to mailgun."""
+    """The secrets required to connect to Mailgun."""
 
     mailgun_api_key: str
 
@@ -228,7 +259,7 @@ class MessagingServiceSecretsMailgun(BaseModel):
 
 
 class MessagingServiceSecretsTwilioSMS(BaseModel):
-    """The secrets required to connect to twilio SMS."""
+    """The secrets required to connect to Twilio SMS."""
 
     twilio_account_sid: str
     twilio_auth_token: str
@@ -272,7 +303,11 @@ class MessagingConfigBase(BaseModel):
 
     service_type: MessagingServiceType
     details: Optional[
-        Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
+        Union[
+            MessagingServiceDetailsMailchimpTransactional,
+            MessagingServiceDetailsMailgun,
+            MessagingServiceDetailsTwilioEmail,
+        ]
     ]
 
     class Config:
@@ -333,6 +368,7 @@ class MessagingConfigResponse(MessagingConfigBase):
 
 
 SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
+    MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceSecretsTwilioEmail,

@@ -64,6 +64,16 @@ class TestPostMessagingConfig:
         }
 
     @pytest.fixture(scope="function")
+    def payload_mailchimp_transactional(self):
+        return {
+            "name": "mailchimp_transactional_email",
+            "service_type": MessagingServiceType.MAILCHIMP_TRANSACTIONAL.value,
+            "details": {
+                MessagingServiceDetails.EMAIL_FROM.value: "user@example.com",
+            },
+        }
+
+    @pytest.fixture(scope="function")
     def payload_twilio_sms(self):
         return {
             "name": "twilio_sms",
@@ -142,7 +152,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "value is not a valid enumeration member; permitted: 'MAILGUN', 'TWILIO_TEXT', 'TWILIO_EMAIL'"
+            == "value is not a valid enumeration member; permitted: 'MAILCHIMP_TRANSACTIONAL', 'MAILGUN', 'TWILIO_TEXT', 'TWILIO_EMAIL'"
         )
 
     def test_post_email_config_with_no_key(
@@ -254,6 +264,37 @@ class TestPostMessagingConfig:
         assert (
             f"Key (service_type)=(MAILGUN) already exists" in response.json()["detail"]
         )
+
+    def test_post_mailgun_transactional_config(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload_mailchimp_transactional,
+        url,
+        generate_auth_header,
+    ):
+        key = "mailchimp_transactional_messaging_config"
+        payload_mailchimp_transactional["key"] = key
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json=payload_mailchimp_transactional,
+        )
+        assert 200 == response.status_code
+
+        response_body = json.loads(response.text)
+        email_config = db.query(MessagingConfig).filter_by(key=key)[0]
+
+        expected_response = {
+            "key": key,
+            "name": payload_mailchimp_transactional["name"],
+            "service_type": MessagingServiceType.MAILCHIMP_TRANSACTIONAL.value,
+            "details": {MessagingServiceDetails.EMAIL_FROM.value: "user@example.com"},
+        }
+        assert expected_response == response_body
+        email_config.delete(db)
 
     def test_post_twilio_email_config(
         self,
@@ -543,6 +584,47 @@ class TestPutMessagingConfigSecretTwilioEmail:
         )
 
 
+class TestPutMessagingConfigSecretMailchimpTransactional:
+    @pytest.fixture(scope="function")
+    def url(self, messaging_config_mailchimp_transactional) -> str:
+        return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
+            config_key=messaging_config_mailchimp_transactional.key
+        )
+
+    def test_put_config_secrets(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        messaging_config_mailchimp_transactional,
+    ):
+        key = "key-123456789"
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json={
+                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value: key,
+            },
+        )
+        assert 200 == response.status_code
+
+        db.refresh(messaging_config_mailchimp_transactional)
+
+        assert json.loads(response.text) == {
+            "msg": f"Secrets updated for MessagingConfig with key: {messaging_config_mailchimp_transactional.key}.",
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert (
+            messaging_config_mailchimp_transactional.secrets[
+                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
+            ]
+            == key
+        )
+
+
 class TestPutMessagingConfigSecretTwilioSms:
     @pytest.fixture(scope="function")
     def url(self, messaging_config_twilio_sms) -> str:
@@ -701,7 +783,12 @@ class TestGetMessagingConfigs:
         assert 403 == response.status_code
 
     def test_get_configs(
-        self, db, api_client: TestClient, url, generate_auth_header, messaging_config
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        messaging_config,
     ):
         auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(url, headers=auth_header)
@@ -757,7 +844,11 @@ class TestGetMessagingConfig:
         assert 404 == response.status_code
 
     def test_get_config(
-        self, url, api_client: TestClient, generate_auth_header, messaging_config
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        messaging_config,
     ):
         auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(url, headers=auth_header)
