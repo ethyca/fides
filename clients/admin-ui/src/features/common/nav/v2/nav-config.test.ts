@@ -56,8 +56,8 @@ describe("configureNavGroups", () => {
       config: NAV_CONFIG,
       hasSystems: true,
       userScopes: [
-        ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-        ScopeRegistryEnum.CLI_OBJECTS_READ,
+        ScopeRegistryEnum.SYSTEM_CREATE,
+        ScopeRegistryEnum.SYSTEM_READ,
       ],
     });
 
@@ -84,9 +84,9 @@ describe("configureNavGroups", () => {
       hasPlus: true,
       userScopes: [
         ScopeRegistryEnum.DATAMAP_READ,
-        ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-        ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
-        ScopeRegistryEnum.CLI_OBJECTS_READ,
+        ScopeRegistryEnum.SYSTEM_CREATE,
+        ScopeRegistryEnum.SYSTEM_UPDATE,
+        ScopeRegistryEnum.SYSTEM_READ,
       ],
     });
 
@@ -112,7 +112,7 @@ describe("configureNavGroups", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         hasSystems: true,
-        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
+        userScopes: [ScopeRegistryEnum.SYSTEM_READ],
       });
 
       expect(navGroups[0]).toMatchObject({
@@ -163,8 +163,8 @@ describe("configureNavGroups", () => {
         hasSystems: true,
         userScopes: [
           ScopeRegistryEnum.DATAMAP_READ,
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_READ,
+          ScopeRegistryEnum.SYSTEM_CREATE,
+          ScopeRegistryEnum.SYSTEM_READ,
         ],
       });
 
@@ -194,9 +194,9 @@ describe("findActiveNav", () => {
     hasConnections: true,
     userScopes: [
       ScopeRegistryEnum.DATAMAP_READ,
-      ScopeRegistryEnum.CLI_OBJECTS_READ,
-      ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
-      ScopeRegistryEnum.CLI_OBJECTS_CREATE,
+      ScopeRegistryEnum.SYSTEM_READ,
+      ScopeRegistryEnum.SYSTEM_UPDATE,
+      ScopeRegistryEnum.SYSTEM_CREATE,
       ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
     ],
   });
@@ -265,12 +265,12 @@ describe("findActiveNav", () => {
       {
         path: "/add-systems",
         expected: true,
-        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
+        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
       },
       {
         path: "/privacy-requests",
         expected: false,
-        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
+        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
       },
       {
         path: "/privacy-requests",

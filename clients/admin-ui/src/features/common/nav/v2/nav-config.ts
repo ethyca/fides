@@ -62,29 +62,29 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "View systems",
         path: "/system",
-        scopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
+        scopes: [ScopeRegistryEnum.SYSTEM_READ],
       },
       {
         title: "Add systems",
         path: "/add-systems",
         scopes: [
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
+          ScopeRegistryEnum.SYSTEM_CREATE,
+          ScopeRegistryEnum.SYSTEM_UPDATE,
         ],
       },
       {
         title: "Manage datasets",
         path: "/dataset",
         scopes: [
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
+          ScopeRegistryEnum.SYSTEM_CREATE,
+          ScopeRegistryEnum.SYSTEM_UPDATE,
         ],
       },
       {
         title: "Classify systems",
         path: "/classify-systems",
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.CLI_OBJECTS_UPDATE], // temporary scope until we decide what to do here
+        scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
       },
     ],
   },
@@ -94,7 +94,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Taxonomy",
         path: "/taxonomy",
-        scopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
+        scopes: [ScopeRegistryEnum.SYSTEM_READ],
       },
       {
         title: "Users",

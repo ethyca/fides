@@ -1,20 +1,12 @@
-import {
-  Button,
-  ButtonGroup,
-  Flex,
-  Spinner,
-  Stack,
-  Text,
-  useToast,
-} from "@fidesui/react";
-import { Form, Formik } from "formik";
+import {Button, ButtonGroup, Flex, Spinner, Stack, Text, useToast,} from "@fidesui/react";
+import {Form, Formik} from "formik";
 import NextLink from "next/link";
 
-import { useAppSelector } from "~/app/hooks";
-import { USER_MANAGEMENT_ROUTE } from "~/constants";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { RoleRegistry } from "~/types/api";
+import {useAppSelector} from "~/app/hooks";
+import {USER_MANAGEMENT_ROUTE} from "~/constants";
+import {getErrorMessage, isErrorResult} from "~/features/common/helpers";
+import {errorToastParams, successToastParams} from "~/features/common/toast";
+import {RoleRegistryEnum} from "~/types/api";
 
 import QuestionTooltip from "../common/QuestionTooltip";
 import RoleOption from "./RoleOption";
@@ -25,21 +17,20 @@ import {
 } from "./user-management.slice";
 
 const defaultInitialValues = {
-  roles: [] as RoleRegistry[],
+  roles: [] as RoleRegistryEnum[],
 };
 
 export type FormValues = typeof defaultInitialValues;
 
 const ROLES = [
-  { label: "Owner", roleKey: RoleRegistry.ADMIN },
-  // TODO: update once the backend has this
-  //   { label: "Contributor", roleKey: RoleRegistry.ADMIN },
-  { label: "Viewer", roleKey: RoleRegistry.VIEWER },
+  { label: "Owner", roleKey: RoleRegistryEnum.OWNER },
+  { label: "Contributor", roleKey: RoleRegistryEnum.CONTRIBUTOR },
+  { label: "Viewer", roleKey: RoleRegistryEnum.VIEWER },
   {
     label: "Viewer & Approver",
-    roleKey: RoleRegistry.VIEWER_AND_PRIVACY_REQUEST_MANAGER,
+    roleKey: RoleRegistryEnum.VIEWER_AND_APPROVER,
   },
-  { label: "Approver", roleKey: RoleRegistry.PRIVACY_REQUEST_MANAGER },
+  { label: "Approver", roleKey: RoleRegistryEnum.APPROVER },
 ];
 
 const PermissionsForm = () => {
