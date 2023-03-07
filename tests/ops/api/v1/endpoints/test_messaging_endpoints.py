@@ -289,11 +289,9 @@ class TestPostMessagingConfig:
 
         expected_response = {
             "key": key,
-            "name": "twilio_email",
-            "service_type": MessagingServiceType.TWILIO_EMAIL.value,
-            "details": {
-                MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "test@email.com"
-            },
+            "name": payload_mailchimp_transactional["name"],
+            "service_type": MessagingServiceType.MAILCHIMP_TRANSACTIONAL.value,
+            "details": {MessagingServiceDetails.EMAIL_FROM.value: "test@email.com"},
         }
         assert expected_response == response_body
         email_config.delete(db)
