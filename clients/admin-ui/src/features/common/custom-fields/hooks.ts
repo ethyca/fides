@@ -39,12 +39,14 @@ export const useCustomFields = ({
     useGetCustomFieldDefinitionsByResourceTypeQuery(resourceType, {
       skip: !isEnabled,
     });
-  const customFieldsQuery = useGetCustomFieldsForResourceQuery(
-    resourceFidesKey ?? "",
-    {
-      skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
-    }
-  );
+  const {
+    data,
+    isLoading: isCustomFieldIsLoading,
+    error,
+    isError,
+  } = useGetCustomFieldsForResourceQuery(resourceFidesKey ?? "", {
+    skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
+  });
 
   // The `fixedCacheKey` options will ensure that components referencing the same resource will
   // share mutation info. That won't be too useful, though, because `upsertCustomField` can issue
@@ -57,7 +59,7 @@ export const useCustomFields = ({
   const isLoading =
     allAllowListQuery.isLoading ||
     customFieldDefinitionsQuery.isLoading ||
-    customFieldsQuery.isLoading ||
+    isCustomFieldIsLoading ||
     upsertCustomFieldMutationResult.isLoading ||
     deleteCustomFieldMutationResult.isLoading;
 
@@ -91,16 +93,18 @@ export const useCustomFields = ({
     [activeCustomFieldDefinition]
   );
 
-  const definitionIdToCustomField = useMemo(
-    () =>
-      new Map(
-        filterWithId(customFieldsQuery.data).map((fd) => [
-          fd.custom_field_definition_id,
-          fd,
-        ])
-      ),
-    [customFieldsQuery]
-  );
+  const definitionIdToCustomField = useMemo(() => {
+    console.log("Error: ", error);
+    if (isError && error.status === 404) {
+      return new Map();
+    }
+    const newMap = new Map(
+      filterWithId(data).map((fd) => [fd.custom_field_definition_id, fd])
+    );
+    console.log("newMap: ", newMap);
+    console.log("customFieldsQuery: ", data);
+    return newMap;
+  }, [data, isError]);
 
   const sortedCustomFieldDefinitionIds = useMemo(() => {
     const ids = [...idToCustomFieldDefinition.keys()];
