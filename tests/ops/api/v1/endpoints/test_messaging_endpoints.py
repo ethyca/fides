@@ -291,7 +291,7 @@ class TestPostMessagingConfig:
             "key": key,
             "name": payload_mailchimp_transactional["name"],
             "service_type": MessagingServiceType.MAILCHIMP_TRANSACTIONAL.value,
-            "details": {MessagingServiceDetails.EMAIL_FROM.value: "test@email.com"},
+            "details": {MessagingServiceDetails.EMAIL_FROM.value: "user@example.com"},
         }
         assert expected_response == response_body
         email_config.delete(db)
