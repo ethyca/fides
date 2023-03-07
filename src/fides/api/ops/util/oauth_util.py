@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
-from typing import Callable
+from typing import Any, Callable, Dict, List
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
@@ -16,23 +16,23 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
 
 from fides.api.ops.api.deps import get_db
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.exceptions import AuthenticationError, AuthorizationError
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
+from fides.lib.oauth.roles import get_scopes_from_roles
 from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 
-CONFIG = get_config()
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
 
@@ -141,7 +141,11 @@ async def get_root_client(
     This function is primarily used to let users bypass endpoint authorization
     """
     client = ClientDetail.get(
-        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
+        db,
+        object_id=client_id,
+        config=CONFIG,
+        scopes=CONFIG.security.root_user_scopes,
+        roles=CONFIG.security.root_user_roles,
     )
     if not client:
         logger.debug("Auth token belongs to an invalid client_id.")
@@ -156,7 +160,7 @@ async def verify_oauth_client(
 ) -> ClientDetail:
     """
     Verifies that the access token provided in the authorization header contains
-    the necessary scopes specified by the caller. Yields a 403 forbidden error
+    the necessary scopes or roles specified by the caller. Yields a 403 forbidden error
     if not.
 
     NOTE: This function may be overwritten in `main.py` when changing
@@ -185,37 +189,101 @@ async def verify_oauth_client(
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
 
-    assigned_scopes = token_data[JWE_PAYLOAD_SCOPES]
-    if not set(security_scopes.scopes).issubset(assigned_scopes):
-        scopes_required = ",".join(security_scopes.scopes)
-        scopes_provided = ",".join(assigned_scopes)
-        logger.debug(
-            "Auth token missing required scopes: {}. Scopes provided: {}.",
-            scopes_required,
-            scopes_provided,
-        )
-        raise AuthorizationError(detail="Not Authorized for this action")
-
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
     if not client_id:
         logger.debug("No client_id included in auth token.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
-    # scopes param is only used if client is root client, otherwise we use the client's associated scopes
+    # scopes/roles param is only used if client is root client, otherwise we use the client's associated scopes
     client = ClientDetail.get(
-        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
+        db,
+        object_id=client_id,
+        config=CONFIG,
+        scopes=CONFIG.security.root_user_scopes,
+        roles=CONFIG.security.root_user_roles,
     )
 
     if not client:
         logger.debug("Auth token belongs to an invalid client_id.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
-    if not set(assigned_scopes).issubset(set(client.scopes)):
+    if not has_permissions(
+        token_data=token_data, client=client, endpoint_scopes=security_scopes
+    ):
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    return client
+
+
+def has_permissions(
+    token_data: Dict[str, Any], client: ClientDetail, endpoint_scopes: SecurityScopes
+) -> bool:
+    """Does the user have the necessary scopes, either via a scope they were assigned directly,
+    or a scope associated with their role(s)?"""
+    has_direct_scope: bool = _has_direct_scopes(
+        token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
+    )
+    has_role: bool = _has_scope_via_role(
+        token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
+    )
+    return has_direct_scope or has_role
+
+
+def _has_scope_via_role(
+    token_data: Dict[str, Any], client: ClientDetail, endpoint_scopes: SecurityScopes
+) -> bool:
+    """Does the user have the required scopes indirectly via a role and is the token valid?"""
+    assigned_roles: List[str] = token_data.get(JWE_PAYLOAD_ROLES, [])
+    associated_scopes: List[str] = get_scopes_from_roles(assigned_roles)
+
+    if not _has_correct_scopes(
+        user_scopes=associated_scopes, endpoint_scopes=endpoint_scopes
+    ):
+        return False
+
+    if not set(assigned_roles).issubset(set(client.roles or [])):
+        # If the roles on the token are not a subset of the roles available
+        # one the associated oauth client, this token is not valid
+        logger.debug("Client no longer allowed to issue these roles.")
+        return False
+
+    return True
+
+
+def _has_direct_scopes(
+    token_data: Dict[str, Any], client: ClientDetail, endpoint_scopes: SecurityScopes
+) -> bool:
+    """Does the token have the required scopes directly and is the token still valid?"""
+    assigned_scopes: List[str] = token_data.get(JWE_PAYLOAD_SCOPES, [])
+
+    if not _has_correct_scopes(
+        user_scopes=assigned_scopes, endpoint_scopes=endpoint_scopes
+    ):
+        return False
+
+    if not set(assigned_scopes).issubset(set(client.scopes or [])):
         # If the scopes on the token are not a subset of the scopes available
         # to the associated oauth client, this token is not valid
         logger.debug("Client no longer allowed to issue these scopes.")
-        raise AuthorizationError(detail="Not Authorized for this action")
-    return client
+        return False
+
+    return True
+
+
+def _has_correct_scopes(
+    user_scopes: List[str], endpoint_scopes: SecurityScopes
+) -> bool:
+    """Are the required scopes a subset of the scopes belonging to the user?"""
+    if not set(endpoint_scopes.scopes).issubset(user_scopes):
+        scopes_required = ",".join(endpoint_scopes.scopes)
+        scopes_provided = ",".join(user_scopes)
+        logger.debug(
+            "Auth token missing required scopes: {}. Scopes provided: {}.",
+            scopes_required,
+            scopes_provided,
+        )
+        return False
+    return True
 
 
 # This is a workaround so that we can override CLI-related endpoints and

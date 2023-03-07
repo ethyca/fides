@@ -11,10 +11,8 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from tests.ops.graph.graph_test_util import assert_rows_match
-
-CONFIG = get_config()
 
 
 @pytest.mark.integration_saas

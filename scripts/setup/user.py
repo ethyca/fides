@@ -4,7 +4,7 @@ import requests
 from loguru import logger
 
 from fides.api.ops.api.v1 import urn_registry as urls
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.core.config import CONFIG
 
 from . import constants
 
@@ -14,7 +14,7 @@ def create_user(
     username=constants.FIDES_USERNAME,
     password=constants.FIDES_PASSWORD,
 ):
-    """Adds a user with full permissions"""
+    """Adds a user with full permissions - all scopes and admin role"""
     login_response = requests.post(
         f"{constants.BASE_URL}{urls.LOGIN}",
         headers=auth_header,
@@ -52,7 +52,8 @@ def create_user(
         headers=auth_header,
         json={
             "id": user_id,
-            "scopes": SCOPE_REGISTRY,
+            "scopes": CONFIG.security.root_user_scopes,
+            "roles": CONFIG.security.root_user_roles,
         },
     )
 

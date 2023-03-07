@@ -1,0 +1,13 @@
+{
+  "title": "Privacy center",
+  "description": "Privacy center test configuration",
+  "logo_path": "/logo.svg",
+  "actions": [
+    {
+      "policy_key": "download",
+      "icon_path": "/download.svg",
+      "title": "Download your data",
+      "description": "We will email you a report of the data related to your account."
+    }
+  ]
+}

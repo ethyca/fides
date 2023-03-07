@@ -57,3 +57,4 @@ port=5432
 uri="http://fides:8080"
 username="root_user"
 password="Testpassword1!"
+polling_timeout=1800

@@ -14,10 +14,9 @@ from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
 
-CONFIG = get_config()
 privacy_request = PrivacyRequest(id="234544")
 
 

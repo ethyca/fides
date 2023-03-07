@@ -1,15 +1,17 @@
-"""Contains the groups and setup for the CLI."""
+"""
+Entrypoint for the Fides command-line.
+"""
 from importlib.metadata import version
 from platform import system
 
-import click
+import rich_click as click
 from fideslog.sdk.python.client import AnalyticsClient
 
 import fides
 from fides.cli.utils import check_server
 from fides.core.config import get_config
-from fides.core.user import get_auth_header
 
+from . import cli_formatting
 from .commands.annotate import annotate
 from .commands.core import evaluate, parse, pull, push
 from .commands.crud import delete, get_resource, list_resources
@@ -59,28 +61,28 @@ PACKAGE = "ethyca-fides"
     "--config-path",
     "-f",
     "config_path",
-    default="",
-    help="Path to a configuration file. Use 'fides view-config' to print the config. Not compatible with the 'fides webserver' subcommand.",
+    show_default=True,
+    help="Path to a Fides config file. _Defaults to `.fides/fides.toml`._",
 )
 @click.option(
     "--local",
     is_flag=True,
-    help="Run in 'local_mode'. This mode doesn't make API calls and can be used without the API server/database.",
+    help="Run in `local_mode`. This mode doesn't make API calls and can be used without the API server/database.",
 )
 @click.pass_context
 def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     """
-    The parent group for the Fides CLI.
+    __Command-line tool for the Fides privacy engineering platform.__
+
+    ---
+
+    _Note: The common MANIFESTS_DIR argument _always_ defaults to ".fides/" if not specified._
     """
 
     ctx.ensure_object(dict)
     config = get_config(config_path, verbose=True)
-    try:
-        config.user.auth_header = get_auth_header(verbose=False)
-    except SystemExit:
-        pass
 
-    # Dyanmically add commands to the CLI
+    # Dynamically add commands to the CLI
     cli.commands = LOCAL_COMMAND_DICT
 
     if not (local or config.cli.local_mode):

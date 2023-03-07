@@ -1,11 +1,19 @@
 from json import dumps
 from typing import Generator, List
+from uuid import uuid4
 
 import pytest
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl import sql_models
-from fides.api.ctl.database.crud import delete_resource, list_resource
+from fides.api.ctl.database.crud import (
+    create_resource,
+    delete_resource,
+    get_resource_with_custom_fields,
+    list_resource,
+)
+from fides.api.ctl.utils.errors import QueryError
 from fides.core import api as _api
 from fides.core.config import FidesConfig
 from tests.ctl.types import FixtureRequest
@@ -62,3 +70,81 @@ async def test_cascade_delete_taxonomy_children(
     resources = await list_resource(sql_model, async_session)
     remaining_keys = {resource.fides_key for resource in resources}
     assert len(set(keys).intersection(remaining_keys)) == 0
+
+
+async def test_get_resource_with_custom_field(db, async_session):
+    system_data = {
+        "name": "my system",
+        "registry_id": "1",
+        "system_type": "test",
+        "fides_key": str(uuid4()),
+    }
+
+    system = await create_resource(sql_models.System, system_data, async_session)
+
+    custom_definition_data = {
+        "name": "test1",
+        "description": "test",
+        "field_type": "string",
+        "resource_type": "system",
+        "field_definition": "string",
+    }
+
+    custom_field_definition = sql_models.CustomFieldDefinition.create(
+        db=db, data=custom_definition_data
+    )
+
+    sql_models.CustomField.create(
+        db=db,
+        data={
+            "resource_type": custom_field_definition.resource_type,
+            "resource_id": system.fides_key,
+            "custom_field_definition_id": custom_field_definition.id,
+            "value": ["Test value 1"],
+        },
+    )
+
+    sql_models.CustomField.create(
+        db=db,
+        data={
+            "resource_type": custom_field_definition.resource_type,
+            "resource_id": system.fides_key,
+            "custom_field_definition_id": custom_field_definition.id,
+            "value": ["Test value 2"],
+        },
+    )
+
+    result = await get_resource_with_custom_fields(
+        sql_models.System, system.fides_key, async_session
+    )
+
+    assert result["name"] == system.name
+    assert custom_field_definition.name in result
+    assert result[custom_field_definition.name] == "Test value 1, Test value 2"
+
+
+async def test_get_resource_with_custom_field_no_custom_field(async_session):
+    system_data = {
+        "name": "my system",
+        "registry_id": "1",
+        "system_type": "test",
+        "fides_key": str(uuid4()),
+    }
+
+    system = await create_resource(sql_models.System, system_data, async_session)
+    result = await get_resource_with_custom_fields(
+        sql_models.System, system.fides_key, async_session
+    )
+
+    assert result["name"] == system.name
+
+
+async def test_get_resource_with_custom_field_error(async_session, monkeypatch):
+    async def mock_execute(*args, **kwargs):
+        raise SQLAlchemyError
+
+    monkeypatch.setattr(
+        "fides.api.ctl.database.crud.AsyncSession.execute", mock_execute
+    )
+    with pytest.raises(QueryError):
+        await get_resource_with_custom_fields(sql_models.System, "ABC", async_session)

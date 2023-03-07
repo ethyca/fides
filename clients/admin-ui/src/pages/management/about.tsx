@@ -64,14 +64,27 @@ const About: NextPage = () => {
 
         <Box>
           <Text fontSize="sm">
-            Please visit docs.ethyca.com for more information on these features.
+            Please visit{" "}
+            <Link
+              color="complimentary.500"
+              href="https://docs.ethyca.com/fides/overview"
+              isExternal
+            >
+              docs.ethyca.com
+            </Link>{" "}
+            for more information on these features.
           </Text>
 
           <Text fontSize="sm">
             For questions and feedback, please join us at{" "}
-            <Link href="fidescommunity.slack.com" isExternal>
+            <Link
+              color="complimentary.500"
+              href="https://fidescommunity.slack.com"
+              isExternal
+            >
               fidescommunity.slack.com
             </Link>
+            .
           </Text>
         </Box>
       </Flex>

@@ -5,9 +5,10 @@ Contains all of the SqlAlchemy models for the Fides resources.
 """
 
 from enum import Enum as EnumType
-from typing import Dict
+from typing import Any, Dict, List, Optional
 
 from fideslang.models import Dataset as FideslangDataset
+from pydantic import BaseModel
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
@@ -25,7 +26,7 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG
 from fides.lib.db.base import (  # type: ignore[attr-defined]
     Base,
     ClientDetail,
@@ -33,8 +34,6 @@ from fides.lib.db.base import (  # type: ignore[attr-defined]
     FidesUserPermissions,
 )
 from fides.lib.db.base_class import FidesBase as FideslibBase
-
-CONFIG: FidesConfig = get_config()
 
 
 class FidesBase(FideslibBase):
@@ -286,6 +285,24 @@ class System(Base, FidesBase):
     data_protection_impact_assessment = Column(JSON)
     egress = Column(JSON)
     ingress = Column(JSON)
+
+
+class SystemModel(BaseModel):
+    fides_key: str
+    registry_id: str
+    meta: Optional[Dict[str, Any]]
+    fidesctl_meta: Optional[Dict[str, Any]]
+    system_type: str
+    data_responsibility_title: Optional[str]
+    system_dependencies: Optional[List[str]]
+    joint_controller: Optional[str]
+    third_country_transfers: Optional[List[str]]
+    privacy_declarations: Optional[Dict[str, Any]]
+    administrating_department: Optional[str]
+    data_protection_impact_assessment: Optional[Dict[str, Any]]
+    egress: Optional[Dict[str, Any]]
+    ingress: Optional[Dict[str, Any]]
+    value: Optional[List[Any]]
 
 
 class SystemScans(Base):

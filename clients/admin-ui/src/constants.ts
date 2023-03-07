@@ -109,15 +109,15 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "privacy-request:view_data",
   },
   {
-    privilege: "Create manual webhooks",
+    privilege: "Create manual processes",
     scope: "webhook:create_or_update",
   },
   {
-    privilege: "Read manual webhooks",
+    privilege: "Read manual processes",
     scope: "webhook:read",
   },
   {
-    privilege: "Delete manual webhooks",
+    privilege: "Delete manual processes",
     scope: "webhook:delete",
   },
 ];
@@ -141,4 +141,6 @@ export const CONFIG_WIZARD_ROUTE = "/add-systems";
 export const DATAMAP_ROUTE = "/datamap";
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
+export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE =
+  "/privacy-requests/configure";
 export const SYSTEM_ROUTE = "/system";

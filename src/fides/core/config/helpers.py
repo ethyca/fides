@@ -5,10 +5,8 @@ from pathlib import Path
 from re import compile as regex
 from typing import Any, Dict, List, Union
 
-import toml
 from click import echo
 from loguru import logger
-from pydantic import BaseSettings
 from toml import dump, load
 
 from fides.core.utils import echo_red
@@ -101,58 +99,6 @@ def update_config_file(  # type: ignore
     for key, value in updates.items():
         for subkey, val in value.items():
             echo(f"\tSet {key}.{subkey} = {val}")
-
-
-def create_config_file(
-    config: BaseSettings, fides_directory_location: str = "."
-) -> str:
-    """
-    Creates the .fides/fides.toml file and initializes it, if it doesn't exist.
-
-    Returns the config_path if successful.
-    """
-    # TODO: These important constants should live elsewhere
-    fides_dir_name = ".fides"
-    fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
-    config_file_name = "fides.toml"
-    config_path = f"{fides_dir_path}/{config_file_name}"
-
-    included_values = {
-        "database": {
-            "server",
-            "user",
-            "password",
-            "port",
-            "db",
-        },
-        "logging": {
-            "level",
-            "destination",
-            "serialization",
-        },
-        "cli": {"server_protocol", "server_host", "server_port"},
-    }
-
-    # create the .fides dir if it doesn't exist
-    if not os.path.exists(fides_dir_path):
-        os.mkdir(fides_dir_path)
-        echo(f"Created a '{fides_dir_path}' directory.")
-    else:
-        echo(f"Directory '{fides_dir_path}' already exists.")
-
-    # create a fides.toml config file if it doesn't exist
-    if not os.path.isfile(config_path):
-        with open(config_path, "w", encoding="utf-8") as config_file:
-            config_dict = config.dict(include=included_values)  # type: ignore[arg-type]
-            toml.dump(config_dict, config_file)
-        echo(f"Created a fides config file: {config_path}")
-    else:
-        echo(f"Configuration file already exists: {config_path}")
-
-    echo("To learn more about configuring fides, see:")
-    echo("\thttps://ethyca.github.io/fides/installation/configuration/")
-
-    return config_path
 
 
 def handle_deprecated_fields(settings: Dict[str, Any]) -> Dict[str, Any]:

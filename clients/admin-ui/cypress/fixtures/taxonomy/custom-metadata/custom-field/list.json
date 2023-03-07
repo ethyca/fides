@@ -1,0 +1,14 @@
+[
+  {
+    "resource_id": "user.biometric",
+    "custom_field_definition_id": "id-custom-field-definition-starter-pokemon",
+    "value": "Squirtle",
+    "id": "id-custom-field-starter-pokemon"
+  },
+  {
+    "resource_id": "user.biometric",
+    "custom_field_definition_id": "id-custom-field-definition-pokemon-party",
+    "value": ["Charmander", "Eevee", "Snorlax"],
+    "id": "id-custom-field-pokemon-party"
+  }
+]

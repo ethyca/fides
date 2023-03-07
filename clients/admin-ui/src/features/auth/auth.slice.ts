@@ -6,6 +6,7 @@ import { BASE_URL } from "~/constants";
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { utf8ToB64 } from "~/features/common/utils";
 import { User } from "~/features/user-management/types";
+import { RoleRegistry, ScopeRegistry } from "~/types/api";
 
 import {
   LoginRequest,
@@ -53,6 +54,8 @@ export const selectToken = (state: RootState) => selectAuth(state).token;
 
 export const { login, logout } = authSlice.actions;
 
+type RoleToScopes = Record<RoleRegistry, ScopeRegistry[]>;
+
 // Auth API
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -64,7 +67,7 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Auth"],
+  tagTypes: ["Auth", "Roles"],
   endpoints: (build) => ({
     login: build.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
@@ -81,8 +84,16 @@ export const authApi = createApi({
       }),
       invalidatesTags: () => ["Auth"],
     }),
+    getRolesToScopesMapping: build.query<RoleToScopes, void>({
+      query: () => ({ url: `oauth/role` }),
+      providesTags: ["Roles"],
+    }),
   }),
 });
 
-export const { useLoginMutation, useLogoutMutation } = authApi;
+export const {
+  useLoginMutation,
+  useLogoutMutation,
+  useGetRolesToScopesMappingQuery,
+} = authApi;
 export const { reducer } = authSlice;
