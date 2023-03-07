@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "05a210dba67ab9812b293c9411d588ae" # string
+analytics_id = "18bf6bb2b1aa77920c37b00461c71f6f" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -133,7 +133,8 @@ log_pii = false # boolean
 [notifications] # Configuration settings for Data Subject and/or Data Processor notifications.
 
 # Sets the notification service type used to send notifications.
-# Accepts mailgun, twilio_sms, or twilio_email.
+# Accepts mailchimp_transactional, mailgun, twilio_sms, or
+# twilio_email.
 notification_service_type = "" # string
 
 # When set to True, enables subject notifications upon privacy request

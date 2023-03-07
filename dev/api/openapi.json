@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.1.post0.dev109"
+    "version": "2.7.1.post0.dev110"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10996,6 +10996,9 @@
                 "title": "Unvalidated Messaging Secrets",
                 "anyOf": [
                   {
+                    "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
+                  },
+                  {
                     "$ref": "#/components/schemas/MessagingSecretsMailgunDocs"
                   },
                   {
@@ -11067,6 +11070,9 @@
               "schema": {
                 "title": "Unvalidated Messaging Secrets",
                 "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
+                  },
                   {
                     "$ref": "#/components/schemas/MessagingSecretsMailgunDocs"
                   },
@@ -15097,6 +15103,9 @@
             "title": "Details",
             "anyOf": [
               {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
+              },
+              {
                 "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
               },
               {
@@ -15131,6 +15140,9 @@
             "title": "Details",
             "anyOf": [
               {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
+              },
+              {
                 "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
               },
               {
@@ -15157,6 +15169,9 @@
           "details": {
             "title": "Details",
             "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
+              },
               {
                 "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
               },
@@ -15267,6 +15282,21 @@
         "additionalProperties": false,
         "description": "The secrets required to connect to Twilio sms, for documentation"
       },
+      "MessagingServiceDetailsMailchimpTransactional": {
+        "title": "MessagingServiceDetailsMailchimpTransactional",
+        "required": [
+          "email_from"
+        ],
+        "type": "object",
+        "properties": {
+          "email_from": {
+            "title": "Email From",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The details required to represent a Mailchimp Transactional email configuration."
+      },
       "MessagingServiceDetailsMailgun": {
         "title": "MessagingServiceDetailsMailgun",
         "required": [
@@ -15307,9 +15337,25 @@
         "additionalProperties": false,
         "description": "The details required to represent a Twilio email configuration."
       },
+      "MessagingServiceSecretsMailchimpTransactionalDocs": {
+        "title": "MessagingServiceSecretsMailchimpTransactionalDocs",
+        "required": [
+          "mailchimp_transactional_api_key"
+        ],
+        "type": "object",
+        "properties": {
+          "mailchimp_transactional_api_key": {
+            "title": "Mailchimp Transactional Api Key",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The secrets required to connect Mailchimp Transactional, for documentation"
+      },
       "MessagingServiceType": {
         "title": "MessagingServiceType",
         "enum": [
+          "MAILCHIMP_TRANSACTIONAL",
           "MAILGUN",
           "TWILIO_TEXT",
           "TWILIO_EMAIL"
