@@ -252,7 +252,7 @@ def perform_login(
             user_id=user.id,
         )
     else:
-        # Refresh the client just in case
+        # Refresh the client just in case - for example, scopes and roles were added via the db directly.
         client.scopes = user.permissions.scopes  # type: ignore
         client.roles = user.permissions.roles  # type: ignore
         client.systems = user.system_ids  # type: ignore

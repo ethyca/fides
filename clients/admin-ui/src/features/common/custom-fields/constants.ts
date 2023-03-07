@@ -4,6 +4,7 @@ import { AllowedTypes, ResourceTypes } from "~/types/api";
 export enum TabTypes {
   CREATE_CUSTOM_FIELDS,
   CREATE_CUSTOM_LISTS,
+  CHOOSE_FROM_LIBRARY,
 }
 
 export const FIELD_TYPE_OPTIONS = [

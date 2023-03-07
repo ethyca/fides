@@ -126,7 +126,7 @@ def yotpo_loyalty_dataset_config(
     ctl_dataset.delete(db=db)
 
 
-class YotpoReviewsTestClient:
+class YotpoLoyaltyTestClient:
     def __init__(self, connection_config: ConnectionConfig):
         yotpo_loyalty_secrets = connection_config.secrets
         self.domain = yotpo_loyalty_secrets["domain"]
@@ -161,13 +161,13 @@ class YotpoReviewsTestClient:
 def yotpo_loyalty_test_client(
     yotpo_loyalty_connection_config: ConnectionConfig,
 ) -> Generator:
-    test_client = YotpoReviewsTestClient(yotpo_loyalty_connection_config)
+    test_client = YotpoLoyaltyTestClient(yotpo_loyalty_connection_config)
     yield test_client
 
 
 @pytest.fixture(scope="function")
 def yotpo_loyalty_erasure_data(
-    yotpo_loyalty_test_client: YotpoReviewsTestClient,
+    yotpo_loyalty_test_client: YotpoLoyaltyTestClient,
     yotpo_loyalty_erasure_identity_email,
 ) -> None:
     # create customer

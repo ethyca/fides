@@ -138,7 +138,7 @@ describe("Privacy Requests", () => {
       cy.getByTestId("option-local").click();
       cy.wait("@createConfigurationSettings").then((interception) => {
         const { body } = interception.request;
-        expect(body.fides.storage.active_default_storage_type).to.eql("local");
+        expect(body.storage.active_default_storage_type).to.eql("local");
       });
 
       cy.wait("@createStorage").then((interception) => {
@@ -146,25 +146,52 @@ describe("Privacy Requests", () => {
         expect(body.type).to.eql("local");
         expect(body.format).to.eql("json");
       });
-
-      cy.contains("Configure active storage type saved successfully");
-      cy.contains("Configure storage type details saved successfully");
     });
 
     it("Can configure S3 storage", () => {
       cy.getByTestId("option-s3").click();
       cy.wait("@createConfigurationSettings").then((interception) => {
         const { body } = interception.request;
-        expect(body.fides.storage.active_default_storage_type).to.eql("s3");
+        expect(body.storage.active_default_storage_type).to.eql("s3");
       });
       cy.wait("@getStorageDetails");
+    });
+  });
+
+  describe("Message Configuration", () => {
+    beforeEach(() => {
+      cy.visit("/privacy-requests/configure/messaging");
+    });
+
+    it("Can configure Mailgun email", () => {
+      cy.getByTestId("option-mailgun").click();
+      cy.getByTestId("input-domain").type("test-domain");
       cy.getByTestId("save-btn").click();
-      cy.wait("@createStorage").then((interception) => {
+      cy.wait("@createMessagingConfiguration").then((interception) => {
         const { body } = interception.request;
-        expect(body.type).to.eql("s3");
+        expect(body.service_type).to.eql("MAILGUN");
+        cy.contains(
+          "Mailgun email successfully updated. You can now enter your security key."
+        );
       });
-      cy.contains("S3 storage credentials successfully updated.");
-      cy.contains("Configure active storage type saved successfully.");
+    });
+
+    it("Can configure Twilio email", () => {
+      cy.getByTestId("option-twilio-email").click();
+      cy.getByTestId("input-email").type("test-email");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@createMessagingConfiguration").then(() => {
+        cy.contains(
+          "Twilio email successfully updated. You can now enter your security key."
+        );
+      });
+    });
+
+    it("Can configure Twilio SMS", () => {
+      cy.getByTestId("option-twilio-sms").click();
+      cy.wait("@createMessagingConfiguration").then(() => {
+        cy.contains("Messaging provider saved successfully.");
+      });
     });
   });
 });

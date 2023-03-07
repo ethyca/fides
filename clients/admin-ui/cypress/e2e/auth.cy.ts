@@ -1,5 +1,3 @@
-import { USER_PRIVILEGES } from "~/constants";
-
 describe("User Authentication", () => {
   describe("when the user not logged in", () => {
     it("redirects them to the login page", () => {
@@ -23,11 +21,7 @@ describe("User Authentication", () => {
       cy.fixture("login.json").then((body) => {
         cy.intercept("POST", "/api/v1/login", body).as("postLogin");
         cy.intercept("/api/v1/user/*/permission", {
-          body: {
-            id: body.user_data.id,
-            user_id: body.user_data.id,
-            scopes: USER_PRIVILEGES.map((up) => up.scope),
-          },
+          fixture: "user-management/permissions.json",
         }).as("getUserPermission");
       });
 

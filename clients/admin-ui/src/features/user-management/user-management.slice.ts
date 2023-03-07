@@ -6,7 +6,7 @@ import { utf8ToB64 } from "common/utils";
 import type { RootState } from "~/app/store";
 import { BASE_URL } from "~/constants";
 import { selectToken, selectUser } from "~/features/auth";
-import { ScopeRegistry, System, UserForcePasswordReset } from "~/types/api";
+import { ScopeRegistryEnum, System, UserForcePasswordReset } from "~/types/api";
 
 import {
   User,
@@ -217,7 +217,7 @@ export const selectActiveUserId = createSelector(
   (state) => state.activeUserId
 );
 
-const emptyScopes: ScopeRegistry[] = [];
+const emptyScopes: ScopeRegistryEnum[] = [];
 export const selectThisUsersScopes = createSelector(
   [(RootState) => RootState, selectUser],
   (RootState, user) => {
@@ -227,9 +227,8 @@ export const selectThisUsersScopes = createSelector(
     const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
       RootState
     ).data;
-    // Backend UserPermissions model doesn't automatically type to the same enum
-    // so cast to ScopeRegistry[]
-    return permissions ? (permissions.scopes as ScopeRegistry[]) : emptyScopes;
+
+    return permissions ? permissions.total_scopes : emptyScopes;
   }
 );
 

@@ -18,7 +18,7 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 from fides.api.ctl.database.crud import (
     create_resource,
     delete_resource,
-    get_resource,
+    get_resource_with_custom_fields,
     list_resource,
     update_resource,
     upsert_resources,
@@ -157,7 +157,7 @@ for model_type, fides_model in model_map.items():
     ) -> Dict:
         """Get a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        return await get_resource(sql_model, fides_key, db)
+        return await get_resource_with_custom_fields(sql_model, fides_key, db)
 
     if (
         model_type != "system"

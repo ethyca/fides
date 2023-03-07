@@ -1,5 +1,6 @@
 import {
   Page_UserResponse_,
+  ScopeRegistryEnum,
   UserCreate,
   UserCreateResponse,
   UserPasswordReset,
@@ -48,5 +49,5 @@ export interface UserPermissionsEditParams {
 
 export interface UserPrivileges {
   privilege: string;
-  scope: string;
+  scope: ScopeRegistryEnum;
 }

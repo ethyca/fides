@@ -85,6 +85,10 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("PUT", "/api/v1/storage/default/*/secret", {
     fixture: "/privacy-requests/settings_configuration.json",
   }).as("createStorageSecrets");
+
+  cy.intercept("PUT", "/api/v1/messaging/default", {
+    fixture: "/privacy-requests/messaging_configuration.json",
+  }).as("createMessagingConfiguration");
 };
 
 export const CONNECTION_STRING =

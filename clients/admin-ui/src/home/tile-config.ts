@@ -1,4 +1,4 @@
-import { ScopeRegistry } from "~/types/api";
+import { ScopeRegistryEnum } from "~/types/api";
 
 import { ModuleCardConfig } from "./types";
 
@@ -10,7 +10,7 @@ export const configureTiles = ({
   hasConnections = false,
 }: {
   config: ModuleCardConfig[];
-  userScopes: ScopeRegistry[];
+  userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
   hasSystems?: boolean;
   hasConnections?: boolean;

@@ -5,9 +5,10 @@ Contains all of the SqlAlchemy models for the Fides resources.
 """
 
 from enum import Enum as EnumType
-from typing import Dict
+from typing import Any, Dict, List, Optional
 
 from fideslang.models import Dataset as FideslangDataset
+from pydantic import BaseModel
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
@@ -288,6 +289,24 @@ class System(Base, FidesBase):
     users = relationship(
         "FidesUser", secondary="systemmanager", back_populates="systems"
     )
+
+
+class SystemModel(BaseModel):
+    fides_key: str
+    registry_id: str
+    meta: Optional[Dict[str, Any]]
+    fidesctl_meta: Optional[Dict[str, Any]]
+    system_type: str
+    data_responsibility_title: Optional[str]
+    system_dependencies: Optional[List[str]]
+    joint_controller: Optional[str]
+    third_country_transfers: Optional[List[str]]
+    privacy_declarations: Optional[Dict[str, Any]]
+    administrating_department: Optional[str]
+    data_protection_impact_assessment: Optional[Dict[str, Any]]
+    egress: Optional[Dict[str, Any]]
+    ingress: Optional[Dict[str, Any]]
+    value: Optional[List[Any]]
 
 
 class SystemScans(Base):
