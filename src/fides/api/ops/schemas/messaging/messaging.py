@@ -368,6 +368,7 @@ class MessagingConfigResponse(MessagingConfigBase):
 
 
 SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
+    MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceSecretsTwilioEmail,

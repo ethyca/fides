@@ -33,6 +33,7 @@ The types of changes are:
 * Custom Field Library Tab [#527](https://github.com/ethyca/fides/pull/2693)
 * Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)
 * Added ConnectorRunner to simplify SaaS connector testing [#1795](https://github.com/ethyca/fides/pull/1795)
+* Adds support for Mailchimp Transactional as a messaging config [#2742](https://github.com/ethyca/fides/pull/2742)
 
 ### Changed
 

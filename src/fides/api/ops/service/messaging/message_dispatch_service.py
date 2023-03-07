@@ -366,9 +366,11 @@ def _mailchimp_transactional_dispatcher(
 
     if not messaging_config.details or not messaging_config.secrets:
         logger.error(
-            "Message failed to send. No mailgun config details or secrets supplied."
+            "Message failed to send. No Mailchimp Transactional config details or secrets supplied."
         )
-        raise MessageDispatchException("No mailgun config details or secrets supplied.")
+        raise MessageDispatchException(
+            "No Mailchimp Transactional config details or secrets supplied."
+        )
 
     from_email = messaging_config.details[MessagingServiceDetails.EMAIL_FROM.value]
     data = json.dumps(
