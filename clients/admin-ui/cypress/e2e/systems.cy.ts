@@ -283,8 +283,12 @@ describe("System management page", () => {
         expect(body.joint_controller.name).to.eql(controllerName);
       });
 
-      // add another privacy declaration
+      // Switch to the Data Uses tab
       cy.getByTestId("tab-Data uses").click();
+      // TODO: this is needed to dismiss the "Unsaved Changes" popup. Is that a bug?
+      cy.getByTestId("continue-btn").click()
+
+      // add another privacy declaration
       const secondDataUse = "advertising";
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
