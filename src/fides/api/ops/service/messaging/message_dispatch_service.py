@@ -167,9 +167,9 @@ def dispatch_message(
     logger.info(
         "Retrieving appropriate dispatcher for email service: {}", messaging_service
     )
-    dispatcher: Optional[
-        Callable[[MessagingConfig, Any, Optional[str]], None]
-    ] = _get_dispatcher_from_config_type(message_service_type=messaging_service)
+    dispatcher: Optional[function] = _get_dispatcher_from_config_type(
+        message_service_type=messaging_service
+    )
     if not dispatcher:
         logger.error(
             "Dispatcher has not been implemented for message service type: {}",
@@ -186,7 +186,7 @@ def dispatch_message(
     if subject_override and isinstance(message, EmailForActionType):
         message.subject = subject_override
 
-    dispatcher(
+    dispatcher(  # type: ignore
         messaging_config,
         message,
         to_identity.email
@@ -342,7 +342,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
 
 def _get_dispatcher_from_config_type(
     message_service_type: MessagingServiceType,
-) -> Optional[Callable[[MessagingConfig, Any, Optional[str]], None]]:
+) -> Optional[function]:
     """Determines which dispatcher to use based on message service type"""
     handler = {
         MessagingServiceType.MAILGUN: _mailgun_dispatcher,
@@ -350,9 +350,7 @@ def _get_dispatcher_from_config_type(
         MessagingServiceType.TWILIO_TEXT: _twilio_sms_dispatcher,
         MessagingServiceType.TWILIO_EMAIL: _twilio_email_dispatcher,
     }
-    func: Optional[Callable[[MessagingConfig, Any, Optional[str]], None]] = handler.get(
-        message_service_type
-    )
+    func = handler.get(message_service_type)
     return func
 
 
