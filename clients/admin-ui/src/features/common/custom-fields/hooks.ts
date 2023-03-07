@@ -94,17 +94,15 @@ export const useCustomFields = ({
   );
 
   const definitionIdToCustomField = useMemo(() => {
-    console.log("Error: ", error);
-    if (isError && error.status === 404) {
+    // @ts-ignore
+    if (isError && error?.status === 404) {
       return new Map();
     }
     const newMap = new Map(
       filterWithId(data).map((fd) => [fd.custom_field_definition_id, fd])
     );
-    console.log("newMap: ", newMap);
-    console.log("customFieldsQuery: ", data);
     return newMap;
-  }, [data, isError]);
+  }, [data, isError, error]);
 
   const sortedCustomFieldDefinitionIds = useMemo(() => {
     const ids = [...idToCustomFieldDefinition.keys()];
