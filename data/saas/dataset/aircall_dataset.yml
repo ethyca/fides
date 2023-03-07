@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: aircall_new
-    description: A sample dataset representing the Aircall_new connector for Fides
+    name: aircall
+    description: A sample dataset representing the Aircall connector for Fides
     collections:
       - name: customer
         fields:

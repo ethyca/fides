@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Aircall_new SaaS Config
-  type: aircall_new
-  description: A sample schema representing the Aircall_new connector for Fides
+  name: Aircall SaaS Config
+  type: aircall
+  description: A sample schema representing the Aircall connector for Fides
   version: 0.1.0
 
   connector_params:
@@ -13,17 +13,16 @@ saas_config:
   client_config:
     protocol: https
     host: <domain>
-    # authentication:
-    #   strategy: basic
-    #   configuration:
-    #     username: <api_token>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+          - name: Authorization
+            value: Basic <api_token>
 
   test_request:
     method: GET
     path: /v1/contacts/
-    headers:
-      - name: Authorization
-        value: Basic <api_token>
     param_values:
       - name: api_token
         connector_param: api_token
@@ -34,9 +33,6 @@ saas_config:
         read:
           method: GET
           path: /v1/users/<email>
-          headers:
-            - name: Authorization
-              value: Basic <api_token>
           data_path: user
           param_values:
             - name: email
@@ -48,9 +44,6 @@ saas_config:
         read:
           method: GET
           path: /v1/contacts/search
-          headers:
-            - name: Authorization
-              value: Basic <api_token>
           query_params:
             - name: email
               value: <email>
@@ -63,9 +56,6 @@ saas_config:
         update:
           method: POST
           path: /v1/contacts/<contact_id>
-          headers:
-            - name: Authorization
-              value: Basic <api_token>
           body: |
             {
                <masked_object_fields> 
@@ -81,9 +71,6 @@ saas_config:
         delete:
           method: DELETE
           path: /v1/contacts/<contact_id>
-          headers:
-            - name: Authorization
-              value: Basic <api_token>
           param_values:
             - name: contact_id
               references:
@@ -97,9 +84,6 @@ saas_config:
         read:
           method: GET
           path: /v1/calls/search
-          headers:
-            - name: Authorization
-              value: Basic <api_token>
           query_params:
             - name: user_id
               value: <customer_id>
@@ -115,9 +99,6 @@ saas_config:
         delete:
           method: DELETE
           path: /v1/calls/<calls_id>/recording
-          headers:
-            - name: Authorization
-              value: Basic <api_token>
           param_values:
             - name: calls_id
               references:
