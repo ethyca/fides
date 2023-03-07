@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.7.1.post0.dev110"
+    "version": "2.7.1.post0.dev111"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10908,7 +10908,7 @@
                 },
                 "example": {
                   "config_status": "configured",
-                  "detail": "Active default messaging service of type MAILGUN is fully configured"
+                  "detail": "Active default messaging service of type mailgun is fully configured"
                 }
               }
             }
@@ -10996,9 +10996,6 @@
                 "title": "Unvalidated Messaging Secrets",
                 "anyOf": [
                   {
-                    "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
-                  },
-                  {
                     "$ref": "#/components/schemas/MessagingSecretsMailgunDocs"
                   },
                   {
@@ -11006,6 +11003,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/MessagingSecretsTwilioEmailDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
                   }
                 ]
               }
@@ -11071,9 +11071,6 @@
                 "title": "Unvalidated Messaging Secrets",
                 "anyOf": [
                   {
-                    "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
-                  },
-                  {
                     "$ref": "#/components/schemas/MessagingSecretsMailgunDocs"
                   },
                   {
@@ -11081,6 +11078,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/MessagingSecretsTwilioEmailDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
                   }
                 ]
               }
@@ -15103,13 +15103,13 @@
             "title": "Details",
             "anyOf": [
               {
-                "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
-              },
-              {
                 "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
               },
               {
                 "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
               }
             ]
           },
@@ -15140,13 +15140,13 @@
             "title": "Details",
             "anyOf": [
               {
-                "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
-              },
-              {
                 "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
               },
               {
                 "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
               }
             ]
           }
@@ -15170,13 +15170,13 @@
             "title": "Details",
             "anyOf": [
               {
-                "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
-              },
-              {
                 "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
               },
               {
                 "$ref": "#/components/schemas/MessagingServiceDetailsTwilioEmail"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
               }
             ]
           },
@@ -15355,10 +15355,10 @@
       "MessagingServiceType": {
         "title": "MessagingServiceType",
         "enum": [
-          "MAILCHIMP_TRANSACTIONAL",
-          "MAILGUN",
-          "TWILIO_TEXT",
-          "TWILIO_EMAIL"
+          "mailgun",
+          "twilio_text",
+          "twilio_email",
+          "mailchimp_transactional"
         ],
         "description": "Enum for messaging service type. Upper-cased in the database"
       },
