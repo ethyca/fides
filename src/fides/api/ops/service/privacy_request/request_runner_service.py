@@ -82,13 +82,11 @@ from fides.api.ops.util.cache import (
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.db.session import get_db_session
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.schemas.base_class import BaseSchema
-
-CONFIG = get_config()
 
 
 class ManualWebhookResults(BaseSchema):
@@ -555,7 +553,9 @@ def initiate_privacy_request_completion_email(
             to_identity=to_identity,
             service_type=config_proxy.notifications.notification_service_type,
             message_body_params=AccessRequestCompleteBodyParams(
-                download_links=access_result_urls
+                download_links=access_result_urls,
+                subject_request_download_time_in_days=CONFIG.security.subject_request_download_link_ttl_seconds
+                / 86400,
             ),
         )
     if policy.get_rules_for_action(action_type=ActionType.erasure):

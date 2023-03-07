@@ -10,8 +10,8 @@ from os import getenv
 from platform import system
 from typing import Any, Callable, Dict, Optional, Union
 
-import click
 import requests
+import rich_click as click
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
@@ -20,7 +20,6 @@ from fideslog.sdk.python.utils import (
     EMAIL_PROMPT,
     FIDESCTL_CLI,
     OPT_OUT_COPY,
-    OPT_OUT_PROMPT,
     ORGANIZATION_PROMPT,
     generate_client_id,
 )
@@ -42,7 +41,7 @@ from fides.core.config.credentials_settings import (
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.core.config.helpers import get_config_from_file, update_config_file
+from fides.core.config.helpers import get_config_from_file
 from fides.core.config.utils import get_dev_mode
 from fides.core.utils import check_response, echo_green, echo_red
 
@@ -73,6 +72,12 @@ def check_server_health(server_url: str, verbose: bool = True) -> requests.Respo
     return health_response
 
 
+def compare_application_versions(server_version: str, cli_version: str) -> bool:
+    """Normalize and compare application versions."""
+    normalize_version = lambda v: str(v).replace(".dirty", "", 1)
+    return normalize_version(server_version) == normalize_version(cli_version)
+
+
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""
 
@@ -83,8 +88,7 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         raise SystemExit(1)
 
     server_version = health_response.json()["version"]
-    normalize_version = lambda v: str(v).replace(".dirty", "", 1)
-    if normalize_version(server_version) == normalize_version(cli_version):
+    if compare_application_versions(server_version, cli_version):
         if not quiet:
             echo_green(
                 "Server is reachable and the client/server application versions match."
@@ -144,70 +148,50 @@ def register_user(config: FidesConfig, email: str, organization: str) -> None:
     )
 
 
-def check_and_update_analytics_config(
-    config: FidesConfig, config_path: str
-) -> FidesConfig:
+def request_analytics_consent(config: FidesConfig, opt_in: bool = False) -> FidesConfig:
     """
-    Verify that the analytics opt-out value is populated. If not,
-    prompt the user to opt-in to analytics and update the config
-    file with their preferences if needed.
+    Request the user's consent for analytics collection.
 
-    NOTE: This doesn't handle the case where we've collected consent for this
-    CLI instance, but are connected to a server for the first time that is
-    unregistered. This *should* be something we can detect and then
-    "re-prompt" the user for their email/org information, but right
-    now a lot of our test automation runs headless and this kind of
-    prompt can't be skipped otherwise.
+    This function should only be called when specifically wanting to ask
+    for the user's consent, otherwise it will ask repeatedly for consent
+    unless they've opted in.
     """
 
-    config_updates: Dict[str, Dict] = {}
-    if config.user.analytics_opt_out is None:
-        click.echo(OPT_OUT_COPY)
-        config.user.analytics_opt_out = bool(
-            input(OPT_OUT_PROMPT + "\n").lower() == "n"
+    analytics_env_var = getenv("FIDES__USER__ANALYTICS_OPT_OUT")
+    if analytics_env_var and analytics_env_var.lower() != "false":
+        return config
+
+    if analytics_env_var and analytics_env_var.lower() == "true":
+        opt_in = True
+
+    # Otherwise, ask for consent
+    print(OPT_OUT_COPY)
+    if not opt_in:
+        config.user.analytics_opt_out = not click.confirm(
+            "Opt-in to anonymous usage analytics?"
         )
+    else:
+        config.user.analytics_opt_out = opt_in
 
-        config_updates.update(user={"analytics_opt_out": config.user.analytics_opt_out})
-
-        # If we've not opted out, attempt to register the user if they are
-        # currently connected to a Fides server
-        if config.user.analytics_opt_out is False:
-            server_url = str(config.cli.server_url) or ""
-            try:
-                check_server_health(server_url, verbose=False)
-                should_attempt_registration = not is_user_registered(config)
-            except SystemExit:
-                should_attempt_registration = False
-
-            if should_attempt_registration:
-                email = input(EMAIL_PROMPT)
-                organization = input(ORGANIZATION_PROMPT)
-                if email and organization:
-                    register_user(config, email, organization)
-
-            # Either way, thank the user for their opt-in for analytics!
-            click.echo(CONFIRMATION_COPY)
-
-    # Update the analytics ID in the config file if necessary
-    is_analytics_id_config_empty = get_config_from_file(
-        config_path,
-        "cli",
-        "analytics_id",
-    ) in ("", None)
-    is_analytics_id_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
-    if (
-        not config.user.analytics_opt_out
-        and is_analytics_id_config_empty
-        and not is_analytics_id_env_var_set
-    ):
-        config_updates.update(cli={"analytics_id": config.cli.analytics_id})
-
-    if len(config_updates) > 0:
+    # If we've not opted out, attempt to register the user if they are
+    # currently connected to a Fides server
+    if not config.user.analytics_opt_out:
+        server_url = str(config.cli.server_url) or ""
         try:
-            update_config_file(config_updates, config_path)
-        except FileNotFoundError as err:
-            echo_red(f"Failed to update config file ({config_path}): {err.strerror}")
-            click.echo("Run 'fides init' to create a configuration file.")
+            check_server_health(server_url, verbose=False)
+            should_attempt_registration = not is_user_registered(config)
+        except SystemExit:
+            should_attempt_registration = False
+
+        if should_attempt_registration:
+            email = input(EMAIL_PROMPT)
+            organization = input(ORGANIZATION_PROMPT)
+            if email and organization:
+                register_user(config, email, organization)
+
+        # Either way, thank the user for their opt-in for analytics!
+        click.echo(CONFIRMATION_COPY)
+
     return config
 
 

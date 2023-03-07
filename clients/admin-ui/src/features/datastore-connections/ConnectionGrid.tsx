@@ -57,6 +57,7 @@ const ConnectionGrid: React.FC<ConnectionGridProps> = ({
               ? "0.5px"
               : undefined
           }
+          data-testid="connection-grid"
         >
           <SimpleGrid columns={columns}>
             {parent.map((child) => (

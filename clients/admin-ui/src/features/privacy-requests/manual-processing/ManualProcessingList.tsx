@@ -229,7 +229,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
                     <Td colSpan={3} pl="0">
                       <Center>
                         <Text>
-                          You don&lsquo;t have any Manual Webhook connections
+                          You don&lsquo;t have any Manual Process connections
                           set up yet.
                         </Text>
                       </Center>

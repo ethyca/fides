@@ -146,13 +146,13 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
-CONFIG = get_config()
+
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
@@ -1633,6 +1633,7 @@ def create_privacy_request_func(
             privacy_request_data.requested_at,
             policy.id,
             config_proxy.execution.subject_identity_verification_required,
+            authenticated,
         )
         for field in optional_fields:
             attr = getattr(privacy_request_data, field)
@@ -1676,7 +1677,7 @@ def create_privacy_request_func(
                     privacy_request_data.identity,
                     config_proxy.notifications.notification_service_type,
                 )
-            if not CONFIG.execution.require_manual_request_approval:
+            if not config_proxy.execution.require_manual_request_approval:
                 AuditLog.create(
                     db=db,
                     data={

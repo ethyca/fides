@@ -27,7 +27,10 @@ class TestPatchApplicationConfig:
                 "send_request_receipt_notification": True,
                 "send_request_review_notification": True,
             },
-            "execution": {"subject_identity_verification_required": True},
+            "execution": {
+                "subject_identity_verification_required": True,
+                "require_manual_request_approval": True,
+            },
         }
 
     def test_patch_application_config_unauthenticated(
@@ -326,7 +329,8 @@ class TestGetApplicationConfigApiSet:
 
         # then we test that we can GET them
         auth_header = generate_auth_header([scopes.CONFIG_READ])
-        response = api_client.get(
+        response = api_client.request(
+            "GET",
             url,
             headers=auth_header,
             params={"api_set": True},
@@ -383,7 +387,10 @@ class TestDeleteApplicationConfig:
                 "send_request_receipt_notification": True,
                 "send_request_review_notification": True,
             },
-            "execution": {"subject_identity_verification_required": True},
+            "execution": {
+                "subject_identity_verification_required": True,
+                "require_manual_request_approval": True,
+            },
         }
 
     def test_reset_application_config(

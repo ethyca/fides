@@ -24,6 +24,9 @@ export const dataUseApi = createApi({
       transformResponse: (uses: DataUse[]) =>
         uses.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
+    getDataUseByKey: build.query<DataUse, string>({
+      query: (fidesKey) => ({ url: `data_use/${fidesKey}` }),
+    }),
     updateDataUse: build.mutation<
       DataUse,
       Partial<DataUse> & Pick<DataUse, "fides_key">
@@ -57,6 +60,7 @@ export const dataUseApi = createApi({
 
 export const {
   useGetAllDataUsesQuery,
+  useGetDataUseByKeyQuery,
   useUpdateDataUseMutation,
   useCreateDataUseMutation,
   useDeleteDataUseMutation,

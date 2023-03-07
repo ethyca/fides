@@ -26,9 +26,7 @@ from fides.api.ops.util.saas_util import (
     get_identity,
     unflatten_dict,
 )
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 T = TypeVar("T")
 

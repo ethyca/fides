@@ -16,15 +16,13 @@ from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.privacy_request import PrivacyRequestResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.core.config import get_config
-
-CONFIG = get_config()
 
 
 def build_required_privacy_request_kwargs(
     requested_at: Optional[datetime],
     policy_id: str,
     verification_required: bool,
+    authenticated: bool,
 ) -> Dict[str, Any]:
     """Build kwargs required for creating privacy request
 
@@ -33,7 +31,7 @@ def build_required_privacy_request_kwargs(
     """
     status = (
         PrivacyRequestStatus.identity_unverified
-        if verification_required
+        if verification_required and not authenticated
         else PrivacyRequestStatus.pending
     )
     return {

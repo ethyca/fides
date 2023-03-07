@@ -9,7 +9,12 @@ from click.testing import CliRunner
 from git.repo import Repo
 from py._path.local import LocalPath
 
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.cli import cli
+from fides.core.config import CONFIG
+from fides.core.user import get_user_permissions
+from fides.core.utils import get_auth_header, read_credentials_file
+from fides.lib.oauth.roles import OWNER
 
 OKTA_URL = "https://dev-78908748.okta.com"
 
@@ -36,13 +41,32 @@ def test_init(test_cli_runner: CliRunner) -> None:
     assert result.exit_code == 0
 
 
-@pytest.mark.unit
-def test_view_config(test_cli_runner: CliRunner) -> None:
+@pytest.mark.integration
+def test_init_opt_in(test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
-        cli, ["view", "config"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
+        cli,
+        ["init", "--opt-in"],
     )
     print(result.output)
     assert result.exit_code == 0
+
+
+class TestView:
+    @pytest.mark.unit
+    def test_view_config(self, test_cli_runner: CliRunner) -> None:
+        result = test_cli_runner.invoke(
+            cli, ["view", "config"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
+        )
+        print(result.output)
+        assert result.exit_code == 0
+
+    @pytest.mark.unit
+    def test_view_credentials(self, test_cli_runner: CliRunner) -> None:
+        result = test_cli_runner.invoke(
+            cli, ["view", "credentials"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
+        )
+        print(result.output)
+        assert result.exit_code == 0
 
 
 @pytest.mark.unit
@@ -182,8 +206,8 @@ def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:
     assert result.exit_code == 0
 
 
+@pytest.mark.integration
 class TestCRUD:
-    @pytest.mark.integration
     def test_get(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(
             cli,
@@ -192,9 +216,33 @@ class TestCRUD:
         print(result.output)
         assert result.exit_code == 0
 
-    @pytest.mark.integration
+    def test_delete(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
+        result = test_cli_runner.invoke(
+            cli,
+            ["-f", test_config_path, "delete", "system", "demo_marketing_system"],
+        )
+        print(result.output)
+        assert result.exit_code == 0
+
     def test_ls(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
+        print(result.output)
+        assert result.exit_code == 0
+
+    def test_ls_verbose(
+        self, test_config_path: str, test_cli_runner: CliRunner
+    ) -> None:
+        result = test_cli_runner.invoke(
+            cli, ["-f", test_config_path, "ls", "system", "--verbose"]
+        )
+        print(result.output)
+        assert result.exit_code == 0
+
+    def test_ls_no_resources_found(
+        self, test_config_path: str, test_cli_runner: CliRunner
+    ) -> None:
+        """This test only workss because we don't have any registry resources by default."""
+        result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "registry"])
         print(result.output)
         assert result.exit_code == 0
 
@@ -916,6 +964,28 @@ class TestUser:
         print(result.output)
         assert result.exit_code == 0
 
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "user",
+                "login",
+                "-u",
+                "newuser",
+                "-p",
+                "Newpassword1!",
+            ],
+            env={"FIDES_CREDENTIALS_PATH": credentials_path},
+        )
+
+        credentials = read_credentials_file(credentials_path)
+        scopes, roles = get_user_permissions(
+            credentials.user_id, get_auth_header(), CONFIG.cli.server_url
+        )
+        assert scopes == SCOPE_REGISTRY
+        assert roles == [OWNER]
+
     @pytest.mark.unit
     def test_user_permissions_valid(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
@@ -929,6 +999,33 @@ class TestUser:
         )
         print(result.output)
         assert result.exit_code == 0
+
+    @pytest.mark.unit
+    def test_get_user_permissions(
+        self, test_config_path, test_cli_runner, credentials_path
+    ) -> None:
+        """Test getting user permissions"""
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "user",
+                "login",
+                "-u",
+                "root_user",
+                "-p",
+                "Testpassword1!",
+            ],
+            env={"FIDES_CREDENTIALS_PATH": credentials_path},
+        )
+        scopes, roles = get_user_permissions(
+            CONFIG.security.oauth_root_client_id,
+            get_auth_header(),
+            CONFIG.cli.server_url,
+        )
+        assert scopes == SCOPE_REGISTRY
+        assert roles == [OWNER]
 
     @pytest.mark.unit
     def test_user_permissions_not_found(

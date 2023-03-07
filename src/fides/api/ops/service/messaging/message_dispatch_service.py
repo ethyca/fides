@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import requests
 import sendgrid
 from loguru import logger
-from sendgrid.helpers.mail import Content, Email, Mail, To
+from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
@@ -41,13 +41,11 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
-CONFIG = get_config()
-
-
 EMAIL_JOIN_STRING = ", "
+EMAIL_TEMPLATE_NAME = "fides"
 
 
 def check_and_dispatch_error_notifications(db: Session) -> None:
@@ -220,15 +218,19 @@ def _build_sms(  # pylint: disable=too-many-return-statements
             return f"The following requests have been received: {separator.join(body_params.request_types)}"
         return f"Your {body_params.request_types[0]} request has been received"
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
+        # Converting the expiration time to days
+        subject_request_download_time_in_days = (
+            CONFIG.security.subject_request_download_link_ttl_seconds / 86400
+        )
         if len(body_params.download_links) > 1:
             return (
                 "Your data access has been completed and can be downloaded at the following links. "
-                "For security purposes, these secret links will expire in 24 hours: "
+                f"For security purposes, these secret links will expire in {subject_request_download_time_in_days} days: "
                 f"{separator.join(body_params.download_links)}"
             )
         return (
             f"Your data access has been completed and can be downloaded at {body_params.download_links[0]}. "
-            f"For security purposes, this secret link will expire in 24 hours."
+            f"For security purposes, this secret link will expire in {subject_request_download_time_in_days} days."
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return "Your privacy request for deletion has been completed."
@@ -377,7 +379,7 @@ def _mailgun_dispatcher(
     try:
         # Check if a fides template exists
         template_test = requests.get(
-            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/templates/fides",
+            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/templates/{EMAIL_TEMPLATE_NAME}",
             auth=(
                 "api",
                 messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],
@@ -391,7 +393,7 @@ def _mailgun_dispatcher(
         }
 
         if template_test.status_code == 200:
-            data["template"] = "fides"
+            data["template"] = EMAIL_TEMPLATE_NAME
             data["h:X-Mailgun-Variables"] = json.dumps(
                 {"fides_email_body": message.body}
             )
@@ -455,18 +457,32 @@ def _twilio_email_dispatcher(
         )
 
     try:
+
         sg = sendgrid.SendGridAPIClient(
             api_key=messaging_config.secrets[
                 MessagingServiceSecrets.TWILIO_API_KEY.value
             ]
         )
+
+        # the pagination via the client actually doesn't work
+        # in lieu of over-engineering this we can manually call
+        # the next page if/when we hit the limit here
+        response = sg.client.templates.get(
+            query_params={"generations": "dynamic", "page_size": 200}
+        )
+        template_test = _get_template_id_if_exists(
+            json.loads(response.body), EMAIL_TEMPLATE_NAME
+        )
+
         from_email = Email(
             messaging_config.details[MessagingServiceDetails.TWILIO_EMAIL_FROM.value]
         )
         to_email = To(to.strip())
         subject = message.subject
-        content = Content("text/html", message.body)
-        mail = Mail(from_email, to_email, subject, content)
+        mail = _compose_twilio_mail(
+            from_email, to_email, subject, message.body, template_test
+        )
+
         response = sg.client.mail.send.post(request_body=mail.get())
         if response.status_code >= 400:
             logger.error(
@@ -525,3 +541,40 @@ def _twilio_sms_dispatcher(
     except TwilioRestException as e:
         logger.error("Twilio SMS failed to send: {}", Pii(str(e)))
         raise MessageDispatchException(f"Twilio SMS failed to send due to: {Pii(e)}")
+
+
+def _get_template_id_if_exists(
+    templates_response: Dict[str, List], template_name: str
+) -> Optional[str]:
+    """
+    Checks to see if a SendGrid template exists for Fides, returning the id if so
+    """
+
+    for template in templates_response["result"]:
+        if template["name"].lower() == template_name.lower():
+            return template["id"]
+    return None
+
+
+def _compose_twilio_mail(
+    from_email: Email,
+    to_email: To,
+    subject: str,
+    message_body: str,
+    template_test: Optional[str] = None,
+) -> Mail:
+    """
+    Returns the Mail object to send, if a template is passed composes the Mail
+    appropriately with the template ID and paramaterized message body.
+    """
+    if template_test:
+        mail = Mail(from_email=from_email, subject=subject)
+        mail.template_id = TemplateId(template_test)
+        personalization = Personalization()
+        personalization.dynamic_template_data = {"fides_email_body": message_body}
+        personalization.add_email(to_email)
+        mail.add_personalization(personalization)
+    else:
+        content = Content("text/html", message_body)
+        mail = Mail(from_email, to_email, subject, content)
+    return mail
