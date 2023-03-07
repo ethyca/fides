@@ -9,32 +9,22 @@ import {
   NAV_CONFIG,
 } from "./nav-config";
 
+const ALL_SCOPES = [
+  ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+  ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
+  ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
+  ScopeRegistryEnum.DATAMAP_READ,
+  ScopeRegistryEnum.CLI_OBJECTS_READ,
+  ScopeRegistryEnum.CLI_OBJECTS_CREATE,
+  ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
+  ScopeRegistryEnum.USER_READ,
+];
+
 describe("configureNavGroups", () => {
-  it("only includes home and management by default", () => {
+  it("includes all navigation groups for users with all scopes", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
-      userScopes: [],
-    });
-
-    expect(navGroups[0]).toMatchObject({
-      title: "Home",
-      children: [{ title: "Home", path: "/" }],
-    });
-
-    expect(navGroups[1]).toMatchObject({
-      title: "Management",
-      children: [{ title: "About Fides", path: "/management/about" }],
-    });
-  });
-
-  it("includes the privacy requests group when there are connections", () => {
-    const navGroups = configureNavGroups({
-      config: NAV_CONFIG,
-      hasConnections: true,
-      userScopes: [
-        ScopeRegistryEnum.PRIVACY_REQUEST_READ,
-        ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
-      ],
+      userScopes: ALL_SCOPES,
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -49,25 +39,9 @@ describe("configureNavGroups", () => {
         { title: "Connection manager", path: "/datastore-connection" },
       ],
     });
-  });
 
-  it("includes the data map group when there are systems", () => {
-    const navGroups = configureNavGroups({
-      config: NAV_CONFIG,
-      hasSystems: true,
-      userScopes: [
-        ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-        ScopeRegistryEnum.CLI_OBJECTS_READ,
-      ],
-    });
-
-    expect(navGroups[0]).toMatchObject({
-      title: "Home",
-      children: [{ title: "Home", path: "/" }],
-    });
-
-    // The data map should _not_ include the actual "/datamap".
-    expect(navGroups[1]).toMatchObject({
+    // NOTE: the data map should _not_ include the Plus routes (/datamap, /classify-systems, etc.)
+    expect(navGroups[2]).toMatchObject({
       title: "Data map",
       children: [
         { title: "View systems", path: "/system" },
@@ -75,19 +49,22 @@ describe("configureNavGroups", () => {
         { title: "Manage datasets", path: "/dataset" },
       ],
     });
+
+    expect(navGroups[3]).toMatchObject({
+      title: "Management",
+      children: [
+        { title: "Taxonomy", path: "/taxonomy" },
+        { title: "Users", path: "/user-management" },
+        { title: "About Fides", path: "/management/about" },
+      ],
+    });
   });
 
-  it("includes the visual data map when there are systems for Fidesplus", () => {
+  it("includes the Plus routes when running with Fidesplus API", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
-      hasSystems: true,
       hasPlus: true,
-      userScopes: [
-        ScopeRegistryEnum.DATAMAP_READ,
-        ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-        ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
-        ScopeRegistryEnum.CLI_OBJECTS_READ,
-      ],
+      userScopes: ALL_SCOPES,
     });
 
     expect(navGroups[0]).toMatchObject({
@@ -96,7 +73,7 @@ describe("configureNavGroups", () => {
     });
 
     // The data map _should_ include the actual "/datamap".
-    expect(navGroups[1]).toMatchObject({
+    expect(navGroups[2]).toMatchObject({
       title: "Data map",
       children: [
         { title: "View map", path: "/datamap" },
@@ -107,11 +84,11 @@ describe("configureNavGroups", () => {
       ],
     });
   });
+
   describe("configure by scopes", () => {
     it("does not render paths the user does not have scopes for", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
-        hasSystems: true,
         userScopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
       });
 
@@ -147,8 +124,6 @@ describe("configureNavGroups", () => {
     it("conditionally shows request manager using scopes", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
-        hasSystems: true,
-        hasConnections: true,
         userScopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
       });
       expect(navGroups[1]).toMatchObject({
@@ -160,12 +135,7 @@ describe("configureNavGroups", () => {
     it("does not show /datamap if plus is not enabled but user has the scope", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
-        hasSystems: true,
-        userScopes: [
-          ScopeRegistryEnum.DATAMAP_READ,
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_READ,
-        ],
+        userScopes: ALL_SCOPES,
       });
 
       expect(navGroups[0]).toMatchObject({
@@ -174,7 +144,7 @@ describe("configureNavGroups", () => {
       });
 
       // The data map should _not_ include the actual "/datamap".
-      expect(navGroups[1]).toMatchObject({
+      expect(navGroups[2]).toMatchObject({
         title: "Data map",
         children: [
           { title: "View systems", path: "/system" },
@@ -190,15 +160,7 @@ describe("findActiveNav", () => {
   const navGroups = configureNavGroups({
     config: NAV_CONFIG,
     hasPlus: true,
-    hasSystems: true,
-    hasConnections: true,
-    userScopes: [
-      ScopeRegistryEnum.DATAMAP_READ,
-      ScopeRegistryEnum.CLI_OBJECTS_READ,
-      ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
-      ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-      ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
-    ],
+    userScopes: ALL_SCOPES,
   });
 
   const testCases = [

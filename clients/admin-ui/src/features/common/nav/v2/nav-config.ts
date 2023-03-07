@@ -11,8 +11,6 @@ export type NavConfigRoute = {
 
 export type NavConfigGroup = {
   title: string;
-  requiresSystems?: boolean;
-  requiresConnections?: boolean;
   routes: NavConfigRoute[];
 };
 
@@ -30,7 +28,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Privacy requests",
-    requiresConnections: true,
     routes: [
       {
         title: "Request manager",
@@ -51,7 +48,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Data map",
-    requiresSystems: true,
     routes: [
       {
         title: "View map",
@@ -170,28 +166,16 @@ export const configureNavGroups = ({
   config,
   userScopes,
   hasPlus = false,
-  hasSystems = false,
-  hasConnections = false,
   hasAccessToPrivacyRequestConfigurations = false,
 }: {
   config: NavConfigGroup[];
   userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
-  hasSystems?: boolean;
-  hasConnections?: boolean;
   hasAccessToPrivacyRequestConfigurations?: boolean;
 }): NavGroup[] => {
   const navGroups: NavGroup[] = [];
 
   config.forEach((group) => {
-    // Skip groups with unmet requirements.
-    if (
-      (group.requiresConnections && !hasConnections) ||
-      (group.requiresSystems && !hasSystems)
-    ) {
-      return;
-    }
-
     if (!navGroupInScope(group, userScopes)) {
       return;
     }

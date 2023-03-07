@@ -1,4 +1,4 @@
-import { Flex, VStack } from "@fidesui/react";
+import { VStack } from "@fidesui/react";
 import {
   reset,
   selectConnectionTypeState,
@@ -18,7 +18,6 @@ import DataTabs, { TabData } from "~/features/common/DataTabs";
 import { SystemType } from "~/types/api";
 
 import Breadcrumb from "./Breadcrumb";
-import ConfigurationSettingsNav from "./ConfigurationSettingsNav";
 import { ConnectorParameters } from "./ConnectorParameters";
 import {
   ConfigurationSettings,

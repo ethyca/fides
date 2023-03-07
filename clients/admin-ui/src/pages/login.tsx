@@ -18,13 +18,9 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 
-import { useGetAllSystemsQuery } from "~/features/system/system.slice";
-
 import { login, selectToken, useLoginMutation } from "../features/auth";
 
 const useLogin = () => {
-  const { data: systems, isLoading: isSystemsLoading } =
-    useGetAllSystemsQuery();
   const [loginRequest, { isLoading }] = useLoginMutation();
   const token = useSelector(selectToken);
   const toast = useToast();
@@ -72,18 +68,8 @@ const useLogin = () => {
     return errors;
   };
 
-  const getRedirectRoute = () => {
-    if (!token || isSystemsLoading) {
-      return undefined;
-    }
-
-    return "/";
-  };
-
-  const redirectRoute = getRedirectRoute();
-
-  if (redirectRoute) {
-    router.push(redirectRoute);
+  if (token) {
+    router.push("/");
   }
 
   return {

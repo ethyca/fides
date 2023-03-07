@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text, VStack } from "@fidesui/react";
+import { Box, Heading, Text, VStack } from "@fidesui/react";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -10,7 +10,6 @@ import {
 } from "~/features/connection-type";
 
 import Breadcrumb from "../add-connection/Breadcrumb";
-import ConfigurationSettingsNav from "../add-connection/ConfigurationSettingsNav";
 import { ConnectorParameters } from "../add-connection/ConnectorParameters";
 import {
   ConfigurationSettings,
@@ -30,7 +29,6 @@ const EditConnection: React.FC = () => {
   const [connector, setConnector] = useState(
     undefined as unknown as ConnectorParameterOption
   );
-  const [selectedItem, setSelectedItem] = useState("");
 
   const getTabs = useMemo(
     () => () => {
@@ -74,10 +72,6 @@ const EditConnection: React.FC = () => {
     [connection?.key, connector?.options]
   );
 
-  const handleNavChange = (value: string) => {
-    setSelectedItem(value);
-  };
-
   useEffect(() => {
     if (connectionOption) {
       const item = CONNECTOR_PARAMETERS_OPTIONS.find(
@@ -85,7 +79,6 @@ const EditConnection: React.FC = () => {
       );
       if (item) {
         setConnector(item);
-        setSelectedItem(item.options[0]);
         dispatch(setStep(STEPS[2]));
       }
     }
