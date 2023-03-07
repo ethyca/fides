@@ -168,7 +168,7 @@ def dispatch_message(
     logger.info(
         "Retrieving appropriate dispatcher for email service: {}", messaging_service
     )
-    dispatcher: Optional[function] = _get_dispatcher_from_config_type(
+    dispatcher: Optional[Callable] = _get_dispatcher_from_config_type(
         message_service_type=messaging_service
     )
     if not dispatcher:
@@ -187,7 +187,7 @@ def dispatch_message(
     if subject_override and isinstance(message, EmailForActionType):
         message.subject = subject_override
 
-    dispatcher(  # type: ignore
+    dispatcher(
         messaging_config,
         message,
         to_identity.email
@@ -343,7 +343,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
 
 def _get_dispatcher_from_config_type(
     message_service_type: MessagingServiceType,
-) -> Optional[function]:
+) -> Optional[Callable]:
     """Determines which dispatcher to use based on message service type"""
     handler = {
         MessagingServiceType.MAILGUN: _mailgun_dispatcher,
@@ -351,8 +351,7 @@ def _get_dispatcher_from_config_type(
         MessagingServiceType.TWILIO_TEXT: _twilio_sms_dispatcher,
         MessagingServiceType.TWILIO_EMAIL: _twilio_email_dispatcher,
     }
-    func = handler.get(message_service_type)
-    return func
+    return handler.get(message_service_type)  # type: ignore
 
 
 def _mailchimp_transactional_dispatcher(
@@ -519,7 +518,6 @@ def _twilio_email_dispatcher(
         )
 
     try:
-
         sg = sendgrid.SendGridAPIClient(
             api_key=messaging_config.secrets[
                 MessagingServiceSecrets.TWILIO_API_KEY.value
