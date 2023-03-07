@@ -4,7 +4,7 @@ import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import Restrict from "~/features/common/Restrict";
-import { ScopeRegistry } from "~/types/api";
+import { ScopeRegistryEnum } from "~/types/api";
 
 import NewPasswordModal from "./NewPasswordModal";
 import UpdatePasswordModal from "./UpdatePasswordModal";
@@ -37,7 +37,7 @@ const PasswordManagement = ({ profileId }: Props) => {
   return (
     <HStack>
       {isOwnProfile ? <UpdatePasswordModal id={profileId} /> : null}
-      <Restrict scopes={[ScopeRegistry.USER_PASSWORD_RESET]}>
+      <Restrict scopes={[ScopeRegistryEnum.USER_PASSWORD_RESET]}>
         <NewPasswordModal id={profileId} />
       </Restrict>
     </HStack>

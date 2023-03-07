@@ -1,4 +1,4 @@
-import { ScopeRegistry } from "~/types/api";
+import { ScopeRegistryEnum } from "~/types/api";
 
 type ModuleCard = {
   description: string;
@@ -14,5 +14,5 @@ export interface ModuleCardConfig extends ModuleCard {
   requiresSystems?: boolean;
   requiresConnections?: boolean;
   requiresPlus?: boolean;
-  scopes: ScopeRegistry[];
+  scopes: ScopeRegistryEnum[];
 }
