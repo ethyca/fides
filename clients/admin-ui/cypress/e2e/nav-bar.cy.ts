@@ -1,33 +1,33 @@
 // TODO: Update Cypress test to reflect the nav bar 2.0
-describe.skip("Nav Bar", () => {
+describe("Nav Bar", () => {
   beforeEach(() => {
     cy.login();
   });
 
-  it("Renders all page links", () => {
+  it("renders all navigation links", () => {
     cy.visit("/");
-
-    cy.getByTestId("nav-link-Privacy Requests");
-    cy.getByTestId("nav-link-Connections");
-    cy.getByTestId("nav-link-User Management");
-    cy.getByTestId("nav-link-Datasets");
-    cy.getByTestId("nav-link-Taxonomy");
-    cy.getByTestId("nav-link-Systems");
+    
+    cy.get("nav a").should("have.length", 4)
+    cy.contains("nav a", "Home");
+    cy.contains("nav a", "Privacy requests");
+    cy.contains("nav a", "Data map");
+    cy.contains("nav a", "Management");
   });
 
-  it("Renders the active page based on the current route", () => {
-    // Start on the dataset page.
-    cy.visit("/dataset");
+  it("styles the active navigation link based on the current route", () => {
+    const ACTIVE_COLOR = "rgb(17, 20, 57)"
+    // Start on the Home page
+    cy.visit("/");
 
     // The nav should reflect the active page.
-    cy.getByTestId("nav-link-Datasets").should("have.attr", "data-active");
-    cy.getByTestId("nav-link-Taxonomy").should("not.have.attr", "data-active");
+    cy.contains("nav a", "Home").should("have.css", "background-color").should("eql", ACTIVE_COLOR);
+    cy.contains("nav a", "Management").should("have.css", "background-color").should("not.eql", ACTIVE_COLOR);
 
     // Navigate by clicking a nav link.
-    cy.getByTestId("nav-link-Taxonomy").click();
+    cy.contains("nav a", "Management").click()
 
     // The nav should update which page is active.
-    cy.getByTestId("nav-link-Taxonomy").should("have.attr", "data-active");
-    cy.getByTestId("nav-link-Datasets").should("not.have.attr", "data-active");
+    cy.contains("nav a", "Home").should("have.css", "background-color").should("not.eql", ACTIVE_COLOR);
+    cy.contains("nav a", "Management").should("have.css", "background-color").should("eql", ACTIVE_COLOR);
   });
 });
