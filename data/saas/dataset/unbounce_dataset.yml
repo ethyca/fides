@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: unbounce_new
-    description: A sample dataset representing the Unbounce_new connector for Fides
+    name: unbounce
+    description: A sample dataset representing the Unbounce connector for Fides
     collections:
       - name: lead
         fields:
