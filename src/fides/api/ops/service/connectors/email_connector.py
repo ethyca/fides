@@ -242,36 +242,36 @@ def _get_email_messaging_config_service_type(db: Session) -> Optional[str]:
         (
             config
             for config in messaging_configs
-            if config.service_type == MessagingServiceType.TWILIO_EMAIL
+            if config.service_type == MessagingServiceType.twilio_email
         ),
         None,
     )
     if twilio_email_config:
         # First choice: use Twilio
-        return MessagingServiceType.TWILIO_EMAIL.value
+        return MessagingServiceType.twilio_email.value
 
     mailgun_config = next(
         (
             config
             for config in messaging_configs
-            if config.service_type == MessagingServiceType.MAILGUN
+            if config.service_type == MessagingServiceType.mailgun
         ),
         None,
     )
     if mailgun_config:
         # Second choice: use Mailgun
-        return MessagingServiceType.MAILGUN.value
+        return MessagingServiceType.mailgun.value
 
     mailchimp_transactional_config = next(
         (
             config
             for config in messaging_configs
-            if config.service_type == MessagingServiceType.MAILCHIMP_TRANSACTIONAL
+            if config.service_type == MessagingServiceType.mailchimp_transactional
         ),
         None,
     )
     if mailchimp_transactional_config:
         # Third choice: use Mailchimp Transactional
-        return MessagingServiceType.MAILCHIMP_TRANSACTIONAL.value
+        return MessagingServiceType.mailchimp_transactional.value
 
     return None

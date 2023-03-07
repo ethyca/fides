@@ -32,13 +32,14 @@ class NotificationSettings(FidesSettings):
     def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
         if value:
+
             valid_values = [
-                "MAILCHIMP_TRANSACTIONAL",
-                "MAILGUN",
-                "TWILIO_TEXT",
-                "TWILIO_EMAIL",
+                "mailgun",
+                "twilio_text",
+                "twilio_email",
+                "mailchimp_transactional",
             ]
-            value = value.upper()  # force uppercase for safety
+            value = value.lower()  # force lowercase for safety
 
             if value not in valid_values:
                 raise ValueError(

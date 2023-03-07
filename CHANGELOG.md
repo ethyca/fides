@@ -50,6 +50,7 @@ The types of changes are:
 * Update the CLI aesthetics & docstrings [#2703](https://github.com/ethyca/fides/pull/2703)
 * Updates Roles->Scopes Mapping [#2744](https://github.com/ethyca/fides/pull/2744)
 * Return user scopes as an enum, as well as total scopes [#2741](https://github.com/ethyca/fides/pull/2741)
+* Update `MessagingServiceType` enum to be lowercased throughout [#2746](https://github.com/ethyca/fides/pull/2746)
 
 ### Developer Experience
 

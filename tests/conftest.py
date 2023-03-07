@@ -652,7 +652,7 @@ def privacy_request_review_notification_disabled(db):
 def set_notification_service_type_mailgun(db):
     """Set default notification service type"""
     original_value = CONFIG.notifications.notification_service_type
-    CONFIG.notifications.notification_service_type = MessagingServiceType.MAILGUN.value
+    CONFIG.notifications.notification_service_type = MessagingServiceType.mailgun.value
     ApplicationConfig.update_config_set(db, CONFIG)
     db.commit()
     yield

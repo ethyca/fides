@@ -23,18 +23,16 @@ class MessagingMethod(Enum):
 class MessagingServiceType(Enum):
     """Enum for messaging service type. Upper-cased in the database"""
 
-    MAILCHIMP_TRANSACTIONAL = "MAILCHIMP_TRANSACTIONAL"
-
-    MAILGUN = "MAILGUN"
-
-    TWILIO_TEXT = "TWILIO_TEXT"
-    TWILIO_EMAIL = "TWILIO_EMAIL"
+    mailgun = "mailgun"
+    twilio_text = "twilio_text"
+    twilio_email = "twilio_email"
+    mailchimp_transactional = "mailchimp_transactional"
 
     @classmethod
     def _missing_(
         cls: Type[MessagingServiceType], value: Any
     ) -> Optional[MessagingServiceType]:
-        value = value.upper()
+        value = value.lower()
         for member in cls:
             if member.value == value:
                 return member
@@ -42,11 +40,11 @@ class MessagingServiceType(Enum):
 
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
-    MessagingServiceType.MAILCHIMP_TRANSACTIONAL.value,
-    MessagingServiceType.MAILGUN.value,
-    MessagingServiceType.TWILIO_EMAIL.value,
+    MessagingServiceType.mailgun.value,
+    MessagingServiceType.twilio_email.value,
+    MessagingServiceType.mailchimp_transactional.value,
 )
-SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.TWILIO_TEXT.value,)
+SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.twilio_text.value,)
 
 
 class MessagingActionType(str, Enum):
@@ -304,9 +302,9 @@ class MessagingConfigBase(BaseModel):
     service_type: MessagingServiceType
     details: Optional[
         Union[
-            MessagingServiceDetailsMailchimpTransactional,
             MessagingServiceDetailsMailgun,
             MessagingServiceDetailsTwilioEmail,
+            MessagingServiceDetailsMailchimpTransactional,
         ]
     ]
 
@@ -323,9 +321,9 @@ class MessagingConfigRequestBase(MessagingConfigBase):
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         service_type = values.get("service_type")
         if service_type:
-            # uppercase to match enums in database
+            # lowercase to match enums in database
             if isinstance(service_type, str):
-                service_type = service_type.upper()
+                service_type = service_type.lower()
 
             # assign the transformed service_type value back into the values dict
             values["service_type"] = service_type
@@ -339,11 +337,11 @@ class MessagingConfigRequestBase(MessagingConfigBase):
     ) -> None:
         if isinstance(service_type, MessagingServiceType):
             service_type = service_type.value
-        if service_type == MessagingServiceType.MAILGUN.value:
+        if service_type == MessagingServiceType.mailgun.value:
             if not details:
                 raise ValueError("Messaging config must include details")
             MessagingServiceDetailsMailgun.validate(details)
-        if service_type == MessagingServiceType.TWILIO_EMAIL.value:
+        if service_type == MessagingServiceType.twilio_email.value:
             if not details:
                 raise ValueError("Messaging config must include details")
             MessagingServiceDetailsTwilioEmail.validate(details)
@@ -368,10 +366,10 @@ class MessagingConfigResponse(MessagingConfigBase):
 
 
 SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
-    MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceSecretsTwilioEmail,
+    MessagingServiceSecretsMailchimpTransactional,
 ]
 
 

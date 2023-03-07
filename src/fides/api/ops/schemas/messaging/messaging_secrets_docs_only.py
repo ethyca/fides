@@ -33,8 +33,8 @@ class MessagingSecretsTwilioEmailDocs(
 
 
 possible_messaging_secrets = Union[
-    MessagingServiceSecretsMailchimpTransactionalDocs,
     MessagingSecretsMailgunDocs,
     MessagingSecretsTwilioSMSDocs,
     MessagingSecretsTwilioEmailDocs,
+    MessagingServiceSecretsMailchimpTransactionalDocs,
 ]

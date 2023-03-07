@@ -346,10 +346,10 @@ def _get_dispatcher_from_config_type(
 ) -> Optional[Callable]:
     """Determines which dispatcher to use based on message service type"""
     handler = {
-        MessagingServiceType.MAILGUN: _mailgun_dispatcher,
-        MessagingServiceType.MAILCHIMP_TRANSACTIONAL: _mailchimp_transactional_dispatcher,
-        MessagingServiceType.TWILIO_TEXT: _twilio_sms_dispatcher,
-        MessagingServiceType.TWILIO_EMAIL: _twilio_email_dispatcher,
+        MessagingServiceType.mailgun: _mailgun_dispatcher,
+        MessagingServiceType.mailchimp_transactional: _mailchimp_transactional_dispatcher,
+        MessagingServiceType.twilio_text: _twilio_sms_dispatcher,
+        MessagingServiceType.twilio_email: _twilio_email_dispatcher,
     }
     return handler.get(message_service_type)  # type: ignore
 
