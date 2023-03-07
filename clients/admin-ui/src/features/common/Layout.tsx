@@ -41,7 +41,9 @@ const Layout = ({
   });
 
   const showNotificationBanner =
-    (!activeMessagingProvider || !activeStorage) && isValidNotificationRoute;
+    features.flags.privacyRequestsConfiguration &&
+    (!activeMessagingProvider || !activeStorage) &&
+    isValidNotificationRoute;
 
   return (
     <div data-testid={title}>

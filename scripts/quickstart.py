@@ -14,6 +14,7 @@ import yaml
 from loguru import logger
 
 from fides.api.ops.api.v1 import urn_registry as ops_urls
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.models.connectionconfig import ConnectionType
 from fides.api.ops.models.policy import ActionType
 from fides.core.config import get_config
@@ -53,34 +54,11 @@ def create_oauth_client():
     See http://localhost:8000/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post
     See http://localhost:8000/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post
     """
-    scopes_data = [
-        "client:create",
-        "client:update",
-        "client:read",
-        "client:delete",
-        "policy:create_or_update",
-        "policy:read",
-        "policy:delete",
-        "connection:create_or_update",
-        "connection:read",
-        "connection:delete",
-        "privacy-request:read",
-        "privacy-request:delete",
-        "rule:create_or_update",
-        "rule:read",
-        "rule:delete",
-        "storage:create_or_update",
-        "storage:read",
-        "storage:delete",
-        "dataset:create_or_update",
-        "dataset:read",
-        "dataset:delete",
-    ]
     url = f"{FIDESOPS_V1_API_URL}{ops_urls.CLIENT}"
     response = requests.post(
         url,
         headers=root_oauth_header,
-        json=scopes_data,
+        json=SCOPE_REGISTRY,
     )
 
     if response.ok:
