@@ -595,7 +595,6 @@ class TestPutMessagingConfigSecretMailchimpTransactional:
         self,
         db: Session,
         api_client: TestClient,
-        payload,
         url,
         generate_auth_header,
         messaging_config_mailchimp_transactional,
@@ -620,7 +619,7 @@ class TestPutMessagingConfigSecretMailchimpTransactional:
         }
         assert (
             messaging_config_mailchimp_transactional.secrets[
-                MessagingServiceSecrets.TWILIO_API_KEY.value
+                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
             ]
             == key
         )
