@@ -17,16 +17,16 @@ export const stubTaxonomyEntities = () => {
 };
 
 export const stubSystemCrud = () => {
-  cy.intercept("POST", "/api/v1/system", { fixture: "system.json" }).as(
+  cy.intercept("POST", "/api/v1/system", { fixture: "systems/system.json" }).as(
     "postSystem"
   );
-  cy.intercept("GET", "/api/v1/system/*", { fixture: "system.json" }).as(
-    "getSystem"
-  );
-  cy.intercept("PUT", "/api/v1/system*", { fixture: "system.json" }).as(
+  cy.intercept("GET", "/api/v1/system/*", {
+    fixture: "systems/system.json",
+  }).as("getSystem");
+  cy.intercept("PUT", "/api/v1/system*", { fixture: "systems/system.json" }).as(
     "putSystem"
   );
-  cy.fixture("system.json").then((system) => {
+  cy.fixture("systems/system.json").then((system) => {
     cy.intercept("DELETE", "/api/v1/system/*", {
       body: {
         message: "resource deleted",
@@ -85,6 +85,10 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("PUT", "/api/v1/storage/default/*/secret", {
     fixture: "/privacy-requests/settings_configuration.json",
   }).as("createStorageSecrets");
+
+  cy.intercept("PUT", "/api/v1/messaging/default", {
+    fixture: "/privacy-requests/messaging_configuration.json",
+  }).as("createMessagingConfiguration");
 };
 
 export const CONNECTION_STRING =

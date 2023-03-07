@@ -12,9 +12,7 @@ from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
-from fides.core.config import get_config
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
 
 # This constant represents every type a redis key may contain, and can be
 # extended if needed
@@ -23,19 +21,18 @@ RedisValue = Union[bytes, float, int, str]
 _connection = None
 
 ENCODED_BYTES_PREFIX = "quote_encoded_"
+ENCODED_DATE_PREFIX = "date_encoded_"
 ENCODED_MONGO_OBJECT_ID_PREFIX = "encoded_object_id_"
 
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:  # pylint: disable=too-many-return-statements
-        print("HERE")
-        print(o)
         if isinstance(o, Enum):
             return o.value
         if isinstance(o, bytes):
             return f"{ENCODED_BYTES_PREFIX}{quote(o)}"
         if isinstance(o, (datetime, date)):
-            return o.isoformat()
+            return f"{ENCODED_DATE_PREFIX}{o.isoformat()}"
         if isinstance(o, ObjectId):
             return f"{ENCODED_MONGO_OBJECT_ID_PREFIX}{str(o)}"
         if isinstance(o, object):
@@ -51,17 +48,13 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
     for k, v in json_dict.items():
-        try:
-            json_dict[k] = datetime.fromisoformat(v)
-            continue
-        except (TypeError, ValueError):
-            pass
-
         if isinstance(v, str):
             # The mongodb objectids couldn't be directly json encoded so they are converted
             # to strings and prefixed with encoded_object_id in order to find during decodeint.
             if v.startswith(ENCODED_MONGO_OBJECT_ID_PREFIX):
                 json_dict[k] = ObjectId(v[18:])
+            if v.startswith(ENCODED_DATE_PREFIX):
+                json_dict[k] = datetime.fromisoformat(v[13:])
             # The bytes from secrets couldn't be directly json encoded so it is url
             # encode and prefixed with quite_encoded in order to find during decodeint.
             elif v.startswith(ENCODED_BYTES_PREFIX):
@@ -139,13 +132,23 @@ class FidesopsRedis(Redis):
         return json.dumps(obj, cls=CustomJSONEncoder)  # type: ignore
 
     @staticmethod
-    def decode_obj(bs: Optional[str]) -> Any:
+    def decode_obj(bs: Optional[str]) -> Optional[Dict[str, Any]]:
         """Decode an object from its JSON.
 
         Since Redis may not contain a value
         for a given key it's possible we may try to decode an empty object."""
         if bs:
-            result = json.loads(bs, object_hook=_custom_decoder)
+            try:
+                result = json.loads(bs, object_hook=_custom_decoder)
+            except json.decoder.JSONDecodeError:
+                # The cache used to be stored as a pickle. This decoder is unable
+                # to decode the pickle object (this is on purpose) so None is returned
+                # if a cache value is present in the old format rather the crashing.
+
+                logger.info(
+                    "Error decoding cache. If you are coming from a version of fides prior to 2.8 this could be an issue with cache format and the request needs to be reprocessed."
+                )
+                return None
             # Secrets are just a string and not dict so decode here.
             if isinstance(result, str) and result.startswith("quote_encoded"):
                 result = unquote_to_bytes(result)[14:]
@@ -164,6 +167,7 @@ def get_cache() -> FidesopsRedis:
             host=CONFIG.redis.host,
             port=CONFIG.redis.port,
             db=CONFIG.redis.db_index,
+            username=CONFIG.redis.user,
             password=CONFIG.redis.password,
             ssl=CONFIG.redis.ssl,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,

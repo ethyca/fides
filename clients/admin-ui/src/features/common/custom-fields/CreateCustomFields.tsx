@@ -42,8 +42,13 @@ const validationSchema = Yup.object().shape({
   name: Yup.string().required("Name is required").trim(),
 });
 
+type CreateCustomFieldProps = {
+  onSubmitComplete: () => void;
+  resourceType: ResourceTypes;
+};
+
 const CreateCustomFields = forwardRef(
-  ({ onSubmitComplete, resourceType }, ref) => {
+  ({ onSubmitComplete, resourceType }: CreateCustomFieldProps, ref) => {
     const { errorAlert, successAlert } = useAlert();
     const formRef = useRef(null);
 
@@ -147,8 +152,10 @@ const CreateCustomFields = forwardRef(
                   options={FIELD_TYPE_OPTIONS}
                 />
                 <CustomSelect
+                  isRequired
                   label="Select custom list"
                   labelProps={CUSTOM_LABEL_STYLES}
+                  menuPosition="fixed"
                   name="allow_list_id"
                   options={allowListOptions}
                 />

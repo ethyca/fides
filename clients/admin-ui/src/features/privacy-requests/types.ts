@@ -1,5 +1,6 @@
 export type PrivacyRequestStatus =
   | "approved"
+  | "awaiting_consent_email_send"
   | "complete"
   | "denied"
   | "error"
@@ -111,27 +112,27 @@ export type RetryRequests = {
 };
 
 export interface MessagingConfigResponse {
-  fides: {
-    storage: {
-      active_default_storage_type: string;
-    };
+  storage: {
+    active_default_storage_type: string;
   };
 }
 
 export interface StorageConfigResponse {
-  fides: {
-    notifications: {
-      notification_service_type: string;
-      send_request_completion_notification: boolean;
-      send_request_receipt_notification: boolean;
-      send_request_review_notification: boolean;
-      subject_identity_verification_required: boolean;
-    };
+  notifications: {
+    notification_service_type: string;
+    send_request_completion_notification: boolean;
+    send_request_receipt_notification: boolean;
+    send_request_review_notification: boolean;
+  };
+  execution: {
+    subject_identity_verification_required: true;
   };
 }
 
 export interface ConfigStorageDetailsRequest {
   type: string;
+  auth_method?: string;
+  bucket?: string;
   details?: {
     auth_method?: string;
     bucket?: string;
@@ -142,8 +143,10 @@ export interface ConfigStorageDetailsRequest {
 
 export interface ConfigStorageSecretsDetailsRequest {
   type?: string;
-  aws_access_key_id: string;
-  aws_secret_access_key: string;
+  details?: {
+    aws_access_key_id: string;
+    aws_secret_access_key: string;
+  };
 }
 
 export interface ConfigMessagingRequest {
@@ -151,7 +154,7 @@ export interface ConfigMessagingRequest {
 }
 
 export interface ConfigMessagingDetailsRequest {
-  type: string;
+  service_type: string;
   details?: {
     is_eu_domain?: string;
     domain?: string;
@@ -160,11 +163,13 @@ export interface ConfigMessagingDetailsRequest {
 }
 
 export interface ConfigMessagingSecretsRequest {
-  type?: string;
-  mailgun_api_key?: string;
-  twilio_api_key?: string;
-  twilio_account_sid?: string;
-  twilio_auth_token?: string;
-  twilio_messaging_service_sid?: string;
-  twilio_sender_phone_number?: string;
+  service_type?: string;
+  details?: {
+    twilio_api_key?: string;
+    mailgun_api_key?: string;
+    twilio_account_sid?: string;
+    twilio_auth_token?: string;
+    twilio_messaging_service_sid?: string;
+    twilio_sender_phone_number?: string;
+  };
 }

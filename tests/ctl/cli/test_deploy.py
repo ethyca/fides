@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 
 from fides.core import deploy
@@ -23,3 +25,21 @@ class TestDeploy:
     )
     def test_compare_semvers(self, semver_1, semver_2, expected):
         assert deploy.compare_semvers(semver_1, semver_2) is expected
+
+    @mock.patch("fides.core.deploy.sys")
+    def test_check_virtualenv(self, mock_sys):
+        # Emulate non-virtual environment
+        mock_sys.prefix = (
+            "/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9"
+        )
+        mock_sys.base_prefix = (
+            "/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9"
+        )
+        assert deploy.check_virtualenv() == False
+
+        # Emulate virtual environment
+        mock_sys.prefix = "/Users/fidesuser/fides/venv"
+        mock_sys.base_prefix = (
+            "/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9"
+        )
+        assert deploy.check_virtualenv() == True

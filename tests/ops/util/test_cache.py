@@ -1,5 +1,6 @@
-import json
+import pickle
 import random
+from base64 import b64encode
 from datetime import datetime
 from enum import Enum
 from typing import Any, List
@@ -9,16 +10,12 @@ from bson.objectid import ObjectId
 
 from fides.api.ops.util.cache import (
     ENCODED_BYTES_PREFIX,
+    ENCODED_DATE_PREFIX,
     ENCODED_MONGO_OBJECT_ID_PREFIX,
-    CustomJSONEncoder,
     FidesopsRedis,
-    _custom_decoder,
 )
-from fides.core.config import get_config
-
-from ..fixtures.application_fixtures import faker
-
-CONFIG = get_config()
+from fides.core.config import CONFIG
+from tests.fixtures.application_fixtures import faker
 
 
 def test_get_cache(cache: FidesopsRedis) -> None:
@@ -96,7 +93,8 @@ class TestCustomJSONEncoder:
         class TestEnum(Enum):
             test = "test_value"
 
-        result = json.dumps({"key": TestEnum.test}, cls=CustomJSONEncoder)
+        cache = FidesopsRedis()
+        result = cache.encode_obj({"key": TestEnum.test})
 
         assert result == '{"key": "test_value"}'
 
@@ -104,7 +102,8 @@ class TestCustomJSONEncoder:
         class TestEnum(Enum):
             test = {"key": "test_value"}
 
-        result = json.dumps({"key": TestEnum.test}, cls=CustomJSONEncoder)
+        cache = FidesopsRedis()
+        result = cache.encode_obj({"key": TestEnum.test})
 
         assert result == '{"key": {"key": "test_value"}}'
 
@@ -113,7 +112,8 @@ class TestCustomJSONEncoder:
             def __init__(self):
                 self.val = "some value"
 
-        assert json.dumps(SomeClass(), cls=CustomJSONEncoder) == '{"val": "some value"}'
+        cache = FidesopsRedis()
+        assert cache.encode_obj(SomeClass()) == '{"val": "some value"}'
 
     @pytest.mark.parametrize(
         "value, expected",
@@ -121,7 +121,15 @@ class TestCustomJSONEncoder:
             (b"some value", f'"{ENCODED_BYTES_PREFIX}some%20value"'),
             (
                 datetime(2023, 2, 14, 20, 58),
-                f'"{datetime(2023, 2, 14, 20, 58).isoformat()}"',
+                f'"{ENCODED_DATE_PREFIX}{datetime(2023, 2, 14, 20, 58).isoformat()}"',
+            ),
+            (
+                {"a": datetime(2023, 2, 14, 20, 58)},
+                f'{{"a": "{ENCODED_DATE_PREFIX}{datetime(2023, 2, 14, 20, 58).isoformat()}"}}',
+            ),
+            (
+                {"a": {"b": datetime(2023, 2, 14, 20, 58)}},
+                f'{{"a": {{"b": "{ENCODED_DATE_PREFIX}{datetime(2023, 2, 14, 20, 58).isoformat()}"}}}}',
             ),
             ({"a": "b"}, '{"a": "b"}'),
             ({"a": {"b": "c"}}, '{"a": {"b": "c"}}'),
@@ -135,12 +143,50 @@ class TestCustomJSONEncoder:
         ],
     )
     def test_encode(self, value, expected):
-        assert json.dumps(value, cls=CustomJSONEncoder) == expected
+        cache = FidesopsRedis()
+        assert cache.encode_obj(value) == expected
+
+
+class PickleObj:
+    """For testing pickle decode."""
+
+    def __init__(self):
+        self.field = "value"
 
 
 class TestCustomDecoder:
-    def test_decode_bytes(self):
-        encoded_bytes = f'"{ENCODED_BYTES_PREFIX}some%20value"'
-        assert json.loads(f'{{"a": {encoded_bytes}}}', object_hook=_custom_decoder) == {
-            "a": b"some value"
-        }
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            (f'{{"a": "{ENCODED_BYTES_PREFIX}some%20value"}}', {"a": b"some value"}),
+            (
+                f'{{"a": "{ENCODED_MONGO_OBJECT_ID_PREFIX}507f191e810c19729de860ea"}}',
+                {"a": ObjectId("507f191e810c19729de860ea")},
+            ),
+            (
+                f'{{"a": "{ENCODED_DATE_PREFIX}{datetime(2023, 2, 17, 14, 5).isoformat()}"}}',
+                {"a": datetime(2023, 2, 17, 14, 5)},
+            ),
+            (
+                f'{{"a": {{"b": {{"c": "{ENCODED_DATE_PREFIX}{datetime(2023, 2, 17, 14, 5).isoformat()}"}}}}}}',
+                {"a": {"b": {"c": datetime(2023, 2, 17, 14, 5)}}},
+            ),
+            (
+                '{"birthday": "2001-11-08"}',
+                {"birthday": "2001-11-08"},
+            ),
+            (
+                '{"a": {"b": {"birthday": "2001-11-08"}}}',
+                {"a": {"b": {"birthday": "2001-11-08"}}},
+            ),
+        ],
+    )
+    def test_cache_decode(self, value, expected):
+        cache = FidesopsRedis()
+        assert cache.decode_obj(value) == expected
+
+    def test_decode_pickle_doesnt_break(self):
+        """Test to ensure cache values in the old format don't break the decode."""
+        value = b64encode(pickle.dumps(PickleObj()))
+        cache = FidesopsRedis()
+        assert cache.decode_obj(value) is None

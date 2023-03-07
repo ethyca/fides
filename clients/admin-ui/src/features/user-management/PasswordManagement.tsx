@@ -3,10 +3,11 @@ import { HStack } from "@fidesui/react";
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
 import { CustomTextInput } from "~/features/common/form/inputs";
+import Restrict from "~/features/common/Restrict";
+import { ScopeRegistryEnum } from "~/types/api";
 
 import NewPasswordModal from "./NewPasswordModal";
 import UpdatePasswordModal from "./UpdatePasswordModal";
-import { useGetUserPermissionsQuery } from "./user-management.slice";
 
 interface Props {
   profileId?: string;
@@ -14,14 +15,8 @@ interface Props {
 const PasswordManagement = ({ profileId }: Props) => {
   const isNewUser = profileId == null;
   const currentUser = useAppSelector(selectUser);
-  const { data: userPermissions } = useGetUserPermissionsQuery(
-    currentUser?.id ?? ""
-  );
 
   const isOwnProfile = currentUser ? currentUser.id === profileId : false;
-  const canForceResetPassword = userPermissions
-    ? userPermissions.scopes.includes("user:password-reset")
-    : false;
 
   if (isNewUser) {
     return (
@@ -39,14 +34,12 @@ const PasswordManagement = ({ profileId }: Props) => {
     return null;
   }
 
-  if (!isOwnProfile && !canForceResetPassword) {
-    return null;
-  }
-
   return (
     <HStack>
       {isOwnProfile ? <UpdatePasswordModal id={profileId} /> : null}
-      {canForceResetPassword ? <NewPasswordModal id={profileId} /> : null}
+      <Restrict scopes={[ScopeRegistryEnum.USER_PASSWORD_RESET]}>
+        <NewPasswordModal id={profileId} />
+      </Restrict>
     </HStack>
   );
 };
