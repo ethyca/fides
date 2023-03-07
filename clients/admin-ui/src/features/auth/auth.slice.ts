@@ -6,7 +6,7 @@ import { BASE_URL } from "~/constants";
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { utf8ToB64 } from "~/features/common/utils";
 import { User } from "~/features/user-management/types";
-import { RoleRegistry, ScopeRegistry } from "~/types/api";
+import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 import {
   LoginRequest,
@@ -54,7 +54,7 @@ export const selectToken = (state: RootState) => selectAuth(state).token;
 
 export const { login, logout } = authSlice.actions;
 
-type RoleToScopes = Record<RoleRegistry, ScopeRegistry[]>;
+type RoleToScopes = Record<RoleRegistryEnum, ScopeRegistryEnum[]>;
 
 // Auth API
 export const authApi = createApi({

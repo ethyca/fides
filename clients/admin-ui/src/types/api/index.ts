@@ -200,7 +200,7 @@ export type { ResourceFilter } from "./models/ResourceFilter";
 export { ResourceTypes } from "./models/ResourceTypes";
 export { ResponseFormat } from "./models/ResponseFormat";
 export type { ReviewPrivacyRequestIds } from "./models/ReviewPrivacyRequestIds";
-export { RoleRegistry } from "./models/RoleRegistry";
+export { RoleRegistryEnum } from "./models/RoleRegistryEnum";
 export type { RowCountRequest } from "./models/RowCountRequest";
 export type { RuleCreate } from "./models/RuleCreate";
 export type { RuleResponse } from "./models/RuleResponse";
@@ -215,7 +215,7 @@ export type { SaasConnectionTemplateValues } from "./models/SaasConnectionTempla
 export type { SaaSRequest } from "./models/SaaSRequest";
 export type { SaaSRequestMap } from "./models/SaaSRequestMap";
 export type { SaaSSchema } from "./models/SaaSSchema";
-export { ScopeRegistry } from "./models/ScopeRegistry";
+export { ScopeRegistryEnum } from "./models/ScopeRegistryEnum";
 export type { SnowflakeDocsSchema } from "./models/SnowflakeDocsSchema";
 export type { SovrnEmailDocsSchema } from "./models/SovrnEmailDocsSchema";
 export { SpecialCategoriesEnum } from "./models/SpecialCategoriesEnum";

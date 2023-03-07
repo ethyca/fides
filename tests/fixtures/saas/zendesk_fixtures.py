@@ -1,30 +1,21 @@
-from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
 import requests
-from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import Dataset as CtlDataset
-from fides.api.ops.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from tests.ops.integration_tests.saas.connector_runner import (
+    ConnectorRunner,
+    generate_random_email,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.util.saas_util import (
-    load_config_with_replacement,
-    load_dataset_with_replacement,
-)
-from fides.lib.cryptography import cryptographic_util
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("zendesk")
 
 
 @pytest.fixture(scope="session")
-def zendesk_secrets(saas_config):
+def zendesk_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "zendesk.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "zendesk.username") or secrets["username"],
@@ -35,119 +26,92 @@ def zendesk_secrets(saas_config):
 
 
 @pytest.fixture(scope="session")
-def zendesk_identity_email(saas_config):
+def zendesk_identity_email(saas_config) -> str:
     return (
         pydash.get(saas_config, "zendesk.identity_email") or secrets["identity_email"]
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def zendesk_erasure_identity_email() -> str:
-    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+    return generate_random_email()
+
+
+class ZendeskClient:
+    def __init__(self, secrets: Dict[str, Any]):
+        self.base_url = f"https://{secrets['domain']}"
+        self.auth = secrets["username"], secrets["api_key"]
+
+    def create_user(self, email):
+        return requests.post(
+            url=f"{self.base_url}/api/v2/users",
+            auth=self.auth,
+            json={
+                "user": {
+                    "name": "Ethyca Test Erasure",
+                    "email": email,
+                    "verified": "true",
+                }
+            },
+        )
+
+    def get_user(self, email):
+        return requests.get(
+            url=f"{self.base_url}/v2/users",
+            auth=self.auth,
+            params={"email": email},
+        )
+
+    def create_ticket(self, user_id: str):
+        return requests.post(
+            url=f"{self.base_url}/api/v2/tickets",
+            auth=self.auth,
+            json={
+                "ticket": {
+                    "comment": {"body": "Test Comment"},
+                    "priority": "urgent",
+                    "subject": "Test Ticket",
+                    "requester_id": user_id,
+                    "submitter_id": user_id,
+                    "description": "Test Description",
+                }
+            },
+        )
+
+    def get_ticket(self, ticket_id: str):
+        return requests.get(
+            url=f"{self.base_url}/v2/tickets/{ticket_id}.json",
+            auth=self.auth,
+        )
 
 
 @pytest.fixture
-def zendesk_config() -> Dict[str, Any]:
-    return load_config_with_replacement(
-        "data/saas/config/zendesk_config.yml",
-        "<instance_fides_key>",
-        "zendesk_instance",
-    )
+def zendesk_client(zendesk_secrets) -> Generator:
+    yield ZendeskClient(zendesk_secrets)
 
 
 @pytest.fixture
-def zendesk_dataset() -> Dict[str, Any]:
-    return load_dataset_with_replacement(
-        "data/saas/dataset/zendesk_dataset.yml",
-        "<instance_fides_key>",
-        "zendesk_instance",
-    )[0]
-
-
-@pytest.fixture(scope="function")
-def zendesk_connection_config(
-    db: Session, zendesk_config, zendesk_secrets
+def zendesk_erasure_data(
+    zendesk_client: ZendeskClient,
+    zendesk_erasure_identity_email: str,
 ) -> Generator:
-    fides_key = zendesk_config["fides_key"]
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "key": fides_key,
-            "name": fides_key,
-            "connection_type": ConnectionType.saas,
-            "access": AccessLevel.write,
-            "secrets": zendesk_secrets,
-            "saas_config": zendesk_config,
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
 
-
-@pytest.fixture
-def zendesk_dataset_config(
-    db: Session,
-    zendesk_connection_config: ConnectionConfig,
-    zendesk_dataset: Dict[str, Any],
-) -> Generator:
-    fides_key = zendesk_dataset["fides_key"]
-    zendesk_connection_config.name = fides_key
-    zendesk_connection_config.key = fides_key
-    zendesk_connection_config.save(db=db)
-
-    ctl_dataset = CtlDataset.create_from_dataset_dict(db, zendesk_dataset)
-
-    dataset = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": zendesk_connection_config.id,
-            "fides_key": fides_key,
-            "ctl_dataset_id": ctl_dataset.id,
-        },
-    )
-    yield dataset
-    dataset.delete(db=db)
-    ctl_dataset.delete(db=db)
-
-
-@pytest.fixture(scope="function")
-def zendesk_create_erasure_data(
-    zendesk_connection_config: ConnectionConfig, zendesk_erasure_identity_email: str
-) -> None:
-
-    sleep(60)
-
-    zendesk_secrets = zendesk_connection_config.secrets
-    auth = zendesk_secrets["username"], zendesk_secrets["api_key"]
-    base_url = f"https://{zendesk_secrets['domain']}"
-
-    # user
-    body = {
-        "user": {
-            "name": "Ethyca Test Erasure",
-            "email": zendesk_erasure_identity_email,
-            "verified": "true",
-        }
-    }
-
-    users_response = requests.post(url=f"{base_url}/api/v2/users", auth=auth, json=body)
-    user = users_response.json()["user"]
-    user_id = user["id"]
+    # customer
+    response = zendesk_client.create_user(zendesk_erasure_identity_email)
+    assert response.ok
+    user = response.json()["user"]
 
     # ticket
-    ticket_data = {
-        "ticket": {
-            "comment": {"body": "Test Comment"},
-            "priority": "urgent",
-            "subject": "Test Ticket",
-            "requester_id": user_id,
-            "submitter_id": user_id,
-            "description": "Test Description",
-        }
-    }
-    response = requests.post(
-        url=f"{base_url}/api/v2/tickets", auth=auth, json=ticket_data
-    )
+    response = zendesk_client.create_ticket(user["id"])
+    assert response.ok
     ticket = response.json()["ticket"]
-    ticket_id = ticket["id"]
     yield ticket, user
+
+
+@pytest.fixture
+def zendesk_runner(
+    db,
+    cache,
+    zendesk_secrets,
+) -> ConnectorRunner:
+    return ConnectorRunner(db, cache, "zendesk", zendesk_secrets)

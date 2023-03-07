@@ -42,8 +42,13 @@ const validationSchema = Yup.object().shape({
   name: Yup.string().required("Name is required").trim(),
 });
 
+type CreateCustomFieldProps = {
+  onSubmitComplete: () => void;
+  resourceType: ResourceTypes;
+};
+
 const CreateCustomFields = forwardRef(
-  ({ onSubmitComplete, resourceType }, ref) => {
+  ({ onSubmitComplete, resourceType }: CreateCustomFieldProps, ref) => {
     const { errorAlert, successAlert } = useAlert();
     const formRef = useRef(null);
 

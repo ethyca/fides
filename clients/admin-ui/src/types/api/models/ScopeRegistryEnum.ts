@@ -5,7 +5,7 @@
 /**
  * An enumeration.
  */
-export enum ScopeRegistry {
+export enum ScopeRegistryEnum {
   CONFIG_READ = "config:read",
   CONFIG_UPDATE = "config:update",
   CLI_OBJECTS_CREATE = "cli-objects:create",

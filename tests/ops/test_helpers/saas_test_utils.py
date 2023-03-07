@@ -14,12 +14,15 @@ def poll_for_existence(
     retries: int = 10,
     interval: int = 5,
     existence_desired=True,
+    verification_count=1,
 ) -> Any:
     # we continue polling if poller is None OR if poller is not None but we don't desire existence, i.e. we are polling for removal
-    while (return_val := poller(*args, **kwargs) is None) is existence_desired:
-        if not retries:
-            raise Exception(error_message)
-        retries -= 1
-        time.sleep(interval)
-
+    original_retries = retries
+    for _ in range(verification_count):
+        while (return_val := poller(*args, **kwargs) is None) is existence_desired:
+            if not retries:
+                raise Exception(error_message)
+            retries -= 1
+            time.sleep(interval)
+        retries = original_retries
     return return_val
