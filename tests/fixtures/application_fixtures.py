@@ -71,7 +71,6 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import ADMIN, VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -127,6 +126,9 @@ integration_secrets = {
         "uri": pydash.get(integration_config, "fides_example.uri"),
         "username": pydash.get(integration_config, "fides_example.username"),
         "password": pydash.get(integration_config, "fides_example.password"),
+        "polling_timeout": pydash.get(
+            integration_config, "fides_example.polling_timeout"
+        ),
     },
 }
 
@@ -1628,6 +1630,7 @@ def test_fides_client(
         fides_connector_example_secrets["uri"],
         fides_connector_example_secrets["username"],
         fides_connector_example_secrets["password"],
+        fides_connector_example_secrets["polling_timeout"]
     )
 
 
@@ -1650,59 +1653,3 @@ def system(db: Session) -> System:
         },
     )
     return system
-
-
-@pytest.fixture
-def admin_user(db):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fides_admin_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-        },
-    )
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=[],
-        roles=[ADMIN],
-        user_id=user.id,
-    )
-
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [ADMIN]}
-    )
-
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
-def viewer_user(db):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fides_viewer_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-        },
-    )
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=[],
-        roles=[VIEWER],
-        user_id=user.id,
-    )
-
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER]}
-    )
-
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    yield user
-    user.delete(db)

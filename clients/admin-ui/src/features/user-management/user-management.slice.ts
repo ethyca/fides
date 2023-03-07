@@ -1,13 +1,13 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 import { utf8ToB64 } from "common/utils";
 
 import type { RootState } from "~/app/store";
 import { BASE_URL } from "~/constants";
-import { UserForcePasswordReset } from "~/types/api";
+import { selectToken, selectUser } from "~/features/auth";
+import { ScopeRegistry, UserForcePasswordReset } from "~/types/api";
 
-import { selectToken } from "../auth";
 import {
   User,
   UserCreate,
@@ -59,12 +59,6 @@ export const userManagementSlice = createSlice({
 });
 
 export const { setPage, setUsernameSearch } = userManagementSlice.actions;
-
-export const selectUserFilters = (state: RootState): UsersListParams => ({
-  page: state.userManagement.page,
-  size: state.userManagement.size,
-  username: state.userManagement.username,
-});
 
 export const { reducer } = userManagementSlice;
 
@@ -186,6 +180,28 @@ export const userApi = createApi({
     }),
   }),
 });
+
+export const selectUserFilters = (state: RootState): UsersListParams => ({
+  page: state.userManagement.page,
+  size: state.userManagement.size,
+  username: state.userManagement.username,
+});
+
+const emptyScopes: ScopeRegistry[] = [];
+export const selectThisUsersScopes = createSelector(
+  [(RootState) => RootState, selectUser],
+  (RootState, user) => {
+    if (!user) {
+      return emptyScopes;
+    }
+    const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
+      RootState
+    ).data;
+    // Backend UserPermissions model doesn't automatically type to the same enum
+    // so cast to ScopeRegistry[]
+    return permissions ? (permissions.scopes as ScopeRegistry[]) : emptyScopes;
+  }
+);
 
 export const {
   useGetAllUsersQuery,

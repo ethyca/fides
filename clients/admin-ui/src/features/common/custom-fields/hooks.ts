@@ -78,15 +78,17 @@ export const useCustomFields = ({
     [allAllowListQuery.data]
   );
 
+  const activeCustomFieldDefinition = useMemo(
+    () => customFieldDefinitionsQuery.data?.filter((cfd) => cfd.active),
+    [customFieldDefinitionsQuery.data]
+  );
+
   const idToCustomFieldDefinition = useMemo(
     () =>
       new Map(
-        filterWithId(customFieldDefinitionsQuery.data).map((cfd) => [
-          cfd.id,
-          cfd,
-        ])
+        filterWithId(activeCustomFieldDefinition).map((cfd) => [cfd.id, cfd])
       ),
-    [customFieldDefinitionsQuery]
+    [activeCustomFieldDefinition]
   );
 
   const definitionIdToCustomField = useMemo(

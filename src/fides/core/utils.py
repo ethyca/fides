@@ -102,9 +102,14 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
     """
     for field in fields:
         yield field
-        if field.fields:
-            for nested_field in get_all_level_fields(field.fields):
-                yield nested_field
+        if isinstance(field, dict):
+            if field["fields"]:
+                for nested_field in get_all_level_fields(field["fields"]):
+                    yield nested_field
+        else:
+            if field.fields:
+                for nested_field in get_all_level_fields(field.fields):
+                    yield nested_field
 
 
 def get_manifest_list(manifests_dir: str) -> List[str]:

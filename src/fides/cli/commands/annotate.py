@@ -1,6 +1,6 @@
 """Contains the annotate group of CLI commands for fides."""
 
-import click
+import rich_click as click
 
 from fides.cli.utils import with_analytics
 from fides.core import annotate_dataset as _annotate_dataset
@@ -10,7 +10,7 @@ from fides.core import annotate_dataset as _annotate_dataset
 @click.pass_context
 def annotate(ctx: click.Context) -> None:
     """
-    Annotate fides resource types
+    Interactively annotate Fides resources.
     """
 
 
@@ -21,21 +21,21 @@ def annotate(ctx: click.Context) -> None:
     "-a",
     "--all-members",
     is_flag=True,
-    help="Annotate all dataset members, not just fields",
+    help="Annotate all parts of the dataset including schemas and tables.",
 )
 @click.option(
     "-v",
     "--validate",
     is_flag=True,
     default=False,
-    help="Strictly validate annotation inputs.",
+    help="Validate annotation inputs.",
 )
 @with_analytics
 def annotate_dataset(
     ctx: click.Context, input_filename: str, all_members: bool, validate: bool
 ) -> None:
     """
-    Guided flow for annotating datasets. The dataset file will be edited in-place.
+    Interactively annotate a dataset file in-place.
     """
     config = ctx.obj["CONFIG"]
     _annotate_dataset.annotate_dataset(

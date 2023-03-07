@@ -1,14 +1,9 @@
 """Contains all of the core CLI commands for fides."""
 from typing import Optional
 
-import click
+import rich_click as click
 
-from fides.cli.options import (
-    dry_flag,
-    fides_key_option,
-    manifests_dir_argument,
-    verbose_flag,
-)
+from fides.cli.options import dry_flag, manifests_dir_argument, verbose_flag
 from fides.cli.utils import pretty_echo, print_divider, with_analytics
 from fides.core import audit as _audit
 from fides.core import evaluate as _evaluate
@@ -24,13 +19,13 @@ from fides.core.utils import echo_red, git_is_dirty
 @click.option(
     "--diff",
     is_flag=True,
-    help="Include any changes between server and local resources in the command output",
+    help="Print any diffs between the local & server objects",
 )
 @manifests_dir_argument
 @with_analytics
 def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
-    Validate local manifest files and persist any changes via the API server.
+    Parse local manifest files and upload them to the server.
     """
 
     config = ctx.obj["CONFIG"]
@@ -47,19 +42,28 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
 @click.command()
 @click.pass_context
 @manifests_dir_argument
-@fides_key_option
+@click.option(
+    "--fides-key",
+    "-k",
+    help="The fides_key of a specific policy to evaluate.",
+    default="",
+)
 @click.option(
     "-m",
     "--message",
-    help="A message that you can supply to describe the context of this evaluation.",
+    help="Describe the context of this evaluation.",
 )
 @click.option(
     "-a",
     "--audit",
     is_flag=True,
-    help="Raise errors if resources are missing attributes required for building a data map.",
+    help="Validate that the objects in this evaluation produce a valid data map.",
 )
-@dry_flag
+@click.option(
+    "--dry",
+    is_flag=True,
+    help="Do not upload objects or results to the Fides webserver.",
+)
 @with_analytics
 def evaluate(
     ctx: click.Context,
@@ -70,12 +74,7 @@ def evaluate(
     dry: bool,
 ) -> None:
     """
-    Compare your System's Privacy Declarations with your Organization's Policy Rules.
-
-    All local resources are applied to the server before evaluation.
-
-    If your policy evaluation fails, it is expected that you will need to
-    either adjust your Privacy Declarations, Datasets, or Policies before trying again.
+    Evaluate System-level Privacy Declarations against Organization-level Policy Rules.
     """
 
     config = ctx.obj["CONFIG"]
@@ -127,10 +126,7 @@ def evaluate(
 @with_analytics
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
-    Reads the resource files that are stored in MANIFESTS_DIR and its subdirectories to verify
-    the validity of all manifest files.
-
-    If the taxonomy is invalid, this command prints the error messages and triggers a non-zero exit code.
+    Parse all Fides objects located in the supplied directory.
     """
     taxonomy = _parse.parse(manifests_dir=manifests_dir)
     if verbose:
@@ -149,12 +145,7 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 @with_analytics
 def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -> None:
     """
-    Update local resource files by their fides_key to match their server versions.
-
-    Alternatively, with the "--all" flag all resources from the server will be pulled
-    down into a local file.
-
-    The pull is aborted if there are unstaged or untracked files in the manifests dir.
+    Update local resource files based on the state of the objects on the server.
     """
 
     # Make the resources that are pulled configurable

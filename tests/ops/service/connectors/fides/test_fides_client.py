@@ -2,8 +2,7 @@ from typing import Dict
 from unittest import mock
 
 import pytest
-from httpx import AsyncClient
-from requests import HTTPError, Session
+from httpx import AsyncClient, Client, HTTPStatusError
 
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
@@ -17,8 +16,8 @@ class MockResponse:
     A class to mock Fides API responses
     """
 
-    def __init__(self, ok, json_data):
-        self.ok = ok
+    def __init__(self, is_success, json_data):
+        self.is_success = is_success
         self.json_data = json_data
 
     def json(self):
@@ -43,7 +42,7 @@ class TestFidesClientUnit:
     """
 
     @mock.patch(
-        "requests.post",
+        "httpx.post",
         side_effect=[
             MockResponse(True, {"token_data": {"access_token": SAMPLE_TOKEN}})
         ],
@@ -69,7 +68,7 @@ class TestFidesClientUnit:
         )
         assert request.method == "GET"
         assert request.url == test_fides_client.uri + "/testpath"
-        assert len(request.headers) == 2
+        assert len(request.headers) == 7
         assert "another_header" in request.headers
         assert request.headers["another_header"] == "header_value"
         assert "Authorization" in request.headers
@@ -88,7 +87,7 @@ class TestFidesClientUnit:
         assert "No token" in str(exc)
 
     @mock.patch(
-        "requests.post",
+        "httpx.post",
         side_effect=[
             MockResponse(True, {"token_data": {"access_token": SAMPLE_TOKEN}})
         ],
@@ -112,22 +111,6 @@ class TestFidesClientUnit:
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
 
-        # test form data passed as tuples
-        request = test_fides_client.authenticated_request(
-            "POST",
-            path="/testpath",
-            query_params={"param1": "value1", "param2": "value2"},
-            data=[("key1", "value1"), ("key2", "value2")],
-        )
-        assert "Authorization" in request.headers
-        assert request.headers["Authorization"] == f"Bearer {SAMPLE_TOKEN}"
-        assert request.method == "POST"
-        assert (
-            request.url
-            == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
-        )
-        assert request.body == "key1=value1&key2=value2"
-
         # test form data passed as dict
         request = test_fides_client.authenticated_request(
             "POST",
@@ -142,7 +125,8 @@ class TestFidesClientUnit:
             request.url
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
-        assert request.body == "key1=value1&key2=value2"
+        request.read()
+        assert request.content == b"key1=value1&key2=value2"
 
         # test body passed as string literal
         request = test_fides_client.authenticated_request(
@@ -158,7 +142,8 @@ class TestFidesClientUnit:
             request.url
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
-        assert request.body == "testbody"
+        request.read()
+        assert request.content == b"testbody"
 
         # test json body passed as a dict
         request = test_fides_client.authenticated_request(
@@ -174,7 +159,8 @@ class TestFidesClientUnit:
             request.url
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
-        assert request.body == b'{"field1": "value1"}'
+        request.read()
+        assert request.content == b'{"field1": "value1"}'
 
         # test json body passed as a list
         request = test_fides_client.authenticated_request(
@@ -190,7 +176,8 @@ class TestFidesClientUnit:
             request.url
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
-        assert request.body == b'[{"field1": "value1"}]'
+        request.read()
+        assert request.content == b'[{"field1": "value1"}]'
 
     @pytest.mark.asyncio
     def test_poll_for_completion(
@@ -301,7 +288,7 @@ class TestFidesClientIntegration:
         # so that we don't call `create_client()`, which performs
         # login as part of initialization
 
-        with pytest.raises(HTTPError):
+        with pytest.raises(HTTPStatusError):
             test_fides_client_bad_credentials.login()
         assert test_fides_client_bad_credentials.token is None
 
@@ -317,7 +304,7 @@ class TestFidesClientIntegration:
         Test that properly configured fides client can create and execute a valid access privacy request
         Inspired by `test_privacy_request_endpoints.TestCreatePrivacyRequest`
         """
-        monkeypatch.setattr(Session, "send", api_client.send)
+        monkeypatch.setattr(Client, "send", api_client.send)
 
         pr_id = authenticated_fides_client.create_privacy_request(
             external_id="test_external_id",
@@ -339,14 +326,14 @@ class TestFidesClientIntegration:
         privacy request ID specified. This acts as a basic test to
         validate we can successfully hit authenticated endpoints.
         """
-        monkeypatch.setattr(Session, "send", api_client.send)
+        monkeypatch.setattr(Client, "send", api_client.send)
         statuses = authenticated_fides_client.request_status()
         assert len(statuses) == 0
 
     def test_request_status_privacy_request(
         self, authenticated_fides_client: FidesClient, policy, monkeypatch, api_client
     ):
-        monkeypatch.setattr(Session, "send", api_client.send)
+        monkeypatch.setattr(Client, "send", api_client.send)
 
         pr_id = authenticated_fides_client.create_privacy_request(
             external_id="test_external_id",
