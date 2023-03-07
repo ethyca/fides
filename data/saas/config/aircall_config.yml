@@ -7,14 +7,16 @@ saas_config:
 
   connector_params:
     - name: domain
+      default_value: api.aircall.io
     - name: api_token
 
   client_config:
     protocol: https
     host: <domain>
     # authentication:
-    #   strategy: no_authentication
-    #   configuration: {}
+    #   strategy: basic
+    #   configuration:
+    #     username: <api_token>
 
   test_request:
     method: GET

@@ -21,6 +21,7 @@ export enum DisabledStatus {
 
 export enum SaasType {
   ADOBE_CAMPAIGN = "adobe_campaign",
+  AIRCALL = "aircall",
   AUTH0 = "auth0",
   BRAZE = "braze",
   DATADOG = "datadog",
@@ -79,6 +80,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   [ConnectionType.SNOWFLAKE, "snowflake.svg"],
   [ConnectionType.TIMESCALE, "timescaledb.svg"],
   [SaasType.ADOBE_CAMPAIGN, "adobe.svg"],
+  [SaasType.AIRCALL, "aircall.svg"],
   [SaasType.AUTH0, "auth0.svg"],
   [SaasType.BRAZE, "braze.svg"],
   [SaasType.DATADOG, "datadog.svg"],

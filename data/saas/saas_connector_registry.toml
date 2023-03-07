@@ -175,5 +175,5 @@ human_readable = "Universal Analytics"
 [aircall]
 config = "data/saas/config/aircall_config.yml"
 dataset = "data/saas/dataset/aircall_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/aircall.svg"
 human_readable = "Aircall"
