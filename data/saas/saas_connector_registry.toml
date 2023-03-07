@@ -169,5 +169,5 @@ human_readable = "Universal Analytics"
 [amplitude]
 config = "data/saas/config/amplitude_config.yml"
 dataset = "data/saas/dataset/amplitude_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/amplitude.svg"
 human_readable = "Amplitude"
