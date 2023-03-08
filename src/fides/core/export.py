@@ -229,10 +229,12 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 keys.append(key_string)
                 output_list[0] = tuple(keys)
                 custom_columns[key_string] = key
+                child_custom_field_data = {}
                 if isinstance(value, list):
-                    system_custom_field_data[key_string] = ", ".join(value)
+                    child_custom_field_data[key_string] = ", ".join(value)
                 else:
-                    system_custom_field_data[key_string] = value
+                    child_custom_field_data[key_string] = value
+                system_custom_field_data[system["fides_key"]] = child_custom_field_data
 
         third_country_list = ", ".join(system.get("third_country_transfers") or [])
         system_dependencies = ", ".join(system.get("system_dependencies") or [])
@@ -317,14 +319,19 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 ]
                 cartesian_product_of_declaration = []
                 if system_custom_field_data:
-                    for _, v in system_custom_field_data.items():
-                        for product in cartesian_product_of_declaration_builder:
-                            product.append(v)
-                            cartesian_product_of_declaration.append(tuple(product))
-                else:
-                    cartesian_product_of_declaration = [
-                        tuple(x) for x in cartesian_product_of_declaration_builder
-                    ]
+                    for product in cartesian_product_of_declaration_builder:
+                        product_fides_key = product[0]
+                        if product_fides_key in system_custom_field_data:
+                            for _, v in system_custom_field_data[
+                                product_fides_key
+                            ].items():
+                                product.append(v)
+                                cartesian_product_of_declaration.append(tuple(product))
+                        else:
+                            cartesian_product_of_declaration = [
+                                tuple(x)
+                                for x in cartesian_product_of_declaration_builder
+                            ]
 
                 output_list += cartesian_product_of_declaration
         else:
@@ -340,8 +347,9 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system_egress,
             ]
             if system_custom_field_data:
-                for _, v in system_custom_field_data.items():
-                    system_row.append(v)
+                if system["fides_key"] in system_custom_field_data:
+                    for _, v in system_custom_field_data[system["fides_key"]].items():
+                        system_row.append(v)
             len_no_privacy = len(system_row)
             system_row.append(data_protection_impact_assessment["is_required"])
             system_row.append(data_protection_impact_assessment["progress"])
