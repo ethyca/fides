@@ -35,9 +35,10 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
     <>
       <Tr
         key={user.id}
-        _hover={{ bg: "gray.50" }}
+        _hover={{ bg: "gray.50", cursor: "pointer" }}
         height="36px"
         data-testid={`row-${user.id}`}
+        onClick={handleEditUser}
       >
         <Td pl={0} py={1}>
           {user.username}
