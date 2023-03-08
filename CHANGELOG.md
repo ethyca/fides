@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.8.0...main)
 
+### Fixed
+
+* Disabled hiding Admin UI based on user scopes [#2771](https://github.com/ethyca/fides/pull/2771)
+
 ## [2.8.0](https://github.com/ethyca/fides/compare/2.7.1...2.8.0)
 
 ### Added
