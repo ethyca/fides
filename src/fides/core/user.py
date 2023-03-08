@@ -186,22 +186,13 @@ def get_permissions_command(server_url: str) -> None:
     )
 
     print("Permissions (Directly-Assigned Scopes):")
-    if scopes:
-        for scope in scopes:
-            print(f"\t{scope}")
-    else:
-        print(f"\t{None}")
+    for scope in scopes:
+        print(f"\t{scope}")
 
     print("Roles:")
-    if roles:
-        for role in roles:
-            print(f"\t{role}")
-    else:
-        print(f"\t{None}")
+    for role in roles:
+        print(f"\t{role}")
 
     print("Systems Under Management:")
-    if systems:
-        for system in systems:
-            print(f"\t{system}")
-    else:
-        print(f"\t{None}")
+    for system in systems:
+        print(f"\t{system}")
