@@ -45,7 +45,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Configuration",
         path: "/privacy-requests/configure",
-        scopes: [],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
     ],
   },
@@ -57,28 +57,28 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "View map",
         path: "/datamap",
         requiresPlus: true,
-        scopes: [],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "View systems",
         path: "/system",
-        scopes: [],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Add systems",
         path: "/add-systems",
-        scopes: [],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Manage datasets",
         path: "/dataset",
-        scopes: [ScopeRegistryEnum.DATASET_CREATE_OR_UPDATE],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Classify systems",
         path: "/classify-systems",
         requiresPlus: true,
-        scopes: [], // temporary scope until we decide what to do here
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
     ],
   },
@@ -88,7 +88,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Taxonomy",
         path: "/taxonomy",
-        scopes: [],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Users",
