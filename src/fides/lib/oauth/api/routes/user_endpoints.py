@@ -85,8 +85,8 @@ def create_user(
         db=db,
         data={
             "user_id": user.id,
-            "scopes": [PRIVACY_REQUEST_READ],
-        },  # TODO - Change this to Viewer Role by default?
+            "scopes": [],
+        },
     )
     return user
 
