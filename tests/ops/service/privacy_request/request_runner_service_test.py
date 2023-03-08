@@ -1983,7 +1983,7 @@ class TestPrivacyRequestsEmailNotifications:
                     db=ANY,
                     action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
                     to_identity=identity,
-                    service_type=MessagingServiceType.MAILGUN.value,
+                    service_type=MessagingServiceType.mailgun.value,
                     message_body_params=AccessRequestCompleteBodyParams(
                         subject_request_download_time_in_days=download_time_in_days,
                         download_links=[upload_mock.return_value],
@@ -1993,7 +1993,7 @@ class TestPrivacyRequestsEmailNotifications:
                     db=ANY,
                     action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
                     to_identity=identity,
-                    service_type=MessagingServiceType.MAILGUN.value,
+                    service_type=MessagingServiceType.mailgun.value,
                     message_body_params=None,
                 ),
             ],

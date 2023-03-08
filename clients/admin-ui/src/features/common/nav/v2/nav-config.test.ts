@@ -9,7 +9,8 @@ import {
   NAV_CONFIG,
 } from "./nav-config";
 
-describe("configureNavGroups", () => {
+// TODO: tests temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+describe.skip("configureNavGroups", () => {
   it("only includes home and management by default", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
@@ -250,7 +251,8 @@ describe("findActiveNav", () => {
     });
   });
 
-  describe("canAccessRoute", () => {
+  // TODO: tests temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+  describe.skip("canAccessRoute", () => {
     const accessTestCases = [
       {
         path: "/",

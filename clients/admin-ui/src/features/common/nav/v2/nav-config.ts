@@ -45,7 +45,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Configuration",
         path: "/privacy-requests/configure",
-        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
     ],
   },
@@ -57,34 +57,28 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "View map",
         path: "/datamap",
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "View systems",
         path: "/system",
-        scopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Add systems",
         path: "/add-systems",
-        scopes: [
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
-        ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Manage datasets",
         path: "/dataset",
-        scopes: [
-          ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-          ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
-        ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Classify systems",
         path: "/classify-systems",
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.CLI_OBJECTS_UPDATE], // temporary scope until we decide what to do here
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
     ],
   },
@@ -94,7 +88,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Taxonomy",
         path: "/taxonomy",
-        scopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Users",
