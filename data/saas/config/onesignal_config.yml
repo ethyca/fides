@@ -27,8 +27,6 @@ saas_config:
     param_values:
       - name: app_id
         connector_param: app_id
-      - name: api_token
-        connector_param: api_token
 
   endpoints:
     - name: devices
@@ -41,8 +39,6 @@ saas_config:
               connector_param: player_id
             - name: app_id
               connector_param: app_id
-            - name: api_token
-              connector_param: api_token
             - name: placeholder
               identity: email
         update:
