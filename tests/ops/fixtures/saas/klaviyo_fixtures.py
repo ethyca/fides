@@ -28,7 +28,8 @@ secrets = get_secrets("klaviyo")
 def klaviyo_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "klaviyo.domain") or secrets["domain"],
-        "api_key": pydash.get(saas_config, "klaviyo.api_key") or secrets["api_key"]
+        "api_key": pydash.get(saas_config, "klaviyo.api_key") or secrets["api_key"],
+        "revision": pydash.get(saas_config, "klaviyo.revision") or secrets["revision"]
     }
 
 
@@ -118,7 +119,7 @@ def klaviyo_create_erasure_data(
     base_url = f"https://{klaviyo_secrets['domain']}"
     headers = {
         "Authorization": f"Klaviyo-API-Key {klaviyo_secrets['api_key']}",
-        "revision": "2023-02-03"
+        "revision": klaviyo_secrets['revision']
     }
     # user
     body = {

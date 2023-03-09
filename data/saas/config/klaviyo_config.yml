@@ -9,6 +9,7 @@ saas_config:
     - name: domain
       default_value: a.klaviyo.com
     - name: api_key
+    - name: revision
 
   client_config:
     protocol: https
@@ -19,13 +20,12 @@ saas_config:
         headers:
           - name: Authorization
             value: Klaviyo-API-Key <api_key>
+          - name: revision
+            value: '2023-02-03'
 
   test_request:
     method: GET
     path: /api/profiles
-    headers:
-      - name: revision
-        value: '2023-02-03'
 
   endpoints:
     - name: profiles
@@ -33,9 +33,6 @@ saas_config:
         read:
           method: GET
           path: /api/profiles
-          headers:
-            - name: revision
-              value: '2023-02-03'
           query_params:
             - name: filter
               value: 'equals(email,"<email>")'
@@ -46,9 +43,6 @@ saas_config:
         delete:
           method: POST
           path: /api/data-privacy-deletion-jobs
-          headers:
-            - name: revision
-              value: '2023-02-03'
           body: |
             {
               "data": {

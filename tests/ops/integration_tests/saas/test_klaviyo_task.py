@@ -136,7 +136,7 @@ async def test_klaviyo_erasure_request_task(
     base_url = f"https://{klaviyo_secrets['domain']}"
     headers = {
         "Authorization": f"Klaviyo-API-Key {klaviyo_secrets['api_key']}",
-        "revision": "2023-02-03"
+        "revision": klaviyo_secrets['revision']
     }
 
     # user
