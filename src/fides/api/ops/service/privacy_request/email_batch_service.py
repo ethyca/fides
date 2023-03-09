@@ -18,7 +18,6 @@ from fides.api.ops.service.connectors.consent_email_connector import (
     get_identity_types_for_connector,
     send_single_consent_email,
 )
-from fides.api.ops.service.connectors.email_connector import EmailConnector
 from fides.api.ops.service.privacy_request.request_runner_service import (
     get_consent_email_connection_configs,
     get_erasure_email_connection_configs,
@@ -30,7 +29,7 @@ from fides.core.config import get_config
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 CONFIG = get_config()
-BATCH_CONSENT_EMAIL_SEND = "batch_consent_email_send"
+BATCH_EMAIL_SEND = "batch_email_send"
 
 
 class BatchedUserConsentData(BaseModel):
@@ -170,7 +169,7 @@ def send_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
     with self.get_new_session() as session:
 
         privacy_requests: Query = session.query(PrivacyRequest).filter(
-            PrivacyRequest.status == PrivacyRequestStatus.awaiting_consent_email_send
+            PrivacyRequest.status == PrivacyRequestStatus.awaiting_email_send
         )
         if not privacy_requests.first():
             logger.info(
@@ -181,8 +180,9 @@ def send_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
 
         consent_configs: Query = get_consent_email_connection_configs(session)
         erasure_configs: Query = get_erasure_email_connection_configs(session)
-        if not consent_configs.first() and not erasure_configs.first():
-            requeue_privacy_requests_after_consent_email_send(privacy_requests, session)
+        combined_configs = consent_configs.union_all(erasure_configs)
+        if not combined_configs.first():
+            requeue_privacy_requests_after_email_send(privacy_requests, session)
             logger.info(
                 "Skipping batch email send with status: {}",
                 ConsentEmailExitState.no_applicable_connectors.value,
@@ -200,7 +200,7 @@ def send_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
                 get_erasure_email_connection_configs(session)
             )
             for connection_config in erasure_email_connection_configs:
-                get_connector(connection_config).send_erasure_email(
+                get_connector(connection_config).send_erasure_email(  # type: ignore
                     filter_privacy_requests_by_action_type(
                         privacy_requests, ActionType.erasure
                     )
@@ -221,7 +221,7 @@ def send_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
             )
             return ConsentEmailExitState.email_send_failed
 
-    requeue_privacy_requests_after_consent_email_send(privacy_requests, session)
+    requeue_privacy_requests_after_email_send(privacy_requests, session)
     return ConsentEmailExitState.complete
 
 
@@ -235,7 +235,7 @@ def filter_privacy_requests_by_action_type(
     )
 
 
-def requeue_privacy_requests_after_consent_email_send(
+def requeue_privacy_requests_after_email_send(
     privacy_requests: Query, db: Session
 ) -> None:
     """After batch consent email send, requeue privacy requests from the post webhooks step
@@ -244,7 +244,7 @@ def requeue_privacy_requests_after_consent_email_send(
     Also cache on the privacy request itself that it is paused at the post-webhooks state,
     in case something happens in re-queueing.
     """
-    logger.info("Batched consent email send complete.")
+    logger.info("Batched email send complete.")
     logger.info("Queuing privacy requests from 'post_webhooks' step.")
     for privacy_request in privacy_requests:
         privacy_request.cache_paused_collection_details(
@@ -261,17 +261,17 @@ def requeue_privacy_requests_after_consent_email_send(
         )
 
 
-def initiate_scheduled_batch_consent_email_send() -> None:
-    """Initiates scheduler to add weekly batch consent email send"""
+def initiate_scheduled_batch_email_send() -> None:
+    """Initiates scheduler to add weekly batch email send"""
 
     if CONFIG.test_mode:
         return
 
-    logger.info("Initiating scheduler for batch consent email send")
+    logger.info("Initiating scheduler for batch email send")
     scheduler.add_job(
         func=send_email_batch,
         kwargs={},
-        id=BATCH_CONSENT_EMAIL_SEND,
+        id=BATCH_EMAIL_SEND,
         coalesce=False,
         replace_existing=True,
         trigger="interval",

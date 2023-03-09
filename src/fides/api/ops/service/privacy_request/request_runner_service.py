@@ -56,11 +56,9 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import FidesConnector, get_connector
 from fides.api.ops.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
-    GenericEmailConsentConnector,
 )
 from fides.api.ops.service.connectors.email_connector import (
     ERASURE_EMAIL_CONNECTOR_TYPES,
-    EmailConnector,
 )
 from fides.api.ops.service.connectors.fides_connector import (
     filter_fides_connector_datasets,
@@ -692,7 +690,7 @@ def needs_email_send(
     consent_email_configs: Query = get_consent_email_connection_configs(db)
     combined_configs = erasure_email_configs.union_all(consent_email_configs)
     for connection_config in combined_configs:
-        if get_connector(connection_config).needs_email(
+        if get_connector(connection_config).needs_email(  # type: ignore
             user_identities, privacy_request
         ):
             return True

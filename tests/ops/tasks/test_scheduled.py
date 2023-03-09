@@ -3,9 +3,9 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 
 from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.api.ops.service.privacy_request.consent_email_batch_service import (
-    BATCH_CONSENT_EMAIL_SEND,
-    initiate_scheduled_batch_consent_email_send,
+from fides.api.ops.service.privacy_request.email_batch_service import (
+    BATCH_EMAIL_SEND,
+    initiate_scheduled_batch_email_send,
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     initiate_paused_privacy_request_followup,
@@ -28,13 +28,12 @@ def test_initiate_scheduled_paused_privacy_request_followup(
     assert isinstance(job.trigger, DateTrigger)
 
 
-@pytest.mark.skip("Come back to this later")
-def test_initiate_batch_consent_email_send() -> None:
+def test_initiate_batch_email_send() -> None:
     CONFIG.test_mode = False
 
-    initiate_scheduled_batch_consent_email_send()
+    initiate_scheduled_batch_email_send()
     assert scheduler.running
-    job = scheduler.get_job(job_id=BATCH_CONSENT_EMAIL_SEND)
+    job = scheduler.get_job(job_id=BATCH_EMAIL_SEND)
     assert job is not None
     assert isinstance(job.trigger, CronTrigger)
 

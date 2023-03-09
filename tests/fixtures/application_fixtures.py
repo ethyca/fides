@@ -1242,14 +1242,14 @@ def privacy_request_requires_input(db: Session, policy: Policy) -> PrivacyReques
 
 
 @pytest.fixture(scope="function")
-def privacy_request_awaiting_consent_email_send(
+def privacy_request_awaiting_email_send(
     db: Session, consent_policy: Policy
 ) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
         consent_policy,
     )
-    privacy_request.status = PrivacyRequestStatus.awaiting_consent_email_send
+    privacy_request.status = PrivacyRequestStatus.awaiting_email_send
     privacy_request.save(db)
     yield privacy_request
     privacy_request.delete(db)

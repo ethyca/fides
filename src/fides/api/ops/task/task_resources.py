@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -29,6 +29,7 @@ from fides.api.ops.service.connectors import (
     SnowflakeConnector,
     TimescaleConnector,
 )
+from fides.api.ops.service.connectors.base_connector import LimitedConnector
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import Row
 
@@ -37,9 +38,11 @@ class Connections:
     """Temporary container for connections. This will be replaced."""
 
     def __init__(self) -> None:
-        self.connections: Dict[str, BaseConnector] = {}
+        self.connections: Dict[str, Union[BaseConnector, LimitedConnector]] = {}
 
-    def get_connector(self, connection_config: ConnectionConfig) -> BaseConnector:
+    def get_connector(
+        self, connection_config: ConnectionConfig
+    ) -> Union[BaseConnector, LimitedConnector]:
         """Return the connector corresponding to this config. Will return the existing
         connector or create one if it does not yet exist."""
         key = connection_config.key
@@ -51,7 +54,7 @@ class Connections:
     @staticmethod
     def build_connector(  # pylint: disable=R0911,R0912
         connection_config: ConnectionConfig,
-    ) -> BaseConnector:
+    ) -> Union[BaseConnector, LimitedConnector]:
         """Factory method to build the appropriately typed connector from the config."""
         if connection_config.connection_type == ConnectionType.postgres:
             return PostgreSQLConnector(connection_config)
@@ -86,7 +89,9 @@ class Connections:
     def close(self) -> None:
         """Close all held connection resources."""
         for connector in self.connections.values():
-            connector.close()
+            # Connectors extending LimitedConnector do not implement the close function
+            if isinstance(connector, BaseConnector):
+                connector.close()
 
 
 class TaskResources:

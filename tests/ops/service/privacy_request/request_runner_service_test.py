@@ -175,7 +175,6 @@ def test_halts_proceeding_if_cancelled(
     assert not upload_access_results_mock.called
 
 
-@pytest.mark.skip("Come back to this later")
 @mock.patch(
     "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
 )
@@ -226,7 +225,6 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     assert mock_email_dispatch.call_count == 1
 
 
-@pytest.mark.skip("Come back to this later")
 @mock.patch(
     "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
 )
@@ -2110,7 +2108,6 @@ class TestPrivacyRequestsManualWebhooks:
         assert pr.status == PrivacyRequestStatus.requires_input
         assert not mock_upload.called
 
-    @pytest.mark.skip("Come back to this later")
     @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_erasure"
@@ -2250,7 +2247,6 @@ def test_build_consent_dataset_graph(
 
 
 class TestConsentEmailStep:
-    @pytest.mark.skip("Come back to this later")
     def test_privacy_request_completes_if_no_consent_email_send_needed(
         self, db, privacy_request_with_consent_policy, run_privacy_request_task
     ):
@@ -2263,7 +2259,6 @@ class TestConsentEmailStep:
             privacy_request_with_consent_policy.status == PrivacyRequestStatus.complete
         )
 
-    @pytest.mark.skip("Come back to this later")
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_privacy_request_is_put_in_awaiting_email_send_status(
         self,
@@ -2285,14 +2280,10 @@ class TestConsentEmailStep:
         db.refresh(privacy_request_with_consent_policy)
         assert (
             privacy_request_with_consent_policy.status
-            == PrivacyRequestStatus.awaiting_consent_email_send
+            == PrivacyRequestStatus.awaiting_email_send
         )
-        assert (
-            privacy_request_with_consent_policy.awaiting_consent_email_send_at
-            is not None
-        )
+        assert privacy_request_with_consent_policy.awaiting_email_send_at is not None
 
-    @pytest.mark.skip("Come back to this later")
     def test_needs_email_send_no_consent_preferences(
         self, db, privacy_request_with_consent_policy
     ):
@@ -2300,7 +2291,6 @@ class TestConsentEmailStep:
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
 
-    @pytest.mark.skip("Come back to this later")
     def test_needs_email_send_no_email_consent_connections(
         self, db, privacy_request_with_consent_policy
     ):
@@ -2312,7 +2302,6 @@ class TestConsentEmailStep:
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
 
-    @pytest.mark.skip("Come back to this later")
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_needs_email_send_no_relevant_identities(
         self, db, privacy_request_with_consent_policy
@@ -2325,7 +2314,6 @@ class TestConsentEmailStep:
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
 
-    @pytest.mark.skip("Come back to this later")
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_needs_email_send(self, db, privacy_request_with_consent_policy):
         privacy_request_with_consent_policy.consent_preferences = [

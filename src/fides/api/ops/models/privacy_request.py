@@ -132,7 +132,7 @@ class PrivacyRequestStatus(str, EnumType):
     in_processing = "in_processing"
     complete = "complete"
     paused = "paused"
-    awaiting_consent_email_send = "awaiting_consent_email_send"
+    awaiting_email_send = "awaiting_email_send"
     canceled = "canceled"
     error = "error"
 
@@ -232,7 +232,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
     due_date = Column(DateTime(timezone=True), nullable=True)
-    awaiting_consent_email_send_at = Column(DateTime(timezone=True), nullable=True)
+    awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
@@ -708,10 +708,10 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         )
 
     def pause_processing_for_email_send(self, db: Session) -> None:
-        """Put the privacy request in a state of awaiting_consent_email_send"""
-        if self.awaiting_consent_email_send_at is None:
-            self.awaiting_consent_email_send_at = datetime.utcnow()
-        self.status = PrivacyRequestStatus.awaiting_consent_email_send
+        """Put the privacy request in a state of awaiting_email_send"""
+        if self.awaiting_email_send_at is None:
+            self.awaiting_email_send_at = datetime.utcnow()
+        self.status = PrivacyRequestStatus.awaiting_email_send
         self.save(db=db)
 
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:

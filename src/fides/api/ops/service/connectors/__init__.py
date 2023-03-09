@@ -15,7 +15,9 @@ from fides.api.ops.service.connectors.email.attentive_connector import (
     AttentiveConnector,
 )
 from fides.api.ops.service.connectors.email.sovrn_connector import SovrnConnector
-from fides.api.ops.service.connectors.email_connector import EmailConnector
+from fides.api.ops.service.connectors.email_connector import (
+    EmailConnector as EmailConnector,
+)
 from fides.api.ops.service.connectors.fides_connector import (
     FidesConnector as FidesConnector,
 )
