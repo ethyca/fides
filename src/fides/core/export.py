@@ -326,14 +326,13 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                                 product_fides_key
                             ].items():
                                 product.append(v)
-                                cartesian_product_of_declaration.append(tuple(product))
-                        else:
-                            cartesian_product_of_declaration = [
-                                tuple(x)
-                                for x in cartesian_product_of_declaration_builder
-                            ]
+                        cartesian_product_of_declaration.append(tuple(product))
+                else:
+                    cartesian_product_of_declaration = [
+                        tuple(x) for x in cartesian_product_of_declaration_builder
+                    ]
 
-                output_list += cartesian_product_of_declaration
+            output_list += cartesian_product_of_declaration
         else:
             system_row = [
                 system["fides_key"],
