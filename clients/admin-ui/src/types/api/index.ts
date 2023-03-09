@@ -215,7 +215,7 @@ export type { SaaSRequest } from "./models/SaaSRequest";
 export type { SaaSRequestMap } from "./models/SaaSRequestMap";
 export type { SaaSSchema } from "./models/SaaSSchema";
 export type { SnowflakeDocsSchema } from "./models/SnowflakeDocsSchema";
-export type { SovrnEmailDocsSchema } from "./models/SovrnEmailDocsSchema";
+export type { SovrnDocsSchema } from "./models/SovrnDocsSchema";
 export { SpecialCategoriesEnum } from "./models/SpecialCategoriesEnum";
 export { StatusEnum } from "./models/StatusEnum";
 export type { StorageApplicationConfig } from "./models/StorageApplicationConfig";

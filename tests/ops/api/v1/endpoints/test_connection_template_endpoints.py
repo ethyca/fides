@@ -321,14 +321,20 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=email", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 1
+        assert len(data) == 2
         assert data == [
+            {
+                "identifier": "attentive",
+                "type": "email",
+                "human_readable": "Attentive",
+                "encoded_icon": None,
+            },
             {
                 "identifier": "sovrn",
                 "type": "email",
                 "human_readable": "Sovrn",
                 "encoded_icon": None,
-            }
+            },
         ]
 
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import requests
 import sendgrid
@@ -19,7 +19,7 @@ from fides.api.ops.models.messaging import (  # type: ignore[attr-defined]
     get_messaging_method,
 )
 from fides.api.ops.models.privacy_request import (
-    CheckpointActionRequired,
+    ErasureRequestBodyParams,
     PrivacyRequestError,
     PrivacyRequestNotifications,
 )
@@ -121,7 +121,7 @@ def dispatch_message(
             SubjectIdentityVerificationBodyParams,
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
-            List[CheckpointActionRequired],
+            ErasureRequestBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
@@ -158,7 +158,7 @@ def dispatch_message(
         )
     else:  # pragma: no cover
         # This is here as a fail safe, but it should be impossible to reach because
-        # is controlled by a datbase enum field.
+        # is controlled by a database enum field.
         logger.error("Notification service type is not valid: {}", service_type)
         raise MessageDispatchException(
             f"Notification service type is not valid: {service_type}"
@@ -276,9 +276,13 @@ def _build_email(  # pylint: disable=too-many-return-statements
     if action_type == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT:
         base_template = get_email_template(action_type)
         return EmailForActionType(
-            subject="Data erasure request",
+            subject=f"Notification of user erasure requests from {body_params.controller}",
             body=base_template.render(
-                {"dataset_collection_action_required": body_params}
+                {
+                    "controller": body_params.controller,
+                    "third_party_vendor_name": body_params.third_party_vendor_name,
+                    "identities": body_params.identities,
+                }
             ),
         )
     if action_type == MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT:

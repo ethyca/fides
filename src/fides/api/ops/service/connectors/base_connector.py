@@ -131,3 +131,9 @@ class LimitedConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         If no issues are encountered, this should run without error, otherwise a ConnectionException
         will be raised.
         """
+
+    @abstractmethod
+    def needs_email(
+        self, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
+    ) -> bool:
+        """Determines if this connector needs to schedule an email based on the provided user identities and privacy request"""

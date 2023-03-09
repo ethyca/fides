@@ -10,6 +10,9 @@ from fides.api.ops.models.connectionconfig import ConnectionType
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema as ConnectionConfigSecretsSchema,
 )
+from fides.api.ops.schemas.connection_configuration.connection_secrets_attentive import (
+    AttentiveSchema,
+)
 from fides.api.ops.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQueryDocsSchema as BigQueryDocsSchema,
 )
@@ -84,13 +87,8 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_snowflake
     SnowflakeSchema as SnowflakeSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
-    SOVRN_REQUIRED_IDENTITY as SOVRN_REQUIRED_IDENTITY,
-)
-from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
-    SovrnEmailDocsSchema as SovrnEmailDocsSchema,
-)
-from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
-    SovrnEmailSchema as SovrnEmailSchema,
+    SovrnDocsSchema,
+    SovrnSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_timescale import (
     TimescaleDocsSchema as TimescaleDocsSchema,
@@ -104,21 +102,22 @@ from fides.api.ops.schemas.connection_configuration.connections_secrets_https im
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 
 secrets_schemas: Dict[str, Any] = {
-    ConnectionType.postgres.value: PostgreSQLSchema,
-    ConnectionType.https.value: HttpsSchema,
-    ConnectionType.mongodb.value: MongoDBSchema,
-    ConnectionType.mysql.value: MySQLSchema,
-    ConnectionType.redshift.value: RedshiftSchema,
-    ConnectionType.snowflake.value: SnowflakeSchema,
-    ConnectionType.mssql.value: MicrosoftSQLServerSchema,
-    ConnectionType.mariadb.value: MariaDBSchema,
+    ConnectionType.attentive.value: AttentiveSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
-    ConnectionType.saas.value: SaaSSchema,
     ConnectionType.email.value: EmailSchema,
-    ConnectionType.manual_webhook.value: ManualWebhookSchema,
-    ConnectionType.timescale.value: TimescaleSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
-    ConnectionType.sovrn.value: SovrnEmailSchema,
+    ConnectionType.https.value: HttpsSchema,
+    ConnectionType.manual_webhook.value: ManualWebhookSchema,
+    ConnectionType.mariadb.value: MariaDBSchema,
+    ConnectionType.mongodb.value: MongoDBSchema,
+    ConnectionType.mssql.value: MicrosoftSQLServerSchema,
+    ConnectionType.mysql.value: MySQLSchema,
+    ConnectionType.postgres.value: PostgreSQLSchema,
+    ConnectionType.redshift.value: RedshiftSchema,
+    ConnectionType.saas.value: SaaSSchema,
+    ConnectionType.snowflake.value: SnowflakeSchema,
+    ConnectionType.sovrn.value: SovrnSchema,
+    ConnectionType.timescale.value: TimescaleSchema,
 }
 
 
@@ -162,5 +161,5 @@ connection_secrets_schemas = Union[
     ManualWebhookSchemaforDocs,
     TimescaleDocsSchema,
     FidesDocsSchema,
-    SovrnEmailDocsSchema,
+    SovrnDocsSchema,
 ]

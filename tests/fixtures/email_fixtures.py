@@ -12,7 +12,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.service.connectors import SovrnConsentConnector
+from fides.api.ops.service.connectors import SovrnConnector
 
 
 @pytest.fixture(scope="function")
@@ -25,7 +25,11 @@ def email_connection_config(db: Session) -> Generator:
             "key": "my_email_connection_config",
             "connection_type": ConnectionType.email,
             "access": AccessLevel.write,
-            "secrets": {"to_email": "test@example.com"},
+            "secrets": {
+                "test_email_address": "processor_address@example.com",
+                "recipient_email_address": "test@example.com",
+                "third_party_vendor_name": "Email",
+            },
         },
     )
     yield connection_config
@@ -90,8 +94,8 @@ def sovrn_email_connection_config(db: Session) -> Generator:
 @pytest.fixture(scope="function")
 def test_sovrn_consent_email_connector(
     sovrn_email_connection_config: Dict[str, str],
-) -> SovrnConsentConnector:
-    return SovrnConsentConnector(configuration=sovrn_email_connection_config)
+) -> SovrnConnector:
+    return SovrnConnector(configuration=sovrn_email_connection_config)
 
 
 @pytest.fixture(scope="function")

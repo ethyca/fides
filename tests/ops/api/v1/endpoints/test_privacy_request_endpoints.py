@@ -1450,7 +1450,7 @@ class TestGetPrivacyRequests:
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
         privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -1461,7 +1461,7 @@ class TestGetPrivacyRequests:
         data = response.json()["items"][0]
         assert data["status"] == "error"
         assert data["action_required_details"] == {
-            "step": "erasure_email_post_send",
+            "step": "email_post_send",
             "collection": None,
             "action_needed": None,
         }
@@ -2815,7 +2815,7 @@ class TestBulkRestartFromFailure:
         privacy_requests[0].save(db)
 
         privacy_requests[0].cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -2832,7 +2832,7 @@ class TestBulkRestartFromFailure:
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_requests[0].id,
-            from_step=CurrentStep.erasure_email_post_send.value,
+            from_step=CurrentStep.email_post_send.value,
             from_webhook_id=None,
         )
 
@@ -2961,7 +2961,7 @@ class TestRestartFromFailure:
         privacy_request.save(db)
 
         privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -2973,7 +2973,7 @@ class TestRestartFromFailure:
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_request.id,
-            from_step=CurrentStep.erasure_email_post_send.value,
+            from_step=CurrentStep.email_post_send.value,
             from_webhook_id=None,
         )
 

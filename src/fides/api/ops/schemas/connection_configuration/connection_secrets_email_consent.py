@@ -1,8 +1,11 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
+    EmailSchema,
+)
 
 
 class IdentityTypes(BaseModel):
@@ -14,16 +17,9 @@ class AdvancedSettings(BaseModel):
     identity_types: IdentityTypes
 
 
-class ConsentEmailSchema(BaseModel):
-    """Schema to validate the secrets needed for the generic ConsentEmailConnector
+class ConsentEmailSchema(EmailSchema):
+    """Schema to validate the secrets needed for the generic ConsentEmailConnector"""
 
-    Does not inherit from ConnectionConfigSecretsSchema as there is no url
-    required here.
-    """
-
-    third_party_vendor_name: str
-    recipient_email_address: str
-    test_email_address: Optional[str]
     advanced_settings: AdvancedSettings
 
     class Config:

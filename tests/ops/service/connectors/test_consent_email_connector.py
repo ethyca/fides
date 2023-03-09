@@ -4,7 +4,7 @@ import pytest
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionTestStatus
-from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedConsentEmailSchema,
     ExtendedIdentityTypes,
@@ -17,9 +17,11 @@ from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.service.connectors.consent_email_connector import (
     GenericEmailConsentConnector,
     filter_user_identities_for_connector,
-    get_consent_email_connection_configs,
     get_identity_types_for_connector,
     send_single_consent_email,
+)
+from fides.api.ops.service.privacy_request.request_runner_service import (
+    get_consent_email_connection_configs,
 )
 
 

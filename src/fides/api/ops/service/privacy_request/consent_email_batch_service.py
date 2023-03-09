@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
 
 from fides.api.ops.common_exceptions import MessageDispatchException
-from fides.api.ops.models.policy import CurrentStep
+from fides.api.ops.models.policy import ActionType, CurrentStep, Policy, Rule
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     ExtendedConsentEmailSchema,
@@ -14,11 +14,13 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email_con
 from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
 from fides.api.ops.service.connectors.consent_email_connector import (
     filter_user_identities_for_connector,
-    get_consent_email_connection_configs,
     get_identity_types_for_connector,
     send_single_consent_email,
 )
+from fides.api.ops.service.connectors.email_connector import EmailConnector
 from fides.api.ops.service.privacy_request.request_runner_service import (
+    get_consent_email_connection_configs,
+    get_erasure_email_connection_configs,
     queue_privacy_request,
 )
 from fides.api.ops.tasks import DatabaseTask, celery_app
@@ -103,7 +105,7 @@ def add_batched_user_preferences_to_emails(
                 pending_email.skipped_privacy_requests.append(privacy_request.id)
 
 
-def send_prepared_emails(
+def send_prepared_consent_emails(
     db: Session,
     batched_user_data: List[BatchedUserConsentData],
     privacy_requests: Query,
@@ -160,11 +162,10 @@ def send_prepared_emails(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def send_consent_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
-    """Sends consent emails for each relevant connector with
-    applicable user details batched together."""
+def send_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
+    """Sends emails for each relevant connector with applicable user details batched together."""
 
-    logger.info("Starting batched consent email send...")
+    logger.info("Starting batched email send...")
     with self.get_new_session() as session:
 
         privacy_requests: Query = session.query(PrivacyRequest).filter(
@@ -172,38 +173,46 @@ def send_consent_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
         )
         if not privacy_requests.first():
             logger.info(
-                "Skipping batch consent email send with status: {}",
+                "Skipping batch email send with status: {}",
                 ConsentEmailExitState.no_applicable_privacy_requests.value,
             )
             return ConsentEmailExitState.no_applicable_privacy_requests
 
-        conn_configs: Query = get_consent_email_connection_configs(session)
-        if not conn_configs.first():
+        consent_configs: Query = get_consent_email_connection_configs(session)
+        erasure_configs: Query = get_erasure_email_connection_configs(session)
+        if not consent_configs.first() and not erasure_configs.first():
             requeue_privacy_requests_after_consent_email_send(privacy_requests, session)
             logger.info(
-                "Skipping batch consent email send with status: {}",
+                "Skipping batch email send with status: {}",
                 ConsentEmailExitState.no_applicable_connectors.value,
             )
             return ConsentEmailExitState.no_applicable_connectors
 
         batched_user_data: List[BatchedUserConsentData] = stage_resource_per_connector(
-            conn_configs
+            consent_configs
         )
         add_batched_user_preferences_to_emails(privacy_requests, batched_user_data)
 
-        if not any(
-            pending_email.batched_user_consent_preferences
-            for pending_email in batched_user_data
-        ):
-            requeue_privacy_requests_after_consent_email_send(privacy_requests, session)
-            logger.info(
-                "Skipping batch consent email send with status: {}",
-                ConsentEmailExitState.missing_required_data.value,
-            )
-            return ConsentEmailExitState.missing_required_data
-
         try:
-            send_prepared_emails(session, batched_user_data, privacy_requests)
+            # erasure
+            erasure_email_connection_configs: Query = (
+                get_erasure_email_connection_configs(session)
+            )
+            for connection_config in erasure_email_connection_configs:
+                EmailConnector(connection_config).send_erasure_email(
+                    filter_privacy_requests_by_action_type(
+                        privacy_requests, ActionType.erasure
+                    )
+                )
+
+            # consent
+            send_prepared_consent_emails(
+                session,
+                batched_user_data,
+                filter_privacy_requests_by_action_type(
+                    privacy_requests, ActionType.consent
+                ),
+            )
         except MessageDispatchException as exc:
             logger.error(
                 "Consent email send for connector failed with exception: '{}'",
@@ -213,6 +222,16 @@ def send_consent_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
 
     requeue_privacy_requests_after_consent_email_send(privacy_requests, session)
     return ConsentEmailExitState.complete
+
+
+def filter_privacy_requests_by_action_type(
+    privacy_requests: Query, action_type: ActionType
+) -> Query:
+    return (
+        privacy_requests.join(Policy, PrivacyRequest.policy_id == Policy.id)
+        .join(Rule, Policy.id == Rule.policy_id)
+        .filter(Rule.action_type == action_type)
+    )
 
 
 def requeue_privacy_requests_after_consent_email_send(
@@ -249,14 +268,12 @@ def initiate_scheduled_batch_consent_email_send() -> None:
 
     logger.info("Initiating scheduler for batch consent email send")
     scheduler.add_job(
-        func=send_consent_email_batch,
+        func=send_email_batch,
         kwargs={},
         id=BATCH_CONSENT_EMAIL_SEND,
         coalesce=False,
         replace_existing=True,
-        trigger="cron",
-        minute="0",
-        hour="12",
-        day_of_week="mon",
+        trigger="interval",
+        minutes=1,
         timezone="US/Eastern",
     )

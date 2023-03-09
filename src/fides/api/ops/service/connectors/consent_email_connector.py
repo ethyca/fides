@@ -1,23 +1,21 @@
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.connectionconfig import (
-    AccessLevel,
     ConnectionConfig,
     ConnectionTestStatus,
     ConnectionType,
 )
+from fides.api.ops.models.policy import ActionType, Rule
+from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedConsentEmailSchema,
     ExtendedIdentityTypes,
-)
-from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
-    SOVRN_REQUIRED_IDENTITY,
 )
 from fides.api.ops.schemas.messaging.messaging import (
     ConsentEmailFulfillmentBodyParams,
@@ -26,7 +24,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.connectors.base_connector import LimitedConnector
+from fides.api.ops.service.connectors.email_connector import EmailConnector
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.core.config import get_config
 
@@ -35,7 +33,7 @@ CONFIG = get_config()
 CONSENT_EMAIL_CONNECTOR_TYPES = [ConnectionType.sovrn]
 
 
-class GenericEmailConsentConnector(LimitedConnector[None]):
+class GenericEmailConsentConnector(EmailConnector):
     """Generic Email Consent Connector that can be overridden for specific vendors"""
 
     @property
@@ -47,17 +45,22 @@ class GenericEmailConsentConnector(LimitedConnector[None]):
     @property
     def required_identities(self) -> List[str]:
         """Returns the identity types we need to supply to the third party for this connector"""
-        config = ExtendedConsentEmailSchema(**self.configuration.secrets or {})
-        return get_identity_types_for_connector(config)
+        return get_identity_types_for_connector(self.config)
+
+    def __init__(self, configuration: ConnectionConfig):
+        super().__init__(configuration)
+        self.config: ExtendedConsentEmailSchema = ExtendedConsentEmailSchema(
+            **configuration.secrets or {}
+        )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
         Sends an email to the "test_email" configured, just to establish
         that the email workflow is working.
         """
-        config = ExtendedConsentEmailSchema(**self.configuration.secrets or {})
+
         try:
-            if not config.test_email_address:
+            if not self.config.test_email_address:
                 raise MessageDispatchException(
                     f"Cannot test connection. No test email defined for {self.configuration.name}"
                 )
@@ -67,8 +70,8 @@ class GenericEmailConsentConnector(LimitedConnector[None]):
             # synchronous since failure to send is considered a connection test failure
             send_single_consent_email(
                 db=Session.object_session(self.configuration),
-                subject_email=config.test_email_address,
-                subject_name=config.third_party_vendor_name,
+                subject_email=self.config.test_email_address,
+                subject_name=self.config.third_party_vendor_name,
                 required_identities=self.required_identities,
                 user_consent_preferences=[
                     ConsentPreferencesByUser(
@@ -87,22 +90,21 @@ class GenericEmailConsentConnector(LimitedConnector[None]):
             return ConnectionTestStatus.failed
         return ConnectionTestStatus.succeeded
 
+    def needs_email(
+        self, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
+    ) -> bool:
+        """Schedules a consent email for consent privacy requests containing consent preferences and valid user identities"""
 
-class SovrnConsentConnector(GenericEmailConsentConnector):
-    """SovrnConsentConnector - only need to override the details for the test email."""
+        if not privacy_request.consent_preferences:
+            return False
 
-    @property
-    def identities_for_test_email(self) -> Dict[str, Any]:
-        return {SOVRN_REQUIRED_IDENTITY: "test_ljt_reader_id"}
-
-
-def get_consent_email_connection_configs(db: Session) -> Query:
-    """Return enabled consent-type email connection configs."""
-    return db.query(ConnectionConfig).filter(
-        ConnectionConfig.connection_type.in_(CONSENT_EMAIL_CONNECTOR_TYPES),
-        ConnectionConfig.disabled.is_(False),
-        ConnectionConfig.access == AccessLevel.write,
-    )
+        consent_rules: List[Rule] = privacy_request.policy.get_rules_for_action(
+            action_type=ActionType.consent
+        )
+        return bool(
+            consent_rules
+            and filter_user_identities_for_connector(self.config, user_identities)
+        )
 
 
 def get_identity_types_for_connector(

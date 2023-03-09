@@ -2,7 +2,7 @@ import pytest
 
 from fides.api.ops.schemas.connection_configuration import (
     ConsentEmailSchema,
-    SovrnEmailSchema,
+    SovrnSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     AdvancedSettings,
@@ -11,7 +11,7 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email_con
     ExtendedIdentityTypes,
     IdentityTypes,
 )
-from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
+from fides.api.ops.service.connectors.email.sovrn_connector import (
     SOVRN_REQUIRED_IDENTITY,
 )
 
@@ -112,9 +112,9 @@ class TestExtnededConsentEmailSchema:
             )
 
 
-class TestSovrnEmailSchema:
+class TestSovrnSchema:
     def test_base_sovrn_consent_email_schema(self):
-        schema = SovrnEmailSchema(
+        schema = SovrnSchema(
             recipient_email_address="sovrn@example.com",
             advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
                 identity_types=ExtendedIdentityTypes(

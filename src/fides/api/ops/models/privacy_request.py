@@ -76,8 +76,7 @@ EXECUTION_CHECKPOINTS = [
     CurrentStep.access,
     CurrentStep.erasure,
     CurrentStep.consent,
-    CurrentStep.erasure_email_post_send,
-    CurrentStep.consent_email_post_send,
+    CurrentStep.email_post_send,
     CurrentStep.post_webhooks,
 ]
 
@@ -93,6 +92,12 @@ class ManualAction(BaseSchema):
     locators: Dict[str, Any]
     get: Optional[List[str]]
     update: Optional[Dict[str, Any]]
+
+
+class ErasureRequestBodyParams(BaseSchema):
+    controller: str
+    third_party_vendor_name: str
+    identities: List[str]
 
 
 class CheckpointActionRequired(BaseSchema):
@@ -702,7 +707,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             },
         )
 
-    def pause_processing_for_consent_email_send(self, db: Session) -> None:
+    def pause_processing_for_email_send(self, db: Session) -> None:
         """Put the privacy request in a state of awaiting_consent_email_send"""
         if self.awaiting_consent_email_send_at is None:
             self.awaiting_consent_email_send_at = datetime.utcnow()

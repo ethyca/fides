@@ -27,6 +27,7 @@ from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import CurrentStep
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
+    ErasureRequestBodyParams,
     ManualAction,
     PrivacyRequestStatus,
 )
@@ -1713,9 +1714,9 @@ class TestPutConnectionConfigSecrets:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
-            "url": None,
-            "to_email": "test1@example.com",
-            "test_email": "test@example.com",
+            "recipient_email_address": "test1@example.com",
+            "test_email_address": "test@example.com",
+            "third_party_vendor_name": "Test",
         }
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{email_connection_config.key}/secret"
 
@@ -1734,9 +1735,9 @@ class TestPutConnectionConfigSecrets:
         assert body["test_status"] == "succeeded"
         db.refresh(email_connection_config)
         assert email_connection_config.secrets == {
-            "to_email": "test1@example.com",
-            "url": None,
-            "test_email": "test@example.com",
+            "recipient_email_address": "test1@example.com",
+            "test_email_address": "test@example.com",
+            "third_party_vendor_name": "Test",
         }
         assert email_connection_config.last_test_timestamp is not None
         assert email_connection_config.last_test_succeeded is not None
@@ -1748,16 +1749,8 @@ class TestPutConnectionConfigSecrets:
             == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
         )
         assert kwargs["to_identity"] == Identity(email="test@example.com")
-        assert kwargs["message_body_params"] == [
-            CheckpointActionRequired(
-                step=CurrentStep.erasure,
-                collection=CollectionAddress("test_dataset", "test_collection"),
-                action_needed=[
-                    ManualAction(
-                        locators={"id": ["example_id"]},
-                        get=None,
-                        update={"test_field": "null_rewrite"},
-                    )
-                ],
-            )
-        ]
+        assert kwargs["message_body_params"] == ErasureRequestBodyParams(
+            controller="Demo Organization",
+            third_party_vendor_name="Test",
+            identities=["test@ethyca.com"],
+        )

@@ -48,6 +48,7 @@ class ConnectionType(enum.Enum):
     manual = "manual"  # Run as part of the traversal
     email = "email"
     sovrn = "sovrn"
+    attentive = "attentive"
     manual_webhook = "manual_webhook"  # Run before the traversal
     timescale = "timescale"
     fides = "fides"
@@ -58,22 +59,23 @@ class ConnectionType(enum.Enum):
         Add to this mapping if you add a new ConnectionType
         """
         readable_mapping: Dict[str, str] = {
-            ConnectionType.postgres.value: "PostgreSQL",
-            ConnectionType.mongodb.value: "MongoDB",
-            ConnectionType.mysql.value: "MySQL",
-            ConnectionType.https.value: "Policy Webhook",
-            ConnectionType.saas.value: "SaaS",
-            ConnectionType.redshift.value: "Amazon Redshift",
-            ConnectionType.snowflake.value: "Snowflake",
-            ConnectionType.mssql.value: "Microsoft SQL Server",
-            ConnectionType.mariadb.value: "MariaDB",
+            ConnectionType.attentive.value: "Attentive",
             ConnectionType.bigquery.value: "BigQuery",
-            ConnectionType.manual.value: "Manual Connector",
-            ConnectionType.email.value: "Email Connector",
-            ConnectionType.manual_webhook.value: "Manual Process",
-            ConnectionType.timescale.value: "TimescaleDB",
+            ConnectionType.email.value: "Email",
             ConnectionType.fides.value: "Fides Connector",
+            ConnectionType.https.value: "Policy Webhook",
+            ConnectionType.manual.value: "Manual Connector",
+            ConnectionType.manual_webhook.value: "Manual Process",
+            ConnectionType.mariadb.value: "MariaDB",
+            ConnectionType.mongodb.value: "MongoDB",
+            ConnectionType.mssql.value: "Microsoft SQL Server",
+            ConnectionType.mysql.value: "MySQL",
+            ConnectionType.postgres.value: "PostgreSQL",
+            ConnectionType.redshift.value: "Amazon Redshift",
+            ConnectionType.saas.value: "SaaS",
+            ConnectionType.snowflake.value: "Snowflake",
             ConnectionType.sovrn.value: "Sovrn",
+            ConnectionType.timescale.value: "TimescaleDB",
         }
         try:
             return readable_mapping[self.value]

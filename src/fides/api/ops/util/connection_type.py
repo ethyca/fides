@@ -80,6 +80,7 @@ def get_connection_types(
                     ConnectionType.manual_webhook,
                     ConnectionType.fides,
                     ConnectionType.sovrn,
+                    ConnectionType.attentive,
                 ]
                 and is_match(conn_type.value)
             ]
@@ -148,7 +149,8 @@ def get_connection_types(
             [
                 email_type.value
                 for email_type in ConnectionType
-                if email_type == ConnectionType.sovrn and is_match(email_type.value)
+                if email_type in [ConnectionType.attentive, ConnectionType.sovrn]
+                and is_match(email_type.value)
             ]
         )
         connection_system_types.extend(

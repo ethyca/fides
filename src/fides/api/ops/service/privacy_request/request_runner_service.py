@@ -27,7 +27,11 @@ from fides.api.ops.graph.analytics_events import (
 )
 from fides.api.ops.graph.config import CollectionAddress, GraphDataset
 from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import (
@@ -44,9 +48,6 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
-    ExtendedConsentEmailSchema,
-)
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
@@ -54,11 +55,12 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import FidesConnector
 from fides.api.ops.service.connectors.consent_email_connector import (
-    filter_user_identities_for_connector,
-    get_consent_email_connection_configs,
+    CONSENT_EMAIL_CONNECTOR_TYPES,
+    GenericEmailConsentConnector,
 )
 from fides.api.ops.service.connectors.email_connector import (
-    email_connector_erasure_send,
+    ERASURE_EMAIL_CONNECTOR_TYPES,
+    EmailConnector,
 )
 from fides.api.ops.service.connectors.fides_connector import (
     filter_fides_connector_datasets,
@@ -416,41 +418,21 @@ async def run_privacy_request(
             _log_exception(exc, CONFIG.dev_mode)
             return
 
-        # Send erasure requests via email to third parties where applicable
-        if policy.get_rules_for_action(
-            action_type=ActionType.erasure
-        ) and can_run_checkpoint(
-            request_checkpoint=CurrentStep.erasure_email_post_send,
-            from_checkpoint=resume_step,
-        ):
-            try:
-                email_connector_erasure_send(
-                    db=session, privacy_request=privacy_request
-                )
-            except MessageDispatchException as exc:
-                privacy_request.cache_failed_checkpoint_details(
-                    step=CurrentStep.erasure_email_post_send, collection=None
-                )
-                privacy_request.error_processing(db=session)
-                await fideslog_graph_failure(
-                    failed_graph_analytics_event(privacy_request, exc)
-                )
-                # If dev mode, log traceback
-                _log_exception(exc, CONFIG.dev_mode)
-                return
-
-        # Check if privacy request needs consent emails sent
+        # Check if privacy request needs erasure or consent emails sent
         if (
-            policy.get_rules_for_action(action_type=ActionType.consent)
+            (
+                policy.get_rules_for_action(action_type=ActionType.erasure)
+                or policy.get_rules_for_action(action_type=ActionType.consent)
+            )
             and can_run_checkpoint(
-                request_checkpoint=CurrentStep.consent_email_post_send,
+                request_checkpoint=CurrentStep.email_post_send,
                 from_checkpoint=resume_step,
             )
-            and needs_consent_email_send(session, identity_data, privacy_request)
+            and needs_email_send(session, identity_data, privacy_request)
         ):
-            privacy_request.pause_processing_for_consent_email_send(session)
+            privacy_request.pause_processing_for_email_send(session)
             logger.info(
-                "Privacy request '{}' exiting: awaiting consent email send.",
+                "Privacy request '{}' exiting: awaiting email send.",
                 privacy_request.id,
             )
             return
@@ -679,28 +661,45 @@ def _retrieve_child_results(  # pylint: disable=R0911
     return results
 
 
-def needs_consent_email_send(
-    db: Session, user_identity: Dict[str, Any], privacy_request: PrivacyRequest
+def get_consent_email_connection_configs(db: Session) -> Query:
+    """Return enabled consent email connection configs."""
+    return db.query(ConnectionConfig).filter(
+        ConnectionConfig.connection_type.in_(CONSENT_EMAIL_CONNECTOR_TYPES),
+        ConnectionConfig.disabled.is_(False),
+        ConnectionConfig.access == AccessLevel.write,
+    )
+
+
+def get_erasure_email_connection_configs(db: Session) -> Query:
+    """Return enabled erasure email connection configs."""
+    return db.query(ConnectionConfig).filter(
+        ConnectionConfig.connection_type.in_(ERASURE_EMAIL_CONNECTOR_TYPES),
+        ConnectionConfig.disabled.is_(False),
+        ConnectionConfig.access == AccessLevel.write,
+    )
+
+
+def needs_email_send(
+    db: Session, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
 ) -> bool:
     """
-    Returns True if the privacy request fulfills the requirements for consent email send:
-
-    1) Privacy request must have consent preferences saved
-    2) There must be consent email connections configured
-    3) The user must have identity data matching at least one of these connectors
+    Delegates the "needs email" check to each configured email or
+    generic email consent connector. Returns true if at least one
+    connector needs to send an email.
     """
-    if not privacy_request.consent_preferences:
-        return False
 
-    email_consent_connection_configs: Query = get_consent_email_connection_configs(db)
-
-    for connection_config in email_consent_connection_configs:
-        secrets: ExtendedConsentEmailSchema = ExtendedConsentEmailSchema(
-            **connection_config.secrets or {}
-        )
-        filtered_user_identities = filter_user_identities_for_connector(
-            secrets, user_identity
-        )
-        if filtered_user_identities:
+    erasure_email_connection_configs: Query = get_erasure_email_connection_configs(db)
+    for connection_config in erasure_email_connection_configs:
+        if EmailConnector(connection_config).needs_email(
+            user_identities, privacy_request
+        ):
             return True
+
+    consent_email_connection_configs: Query = get_consent_email_connection_configs(db)
+    for connection_config in consent_email_connection_configs:
+        if GenericEmailConsentConnector(connection_config).needs_email(
+            user_identities, privacy_request
+        ):
+            return True
+
     return False
