@@ -24,57 +24,63 @@ dataset:
               data_type: boolean
           - name: validation_results
           - name: object_owner
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: name
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: company
-            data_categories: [system.operations]
+            data_categories: [user.workplace]
             fidesops_meta:
               data_type: string
           - name: street_no
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: street1
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: street2
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: street3
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: city
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: state
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: zip
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: country
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: longitude
+            data_categories: [user.location]
+            fidesops_meta:
+              data_type: string
           - name: latitude
+            data_categories: [user.location]
+            fidesops_meta:
+              data_type: string
           - name: phone
-            data_categories: [system.operations]
+            data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: email
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: is_residential
@@ -106,7 +112,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: object_owner
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: to_address
@@ -131,57 +137,63 @@ dataset:
                   data_type: boolean
               - name: validation_results
               - name: object_owner
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: company
-                data_categories: [system.operations]
+                data_categories: [user.workplace]
                 fidesops_meta:
                   data_type: string
               - name: street_no
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: street1
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: street2
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: street3
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: city
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
               - name: state
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
               - name: zip
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: longitude
+                data_categories: [user.location]
+                fidesops_meta:
+                  data_type: string
               - name: latitude
+                data_categories: [user.location]
+                fidesops_meta:
+                  data_type: string
               - name: phone
-                data_categories: [system.operations]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
               - name: email
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: is_residential
@@ -239,47 +251,43 @@ dataset:
             fidesops_meta:
               data_type: 'object[]'
             fields:
-              - name: '0'
+              - name: object_id
+                data_categories: [system.operations]
                 fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: object_id
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: title
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: variant_title
-                  - name: sku
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: quantity
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: integer
-                  - name: total_price
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: currency
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: weight
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: weight_unit
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: manufacture_country
-                  - name: max_ship_time
-                  - name: max_delivery_time
-                  - name: description
+                  data_type: string
+              - name: title
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: variant_title
+              - name: sku
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: quantity
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: total_price
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: currency
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: weight
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: weight_unit
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: manufacture_country
+              - name: max_ship_time
+              - name: max_delivery_time
+              - name: description
           - name: notes
           - name: test
             data_categories: [system.operations]
