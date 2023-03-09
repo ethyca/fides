@@ -7,6 +7,7 @@ saas_config:
 
   connector_params:
     - name: domain
+      default_value: ethyca-test.gorgias.com
     - name: api_key
     - name: username
 

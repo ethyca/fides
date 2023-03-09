@@ -33,9 +33,6 @@ dataset:
               data_type: string
           - name: language
           - name: timezone
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: created_datetime
             data_categories: [system.operations]
             fidesops_meta:
@@ -60,7 +57,19 @@ dataset:
             fidesops_meta:
               data_type: 'object[]'
             fields:
-              - name: '0'
+              - name: id
+                data_categories: [user.unique_id]
+                fidesops_meta:
+                  data_type: integer
+              - name: address
+                data_categories: [user.contact.address]
+                fidesops_meta:
+                  data_type: string
+              - name: type
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: user
                 fidesops_meta:
                   data_type: object
                 fields:
@@ -68,38 +77,22 @@ dataset:
                     data_categories: [system.operations]
                     fidesops_meta:
                       data_type: integer
-                  - name: address
-                    data_categories: [user.contact.address]
+                  - name: name
+                    data_categories: [user.name]
                     fidesops_meta:
                       data_type: string
-                  - name: type
+              - name: customer
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: id
                     data_categories: [system.operations]
                     fidesops_meta:
+                      data_type: integer
+                  - name: name
+                    data_categories: [user.name]
+                    fidesops_meta:
                       data_type: string
-                  - name: user
-                    fidesops_meta:
-                      data_type: object
-                    fields:
-                      - name: id
-                        data_categories: [system.operations]
-                        fidesops_meta:
-                          data_type: integer
-                      - name: name
-                        data_categories: [user.name]
-                        fidesops_meta:
-                          data_type: string
-                  - name: customer
-                    fidesops_meta:
-                      data_type: object
-                    fields:
-                      - name: id
-                        data_categories: [system.operations]
-                        fidesops_meta:
-                          data_type: integer
-                      - name: name
-                        data_categories: [user.name]
-                        fidesops_meta:
-                          data_type: string
           - name: object
             data_categories: [system.operations]
             fidesops_meta:
@@ -193,6 +186,9 @@ dataset:
               data_type: string
           - name: opened_datetime
           - name: last_received_message_datetime
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: last_message_datetime
             data_categories: [system.operations]
             fidesops_meta:
@@ -296,9 +292,6 @@ dataset:
           - name: receiver
           - name: subject
           - name: body_text
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: body_html
           - name: stripped_text
           - name: stripped_html
@@ -313,6 +306,9 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: sent_datetime
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
           - name: failed_datetime
           - name: deleted_datetime
           - name: opened_datetime

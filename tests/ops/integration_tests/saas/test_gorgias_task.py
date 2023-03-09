@@ -137,7 +137,6 @@ async def test_gorgias_access_request_task(
             "intents",
             "rule_id",
             "from_agent",
-            # "receiver",
             "subject",
             "body_text",
             "body_html",
@@ -339,16 +338,6 @@ async def test_gorgias_erasure_request_task(
         auth=auth,
         params={"email": gorgias_erasure_identity_email},
     )
-    # Since user is deleted, it won't be available so response is 404
     assert response.status_code == 200
-
-    # for ticket in v[f"{dataset_name}:tickets"]:
-    #     ticket_id = ticket["id"]
-    #     response = requests.get(
-    #         url=f"{base_url}/v2/tickets/{ticket_id}.json",
-    #         auth=auth,
-    #     )
-    #     # Since ticket is deleted, it won't be available so response is 404
-    #     assert response.status_code == 404
 
     CONFIG.execution.masking_strict = masking_strict
