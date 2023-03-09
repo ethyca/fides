@@ -133,7 +133,6 @@ def aircall_create_erasure_data(
     }
 
     users_response = requests.post(url=f"{base_url}/v1/users", headers=headers, json=user_body)
-    print(users_response)
     sleep(30)
 
     # contact
