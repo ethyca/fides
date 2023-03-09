@@ -112,3 +112,48 @@ def aircall_dataset_config(
     yield dataset
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
+
+@pytest.fixture(scope="function")
+def aircall_create_erasure_data(
+    aircall_connection_config: ConnectionConfig, aircall_erasure_identity_email: str
+) -> None:
+
+
+    aircall_secrets = aircall_connection_config.secrets
+    base_url = f"https://{aircall_secrets['domain']}"
+    headers = {
+            "Authorization": f"Basic {aircall_secrets['api_token']}",
+        }
+
+    # user
+    user_body = {
+            "email": aircall_erasure_identity_email,
+            "first_name": "Erasure test",
+            "last_name": "testing"
+    }
+
+    users_response = requests.post(url=f"{base_url}/v1/users", headers=headers, json=user_body)
+    print(users_response)
+    sleep(30)
+
+    # contact
+
+    body = {
+        "first_name":"john",
+        "phone_numbers": [
+            {
+            "label": "test",
+            "value": '+12234567890'
+            }
+        ],
+        "emails": [
+            {
+            "label": "Office",
+            "value": aircall_erasure_identity_email
+            }
+        ]
+    }
+
+    contact_response = requests.post(url=f"{base_url}/v1/contacts", headers=headers, json=body)
+    sleep(30)
+    yield contact_response.ok

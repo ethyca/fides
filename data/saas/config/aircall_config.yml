@@ -23,22 +23,8 @@ saas_config:
   test_request:
     method: GET
     path: /v1/contacts/
-    param_values:
-      - name: api_token
-        connector_param: api_token
 
   endpoints:
-    - name: customer
-      requests:
-        read:
-          method: GET
-          path: /v1/users/<email>
-          data_path: user
-          param_values:
-            - name: email
-              identity: email
-            - name: api_token
-              connector_param: api_token
     - name: contact
       requests:
         read:
@@ -49,25 +35,8 @@ saas_config:
               value: <email>
           data_path: contacts
           param_values:
-            - name: api_token
-              connector_param: api_token
             - name: email
               identity: email
-        update:
-          method: POST
-          path: /v1/contacts/<contact_id>
-          body: |
-            {
-               <masked_object_fields> 
-            }
-          param_values:
-            - name: contact_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: contact.id
-                  direction: from
-            - name: api_token
-              connector_param: api_token
         delete:
           method: DELETE
           path: /v1/contacts/<contact_id>
@@ -77,8 +46,6 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: contact.id
                   direction: from
-            - name: api_token
-              connector_param: api_token
     - name: calls
       requests:
         read:
@@ -89,8 +56,6 @@ saas_config:
               value: <customer_id>
           data_path: calls
           param_values:
-            - name: api_token
-              connector_param: api_token
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
@@ -105,5 +70,12 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: calls.id
                   direction: from
-            - name: api_token
-              connector_param: api_token
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /v1/users/<email>
+          data_path: user
+          param_values:
+            - name: email
+              identity: email
