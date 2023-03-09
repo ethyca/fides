@@ -45,7 +45,7 @@ dataset:
                   primary_key: True
                   data_type: string
               - name: last_device_id
-                data_categories: [system.operations]
+                data_categories: [user.device.device_id]
                 fidesops_meta:
                   data_type: string
               - name: canonical_amplitude_id
@@ -107,7 +107,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: region
-                data_categories: [user.contact.address.region]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
               - name: dma
@@ -136,11 +136,11 @@ dataset:
                   data_type: object
                 fields:
                   - name: lng
-                    data_categories: [system.operations]
+                    data_categories: [user.location]
                     fidesops_meta:
                       data_type: integer
                   - name: lat
-                    data_categories: [system.operations]
+                    data_categories: [user.location]
                     fidesops_meta:
                       data_type: integer
           - name: metadata
@@ -194,7 +194,7 @@ dataset:
                 fidesops_meta:
                   data_type: integer
               - name: last_device_id
-                data_categories: [system.operations]
+                data_categories: [user.device.device_id]
                 fidesops_meta:
                   data_type: string
               - name: last_seen
