@@ -34,7 +34,7 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.lib.models.client import ClientDetail
-from fides.lib.oauth.roles import ADMIN, PRIVACY_REQUEST_MANAGER, VIEWER
+from fides.lib.oauth.roles import APPROVER, OWNER, VIEWER
 from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
@@ -91,17 +91,17 @@ class TestPatchConnections:
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_patch_connections_privacy_request_manager_role(
+    def test_patch_connections_approver_role(
         self, api_client: TestClient, generate_role_header, url, payload
     ) -> None:
-        auth_header = generate_role_header(roles=[PRIVACY_REQUEST_MANAGER])
+        auth_header = generate_role_header(roles=[APPROVER])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_patch_connection_admin_role(
+    def test_patch_connection_owner_role(
         self, url, api_client, db: Session, generate_role_header
     ):
-        auth_header = generate_role_header(roles=[ADMIN])
+        auth_header = generate_role_header(roles=[OWNER])
         payload = [
             {
                 "name": "My Post-Execution Webhook",

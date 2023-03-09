@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 
-import { STORAGE_ROOT_KEY, USER_PRIVILEGES } from "~/constants";
+import { STORAGE_ROOT_KEY } from "~/constants";
+import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 Cypress.Commands.add("getByTestId", (selector, options) =>
   cy.get(`[data-testid='${selector}']`, options)
@@ -27,10 +28,19 @@ Cypress.Commands.add("login", () => {
       );
     });
     cy.intercept("/api/v1/user/*/permission", {
+      fixture: "user-management/permissions.json",
+    }).as("getUserPermission");
+  });
+});
+
+Cypress.Commands.add("assumeRole", (role) => {
+  cy.fixture("scopes/roles-to-scopes.json").then((mapping) => {
+    const scopes: ScopeRegistryEnum[] = mapping[role];
+    cy.intercept("/api/v1/user/*/permission", {
       body: {
-        id: body.user_data.id,
-        user_id: body.user_data.id,
-        scopes: USER_PRIVILEGES.map((up) => up.scope),
+        id: 123,
+        user_id: 123,
+        total_scopes: scopes,
       },
     }).as("getUserPermission");
   });
@@ -70,6 +80,11 @@ declare global {
        * Programmatically login with a mock user
        */
       login(): void;
+      /**
+       * Stub a user with the scopes associated with a role
+       * @example cy.assumeRole(RoleRegistryEnum.OWNER)
+       */
+      assumeRole(role: RoleRegistryEnum): void;
     }
   }
 }

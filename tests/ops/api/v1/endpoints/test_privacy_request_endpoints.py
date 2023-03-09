@@ -92,7 +92,7 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
-from fides.lib.oauth.roles import PRIVACY_REQUEST_MANAGER, VIEWER
+from fides.lib.oauth.roles import APPROVER, VIEWER
 
 page_size = Params().size
 
@@ -592,10 +592,10 @@ class TestGetPrivacyRequests:
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
-    def test_get_privacy_requests_privacy_request_manager_role(
+    def test_get_privacy_requests_approver_role(
         self, api_client: TestClient, generate_role_header, url
     ):
-        auth_header = generate_role_header(roles=[PRIVACY_REQUEST_MANAGER])
+        auth_header = generate_role_header(roles=[APPROVER])
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
 
@@ -1532,7 +1532,8 @@ class TestGetPrivacyRequests:
         api_client.post(url, json=data)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        resp = api_client.get(
+        resp = api_client.request(
+            "GET",
             f"{url}?sort_direction=asc&sort_field=due_date",
             json=data,
             headers=auth_header,
@@ -1542,7 +1543,8 @@ class TestGetPrivacyRequests:
         for i, request in enumerate(asc_response_data):
             assert request["days_left"] == days_left_values[i]
 
-        resp = api_client.get(
+        resp = api_client.request(
+            "GET",
             f"{url}?sort_direction=desc&sort_field=due_date",
             json=data,
             headers=auth_header,
@@ -1827,13 +1829,13 @@ class TestApprovePrivacyRequest:
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_approve_privacy_request_privacy_request_manager_role(
+    def test_approve_privacy_request_approver_role(
         self, _, url, api_client, generate_role_header, privacy_request, db
     ):
         privacy_request.status = PrivacyRequestStatus.pending
         privacy_request.save(db=db)
 
-        auth_header = generate_role_header(roles=[PRIVACY_REQUEST_MANAGER])
+        auth_header = generate_role_header(roles=[APPROVER])
         body = {"request_ids": [privacy_request.id]}
         response = api_client.patch(url, headers=auth_header, json=body)
         assert response.status_code == 200
@@ -2019,7 +2021,7 @@ class TestApprovePrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2151,7 +2153,7 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2222,7 +2224,7 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3146,7 +3148,7 @@ class TestVerifyIdentity:
         assert task_kwargs["to_identity"] == Identity(
             phone_number="+12345678910", email="test@example.com"
         )
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3254,7 +3256,7 @@ class TestVerifyIdentity:
         assert task_kwargs["to_identity"] == Identity(
             phone_number="+12345678910", email="test@example.com"
         )
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3356,7 +3358,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
             kwargs["action_type"] == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
         )
         assert kwargs["to_identity"] == Identity(email="test@example.com")
-        assert kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert kwargs["service_type"] == MessagingServiceType.mailgun.value
         assert kwargs["message_body_params"] == SubjectIdentityVerificationBodyParams(
             verification_code=pr.get_cached_verification_code(),
             verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
@@ -3875,7 +3877,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3926,7 +3928,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (

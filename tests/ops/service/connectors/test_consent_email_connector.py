@@ -215,7 +215,7 @@ class TestEmailConsentConnectorMethods:
         assert call_kwargs["to_identity"].phone_number is None
         assert call_kwargs["to_identity"].ga_client_id is None
 
-        assert call_kwargs["service_type"] == "MAILGUN"
+        assert call_kwargs["service_type"] == "mailgun"
         message_body_params = call_kwargs["message_body_params"]
 
         assert message_body_params.controller == "Test Org"

@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Optional, Union
 import requests
 import sendgrid
 from loguru import logger
-from sendgrid.helpers.mail import Content, Email, Mail, To
+from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
@@ -45,6 +45,7 @@ from fides.core.config import CONFIG
 from fides.core.config.config_proxy import ConfigProxy
 
 EMAIL_JOIN_STRING = ", "
+EMAIL_TEMPLATE_NAME = "fides"
 
 
 def check_and_dispatch_error_notifications(db: Session) -> None:
@@ -167,9 +168,9 @@ def dispatch_message(
     logger.info(
         "Retrieving appropriate dispatcher for email service: {}", messaging_service
     )
-    dispatcher: Optional[
-        Callable[[MessagingConfig, Any, Optional[str]], None]
-    ] = _get_dispatcher_from_config_type(message_service_type=messaging_service)
+    dispatcher: Optional[Callable] = _get_dispatcher_from_config_type(
+        message_service_type=messaging_service
+    )
     if not dispatcher:
         logger.error(
             "Dispatcher has not been implemented for message service type: {}",
@@ -346,15 +347,76 @@ def _build_email(  # pylint: disable=too-many-return-statements
 
 def _get_dispatcher_from_config_type(
     message_service_type: MessagingServiceType,
-) -> Optional[Callable[[MessagingConfig, Any, Optional[str]], None]]:
+) -> Optional[Callable]:
     """Determines which dispatcher to use based on message service type"""
-    if message_service_type == MessagingServiceType.MAILGUN:
-        return _mailgun_dispatcher
-    if message_service_type == MessagingServiceType.TWILIO_TEXT:
-        return _twilio_sms_dispatcher
-    if message_service_type == MessagingServiceType.TWILIO_EMAIL:
-        return _twilio_email_dispatcher
-    return None
+    handler = {
+        MessagingServiceType.mailgun: _mailgun_dispatcher,
+        MessagingServiceType.mailchimp_transactional: _mailchimp_transactional_dispatcher,
+        MessagingServiceType.twilio_text: _twilio_sms_dispatcher,
+        MessagingServiceType.twilio_email: _twilio_email_dispatcher,
+    }
+    return handler.get(message_service_type)  # type: ignore
+
+
+def _mailchimp_transactional_dispatcher(
+    messaging_config: MessagingConfig,
+    message: EmailForActionType,
+    to: Optional[str],
+) -> None:
+    """Dispatches email using Mailchimp Transactional"""
+    if not to:
+        logger.error("Message failed to send. No email identity supplied.")
+        raise MessageDispatchException("No email identity supplied.")
+
+    if not messaging_config.details or not messaging_config.secrets:
+        logger.error(
+            "Message failed to send. No Mailchimp Transactional config details or secrets supplied."
+        )
+        raise MessageDispatchException(
+            "No Mailchimp Transactional config details or secrets supplied."
+        )
+
+    from_email = messaging_config.details[MessagingServiceDetails.EMAIL_FROM.value]
+    data = json.dumps(
+        {
+            "key": messaging_config.secrets[
+                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
+            ],
+            "message": {
+                "from_email": from_email,
+                "subject": message.subject,
+                "text": message.body,
+                # On Mailchimp Transactional's free plan `to` must be an email of the same
+                # domain as `from_email`
+                "to": [{"email": to.strip(), "type": "to"}],
+            },
+        }
+    )
+
+    response = requests.post(
+        "https://mandrillapp.com/api/1.0/messages/send",
+        headers={"Content-Type": "application/json"},
+        data=data,
+    )
+    if not response.ok:
+        logger.error("Email failed to send with status code: %s" % response.status_code)
+        raise MessageDispatchException(
+            f"Email failed to send with status code {response.status_code}"
+        )
+
+    send_data = response.json()[0]
+    email_rejected = send_data.get("status", "rejected") == "rejected"
+    if email_rejected:
+        reason = send_data.get("reject_reason", "Fides Error")
+        explanations = {
+            "soft-bounce": "A temporary error occured with the target inbox. For example, this inbox could be full. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
+            "hard-bounce": "A permanent error occured with the target inbox. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
+            "recipient-domain-mismatch": f"You are not authorised to send email to this domain from {from_email}.",
+        }
+        explanation = explanations.get(reason, "")
+        raise MessageDispatchException(
+            f"Verification email unable to send due to reason: {reason}. {explanation}"
+        )
 
 
 def _mailgun_dispatcher(
@@ -362,15 +424,17 @@ def _mailgun_dispatcher(
     message: EmailForActionType,
     to: Optional[str],
 ) -> None:
-    """Dispatches email using mailgun"""
+    """Dispatches email using Mailgun"""
     if not to:
         logger.error("Message failed to send. No email identity supplied.")
         raise MessageDispatchException("No email identity supplied.")
+
     if not messaging_config.details or not messaging_config.secrets:
         logger.error(
             "Message failed to send. No mailgun config details or secrets supplied."
         )
         raise MessageDispatchException("No mailgun config details or secrets supplied.")
+
     base_url = (
         "https://api.mailgun.net"
         if messaging_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value] is False
@@ -382,7 +446,7 @@ def _mailgun_dispatcher(
     try:
         # Check if a fides template exists
         template_test = requests.get(
-            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/templates/fides",
+            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/templates/{EMAIL_TEMPLATE_NAME}",
             auth=(
                 "api",
                 messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],
@@ -396,7 +460,7 @@ def _mailgun_dispatcher(
         }
 
         if template_test.status_code == 200:
-            data["template"] = "fides"
+            data["template"] = EMAIL_TEMPLATE_NAME
             data["h:X-Mailgun-Variables"] = json.dumps(
                 {"fides_email_body": message.body}
             )
@@ -465,13 +529,26 @@ def _twilio_email_dispatcher(
                 MessagingServiceSecrets.TWILIO_API_KEY.value
             ]
         )
+
+        # the pagination via the client actually doesn't work
+        # in lieu of over-engineering this we can manually call
+        # the next page if/when we hit the limit here
+        response = sg.client.templates.get(
+            query_params={"generations": "dynamic", "page_size": 200}
+        )
+        template_test = _get_template_id_if_exists(
+            json.loads(response.body), EMAIL_TEMPLATE_NAME
+        )
+
         from_email = Email(
             messaging_config.details[MessagingServiceDetails.TWILIO_EMAIL_FROM.value]
         )
         to_email = To(to.strip())
         subject = message.subject
-        content = Content("text/html", message.body)
-        mail = Mail(from_email, to_email, subject, content)
+        mail = _compose_twilio_mail(
+            from_email, to_email, subject, message.body, template_test
+        )
+
         response = sg.client.mail.send.post(request_body=mail.get())
         if response.status_code >= 400:
             logger.error(
@@ -530,3 +607,40 @@ def _twilio_sms_dispatcher(
     except TwilioRestException as e:
         logger.error("Twilio SMS failed to send: {}", Pii(str(e)))
         raise MessageDispatchException(f"Twilio SMS failed to send due to: {Pii(e)}")
+
+
+def _get_template_id_if_exists(
+    templates_response: Dict[str, List], template_name: str
+) -> Optional[str]:
+    """
+    Checks to see if a SendGrid template exists for Fides, returning the id if so
+    """
+
+    for template in templates_response["result"]:
+        if template["name"].lower() == template_name.lower():
+            return template["id"]
+    return None
+
+
+def _compose_twilio_mail(
+    from_email: Email,
+    to_email: To,
+    subject: str,
+    message_body: str,
+    template_test: Optional[str] = None,
+) -> Mail:
+    """
+    Returns the Mail object to send, if a template is passed composes the Mail
+    appropriately with the template ID and paramaterized message body.
+    """
+    if template_test:
+        mail = Mail(from_email=from_email, subject=subject)
+        mail.template_id = TemplateId(template_test)
+        personalization = Personalization()
+        personalization.dynamic_template_data = {"fides_email_body": message_body}
+        personalization.add_email(to_email)
+        mail.add_personalization(personalization)
+    else:
+        content = Content("text/html", message_body)
+        mail = Mail(from_email, to_email, subject, content)
+    return mail

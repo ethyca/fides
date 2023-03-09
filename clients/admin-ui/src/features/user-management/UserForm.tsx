@@ -19,12 +19,13 @@ import * as Yup from "yup";
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
+import { ScopeRegistryEnum } from "~/types/api";
 
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
 import { useUpdateUserPermissionsMutation } from "./user-management.slice";
 
-const requiredPermission = "privacy-request:read";
+const requiredPermission = ScopeRegistryEnum.PRIVACY_REQUEST_READ;
 
 const defaultInitialValues = {
   username: "",

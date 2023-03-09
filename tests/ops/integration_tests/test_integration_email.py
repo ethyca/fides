@@ -27,6 +27,13 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 @pytest.mark.integration
 @mock.patch("fides.api.ops.service.connectors.email_connector.dispatch_message")
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "service_type, m_config",
+    [
+        (MessagingServiceType.mailgun.value, "messaging_config"),
+        (MessagingServiceType.twilio_email.value, "messaging_config_twilio_email"),
+    ],
+)
 async def test_email_connector_cache_and_delayed_send(
     mock_email_dispatch,
     db,
@@ -36,13 +43,18 @@ async def test_email_connector_cache_and_delayed_send(
     privacy_request,
     example_datasets,
     email_dataset_config,
-    messaging_config,
+    service_type,
+    m_config,
+    request,
 ) -> None:
     """Run an erasure privacy request with a postgres dataset and an email dataset.
     The email dataset has three separate collections.
 
     Call the email send and verify what would have been emailed
     """
+    # load the appropriate messaging config fixture
+    messaging_config = request.getfixturevalue(m_config)
+
     privacy_request.policy = erasure_policy
     rule = erasure_policy.rules[0]
     target = rule.targets[0]
@@ -185,7 +197,7 @@ async def test_email_connector_cache_and_delayed_send(
         == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
     assert call_args["to_identity"] == Identity(email="test@example.com")
-    assert call_args["service_type"] == MessagingServiceType.MAILGUN.value
+    assert call_args["service_type"] == service_type
     assert call_args["message_body_params"] == raw_email_template_values
 
     created_email_audit_log = (

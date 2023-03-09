@@ -75,7 +75,7 @@ class TestConsentRequest:
         """Overrides autouse fixture to set notification service type to twilio sms"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = (
-            MessagingServiceType.TWILIO_TEXT.value
+            MessagingServiceType.twilio_text.value
         )
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
@@ -375,7 +375,8 @@ class TestGetConsentUnverified:
     def test_consent_unverified_no_consent_request_id(self, api_client):
         data = {"code": "12345"}
 
-        response = api_client.get(
+        response = api_client.request(
+            "GET",
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id='non_existent_consent_id')}",
             json=data,
         )
@@ -388,7 +389,8 @@ class TestGetConsentUnverified:
     def test_consent_unverified_verification_error(self, api_client):
         data = {"code": "12345"}
 
-        response = api_client.get(
+        response = api_client.request(
+            "GET",
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id='non_existent_consent_id')}",
             json=data,
         )
