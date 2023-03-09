@@ -53,7 +53,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.connectors import FidesConnector
+from fides.api.ops.service.connectors import FidesConnector, get_connector
 from fides.api.ops.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
     GenericEmailConsentConnector,
@@ -688,16 +688,11 @@ def needs_email_send(
     connector needs to send an email.
     """
 
-    erasure_email_connection_configs: Query = get_erasure_email_connection_configs(db)
-    for connection_config in erasure_email_connection_configs:
-        if EmailConnector(connection_config).needs_email(
-            user_identities, privacy_request
-        ):
-            return True
-
-    consent_email_connection_configs: Query = get_consent_email_connection_configs(db)
-    for connection_config in consent_email_connection_configs:
-        if GenericEmailConsentConnector(connection_config).needs_email(
+    erasure_email_configs: Query = get_erasure_email_connection_configs(db)
+    consent_email_configs: Query = get_consent_email_connection_configs(db)
+    combined_configs = erasure_email_configs.union_all(consent_email_configs)
+    for connection_config in combined_configs:
+        if get_connector(connection_config).needs_email(
             user_identities, privacy_request
         ):
             return True

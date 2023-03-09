@@ -1750,7 +1750,7 @@ class TestPutConnectionConfigSecrets:
         )
         assert kwargs["to_identity"] == Identity(email="test@example.com")
         assert kwargs["message_body_params"] == ErasureRequestBodyParams(
-            controller="Demo Organization",
+            controller="Test Organization",
             third_party_vendor_name="Test",
             identities=["test@ethyca.com"],
         )

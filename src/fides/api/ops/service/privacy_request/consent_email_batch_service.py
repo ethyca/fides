@@ -12,6 +12,7 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email_con
     ExtendedConsentEmailSchema,
 )
 from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
+from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.connectors.consent_email_connector import (
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
@@ -199,7 +200,7 @@ def send_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
                 get_erasure_email_connection_configs(session)
             )
             for connection_config in erasure_email_connection_configs:
-                EmailConnector(connection_config).send_erasure_email(
+                get_connector(connection_config).send_erasure_email(
                     filter_privacy_requests_by_action_type(
                         privacy_requests, ActionType.erasure
                     )

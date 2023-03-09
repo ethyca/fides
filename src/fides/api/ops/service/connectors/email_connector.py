@@ -52,7 +52,7 @@ class EmailConnector(LimitedConnector):
                 to_identity=Identity(email=self.config.test_email_address),
                 service_type=email_service,
                 message_body_params=ErasureRequestBodyParams(
-                    controller="Demo Organization",
+                    controller="Test Organization",
                     third_party_vendor_name=self.config.third_party_vendor_name,
                     identities=["test@ethyca.com"],
                 ),
