@@ -7,20 +7,18 @@ saas_config:
 
   connector_params:
     - name: domain
+      default_value: amplitude.com
     - name: authorization_key
 
   client_config:
     protocol: https
     host: <domain>
-    # authentication:
-    #   strategy: no_authentication
-    #   configuration: {}
     authentication:
-      strategy: api_key
-      configuration:
-        headers:
-          - name: Authorization
-            value: Basic <authorization_key>
+        strategy: api_key
+        configuration:
+          headers:
+            - name: Authorization
+              value: Basic <authorization_key>
 
   test_request:
     method: GET
@@ -29,8 +27,6 @@ saas_config:
       - name: user
         value: 12345@gmail.com
     param_values:
-      - name: authorization_key
-        connector_param: authorization_key
       - name: email
         identity: email
 
@@ -44,8 +40,6 @@ saas_config:
             - name: user
               value: <user_search_matches_amplitude_id>
           param_values:
-            - name: authorization_key
-              connector_param: authorization_key
             - name: user_search_matches_amplitude_id
               references:
                 - dataset: <instance_fides_key>
@@ -61,8 +55,6 @@ saas_config:
              ]
             }
           param_values:
-            - name: authorization_key
-              connector_param: authorization_key
             - name: email
               identity: email
     - name: user_search
@@ -72,9 +64,7 @@ saas_config:
           path: /api/2/usersearch
           query_params:
             - name: user
-              value: 12345@gmail.com
+              value: <email>
           param_values:
-            - name: authorization_key
-              connector_param: authorization_key
             - name: email
               identity: email
