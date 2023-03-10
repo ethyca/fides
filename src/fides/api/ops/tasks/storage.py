@@ -10,7 +10,8 @@ from typing import Any, Dict, Union
 import pandas as pd
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
-from bson import json_util as json
+
+from bson import json_util
 from loguru import logger
 
 from fides.api.ops.schemas.storage.storage import (
@@ -67,7 +68,7 @@ def write_to_in_memory_buffer(
     logger.info("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
-        json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
+        json_str = json_util.dumps(data, indent=2, default=_handle_json_encoding)
         return BytesIO(
             encrypt_access_request_results(json_str, request_id).encode(
                 CONFIG.security.encoding
@@ -168,7 +169,7 @@ def upload_to_local(payload: Dict, file_key: str, request_id: str) -> str:
 
     filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
     data_str: str = encrypt_access_request_results(
-        json.dumps(payload, default=_handle_json_encoding), request_id
+        json_util.dumps(payload, default=_handle_json_encoding), request_id
     )
     with open(filename, "w") as file:  # pylint: disable=W1514
         file.write(data_str)
