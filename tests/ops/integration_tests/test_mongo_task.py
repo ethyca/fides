@@ -858,6 +858,16 @@ async def test_array_querying_mongo(
     # Note that order matters here!
     assert customer_detail_logs[0].fields_affected == [
         {
+            "path": "mongo_test:customer_details:_id",
+            "field_name": "_id",
+            "data_categories": ["user.unique_id"],
+        },
+        {
+            "path": "mongo_test:customer_details:customer_id",
+            "field_name": "customer_id",
+            "data_categories": ["user.unique_id"],
+        },
+        {
             "path": "mongo_test:customer_details:birthday",
             "field_name": "birthday",
             "data_categories": ["user.date_of_birth"],
@@ -866,11 +876,6 @@ async def test_array_querying_mongo(
             "path": "mongo_test:customer_details:children",
             "field_name": "children",
             "data_categories": ["user.childrens"],
-        },
-        {
-            "path": "mongo_test:customer_details:customer_id",
-            "field_name": "customer_id",
-            "data_categories": ["user.unique_id"],
         },
         {
             "path": "mongo_test:customer_details:emergency_contacts.name",
