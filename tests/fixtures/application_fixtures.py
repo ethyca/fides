@@ -1607,7 +1607,7 @@ def test_fides_client(
         fides_connector_example_secrets["uri"],
         fides_connector_example_secrets["username"],
         fides_connector_example_secrets["password"],
-        fides_connector_example_secrets["polling_timeout"]
+        fides_connector_example_secrets["polling_timeout"],
     )
 
 

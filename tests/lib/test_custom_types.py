@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.custom_types import SafeStr, PhoneNumber
+from fides.api.custom_types import PhoneNumber, SafeStr
 
 DANGEROUS_STRINGS = [
     "<svg onload=alert(1)>",
