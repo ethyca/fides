@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import secrets
 import zipfile
@@ -11,7 +12,7 @@ import pandas as pd
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
 
-from bson import json_util
+from bson import ObjectId
 from loguru import logger
 
 from fides.api.ops.schemas.storage.storage import (
@@ -68,7 +69,7 @@ def write_to_in_memory_buffer(
     logger.info("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
-        json_str = json_util.dumps(data, indent=2, default=_handle_json_encoding)
+        json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
         return BytesIO(
             encrypt_access_request_results(json_str, request_id).encode(
                 CONFIG.security.encoding
@@ -159,6 +160,8 @@ def _handle_json_encoding(field: Any) -> str:
     """Specify str format for datetime objects"""
     if isinstance(field, datetime):
         return field.strftime("%Y-%m-%dT%H:%M:%S")
+    if isinstance(field, ObjectId):
+        return {"$oid": str(field)}
     return field
 
 
@@ -169,7 +172,7 @@ def upload_to_local(payload: Dict, file_key: str, request_id: str) -> str:
 
     filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
     data_str: str = encrypt_access_request_results(
-        json_util.dumps(payload, default=_handle_json_encoding), request_id
+        json.dumps(payload, default=_handle_json_encoding), request_id
     )
     with open(filename, "w") as file:  # pylint: disable=W1514
         file.write(data_str)
