@@ -79,7 +79,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
   return (
     <>
       <Button
-        colorScheme="primary"
+        variant="outline"
         size="sm"
         onClick={onOpen}
         data-testid="update-password-btn"

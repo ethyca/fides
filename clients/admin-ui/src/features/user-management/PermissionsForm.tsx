@@ -87,7 +87,7 @@ const PermissionsForm = () => {
                 <Text fontSize="sm" fontWeight="semibold" mr={1}>
                   User role
                 </Text>
-                <QuestionTooltip label="TODO" />
+                <QuestionTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
               </Flex>
               {ROLES.map((role) => {
                 const isSelected = values.roles.indexOf(role.roleKey) >= 0;

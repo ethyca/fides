@@ -8,6 +8,7 @@ import { selectActiveUserId } from "./user-management.slice";
 import UserForm, { type Props as UserFormProps } from "./UserForm";
 
 const UserManagementTabs = ({
+  user,
   onSubmit,
   initialValues,
   ...props
@@ -19,6 +20,7 @@ const UserManagementTabs = ({
       label: "Profile",
       content: (
         <UserForm
+          user={user}
           onSubmit={onSubmit}
           initialValues={initialValues}
           {...props}

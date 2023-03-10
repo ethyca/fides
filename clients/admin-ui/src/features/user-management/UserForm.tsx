@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Stack, Text, useToast } from "@fidesui/react";
+import {Box, Button, ButtonGroup, Flex, HStack, Stack, Text, useToast} from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useAPIHelper } from "common/hooks";
@@ -33,6 +33,7 @@ const ValidationSchema = Yup.object().shape({
 });
 
 export interface Props {
+  user: User;
   onSubmit: (values: FormValues) => Promise<
     | {
         data: User | UserCreateResponse;
@@ -47,6 +48,7 @@ export interface Props {
 }
 
 const UserForm = ({
+  user,
   onSubmit,
   initialValues,
   canEditNames,
@@ -84,28 +86,37 @@ const UserForm = ({
       {({ dirty, isSubmitting, isValid }) => (
         <Form>
           <Stack maxW={["xs", "xs", "100%"]} width="100%" spacing={7}>
-            <Text fontSize="sm" fontWeight="semibold">
-              Profile
-            </Text>
-            <Stack mb={8} spacing={6} maxWidth="40%">
+            <Stack spacing={6} maxWidth="60%">
+              <Flex>
+                <Text display="flex" alignItems="center" fontSize="sm" fontWeight="semibold">
+                  Profile
+                </Text>
+                <Box marginLeft="auto">
+                  <PasswordManagement
+                      user={user}
+                  />
+                </Box>
+              </Flex>
               <CustomTextInput
                 name="username"
                 label="Username"
+                variant="block"
                 placeholder="Enter new username"
               />
               <CustomTextInput
                 name="first_name"
                 label="First Name"
+                variant="block"
                 placeholder="Enter first name of user"
                 disabled={nameDisabled}
               />
               <CustomTextInput
                 name="last_name"
                 label="Last Name"
+                variant="block"
                 placeholder="Enter last name of user"
                 disabled={nameDisabled}
               />
-              <PasswordManagement />
             </Stack>
             <ButtonGroup size="sm">
               <NextLink href={USER_MANAGEMENT_ROUTE} passHref>

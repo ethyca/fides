@@ -54,7 +54,7 @@ const RoleOption = ({ label, roleKey, isSelected }: Props) => {
           <Text fontSize="sm" fontWeight="semibold" mr={1}>
             Assigned systems
           </Text>
-          <QuestionTooltip label="TODO" />
+          <QuestionTooltip label="Assigned systems refer to those systems that have been specifically allocated to a user for management purposes. Users assigned to a system possess full edit permissions and are listed as the Data Steward for the respective system." />
         </Flex>
         <Button
           colorScheme="primary"
