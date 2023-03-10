@@ -86,7 +86,7 @@ const UserForm = ({
       {({ dirty, isSubmitting, isValid }) => (
         <Form>
           <Stack maxW={["xs", "xs", "100%"]} width="100%" spacing={7}>
-            <Stack spacing={6} maxWidth="60%">
+            <Stack spacing={6} maxWidth="55%">
               <Flex>
                 <Text display="flex" alignItems="center" fontSize="sm" fontWeight="semibold">
                   Profile

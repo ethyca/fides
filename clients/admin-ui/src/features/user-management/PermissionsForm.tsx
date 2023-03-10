@@ -22,18 +22,22 @@ const defaultInitialValues = {
 
 export type FormValues = typeof defaultInitialValues;
 
-const ROLES = [
-  { label: "Owner", roleKey: RoleRegistryEnum.OWNER },
-  { label: "Contributor", roleKey: RoleRegistryEnum.CONTRIBUTOR },
-  { label: "Viewer", roleKey: RoleRegistryEnum.VIEWER },
-  {
-    label: "Viewer & Approver",
-    roleKey: RoleRegistryEnum.VIEWER_AND_APPROVER,
-  },
-  { label: "Approver", roleKey: RoleRegistryEnum.APPROVER },
-];
+// const ROLES = [
+//   { label: "Owner", roleKey: RoleRegistryEnum.OWNER },
+//   { label: "Contributor", roleKey: RoleRegistryEnum.CONTRIBUTOR },
+//   { label: "Viewer", roleKey: RoleRegistryEnum.VIEWER },
+//   {
+//     label: "Viewer & Approver",
+//     roleKey: RoleRegistryEnum.VIEWER_AND_APPROVER,
+//   },
+//   { label: "Approver", roleKey: RoleRegistryEnum.APPROVER },
+// ];
 
-const PermissionsForm = () => {
+interface Props {
+  roles: any[]
+}
+
+const PermissionsForm = ({roles}: Props) => {
   const toast = useToast();
   const activeUserId = useAppSelector(selectActiveUserId);
 
@@ -89,7 +93,7 @@ const PermissionsForm = () => {
                 </Text>
                 <QuestionTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
               </Flex>
-              {ROLES.map((role) => {
+              {roles.map((role) => {
                 const isSelected = values.roles.indexOf(role.roleKey) >= 0;
                 return (
                   <RoleOption
