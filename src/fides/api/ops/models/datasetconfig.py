@@ -154,7 +154,6 @@ class DatasetConfig(Base):
             and self.connection_config.saas_config is not None
             and self.connection_config.saas_config["fides_key"] == self.fides_key
         ):
-
             dataset_graph = merge_datasets(
                 dataset_graph,
                 self.connection_config.get_saas_config().get_graph(self.connection_config.secrets),  # type: ignore

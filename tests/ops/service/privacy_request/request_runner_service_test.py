@@ -408,7 +408,6 @@ def test_create_and_process_access_request_mssql(
     policy_post_execution_webhooks,
     run_privacy_request_task,
 ):
-
     customer_email = "customer-1@example.com"
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -456,7 +455,6 @@ def test_create_and_process_access_request_mysql(
     policy_post_execution_webhooks,
     run_privacy_request_task,
 ):
-
     customer_email = "customer-1@example.com"
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -505,7 +503,6 @@ def test_create_and_process_access_request_mariadb(
     policy_post_execution_webhooks,
     run_privacy_request_task,
 ):
-
     customer_email = "customer-1@example.com"
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -1458,7 +1455,6 @@ def test_create_and_process_erasure_request_bigquery(
 
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
-
         address_id = bigquery_resources["address_id"]
         stmt = f"select 'id', city, state from address where id = {address_id};"
         res = connection.execute(stmt).all()
@@ -1568,7 +1564,6 @@ class TestRunPrivacyRequestRunsWebhooks:
         privacy_request,
         policy_pre_execution_webhooks,
     ):
-
         proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
         assert proceed
         assert privacy_request.status == PrivacyRequestStatus.in_processing

@@ -664,7 +664,6 @@ class TestGetUserPermissions:
     def test_get_other_user_roles_as_root(
         self, db, api_client, auth_user, root_auth_header
     ):
-
         FidesUserPermissions.create(
             db=db, data={"user_id": auth_user.id, "roles": [VIEWER]}
         )

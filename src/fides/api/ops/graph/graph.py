@@ -198,11 +198,10 @@ class DatasetGraph:
 
         for node_address, node in self.nodes.items():
             for field_path, ref_list in node.collection.references().items():
-
                 source_field_address: FieldAddress = FieldAddress(
                     node_address.dataset, node_address.collection, *field_path.levels
                 )
-                for (dest_field_address, direction) in ref_list:
+                for dest_field_address, direction in ref_list:
                     if dest_field_address.collection_address() not in self.nodes:
                         logger.warning(
                             "Referenced object {} does not exist", dest_field_address

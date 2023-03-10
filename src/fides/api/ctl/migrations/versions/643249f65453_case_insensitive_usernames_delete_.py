@@ -20,7 +20,6 @@ depends_on = None
 
 
 def upgrade():
-
     session = Session(bind=op.get_bind())
     conn = session.connection()
     statement = text(

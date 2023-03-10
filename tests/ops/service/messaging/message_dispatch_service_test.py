@@ -100,7 +100,6 @@ class TestMessageDispatchService:
     def test_email_dispatch_mailgun_config_not_found(
         self, mock_mailgun_dispatcher: Mock, db: Session
     ) -> None:
-
         with pytest.raises(MessageDispatchException) as exc:
             dispatch_message(
                 db=db,
@@ -123,7 +122,6 @@ class TestMessageDispatchService:
     def test_email_dispatch_mailgun_config_no_secrets(
         self, mock_mailgun_dispatcher: Mock, db: Session
     ) -> None:
-
         messaging_config = MessagingConfig.create(
             db=db,
             data={
@@ -287,7 +285,6 @@ class TestMessageDispatchService:
     def test_sms_dispatch_twilio_success(
         self, mock_twilio_dispatcher: Mock, db: Session, messaging_config_twilio_sms
     ) -> None:
-
         dispatch_message(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
@@ -325,7 +322,6 @@ class TestMessageDispatchService:
     def test_sms_dispatch_twilio_config_not_found(
         self, mock_twilio_dispatcher: Mock, db: Session
     ) -> None:
-
         with pytest.raises(MessageDispatchException) as exc:
             dispatch_message(
                 db=db,
@@ -349,7 +345,6 @@ class TestMessageDispatchService:
     def test_sms_dispatch_twilio_config_no_secrets(
         self, mock_mailgun_dispatcher: Mock, db: Session
     ) -> None:
-
         messaging_config = MessagingConfig.create(
             db=db,
             data={

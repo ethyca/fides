@@ -102,7 +102,8 @@ class FidesopsRedis(Redis):
 
     def get_values(self, keys: List[str]) -> Dict[str, Optional[Any]]:
         """Retrieve all values corresponding to the set of input keys and return them as a
-        dictionary. Note that if a key does not exist in redis it will be returned as None"""
+        dictionary. Note that if a key does not exist in redis it will be returned as None
+        """
         values = self.mget(keys)
         return {x[0]: x[1] for x in zip(keys, values)}
 

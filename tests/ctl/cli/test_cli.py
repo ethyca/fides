@@ -825,7 +825,6 @@ class TestGenerate:
         test_cli_runner: CliRunner,
         tmpdir: LocalPath,
     ) -> None:
-
         tmp_output_file = tmpdir.join("dataset.yml")
         config_data = os.getenv("BIGQUERY_CONFIG", "e30=")
         config_data_decoded = loads(
@@ -875,7 +874,6 @@ class TestGenerate:
         test_cli_runner: CliRunner,
         tmpdir: LocalPath,
     ) -> None:
-
         tmp_output_file = tmpdir.join("dataset.yml")
         tmp_keyfile = tmpdir.join("bigquery.json")
         config_data = os.getenv("BIGQUERY_CONFIG", "e30=")

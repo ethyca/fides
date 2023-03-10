@@ -507,7 +507,6 @@ class TestCacheManualErasureCount:
 
 class TestPrivacyRequestCacheFailedStep:
     def test_cache_failed_step_and_collection(self, privacy_request):
-
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.erasure, collection=paused_location
         )

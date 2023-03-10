@@ -107,7 +107,6 @@ def vend_dataset_config(
 def vend_create_erasure_data(
     vend_connection_config: ConnectionConfig, vend_erasure_identity_email: str
 ) -> None:
-
     vend_secrets = vend_connection_config.secrets
     headers = {
         "Authorization": f"Bearer {vend_secrets['token']}",

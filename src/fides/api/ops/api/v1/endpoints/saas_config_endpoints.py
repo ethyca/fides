@@ -63,6 +63,7 @@ from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 
+
 # Helper method to inject the parent ConnectionConfig into these child routes
 def _get_saas_connection_config(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)
@@ -200,7 +201,8 @@ def delete_saas_config(
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
 ) -> None:
     """Removes the SaaS config for the given connection config.
-    The corresponding dataset and secrets must be deleted before deleting the SaaS config"""
+    The corresponding dataset and secrets must be deleted before deleting the SaaS config
+    """
 
     logger.info("Finding SaaS config for connection '{}'", connection_config.key)
     saas_config = connection_config.saas_config
