@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.8.1...main)
 
+### Fixed
+
+* Resolved a bug that stopped custom fields populating the visual datamap [#2775](https://github.com/ethyca/fides/pull/2775)
+
 ## [2.8.1](https://github.com/ethyca/fides/compare/2.8.0...2.8.1)
 
 ### Fixed

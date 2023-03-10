@@ -194,7 +194,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             keys.append(key_string)
             output_list[0] = tuple(keys)
 
-    system_custom_field_data = {}
     known_fields = (
         "fides_key",
         "name",
@@ -219,6 +218,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         "system_type",
     )
     for system in server_resources["system"]:
+        system_custom_field_data = {}
         if not isinstance(system, dict):
             system = system.__dict__
 
