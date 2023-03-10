@@ -274,7 +274,9 @@ def initiate_scheduled_batch_email_send() -> None:
         id=BATCH_EMAIL_SEND,
         coalesce=False,
         replace_existing=True,
-        trigger="interval",
-        minutes=1,
+        trigger="cron",
+        minute="0",
+        hour="12",
+        day_of_week="mon",
         timezone="US/Eastern",
     )
