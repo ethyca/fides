@@ -156,7 +156,7 @@ def upload_to_s3(  # pylint: disable=R0913
         raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
-def _handle_json_encoding(field: Any) -> str:
+def _handle_json_encoding(field: Any) -> Union[str, Dict[str, str]]:
     """Specify str format for datetime objects"""
     if isinstance(field, datetime):
         return field.strftime("%Y-%m-%dT%H:%M:%S")
