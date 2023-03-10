@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from fides.api.custom_types import SafeStr
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
@@ -60,7 +61,7 @@ class ErrorNotificationBodyParams(BaseModel):
 class SubjectIdentityVerificationBodyParams(BaseModel):
     """Body params required for subject identity verification email/sms template"""
 
-    verification_code: str
+    verification_code: SafeStr
     verification_code_ttl_seconds: int
 
     def get_verification_code_ttl_minutes(self) -> int:
@@ -73,7 +74,7 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
 class RequestReceiptBodyParams(BaseModel):
     """Body params required for privacy request receipt template"""
 
-    request_types: List[str]
+    request_types: List[SafeStr]
 
 
 class AccessRequestCompleteBodyParams(BaseModel):
@@ -85,7 +86,7 @@ class AccessRequestCompleteBodyParams(BaseModel):
 class RequestReviewDenyBodyParams(BaseModel):
     """Body params required for privacy request review deny template"""
 
-    rejection_reason: Optional[str]
+    rejection_reason: Optional[SafeStr]
 
 
 class ConsentPreferencesByUser(BaseModel):
