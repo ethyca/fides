@@ -15,6 +15,7 @@ import { successToastParams } from "~/features/common/toast";
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
 import { selectActiveUserId, setActiveUserId } from "./user-management.slice";
+import React from "react";
 
 const defaultInitialValues = {
   username: "",
@@ -94,6 +95,7 @@ const UserForm = ({
                 <Box marginLeft="auto">
                   <PasswordManagement
                       user={user}
+                      isNewUser={isNewUser}
                   />
                 </Box>
               </Flex>
@@ -117,6 +119,17 @@ const UserForm = ({
                 placeholder="Enter last name of user"
                 disabled={nameDisabled}
               />
+              {!activeUserId ?
+                  <CustomTextInput
+                      name="password"
+                      label="Password"
+                      variant="block"
+                      placeholder="********"
+                      type="password"
+                      tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                  />
+                  : null
+              }
             </Stack>
             <ButtonGroup size="sm">
               <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
