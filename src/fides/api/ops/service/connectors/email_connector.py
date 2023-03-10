@@ -77,14 +77,13 @@ class EmailConnector(LimitedConnector):
             identities.add(privacy_request.get_cached_identity_data().get("email"))
 
         db = Session.object_session(self.configuration)
-        email_service: Optional[str] = _get_email_messaging_config_service_type(db=db)
 
         try:
             dispatch_message(
                 db=db,
                 action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
                 to_identity=Identity(email=self.config.recipient_email_address),
-                service_type=email_service,
+                service_type=_get_email_messaging_config_service_type(db=db),
                 message_body_params=ErasureRequestBodyParams(
                     controller=_get_org_name(db),
                     third_party_vendor_name=self.config.third_party_vendor_name,

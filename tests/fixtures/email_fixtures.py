@@ -92,6 +92,27 @@ def sovrn_email_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def attentive_email_connection_config(db: Session) -> Generator:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_email_connection_config",
+            "connection_type": ConnectionType.attentive,
+            "access": AccessLevel.write,
+            "secrets": {
+                "test_email_address": "processor_address@example.com",
+                "recipient_email_address": "attentive@example.com",
+                "third_party_vendor_name": "Attentive",
+            },
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def test_sovrn_consent_email_connector(
     sovrn_email_connection_config: Dict[str, str],
 ) -> SovrnConnector:
