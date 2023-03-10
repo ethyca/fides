@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import secrets
 import zipfile
@@ -11,6 +10,7 @@ from typing import Any, Dict, Union
 import pandas as pd
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
+from bson import json_util as json
 from loguru import logger
 
 from fides.api.ops.schemas.storage.storage import (
