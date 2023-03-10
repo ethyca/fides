@@ -15,11 +15,14 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.8.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.8.2...main)
+
+## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
 
 ### Fixed
 
 * Resolved a bug that stopped custom fields populating the visual datamap [#2775](https://github.com/ethyca/fides/pull/2775)
+* Patch appconfig migration to handle existing db record [#2780](https://github.com/ethyca/fides/pull/2780)
 
 ## [2.8.1](https://github.com/ethyca/fides/compare/2.8.0...2.8.1)
 
