@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from os.path import exists
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional
 
 from fideslang.models import Dataset
 from loguru import logger
-from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
 from pydantic import BaseModel, validator
 from sqlalchemy.orm import Session
@@ -163,9 +162,7 @@ def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
             connector_type
         )
         saas_config_template = SaaSConfig.parse_obj(load_config(template.config))
-        template_version: Union[LegacyVersion, Version] = parse_version(
-            saas_config_template.version
-        )
+        template_version = parse_version(saas_config_template.version)
 
         connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
             db=db,
