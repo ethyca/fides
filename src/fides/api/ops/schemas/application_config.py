@@ -48,7 +48,7 @@ class NotificationApplicationConfig(BaseSchema):
     @classmethod
     def validate_notification_service_type(cls, value: str) -> Optional[str]:
         """Ensure the provided type is a valid value."""
-        value = value.upper()  # force uppercase for safety
+        value = value.lower()  # force lowercase for safety
         try:
             MessagingServiceType[value]
         except KeyError:

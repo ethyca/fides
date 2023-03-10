@@ -267,7 +267,7 @@ def messaging_config(db: Session) -> Generator:
         data={
             "name": name,
             "key": "my_mailgun_messaging_config",
-            "service_type": MessagingServiceType.MAILGUN,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {
                 MessagingServiceDetails.API_VERSION.value: "v3",
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
@@ -293,7 +293,7 @@ def messaging_config_twilio_email(db: Session) -> Generator:
         data={
             "name": name,
             "key": "my_twilio_email_config",
-            "service_type": MessagingServiceType.TWILIO_EMAIL,
+            "service_type": MessagingServiceType.twilio_email.value,
         },
     )
     messaging_config.set_secrets(
@@ -314,7 +314,7 @@ def messaging_config_twilio_sms(db: Session) -> Generator:
         data={
             "name": name,
             "key": "my_twilio_sms_config",
-            "service_type": MessagingServiceType.TWILIO_TEXT,
+            "service_type": MessagingServiceType.twilio_text.value,
         },
     )
     messaging_config.set_secrets(
@@ -323,6 +323,30 @@ def messaging_config_twilio_sms(db: Session) -> Generator:
             MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "23rwrfwxwef",
             MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23984y29384y598432",
             MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value: "2ieurnoqw",
+        },
+    )
+    yield messaging_config
+    messaging_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_config_mailchimp_transactional(db: Session) -> Generator:
+    messaging_config = MessagingConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_mailchimp_transactional_messaging_config",
+            "service_type": MessagingServiceType.mailchimp_transactional,
+            "details": {
+                MessagingServiceDetails.DOMAIN.value: "some.domain",
+                MessagingServiceDetails.EMAIL_FROM.value: "test@example.com",
+            },
+        },
+    )
+    messaging_config.set_secrets(
+        db=db,
+        messaging_secrets={
+            MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value: "12984r70298r"
         },
     )
     yield messaging_config
@@ -655,7 +679,6 @@ def erasure_policy_string_rewrite_long(
 def erasure_policy_two_rules(
     db: Session, oauth_client: ClientDetail, erasure_policy: Policy
 ) -> Generator:
-
     second_erasure_rule = Rule.create(
         db=db,
         data={
@@ -1607,7 +1630,7 @@ def test_fides_client(
         fides_connector_example_secrets["uri"],
         fides_connector_example_secrets["username"],
         fides_connector_example_secrets["password"],
-        fides_connector_example_secrets["polling_timeout"]
+        fides_connector_example_secrets["polling_timeout"],
     )
 
 
@@ -1621,7 +1644,6 @@ def authenticated_fides_client(
 
 @pytest.fixture(scope="function")
 def system(db: Session) -> System:
-
     system = System.create(
         db=db,
         data={

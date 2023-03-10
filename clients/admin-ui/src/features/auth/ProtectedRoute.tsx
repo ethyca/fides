@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { LOGIN_ROUTE, VERIFY_AUTH_INTERVAL } from "~/constants";
 import { canAccessRoute } from "~/features/common/nav/v2/nav-config";
 import { useGetUserPermissionsQuery } from "~/features/user-management";
-import { ScopeRegistry } from "~/types/api";
 
 import { logout, selectToken, selectUser } from "./auth.slice";
 
@@ -30,7 +29,7 @@ const useProtectedRoute = (redirectUrl: string) => {
 
   const path = router.pathname;
   const userScopes = permissionsQuery.data
-    ? (permissionsQuery.data.scopes as ScopeRegistry[])
+    ? permissionsQuery.data.total_scopes
     : [];
 
   const hasAccess = canAccessRoute({ path, userScopes });

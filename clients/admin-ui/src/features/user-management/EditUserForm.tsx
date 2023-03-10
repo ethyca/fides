@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 import { selectUser } from "~/features/auth";
 import { useHasPermission } from "~/features/common/Restrict";
-import { ScopeRegistry } from "~/types/api";
+import { ScopeRegistryEnum } from "~/types/api";
 
 import { User, UserPermissions } from "./types";
 import { useEditUserMutation } from "./user-management.slice";
@@ -29,7 +29,9 @@ const useUserForm = (profile: User, permissions: UserPermissions) => {
   };
 
   const isOwnProfile = currentUser ? currentUser.id === profile.id : false;
-  const hasUserUpdatePermission = useHasPermission([ScopeRegistry.USER_UPDATE]);
+  const hasUserUpdatePermission = useHasPermission([
+    ScopeRegistryEnum.USER_UPDATE,
+  ]);
   const canUpdateUser = isOwnProfile ? true : hasUserUpdatePermission;
 
   return {

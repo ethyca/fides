@@ -3,5 +3,5 @@
       "domain": "test-domain",
         "is_eu_domain": "false"
     },
-    "service_type": "MAILGUN"
+    "service_type": "mailgun"
   }

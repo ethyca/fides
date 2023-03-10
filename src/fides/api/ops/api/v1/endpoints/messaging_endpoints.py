@@ -180,7 +180,7 @@ def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> Messagin
                 "application/json": {
                     "example": {
                         "config_status": "configured",
-                        "detail": "Active default messaging service of type MAILGUN is fully configured",
+                        "detail": "Active default messaging service of type mailgun is fully configured",
                     }
                 }
             }
