@@ -4,6 +4,12 @@ from fides.api.ops.schemas.connection_configuration import (
     ConsentEmailSchema,
     SovrnSchema,
 )
+from fides.api.ops.schemas.connection_configuration.connection_secrets_attentive import (
+    AttentiveSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
+    EmailSchema,
+)
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     AdvancedSettings,
     AdvancedSettingsWithExtendedIdentityTypes,
@@ -14,6 +20,22 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email_con
 from fides.api.ops.service.connectors.email.sovrn_connector import (
     SOVRN_REQUIRED_IDENTITY,
 )
+
+
+class TestEmailSchema:
+    def test_email_schema(self):
+        assert EmailSchema(
+            third_party_vendor_name="Dawn's Bakery",
+            recipient_email_address="test@example.com",
+        )
+
+    def test_email_schema_missing_fields(self):
+        with pytest.raises(ValueError) as exc:
+            EmailSchema()
+        assert exc.value.errors()[0]["msg"] == "field required"
+        assert exc.value.errors()[0]["loc"][0] == "third_party_vendor_name"
+        assert exc.value.errors()[1]["msg"] == "field required"
+        assert exc.value.errors()[1]["loc"][0] == "recipient_email_address"
 
 
 class TestGenericConsentEmailSchema:
@@ -81,7 +103,7 @@ class TestGenericConsentEmailSchema:
         assert exc.value.errors()[0]["msg"] == "extra fields not permitted"
 
 
-class TestExtnededConsentEmailSchema:
+class TestExtendedConsentEmailSchema:
     def test_extended_consent_email_schema(self):
         schema = ExtendedConsentEmailSchema(
             third_party_vendor_name="Test Vendor Name",
@@ -128,3 +150,11 @@ class TestSovrnSchema:
         assert schema.advanced_settings.identity_types.cookie_ids == [
             SOVRN_REQUIRED_IDENTITY
         ]  # Automatically added
+
+
+class TestAttentiveSchema:
+    def test_attentive_email_schema(self):
+        schema = AttentiveSchema(recipient_email_address="attentive@example.com")
+        assert schema.third_party_vendor_name == "Attentive"
+        assert schema.test_email_address is None
+        assert schema.recipient_email_address == "attentive@example.com"

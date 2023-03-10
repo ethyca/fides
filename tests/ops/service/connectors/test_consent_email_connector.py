@@ -237,6 +237,62 @@ class TestEmailConsentConnectorMethods:
             == "Test notification of users' consent preference changes from Test Org"
         )
 
+    def test_needs_email(
+        self,
+        db,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+    ):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            == True
+        )
+
+    def test_needs_email_without_consent_preferences(
+        self,
+        db,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+    ):
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            == False
+        )
+
+    def test_needs_email_without_consent_rules(
+        self, test_sovrn_consent_email_connector, privacy_request
+    ):
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request,
+            )
+            == False
+        )
+
+    def test_needs_email_unsupported_identity(
+        self, test_sovrn_consent_email_connector, privacy_request_with_consent_policy
+    ):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"email": "test@example.com"},
+                privacy_request_with_consent_policy,
+            )
+            == False
+        )
+
 
 class TestSovrnEmailConsentConnector:
     def test_generic_identities_for_test_email_property(
