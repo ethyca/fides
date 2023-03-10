@@ -138,7 +138,7 @@ def test_write_to_in_memory_buffer_handles_bson():
     )
     assert bytesio is not None
     data = json.loads(bytesio.read())
-    assert data["collection:users"]["birthday"] == "1997-01-08T00:00:00"
+    assert data["collection:users"][0]["birthday"] == "1997-01-08T00:00:00"
     assert data["mongo_collection:purchases"][0]["user"]["_id"] == {
         "$oid": "5b4a61b1326bd9777aa61c19"
     }
