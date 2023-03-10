@@ -85,6 +85,7 @@ def test_uploader_s3_success_secrets_auth(
 
 
 def test_write_to_in_memory_buffer_handles_bson():
+    OBJECT_ID_STR = "5b4a61b1326bd9777aa61c19"
     data = {
         "collection:users": [
             {
@@ -102,7 +103,7 @@ def test_write_to_in_memory_buffer_handles_bson():
         ],
         "mongo_collection:purchases": [
             {
-                "user": {"_id": ObjectId("5b4a61b1326bd9777aa61c19")},
+                "user": {"_id": ObjectId(OBJECT_ID_STR)},
                 "geolocation": {
                     "type": "Point",
                     "coordinates": [-122.41210448012356, 37.773223876953125],
@@ -110,7 +111,7 @@ def test_write_to_in_memory_buffer_handles_bson():
                 "customerName": None,
             },
             {
-                "user": {"_id": ObjectId("5b4a61b1326bd9777aa61c19")},
+                "user": {"_id": ObjectId(OBJECT_ID_STR)},
                 "geolocation": {
                     "type": "Point",
                     "coordinates": [-122.4157451701343, 37.773162841796875],
@@ -140,7 +141,7 @@ def test_write_to_in_memory_buffer_handles_bson():
     data = json.loads(bytesio.read())
     assert data["collection:users"][0]["birthday"] == "1997-01-08T00:00:00"
     assert data["mongo_collection:purchases"][0]["user"]["_id"] == {
-        "$oid": "5b4a61b1326bd9777aa61c19"
+        "$oid": OBJECT_ID_STR
     }
 
 
