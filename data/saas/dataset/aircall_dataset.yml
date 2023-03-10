@@ -96,9 +96,6 @@ dataset:
             fidesops_meta:
               data_type: integer
           - name: answered_at
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: integer
           - name: ended_at
             data_categories: [system.operations]
             fidesops_meta:
@@ -159,6 +156,71 @@ dataset:
                 fidesops_meta:
                   data_type: integer
           - name: contact
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: direct_link
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: first_name
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+              - name: last_name
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+              - name: company_name
+              - name: information
+              - name: is_shared
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: created_at
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: updated_at
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: emails
+                fidesops_meta:
+                  data_type: 'object[]'
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [user.contact.email]
+                    fidesops_meta:
+                      data_type: string
+              - name: phone_numbers
+                fidesops_meta:
+                  data_type: 'object[]'
+                fields:
+                  - name: id
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: integer
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [user.contact.phone_number]
+                    fidesops_meta:
+                      data_type: string
           - name: archived
             data_categories: [system.operations]
             fidesops_meta:
@@ -181,15 +243,15 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: digits
-                data_categories: [system.operations]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: time_zone
@@ -262,142 +324,5 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: country_code_a2
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: pricing_type
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
           - name: comments
-      - name: customer
-        fields:
-          - name: id
-            data_categories: [user.unique_id]
-            fidesops_meta:
-              data_type: integer
-          - name: direct_link
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: name
-            data_categories: [user.name]
-            fidesops_meta:
-              data_type: string
-          - name: email
-            data_categories: [user.contact.email]
-            fidesops_meta:
-              data_type: string
-          - name: available
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: boolean
-          - name: availability_status
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: created_at
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: time_zone
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: language
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: wrap_up_time
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: integer
-          - name: numbers
-            fidesops_meta:
-              data_type: 'object[]'
-            fields:
-              - name: id
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer
-              - name: direct_link
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: name
-                data_categories: [user.name]
-                fidesops_meta:
-                  data_type: string
-              - name: digits
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: country
-                data_categories: [user.contact.address.country]
-                fidesops_meta:
-                  data_type: string
-              - name: time_zone
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: open
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: boolean
-              - name: availability_status
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: is_ivr
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: boolean
-              - name: live_recording_activated
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: boolean
-              - name: priority
-              - name: messages
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: welcome
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: waiting
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: ivr
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: voicemail
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: closed
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: callback_later
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: unanswered_call
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: after_hours
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-                  - name: ringing_tone
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string
-              - name: created_at
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string

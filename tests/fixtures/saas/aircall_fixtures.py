@@ -49,6 +49,10 @@ def aircall_identity_phone_number(saas_config):
 def aircall_erasure_identity_email() -> str:
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
+@pytest.fixture(scope="function")
+def aircall_erasure_identity_phone_number() -> str:
+    return f"+16123456788"
+
 
 @pytest.fixture
 def aircall_config() -> Dict[str, Any]:
@@ -115,7 +119,7 @@ def aircall_dataset_config(
 
 @pytest.fixture(scope="function")
 def aircall_create_erasure_data(
-    aircall_connection_config: ConnectionConfig, aircall_erasure_identity_email: str
+    aircall_connection_config: ConnectionConfig, aircall_erasure_identity_email: str, aircall_erasure_identity_phone_number: str
 ) -> None:
 
 
@@ -125,16 +129,6 @@ def aircall_create_erasure_data(
             "Authorization": f"Basic {aircall_secrets['api_token']}",
         }
 
-    # user
-    user_body = {
-            "email": aircall_erasure_identity_email,
-            "first_name": "Erasure test",
-            "last_name": "testing"
-    }
-
-    users_response = requests.post(url=f"{base_url}/v1/users", headers=headers, json=user_body)
-    sleep(30)
-
     # contact
 
     body = {
@@ -142,7 +136,7 @@ def aircall_create_erasure_data(
         "phone_numbers": [
             {
             "label": "test",
-            "value": '+12234567890'
+            "value": aircall_erasure_identity_phone_number
             }
         ],
         "emails": [

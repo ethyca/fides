@@ -29,14 +29,14 @@ saas_config:
       requests:
         read:
           method: GET
-          path: /v1/contacts/search
+          path: /v1/contacts/search          
           query_params:
-            - name: email
-              value: <email>
+            - name: phone_number
+              value: <phone_number>
           data_path: contacts
           param_values:
-            - name: email
-              identity: email
+            - name: phone_number
+              identity: phone_number
         delete:
           method: DELETE
           path: /v1/contacts/<contact_id>
@@ -52,15 +52,12 @@ saas_config:
           method: GET
           path: /v1/calls/search
           query_params:
-            - name: user_id
-              value: <customer_id>
+            - name: phone_number
+              value: <phone_number>
           data_path: calls
           param_values:
-            - name: customer_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: customer.id
-                  direction: from
+            - name: phone_number
+              identity: phone_number
         delete:
           method: DELETE
           path: /v1/calls/<calls_id>/recording
@@ -70,12 +67,3 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: calls.id
                   direction: from
-    - name: customer
-      requests:
-        read:
-          method: GET
-          path: /v1/users/<email>
-          data_path: user
-          param_values:
-            - name: email
-              identity: email
