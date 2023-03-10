@@ -5,7 +5,7 @@ Exports various resources as data maps.
 from typing import Dict, List, Tuple
 
 import pandas as pd
-from fideslang.models import ContactDetails, FidesModel
+from fideslang.models import ContactDetails, DataFlow, FidesModel
 
 from fides.core.api_helpers import (
     get_server_resource,
@@ -51,45 +51,48 @@ def generate_dataset_records(
     # using a set to preserve uniqueness of categories and qualifiers across fields
     unique_data_categories: set = set()
     for dataset in server_dataset_list:
-        dataset_name = dataset.name
-        dataset_description = dataset.description
-        dataset_fides_key = dataset.fides_key
-        dataset_retention = dataset.retention
+        if not isinstance(dataset, dict):
+            dataset = dataset.dict()
+
+        dataset_name = dataset["name"]
+        dataset_description = dataset["description"]
+        dataset_fides_key = dataset["fides_key"]
+        dataset_retention = dataset["retention"]
         dataset_third_country_transfers = ", ".join(
-            dataset.third_country_transfers or []
+            dataset["third_country_transfers"] or []
         )
-        if dataset.data_categories:
+        if dataset["data_categories"]:
             dataset_rows = generate_data_category_rows(
                 dataset_name,
                 dataset_description,
-                dataset.data_qualifier,
-                dataset.data_categories,
+                dataset["data_qualifier"],
+                dataset["data_categories"],
                 dataset_retention,
                 dataset_third_country_transfers,
                 dataset_fides_key,
             )
             unique_data_categories = unique_data_categories.union(dataset_rows)
-        for collection in dataset.collections:
-            collection_retention = collection.retention or dataset_retention
-            if collection.data_categories:
+        for collection in dataset["collections"]:
+            collection_retention = collection["retention"] or dataset_retention
+            if collection["data_categories"]:
                 dataset_rows = generate_data_category_rows(
                     dataset_name,
                     dataset_description,
-                    collection.data_qualifier,
-                    collection.data_categories,
+                    collection["data_qualifier"],
+                    collection["data_categories"],
                     collection_retention,
                     dataset_third_country_transfers,
                     dataset_fides_key,
                 )
                 unique_data_categories = unique_data_categories.union(dataset_rows)
-            for field in get_all_level_fields(collection.fields):
-                if field.data_categories:
+            for field in get_all_level_fields(collection["fields"]):
+                if field["data_categories"]:
                     dataset_rows = generate_data_category_rows(
                         dataset_name,
                         dataset_description,
-                        field.data_qualifier,
-                        field.data_categories,
-                        field.retention or collection_retention,
+                        field["data_qualifier"],
+                        field["data_categories"],
+                        field["retention"] or collection_retention,
                         dataset_third_country_transfers,
                         dataset_fides_key,
                     )
@@ -129,17 +132,22 @@ def export_dataset(
             print(record)
 
 
-def generate_system_records(
+def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many-branches, too-many-statements
     server_resources: Dict[str, List],
-) -> List[Tuple[str, ...]]:
+) -> Tuple[List[Tuple[str, ...]], Dict[str, str]]:
     """
     Takes a dictionary of resources from the server, returning a list of tuples
     to be used as records to be exported. The headers are defined
     as the first tuple in the result.
     """
 
-    formatted_data_uses = format_data_uses(server_resources["data_use"])
-    formatted_data_subjects = format_data_subjects(server_resources["data_subject"])
+    custom_columns = {}
+    formatted_data_uses, custom_data_uses = format_data_uses(
+        server_resources["data_use"]
+    )
+    formatted_data_subjects, custom_data_subjects = format_data_subjects(
+        server_resources["data_subject"]
+    )
     output_list: List[Tuple[str, ...]] = [
         (
             "system.fides_key",
@@ -170,41 +178,123 @@ def generate_system_records(
         )
     ]
 
+    if custom_data_uses:
+        keys = list(output_list[0])
+        for key, value in custom_data_uses.items():
+            key_string = f"system.privacy_declaration.data_use.{key}"
+            custom_columns[key_string] = value
+            keys.append(key_string)
+            output_list[0] = tuple(keys)
+
+    if custom_data_subjects:
+        keys = list(output_list[0])
+        for key, value in custom_data_subjects.items():
+            key_string = f"system.privacy_declaration.data_subjects.{key}"
+            custom_columns[key_string] = value
+            keys.append(key_string)
+            output_list[0] = tuple(keys)
+
+    system_custom_field_data = {}
+    known_fields = (
+        "fides_key",
+        "name",
+        "description",
+        "data_responsibility_title",
+        "administrating_department",
+        "third_country_transfers",
+        "system_dependencies",
+        "ingress",
+        "egress",
+        "privacy_declarations",
+        "data_protection_impact_assessment",
+        "registry_id",
+        "id",
+        "updated_at",
+        "joint_controller",
+        "created_at",
+        "organization_fides_key",
+        "meta",
+        "tags",
+        "fidesctl_meta",
+        "system_type",
+    )
     for system in server_resources["system"]:
-        third_country_list = ", ".join(system.third_country_transfers or [])
-        system_dependencies = ", ".join(system.system_dependencies or [])
+        if not isinstance(system, dict):
+            system = system.__dict__
+
+        for key, value in system.items():
+            if key not in known_fields:
+                keys = list(output_list[0])
+                key_string = f"system.{key}"
+                keys.append(key_string)
+                output_list[0] = tuple(keys)
+                custom_columns[key_string] = key
+                if isinstance(value, list):
+                    system_custom_field_data[key_string] = ", ".join(value)
+                else:
+                    system_custom_field_data[key_string] = value
+
+        third_country_list = ", ".join(system.get("third_country_transfers") or [])
+        system_dependencies = ", ".join(system.get("system_dependencies") or [])
+        if system.get("ingress"):
+            if isinstance(system["ingress"], DataFlow):
+                system["ingress"] = system["ingress"].dict()
+            elif isinstance(system["ingress"], list):
+                reformatted = []
+                for ingress in system["ingress"]:
+                    if isinstance(ingress, DataFlow):
+                        reformatted.append(ingress.dict())
+                    else:
+                        reformatted.append(ingress)
+                system["ingress"] = reformatted
         system_ingress = ", ".join(
-            [ingress.fides_key for ingress in system.ingress or []]
+            [ingress["fides_key"] for ingress in system.get("ingress") or []]
         )
-        system_egress = ", ".join([egress.fides_key for egress in system.egress or []])
+        if system.get("egress"):
+            if isinstance(system["egress"], DataFlow):
+                system["egress"] = system["egress"].dict()
+            elif isinstance(system["egress"], list):
+                reformatted = []
+                for ingress in system["egress"]:
+                    if isinstance(ingress, DataFlow):
+                        reformatted.append(ingress.dict())
+                    else:
+                        reformatted.append(ingress)
+                system["egress"] = reformatted
+        system_egress = ", ".join(
+            [egress["fides_key"] for egress in system.get("egress") or []]
+        )
         data_protection_impact_assessment = (
             get_formatted_data_protection_impact_assessment(
-                system.data_protection_impact_assessment.dict()
+                system.get("data_protection_impact_assessment", {})
             )
         )
-        if system.privacy_declarations:
-            for declaration in system.privacy_declarations:
-                data_use = formatted_data_uses[declaration.data_use]
-                data_categories = declaration.data_categories or []
+        if system.get("privacy_declarations"):
+            for declaration in system["privacy_declarations"]:
+                if not isinstance(declaration, dict):
+                    declaration = declaration.dict()
+
+                data_use = formatted_data_uses[declaration["data_use"]]
+                data_categories = declaration["data_categories"] or []
                 data_subjects = [
                     formatted_data_subjects[data_subject_fides_key]
-                    for data_subject_fides_key in declaration.data_subjects
+                    for data_subject_fides_key in declaration["data_subjects"]
                 ]
-                dataset_references = declaration.dataset_references or [
+                dataset_references = declaration["dataset_references"] or [
                     EMPTY_COLUMN_PLACEHOLDER
                 ]
-                cartesian_product_of_declaration = [
-                    (
-                        system.fides_key,
-                        system.name,
-                        system.description,
-                        system.data_responsibility_title,
-                        system.administrating_department,
+                cartesian_product_of_declaration_builder = [
+                    [
+                        system["fides_key"],
+                        system["name"],
+                        system["description"],
+                        system["data_responsibility_title"],
+                        system["administrating_department"],
                         third_country_list,
                         system_dependencies,
                         system_ingress,
                         system_egress,
-                        declaration.name,
+                        declaration["name"],
                         category,
                         data_use["name"],
                         data_use["legal_basis"],
@@ -215,34 +305,51 @@ def generate_system_records(
                         subject["name"],
                         subject["rights_available"],
                         subject["automated_decisions_or_profiling"],
-                        declaration.data_qualifier,
+                        declaration["data_qualifier"],
                         data_protection_impact_assessment["is_required"],
                         data_protection_impact_assessment["progress"],
                         data_protection_impact_assessment["link"],
                         dataset_reference,
-                    )
+                    ]
                     for category in data_categories
                     for subject in data_subjects
                     for dataset_reference in dataset_references
                 ]
+                cartesian_product_of_declaration = []
+                if system_custom_field_data:
+                    for _, v in system_custom_field_data.items():
+                        for product in cartesian_product_of_declaration_builder:
+                            product.append(v)
+                            cartesian_product_of_declaration.append(tuple(product))
+                else:
+                    cartesian_product_of_declaration = [
+                        tuple(x) for x in cartesian_product_of_declaration_builder
+                    ]
+
                 output_list += cartesian_product_of_declaration
         else:
             system_row = [
-                system.fides_key,
-                system.name,
-                system.description,
-                system.data_responsibility_title,
-                system.administrating_department,
+                system["fides_key"],
+                system["name"],
+                system["description"],
+                system["data_responsibility_title"],
+                system["administrating_department"],
                 third_country_list,
                 system_dependencies,
                 system_ingress,
                 system_egress,
-                data_protection_impact_assessment["is_required"],
-                data_protection_impact_assessment["progress"],
-                data_protection_impact_assessment["link"],
             ]
-            num_privacy_declaration_fields = 12
-            privacy_declaration_start_index = 9
+            if system_custom_field_data:
+                for _, v in system_custom_field_data.items():
+                    system_row.append(v)
+            len_no_privacy = len(system_row)
+            system_row.append(data_protection_impact_assessment["is_required"])
+            system_row.append(data_protection_impact_assessment["progress"])
+            system_row.append(data_protection_impact_assessment["link"])
+            num_privacy_declaration_fields = 3
+            privacy_declaration_start_index = (
+                len_no_privacy - num_privacy_declaration_fields
+            )
             for i in range(num_privacy_declaration_fields):
                 system_row.insert(
                     i + privacy_declaration_start_index, EMPTY_COLUMN_PLACEHOLDER
@@ -252,7 +359,7 @@ def generate_system_records(
             # also add n/a for the dataset reference
             output_list += [tuple(system_row)]
 
-    return output_list
+    return output_list, custom_columns
 
 
 def export_system(
@@ -294,7 +401,7 @@ def export_system(
         url, "data_subject", list(set(data_subject_fides_keys)), headers
     )
 
-    output_list = generate_system_records(server_resources)
+    output_list, _ = generate_system_records(server_resources)
 
     if not dry:
         exported_filename = export_to_csv(output_list, resource_type, manifests_dir)
@@ -327,16 +434,19 @@ def generate_contact_records(
     # currently the output file will only truly support a single organization
     # need to better understand the use case for multiple and how to handle
     for organization in server_organization_list:
+        if not isinstance(organization, dict):
+            organization = organization.dict()
+
         fields = tuple(ContactDetails().dict().keys())
 
         get_values = (
-            lambda x: tuple(x.dict().values())
+            lambda x: tuple(x.values())
             if x
             else tuple(ContactDetails().dict().values())
         )
-        controller = get_values(organization.controller)
-        data_protection_officer = get_values(organization.data_protection_officer)
-        representative = get_values(organization.representative)
+        controller = get_values(organization["controller"])
+        data_protection_officer = get_values(organization["data_protection_officer"])
+        representative = get_values(organization["representative"])
 
         contact_details = list(
             zip(
@@ -389,7 +499,7 @@ def export_organization(
 
 def build_joined_dataframe(
     server_resource_dict: Dict[str, List],
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, Dict[str, str]]:
     """
     Return joined dataframes for datamap export
 
@@ -400,7 +510,7 @@ def build_joined_dataframe(
 
     # systems
 
-    system_output_list = generate_system_records(server_resource_dict)
+    system_output_list, custom_columns = generate_system_records(server_resource_dict)
     systems_df = pd.DataFrame.from_records(system_output_list)
     systems_df.columns = systems_df.iloc[0]
     systems_df = systems_df[1:]
@@ -459,12 +569,17 @@ def build_joined_dataframe(
     joined_df["system.third_country_safeguards"] = ""
     joined_df["system.link_to_processor_contract"] = ""
 
+    if not isinstance(server_resource_dict["organization"][0], dict):
+        server_resource_dict["organization"][0] = server_resource_dict["organization"][
+            0
+        ].dict()
+
     joined_df["organization.link_to_security_policy"] = (
-        server_resource_dict["organization"][0].security_policy or ""
+        server_resource_dict["organization"][0]["security_policy"] or ""
     )
     joined_df["dataset.source_name"] = joined_df["dataset.name"]
 
-    return joined_df
+    return joined_df, custom_columns
 
 
 def export_datamap(
@@ -514,7 +629,7 @@ def export_datamap(
         server_resource_dict[resource_type] = filtered_server_resources
 
     # transform the resources to join a system and referenced datasets
-    joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
+    joined_system_dataset_df, _ = build_joined_dataframe(server_resource_dict)
 
     if not dry and not to_csv:
         # build an organization dataframe if exporting to excel

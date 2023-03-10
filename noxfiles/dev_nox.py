@@ -37,7 +37,26 @@ def shell(session: Session) -> None:
 
 @nox_session()
 def dev(session: Session) -> None:
-    """Spin up the application. Uses positional arguments for additional features."""
+    """
+    Spin up the Fides webserver in development mode alongside it's Postgres
+    database and Redis cache. Use positional arguments to run other services
+    like privacy center, shell, admin UI, etc. (see usage for examples)
+
+    Usage:
+      'nox -s dev' - runs the Fides weserver, database, and cache
+      'nox -s dev -- shell' - also open a shell on the Fides webserver
+      'nox -s dev -- ui' - also build and run the Admin UI
+      'nox -s dev -- pc' - also build and run the Privacy Center
+      'nox -s dev -- remote_debug' - run with remote debugging enabled (see docker-compose.remote-debug.yml)
+      'nox -s dev -- worker' - also run a Fides worker
+      'nox -s dev -- child' - also run a Fides child node
+      'nox -s dev -- <datastore>' - also run a test datastore (e.g. 'mssql', 'mongodb')
+
+    Note that you can combine any of the above arguments together, for example:
+      'nox -s dev -- shell ui pc'
+
+    See noxfiles/dev_nox.py for more info
+    """
 
     build(session, "dev")
     session.notify("teardown")

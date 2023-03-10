@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 from fides.api.custom_types import SafeStr
@@ -26,6 +28,16 @@ class MessagingServiceType(Enum):
 
     TWILIO_TEXT = "TWILIO_TEXT"
     TWILIO_EMAIL = "TWILIO_EMAIL"
+
+    @classmethod
+    def _missing_(
+        cls: Type[MessagingServiceType], value: Any
+    ) -> Optional[MessagingServiceType]:
+        value = value.upper()
+        for member in cls:
+            if member.value == value:
+                return member
+        return None
 
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
@@ -81,6 +93,7 @@ class AccessRequestCompleteBodyParams(BaseModel):
     """Body params required for privacy request completion access template"""
 
     download_links: List[str]
+    subject_request_download_time_in_days: int
 
 
 class RequestReviewDenyBodyParams(BaseModel):
@@ -249,11 +262,9 @@ class MessagingServiceSecretsTwilioEmail(BaseModel):
         extra = Extra.forbid
 
 
-class MessagingConfigRequest(BaseModel):
-    """Messaging Config Request Schema"""
+class MessagingConfigBase(BaseModel):
+    """Base model shared by messaging config related models"""
 
-    name: str
-    key: Optional[FidesKey]
     service_type: MessagingServiceType
     details: Optional[
         Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
@@ -262,44 +273,54 @@ class MessagingConfigRequest(BaseModel):
     class Config:
         use_enum_values = False
         orm_mode = True
+        extra = Extra.forbid
+
+
+class MessagingConfigRequestBase(MessagingConfigBase):
+    """Base model shared by messaging config requests to provide validation on request inputs"""
 
     @root_validator(pre=True)
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        service_type_pre = values.get("service_type")
-        if service_type_pre:
+        service_type = values.get("service_type")
+        if service_type:
             # uppercase to match enums in database
-            values["service_type"] = service_type_pre.upper()
-            service_type: MessagingServiceType = values["service_type"]
-            if service_type == MessagingServiceType.MAILGUN.value:
-                cls._validate_details_schema(
-                    values=values, schema=MessagingServiceDetailsMailgun
-                )
-            if service_type == MessagingServiceType.TWILIO_EMAIL.value:
-                cls._validate_details_schema(
-                    values=values, schema=MessagingServiceDetailsTwilioEmail
-                )
+            if isinstance(service_type, str):
+                service_type = service_type.upper()
+
+            # assign the transformed service_type value back into the values dict
+            values["service_type"] = service_type
+            cls.validate_details_schema(service_type, values.get("details", None))
         return values
 
     @staticmethod
-    def _validate_details_schema(
-        values: Dict[str, Any],
-        schema: Union[
-            Type[MessagingServiceDetailsMailgun],
-            Type[MessagingServiceDetailsTwilioEmail],
-        ],
+    def validate_details_schema(
+        service_type: Union[MessagingServiceType, str],
+        details: Optional[Dict[str, Any]],
     ) -> None:
-        if not values.get("details"):
-            raise ValueError("Messaging config must include details")
-        schema.validate(values.get("details"))
+        if isinstance(service_type, MessagingServiceType):
+            service_type = service_type.value
+        if service_type == MessagingServiceType.MAILGUN.value:
+            if not details:
+                raise ValueError("Messaging config must include details")
+            MessagingServiceDetailsMailgun.validate(details)
+        if service_type == MessagingServiceType.TWILIO_EMAIL.value:
+            if not details:
+                raise ValueError("Messaging config must include details")
+            MessagingServiceDetailsTwilioEmail.validate(details)
 
 
-class MessagingConfigResponse(BaseModel):
+class MessagingConfigRequest(MessagingConfigRequestBase):
+    """Messaging Config Request Schema"""
+
+    name: str
+    key: Optional[FidesKey]
+
+
+class MessagingConfigResponse(MessagingConfigBase):
     """Messaging Config Response Schema"""
 
     name: str
     key: FidesKey
-    service_type: MessagingServiceType
-    details: Optional[Dict[MessagingServiceDetails, Any]]
 
     class Config:
         orm_mode = True
@@ -322,7 +343,21 @@ class MessagingConnectionTestStatus(Enum):
 
 
 class TestMessagingStatusMessage(Msg):
-    """A schema for checking status of message config."""
+    """A schema for testing functionality of a messaging config."""
 
     test_status: Optional[MessagingConnectionTestStatus] = None
     failure_reason: Optional[str] = None
+
+
+class MessagingConfigStatus(Enum):
+    """Enum for configuration statuses of a messaging config"""
+
+    configured = "configured"
+    not_configured = "not configured"
+
+
+class MessagingConfigStatusMessage(BaseModel):
+    """A schema for checking configuration status of message config."""
+
+    config_status: Optional[MessagingConfigStatus] = None
+    detail: Optional[str] = None

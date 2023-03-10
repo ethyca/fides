@@ -15,6 +15,7 @@ from fides.api.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import AccessLevel
 from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
@@ -59,22 +60,23 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
     upload_access_results,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
-CONFIG = get_config()
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
 @pytest.fixture(scope="function")
-def privacy_request_complete_email_notification_enabled():
+def privacy_request_complete_email_notification_enabled(db):
     """Enable request completion email"""
     original_value = CONFIG.notifications.send_request_completion_notification
     CONFIG.notifications.send_request_completion_notification = True
+    ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.send_request_completion_notification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
 
 
 @mock.patch(
@@ -1852,12 +1854,14 @@ class TestPrivacyRequestsEmailConnector:
 
 class TestPrivacyRequestsEmailNotifications:
     @pytest.fixture(scope="function")
-    def privacy_request_complete_email_notification_enabled(self):
+    def privacy_request_complete_email_notification_enabled(self, db):
         """Enable request completion email"""
         original_value = CONFIG.notifications.send_request_completion_notification
         CONFIG.notifications.send_request_completion_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_completion_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
@@ -1956,6 +1960,7 @@ class TestPrivacyRequestsEmailNotifications:
         run_privacy_request_task,
     ):
         upload_mock.return_value = "http://www.data-download-url"
+        download_time_in_days = "5"
         customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -1980,7 +1985,8 @@ class TestPrivacyRequestsEmailNotifications:
                     to_identity=identity,
                     service_type=MessagingServiceType.MAILGUN.value,
                     message_body_params=AccessRequestCompleteBodyParams(
-                        download_links=[upload_mock.return_value]
+                        subject_request_download_time_in_days=download_time_in_days,
+                        download_links=[upload_mock.return_value],
                     ),
                 ),
                 call(

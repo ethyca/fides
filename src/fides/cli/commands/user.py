@@ -1,5 +1,5 @@
 """Contains the user command group for the fides CLI."""
-import click
+import rich_click as click
 
 from fides.cli.options import (
     first_name_option,
@@ -28,9 +28,7 @@ def create(
     ctx: click.Context, username: str, password: str, first_name: str, last_name: str
 ) -> None:
     """
-    Use credentials from the credentials file to create a new user.
-
-    Gives full permissions to the new user.
+    Use the credentials file to create a new user. Gives full permissions to the new user.
     """
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
@@ -49,7 +47,7 @@ def create(
 @password_option
 def login(ctx: click.Context, username: str, password: str) -> None:
     """
-    Use credentials to get a user access token and write it to a credentials file.
+    Generate a user access token and write it to a credentials file.
     """
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
@@ -59,7 +57,9 @@ def login(ctx: click.Context, username: str, password: str) -> None:
 @user.command(name="permissions")
 @click.pass_context
 def get_permissions(ctx: click.Context) -> None:
-    """List the scopes avaible to the current user."""
+    """
+    List the directly-assigned scopes and roles available to the current user.
+    """
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
     get_permissions_command(server_url=server_url)

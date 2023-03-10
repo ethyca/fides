@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 import requests
 
 from fides.cli.utils import handle_cli_response
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.core.utils import (
     Credentials,
     echo_green,
@@ -16,9 +16,7 @@ from fides.core.utils import (
     write_credentials_file,
 )
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
-from fides.lib.oauth.scopes import SCOPES
 
-config = get_config()
 CREATE_USER_PATH = "/api/v1/user"
 LOGIN_PATH = "/api/v1/login"
 USER_PERMISSIONS_PATH = "/api/v1/user/{}/permission"
@@ -66,9 +64,9 @@ def create_user(
 
 def get_user_permissions(
     user_id: str, auth_header: Dict[str, str], server_url: str
-) -> List[str]:
+) -> Tuple[List[str], List[str]]:
     """
-    List all of the user permissions for the provided user.
+    List all of the directly-assigned scopes for the provided user.
     """
     get_permissions_path = USER_PERMISSIONS_PATH.format(user_id)
     response = requests.get(
@@ -77,16 +75,20 @@ def get_user_permissions(
     )
 
     handle_cli_response(response, verbose=False)
-    return response.json()["scopes"]
+    return response.json()["scopes"], response.json()["roles"]
 
 
 def update_user_permissions(
-    user_id: str, scopes: List[str], auth_header: Dict[str, str], server_url: str
+    user_id: str,
+    scopes: List[str],
+    auth_header: Dict[str, str],
+    server_url: str,
+    roles: List[str],
 ) -> requests.Response:
     """
     Update user permissions for a given user.
     """
-    request_data = {"scopes": scopes, "id": user_id}
+    request_data = {"scopes": scopes, "id": user_id, "roles": roles}
     set_permissions_path = USER_PERMISSIONS_PATH.format(user_id)
     response = requests.put(
         server_url + set_permissions_path,
@@ -116,7 +118,11 @@ def create_command(
     )
     user_id = user_response.json()["id"]
     update_user_permissions(
-        user_id=user_id, scopes=SCOPES, auth_header=auth_header, server_url=server_url
+        user_id=user_id,
+        scopes=CONFIG.security.root_user_scopes,
+        auth_header=auth_header,
+        server_url=server_url,
+        roles=CONFIG.security.root_user_roles,
     )
     echo_green(f"User: '{username}' created and assigned permissions.")
 
@@ -152,8 +158,12 @@ def get_permissions_command(server_url: str) -> None:
 
     user_id = credentials.user_id
     auth_header = get_auth_header()
-    permissions: List[str] = get_user_permissions(user_id, auth_header, server_url)
+    scopes, roles = get_user_permissions(user_id, auth_header, server_url)
 
-    print("Permissions:")
-    for permission in permissions:
-        print(f"\t{permission}")
+    print("Permissions (Directly-Assigned Scopes):")
+    for scope in scopes:
+        print(f"\t{scope}")
+
+    print("Roles:")
+    for role in roles:
+        print(f"\t{role}")

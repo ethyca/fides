@@ -10,14 +10,16 @@ import {
   Text,
 } from "@fidesui/react";
 import NextLink from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
+import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateConfigurationSettingsMutation,
   useCreateStorageMutation,
+  useGetActiveStorageQuery,
   useGetStorageDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
@@ -27,37 +29,43 @@ const StorageConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [storageValue, setStorageValue] = useState("");
-  const [saveStorageType, { isLoading }] = useCreateStorageMutation();
-  const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
+
+  const { data: activeStorage } = useGetActiveStorageQuery();
   const { data: storageDetails } = useGetStorageDetailsQuery({
     type: storageValue,
   });
+  const [saveStorageType, { isLoading }] = useCreateStorageMutation();
+  const [saveActiveStorage] = useCreateConfigurationSettingsMutation();
+
+  useEffect(() => {
+    if (activeStorage) {
+      setStorageValue(activeStorage.type);
+    }
+  }, [activeStorage]);
 
   const handleChange = async (value: string) => {
-    if (value === "local") {
+    if (value === storageTypes.local) {
       const storageDetailsResult = await saveStorageType({
         type: value,
+        details: {},
         format: "json",
       });
       if (isErrorResult(storageDetailsResult)) {
         handleError(storageDetailsResult.error);
       } else {
-        successAlert(`Configure storage type details saved successfully.`);
+        successAlert(`Configured storage details successfully.`);
       }
     }
 
     const activeStorageResults = await saveActiveStorage({
-      fides: {
-        storage: {
-          active_default_storage_type: value,
-        },
+      storage: {
+        active_default_storage_type: value,
       },
     });
 
     if (isErrorResult(activeStorageResults)) {
       handleError(activeStorageResults.error);
     } else {
-      successAlert(`Configure active storage type saved successfully.`);
       setStorageValue(value);
     }
   };

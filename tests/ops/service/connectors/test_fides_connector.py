@@ -2,7 +2,7 @@ import uuid
 from typing import Tuple
 
 import pytest
-from requests import Session
+from httpx import Client
 
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
@@ -128,7 +128,7 @@ class TestFidesConnectorIntegration:
         # Monkey patch both Session.send and the httpx.AsyncClient. Both of these will just
         # make requests to the running webserver which is connected to the application db,
         # but we need them to talk to the test db in pytest
-        monkeypatch.setattr(Session, "send", api_client.send)
+        monkeypatch.setattr(Client, "send", api_client.send)
         monkeypatch.setattr(
             request_service, "get_async_client", lambda: async_api_client
         )
