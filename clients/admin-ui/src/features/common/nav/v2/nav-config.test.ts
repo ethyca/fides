@@ -20,8 +20,7 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.USER_READ,
 ];
 
-// TODO: tests temporarily disabled due to https://github.com/ethyca/fides/issues/2769
-describe.skip("configureNavGroups", () => {
+describe("configureNavGroups", () => {
   it("includes all navigation groups for users with all scopes", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
@@ -86,7 +85,8 @@ describe.skip("configureNavGroups", () => {
     });
   });
 
-  describe("configure by scopes", () => {
+  // TODO: tests temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+  describe.skip("configure by scopes", () => {
     it("does not render paths the user does not have scopes for", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
