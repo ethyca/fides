@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
@@ -166,6 +166,20 @@ async def verify_oauth_client(
     NOTE: This function may be overwritten in `main.py` when changing
     the security environment.
     """
+    token_data, client = extract_token_and_load_client(authorization, db)
+
+    if not has_permissions(
+        token_data=token_data, client=client, endpoint_scopes=security_scopes
+    ):
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    return client
+
+
+def extract_token_and_load_client(
+    authorization: str = Security(oauth2_scheme), db: Session = Depends(get_db)
+) -> Tuple[Dict, ClientDetail]:
+    """Extract the token, verify it's valid, and likewise load the client as part of authorization"""
     if authorization is None:
         logger.debug("No authorization supplied.")
         raise AuthenticationError(detail="Authentication Failure")
@@ -207,12 +221,7 @@ async def verify_oauth_client(
         logger.debug("Auth token belongs to an invalid client_id.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
-    if not has_permissions(
-        token_data=token_data, client=client, endpoint_scopes=security_scopes
-    ):
-        raise AuthorizationError(detail="Not Authorized for this action")
-
-    return client
+    return token_data, client
 
 
 def has_permissions(
@@ -236,7 +245,7 @@ def _has_scope_via_role(
     assigned_roles: List[str] = token_data.get(JWE_PAYLOAD_ROLES, [])
     associated_scopes: List[str] = get_scopes_from_roles(assigned_roles)
 
-    if not _has_correct_scopes(
+    if not has_scope_subset(
         user_scopes=associated_scopes, endpoint_scopes=endpoint_scopes
     ):
         return False
@@ -256,7 +265,7 @@ def _has_direct_scopes(
     """Does the token have the required scopes directly and is the token still valid?"""
     assigned_scopes: List[str] = token_data.get(JWE_PAYLOAD_SCOPES, [])
 
-    if not _has_correct_scopes(
+    if not has_scope_subset(
         user_scopes=assigned_scopes, endpoint_scopes=endpoint_scopes
     ):
         return False
@@ -270,9 +279,7 @@ def _has_direct_scopes(
     return True
 
 
-def _has_correct_scopes(
-    user_scopes: List[str], endpoint_scopes: SecurityScopes
-) -> bool:
+def has_scope_subset(user_scopes: List[str], endpoint_scopes: SecurityScopes) -> bool:
     """Are the required scopes a subset of the scopes belonging to the user?"""
     if not set(endpoint_scopes.scopes).issubset(user_scopes):
         scopes_required = ",".join(endpoint_scopes.scopes)

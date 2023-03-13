@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 
 * Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
+* The ability to assign users as system managers for a specific system [#2714](https://github.com/ethyca/fides/pull/2714)
+* New endpoints to add and remove users as system managers [#2726](https://github.com/ethyca/fides/pull/2726)
+
 
 ### Changed
 
@@ -38,6 +41,7 @@ The types of changes are:
 * Patch appconfig migration to handle existing db record [#2780](https://github.com/ethyca/fides/pull/2780)
 
 ## [2.8.1](https://github.com/ethyca/fides/compare/2.8.0...2.8.1)
+
 
 ### Fixed
 

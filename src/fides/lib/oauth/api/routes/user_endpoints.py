@@ -248,11 +248,18 @@ def perform_login(
             client_secret_btye_length,
             scopes=user.permissions.scopes,  # type: ignore
             roles=user.permissions.roles,  # type: ignore
+            systems=user.system_ids,  # type: ignore
             user_id=user.id,
         )
+    else:
+        # Refresh the client just in case - for example, scopes and roles were added via the db directly.
+        client.scopes = user.permissions.scopes  # type: ignore
+        client.roles = user.permissions.roles  # type: ignore
+        client.systems = user.system_ids  # type: ignore
+        client.save(db)
 
-    if not user.permissions.scopes and not user.permissions.roles:  # type: ignore
-        logger.info("User needs scopes and/or roles to login.")
+    if not user.permissions.scopes and not user.permissions.roles and not user.systems:  # type: ignore
+        logger.warning("User {} needs scopes, roles, or systems to login.", user.id)
         raise AuthorizationError(detail="Not Authorized for this action")
 
     user.last_login_at = datetime.utcnow()
