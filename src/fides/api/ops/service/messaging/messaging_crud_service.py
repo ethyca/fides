@@ -29,7 +29,7 @@ def create_or_update_messaging_config(
     data = {
         "key": config.key,
         "name": config.name,
-        "service_type": config.service_type,
+        "service_type": config.service_type.value,
     }
     if config.details:
         data["details"] = config.details.__dict__  # type: ignore
@@ -40,7 +40,7 @@ def create_or_update_messaging_config(
     return MessagingConfigResponse(
         name=messaging_config.name,
         key=messaging_config.key,
-        service_type=messaging_config.service_type,
+        service_type=messaging_config.service_type.value,  # type: ignore
         details=messaging_config.details,
     )
 
@@ -67,6 +67,6 @@ def get_messaging_config_by_key(db: Session, key: FidesKey) -> MessagingConfigRe
     return MessagingConfigResponse(
         name=config.name,
         key=config.key,
-        service_type=config.service_type,
+        service_type=config.service_type.value,
         details=config.details,
     )

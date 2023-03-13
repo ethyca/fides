@@ -32,7 +32,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     title: "VM",
     requiresPlus: true,
     requiresSystems: true,
-    scopes: [ScopeRegistryEnum.DATAMAP_READ],
+    scopes: [],
   },
   {
     color: "orange",
@@ -43,7 +43,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     name: "Add systems",
     sortOrder: 1,
     title: "AS",
-    scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+    scopes: [],
   },
   {
     color: "purple",
@@ -54,7 +54,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     name: "View systems",
     sortOrder: 2,
     title: "VS",
-    scopes: [ScopeRegistryEnum.SYSTEM_READ],
+    scopes: [],
     requiresSystems: true,
   },
   {

@@ -1,4 +1,4 @@
-import {Box, Button, ButtonGroup, Flex, HStack, Stack, Text, useToast} from "@fidesui/react";
+import {Box, Button, ButtonGroup, Flex, Stack, Text, useToast} from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useAPIHelper } from "common/hooks";
@@ -12,10 +12,10 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { successToastParams } from "~/features/common/toast";
 
+import React from "react";
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
-import { selectActiveUserId, setActiveUserId } from "./user-management.slice";
-import React from "react";
+import {selectActiveUserId, setActiveUserId} from "./user-management.slice";
 
 const defaultInitialValues = {
   username: "",

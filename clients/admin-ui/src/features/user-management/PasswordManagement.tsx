@@ -1,8 +1,7 @@
-import {Box, Button, HStack, IconButton, TrashCanSolidIcon, useDisclosure} from "@fidesui/react";
+import {Box, HStack, IconButton, TrashCanSolidIcon, useDisclosure} from "@fidesui/react";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
-import { CustomTextInput } from "~/features/common/form/inputs";
 import Restrict from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -11,7 +10,7 @@ import DeleteUserModal from "user-management/DeleteUserModal";
 import {User} from "user-management/types";
 import NewPasswordModal from "./NewPasswordModal";
 import UpdatePasswordModal from "./UpdatePasswordModal";
-import { selectActiveUserId } from "./user-management.slice";
+import {selectActiveUserId} from "./user-management.slice";
 
 interface PasswordManagementProps {
   user: User;
@@ -44,7 +43,8 @@ const PasswordManagement: React.FC<PasswordManagementProps> = ({ user, isNewUser
                   <Restrict scopes={[ScopeRegistryEnum.USER_PASSWORD_RESET]}>
                       <NewPasswordModal id={activeUserId}/>
                   </Restrict>
-                  {!isNewUser
+
+                  {!isNewUser && user
                       ?
                       <Box>
                           <IconButton
