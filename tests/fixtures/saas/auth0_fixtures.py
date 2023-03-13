@@ -31,6 +31,9 @@ def auth0_secrets(saas_config):
         "domain": pydash.get(saas_config, "auth0.domain") or secrets["domain"],
         "access_token": pydash.get(saas_config, "auth0.access_token")
         or secrets["access_token"],
+        "client_id": pydash.get(saas_config, "auth0.client_id") or secrets["client_id"],
+        "client_secret": pydash.get(saas_config, "auth0.client_secret")
+        or secrets["client_secret"],
     }
 
 
@@ -165,7 +168,7 @@ def auth0_erasure_data(
     user = users_response.json()
     assert users_response.ok
     error_message = (
-        f"User with email {auth0_erasure_identity_email} could not be added to auth0"
+        f"User with email {auth0_erasure_identity_email} could not be added to Auth0"
     )
     poll_for_existence(
         _user_exists,
@@ -186,7 +189,7 @@ def auth0_erasure_data(
 
 def _user_exists(auth0_erasure_identity_email: str, auth0_secrets):
     """
-    Confirm whether user exists by calling user search by email api and comparing resulting firstname str.
+    Confirm whether user exists by calling user search by email API and comparing resulting firstname str.
     Returns user ID if it exists, returns None if it does not.
     """
     base_url = f"https://{auth0_secrets['domain']}"

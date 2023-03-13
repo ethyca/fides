@@ -13,14 +13,12 @@ from fides.core.config import CONFIG
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
-@pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
 @pytest.mark.integration_saas
 @pytest.mark.integration_auth0
 def test_auth0_connection_test(auth0_connection_config) -> None:
     get_connector(auth0_connection_config).test_connection()
 
 
-@pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
 @pytest.mark.integration_saas
 @pytest.mark.integration_auth0
 async def test_auth0_access_request_task(
@@ -93,7 +91,6 @@ async def test_auth0_access_request_task(
     )
 
 
-@pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
 @pytest.mark.integration_saas
 @pytest.mark.integration_auth0
 async def test_auth0_erasure_request_task(

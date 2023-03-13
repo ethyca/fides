@@ -7,15 +7,26 @@ saas_config:
 
   connector_params:
     - name: domain
-    - name: access_token
+    - name: client_id
+      label: Client ID
+    - name: client_secret
 
   client_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: bearer
+      strategy: oauth2_client_credentials
       configuration:
-        token: <access_token>
+        token_request:
+          method: POST
+          path: /oauth/token
+          body: |
+            {
+              "grant_type": "client_credentials",
+              "audience": "https://<domain>/api/v2/",
+              "client_id": <client_id>
+              "client_secret": <client_secret>
+            }
 
   test_request:
     method: GET
