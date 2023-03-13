@@ -18,7 +18,6 @@ from starlette.status import (
 )
 
 from fides.api.ops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_READ,
     USER_CREATE,
     USER_DELETE,
     USER_READ,
