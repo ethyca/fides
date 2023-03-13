@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.8.2...main)
 
+### Added
+
+* Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
+
 ## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
 
 ### Fixed
