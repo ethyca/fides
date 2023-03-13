@@ -27,6 +27,16 @@ saas_config:
               "client_id": "<client_id>",
               "client_secret": "<client_secret>"
             }
+        refresh_request:
+          method: POST
+          path: /oauth/token
+          body: |
+            {
+              "grant_type": "client_credentials",
+              "audience": "https://<domain>/api/v2/",
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>"
+            }
 
   test_request:
     method: GET
