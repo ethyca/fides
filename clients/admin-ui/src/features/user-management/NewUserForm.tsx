@@ -1,5 +1,5 @@
 import { utf8ToB64 } from "common/utils";
-import { router } from "next/client";
+import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import UserManagementTabs from "user-management/UserManagementTabs";
 
@@ -13,6 +13,7 @@ import {
 import { FormValues } from "./UserForm";
 
 const NewUserForm = () => {
+  const router = useRouter();
   const [createUser] = useCreateUserMutation();
   const dispatch = useAppDispatch();
 
