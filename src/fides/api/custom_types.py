@@ -42,6 +42,7 @@ class PhoneNumber(str):
 
     @classmethod
     def validate(cls, value: str) -> str:
+        # The front-end sends an empty string if the user doesn't input anything
         if value == "":
             return ""
         max_length = 16  # Includes the +
