@@ -42,6 +42,8 @@ class PhoneNumber(str):
 
     @classmethod
     def validate(cls, value: str) -> str:
+        if value == "":
+            return ""
         max_length = 16  # Includes the +
         min_length = 9
         pattern = regex(r"^\+[1-9]\d{1,14}$")
