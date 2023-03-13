@@ -11,7 +11,7 @@ import {
 } from "@fidesui/react";
 import { useFormikContext } from "formik";
 
-import { RoleRegistry } from "~/types/api";
+import { RoleRegistryEnum } from "~/types/api";
 
 import QuestionTooltip from "../common/QuestionTooltip";
 import AssignSystemsModal from "./AssignSystemsModal";
@@ -20,7 +20,7 @@ import { type FormValues } from "./PermissionsForm";
 
 interface Props {
   label: string;
-  roleKey: RoleRegistry;
+  roleKey: RoleRegistryEnum;
   isSelected: boolean;
 }
 
