@@ -11,7 +11,7 @@ import {
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { User} from "./types";
+import { User } from "./types";
 import {
   selectUserFilters,
   setPage,
