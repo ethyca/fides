@@ -13,7 +13,7 @@ import UpdatePasswordModal from "./UpdatePasswordModal";
 import {selectActiveUserId} from "./user-management.slice";
 
 interface PasswordManagementProps {
-  user: User;
+  user?: User;
   isNewUser: boolean
 }
 

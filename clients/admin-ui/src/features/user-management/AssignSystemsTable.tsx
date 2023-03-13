@@ -8,7 +8,7 @@ import {
   Th,
   Thead,
   Tr,
-  TrashCanSolidIcon,
+  TrashCanSolidIcon, useDisclosure,
 } from "@fidesui/react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -20,27 +20,17 @@ import {
   useGetUserManagedSystemsQuery,
   useRemoveUserManagedSystemMutation,
 } from "./user-management.slice";
+import DeleteUserModal from "user-management/DeleteUserModal";
+import React from "react";
+import RemoveSystemModal from "user-management/RemoveSystemModal";
 
 export const AssignSystemsDeleteTable = () => {
   const activeUserId = useAppSelector(selectActiveUserId);
+  const removeSystemModal = useDisclosure();
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
   });
   const assignedSystems = useAppSelector(selectActiveUsersManagedSystems);
-
-  const [removeUserManagedSystemTrigger] = useRemoveUserManagedSystemMutation();
-  const handleDelete = async (system: System) => {
-    // TODO: the designs don't have this, but we probably want a confirmation modal
-    if (!activeUserId) {
-      return;
-    }
-    // TODO: error handling
-    const result = await removeUserManagedSystemTrigger({
-      userId: activeUserId,
-      systemKey: system.fides_key,
-    });
-    console.log({ result });
-  };
 
   if (assignedSystems.length === 0) {
     return null;
@@ -67,9 +57,10 @@ export const AssignSystemsDeleteTable = () => {
                 aria-label="Unassign system from user"
                 icon={<TrashCanSolidIcon />}
                 size="xs"
-                onClick={() => handleDelete(system)}
+                onClick={removeSystemModal.onOpen}
                 data-testid="unassign-btn"
               />
+              <RemoveSystemModal system={system} activeUserId={activeUserId} {...removeSystemModal} />
             </Td>
           </Tr>
         ))}
