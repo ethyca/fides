@@ -90,7 +90,7 @@ describe("configureNavGroups", () => {
     it("does not render paths the user does not have scopes for", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
-        userScopes: [ScopeRegistryEnum.SYSTEM_READ],
+        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
       });
 
       expect(navGroups[0]).toMatchObject({
@@ -229,12 +229,12 @@ describe("findActiveNav", () => {
       {
         path: "/add-systems",
         expected: true,
-        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
       },
       {
         path: "/privacy-requests",
         expected: false,
-        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
+        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
       },
       {
         path: "/privacy-requests",

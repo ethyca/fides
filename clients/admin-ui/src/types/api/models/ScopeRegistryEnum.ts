@@ -8,6 +8,10 @@
 export enum ScopeRegistryEnum {
   CONFIG_READ = "config:read",
   CONFIG_UPDATE = "config:update",
+  CLI_OBJECTS_CREATE = "cli-objects:create",
+  CLI_OBJECTS_READ = "cli-objects:read",
+  CLI_OBJECTS_UPDATE = "cli-objects:update",
+  CLI_OBJECTS_DELETE = "cli-objects:delete",
   CLIENT_CREATE = "client:create",
   CLIENT_DELETE = "client:delete",
   CLIENT_READ = "client:read",

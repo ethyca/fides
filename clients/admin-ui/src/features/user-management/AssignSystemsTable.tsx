@@ -4,32 +4,56 @@ import {
   Switch,
   Table,
   Tbody,
-  Td,
+  Td, Text,
   Th,
   Thead,
   Tr,
   TrashCanSolidIcon,
-  useDisclosure,
+  useDisclosure, useToast,
 } from "@fidesui/react";
 import React from "react";
-import RemoveSystemModal from "user-management/RemoveSystemModal";
 
 import { useAppSelector } from "~/app/hooks";
 import { System } from "~/types/api";
 
+import ConfirmationModal from "common/ConfirmationModal";
+import {isErrorResult} from "~/types/errors";
+import {errorToastParams, successToastParams} from "common/toast";
+import {getErrorMessage} from "common/helpers";
 import {
   selectActiveUserId,
   selectActiveUsersManagedSystems,
-  useGetUserManagedSystemsQuery,
+  useGetUserManagedSystemsQuery, useRemoveUserManagedSystemMutation,
 } from "./user-management.slice";
 
 export const AssignSystemsDeleteTable = () => {
   const activeUserId = useAppSelector(selectActiveUserId);
-  const removeSystemModal = useDisclosure();
+  const {
+    isOpen: deleteIsOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
   });
   const assignedSystems = useAppSelector(selectActiveUsersManagedSystems);
+  const toast = useToast();
+  const [removeUserManagedSystemTrigger] = useRemoveUserManagedSystemMutation();
+  const handleDelete = async (system: System) => {
+    if (!activeUserId) {
+      return;
+    }
+    const result = await removeUserManagedSystemTrigger({
+      userId: activeUserId,
+      systemKey: system.fides_key,
+    });
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      toast(successToastParams("Successfully removed system"));
+      onDeleteClose();
+    }
+  };
 
   if (assignedSystems.length === 0) {
     return null;
@@ -56,13 +80,20 @@ export const AssignSystemsDeleteTable = () => {
                 aria-label="Unassign system from user"
                 icon={<TrashCanSolidIcon />}
                 size="xs"
-                onClick={removeSystemModal.onOpen}
+                onClick={onDeleteOpen}
                 data-testid="unassign-btn"
               />
-              <RemoveSystemModal
-                system={system}
-                activeUserId={activeUserId}
-                {...removeSystemModal}
+              <ConfirmationModal
+                  isOpen={deleteIsOpen}
+                  onClose={onDeleteClose}
+                  onConfirm={() => handleDelete(system)}
+                  title="Delete System"
+                  continueButtonText="Yes, Remove System"
+                  message={
+                      <Text>
+                        Are you sure you want to remove this system?
+                      </Text>
+                  }
               />
             </Td>
           </Tr>

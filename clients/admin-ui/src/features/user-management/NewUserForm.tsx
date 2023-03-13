@@ -26,8 +26,6 @@ const NewUserForm = () => {
     createUser({ ...values, password: b64Password });
     router.push(`${USER_MANAGEMENT_ROUTE}`);
   };
-
-  // @ts-ignore
   return (
     <div>
       <main>
