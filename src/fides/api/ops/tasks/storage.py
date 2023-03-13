@@ -11,6 +11,8 @@ from typing import Any, Dict, Union
 import pandas as pd
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
+
+from bson import ObjectId
 from loguru import logger
 
 from fides.api.ops.schemas.storage.storage import (
@@ -154,10 +156,12 @@ def upload_to_s3(  # pylint: disable=R0913
         raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
-def _handle_json_encoding(field: Any) -> str:
+def _handle_json_encoding(field: Any) -> Union[str, Dict[str, str]]:
     """Specify str format for datetime objects"""
     if isinstance(field, datetime):
         return field.strftime("%Y-%m-%dT%H:%M:%S")
+    if isinstance(field, ObjectId):
+        return {"$oid": str(field)}
     return field
 
 
