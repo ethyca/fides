@@ -15,7 +15,13 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.8.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.8.3...main)
+
+## [2.8.3](https://github.com/ethyca/fides/compare/2.8.2...2.8.3)
+
+### Added
+
+* Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
 
 ## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
 
