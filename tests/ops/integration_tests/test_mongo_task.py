@@ -575,20 +575,26 @@ async def test_object_querying_mongo(
     assert len(filtered_results["mongo_test:customer_details"]) == 1
 
     # Array of embedded emergency contacts returned, array of children, nested array of workplace_info.direct_reports
-    assert filtered_results["mongo_test:customer_details"][0] == {
-        "birthday": datetime(1988, 1, 10, 0, 0),
-        "gender": "male",
-        "customer_id": 1.0,
-        "children": ["Christopher Customer", "Courtney Customer"],
-        "emergency_contacts": [
-            {"name": "June Customer", "phone": "444-444-4444"},
-            {"name": "Josh Customer", "phone": "111-111-111"},
-        ],
-        "workplace_info": {
-            "position": "Chief Strategist",
-            "direct_reports": ["Robbie Margo", "Sully Hunter"],
-        },
+    assert filtered_results["mongo_test:customer_details"][0]["birthday"] == datetime(
+        1988, 1, 10, 0, 0
+    )
+    assert filtered_results["mongo_test:customer_details"][0]["gender"] == "male"
+    assert filtered_results["mongo_test:customer_details"][0]["customer_id"] == 1.0
+    assert filtered_results["mongo_test:customer_details"][0]["children"] == [
+        "Christopher Customer",
+        "Courtney Customer",
+    ]
+    assert filtered_results["mongo_test:customer_details"][0]["emergency_contacts"] == [
+        {"name": "June Customer", "phone": "444-444-4444"},
+        {"name": "Josh Customer", "phone": "111-111-111"},
+    ]
+    assert filtered_results["mongo_test:customer_details"][0]["workplace_info"] == {
+        "position": "Chief Strategist",
+        "direct_reports": ["Robbie Margo", "Sully Hunter"],
     }
+    assert isinstance(
+        filtered_results["mongo_test:customer_details"][0]["_id"], ObjectId
+    )
 
     # Includes data retrieved from a nested field that was joined with a nested field from another table
     target_categories = {"user"}
@@ -833,14 +839,17 @@ async def test_array_querying_mongo(
     )
 
     # Includes array field
-    assert filtered_identifiable["mongo_test:customer_details"] == [
-        {
-            "birthday": datetime(1990, 2, 28, 0, 0),
-            "customer_id": 3.0,
-            "gender": "female",
-            "children": ["Erica Example"],
-        }
+    assert filtered_identifiable["mongo_test:customer_details"][0][
+        "birthday"
+    ] == datetime(1990, 2, 28, 0, 0)
+    assert filtered_identifiable["mongo_test:customer_details"][0]["customer_id"] == 3.0
+    assert filtered_identifiable["mongo_test:customer_details"][0]["gender"] == "female"
+    assert filtered_identifiable["mongo_test:customer_details"][0]["children"] == [
+        "Erica Example"
     ]
+    assert isinstance(
+        filtered_identifiable["mongo_test:customer_details"][0]["_id"], ObjectId
+    )
     customer_detail_logs = privacy_request.execution_logs.filter_by(
         dataset_name="mongo_test", collection_name="customer_details", status="complete"
     )
@@ -848,6 +857,16 @@ async def test_array_querying_mongo(
     # of them actually populated
     # Note that order matters here!
     assert customer_detail_logs[0].fields_affected == [
+        {
+            "path": "mongo_test:customer_details:_id",
+            "field_name": "_id",
+            "data_categories": ["user.unique_id"],
+        },
+        {
+            "path": "mongo_test:customer_details:customer_id",
+            "field_name": "customer_id",
+            "data_categories": ["user.unique_id"],
+        },
         {
             "path": "mongo_test:customer_details:birthday",
             "field_name": "birthday",
@@ -857,11 +876,6 @@ async def test_array_querying_mongo(
             "path": "mongo_test:customer_details:children",
             "field_name": "children",
             "data_categories": ["user.childrens"],
-        },
-        {
-            "path": "mongo_test:customer_details:customer_id",
-            "field_name": "customer_id",
-            "data_categories": ["user.unique_id"],
         },
         {
             "path": "mongo_test:customer_details:emergency_contacts.name",

@@ -233,14 +233,13 @@ describe("Config wizard with plus settings", () => {
       cy.getByTestId("add-systems");
     });
 
-    // TODO: Update Cypress test to reflect the nav bar 2.0
-    it.skip("Resets the flow when it is completed", () => {
+    it("Resets the flow when it is completed", () => {
       goToDataFlowScanner();
       cy.wait("@putScanResults");
       cy.getByTestId("scan-results");
       cy.getByTestId("register-btn").click();
-      cy.getByTestId("nav-link-Add Systems").click();
-      cy.getByTestId("setup");
+      cy.visit("/add-systems");
+      cy.getByTestId("add-systems");
     });
 
     it("Can render an error", () => {

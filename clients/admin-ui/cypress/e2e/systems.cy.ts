@@ -8,10 +8,10 @@ describe("System management page", () => {
     }).as("getSystems");
   });
 
-  // TODO: Update Cypress test to reflect the nav bar 2.0
-  it.skip("Can navigate to the system management page", () => {
+  it("Can navigate to the system management page", () => {
     cy.visit("/");
-    cy.getByTestId("nav-link-Systems").click();
+    cy.contains("nav a", "Data map").click();
+    cy.contains("nav a", "View systems").click();
     cy.wait("@getSystems");
     cy.getByTestId("system-management");
   });
@@ -283,8 +283,14 @@ describe("System management page", () => {
         expect(body.joint_controller.name).to.eql(controllerName);
       });
 
-      // add another privacy declaration
+      // Switch to the Data Uses tab
       cy.getByTestId("tab-Data uses").click();
+
+      // Dismiss the "Unsaved changes" modal that appears
+      // TODO: This modal only appears due to a bug: https://github.com/ethyca/fides/issues/2788, once fixed this can be removed
+      cy.getByTestId("continue-btn").click()
+
+      // add another privacy declaration
       const secondDataUse = "advertising";
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
