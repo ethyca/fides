@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import UserManagementTabs from "user-management/UserManagementTabs";
 
 import { selectUser } from "~/features/auth";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -8,7 +9,6 @@ import { ScopeRegistryEnum } from "~/types/api";
 import { User } from "./types";
 import { useEditUserMutation } from "./user-management.slice";
 import { FormValues } from "./UserForm";
-import UserManagementTabs from "./UserManagementTabs";
 
 const useUserForm = (profile: User) => {
   const currentUser = useSelector(selectUser);

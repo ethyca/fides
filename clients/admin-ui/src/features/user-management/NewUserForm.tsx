@@ -1,6 +1,7 @@
 import { utf8ToB64 } from "common/utils";
 import { router } from "next/client";
 import React, { useEffect } from "react";
+import UserManagementTabs from "user-management/UserManagementTabs";
 
 import { useAppDispatch } from "~/app/hooks";
 import { USER_MANAGEMENT_ROUTE } from "~/constants";
@@ -10,7 +11,6 @@ import {
   useCreateUserMutation,
 } from "./user-management.slice";
 import { FormValues } from "./UserForm";
-import UserManagementTabs from "./UserManagementTabs";
 
 const NewUserForm = () => {
   const [createUser] = useCreateUserMutation();
@@ -26,6 +26,7 @@ const NewUserForm = () => {
     router.push(`${USER_MANAGEMENT_ROUTE}`);
   };
 
+  // @ts-ignore
   return (
     <div>
       <main>
