@@ -130,7 +130,7 @@ def test_write_to_in_memory_buffer_handles_bson():
             }
         ],
     }
-    # This will throw a `ValueError: Circular reference detected` if no BSON
+    # This will throw a `ValueError: Circular reference detected` if no ObjectId
     # handler is available to the JSON encoder.
     bytesio = write_to_in_memory_buffer(
         resp_format="json",
