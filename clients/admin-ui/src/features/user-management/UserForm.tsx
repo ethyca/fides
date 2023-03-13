@@ -22,7 +22,7 @@ import { passwordValidation } from "~/features/common/form/validation";
 import { successToastParams } from "~/features/common/toast";
 
 import PasswordManagement from "./PasswordManagement";
-import { User, UserCreateResponse } from "./types";
+import { User } from "./types";
 import { selectActiveUserId, setActiveUserId } from "./user-management.slice";
 
 const defaultInitialValues = {
@@ -43,9 +43,10 @@ const ValidationSchema = Yup.object().shape({
 
 export interface Props {
   user?: User;
-  onSubmit: (values: FormValues) => Promise<
-    | {
-        data: User | UserCreateResponse;
+  onSubmit: (values: FormValues) => void | Promise<
+    |
+      {
+        data: User;
       }
     | {
         error: FetchBaseQueryError | SerializedError;
@@ -75,12 +76,14 @@ const UserForm = ({
   const handleSubmit = async (values: FormValues) => {
     // first either update or create the user
     const result = await onSubmit(values);
-    if ("error" in result) {
+    if (result && "error" in result) {
       handleError(result.error);
       return;
     }
     toast(successToastParams(`User ${isNewUser ? "created" : "updated"}`));
-    dispatch(setActiveUserId(result.data.id));
+    if (result && result.data) {
+      dispatch(setActiveUserId(result.data.id));
+    }
   };
   const validationSchema = canChangePassword
     ? ValidationSchema
