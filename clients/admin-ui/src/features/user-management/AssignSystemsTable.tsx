@@ -8,8 +8,11 @@ import {
   Th,
   Thead,
   Tr,
-  TrashCanSolidIcon, useDisclosure,
+  TrashCanSolidIcon,
+  useDisclosure,
 } from "@fidesui/react";
+import React from "react";
+import RemoveSystemModal from "user-management/RemoveSystemModal";
 
 import { useAppSelector } from "~/app/hooks";
 import { System } from "~/types/api";
@@ -18,11 +21,7 @@ import {
   selectActiveUserId,
   selectActiveUsersManagedSystems,
   useGetUserManagedSystemsQuery,
-  useRemoveUserManagedSystemMutation,
 } from "./user-management.slice";
-import DeleteUserModal from "user-management/DeleteUserModal";
-import React from "react";
-import RemoveSystemModal from "user-management/RemoveSystemModal";
 
 export const AssignSystemsDeleteTable = () => {
   const activeUserId = useAppSelector(selectActiveUserId);
@@ -60,7 +59,11 @@ export const AssignSystemsDeleteTable = () => {
                 onClick={removeSystemModal.onOpen}
                 data-testid="unassign-btn"
               />
-              <RemoveSystemModal system={system} activeUserId={activeUserId} {...removeSystemModal} />
+              <RemoveSystemModal
+                system={system}
+                activeUserId={activeUserId}
+                {...removeSystemModal}
+              />
             </Td>
           </Tr>
         ))}
@@ -95,7 +98,12 @@ const AssignSystemsTable = ({
 
   return (
     <Box overflowY="auto" maxHeight="300px">
-      <Table size="sm" data-testid="assign-systems-table" maxHeight="50vh" overflowY="scroll">
+      <Table
+        size="sm"
+        data-testid="assign-systems-table"
+        maxHeight="50vh"
+        overflowY="scroll"
+      >
         <Thead position="sticky" top={0} background="white" zIndex={1}>
           <Tr>
             <Th>System</Th>
@@ -105,23 +113,23 @@ const AssignSystemsTable = ({
         <Tbody>
           {allSystems.map((system) => {
             const isAssigned = !!assignedSystems.find(
-                (assigned) => assigned.fides_key === system.fides_key
+              (assigned) => assigned.fides_key === system.fides_key
             );
             return (
-                <Tr
-                    key={system.fides_key}
-                    _hover={{ bg: "gray.50" }}
-                    data-testid={`row-${system.fides_key}`}
-                >
-                  <Td>{system.name}</Td>
-                  <Td>
-                    <Switch
-                        isChecked={isAssigned}
-                        onChange={() => handleToggle(system)}
-                        data-testid="assign-switch"
-                    />
-                  </Td>
-                </Tr>
+              <Tr
+                key={system.fides_key}
+                _hover={{ bg: "gray.50" }}
+                data-testid={`row-${system.fides_key}`}
+              >
+                <Td>{system.name}</Td>
+                <Td>
+                  <Switch
+                    isChecked={isAssigned}
+                    onChange={() => handleToggle(system)}
+                    data-testid="assign-switch"
+                  />
+                </Td>
+              </Tr>
             );
           })}
         </Tbody>

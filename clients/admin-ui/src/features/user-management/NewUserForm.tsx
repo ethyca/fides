@@ -1,16 +1,16 @@
 import { utf8ToB64 } from "common/utils";
+import { router } from "next/client";
 import React, { useEffect } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
+import { USER_MANAGEMENT_ROUTE } from "~/constants";
 
 import {
   setActiveUserId,
-  useCreateUserMutation
+  useCreateUserMutation,
 } from "./user-management.slice";
 import { FormValues } from "./UserForm";
 import UserManagementTabs from "./UserManagementTabs";
-import {USER_MANAGEMENT_ROUTE} from "~/constants";
-import {router} from "next/client";
 
 const NewUserForm = () => {
   const [createUser] = useCreateUserMutation();

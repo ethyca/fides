@@ -1,9 +1,18 @@
-import {Box, Button, ButtonGroup, Flex, Stack, Text, useToast} from "@fidesui/react";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Flex,
+  Stack,
+  Text,
+  useToast,
+} from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useAPIHelper } from "common/hooks";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
+import React from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -12,10 +21,9 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { successToastParams } from "~/features/common/toast";
 
-import React from "react";
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
-import {selectActiveUserId, setActiveUserId} from "./user-management.slice";
+import { selectActiveUserId, setActiveUserId } from "./user-management.slice";
 
 const defaultInitialValues = {
   username: "",
@@ -89,14 +97,16 @@ const UserForm = ({
           <Stack maxW={["xs", "xs", "100%"]} width="100%" spacing={7}>
             <Stack spacing={6} maxWidth="55%">
               <Flex>
-                <Text display="flex" alignItems="center" fontSize="sm" fontWeight="semibold">
+                <Text
+                  display="flex"
+                  alignItems="center"
+                  fontSize="sm"
+                  fontWeight="semibold"
+                >
                   Profile
                 </Text>
                 <Box marginLeft="auto">
-                  <PasswordManagement
-                      user={user}
-                      isNewUser={isNewUser}
-                  />
+                  <PasswordManagement user={user} isNewUser={isNewUser} />
                 </Box>
               </Flex>
               <CustomTextInput
@@ -119,17 +129,16 @@ const UserForm = ({
                 placeholder="Enter last name of user"
                 disabled={nameDisabled}
               />
-              {!activeUserId ?
-                  <CustomTextInput
-                      name="password"
-                      label="Password"
-                      variant="block"
-                      placeholder="********"
-                      type="password"
-                      tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  />
-                  : null
-              }
+              {!activeUserId ? (
+                <CustomTextInput
+                  name="password"
+                  label="Password"
+                  variant="block"
+                  placeholder="********"
+                  type="password"
+                  tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                />
+              ) : null}
             </Stack>
             <ButtonGroup size="sm">
               <NextLink href={USER_MANAGEMENT_ROUTE} passHref>

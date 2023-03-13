@@ -1,14 +1,22 @@
-import {Button, ButtonGroup, Flex, Spinner, Stack, Text, useToast,} from "@fidesui/react";
-import {Form, Formik} from "formik";
+import {
+  Button,
+  ButtonGroup,
+  Flex,
+  Spinner,
+  Stack,
+  Text,
+  useToast,
+} from "@fidesui/react";
+import { Form, Formik } from "formik";
 import NextLink from "next/link";
 
-import {useAppSelector} from "~/app/hooks";
-import {USER_MANAGEMENT_ROUTE} from "~/constants";
-import {getErrorMessage, isErrorResult} from "~/features/common/helpers";
-import {errorToastParams, successToastParams} from "~/features/common/toast";
-import {RoleRegistryEnum} from "~/types/api";
+import { useAppSelector } from "~/app/hooks";
+import { USER_MANAGEMENT_ROUTE } from "~/constants";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { RoleRegistryEnum } from "~/types/api";
+import { ROLES } from "~/types/api/models/RolesDataMapping";
 
-import {ROLES} from "~/types/api/models/RolesDataMapping";
 import QuestionTooltip from "../common/QuestionTooltip";
 import RoleOption from "./RoleOption";
 import {
@@ -22,7 +30,6 @@ const defaultInitialValues = {
 };
 
 export type FormValues = typeof defaultInitialValues;
-
 
 const PermissionsForm = () => {
   const toast = useToast();

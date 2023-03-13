@@ -11,11 +11,11 @@ import {
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import {User, UserPermissions} from "./types";
+import { User} from "./types";
 import {
   selectUserFilters,
   setPage,
-  useGetAllUsersQuery
+  useGetAllUsersQuery,
 } from "./user-management.slice";
 import UserManagementRow from "./UserManagementRow";
 

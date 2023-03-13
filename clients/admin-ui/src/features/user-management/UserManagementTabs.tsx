@@ -1,9 +1,9 @@
-import {Box, Flex} from "@fidesui/react";
+import { Box, Flex } from "@fidesui/react";
+import RoleDescriptionDrawer from "user-management/RoleDescriptionDrawer";
 
 import { useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
 
-import RoleDescriptionDrawer from "user-management/RoleDescriptionDrawer";
 import PermissionsForm from "./PermissionsForm";
 import { selectActiveUserId } from "./user-management.slice";
 import UserForm, { type Props as UserFormProps } from "./UserForm";
@@ -33,10 +33,10 @@ const UserManagementTabs = ({
       content: (
         <Flex gap="97px">
           <Box w={{ base: "100%", md: "65%", xl: "55%" }}>
-            <PermissionsForm/>
+            <PermissionsForm />
           </Box>
           <Box w={{ base: "100%", md: "35%", xl: "45%" }}>
-            <RoleDescriptionDrawer/>
+            <RoleDescriptionDrawer />
           </Box>
         </Flex>
       ),

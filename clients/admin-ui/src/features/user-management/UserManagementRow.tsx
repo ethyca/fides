@@ -15,11 +15,13 @@ import {
 } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
-import {useGetUserPermissionsQuery} from "user-management/user-management.slice";
-import {ROLES} from "~/types/api/models/RolesDataMapping";
+import { useGetUserPermissionsQuery } from "user-management/user-management.slice";
+
+import { ROLES } from "~/types/api/models/RolesDataMapping";
+
 import { USER_MANAGEMENT_ROUTE } from "../../constants";
 import DeleteUserModal from "./DeleteUserModal";
-import {User} from "./types";
+import { User } from "./types";
 
 interface UserManagementRowProps {
   user: User;
@@ -33,22 +35,20 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
     router.push(`${USER_MANAGEMENT_ROUTE}/profile/${user.id}`);
   };
 
-  const { data: userPermissions } = useGetUserPermissionsQuery(
-      user.id ?? "",
-      {
-        skip: !user.id,
-      }
-  );
-  const permissionsLabels: string[] = []
+  const { data: userPermissions } = useGetUserPermissionsQuery(user.id ?? "", {
+    skip: !user.id,
+  });
+  const permissionsLabels: string[] = [];
   if (userPermissions && userPermissions.roles) {
-    userPermissions.roles.forEach(permissionRole => {
-      const matchingRole = ROLES.find(role => role.roleKey === permissionRole)
+    userPermissions.roles.forEach((permissionRole) => {
+      const matchingRole = ROLES.find(
+        (role) => role.roleKey === permissionRole
+      );
       if (matchingRole) {
-        permissionsLabels.push(matchingRole.permissions_label)
+        permissionsLabels.push(matchingRole.permissions_label);
       }
-    })
+    });
   }
-
 
   return (
     <>
@@ -69,23 +69,23 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {permissionsLabels.map((permission) => (
-                <Badge
-                    bg="gray.500"
-                    color="white"
-                    paddingLeft="8px"
-                    textTransform="none"
-                    paddingRight="8px"
-                    height="18px"
-                    lineHeight="18px"
-                    borderRadius="6px"
-                    fontWeight="500"
-                    textAlign="center"
-                    data-testid="user-permissions-badge"
-                    key={permission}
-                >
-                  {permission}
-                </Badge>
-            ))}
+            <Badge
+              bg="gray.500"
+              color="white"
+              paddingLeft="8px"
+              textTransform="none"
+              paddingRight="8px"
+              height="18px"
+              lineHeight="18px"
+              borderRadius="6px"
+              fontWeight="500"
+              textAlign="center"
+              data-testid="user-permissions-badge"
+              key={permission}
+            >
+              {permission}
+            </Badge>
+          ))}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {user.created_at ? new Date(user.created_at).toUTCString() : null}
