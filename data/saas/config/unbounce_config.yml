@@ -7,6 +7,7 @@ saas_config:
 
   connector_params:
     - name: domain
+      default_value: api.unbounce.com
     - name: api_key
     - name: lead_id
 
@@ -17,14 +18,14 @@ saas_config:
       strategy: basic
       configuration:
         username: <api_key>
-        password: ''
+        password: ""
 
   test_request:
     method: GET
     path: /pages
     headers:
       - name: Accept
-        value: '*/*'
+        value: "*/*"
 
   endpoints:
     - name: lead
