@@ -11,11 +11,11 @@ import {
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { User } from "./types";
+import {User, UserPermissions} from "./types";
 import {
   selectUserFilters,
   setPage,
-  useGetAllUsersQuery,
+  useGetAllUsersQuery
 } from "./user-management.slice";
 import UserManagementRow from "./UserManagementRow";
 
@@ -62,6 +62,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
             <Th pl={0}>Username</Th>
             <Th pl={0}>First Name</Th>
             <Th pl={0}>Last Name</Th>
+            <Th pl={0}>Permissions</Th>
             <Th pl={0}>Created At</Th>
           </Tr>
         </Thead>

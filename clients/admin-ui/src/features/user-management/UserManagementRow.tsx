@@ -17,7 +17,8 @@ import React from "react";
 
 import { USER_MANAGEMENT_ROUTE } from "../../constants";
 import DeleteUserModal from "./DeleteUserModal";
-import { User } from "./types";
+import {User} from "./types";
+import {useGetUserPermissionsQuery} from "user-management/user-management.slice";
 
 interface UserManagementRowProps {
   user: User;
@@ -30,6 +31,13 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   const handleEditUser = () => {
     router.push(`${USER_MANAGEMENT_ROUTE}/profile/${user.id}`);
   };
+
+  const { data: userPermissions } = useGetUserPermissionsQuery(
+      user.id ?? "",
+      {
+        skip: !user.id,
+      }
+  );
 
   return (
     <>
@@ -48,6 +56,9 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         </Td>
         <Td pl={0} py={1}>
           {user.last_name}
+        </Td>
+        <Td pl={0} py={1}>
+          {userPermissions ? userPermissions.roles : null}
         </Td>
         <Td pl={0} py={1}>
           {user.created_at ? new Date(user.created_at).toUTCString() : null}
