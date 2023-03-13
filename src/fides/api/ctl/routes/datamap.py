@@ -163,8 +163,7 @@ async def export_datamap(
 
     formatted_datamap = format_datamap_values(joined_system_dataset_df, custom_columns)
 
-    # prepend column names
-    formatted_datamap = [DATAMAP_COLUMNS_API] + formatted_datamap
+    formatted_datamap = [{**DATAMAP_COLUMNS_API, **custom_columns}] + formatted_datamap
     return formatted_datamap
 
 
