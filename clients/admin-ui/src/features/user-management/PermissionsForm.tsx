@@ -8,6 +8,7 @@ import {getErrorMessage, isErrorResult} from "~/features/common/helpers";
 import {errorToastParams, successToastParams} from "~/features/common/toast";
 import {RoleRegistryEnum} from "~/types/api";
 
+import {ROLES} from "~/types/api/models/RolesDataMapping";
 import QuestionTooltip from "../common/QuestionTooltip";
 import RoleOption from "./RoleOption";
 import {
@@ -22,22 +23,8 @@ const defaultInitialValues = {
 
 export type FormValues = typeof defaultInitialValues;
 
-// const ROLES = [
-//   { label: "Owner", roleKey: RoleRegistryEnum.OWNER },
-//   { label: "Contributor", roleKey: RoleRegistryEnum.CONTRIBUTOR },
-//   { label: "Viewer", roleKey: RoleRegistryEnum.VIEWER },
-//   {
-//     label: "Viewer & Approver",
-//     roleKey: RoleRegistryEnum.VIEWER_AND_APPROVER,
-//   },
-//   { label: "Approver", roleKey: RoleRegistryEnum.APPROVER },
-// ];
 
-interface Props {
-  roles: any[]
-}
-
-const PermissionsForm = ({roles}: Props) => {
+const PermissionsForm = () => {
   const toast = useToast();
   const activeUserId = useAppSelector(selectActiveUserId);
 
@@ -93,7 +80,7 @@ const PermissionsForm = ({roles}: Props) => {
                 </Text>
                 <QuestionTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
               </Flex>
-              {roles.map((role) => {
+              {ROLES.map((role) => {
                 const isSelected = values.roles.indexOf(role.roleKey) >= 0;
                 return (
                   <RoleOption

@@ -5,10 +5,12 @@ import { useAppDispatch } from "~/app/hooks";
 
 import {
   setActiveUserId,
-  useCreateUserMutation,
+  useCreateUserMutation
 } from "./user-management.slice";
 import { FormValues } from "./UserForm";
 import UserManagementTabs from "./UserManagementTabs";
+import {USER_MANAGEMENT_ROUTE} from "~/constants";
+import {router} from "next/client";
 
 const NewUserForm = () => {
   const [createUser] = useCreateUserMutation();
@@ -20,7 +22,8 @@ const NewUserForm = () => {
 
   const handleSubmit = (values: FormValues) => {
     const b64Password = utf8ToB64(values.password);
-    return createUser({ ...values, password: b64Password });
+    createUser({ ...values, password: b64Password });
+    router.push(`${USER_MANAGEMENT_ROUTE}`);
   };
 
   return (

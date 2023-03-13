@@ -21,18 +21,6 @@ const PasswordManagement: React.FC<PasswordManagementProps> = ({ user, isNewUser
   const activeUserId = useAppSelector(selectActiveUserId);
   const loggedInUser = useAppSelector(selectUser);
   const deleteModal = useDisclosure();
-
-  // if (!activeUserId) {
-  //   return (
-  //     <CustomTextInput
-  //       name="password"
-  //       label="Password"
-  //       placeholder="********"
-  //       type="password"
-  //       tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-  //     />
-  //   );
-  // }
   const isOwnProfile = loggedInUser ? loggedInUser.id === activeUserId : false;
 
   return (

@@ -1,15 +1,11 @@
-import {Box, Flex, VStack} from "@fidesui/react";
+import {Box, VStack} from "@fidesui/react";
+import {ROLES} from "~/types/api/models/RolesDataMapping";
 
-
-interface Props {
-    roles: any[]
-}
-
-const RoleDescriptionDrawer = ({roles}: Props) => (
+const RoleDescriptionDrawer = () => (
         <Box>
             <Box pb={4} fontSize="18px" fontWeight="semibold">Role Description</Box>
             <VStack spacing={4}>
-                {roles.map((role) => (
+                {ROLES.map((role) => (
                     <Box key={role.roleKey} padding="16px" backgroundColor="blue.50" fontSize="14px">
                         <Box fontWeight="semibold">
                             {role.label}

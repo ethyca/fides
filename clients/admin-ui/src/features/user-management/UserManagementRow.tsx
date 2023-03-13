@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   ButtonGroup,
   Menu,
@@ -14,11 +15,11 @@ import {
 } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
-
+import {useGetUserPermissionsQuery} from "user-management/user-management.slice";
+import {ROLES} from "~/types/api/models/RolesDataMapping";
 import { USER_MANAGEMENT_ROUTE } from "../../constants";
 import DeleteUserModal from "./DeleteUserModal";
 import {User} from "./types";
-import {useGetUserPermissionsQuery} from "user-management/user-management.slice";
 
 interface UserManagementRowProps {
   user: User;
@@ -38,6 +39,16 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         skip: !user.id,
       }
   );
+  const permissionsLabels: string[] = []
+  if (userPermissions && userPermissions.roles) {
+    userPermissions.roles.forEach(permissionRole => {
+      const matchingRole = ROLES.find(role => role.roleKey === permissionRole)
+      if (matchingRole) {
+        permissionsLabels.push(matchingRole.permissions_label)
+      }
+    })
+  }
+
 
   return (
     <>
@@ -46,21 +57,37 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         _hover={{ bg: "gray.50", cursor: "pointer" }}
         height="36px"
         data-testid={`row-${user.id}`}
-        onClick={handleEditUser}
       >
-        <Td pl={0} py={1}>
+        <Td pl={0} py={1} onClick={handleEditUser}>
           {user.username}
         </Td>
-        <Td pl={0} py={1}>
+        <Td pl={0} py={1} onClick={handleEditUser}>
           {user.first_name}
         </Td>
-        <Td pl={0} py={1}>
+        <Td pl={0} py={1} onClick={handleEditUser}>
           {user.last_name}
         </Td>
-        <Td pl={0} py={1}>
-          {userPermissions ? userPermissions.roles : null}
+        <Td pl={0} py={1} onClick={handleEditUser}>
+          {permissionsLabels.map((permission) => (
+                <Badge
+                    bg="gray.500"
+                    color="white"
+                    paddingLeft="8px"
+                    textTransform="none"
+                    paddingRight="8px"
+                    height="18px"
+                    lineHeight="18px"
+                    borderRadius="6px"
+                    fontWeight="500"
+                    textAlign="center"
+                    data-testid="user-permissions-badge"
+                    key={permission}
+                >
+                  {permission}
+                </Badge>
+            ))}
         </Td>
-        <Td pl={0} py={1}>
+        <Td pl={0} py={1} onClick={handleEditUser}>
           {user.created_at ? new Date(user.created_at).toUTCString() : null}
         </Td>
         <Td pr={0} py={1} textAlign="end" position="relative">
