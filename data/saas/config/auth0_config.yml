@@ -24,8 +24,8 @@ saas_config:
             {
               "grant_type": "client_credentials",
               "audience": "https://<domain>/api/v2/",
-              "client_id": <client_id>
-              "client_secret": <client_secret>
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>"
             }
 
   test_request:
