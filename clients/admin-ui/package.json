@@ -38,7 +38,7 @@
     "formik": "^2.2.9",
     "framer-motion": "^5",
     "i18n-iso-countries": "^7.4.0",
-    "immer": "^9.0.15",
+    "immer": "^9.0.19",
     "js-yaml": "^4.1.0",
     "lodash.debounce": "^4.0.8",
     "msw": "^1.1.0",
