@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.8.1.post0.dev33"
+    "version": "2.8.1.post0.dev34"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -54,7 +54,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "data_category:read"
             ]
           }
         ]
@@ -127,7 +127,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "data_category:update"
             ]
           }
         ]
@@ -200,7 +200,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "data_category:create"
             ]
           }
         ]
@@ -260,7 +260,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "data_category:read"
             ]
           }
         ]
@@ -333,7 +333,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "data_category:delete"
             ]
           }
         ]
@@ -430,8 +430,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "data_category:create",
+              "data_category:update"
             ]
           }
         ]
@@ -486,7 +486,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "data_qualifier:read"
             ]
           }
         ]
@@ -559,7 +559,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "data_qualifier:update"
             ]
           }
         ]
@@ -632,7 +632,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "data_qualifier:create"
             ]
           }
         ]
@@ -692,7 +692,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "data_qualifier:read"
             ]
           }
         ]
@@ -765,7 +765,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "data_qualifier:delete"
             ]
           }
         ]
@@ -862,8 +862,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "data_qualifier:create",
+              "data_qualifier:update"
             ]
           }
         ]
@@ -918,7 +918,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "data_subject:read"
             ]
           }
         ]
@@ -991,7 +991,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "data_subject:update"
             ]
           }
         ]
@@ -1064,7 +1064,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "data_subject:create"
             ]
           }
         ]
@@ -1124,7 +1124,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "data_subject:read"
             ]
           }
         ]
@@ -1197,7 +1197,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "data_subject:delete"
             ]
           }
         ]
@@ -1294,8 +1294,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "data_subject:create",
+              "data_subject:update"
             ]
           }
         ]
@@ -1350,7 +1350,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "data_use:read"
             ]
           }
         ]
@@ -1423,7 +1423,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "data_use:update"
             ]
           }
         ]
@@ -1496,7 +1496,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "data_use:create"
             ]
           }
         ]
@@ -1556,7 +1556,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "data_use:read"
             ]
           }
         ]
@@ -1629,7 +1629,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "data_use:delete"
             ]
           }
         ]
@@ -1726,8 +1726,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "data_use:create",
+              "data_use:update"
             ]
           }
         ]
@@ -1782,7 +1782,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "ctl_dataset:read"
             ]
           }
         ]
@@ -1855,7 +1855,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "ctl_dataset:update"
             ]
           }
         ]
@@ -1928,7 +1928,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "ctl_dataset:create"
             ]
           }
         ]
@@ -1988,7 +1988,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "ctl_dataset:read"
             ]
           }
         ]
@@ -2061,7 +2061,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "ctl_dataset:delete"
             ]
           }
         ]
@@ -2158,8 +2158,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "ctl_dataset:create",
+              "ctl_dataset:update"
             ]
           }
         ]
@@ -2214,7 +2214,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "organization:read"
             ]
           }
         ]
@@ -2287,7 +2287,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "organization:update"
             ]
           }
         ]
@@ -2360,7 +2360,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "organization:create"
             ]
           }
         ]
@@ -2420,7 +2420,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "organization:read"
             ]
           }
         ]
@@ -2493,7 +2493,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "organization:delete"
             ]
           }
         ]
@@ -2590,8 +2590,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "organization:create",
+              "organization:update"
             ]
           }
         ]
@@ -2646,7 +2646,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "ctl_policy:read"
             ]
           }
         ]
@@ -2719,7 +2719,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "ctl_policy:update"
             ]
           }
         ]
@@ -2792,7 +2792,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "ctl_policy:create"
             ]
           }
         ]
@@ -2852,7 +2852,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "ctl_policy:read"
             ]
           }
         ]
@@ -2925,7 +2925,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "ctl_policy:delete"
             ]
           }
         ]
@@ -3022,8 +3022,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "ctl_policy:create",
+              "ctl_policy:update"
             ]
           }
         ]
@@ -3078,7 +3078,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "registry:read"
             ]
           }
         ]
@@ -3151,7 +3151,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "registry:update"
             ]
           }
         ]
@@ -3224,7 +3224,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "registry:create"
             ]
           }
         ]
@@ -3284,7 +3284,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "registry:read"
             ]
           }
         ]
@@ -3357,7 +3357,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "registry:delete"
             ]
           }
         ]
@@ -3454,8 +3454,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "registry:create",
+              "registry:update"
             ]
           }
         ]
@@ -3510,7 +3510,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "system:read"
             ]
           }
         ]
@@ -3520,20 +3520,8 @@
           "System"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
+        "description": "Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
         "operationId": "update_api_v1_system_put",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3583,7 +3571,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "system:update"
             ]
           }
         ]
@@ -3656,7 +3644,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "system:create"
             ]
           }
         ]
@@ -3716,7 +3704,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "system:read"
             ]
           }
         ]
@@ -3726,7 +3714,7 @@
           "System"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
+        "description": "Delete a System by its fides_key. Defined outside of the crud routes\nto add additional \"system manager\" permission checks.",
         "operationId": "delete_api_v1_system__fides_key__delete",
         "parameters": [
           {
@@ -3737,16 +3725,6 @@
             },
             "name": "fides_key",
             "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Resource Type",
-              "type": "string",
-              "default": "system"
-            },
-            "name": "resource_type",
-            "in": "query"
           }
         ],
         "responses": {
@@ -3789,7 +3767,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "system:delete"
             ]
           }
         ]
@@ -3886,8 +3864,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "system:create",
+              "system:update"
             ]
           }
         ]
@@ -3942,7 +3920,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "evaluation:read"
             ]
           }
         ]
@@ -4015,7 +3993,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:update"
+              "evaluation:update"
             ]
           }
         ]
@@ -4088,7 +4066,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create"
+              "evaluation:create"
             ]
           }
         ]
@@ -4148,7 +4126,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "evaluation:read"
             ]
           }
         ]
@@ -4221,7 +4199,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:delete"
+              "evaluation:delete"
             ]
           }
         ]
@@ -4318,8 +4296,8 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:create",
-              "cli-objects:update"
+              "evaluation:create",
+              "evaluation:update"
             ]
           }
         ]
@@ -4663,7 +4641,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "cli-objects:read"
+              "evaluation:read"
             ]
           }
         ]
@@ -11675,6 +11653,234 @@
         ]
       }
     },
+    "/api/v1/user/{user_id}/system-manager": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Managed Systems",
+        "description": "Endpoint to retrieve all the systems for which a user is \"system manager\".",
+        "operationId": "get_managed_systems_api_v1_user__user_id__system_manager_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Managed Systems Api V1 User  User Id  System Manager Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/System"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update Managed Systems",
+        "description": "Endpoint to override the systems for which a user is \"system manager\".\nAll systems the user manages are replaced with those in the request body.",
+        "operationId": "update_managed_systems_api_v1_user__user_id__system_manager_put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Systems",
+                "type": "array",
+                "items": {
+                  "pattern": "^[a-zA-Z0-9_.<>-]+$",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Update Managed Systems Api V1 User  User Id  System Manager Put",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/System"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system_manager:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/user/{user_id}/system-manager/{system_key}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Managed System Details",
+        "description": "Endpoint to retrieve a single system managed by the given user.",
+        "operationId": "get_managed_system_details_api_v1_user__user_id__system_manager__system_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "System Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "system_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Remove User As System Manager",
+        "description": "Endpoint to remove user as system manager from the given system",
+        "operationId": "remove_user_as_system_manager_api_v1_user__user_id__system_manager__system_key__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "System Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "system_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system_manager:delete"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/user/{user_id}/permission": {
       "get": {
         "tags": [
@@ -17511,18 +17717,47 @@
           "connection:authorize",
           "connection_type:read",
           "consent:read",
+          "ctl_dataset:create",
+          "ctl_dataset:read",
+          "ctl_dataset:delete",
+          "ctl_dataset:update",
+          "ctl_policy:create",
+          "ctl_policy:read",
+          "ctl_policy:delete",
+          "ctl_policy:update",
           "database:reset",
+          "data_category:create",
+          "data_category:delete",
+          "data_category:read",
+          "data_category:update",
+          "data_qualifier:create",
+          "data_qualifier:delete",
+          "data_qualifier:read",
+          "data_qualifier:update",
+          "data_subject:create",
+          "data_subject:read",
+          "data_subject:delete",
+          "data_subject:update",
+          "data_use:create",
+          "data_use:read",
+          "data_use:delete",
+          "data_use:update",
           "datamap:read",
           "dataset:create_or_update",
           "dataset:delete",
           "dataset:read",
           "encryption:exec",
+          "evaluation:create",
+          "evaluation:read",
+          "evaluation:delete",
+          "evaluation:update",
           "fides_taxonomy:update",
           "generate:exec",
           "messaging:create_or_update",
           "messaging:delete",
           "messaging:read",
           "organization:create",
+          "organization:read",
           "organization:delete",
           "organization:update",
           "policy:create_or_update",
@@ -17538,6 +17773,10 @@
           "privacy-request:transfer",
           "privacy-request:upload_data",
           "privacy-request:view_data",
+          "registry:create",
+          "registry:read",
+          "registry:delete",
+          "registry:update",
           "rule:create_or_update",
           "rule:delete",
           "rule:read",
@@ -17550,8 +17789,12 @@
           "storage:delete",
           "storage:read",
           "system:create",
+          "system:read",
           "system:delete",
           "system:update",
+          "system_manager:read",
+          "system_manager:delete",
+          "system_manager:update",
           "taxonomy:create",
           "taxonomy:delete",
           "taxonomy:update",
