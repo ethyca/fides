@@ -45,15 +45,15 @@ const Layout = ({
     isValidNotificationRoute;
 
   return (
-    <div data-testid={title}>
+    <Flex data-testid={title} direction="column" height="100vh">
       <Head>
         <title>Fides Admin UI - {title}</title>
-        <meta name="description" content="Generated from FidesUI template" />
+        <meta name="description" content="Privacy Engineering Platform" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Header />
       <NavTopBar />
-      <Flex as="main" px={9} py={10} gap="40px">
+      <Flex as="main" px={9} py={10} gap="40px" height="100%">
         <Box flex={0} flexShrink={0}>
           <NavSideBar />
         </Box>
@@ -62,7 +62,7 @@ const Layout = ({
           {children}
         </Flex>
       </Flex>
-    </div>
+    </Flex>
   );
 };
 
