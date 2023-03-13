@@ -5,7 +5,6 @@ import React from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Header from "~/features/common/Header";
-import NavBar from "~/features/common/nav/NavBar";
 import { NavSideBar } from "~/features/common/nav/v2/NavSideBar";
 import { NavTopBar } from "~/features/common/nav/v2/NavTopBar";
 import {
@@ -46,40 +45,24 @@ const Layout = ({
     isValidNotificationRoute;
 
   return (
-    <div data-testid={title}>
+    <Flex data-testid={title} direction="column" height="100vh">
       <Head>
         <title>Fides Admin UI - {title}</title>
-        <meta name="description" content="Generated from FidesUI template" />
+        <meta name="description" content="Privacy Engineering Platform" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Header />
-
-      {features.flags.navV2 ? (
-        <>
-          <NavTopBar />
-          <Flex as="main" px={9} py={10} gap="40px">
-            <Box flex={0} flexShrink={0}>
-              <NavSideBar />
-            </Box>
-            <Flex direction="column" flex={1} minWidth={0}>
-              {showNotificationBanner ? (
-                <ConfigurationNotificationBanner />
-              ) : null}
-              {children}
-            </Flex>
-          </Flex>
-        </>
-      ) : (
-        <>
-          <NavBar />
-          <main>
-            <Box px={9} py={10}>
-              {children}
-            </Box>
-          </main>
-        </>
-      )}
-    </div>
+      <NavTopBar />
+      <Flex as="main" px={9} py={10} gap="40px" height="100%">
+        <Box flex={0} flexShrink={0}>
+          <NavSideBar />
+        </Box>
+        <Flex direction="column" flex={1} minWidth={0}>
+          {showNotificationBanner ? <ConfigurationNotificationBanner /> : null}
+          {children}
+        </Flex>
+      </Flex>
+    </Flex>
   );
 };
 

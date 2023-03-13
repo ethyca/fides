@@ -15,8 +15,6 @@ export const useNav = ({ path }: { path: string }) => {
       configureNavGroups({
         config: NAV_CONFIG,
         hasPlus: features.plus,
-        hasSystems: features.systemsCount > 0,
-        hasConnections: features.connectionsCount > 0,
         hasAccessToPrivacyRequestConfigurations:
           features.flags.privacyRequestsConfiguration,
         userScopes,

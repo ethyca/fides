@@ -16,12 +16,6 @@
     "test": true,
     "production": false
   },
-  "navV2": {
-    "description": "The updated navigation experience with links to related features in the sidebar.",
-    "development": true,
-    "production": true,
-    "test": true
-  },
   "privacyDeclarationDeprecatedFields": {
     "description": "Show deprecated fields when adding/editing privacy declarations.",
     "development": true,
