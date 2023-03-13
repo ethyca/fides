@@ -87,7 +87,7 @@ const UserForm = ({
   const validationSchema = canChangePassword
     ? ValidationSchema
     : ValidationSchema.omit(["password"]);
-  
+
   return (
     <Formik
       onSubmit={handleSubmit}
