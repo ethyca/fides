@@ -20,6 +20,7 @@ The types of changes are:
 ### Changed
 
 * Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
+* Changed Auth0's authentication strategy from `bearer` to `oauth2_client_credentials` [#2820](https://github.com/ethyca/fides/pull/2820)
 
 ### Developer Experience
 
