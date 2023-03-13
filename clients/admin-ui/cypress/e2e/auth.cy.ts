@@ -63,21 +63,9 @@ describe("User Authentication", () => {
       cy.getByTestId("Login");
     });
 
-    // TODO: Update Cypress test to reflect the nav bar 2.0
-    it.skip("/login redirects to the onboarding flow if the user has no systems", () => {
-      cy.intercept("GET", "/api/v1/system", { body: [] });
+    it("/login redirects to the Home page", () => {
       cy.visit("/login");
-      cy.getByTestId("setup");
-    });
-
-    // TODO: Update Cypress test to reflect the nav bar 2.0
-    it.skip("/login redirects to the systems page if the user has systems", () => {
-      cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
-        "getSystems"
-      );
-      cy.visit("/login");
-      cy.wait("@getSystems");
-      cy.getByTestId("system-management");
+      cy.location("pathname").should("eq", "/");
     });
   });
 });

@@ -30,6 +30,14 @@ The types of changes are:
 
 * Disabled hiding Admin UI based on user scopes [#2771](https://github.com/ethyca/fides/pull/2771)
 
+### Changed
+
+* Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
+
+### Developer Experience
+
+* Retired legacy `navV2` feature flag [#2762](https://github.com/ethyca/fides/pull/2762)
+
 ## [2.8.0](https://github.com/ethyca/fides/compare/2.7.1...2.8.0)
 
 ### Added
