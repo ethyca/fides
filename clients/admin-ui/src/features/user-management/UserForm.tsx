@@ -43,8 +43,10 @@ const ValidationSchema = Yup.object().shape({
 
 export interface Props {
   user?: User;
-  onSubmit: (values: FormValues) => void | Promise<
-    | {
+  onSubmit: (values: FormValues) => Promise<
+    | void
+    |
+      {
         data: User;
       }
     | {

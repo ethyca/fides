@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 
 * Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
+* Adds Role Assignment UI [#2739](https://github.com/ethyca/fides/pull/2739)
 
 ### Changed
 
