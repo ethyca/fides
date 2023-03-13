@@ -1,9 +1,8 @@
-import { Box, Flex, Heading, Text, VStack } from "@fidesui/react";
+import { Box, Heading, Text, VStack } from "@fidesui/react";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
-import { useFeatures } from "~/features/common/features";
 import {
   reset,
   selectConnectionTypeState,
@@ -11,7 +10,6 @@ import {
 } from "~/features/connection-type";
 
 import Breadcrumb from "../add-connection/Breadcrumb";
-import ConfigurationSettingsNav from "../add-connection/ConfigurationSettingsNav";
 import { ConnectorParameters } from "../add-connection/ConnectorParameters";
 import {
   ConfigurationSettings,
@@ -31,10 +29,6 @@ const EditConnection: React.FC = () => {
   const [connector, setConnector] = useState(
     undefined as unknown as ConnectorParameterOption
   );
-  const [selectedItem, setSelectedItem] = useState("");
-  const {
-    flags: { navV2 },
-  } = useFeatures();
 
   const getTabs = useMemo(
     () => () => {
@@ -78,10 +72,6 @@ const EditConnection: React.FC = () => {
     [connection?.key, connector?.options]
   );
 
-  const handleNavChange = (value: string) => {
-    setSelectedItem(value);
-  };
-
   useEffect(() => {
     if (connectionOption) {
       const item = CONNECTOR_PARAMETERS_OPTIONS.find(
@@ -89,7 +79,6 @@ const EditConnection: React.FC = () => {
       );
       if (item) {
         setConnector(item);
-        setSelectedItem(item.options[0]);
         dispatch(setStep(STEPS[2]));
       }
     }
@@ -114,32 +103,9 @@ const EditConnection: React.FC = () => {
         </Box>
       </Heading>
       <Breadcrumb steps={[STEPS[0], STEPS[2]]} />
-      {navV2 && (
-        <VStack alignItems="stretch" flex="1" gap="18px">
-          <DataTabs data={getTabs()} flexGrow={1} isLazy />
-        </VStack>
-      )}
-      {!navV2 && (
-        <Flex flex="1" gap="18px">
-          <ConfigurationSettingsNav
-            menuOptions={connector?.options || []}
-            onChange={handleNavChange}
-            selectedItem={selectedItem || ""}
-          />
-          {(() => {
-            switch (selectedItem || "") {
-              case ConfigurationSettings.CONNECTOR_PARAMETERS:
-                return <ConnectorParameters />;
-              case ConfigurationSettings.DATASET_CONFIGURATION:
-                return <DatasetConfiguration />;
-              case ConfigurationSettings.DSR_CUSTOMIZATION:
-                return <DSRCustomization />;
-              default:
-                return null;
-            }
-          })()}
-        </Flex>
-      )}
+      <VStack alignItems="stretch" flex="1" gap="18px">
+        <DataTabs data={getTabs()} flexGrow={1} isLazy />
+      </VStack>
     </>
   ) : null;
 };
