@@ -2,7 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { RoleRegistry } from "./RoleRegistry";
+import type { RoleRegistryEnum } from "./RoleRegistryEnum";
+import type { ScopeRegistryEnum } from "./ScopeRegistryEnum";
 
 /**
  * Data required to create a FidesUserPermissions record
@@ -11,6 +12,6 @@ import type { RoleRegistry } from "./RoleRegistry";
  * but we also will continue to support the ability to be assigned specific individual scopes.
  */
 export type UserPermissionsCreate = {
-  scopes?: Array<string>;
-  roles?: Array<RoleRegistry>;
+  scopes?: Array<ScopeRegistryEnum>;
+  roles?: Array<RoleRegistryEnum>;
 };

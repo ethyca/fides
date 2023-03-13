@@ -169,7 +169,7 @@ describe("Privacy Requests", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@createMessagingConfiguration").then((interception) => {
         const { body } = interception.request;
-        expect(body.service_type).to.eql("MAILGUN");
+        expect(body.service_type).to.eql("mailgun");
         cy.contains(
           "Mailgun email successfully updated. You can now enter your security key."
         );

@@ -1,4 +1,4 @@
-import { ScopeRegistry } from "~/types/api";
+import { ScopeRegistryEnum } from "~/types/api";
 
 export type NavConfigRoute = {
   title?: string;
@@ -6,13 +6,11 @@ export type NavConfigRoute = {
   exact?: boolean;
   requiresPlus?: boolean;
   /** This route is only available if the user has ANY of these scopes */
-  scopes: ScopeRegistry[];
+  scopes: ScopeRegistryEnum[];
 };
 
 export type NavConfigGroup = {
   title: string;
-  requiresSystems?: boolean;
-  requiresConnections?: boolean;
   routes: NavConfigRoute[];
 };
 
@@ -30,61 +28,53 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Privacy requests",
-    requiresConnections: true,
     routes: [
       {
         title: "Request manager",
         path: "/privacy-requests",
-        scopes: [ScopeRegistry.PRIVACY_REQUEST_READ],
+        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
       },
       {
         title: "Connection manager",
         path: "/datastore-connection",
-        scopes: [ScopeRegistry.CONNECTION_CREATE_OR_UPDATE],
+        scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
       },
       {
         title: "Configuration",
         path: "/privacy-requests/configure",
-        scopes: [ScopeRegistry.MESSAGING_CREATE_OR_UPDATE],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
     ],
   },
   {
     title: "Data map",
-    requiresSystems: true,
     routes: [
       {
         title: "View map",
         path: "/datamap",
         requiresPlus: true,
-        scopes: [ScopeRegistry.DATAMAP_READ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "View systems",
         path: "/system",
-        scopes: [ScopeRegistry.CLI_OBJECTS_READ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Add systems",
         path: "/add-systems",
-        scopes: [
-          ScopeRegistry.CLI_OBJECTS_CREATE,
-          ScopeRegistry.CLI_OBJECTS_UPDATE,
-        ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Manage datasets",
         path: "/dataset",
-        scopes: [
-          ScopeRegistry.CLI_OBJECTS_CREATE,
-          ScopeRegistry.CLI_OBJECTS_UPDATE,
-        ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Classify systems",
         path: "/classify-systems",
         requiresPlus: true,
-        scopes: [ScopeRegistry.CLI_OBJECTS_UPDATE], // temporary scope until we decide what to do here
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
     ],
   },
@@ -94,12 +84,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Taxonomy",
         path: "/taxonomy",
-        scopes: [ScopeRegistry.CLI_OBJECTS_READ],
+        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
       },
       {
         title: "Users",
         path: "/user-management",
-        scopes: [ScopeRegistry.USER_READ],
+        scopes: [ScopeRegistryEnum.USER_READ],
       },
       { title: "About Fides", path: "/management/about", scopes: [] },
     ],
@@ -130,13 +120,13 @@ export type NavGroup = {
  */
 const navGroupInScope = (
   group: NavConfigGroup,
-  userScopes: ScopeRegistry[]
+  userScopes: ScopeRegistryEnum[]
 ) => {
   if (group.routes.filter((route) => route.scopes.length === 0).length === 0) {
     const allScopesAcrossRoutes = group.routes.reduce((acc, route) => {
       const { scopes } = route;
       return [...acc, ...scopes];
-    }, [] as ScopeRegistry[]);
+    }, [] as ScopeRegistryEnum[]);
     if (
       allScopesAcrossRoutes.length &&
       allScopesAcrossRoutes.filter((scope) => userScopes.includes(scope))
@@ -154,7 +144,7 @@ const navGroupInScope = (
  */
 const navRouteInScope = (
   route: NavConfigRoute,
-  userScopes: ScopeRegistry[]
+  userScopes: ScopeRegistryEnum[]
 ) => {
   if (
     route.scopes.length &&
@@ -170,28 +160,16 @@ export const configureNavGroups = ({
   config,
   userScopes,
   hasPlus = false,
-  hasSystems = false,
-  hasConnections = false,
   hasAccessToPrivacyRequestConfigurations = false,
 }: {
   config: NavConfigGroup[];
-  userScopes: ScopeRegistry[];
+  userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
-  hasSystems?: boolean;
-  hasConnections?: boolean;
   hasAccessToPrivacyRequestConfigurations?: boolean;
 }): NavGroup[] => {
   const navGroups: NavGroup[] = [];
 
   config.forEach((group) => {
-    // Skip groups with unmet requirements.
-    if (
-      (group.requiresConnections && !hasConnections) ||
-      (group.requiresSystems && !hasSystems)
-    ) {
-      return;
-    }
-
     if (!navGroupInScope(group, userScopes)) {
       return;
     }
@@ -274,7 +252,7 @@ export const canAccessRoute = ({
   userScopes,
 }: {
   path: string;
-  userScopes: ScopeRegistry[];
+  userScopes: ScopeRegistryEnum[];
 }) => {
   let childMatch: NavConfigRoute | undefined;
   const groupMatch = NAV_CONFIG.find((group) => {

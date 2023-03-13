@@ -23,16 +23,16 @@ class MessagingMethod(Enum):
 class MessagingServiceType(Enum):
     """Enum for messaging service type. Upper-cased in the database"""
 
-    MAILGUN = "MAILGUN"
-
-    TWILIO_TEXT = "TWILIO_TEXT"
-    TWILIO_EMAIL = "TWILIO_EMAIL"
+    mailgun = "mailgun"
+    twilio_text = "twilio_text"
+    twilio_email = "twilio_email"
+    mailchimp_transactional = "mailchimp_transactional"
 
     @classmethod
     def _missing_(
         cls: Type[MessagingServiceType], value: Any
     ) -> Optional[MessagingServiceType]:
-        value = value.upper()
+        value = value.lower()
         for member in cls:
             if member.value == value:
                 return member
@@ -40,10 +40,11 @@ class MessagingServiceType(Enum):
 
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
-    MessagingServiceType.MAILGUN.value,
-    MessagingServiceType.TWILIO_EMAIL.value,
+    MessagingServiceType.mailgun.value,
+    MessagingServiceType.twilio_email.value,
+    MessagingServiceType.mailchimp_transactional.value,
 )
-SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.TWILIO_TEXT.value,)
+SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.twilio_text.value,)
 
 
 class MessagingActionType(str, Enum):
@@ -167,13 +168,27 @@ class EmailForActionType(BaseModel):
 class MessagingServiceDetails(Enum):
     """Enum for messaging service details"""
 
+    # Generic
+    DOMAIN = "domain"
+    EMAIL_FROM = "email_from"
+
     # Mailgun
     IS_EU_DOMAIN = "is_eu_domain"
     API_VERSION = "api_version"
-    DOMAIN = "domain"
 
     # Twilio Email
     TWILIO_EMAIL_FROM = "twilio_email_from"
+
+
+class MessagingServiceDetailsMailchimpTransactional(BaseModel):
+    """The details required to represent a Mailchimp Transactional email configuration."""
+
+    email_from: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
 
 
 class MessagingServiceDetailsMailgun(BaseModel):
@@ -203,6 +218,9 @@ class MessagingServiceDetailsTwilioEmail(BaseModel):
 class MessagingServiceSecrets(Enum):
     """Enum for message service secrets"""
 
+    # Mailchimp Transactional
+    MAILCHIMP_TRANSACTIONAL_API_KEY = "mailchimp_transactional_api_key"
+
     # Mailgun
     MAILGUN_API_KEY = "mailgun_api_key"
 
@@ -216,8 +234,19 @@ class MessagingServiceSecrets(Enum):
     TWILIO_API_KEY = "twilio_api_key"
 
 
+class MessagingServiceSecretsMailchimpTransactional(BaseModel):
+    """The secrets required to connect to Mailchimp Transactional."""
+
+    mailchimp_transactional_api_key: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
+
+
 class MessagingServiceSecretsMailgun(BaseModel):
-    """The secrets required to connect to mailgun."""
+    """The secrets required to connect to Mailgun."""
 
     mailgun_api_key: str
 
@@ -228,7 +257,7 @@ class MessagingServiceSecretsMailgun(BaseModel):
 
 
 class MessagingServiceSecretsTwilioSMS(BaseModel):
-    """The secrets required to connect to twilio SMS."""
+    """The secrets required to connect to Twilio SMS."""
 
     twilio_account_sid: str
     twilio_auth_token: str
@@ -266,7 +295,11 @@ class MessagingConfigBase(BaseModel):
 
     service_type: MessagingServiceType
     details: Optional[
-        Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
+        Union[
+            MessagingServiceDetailsMailgun,
+            MessagingServiceDetailsTwilioEmail,
+            MessagingServiceDetailsMailchimpTransactional,
+        ]
     ]
 
     class Config:
@@ -282,9 +315,9 @@ class MessagingConfigRequestBase(MessagingConfigBase):
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         service_type = values.get("service_type")
         if service_type:
-            # uppercase to match enums in database
+            # lowercase to match enums in database
             if isinstance(service_type, str):
-                service_type = service_type.upper()
+                service_type = service_type.lower()
 
             # assign the transformed service_type value back into the values dict
             values["service_type"] = service_type
@@ -298,11 +331,11 @@ class MessagingConfigRequestBase(MessagingConfigBase):
     ) -> None:
         if isinstance(service_type, MessagingServiceType):
             service_type = service_type.value
-        if service_type == MessagingServiceType.MAILGUN.value:
+        if service_type == MessagingServiceType.mailgun.value:
             if not details:
                 raise ValueError("Messaging config must include details")
             MessagingServiceDetailsMailgun.validate(details)
-        if service_type == MessagingServiceType.TWILIO_EMAIL.value:
+        if service_type == MessagingServiceType.twilio_email.value:
             if not details:
                 raise ValueError("Messaging config must include details")
             MessagingServiceDetailsTwilioEmail.validate(details)
@@ -330,6 +363,7 @@ SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceSecretsTwilioEmail,
+    MessagingServiceSecretsMailchimpTransactional,
 ]
 
 

@@ -75,7 +75,7 @@ class TestConsentRequest:
         """Overrides autouse fixture to set notification service type to twilio sms"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = (
-            MessagingServiceType.TWILIO_TEXT.value
+            MessagingServiceType.twilio_text.value
         )
         ApplicationConfig.update_config_set(db, CONFIG)
         yield

@@ -20,7 +20,6 @@ import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
-import { useFeatures } from "~/features/common/features";
 import PII from "~/features/common/PII";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import RequestType from "~/features/common/RequestType";
@@ -33,9 +32,6 @@ import ReprocessButton from "./buttons/ReprocessButton";
 import { PrivacyRequestEntity } from "./types";
 
 const useRequestRow = (request: PrivacyRequestEntity) => {
-  const {
-    flags: { navV2 },
-  } = useFeatures();
   const toast = useToast();
   const hoverButtonRef = useRef<HTMLButtonElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -78,9 +74,7 @@ const useRequestRow = (request: PrivacyRequestEntity) => {
 
   const router = useRouter();
   const handleViewDetails = () => {
-    const url = `/${navV2 ? "privacy-requests" : "subject-request"}/${
-      request.id
-    }`;
+    const url = `/privacy-requests/${request.id}`;
     router.push(url);
   };
   return {
