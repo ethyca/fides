@@ -2,9 +2,9 @@ from typing import Any, Dict
 
 from pydantic import root_validator
 
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
-    ExtendedConsentEmailSchema,
+    ExtendedEmailSchema,
     ExtendedIdentityTypes,
 )
 from fides.lib.schemas.base_class import NoValidationSchema
@@ -12,10 +12,10 @@ from fides.lib.schemas.base_class import NoValidationSchema
 SOVRN_REQUIRED_IDENTITY: str = "ljt_readerID"
 
 
-class SovrnSchema(ExtendedConsentEmailSchema):
+class SovrnSchema(ExtendedEmailSchema):
     """Schema to validate the secrets needed for the SovrnConnector
 
-    Overrides the ExtendedConsentEmailSchema to set the third_party_vendor_name
+    Overrides the ExtendedEmailSchema to set the third_party_vendor_name
     and recipient_email_address.
 
     Also hardcodes the cookie_id for now.

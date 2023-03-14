@@ -11,7 +11,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
 )
 from fides.api.ops.service.privacy_request.email_batch_service import (
-    ConsentEmailExitState,
+    EmailExitState,
     send_email_batch,
 )
 from tests.ops.service.privacy_request.test_request_runner_service import (
@@ -62,7 +62,7 @@ async def test_erasure_email(
 
     # execute send email batch job without waiting for it to be scheduled
     exit_state = send_email_batch.delay().get()
-    assert exit_state == ConsentEmailExitState.complete
+    assert exit_state == EmailExitState.complete
 
     # verify the email was sent
     erasure_email_template = get_email_template(
@@ -130,7 +130,7 @@ async def test_erasure_email_no_messaging_config(
     # execute send email batch job without waiting for it to be scheduled
     exit_state = send_email_batch.delay().get()
     # job will fail because there is no messaging config
-    assert exit_state == ConsentEmailExitState.email_send_failed
+    assert exit_state == EmailExitState.email_send_failed
 
     mock_mailgun_dispatcher.assert_not_called()
     mock_requeue_privacy_requests.assert_not_called()
@@ -291,6 +291,7 @@ async def test_erasure_email_unsupported_identity(
 
     db.refresh(pr)
 
-    # the privacy request will be in an "complete" state because the erasure email connector was disabled
+    # the privacy request will be in an "complete" state because
+    # the phone number identity is not supported by this connector
     assert pr.status == PrivacyRequestStatus.complete
     assert pr.awaiting_email_send_at is None

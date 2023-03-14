@@ -8,7 +8,6 @@ from fideslang import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
-from fides.api.ops.models.privacy_request import ErasureRequestBodyParams
 from fides.api.ops.schemas import Msg
 from fides.api.ops.schemas.privacy_request import Consent
 
@@ -136,6 +135,12 @@ class ConsentEmailFulfillmentBodyParams(BaseModel):
     third_party_vendor_name: str
     required_identities: List[str]
     requested_changes: List[ConsentPreferencesByUser]
+
+
+class ErasureRequestBodyParams(BaseModel):
+    controller: str
+    third_party_vendor_name: str
+    identities: List[str]
 
 
 class FidesopsMessage(

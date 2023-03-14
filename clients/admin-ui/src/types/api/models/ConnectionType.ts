@@ -17,7 +17,6 @@ export enum ConnectionType {
   MARIADB = "mariadb",
   BIGQUERY = "bigquery",
   MANUAL = "manual",
-  EMAIL = "email",
   SOVRN = "sovrn",
   ATTENTIVE = "attentive",
   MANUAL_WEBHOOK = "manual_webhook",

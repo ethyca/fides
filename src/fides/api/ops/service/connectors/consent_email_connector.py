@@ -1,9 +1,8 @@
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
-from fides.api.ctl.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
@@ -12,9 +11,9 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.policy import ActionType, Rule
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
-    ExtendedConsentEmailSchema,
+    ExtendedEmailSchema,
     ExtendedIdentityTypes,
 )
 from fides.api.ops.schemas.messaging.messaging import (
@@ -24,32 +23,33 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.connectors.email_connector import EmailConnector
+from fides.api.ops.service.connectors.base_email_connector import (
+    BaseEmailConnector,
+    get_org_name,
+)
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.core.config import get_config
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 CONFIG = get_config()
 
 CONSENT_EMAIL_CONNECTOR_TYPES = [ConnectionType.sovrn]
 
 
-class GenericEmailConsentConnector(EmailConnector):
+class GenericConsentEmailConnector(BaseEmailConnector):
     """Generic Email Consent Connector that can be overridden for specific vendors"""
 
     @property
     def identities_for_test_email(self) -> Dict[str, Any]:
-        """The mock user identities that are sent in the test
-        email to ensure the connector is working"""
         return {"email": "test_email@example.com"}
 
     @property
     def required_identities(self) -> List[str]:
-        """Returns the identity types we need to supply to the third party for this connector"""
         return get_identity_types_for_connector(self.config)
 
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
-        self.config: ExtendedConsentEmailSchema = ExtendedConsentEmailSchema(
+        self.config: ExtendedEmailSchema = ExtendedEmailSchema(
             **configuration.secrets or {}
         )
 
@@ -106,9 +106,76 @@ class GenericEmailConsentConnector(EmailConnector):
             and filter_user_identities_for_connector(self.config, user_identities)
         )
 
+    def batch_email_send(self, privacy_requests: Query) -> None:
+        skipped_privacy_requests: List[str] = []
+        batched_consent_preferences: List[ConsentPreferencesByUser] = []
+
+        for privacy_request in privacy_requests:
+            user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
+            filtered_user_identities: Dict[
+                str, Any
+            ] = filter_user_identities_for_connector(self.config, user_identities)
+            if filtered_user_identities and privacy_request.consent_preferences:
+                batched_consent_preferences.append(
+                    ConsentPreferencesByUser(
+                        identities=filtered_user_identities,
+                        consent_preferences=privacy_request.consent_preferences,
+                    )
+                )
+            else:
+                skipped_privacy_requests.append(privacy_request.id)
+
+        if not batched_consent_preferences:
+            logger.info(
+                "Skipping consent email send for connector: '{}'. "
+                "No corresponding user identities found for pending privacy requests.",
+                self.configuration.name,
+            )
+            return
+
+        logger.info(
+            "Sending batched consent email for connector {}...",
+            self.configuration.name,
+        )
+
+        db = Session.object_session(self.configuration)
+
+        try:
+            send_single_consent_email(
+                db=db,
+                subject_email=self.config.recipient_email_address,
+                subject_name=self.config.third_party_vendor_name,
+                required_identities=self.required_identities,
+                user_consent_preferences=batched_consent_preferences,
+                test_mode=False,
+            )
+        except MessageDispatchException as exc:
+            logger.info("Consent email failed with exception {}", exc)
+            raise
+
+        for privacy_request in privacy_requests:
+            if privacy_request.id not in skipped_privacy_requests:
+                AuditLog.create(
+                    db=db,
+                    data={
+                        "user_id": "system",
+                        "privacy_request_id": privacy_request.id,
+                        "action": AuditLogAction.email_sent,
+                        "message": f"Consent email instructions dispatched for '{self.configuration.name}'",
+                    },
+                )
+
+        if skipped_privacy_requests:
+            logger.info(
+                "Skipping email send for the following privacy request ids: "
+                "{} on connector '{}': no matching identities detected.",
+                skipped_privacy_requests,
+                self.configuration.name,
+            )
+
 
 def get_identity_types_for_connector(
-    email_secrets: ExtendedConsentEmailSchema,
+    email_secrets: ExtendedEmailSchema,
 ) -> List[str]:
     """Return a list of identity types we need to email to the third party vendor."""
     advanced_settings: AdvancedSettingsWithExtendedIdentityTypes = (
@@ -126,7 +193,7 @@ def get_identity_types_for_connector(
 
 
 def filter_user_identities_for_connector(
-    secrets: ExtendedConsentEmailSchema, user_identities: Dict[str, Any]
+    secrets: ExtendedEmailSchema, user_identities: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Filter identities to just those specified for a given connector"""
     required_identities: List[str] = get_identity_types_for_connector(secrets)
@@ -146,15 +213,8 @@ def send_single_consent_email(
     test_mode: bool = False,
 ) -> None:
     """Sends a single consent email"""
-    org: Optional[Organization] = (
-        db.query(Organization).order_by(Organization.created_at.desc()).first()
-    )
 
-    if not org or not org.name:
-        raise MessageDispatchException(
-            "Cannot send an email requesting consent preference changes to third-party vendor. "
-            "No organization name found."
-        )
+    org_name = get_org_name(db)
 
     dispatch_message(
         db=db,
@@ -162,11 +222,11 @@ def send_single_consent_email(
         to_identity=Identity(email=subject_email),
         service_type=CONFIG.notifications.notification_service_type,
         message_body_params=ConsentEmailFulfillmentBodyParams(
-            controller=org.name,
+            controller=org_name,
             third_party_vendor_name=subject_name,
             required_identities=required_identities,
             requested_changes=user_consent_preferences,
         ),
         subject_override=f"{'Test notification' if test_mode else 'Notification'} "
-        f"of users' consent preference changes from {org.name}",
+        f"of users' consent preference changes from {org_name}",
     )

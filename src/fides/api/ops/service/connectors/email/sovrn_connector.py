@@ -1,16 +1,20 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
     SOVRN_REQUIRED_IDENTITY,
 )
 from fides.api.ops.service.connectors.consent_email_connector import (
-    GenericEmailConsentConnector,
+    GenericConsentEmailConnector,
 )
 
 
-class SovrnConnector(GenericEmailConsentConnector):
+class SovrnConnector(GenericConsentEmailConnector):
     """SovrnConnector - only need to override the details for the test email."""
 
     @property
     def identities_for_test_email(self) -> Dict[str, Any]:
         return {SOVRN_REQUIRED_IDENTITY: "test_ljt_reader_id"}
+
+    @property
+    def required_identities(self) -> List[str]:
+        return [SOVRN_REQUIRED_IDENTITY]

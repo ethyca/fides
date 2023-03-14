@@ -15,9 +15,6 @@ from fides.api.ops.service.connectors.email.attentive_connector import (
     AttentiveConnector,
 )
 from fides.api.ops.service.connectors.email.sovrn_connector import SovrnConnector
-from fides.api.ops.service.connectors.email_connector import (
-    EmailConnector as EmailConnector,
-)
 from fides.api.ops.service.connectors.fides_connector import (
     FidesConnector as FidesConnector,
 )
@@ -64,7 +61,6 @@ from fides.api.ops.service.connectors.timescale_connector import (
 supported_connectors: Dict[str, Any] = {
     ConnectionType.attentive.value: AttentiveConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
-    ConnectionType.email.value: EmailConnector,
     ConnectionType.fides.value: FidesConnector,
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.manual.value: ManualConnector,

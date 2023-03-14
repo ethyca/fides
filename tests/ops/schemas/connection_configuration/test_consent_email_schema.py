@@ -8,12 +8,10 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_attentive
     AttentiveSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
-    EmailSchema,
-)
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
     AdvancedSettings,
     AdvancedSettingsWithExtendedIdentityTypes,
-    ExtendedConsentEmailSchema,
+    EmailSchema,
+    ExtendedEmailSchema,
     ExtendedIdentityTypes,
     IdentityTypes,
 )
@@ -103,9 +101,9 @@ class TestGenericConsentEmailSchema:
         assert exc.value.errors()[0]["msg"] == "extra fields not permitted"
 
 
-class TestExtendedConsentEmailSchema:
+class TestExtendedEmailSchema:
     def test_extended_consent_email_schema(self):
-        schema = ExtendedConsentEmailSchema(
+        schema = ExtendedEmailSchema(
             third_party_vendor_name="Test Vendor Name",
             test_email_address="my_email@example.com",
             recipient_email_address="vendor@example.com",
@@ -122,7 +120,7 @@ class TestExtendedConsentEmailSchema:
 
     def test_extended_consent_email_schema_no_identities(self):
         with pytest.raises(ValueError):
-            ExtendedConsentEmailSchema(
+            ExtendedEmailSchema(
                 third_party_vendor_name="Test Vendor Name",
                 test_email_address="my_email@example.com",
                 recipient_email_address="vendor@example.com",

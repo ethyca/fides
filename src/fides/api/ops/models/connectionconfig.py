@@ -46,7 +46,6 @@ class ConnectionType(enum.Enum):
     mariadb = "mariadb"
     bigquery = "bigquery"
     manual = "manual"  # Run as part of the traversal
-    email = "email"
     sovrn = "sovrn"
     attentive = "attentive"
     manual_webhook = "manual_webhook"  # Run before the traversal
@@ -61,7 +60,6 @@ class ConnectionType(enum.Enum):
         readable_mapping: Dict[str, str] = {
             ConnectionType.attentive.value: "Attentive",
             ConnectionType.bigquery.value: "BigQuery",
-            ConnectionType.email.value: "Email",
             ConnectionType.fides.value: "Fides Connector",
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual.value: "Manual Connector",

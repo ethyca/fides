@@ -1,5 +1,7 @@
-from fides.api.ops.service.connectors.email_connector import EmailConnector
+from fides.api.ops.service.connectors.erasure_email_connector import (
+    GenericErasureEmailConnector,
+)
 
 
-class AttentiveConnector(EmailConnector):
+class AttentiveConnector(GenericErasureEmailConnector):
     """No custom logic here but we want to consider this as a separate connector"""

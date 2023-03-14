@@ -94,12 +94,6 @@ class ManualAction(BaseSchema):
     update: Optional[Dict[str, Any]]
 
 
-class ErasureRequestBodyParams(BaseSchema):
-    controller: str
-    third_party_vendor_name: str
-    identities: List[str]
-
-
 class CheckpointActionRequired(BaseSchema):
     """Describes actions needed on a particular checkpoint.
 

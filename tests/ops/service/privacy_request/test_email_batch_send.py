@@ -11,9 +11,9 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
-    ExtendedConsentEmailSchema,
+    ExtendedEmailSchema,
     ExtendedIdentityTypes,
 )
 from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
@@ -21,7 +21,7 @@ from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.privacy_request.email_batch_service import (
     BatchedUserConsentData,
-    ConsentEmailExitState,
+    EmailExitState,
     add_batched_user_preferences_to_emails,
     requeue_privacy_requests_after_email_send,
     send_email_batch,
@@ -72,7 +72,7 @@ class TestConsentEmailBatchSend:
         send_single_consent_email,
     ) -> None:
         exit_state = send_email_batch.delay().get()
-        assert exit_state == ConsentEmailExitState.no_applicable_privacy_requests
+        assert exit_state == EmailExitState.no_applicable_privacy_requests
 
         assert not send_single_consent_email.called
         assert not requeue_privacy_requests.called
@@ -90,7 +90,7 @@ class TestConsentEmailBatchSend:
         send_single_consent_email,
     ) -> None:
         exit_state = send_email_batch.delay().get()
-        assert exit_state == ConsentEmailExitState.no_applicable_connectors
+        assert exit_state == EmailExitState.no_applicable_connectors
 
         assert not send_single_consent_email.called
         assert requeue_privacy_requests.called
@@ -109,7 +109,7 @@ class TestConsentEmailBatchSend:
         send_single_consent_email,
     ) -> None:
         exit_state = send_email_batch.delay().get()
-        assert exit_state == ConsentEmailExitState.complete
+        assert exit_state == EmailExitState.complete
 
         assert not send_single_consent_email.called
         assert requeue_privacy_requests.called
@@ -131,7 +131,7 @@ class TestConsentEmailBatchSend:
         privacy_request_awaiting_email_send.cache_identity(identity)
 
         exit_state = send_email_batch.delay().get()
-        assert exit_state == ConsentEmailExitState.complete
+        assert exit_state == EmailExitState.complete
 
         assert not send_single_consent_email.called
         assert requeue_privacy_requests.called
@@ -159,7 +159,7 @@ class TestConsentEmailBatchSend:
         privacy_request_awaiting_email_send.save(db)
 
         exit_state = send_email_batch.delay().get()
-        assert exit_state == ConsentEmailExitState.email_send_failed
+        assert exit_state == EmailExitState.email_send_failed
 
         assert not requeue_privacy_requests.called
         email_audit_log: AuditLog = AuditLog.filter(
@@ -190,7 +190,7 @@ class TestConsentEmailBatchSend:
             privacy_request_awaiting_email_send, db, "12345"
         )
         exit_state = send_email_batch.delay().get()
-        assert exit_state == ConsentEmailExitState.complete
+        assert exit_state == EmailExitState.complete
 
         assert send_single_consent_email.called
         assert requeue_privacy_requests.called
@@ -259,7 +259,7 @@ class TestConsentEmailBatchSend:
             second_privacy_request_awaiting_email_send, db, "abcde"
         )
         exit_state = send_email_batch.delay().get()
-        assert exit_state == ConsentEmailExitState.complete
+        assert exit_state == EmailExitState.complete
 
         assert send_single_consent_email.called
         assert requeue_privacy_requests.called
@@ -336,7 +336,7 @@ class TestConsentEmailBatchSendHelperFunctions:
 
         assert starting_resources == [
             BatchedUserConsentData(
-                connection_secrets=ExtendedConsentEmailSchema(
+                connection_secrets=ExtendedEmailSchema(
                     third_party_vendor_name="Sovrn",
                     recipient_email_address=sovrn_email_connection_config.secrets[
                         "recipient_email_address"
@@ -428,11 +428,11 @@ class TestConsentEmailBatchSendHelperFunctions:
         assert run_privacy_request.called
 
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.needs_email_send",
+        "fides.api.ops.service.privacy_request.request_runner_service.needs_batch_email_send",
     )
     def test_requeue_privacy_requests_after_email_send(
         self,
-        needs_email_send_check,
+        needs_batch_email_send_check,
         db,
         privacy_request_awaiting_email_send,
     ):
@@ -451,7 +451,7 @@ class TestConsentEmailBatchSendHelperFunctions:
         )
 
         assert (
-            not needs_email_send_check.called
+            not needs_batch_email_send_check.called
         ), "Privacy request is resumed after this point"
 
     @mock.patch(
@@ -467,7 +467,7 @@ class TestConsentEmailBatchSendHelperFunctions:
         """Test that connectors that have no relevant data to be sent are skipped"""
         batched_user_data = [
             BatchedUserConsentData(
-                connection_secrets=ExtendedConsentEmailSchema(
+                connection_secrets=ExtendedEmailSchema(
                     third_party_vendor_name="Sovrn",
                     recipient_email_address=sovrn_email_connection_config.secrets[
                         "recipient_email_address"
@@ -497,7 +497,7 @@ class TestConsentEmailBatchSendHelperFunctions:
                 ],
             ),
             BatchedUserConsentData(
-                connection_secrets=ExtendedConsentEmailSchema(
+                connection_secrets=ExtendedEmailSchema(
                     third_party_vendor_name="Dawn's Bakery",
                     recipient_email_address="dawnsbakery@example.com",
                     test_email_address="company@example.com",

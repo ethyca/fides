@@ -4,9 +4,9 @@ import pytest
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionTestStatus
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
-    ExtendedConsentEmailSchema,
+    ExtendedEmailSchema,
     ExtendedIdentityTypes,
 )
 from fides.api.ops.schemas.messaging.messaging import (
@@ -15,7 +15,6 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.service.connectors.consent_email_connector import (
-    GenericEmailConsentConnector,
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_consent_email,
@@ -25,8 +24,8 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
 )
 
 
-class TestEmailConsentConnectorMethods:
-    email_and_ljt_readerID_defined = ExtendedConsentEmailSchema(
+class TestConsentEmailConnectorMethods:
+    email_and_ljt_readerID_defined = ExtendedEmailSchema(
         third_party_vendor_name="Dawn's Bookstore",
         recipient_email_address="test@example.com",
         advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
@@ -36,7 +35,7 @@ class TestEmailConsentConnectorMethods:
         ),
     )
 
-    phone_defined = ExtendedConsentEmailSchema(
+    phone_defined = ExtendedEmailSchema(
         third_party_vendor_name="Dawn's Bookstore",
         recipient_email_address="test@example.com",
         advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
@@ -46,7 +45,7 @@ class TestEmailConsentConnectorMethods:
         ),
     )
 
-    ljt_readerID_defined = ExtendedConsentEmailSchema(
+    ljt_readerID_defined = ExtendedEmailSchema(
         third_party_vendor_name="Dawn's Bookstore",
         recipient_email_address="test@example.com",
         advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
@@ -251,7 +250,7 @@ class TestEmailConsentConnectorMethods:
                 {"ljt_readerID": "test_ljt_reader_id"},
                 privacy_request_with_consent_policy,
             )
-            == True
+            is True
         )
 
     def test_needs_email_without_consent_preferences(
@@ -265,7 +264,7 @@ class TestEmailConsentConnectorMethods:
                 {"ljt_readerID": "test_ljt_reader_id"},
                 privacy_request_with_consent_policy,
             )
-            == False
+            is False
         )
 
     def test_needs_email_without_consent_rules(
@@ -276,7 +275,7 @@ class TestEmailConsentConnectorMethods:
                 {"ljt_readerID": "test_ljt_reader_id"},
                 privacy_request,
             )
-            == False
+            is False
         )
 
     def test_needs_email_unsupported_identity(
@@ -290,11 +289,11 @@ class TestEmailConsentConnectorMethods:
                 {"email": "test@example.com"},
                 privacy_request_with_consent_policy,
             )
-            == False
+            is False
         )
 
 
-class TestSovrnEmailConsentConnector:
+class TestSovrnConnector:
     def test_generic_identities_for_test_email_property(
         self, sovrn_email_connection_config
     ):

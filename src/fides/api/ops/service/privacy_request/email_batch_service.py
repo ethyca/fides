@@ -1,23 +1,12 @@
 from enum import Enum
-from typing import Any, Dict, List
 
 from loguru import logger
-from pydantic import BaseModel
 from sqlalchemy.orm import Query, Session
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.policy import ActionType, CurrentStep, Policy, Rule
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
-    ExtendedConsentEmailSchema,
-)
-from fides.api.ops.schemas.messaging.messaging import ConsentPreferencesByUser
 from fides.api.ops.service.connectors import get_connector
-from fides.api.ops.service.connectors.consent_email_connector import (
-    filter_user_identities_for_connector,
-    get_identity_types_for_connector,
-    send_single_consent_email,
-)
 from fides.api.ops.service.privacy_request.request_runner_service import (
     get_consent_email_connection_configs,
     get_erasure_email_connection_configs,
@@ -26,23 +15,12 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
 from fides.api.ops.tasks import DatabaseTask, celery_app
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.core.config import get_config
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 CONFIG = get_config()
 BATCH_EMAIL_SEND = "batch_email_send"
 
 
-class BatchedUserConsentData(BaseModel):
-    """Schema to store the batched user consent preferences for each connector"""
-
-    connection_name: str
-    required_identities: List[str]
-    connection_secrets: ExtendedConsentEmailSchema
-    batched_user_consent_preferences: List[ConsentPreferencesByUser] = []
-    skipped_privacy_requests: List[str] = []
-
-
-class ConsentEmailExitState(Enum):
+class EmailExitState(Enum):
     """A schema to describe where the consent email send process exited.
     For logging and testing"""
 
@@ -53,116 +31,8 @@ class ConsentEmailExitState(Enum):
     complete = "complete"
 
 
-def stage_resource_per_connector(
-    consent_email_connection_configs: Query,
-) -> List[BatchedUserConsentData]:
-    """
-    Build a starting resource for each consent email connector that we'll use to gather all the
-    relevant user identities and consent preferences to send in a single email.
-    """
-    batched_email_data: List[BatchedUserConsentData] = []
-
-    for connection_config in consent_email_connection_configs:
-        secrets: ExtendedConsentEmailSchema = ExtendedConsentEmailSchema(
-            **connection_config.secrets or {}
-        )
-        batched_email_data.append(
-            BatchedUserConsentData(
-                connection_secrets=secrets,
-                connection_name=connection_config.name,
-                required_identities=get_identity_types_for_connector(secrets),
-            )
-        )
-    return batched_email_data
-
-
-def add_batched_user_preferences_to_emails(
-    privacy_requests: Query, batched_user_data: List[BatchedUserConsentData]
-) -> None:
-    """
-    Collect user identities and consent preferences across privacy requests for each applicable connector
-
-    ! Edits batched_user_data in place
-    """
-    for privacy_request in privacy_requests:
-        user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
-
-        for pending_email in batched_user_data:
-            filtered_user_identities: Dict[
-                str, Any
-            ] = filter_user_identities_for_connector(
-                pending_email.connection_secrets, user_identities
-            )
-
-            if filtered_user_identities and privacy_request.consent_preferences:
-                pending_email.batched_user_consent_preferences.append(
-                    ConsentPreferencesByUser(
-                        identities=filtered_user_identities,
-                        consent_preferences=privacy_request.consent_preferences,
-                    )
-                )
-            else:
-                pending_email.skipped_privacy_requests.append(privacy_request.id)
-
-
-def send_prepared_consent_emails(
-    db: Session,
-    batched_user_data: List[BatchedUserConsentData],
-    privacy_requests: Query,
-) -> int:
-    """Send a single consent email for each connector using the prepared data in batched_user_data
-
-    Also add audit logs to each relevant privacy request.
-    """
-    emails_sent: int = 0
-    for pending_email in batched_user_data:
-        if not pending_email.batched_user_consent_preferences:
-            logger.info(
-                "Skipping consent email send for connector: '{}'. "
-                "No corresponding user identities found for pending privacy requests.",
-                pending_email.connection_name,
-            )
-            continue
-
-        logger.info(
-            "Sending batched consent email for connector {}...",
-            pending_email.connection_name,
-        )
-        send_single_consent_email(
-            db=db,
-            subject_email=pending_email.connection_secrets.recipient_email_address,
-            subject_name=pending_email.connection_secrets.third_party_vendor_name,
-            required_identities=pending_email.required_identities,
-            user_consent_preferences=pending_email.batched_user_consent_preferences,
-            test_mode=False,
-        )
-
-        for privacy_request in privacy_requests:
-            if privacy_request.id not in pending_email.skipped_privacy_requests:
-                AuditLog.create(
-                    db=db,
-                    data={
-                        "user_id": "system",
-                        "privacy_request_id": privacy_request.id,
-                        "action": AuditLogAction.email_sent,
-                        "message": f"Consent email instructions dispatched for '{pending_email.connection_name}'",
-                    },
-                )
-
-        if pending_email.skipped_privacy_requests:
-            logger.info(
-                "Skipping email send for the following privacy request ids: "
-                "{} on connector '{}': no matching identities detected.",
-                pending_email.skipped_privacy_requests,
-                pending_email.connection_name,
-            )
-
-        emails_sent += 1
-    return emails_sent
-
-
 @celery_app.task(base=DatabaseTask, bind=True)
-def send_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
+def send_email_batch(self: DatabaseTask) -> EmailExitState:
     """Sends emails for each relevant connector with applicable user details batched together."""
 
     logger.info("Starting batched email send...")
@@ -174,9 +44,9 @@ def send_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
         if not privacy_requests.first():
             logger.info(
                 "Skipping batch email send with status: {}",
-                ConsentEmailExitState.no_applicable_privacy_requests.value,
+                EmailExitState.no_applicable_privacy_requests.value,
             )
-            return ConsentEmailExitState.no_applicable_privacy_requests
+            return EmailExitState.no_applicable_privacy_requests
 
         consent_configs: Query = get_consent_email_connection_configs(session)
         erasure_configs: Query = get_erasure_email_connection_configs(session)
@@ -185,49 +55,41 @@ def send_email_batch(self: DatabaseTask) -> ConsentEmailExitState:
             requeue_privacy_requests_after_email_send(privacy_requests, session)
             logger.info(
                 "Skipping batch email send with status: {}",
-                ConsentEmailExitState.no_applicable_connectors.value,
+                EmailExitState.no_applicable_connectors.value,
             )
-            return ConsentEmailExitState.no_applicable_connectors
-
-        batched_user_data: List[BatchedUserConsentData] = stage_resource_per_connector(
-            consent_configs
-        )
-        add_batched_user_preferences_to_emails(privacy_requests, batched_user_data)
+            return EmailExitState.no_applicable_connectors
 
         try:
             # erasure
-            erasure_email_connection_configs: Query = (
-                get_erasure_email_connection_configs(session)
-            )
-            for connection_config in erasure_email_connection_configs:
-                get_connector(connection_config).send_erasure_email(  # type: ignore
+            for connection_config in erasure_configs:
+                get_connector(connection_config).batch_email_send(  # type: ignore
                     filter_privacy_requests_by_action_type(
                         privacy_requests, ActionType.erasure
                     )
                 )
 
             # consent
-            send_prepared_consent_emails(
-                session,
-                batched_user_data,
-                filter_privacy_requests_by_action_type(
-                    privacy_requests, ActionType.consent
-                ),
-            )
+            for connection_config in consent_configs:
+                get_connector(connection_config).batch_email_send(  # type: ignore
+                    filter_privacy_requests_by_action_type(
+                        privacy_requests, ActionType.consent
+                    )
+                )
         except MessageDispatchException as exc:
             logger.error(
-                "Consent email send for connector failed with exception: '{}'",
+                "Batch email send for connector failed with exception: '{}'",
                 exc,
             )
-            return ConsentEmailExitState.email_send_failed
+            return EmailExitState.email_send_failed
 
     requeue_privacy_requests_after_email_send(privacy_requests, session)
-    return ConsentEmailExitState.complete
+    return EmailExitState.complete
 
 
 def filter_privacy_requests_by_action_type(
     privacy_requests: Query, action_type: ActionType
 ) -> Query:
+    """Applies a filter for the specific Rule.action_type to the passed in privacy_requests."""
     return (
         privacy_requests.join(Policy, PrivacyRequest.policy_id == Policy.id)
         .join(Rule, Policy.id == Rule.policy_id)

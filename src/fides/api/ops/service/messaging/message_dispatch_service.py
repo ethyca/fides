@@ -19,7 +19,6 @@ from fides.api.ops.models.messaging import (  # type: ignore[attr-defined]
     get_messaging_method,
 )
 from fides.api.ops.models.privacy_request import (
-    ErasureRequestBodyParams,
     PrivacyRequestError,
     PrivacyRequestNotifications,
 )
@@ -27,6 +26,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     ConsentEmailFulfillmentBodyParams,
     EmailForActionType,
+    ErasureRequestBodyParams,
     ErrorNotificationBodyParams,
     FidesopsMessage,
     MessagingActionType,

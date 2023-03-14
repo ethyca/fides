@@ -57,7 +57,7 @@ from fides.api.ops.service.connectors import FidesConnector, get_connector
 from fides.api.ops.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
 )
-from fides.api.ops.service.connectors.email_connector import (
+from fides.api.ops.service.connectors.erasure_email_connector import (
     ERASURE_EMAIL_CONNECTOR_TYPES,
 )
 from fides.api.ops.service.connectors.fides_connector import (
@@ -426,7 +426,7 @@ async def run_privacy_request(
                 request_checkpoint=CurrentStep.email_post_send,
                 from_checkpoint=resume_step,
             )
-            and needs_email_send(session, identity_data, privacy_request)
+            and needs_batch_email_send(session, identity_data, privacy_request)
         ):
             privacy_request.pause_processing_for_email_send(session)
             logger.info(
@@ -677,7 +677,7 @@ def get_erasure_email_connection_configs(db: Session) -> Query:
     )
 
 
-def needs_email_send(
+def needs_batch_email_send(
     db: Session, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
 ) -> bool:
     """

@@ -25,9 +25,6 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email imp
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     EmailSchema as EmailSchema,
 )
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
-    ConsentEmailSchema as ConsentEmailSchema,
-)
 from fides.api.ops.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
     FidesDocsSchema,
@@ -104,7 +101,6 @@ from fides.api.ops.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 secrets_schemas: Dict[str, Any] = {
     ConnectionType.attentive.value: AttentiveSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
-    ConnectionType.email.value: EmailSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
     ConnectionType.https.value: HttpsSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,

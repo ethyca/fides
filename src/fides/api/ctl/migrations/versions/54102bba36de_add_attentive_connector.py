@@ -46,6 +46,7 @@ def upgrade():
 
 def downgrade():
     # Remove attentive from the connectiontype enum
+    op.execute("delete from connectionconfig where connectiontype in ('attentive')")
     op.execute("alter type connectiontype rename to connectiontype_old")
     op.execute(
         "create type connectiontype as enum('postgres', 'mongodb', 'mysql', 'https', "

@@ -52,7 +52,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
-    needs_email_send,
+    needs_batch_email_send,
     run_webhooks_and_report_status,
 )
 from fides.api.ops.util.data_category import DataCategory
@@ -2072,43 +2072,43 @@ class TestConsentEmailStep:
         )
         assert privacy_request_with_consent_policy.awaiting_email_send_at is not None
 
-    def test_needs_email_send_no_consent_preferences(
+    def test_needs_batch_email_send_no_consent_preferences(
         self, db, privacy_request_with_consent_policy
     ):
-        assert not needs_email_send(
+        assert not needs_batch_email_send(
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
 
-    def test_needs_email_send_no_email_consent_connections(
+    def test_needs_batch_email_send_no_email_consent_connections(
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
             Consent(data_use="advertising", opt_in=False).dict()
         ]
         privacy_request_with_consent_policy.save(db)
-        assert not needs_email_send(
-            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
-        )
-
-    @pytest.mark.usefixtures("sovrn_email_connection_config")
-    def test_needs_email_send_no_relevant_identities(
-        self, db, privacy_request_with_consent_policy
-    ):
-        privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
-        ]
-        privacy_request_with_consent_policy.save(db)
-        assert not needs_email_send(
+        assert not needs_batch_email_send(
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
-    def test_needs_email_send(self, db, privacy_request_with_consent_policy):
+    def test_needs_batch_email_send_no_relevant_identities(
+        self, db, privacy_request_with_consent_policy
+    ):
         privacy_request_with_consent_policy.consent_preferences = [
             Consent(data_use="advertising", opt_in=False).dict()
         ]
         privacy_request_with_consent_policy.save(db)
-        assert needs_email_send(
+        assert not needs_batch_email_send(
+            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
+        )
+
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_needs_batch_email_send(self, db, privacy_request_with_consent_policy):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        privacy_request_with_consent_policy.save(db)
+        assert needs_batch_email_send(
             db,
             {"email": "customer-1@example.com", "ljt_readerID": "12345"},
             privacy_request_with_consent_policy,

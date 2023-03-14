@@ -16,7 +16,6 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
-    EmailConnector,
     FidesConnector,
     ManualConnector,
     MariaDBConnector,
@@ -29,7 +28,7 @@ from fides.api.ops.service.connectors import (
     SnowflakeConnector,
     TimescaleConnector,
 )
-from fides.api.ops.service.connectors.base_connector import LimitedConnector
+from fides.api.ops.service.connectors.base_email_connector import BaseEmailConnector
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import Row
 
@@ -38,11 +37,11 @@ class Connections:
     """Temporary container for connections. This will be replaced."""
 
     def __init__(self) -> None:
-        self.connections: Dict[str, Union[BaseConnector, LimitedConnector]] = {}
+        self.connections: Dict[str, Union[BaseConnector, BaseEmailConnector]] = {}
 
     def get_connector(
         self, connection_config: ConnectionConfig
-    ) -> Union[BaseConnector, LimitedConnector]:
+    ) -> Union[BaseConnector, BaseEmailConnector]:
         """Return the connector corresponding to this config. Will return the existing
         connector or create one if it does not yet exist."""
         key = connection_config.key
@@ -54,7 +53,7 @@ class Connections:
     @staticmethod
     def build_connector(  # pylint: disable=R0911,R0912
         connection_config: ConnectionConfig,
-    ) -> Union[BaseConnector, LimitedConnector]:
+    ) -> Union[BaseConnector, BaseEmailConnector]:
         """Factory method to build the appropriately typed connector from the config."""
         if connection_config.connection_type == ConnectionType.postgres:
             return PostgreSQLConnector(connection_config)
@@ -76,8 +75,6 @@ class Connections:
             return SaaSConnector(connection_config)
         if connection_config.connection_type == ConnectionType.manual:
             return ManualConnector(connection_config)
-        if connection_config.connection_type == ConnectionType.email:
-            return EmailConnector(connection_config)
         if connection_config.connection_type == ConnectionType.timescale:
             return TimescaleConnector(connection_config)
         if connection_config.connection_type == ConnectionType.fides:
@@ -89,7 +86,7 @@ class Connections:
     def close(self) -> None:
         """Close all held connection resources."""
         for connector in self.connections.values():
-            # Connectors extending LimitedConnector do not implement the close function
+            # Connectors extending BaseEmailConnector do not implement the close function
             if isinstance(connector, BaseConnector):
                 connector.close()
 

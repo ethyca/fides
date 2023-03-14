@@ -1,53 +1,79 @@
-import abc
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
-from fides.api.ops.schemas.connection_configuration.connection_secrets import (
-    ConnectionConfigSecretsSchema,
-)
 
 
-class EmailSchema(BaseModel, abc.ABC):
-    """Abstract base schema for updating email configuration secrets"""
+class IdentityTypes(BaseModel):
+    email: bool
+    phone_number: bool
+
+
+class AdvancedSettings(BaseModel):
+    identity_types: IdentityTypes
+
+
+class EmailSchema(BaseModel):
+    """Schema to validate the secrets needed for a generic email connector"""
 
     third_party_vendor_name: str
     recipient_email_address: str
     test_email_address: Optional[str]  # Email to send a connection test email
-
-    _required_components: List[str] = [
-        "third_party_vendor_name",
-        "recipient_email_address",
-    ]
-
-    def __init_subclass__(cls: BaseModel, **kwargs: Any):  # type: ignore
-        super().__init_subclass__(**kwargs)  # type: ignore
-        if not getattr(cls, "_required_components"):
-            raise TypeError(f"Class {cls.__name__} must define '_required_components.'")  # type: ignore
-
-    @root_validator
-    @classmethod
-    def required_components_supplied(  # type: ignore
-        cls: ConnectionConfigSecretsSchema, values: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Validate that the minimum required components have been supplied."""
-        min_fields_present = all(
-            values.get(component) for component in cls._required_components
-        )
-        if not min_fields_present:
-            raise ValueError(
-                f"{cls.__name__} must be supplied all of: {cls._required_components}."  # type: ignore
-            )
-
-        return values
+    advanced_settings: AdvancedSettings
 
     class Config:
         """Only permit selected secret fields to be stored."""
 
-        extra = Extra.ignore
+        extra = Extra.forbid
         orm_mode = True
+
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """At least one identity or browser identity needs to be specified on setup"""
+        advanced_settings = values.get("advanced_settings")
+        if not advanced_settings:
+            raise ValueError("Must supply advanced settings.")
+
+        identities = advanced_settings.identity_types
+        if not identities.email and not identities.phone_number:
+            raise ValueError("Must supply at least one identity_type.")
+        return values
 
 
 class EmailDocsSchema(EmailSchema, NoValidationSchema):
     """EmailDocsSchema Secrets Schema for API Docs"""
+
+
+class ExtendedIdentityTypes(IdentityTypes):
+    """Overrides basic IdentityTypes to add cookie_ids"""
+
+    cookie_ids: List[str] = []
+
+
+class AdvancedSettingsWithExtendedIdentityTypes(AdvancedSettings):
+    """Overrides base AdvancedSettings to have extended IdentityTypes"""
+
+    identity_types: ExtendedIdentityTypes
+
+
+class ExtendedEmailSchema(EmailSchema):
+    """Email schema used to unpack secrets for all email connector types (both generic, Sovrn, etc.)"""
+
+    advanced_settings: AdvancedSettingsWithExtendedIdentityTypes
+
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """At least one identity or browser identity needs to be specified on setup"""
+        advanced_settings = values.get("advanced_settings")
+        if not advanced_settings:
+            raise ValueError("Must supply advanced settings.")
+
+        identities = advanced_settings.identity_types
+        if (
+            not identities.email
+            and not identities.phone_number
+            and not identities.cookie_ids
+        ):
+            raise ValueError("Must supply at least one identity_type.")
+        return values
