@@ -2,9 +2,13 @@ import {
   Box,
   Button,
   ButtonGroup,
-  Flex, HStack, IconButton,
+  Flex,
+  HStack,
+  IconButton,
   Stack,
-  Text, TrashCanSolidIcon, useDisclosure,
+  Text,
+  TrashCanSolidIcon,
+  useDisclosure,
   useToast,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
@@ -13,6 +17,7 @@ import { useAPIHelper } from "common/hooks";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import React from "react";
+import DeleteUserModal from "user-management/DeleteUserModal";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -21,7 +26,6 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { successToastParams } from "~/features/common/toast";
 
-import DeleteUserModal from "user-management/DeleteUserModal";
 import PasswordManagement from "./PasswordManagement";
 import { User } from "./types";
 import { selectActiveUserId, setActiveUserId } from "./user-management.slice";
@@ -46,8 +50,7 @@ export interface Props {
   user?: User;
   onSubmit: (values: FormValues) => Promise<
     | void
-    |
-      {
+    | {
         data: User;
       }
     | {
@@ -115,16 +118,16 @@ const UserForm = ({
                   <HStack>
                     <PasswordManagement />
                     {!isNewUser && user ? (
-                        <Box>
-                          <IconButton
-                              aria-label="delete"
-                              icon={<TrashCanSolidIcon />}
-                              size="xs"
-                              onClick={deleteModal.onOpen}
-                              data-testid="delete-user-btn"
-                          />
-                          <DeleteUserModal user={user} {...deleteModal} />
-                        </Box>
+                      <Box>
+                        <IconButton
+                          aria-label="delete"
+                          icon={<TrashCanSolidIcon />}
+                          size="xs"
+                          onClick={deleteModal.onOpen}
+                          data-testid="delete-user-btn"
+                        />
+                        <DeleteUserModal user={user} {...deleteModal} />
+                      </Box>
                     ) : null}
                   </HStack>
                 </Box>

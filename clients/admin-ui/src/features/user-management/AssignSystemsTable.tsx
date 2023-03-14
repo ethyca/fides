@@ -4,26 +4,29 @@ import {
   Switch,
   Table,
   Tbody,
-  Td, Text,
+  Td,
+  Text,
   Th,
   Thead,
   Tr,
   TrashCanSolidIcon,
-  useDisclosure, useToast,
+  useDisclosure,
+  useToast,
 } from "@fidesui/react";
+import ConfirmationModal from "common/ConfirmationModal";
+import { getErrorMessage } from "common/helpers";
+import { errorToastParams, successToastParams } from "common/toast";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { System } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
-import ConfirmationModal from "common/ConfirmationModal";
-import {isErrorResult} from "~/types/errors";
-import {errorToastParams, successToastParams} from "common/toast";
-import {getErrorMessage} from "common/helpers";
 import {
   selectActiveUserId,
   selectActiveUsersManagedSystems,
-  useGetUserManagedSystemsQuery, useRemoveUserManagedSystemMutation,
+  useGetUserManagedSystemsQuery,
+  useRemoveUserManagedSystemMutation,
 } from "./user-management.slice";
 
 export const AssignSystemsDeleteTable = () => {
@@ -84,16 +87,14 @@ export const AssignSystemsDeleteTable = () => {
                 data-testid="unassign-btn"
               />
               <ConfirmationModal
-                  isOpen={deleteIsOpen}
-                  onClose={onDeleteClose}
-                  onConfirm={() => handleDelete(system)}
-                  title="Delete System"
-                  continueButtonText="Yes, Remove System"
-                  message={
-                      <Text>
-                        Are you sure you want to remove this system?
-                      </Text>
-                  }
+                isOpen={deleteIsOpen}
+                onClose={onDeleteClose}
+                onConfirm={() => handleDelete(system)}
+                title="Delete System"
+                continueButtonText="Yes, Remove System"
+                message={
+                  <Text>Are you sure you want to remove this system?</Text>
+                }
               />
             </Td>
           </Tr>

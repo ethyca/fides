@@ -23,8 +23,11 @@ const NewUserForm = () => {
 
   const handleSubmit = async (values: FormValues) => {
     const b64Password = utf8ToB64(values.password);
-    const result = await createUser({ ...values, password: b64Password }).unwrap();
-    console.log(result)
+    const result = await createUser({
+      ...values,
+      password: b64Password,
+    }).unwrap();
+    console.log(result);
     router.push(`${USER_MANAGEMENT_ROUTE}/profile/${result.id}`);
   };
   return (
