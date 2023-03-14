@@ -76,7 +76,11 @@ const PermissionsForm = () => {
     : defaultInitialValues;
 
   return (
-    <Formik onSubmit={handleSubmit} initialValues={initialValues}>
+    <Formik
+      onSubmit={handleSubmit}
+      initialValues={initialValues}
+      enableReinitialize
+    >
       {({ values, isSubmitting, dirty }) => (
         <Form>
           <Stack spacing={7}>
