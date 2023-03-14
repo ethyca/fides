@@ -23,6 +23,10 @@ The types of changes are:
 
 * Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
 
+### Fixed
+
+* Fixed issue where more than 1 populated custom fields removed a system from the datamap export [#2825](https://github.com/ethyca/fides/pull/2825)
+
 ## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
 
 ### Fixed
