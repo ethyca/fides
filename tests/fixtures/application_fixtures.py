@@ -15,6 +15,7 @@ from toml import load as load_toml
 from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ctl.sql_models import System
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -71,6 +72,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.roles import VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -1643,13 +1645,35 @@ def authenticated_fides_client(
 
 
 @pytest.fixture(scope="function")
-def system(db: Session) -> System:
-    system = System.create(
+def system_manager(db: Session, system) -> System:
+    user = FidesUser.create(
         db=db,
         data={
-            "fides_key": f"system_key-f{uuid4()}",
-            "name": f"system-{uuid4()}",
-            "description": "fixture-made-system",
+            "username": "test_system_manager_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
         },
     )
-    return system
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER],
+        user_id=user.id,
+        systems=[system.id],
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [], "roles": []}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+
+    user.set_as_system_manager(db, system)
+    yield user
+    try:
+        user.remove_as_system_manager(db, system)
+    except SystemManagerException:
+        pass
+    user.delete(db)

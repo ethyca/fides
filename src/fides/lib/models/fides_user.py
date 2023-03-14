@@ -1,15 +1,25 @@
+# pylint: disable=unused-import
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any, List
 
 from citext import CIText
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.orm import Session, relationship
 
+from fides.api.ops.common_exceptions import SystemManagerException
+
+# Intentionally importing SystemManager here to build the FidesUser.systems relationship
+from fides.api.ops.models.system_manager import (  # type: ignore[unused-import]
+    SystemManager,
+)
 from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from fides.lib.db.base_class import Base
 from fides.lib.models.audit_log import AuditLog
+
+if TYPE_CHECKING:
+    from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 
 
 class FidesUser(Base):
@@ -37,6 +47,12 @@ class FidesUser(Base):
     client = relationship(  # type: ignore
         "ClientDetail", backref="user", cascade="all, delete", uselist=False
     )
+
+    systems = relationship("System", secondary="systemmanager", back_populates="users")  # type: ignore
+
+    @property
+    def system_ids(self) -> List[str]:
+        return [system.id for system in self.systems]
 
     @classmethod
     def hash_password(cls, password: str, encoding: str = "UTF-8") -> tuple[str, str]:
@@ -87,3 +103,45 @@ class FidesUser(Base):
         self.salt = salt  # type: ignore
         self.password_reset_at = datetime.utcnow()  # type: ignore
         self.save(db)
+
+    def set_as_system_manager(self, db: Session, system: System) -> None:
+        """Add a user as one of the system managers for the given system
+        If applicable, also update the systems on the user's client
+        """
+        if (
+            not type(system).__name__ == "System"
+        ):  # Checking type instead of with isinstance to avoid import errors
+            raise SystemManagerException(
+                "Must pass in a system to set user as system manager."
+            )
+
+        if self in system.users:
+            raise SystemManagerException(
+                f"User '{self.username}' is already a system manager of '{system.name}'."
+            )
+
+        self.systems.append(system)
+        self.save(db=db)
+
+        if self.client:
+            self.client.update(db=db, data={"systems": self.system_ids})
+
+    def remove_as_system_manager(self, db: Session, system: System) -> None:
+        """Remove a user as one of the system managers for the given system
+        If applicable, also update the systems on the user's client
+        """
+        if not type(system).__name__ == "System":
+            raise SystemManagerException(
+                "Must pass in a system to remove user as system manager."
+            )
+
+        try:
+            self.systems.remove(system)
+            self.save(db=db)
+        except ValueError:
+            raise SystemManagerException(
+                f"User '{self.username}' is not a manager of system '{system.name}'."
+            )
+
+        if self.client:
+            self.client.update(db=db, data={"systems": self.system_ids})

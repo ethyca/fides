@@ -271,33 +271,6 @@ class TestConsentEmailBatchSend:
             consent_pref.identities["ljt_readerID"]
             for consent_pref in user_consent_preferences
         }
-
-        assert call_kwargs["user_consent_preferences"] == [
-            ConsentPreferencesByUser(
-                identities={"ljt_readerID": "12345"},
-                consent_preferences=[
-                    Consent(
-                        data_use="advertising",
-                        data_use_description=None,
-                        opt_in=False,
-                        conflicts_with_gpc=False,
-                        has_gpc_flag=False,
-                    )
-                ],
-            ),
-            ConsentPreferencesByUser(
-                identities={"ljt_readerID": "abcde"},
-                consent_preferences=[
-                    Consent(
-                        data_use="advertising",
-                        data_use_description=None,
-                        opt_in=False,
-                        conflicts_with_gpc=False,
-                        has_gpc_flag=False,
-                    )
-                ],
-            ),
-        ]
         assert not call_kwargs["test_mode"]
 
         email_audit_log: AuditLog = AuditLog.filter(

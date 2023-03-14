@@ -1,13 +1,12 @@
 """adds MAILCHIMP_TRANSACTIONAL enum
 
 Revision ID: 39b209861471
-Revises: eb1e6ec39b83
+Revises: 9f38dad37628
 Create Date: 2023-03-03 21:57:14.368385
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "39b209861471"
