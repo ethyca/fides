@@ -2,9 +2,9 @@ import {
   Box,
   Button,
   ButtonGroup,
-  Flex,
+  Flex, HStack, IconButton,
   Stack,
-  Text,
+  Text, TrashCanSolidIcon, useDisclosure,
   useToast,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
@@ -21,6 +21,7 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { successToastParams } from "~/features/common/toast";
 
+import DeleteUserModal from "user-management/DeleteUserModal";
 import PasswordManagement from "./PasswordManagement";
 import { User } from "./types";
 import { selectActiveUserId, setActiveUserId } from "./user-management.slice";
@@ -67,6 +68,7 @@ const UserForm = ({
 }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const deleteModal = useDisclosure();
 
   const { handleError } = useAPIHelper();
   const activeUserId = useAppSelector(selectActiveUserId);
@@ -110,7 +112,21 @@ const UserForm = ({
                   Profile
                 </Text>
                 <Box marginLeft="auto">
-                  <PasswordManagement user={user} isNewUser={isNewUser} />
+                  <HStack>
+                    <PasswordManagement />
+                    {!isNewUser && user ? (
+                        <Box>
+                          <IconButton
+                              aria-label="delete"
+                              icon={<TrashCanSolidIcon />}
+                              size="xs"
+                              onClick={deleteModal.onOpen}
+                              data-testid="delete-user-btn"
+                          />
+                          <DeleteUserModal user={user} {...deleteModal} />
+                        </Box>
+                    ) : null}
+                  </HStack>
                 </Box>
               </Flex>
               <CustomTextInput
