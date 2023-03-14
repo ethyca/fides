@@ -62,6 +62,10 @@ class GenericErasureEmailConnector(BaseEmailConnector):
         db = Session.object_session(self.configuration)
 
         try:
+            if not self.config.test_email_address:
+                raise MessageDispatchException(
+                    f"Cannot test connection. No test email defined for {self.configuration.name}"
+                )
             # synchronous for now since failure to send is considered a connection test failure
             send_single_erasure_email(
                 db=db,
