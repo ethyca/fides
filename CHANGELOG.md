@@ -22,7 +22,7 @@ The types of changes are:
 * Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
 * The ability to assign users as system managers for a specific system [#2714](https://github.com/ethyca/fides/pull/2714)
 * New endpoints to add and remove users as system managers [#2726](https://github.com/ethyca/fides/pull/2726)
-
+* Add an automated migration to give users a `viewer` role [#2821](https://github.com/ethyca/fides/pull/2821)
 
 ### Changed
 
