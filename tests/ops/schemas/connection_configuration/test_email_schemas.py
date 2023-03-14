@@ -1,9 +1,6 @@
 import pytest
 
-from fides.api.ops.schemas.connection_configuration import (
-    ConsentEmailSchema,
-    SovrnSchema,
-)
+from fides.api.ops.schemas.connection_configuration import SovrnSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_attentive import (
     AttentiveSchema,
 )
@@ -25,22 +22,6 @@ class TestEmailSchema:
         assert EmailSchema(
             third_party_vendor_name="Dawn's Bakery",
             recipient_email_address="test@example.com",
-        )
-
-    def test_email_schema_missing_fields(self):
-        with pytest.raises(ValueError) as exc:
-            EmailSchema()
-        assert exc.value.errors()[0]["msg"] == "field required"
-        assert exc.value.errors()[0]["loc"][0] == "third_party_vendor_name"
-        assert exc.value.errors()[1]["msg"] == "field required"
-        assert exc.value.errors()[1]["loc"][0] == "recipient_email_address"
-
-
-class TestGenericConsentEmailSchema:
-    def test_base_consent_email_schema(self):
-        assert ConsentEmailSchema(
-            third_party_vendor_name="Dawn's Bakery",
-            recipient_email_address="test@example.com",
             advanced_settings=AdvancedSettings(
                 identity_types=IdentityTypes(email=True, phone_number=False)
             ),
@@ -48,18 +29,18 @@ class TestGenericConsentEmailSchema:
 
     def test_no_identities_supplied(self):
         with pytest.raises(ValueError) as exc:
-            ConsentEmailSchema(
+            EmailSchema(
                 third_party_vendor_name="Dawn's Bakery",
                 recipient_email_address="test@example.com",
                 advanced_settings=AdvancedSettings(
                     identity_types=IdentityTypes(email=False, phone_number=False)
                 ),
             )
-        assert exc.value.errors()[0]["msg"] == "Must supply at least one identity_type"
+        assert exc.value.errors()[0]["msg"] == "Must supply at least one identity_type."
 
     def test_missing_advanced_settings(self):
         with pytest.raises(ValueError) as exc:
-            ConsentEmailSchema(
+            EmailSchema(
                 third_party_vendor_name="Dawn's Bakery",
                 recipient_email_address="test@example.com",
             )
@@ -68,7 +49,7 @@ class TestGenericConsentEmailSchema:
 
     def test_missing_third_party_vendor_name(self):
         with pytest.raises(ValueError) as exc:
-            ConsentEmailSchema(
+            EmailSchema(
                 recipient_email_address="test@example.com",
                 advanced_settings=AdvancedSettings(
                     identity_types=IdentityTypes(email=True, phone_number=False)
@@ -79,7 +60,7 @@ class TestGenericConsentEmailSchema:
 
     def test_missing_recipient(self):
         with pytest.raises(ValueError) as exc:
-            ConsentEmailSchema(
+            EmailSchema(
                 third_party_vendor_name="Dawn's Bakery",
                 advanced_settings=AdvancedSettings(
                     identity_types=IdentityTypes(email=True, phone_number=False)
@@ -90,7 +71,7 @@ class TestGenericConsentEmailSchema:
 
     def test_extra_field(self):
         with pytest.raises(ValueError) as exc:
-            ConsentEmailSchema(
+            EmailSchema(
                 third_party_vendor_name="Dawn's Bakery",
                 recipient_email_address="test@example.com",
                 advanced_settings=AdvancedSettings(
@@ -102,7 +83,7 @@ class TestGenericConsentEmailSchema:
 
 
 class TestExtendedEmailSchema:
-    def test_extended_consent_email_schema(self):
+    def test_extended_email_schema(self):
         schema = ExtendedEmailSchema(
             third_party_vendor_name="Test Vendor Name",
             test_email_address="my_email@example.com",
@@ -133,7 +114,7 @@ class TestExtendedEmailSchema:
 
 
 class TestSovrnSchema:
-    def test_base_sovrn_consent_email_schema(self):
+    def test_sovrn_email_schema(self):
         schema = SovrnSchema(
             recipient_email_address="sovrn@example.com",
             advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
@@ -152,7 +133,15 @@ class TestSovrnSchema:
 
 class TestAttentiveSchema:
     def test_attentive_email_schema(self):
-        schema = AttentiveSchema(recipient_email_address="attentive@example.com")
+        schema = AttentiveSchema(
+            recipient_email_address="attentive@example.com",
+            advanced_settings=AdvancedSettings(
+                identity_types=IdentityTypes(email=False, phone_number=False)
+            ),
+        )
         assert schema.third_party_vendor_name == "Attentive"
         assert schema.test_email_address is None
         assert schema.recipient_email_address == "attentive@example.com"
+        assert (
+            schema.advanced_settings.identity_types.email == True
+        )  # Automatically set
