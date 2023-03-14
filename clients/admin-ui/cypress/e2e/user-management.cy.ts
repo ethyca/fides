@@ -109,7 +109,7 @@ describe("User management", () => {
         cy.intercept(`/api/v1/user/${CYPRESS_USER_ID}/permission`, {
           body: {
             ...permissions,
-            scopes: permissions.scopes.filter(
+            total_scopes: permissions.total_scopes.filter(
               (scope) => scope !== "user:password-reset"
             ),
           },
@@ -240,7 +240,7 @@ describe("User management", () => {
             cy.getByTestId("unassign-btn").click();
           });
           cy.getByTestId("confirmation-modal");
-          cy.getByTestId("submit-btn").click();
+          cy.getByTestId("continue-btn").click();
           cy.wait("@removeUserManagedSystem").then((interception) => {
             const { url } = interception.request;
             expect(url).contains("fidesctl_system");
