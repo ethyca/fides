@@ -57,13 +57,9 @@ saas_config:
           param_values:
             - name: email
               identity: email
-        update:
-          method: PATCH
+        delete:
+          method: DELETE
           path: /api/v2/users/<user_id>
-          body: |
-            {
-              <masked_object_fields>
-            }
           param_values:
             - name: user_id
               references:

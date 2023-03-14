@@ -25,12 +25,10 @@ from tests.ops.test_helpers.vault_client import get_secrets
 secrets = get_secrets("auth0")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def auth0_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "auth0.domain") or secrets["domain"],
-        "access_token": pydash.get(saas_config, "auth0.access_token")
-        or secrets["access_token"],
         "client_id": pydash.get(saas_config, "auth0.client_id") or secrets["client_id"],
         "client_secret": pydash.get(saas_config, "auth0.client_secret")
         or secrets["client_secret"],
@@ -45,6 +43,20 @@ def auth0_identity_email(saas_config):
 @pytest.fixture(scope="session")
 def auth0_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
+
+@pytest.fixture(scope="session")
+def auth0_token(auth0_secrets) -> str:
+    response = requests.post(
+        url=f"https://{auth0_secrets['domain']}/oauth/token",
+        json={
+            "grant_type": "client_credentials",
+            "client_id": auth0_secrets["client_id"],
+            "client_secret": auth0_secrets["client_secret"],
+            "audience": f"https://{auth0_secrets['domain']}/api/v2/",
+        },
+    )
+    return response.json()["access_token"]
 
 
 @pytest.fixture
@@ -107,7 +119,7 @@ def auth0_dataset_config(
 
 @pytest.fixture(scope="function")
 def auth0_access_data(
-    auth0_connection_config, auth0_identity_email, auth0_secrets
+    auth0_connection_config, auth0_identity_email, auth0_secrets, auth0_token
 ) -> Generator:
     """
     Updates user password to have some data in user_logs
@@ -115,7 +127,7 @@ def auth0_access_data(
 
     base_url = f"https://{auth0_secrets['domain']}"
 
-    headers = {"Authorization": f"Bearer {auth0_secrets['access_token']}"}
+    headers = {"Authorization": f"Bearer {auth0_token}"}
     user_response = requests.get(
         url=f"{base_url}/api/v2/users-by-email?email={auth0_identity_email}",
         headers=headers,
@@ -138,7 +150,7 @@ def auth0_access_data(
 
 @pytest.fixture(scope="function")
 def auth0_erasure_data(
-    auth0_connection_config, auth0_erasure_identity_email, auth0_secrets
+    auth0_connection_config, auth0_erasure_identity_email, auth0_secrets, auth0_token
 ) -> Generator:
     """
     Creates a dynamic test data record for erasure tests.
@@ -161,7 +173,7 @@ def auth0_erasure_data(
         "password": "P@ssword123",
         "verify_email": False,
     }
-    headers = {"Authorization": f"Bearer {auth0_secrets['access_token']}"}
+    headers = {"Authorization": f"Bearer {auth0_token}"}
     users_response = requests.post(
         url=f"{base_url}/api/v2/users", json=body, headers=headers
     )
@@ -172,7 +184,7 @@ def auth0_erasure_data(
     )
     poll_for_existence(
         _user_exists,
-        (auth0_erasure_identity_email, auth0_secrets),
+        (auth0_erasure_identity_email, auth0_secrets, auth0_token),
         error_message=error_message,
     )
     yield user
@@ -187,14 +199,14 @@ def auth0_erasure_data(
     assert user_delete_response.status_code == HTTP_204_NO_CONTENT
 
 
-def _user_exists(auth0_erasure_identity_email: str, auth0_secrets):
+def _user_exists(auth0_erasure_identity_email: str, auth0_secrets, auth0_token):
     """
     Confirm whether user exists by calling user search by email API and comparing resulting firstname str.
     Returns user ID if it exists, returns None if it does not.
     """
     base_url = f"https://{auth0_secrets['domain']}"
     headers = {
-        "Authorization": f"Bearer {auth0_secrets['access_token']}",
+        "Authorization": f"Bearer {auth0_token}",
     }
 
     user_response = requests.get(
@@ -202,8 +214,4 @@ def _user_exists(auth0_erasure_identity_email: str, auth0_secrets):
         headers=headers,
     )
 
-    # we expect 404 if user doesn't exist
-    if 404 == user_response.status_code:
-        return None
-
-    return user_response.json()
+    return user_response.json() if user_response.json() else None
