@@ -1,7 +1,7 @@
 """add_attentive_connector
 
 Revision ID: 54102bba36de
-Revises: 2f6aa5fe797a
+Revises: 68a518a3c050
 Create Date: 2023-03-09 22:08:17.480643
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "54102bba36de"
-down_revision = "2f6aa5fe797a"
+down_revision = "68a518a3c050"
 branch_labels = None
 depends_on = None
 

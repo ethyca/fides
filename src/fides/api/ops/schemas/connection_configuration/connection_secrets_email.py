@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from pydantic import BaseModel, Extra, root_validator
 
@@ -19,7 +19,7 @@ class EmailSchema(BaseModel):
 
     third_party_vendor_name: str
     recipient_email_address: str
-    test_email_address: Optional[str]  # Email to send a connection test email
+    test_email_address: str  # Email to send a connection test email
     advanced_settings: AdvancedSettings
 
     class Config:

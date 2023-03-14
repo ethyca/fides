@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Optional
 from unittest import mock
 from uuid import uuid4
 
@@ -1163,6 +1163,7 @@ def _create_privacy_request_for_policy(
     db: Session,
     policy: Policy,
     status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
+    email_identity: Optional[str] = "test@example.com",
 ) -> PrivacyRequest:
     data = {
         "external_id": f"ext-{str(uuid4())}",
@@ -1196,7 +1197,6 @@ def _create_privacy_request_for_policy(
         db=db,
         data=data,
     )
-    email_identity = "test@example.com"
     identity_kwargs = {"email": email_identity}
     pr.cache_identity(identity_kwargs)
     pr.persist_identity(
@@ -1214,6 +1214,18 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
         policy,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_erasure_policy(
+    db: Session, erasure_policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        erasure_policy,
     )
     yield privacy_request
     privacy_request.delete(db)
@@ -1244,12 +1256,26 @@ def privacy_request_requires_input(db: Session, policy: Policy) -> PrivacyReques
 
 
 @pytest.fixture(scope="function")
-def privacy_request_awaiting_email_send(
+def privacy_request_awaiting_consent_email_send(
     db: Session, consent_policy: Policy
 ) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
         consent_policy,
+    )
+    privacy_request.status = PrivacyRequestStatus.awaiting_email_send
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_awaiting_erasure_email_send(
+    db: Session, erasure_policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        erasure_policy,
     )
     privacy_request.status = PrivacyRequestStatus.awaiting_email_send
     privacy_request.save(db)

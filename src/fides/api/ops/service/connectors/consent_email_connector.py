@@ -10,7 +10,11 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.policy import ActionType, Rule
-from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.privacy_request import (
+    ExecutionLog,
+    ExecutionLogStatus,
+    PrivacyRequest,
+)
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
@@ -25,11 +29,11 @@ from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_email_connector import (
     BaseEmailConnector,
+    get_email_messaging_config_service_type,
     get_org_name,
 )
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.core.config import get_config
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 CONFIG = get_config()
 
@@ -155,12 +159,14 @@ class GenericConsentEmailConnector(BaseEmailConnector):
 
         for privacy_request in privacy_requests:
             if privacy_request.id not in skipped_privacy_requests:
-                AuditLog.create(
+                ExecutionLog.create(
                     db=db,
                     data={
-                        "user_id": "system",
+                        "connection_key": self.configuration.key,
+                        "dataset_name": self.configuration.name,
                         "privacy_request_id": privacy_request.id,
-                        "action": AuditLogAction.email_sent,
+                        "action_type": ActionType.erasure,
+                        "status": ExecutionLogStatus.complete,
                         "message": f"Consent email instructions dispatched for '{self.configuration.name}'",
                     },
                 )
@@ -220,7 +226,7 @@ def send_single_consent_email(
         db=db,
         action_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT,
         to_identity=Identity(email=subject_email),
-        service_type=CONFIG.notifications.notification_service_type,
+        service_type=get_email_messaging_config_service_type(db=db),
         message_body_params=ConsentEmailFulfillmentBodyParams(
             controller=org_name,
             third_party_vendor_name=subject_name,

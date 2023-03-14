@@ -1,4 +1,3 @@
-import itertools
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
@@ -32,6 +31,9 @@ from fides.api.ops.service.connectors.base_email_connector import (
     get_org_name,
 )
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
+from fides.core.config import get_config
+
+CONFIG = get_config()
 
 ERASURE_EMAIL_CONNECTOR_TYPES = [ConnectionType.attentive]
 
@@ -63,11 +65,9 @@ class GenericErasureEmailConnector(BaseEmailConnector):
             # synchronous for now since failure to send is considered a connection test failure
             send_single_erasure_email(
                 db=db,
-                subject_email=self.config.recipient_email_address,
+                subject_email=self.config.test_email_address,
                 subject_name=self.config.third_party_vendor_name,
-                batch_identities=list(
-                    itertools.chain(self.identities_for_test_email.values())
-                ),
+                batch_identities=list(self.identities_for_test_email.values()),
                 test_mode=True,
             )
         except MessageDispatchException as exc:
@@ -103,7 +103,7 @@ class GenericErasureEmailConnector(BaseEmailConnector):
 
         if not batched_identities:
             logger.info(
-                "Skipping consent email send for connector: '{}'. "
+                "Skipping erasure email send for connector: '{}'. "
                 "No corresponding user identities found for pending privacy requests.",
                 self.configuration.name,
             )

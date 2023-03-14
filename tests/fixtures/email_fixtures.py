@@ -46,11 +46,10 @@ def sovrn_email_connection_config(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def attentive_email_connection_config(db: Session) -> Generator:
-    name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": name,
+            "name": "Attentive",
             "key": "my_email_connection_config",
             "connection_type": ConnectionType.attentive,
             "access": AccessLevel.write,
@@ -76,7 +75,7 @@ def test_sovrn_consent_email_connector(
 
 
 @pytest.fixture(scope="function")
-def test_attentive_erasure_connector(
+def test_attentive_erasure_email_connector(
     attentive_email_connection_config: Dict[str, str]
 ) -> AttentiveConnector:
     return AttentiveConnector(configuration=attentive_email_connection_config)

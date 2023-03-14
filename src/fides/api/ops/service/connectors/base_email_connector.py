@@ -52,8 +52,7 @@ def get_org_name(db: Session) -> str:
 
     if not org or not org.name:
         raise MessageDispatchException(
-            "Cannot send an email requesting data erasure to third-party vendor. "
-            "No organization name found."
+            "Cannot send an email to third-party vendor. No organization name found."
         )
 
     return org.name

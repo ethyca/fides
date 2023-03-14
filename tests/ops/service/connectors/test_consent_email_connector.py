@@ -15,6 +15,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.service.connectors.consent_email_connector import (
+    GenericConsentEmailConnector,
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_consent_email,
@@ -170,13 +171,15 @@ class TestConsentEmailConnectorMethods:
         assert not mock_dispatch.called
         assert (
             exc.value.message
-            == "Cannot send an email requesting consent preference changes to third-party vendor. No organization name found."
+            == "Cannot send an email to third-party vendor. No organization name found."
         )
 
     @mock.patch(
         "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
     )
-    def test_send_single_consent_email(self, mock_dispatch, test_fides_org, db):
+    def test_send_single_consent_email(
+        self, mock_dispatch, test_fides_org, db, messaging_config
+    ):
         consent_preferences = [
             ConsentPreferencesByUser(
                 identities={"email": "customer-1@example.com"},
@@ -297,7 +300,7 @@ class TestSovrnConnector:
     def test_generic_identities_for_test_email_property(
         self, sovrn_email_connection_config
     ):
-        generic_connector = GenericEmailConsentConnector(sovrn_email_connection_config)
+        generic_connector = GenericConsentEmailConnector(sovrn_email_connection_config)
         assert generic_connector.identities_for_test_email == {
             "email": "test_email@example.com"
         }
