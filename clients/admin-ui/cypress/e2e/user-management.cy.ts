@@ -239,8 +239,9 @@ describe("User management", () => {
           cy.getByTestId("row-fidesctl_system").within(() => {
             cy.getByTestId("unassign-btn").click();
           });
-          cy.getByTestId("confirmation-modal");
-          cy.getByTestId("continue-btn").click();
+          cy.getByTestId("remove-system-confirmation-modal").within(() => {
+            cy.getByTestId("continue-btn").click();
+          });
           cy.wait("@removeUserManagedSystem").then((interception) => {
             const { url } = interception.request;
             expect(url).contains("fidesctl_system");

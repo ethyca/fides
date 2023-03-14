@@ -137,6 +137,7 @@ const UserForm = ({
                 label="Username"
                 variant="block"
                 placeholder="Enter new username"
+                disabled={!isNewUser}
               />
               <CustomTextInput
                 name="first_name"

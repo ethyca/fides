@@ -90,7 +90,8 @@ export const AssignSystemsDeleteTable = () => {
                 isOpen={deleteIsOpen}
                 onClose={onDeleteClose}
                 onConfirm={() => handleDelete(system)}
-                title="Delete System"
+                title="Remove System"
+                testId="remove-system-confirmation-modal"
                 continueButtonText="Yes, Remove System"
                 message={
                   <Text>Are you sure you want to remove this system?</Text>
