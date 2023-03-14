@@ -137,7 +137,7 @@ describe("User management", () => {
     beforeEach(() => {
       cy.intercept("DELETE", "/api/v1/user/*", { body: {} }).as("deleteUser");
     });
-    it("can delete a user", () => {
+    it("can delete a user via the menu", () => {
       cy.visit("/user-management");
       cy.getByTestId(`row-${USER_1_ID}`).within(() => {
         cy.getByTestId("menu-btn").click();
@@ -175,6 +175,25 @@ describe("User management", () => {
         expect(url).to.contain(USER_1_ID);
       });
       cy.getByTestId("toast-success-msg");
+    });
+
+    it("can delete a user via the user's profile", () => {
+      cy.intercept("GET", "/api/v1/user/*", {
+        body: { id: "fid", username: "user_1" },
+      }).as("getUser1");
+      cy.visit(`/user-management/profile/${USER_1_ID}`);
+      cy.wait("@getUser1");
+      cy.getByTestId("delete-user-btn").click();
+
+      cy.getByTestId("delete-user-modal").within(() => {
+        cy.getByTestId("input-username").type("user_1");
+        cy.getByTestId("input-usernameConfirmation").type("user_1");
+        cy.getByTestId("submit-btn").should("be.enabled");
+        cy.getByTestId("submit-btn").click();
+      });
+      cy.wait("@deleteUser");
+      cy.getByTestId("toast-success-msg");
+      cy.url().should("match", /user-management$/);
     });
   });
 

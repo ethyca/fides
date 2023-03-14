@@ -5,23 +5,27 @@ import { useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
 
 import PermissionsForm from "./PermissionsForm";
-import { selectActiveUserId } from "./user-management.slice";
+import {
+  selectActiveUserId,
+  useGetUserByIdQuery,
+} from "./user-management.slice";
 import UserForm, { type Props as UserFormProps } from "./UserForm";
 
 const UserManagementTabs = ({
-  user,
   onSubmit,
   initialValues,
   ...props
 }: UserFormProps) => {
   const activeUserId = useAppSelector(selectActiveUserId);
 
+  // Subscribe to active user
+  useGetUserByIdQuery(activeUserId as string, { skip: !activeUserId });
+
   const tabs: TabData[] = [
     {
       label: "Profile",
       content: (
         <UserForm
-          user={user}
           onSubmit={onSubmit}
           initialValues={initialValues}
           {...props}

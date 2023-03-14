@@ -217,6 +217,16 @@ export const selectActiveUserId = createSelector(
   (state) => state.activeUserId
 );
 
+export const selectActiveUser = createSelector(
+  [(RootState) => RootState, selectActiveUserId],
+  (RootState, userId) => {
+    if (!userId) {
+      return undefined;
+    }
+    return userApi.endpoints.getUserById.select(userId)(RootState).data;
+  }
+);
+
 const emptyScopes: ScopeRegistryEnum[] = [];
 export const selectThisUsersScopes = createSelector(
   [(RootState) => RootState, selectUser],

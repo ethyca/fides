@@ -28,7 +28,7 @@ import { successToastParams } from "~/features/common/toast";
 
 import PasswordManagement from "./PasswordManagement";
 import { User } from "./types";
-import { selectActiveUserId, setActiveUserId } from "./user-management.slice";
+import { selectActiveUser, setActiveUserId } from "./user-management.slice";
 
 const defaultInitialValues = {
   username: "",
@@ -47,7 +47,6 @@ const ValidationSchema = Yup.object().shape({
 });
 
 export interface Props {
-  user?: User;
   onSubmit: (values: FormValues) => Promise<
     | void
     | {
@@ -63,7 +62,6 @@ export interface Props {
 }
 
 const UserForm = ({
-  user,
   onSubmit,
   initialValues,
   canEditNames,
@@ -74,9 +72,10 @@ const UserForm = ({
   const deleteModal = useDisclosure();
 
   const { handleError } = useAPIHelper();
-  const activeUserId = useAppSelector(selectActiveUserId);
 
-  const isNewUser = !activeUserId;
+  const activeUser = useAppSelector(selectActiveUser);
+
+  const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
 
   const handleSubmit = async (values: FormValues) => {
@@ -117,7 +116,7 @@ const UserForm = ({
                 <Box marginLeft="auto">
                   <HStack>
                     <PasswordManagement />
-                    {!isNewUser && user ? (
+                    {!isNewUser ? (
                       <Box>
                         <IconButton
                           aria-label="delete"
@@ -126,7 +125,7 @@ const UserForm = ({
                           onClick={deleteModal.onOpen}
                           data-testid="delete-user-btn"
                         />
-                        <DeleteUserModal user={user} {...deleteModal} />
+                        <DeleteUserModal user={activeUser} {...deleteModal} />
                       </Box>
                     ) : null}
                   </HStack>
@@ -153,7 +152,7 @@ const UserForm = ({
                 placeholder="Enter last name of user"
                 disabled={nameDisabled}
               />
-              {!activeUserId ? (
+              {!activeUser ? (
                 <CustomTextInput
                   name="password"
                   label="Password"

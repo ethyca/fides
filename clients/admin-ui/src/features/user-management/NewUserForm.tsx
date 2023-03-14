@@ -27,7 +27,6 @@ const NewUserForm = () => {
       ...values,
       password: b64Password,
     }).unwrap();
-    console.log(result);
     router.push(`${USER_MANAGEMENT_ROUTE}/profile/${result.id}`);
   };
   return (

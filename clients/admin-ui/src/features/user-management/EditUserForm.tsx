@@ -52,7 +52,6 @@ const EditUserForm = ({ user }: Props) => {
     <div>
       <main>
         <UserManagementTabs
-          user={user}
           onSubmit={handleSubmit}
           initialValues={initialValues}
           canEditNames={canUpdateUser}
