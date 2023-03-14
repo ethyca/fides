@@ -241,7 +241,7 @@ describe("User management", () => {
           });
           cy.getByTestId("remove-fidesctl_system-confirmation-modal").within(
             () => {
-              cy.getByTestId("continue-btn").click();
+              cy.getByTestId("continue-btn").click({ force: true });
             }
           );
           cy.wait("@removeUserManagedSystem").then((interception) => {
