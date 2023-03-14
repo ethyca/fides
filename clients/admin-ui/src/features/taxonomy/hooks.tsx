@@ -63,12 +63,16 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
 
-const transformTaxonomyBaseToInitialValues = (t: TaxonomyEntity) => ({
+const transformTaxonomyBaseToInitialValues = (
+  t: TaxonomyEntity,
+  customFieldValues?: Record<string, string | string[]>
+) => ({
   fides_key: t.fides_key ?? "",
   name: t.name ?? "",
   description: t.description ?? "",
   parent_key: t.parent_key ?? "",
   is_default: t.is_default ?? false,
+  customFieldValues,
 });
 
 const transformBaseFormValuesToEntity = (
@@ -89,7 +93,7 @@ const transformBaseFormValuesToEntity = (
     entity.fides_key = initialValues.fides_key;
   }
 
-  delete entity.definitionIdToCustomFieldValue;
+  delete entity.customFieldValues;
 
   return entity;
 };
@@ -153,6 +157,12 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
     />
   );
 
+  const handleTransformEntityToInitialValues = (entity: DataCategory) =>
+    transformTaxonomyBaseToInitialValues(
+      entity,
+      customFields.customFieldValues
+    );
+
   return {
     data,
     isLoading,
@@ -164,7 +174,7 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
     handleEdit,
     handleDelete,
     renderExtraFormFields,
-    transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
+    transformEntityToInitialValues: handleTransformEntityToInitialValues,
   };
 };
 
@@ -252,7 +262,10 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
   const handleDelete = deleteDataUseMutationTrigger;
 
   const transformEntityToInitialValues = (du: DataUse) => {
-    const base = transformTaxonomyBaseToInitialValues(du);
+    const base = transformTaxonomyBaseToInitialValues(
+      du,
+      customFields.customFieldValues
+    );
     return {
       ...base,
       legal_basis: du.legal_basis,
@@ -407,7 +420,10 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
   const handleDelete = deleteDataSubjectMutationTrigger;
 
   const transformEntityToInitialValues = (ds: DataSubject) => {
-    const base = transformTaxonomyBaseToInitialValues(ds);
+    const base = transformTaxonomyBaseToInitialValues(
+      ds,
+      customFields.customFieldValues
+    );
     return {
       ...base,
       rights: ds.rights?.values ?? [],

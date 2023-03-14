@@ -9,7 +9,7 @@ import {
   useGetCustomFieldsForResourceQuery,
   useUpsertCustomFieldMutation,
 } from "~/features/plus/plus.slice";
-import { ResourceTypes } from "~/types/api";
+import { CustomFieldWithId, ResourceTypes } from "~/types/api";
 
 import { filterWithId } from "./helpers";
 import { CustomFieldsFormValues } from "./types";
@@ -93,22 +93,34 @@ export const useCustomFields = ({
     [activeCustomFieldDefinition]
   );
 
-  const definitionIdToCustomField = useMemo(() => {
-    // @ts-ignore
-    if (isError && error?.status === 404) {
-      return new Map();
-    }
-    const newMap = new Map(
-      filterWithId(data).map((fd) => [fd.custom_field_definition_id, fd])
-    );
-    return newMap;
-  }, [data, isError, error]);
+  const definitionIdToCustomField: Map<string, CustomFieldWithId> =
+    useMemo(() => {
+      // @ts-ignore
+      if (isError && error?.status === 404) {
+        return new Map();
+      }
+      const newMap = new Map(
+        filterWithId(data).map((fd) => [fd.custom_field_definition_id, fd])
+      );
+      return newMap;
+    }, [data, isError, error]);
 
   const sortedCustomFieldDefinitionIds = useMemo(() => {
     const ids = [...idToCustomFieldDefinition.keys()];
     ids.sort();
     return ids;
   }, [idToCustomFieldDefinition]);
+
+  /**
+   * Transformed version of definitionIdToCustomField to be easy
+   * to pass into Formik
+   */
+  const customFieldValues: Record<string, string | string[]> = {};
+  if (definitionIdToCustomField) {
+    definitionIdToCustomField.forEach((value, key) => {
+      customFieldValues[key] = value.value.toString();
+    });
+  }
 
   /**
    * Issue a batch of upsert and delete requests that will sync the form selections to the
@@ -123,11 +135,11 @@ export const useCustomFields = ({
         return;
       }
 
-      const { definitionIdToCustomFieldValue } = formValues;
+      const { customFieldValues: customFieldValuesFromForm } = formValues;
 
       // This will be undefined if the form never rendered a `CustomFieldList` that would assign
       // form values.
-      if (!definitionIdToCustomFieldValue) {
+      if (!customFieldValuesFromForm) {
         return;
       }
 
@@ -137,7 +149,7 @@ export const useCustomFields = ({
         await Promise.allSettled(
           sortedCustomFieldDefinitionIds.map((definitionId) => {
             const customField = definitionIdToCustomField.get(definitionId);
-            const value = definitionIdToCustomFieldValue[definitionId];
+            const value = customFieldValuesFromForm[definitionId];
 
             if (
               value === undefined ||
@@ -147,8 +159,9 @@ export const useCustomFields = ({
               if (!customField?.id) {
                 return undefined;
               }
+              const { id } = customField;
 
-              return deleteCustomFieldMutationTrigger(customField);
+              return deleteCustomFieldMutationTrigger({ id });
             }
 
             const body = {
@@ -186,6 +199,7 @@ export const useCustomFields = ({
   );
 
   return {
+    customFieldValues,
     definitionIdToCustomField,
     idToAllowListWithOptions,
     idToCustomFieldDefinition,

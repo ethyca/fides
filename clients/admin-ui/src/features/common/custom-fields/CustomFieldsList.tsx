@@ -75,7 +75,7 @@ export const CustomFieldsList = ({
                 }
 
                 const { options } = allowList;
-                const name = `definitionIdToCustomFieldValue.${customFieldDefinition.id}`;
+                const name = `customFieldValues.${customFieldDefinition.id}`;
 
                 return (
                   <Field key={definitionId} name={name}>

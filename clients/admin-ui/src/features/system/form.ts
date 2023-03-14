@@ -10,7 +10,7 @@ export interface FormValues
     progress?: DataProtectionImpactAssessment["progress"];
     link?: DataProtectionImpactAssessment["link"];
   };
-  definitionIdToCustomFieldValue?: Record<string, string | string[]>;
+  customFieldValues?: Record<string, string | string[]>;
 }
 
 export const defaultInitialValues: FormValues = {
@@ -40,16 +40,9 @@ export const defaultInitialValues: FormValues = {
 
 export const transformSystemToFormValues = (
   system: System,
-  definitionIdToCustomField?: Map<any, any>
+  customFieldValues?: Record<string, string | string[]>
 ): FormValues => {
   const { data_protection_impact_assessment: dpia } = system;
-  const customFields: Record<string, string | string[]> = {};
-
-  if (definitionIdToCustomField) {
-    definitionIdToCustomField.forEach((value, key) => {
-      customFields[key] = value.value;
-    });
-  }
 
   return {
     ...system,
@@ -57,7 +50,7 @@ export const transformSystemToFormValues = (
       ...dpia,
       is_required: dpia?.is_required ? "true" : "false",
     },
-    definitionIdToCustomFieldValue: customFields,
+    customFieldValues,
   };
 };
 

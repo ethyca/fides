@@ -77,10 +77,10 @@ const SystemInformationForm = ({
       passedInSystem
         ? transformSystemToFormValues(
             passedInSystem,
-            customFields.definitionIdToCustomField
+            customFields.customFieldValues
           )
         : defaultInitialValues,
-    [passedInSystem, customFields.definitionIdToCustomField]
+    [passedInSystem, customFields.customFieldValues]
   );
 
   const [createSystemMutationTrigger, createSystemMutationResult] =

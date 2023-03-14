@@ -39,8 +39,5 @@ export interface CustomFieldsFormValues {
    * This is camel-cased because it is only used in UI code and must be handled specially when
    * submitting the form. It does not correspond with a snake-cased API field.
    */
-  definitionIdToCustomFieldValue?: Record<
-    string,
-    string | string[] | undefined
-  >;
+  customFieldValues?: Record<string, string | string[] | undefined>;
 }
