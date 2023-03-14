@@ -48,6 +48,7 @@ jobs:
       - name: Build the wheel
         run: python setup.py bdist_wheel
 
+      # Don't upload to Test PyPI if it is a real release
       - name: Upload to test pypi
         run: twine upload --repository testpypi dist/*
         env:
