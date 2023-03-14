@@ -623,7 +623,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
-    def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
+    def trigger_policy_webhook(
+        self,
+        webhook: WebhookTypes,
+        policy_action: Optional[ActionType] = None,
+    ) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
         should cause privacy request execution to stop.
 
@@ -636,9 +640,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
+            privacy_request_status=self.status,
             direction=webhook.direction.value,  # type: ignore
             callback_type=webhook.prefix,
             identity=self.get_cached_identity_data(),
+            policy_action=policy_action,
         )
 
         headers = {}

@@ -3,7 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from fides.api.ops.models.policy import WebhookDirection
+from fides.api.ops.models.privacy_request import PrivacyRequestStatus
+from fides.api.ops.models.policy import ActionType, WebhookDirection
 from fides.api.ops.schemas.redis_cache import Identity
 
 
@@ -18,9 +19,11 @@ class SecondPartyRequestFormat(BaseModel):
     """The request body we will use when calling a user's HTTP endpoint from fides.api"""
 
     privacy_request_id: str
+    privacy_request_status: Enum(PrivacyRequestStatus)
     direction: WebhookDirection
     callback_type: CallbackType
     identity: Identity
+    policy_action: Optional[Enum(ActionType)]
 
     class Config:
         """Using enum values"""
