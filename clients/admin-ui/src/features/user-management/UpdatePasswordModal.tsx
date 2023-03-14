@@ -11,13 +11,16 @@ import {
   ModalOverlay,
   Stack,
   useDisclosure,
+  useToast,
 } from "@fidesui/react";
 import React, { useState } from "react";
 
+import { successToastParams } from "../common/toast";
 import { useUpdateUserPasswordMutation } from "./user-management.slice";
 
 const useUpdatePasswordModal = (id: string) => {
   const modal = useDisclosure();
+  const toast = useToast();
   const [oldPasswordValue, setOldPasswordValue] = useState("");
   const [newPasswordValue, setNewPasswordValue] = useState("");
   const [changePassword, { isLoading }] = useUpdateUserPasswordMutation();
@@ -44,7 +47,10 @@ const useUpdatePasswordModal = (id: string) => {
         new_password: newPasswordValue,
       })
         .unwrap()
-        .then(() => modal.onClose());
+        .then(() => {
+          toast(successToastParams("Password updated"));
+          modal.onClose();
+        });
     }
   };
 
@@ -84,7 +90,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
         onClick={onOpen}
         data-testid="update-password-btn"
       >
-        Update Password
+        Update password
       </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
