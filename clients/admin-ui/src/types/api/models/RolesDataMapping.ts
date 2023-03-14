@@ -23,14 +23,14 @@ export const ROLES = [
   },
   {
     label: "Viewer & Approver",
-    permissions_label: "Viewer & Privacy Request Manager",
+    permissions_label: "Viewer & Approver",
     roleKey: RoleRegistryEnum.VIEWER_AND_APPROVER,
     description:
       "Viewer & Approvers have view access to the Data Map but can also manage Privacy Requests",
   },
   {
     label: "Approver",
-    permissions_label: "Privacy Request Manager",
+    permissions_label: "Approver",
     roleKey: RoleRegistryEnum.APPROVER,
     description:
       "Approvers can only access the Privacy Requests portal to manage requests",
