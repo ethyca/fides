@@ -17,22 +17,13 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
-from fides.api.ops.models.policy import CurrentStep
-from fides.api.ops.models.privacy_request import (
-    CheckpointActionRequired,
-    ErasureRequestBodyParams,
-    ManualAction,
-    PrivacyRequestStatus,
-)
-from fides.api.ops.schemas.messaging.messaging import MessagingActionType
-from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.models.privacy_request import PrivacyRequestStatus
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.roles import APPROVER, OWNER, VIEWER
 from tests.fixtures.application_fixtures import integration_secrets
