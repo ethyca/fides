@@ -29,6 +29,7 @@ DATAMAP_COLUMNS = {
     "dataset.retention": "Retention Schedule",
     "organization.link_to_security_policy": "General Description of Security Measures",
     "system.data_responsibility_title": "Role or Responsibility",
+    "system.privacy_declaration.name": "Privacy Declaration Name",
     "system.privacy_declaration.data_use.legal_basis": "Article 6 lawful basis for processing personal data",
     "system.privacy_declaration.data_use.special_category": "Article 9 condition for processing special category data",
     "system.privacy_declaration.data_use.legitimate_interest": "Legitimate interests for the processing (if applicable)",
@@ -41,6 +42,12 @@ DATAMAP_COLUMNS = {
     "system.data_protection_impact_assessment.link": "Link to Data Protection Impact Assessment",
 }
 
+
+
+
+
+
+# asdfl;gjasdlfjghle
 
 def export_to_csv(
     list_to_export: List, resource_exported: str, manifests_dir: str
@@ -350,7 +357,6 @@ def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.Dat
     # isolate the system data categories into a new dataframe and create a common column
     joined_df = joined_df.drop(
         [
-            "system.privacy_declaration.name",
             "dataset.description",
         ],
         axis=1,
