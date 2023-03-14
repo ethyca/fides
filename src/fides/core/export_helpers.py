@@ -43,12 +43,6 @@ DATAMAP_COLUMNS = {
 }
 
 
-
-
-
-
-# asdfl;gjasdlfjghle
-
 def export_to_csv(
     list_to_export: List, resource_exported: str, manifests_dir: str
 ) -> str:
