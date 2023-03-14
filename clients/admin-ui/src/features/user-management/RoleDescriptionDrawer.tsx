@@ -10,17 +10,14 @@ const RoleDescriptionDrawer = () => (
     <VStack spacing={4}>
       {ROLES.map((role) => (
         <Box
+          width="100%"
           key={role.roleKey}
           padding="16px"
           backgroundColor="blue.50"
           fontSize="14px"
         >
           <Box fontWeight="semibold">{role.label}</Box>
-          <Box color="gray.500">
-            {role.description}
-            Owners have view and edit access to the whole organization and can
-            create new users
-          </Box>
+          <Box color="gray.500">{role.description}</Box>
         </Box>
       ))}
     </VStack>
