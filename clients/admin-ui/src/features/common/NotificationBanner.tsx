@@ -20,8 +20,12 @@ const NotificationBanner = () => {
   const showBanner = useAppSelector(selectShowNotificationBanner);
   const dispatch = useAppDispatch();
 
+  // if the user hasn't logged out, it's possible `showBanner` can be undefined
+  // since the redux store hasn't reinitialized. in this case, we _do_ want to show the banner
+  const defaultIsOpen = showBanner === undefined ? true : showBanner;
+
   const { isOpen: isVisible, onClose } = useDisclosure({
-    defaultIsOpen: showBanner,
+    defaultIsOpen,
   });
 
   const handleClose = () => {
