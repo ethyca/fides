@@ -302,4 +302,5 @@ jobs:
         env:
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
+          FIDES__DEV_MODE: false # this prevents logging SaaS requests in the logs, which may contain sensitive information
         run: nox -s "pytest(ops-saas)"
