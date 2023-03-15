@@ -115,12 +115,15 @@ export const useCustomFields = ({
    * Transformed version of definitionIdToCustomField to be easy
    * to pass into Formik
    */
-  const customFieldValues: Record<string, string | string[]> = {};
-  if (definitionIdToCustomField) {
-    definitionIdToCustomField.forEach((value, key) => {
-      customFieldValues[key] = value.value.toString();
-    });
-  }
+  const customFieldValues = useMemo(() => {
+    const values: Record<string, string | string[]> = {};
+    if (definitionIdToCustomField) {
+      definitionIdToCustomField.forEach((value, key) => {
+        values[key] = value.value.toString();
+      });
+    }
+    return values;
+  }, [definitionIdToCustomField]);
 
   /**
    * Issue a batch of upsert and delete requests that will sync the form selections to the
