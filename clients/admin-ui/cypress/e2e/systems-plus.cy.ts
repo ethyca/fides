@@ -45,6 +45,9 @@ describe("System management with Plus features", () => {
           fixture: "taxonomy/custom-metadata/custom-field/list.json",
         }
       ).as("getCustomFields");
+      cy.intercept("PUT", `/api/v1/plus/custom-metadata/custom-field`, {
+        fixture: "taxonomy/custom-metadata/custom-field/update-party.json",
+      }).as("updateParty");
     });
 
     it("can populate initial custom metadata", () => {
@@ -64,6 +67,21 @@ describe("System management with Plus features", () => {
 
       // Should be able to save now that form is dirty
       cy.getByTestId("save-btn").should("be.enabled");
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@putSystem");
+      cy.wait("@updateParty").then((interception) => {
+        expect(interception.request.body.id).to.eql(
+          "id-custom-field-pokemon-party"
+        );
+        expect(interception.request.body.resource_id).to.eql("fidesctl_system");
+        expect(interception.request.body.value).to.eql([
+          "Charmander",
+          "Eevee",
+          "Snorlax",
+          "Bulbasaur",
+        ]);
+      });
     });
   });
 });
