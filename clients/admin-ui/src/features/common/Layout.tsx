@@ -13,6 +13,7 @@ import {
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import ConfigurationNotificationBanner from "../privacy-requests/configuration/ConfigurationNotificationBanner";
+import NotificationBanner from "./NotificationBanner";
 
 const Layout = ({
   children,
@@ -39,7 +40,7 @@ const Layout = ({
     skip,
   });
 
-  const showNotificationBanner =
+  const showConfigurationBanner =
     features.flags.privacyRequestsConfiguration &&
     (!activeMessagingProvider || !activeStorage) &&
     isValidNotificationRoute;
@@ -52,13 +53,14 @@ const Layout = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Header />
+      <NotificationBanner />
       <NavTopBar />
       <Flex as="main" px={9} py={10} gap="40px" height="100%">
         <Box flex={0} flexShrink={0}>
           <NavSideBar />
         </Box>
         <Flex direction="column" flex={1} minWidth={0}>
-          {showNotificationBanner ? <ConfigurationNotificationBanner /> : null}
+          {showConfigurationBanner ? <ConfigurationNotificationBanner /> : null}
           {children}
         </Flex>
       </Flex>
