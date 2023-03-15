@@ -8,8 +8,8 @@ import {
 } from "@fidesui/react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { selectThisUsersRoles } from "~/features/user-management";
 import { RoleRegistryEnum } from "~/types/api";
-import { selectThisUsersRoles } from "../user-management";
 
 import {
   selectShowNotificationBanner,
