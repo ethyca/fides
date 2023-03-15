@@ -24,7 +24,7 @@ services:
       FIDES__CLI__SERVER_HOST: "fides"
       FIDES__CLI__SERVER_PORT: "8080"
       FIDES__DATABASE__SERVER: "fides-db"
-      FIDES__DEV_MODE: "True"
+      FIDES__DEV_MODE: "False"
       FIDES__REDIS__ENABLED: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
       VAULT_ADDR: ${VAULT_ADDR-}
