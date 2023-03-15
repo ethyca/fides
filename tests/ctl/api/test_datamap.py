@@ -573,6 +573,22 @@ def test_datamap_with_privacy_declaration_with_name(
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("system_privacy_declarations")
+def test_datamap_with_privacy_declaration_without_name(
+    test_config: FidesConfig,
+    test_client: TestClient,
+) -> None:
+    response = test_client.get(
+        test_config.cli.server_url
+        + API_PREFIX
+        + "/datamap/default_organization?include_deprecated_columns=false",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_PRIVACY_DECLARATION
+
+
+@pytest.mark.integration
 @pytest.mark.usefixtures(
     "system_no_privacy_declarations",
     "system_privacy_declarations",
