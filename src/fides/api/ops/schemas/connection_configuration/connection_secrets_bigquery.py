@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from pydantic import EmailStr
 from pydantic.main import BaseModel
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
@@ -15,7 +16,7 @@ class KeyfileCreds(BaseModel):
     project_id: str
     private_key_id: Optional[str] = None
     private_key: Optional[str] = None
-    client_email: Optional[str] = None
+    client_email: Optional[EmailStr] = None
     client_id: Optional[str] = None
     auth_uri: Optional[str] = None
     token_uri: Optional[str] = None

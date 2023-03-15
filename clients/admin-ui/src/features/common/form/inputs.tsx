@@ -37,7 +37,7 @@ import { useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
-type Variant = "inline" | "stacked";
+type Variant = "inline" | "stacked" | "block";
 
 interface CustomInputProps {
   disabled?: boolean;
