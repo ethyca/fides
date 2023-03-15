@@ -29,7 +29,6 @@ DATAMAP_COLUMNS = {
     "dataset.retention": "Retention Schedule",
     "organization.link_to_security_policy": "General Description of Security Measures",
     "system.data_responsibility_title": "Role or Responsibility",
-    "system.privacy_declaration.name": "Privacy Declaration Name",
     "system.privacy_declaration.data_use.legal_basis": "Article 6 lawful basis for processing personal data",
     "system.privacy_declaration.data_use.special_category": "Article 9 condition for processing special category data",
     "system.privacy_declaration.data_use.legitimate_interest": "Legitimate interests for the processing (if applicable)",
