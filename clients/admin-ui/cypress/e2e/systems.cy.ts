@@ -286,10 +286,6 @@ describe("System management page", () => {
       // Switch to the Data Uses tab
       cy.getByTestId("tab-Data uses").click();
 
-      // Dismiss the "Unsaved changes" modal that appears
-      // TODO: This modal only appears due to a bug: https://github.com/ethyca/fides/issues/2788, once fixed this can be removed
-      cy.getByTestId("continue-btn").click();
-
       // add another privacy declaration
       const secondDataUse = "advertising";
       cy.getByTestId("tab-Data uses").click();
