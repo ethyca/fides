@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from pydantic import root_validator
+from pydantic import EmailStr, root_validator
 
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
@@ -22,7 +22,7 @@ class SovrnSchema(ExtendedEmailSchema):
     """
 
     third_party_vendor_name: str = "Sovrn"
-    recipient_email_address: str = "privacy@sovrn.com"
+    recipient_email_address: EmailStr = EmailStr("privacy@sovrn.com")
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
     SOVRN_REQUIRED_IDENTITY,
