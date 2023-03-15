@@ -22,6 +22,7 @@ The types of changes are:
 * Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
 * The ability to assign users as system managers for a specific system [#2714](https://github.com/ethyca/fides/pull/2714)
 * New endpoints to add and remove users as system managers [#2726](https://github.com/ethyca/fides/pull/2726)
+* Adds Role Assignment UI [#2739](https://github.com/ethyca/fides/pull/2739)
 * Add an automated migration to give users a `viewer` role [#2821](https://github.com/ethyca/fides/pull/2821)
 
 ### Changed
@@ -32,6 +33,11 @@ The types of changes are:
 
 * Retired legacy `navV2` feature flag [#2762](https://github.com/ethyca/fides/pull/2762)
 * Update Admin UI Layout to fill viewport height [#2812](https://github.com/ethyca/fides/pull/2812)
+
+### Fixed
+
+* Fixed issue where unsaved changes warning would always show up when running fidesplus [#2788](https://github.com/ethyca/fides/issues/2788)
+* Fixed issue where more than 1 populated custom fields removed a system from the datamap export [#2825](https://github.com/ethyca/fides/pull/2825)
 
 ## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
 
@@ -61,6 +67,7 @@ The types of changes are:
 * Access and erasure for Jira SaaS Connector [#1871](https://github.com/ethyca/fides/issues/1871)
 * Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
 * Improve "Upload a new dataset YAML" [#1531](https://github.com/ethyca/fides/pull/2258)
+* Input validation and sanitization for Privacy Request fields [#2655](https://github.com/ethyca/fides/pull/2655)
 * Access and erasure support for Yotpo [#2708](https://github.com/ethyca/fides/pull/2708)
 * Custom Field Library Tab [#527](https://github.com/ethyca/fides/pull/2693)
 * Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)

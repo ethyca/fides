@@ -1,15 +1,18 @@
 import { Spinner } from "@fidesui/react";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect } from "react";
 import EditUserForm from "user-management/EditUserForm";
 import {
+  setActiveUserId,
   useGetUserByIdQuery,
-  useGetUserPermissionsQuery,
 } from "user-management/user-management.slice";
 import UserManagementLayout from "user-management/UserManagementLayout";
 
+import { useAppDispatch } from "~/app/hooks";
+
 const Profile = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   let profileId = "";
   if (router.query.id) {
     profileId = Array.isArray(router.query.id)
@@ -20,10 +23,14 @@ const Profile = () => {
   }
   const { data: existingUser, isLoading: isLoadingUser } =
     useGetUserByIdQuery(profileId);
-  const { data: userPermissions, isLoading: isLoadingPermissions } =
-    useGetUserPermissionsQuery(profileId);
 
-  if (isLoadingUser || isLoadingPermissions) {
+  useEffect(() => {
+    if (existingUser) {
+      dispatch(setActiveUserId(existingUser.id));
+    }
+  }, [dispatch, existingUser]);
+
+  if (isLoadingUser) {
     return (
       <UserManagementLayout title="Edit User">
         <Spinner />
@@ -31,7 +38,7 @@ const Profile = () => {
     );
   }
 
-  if (existingUser == null || userPermissions == null) {
+  if (existingUser == null) {
     return (
       <UserManagementLayout title="Edit User">
         Could not find profile ID.
@@ -41,7 +48,7 @@ const Profile = () => {
 
   return (
     <UserManagementLayout title="Edit User">
-      <EditUserForm user={existingUser} permissions={userPermissions} />
+      <EditUserForm user={existingUser} />
     </UserManagementLayout>
   );
 };

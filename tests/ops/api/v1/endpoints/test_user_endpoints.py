@@ -156,6 +156,7 @@ class TestCreateUser:
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
+        assert len(user.permissions.scopes) == 0
 
     def test_create_user_as_root(
         self,

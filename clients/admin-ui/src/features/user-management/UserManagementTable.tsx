@@ -8,12 +8,15 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
+import { useAppDispatch } from "~/app/hooks";
 
 import { User } from "./types";
 import {
   selectUserFilters,
+  setActiveUserId,
   setPage,
   useGetAllUsersQuery,
 } from "./user-management.slice";
@@ -54,6 +57,12 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
   const startingItem = (page - 1) * size + 1;
   const endingItem = Math.min(total, page * size);
 
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setActiveUserId(undefined));
+  }, [dispatch]);
+
   return (
     <>
       <Table size="sm" data-testid="user-management-table">
@@ -62,6 +71,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
             <Th pl={0}>Username</Th>
             <Th pl={0}>First Name</Th>
             <Th pl={0}>Last Name</Th>
+            <Th pl={0}>Permissions</Th>
             <Th pl={0}>Created At</Th>
           </Tr>
         </Thead>
