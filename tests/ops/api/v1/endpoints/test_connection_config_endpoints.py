@@ -442,12 +442,6 @@ class TestPatchConnections:
                 "description": "Backup snowflake db",
             },
             {
-                "key": "email_connector",
-                "name": "Third Party Email Connector",
-                "connection_type": "email",
-                "access": "write",
-            },
-            {
                 "key": "manual_webhook_type",
                 "name": "Third Party Manual Webhook",
                 "connection_type": "manual_webhook",
@@ -462,7 +456,7 @@ class TestPatchConnections:
         assert 200 == response.status_code
         response_body = response.json()
         assert len(response_body) == 2
-        assert len(response_body["succeeded"]) == 10
+        assert len(response_body["succeeded"]) == 9
         assert len(response_body["failed"]) == 0
 
         postgres_connection = response_body["succeeded"][0]
@@ -538,16 +532,7 @@ class TestPatchConnections:
         assert snowflake_resource.description == "Backup snowflake db"
         assert "secrets" not in snowflake_connection
 
-        email_connection = response_body["succeeded"][8]
-        assert email_connection["access"] == "write"
-        assert email_connection["updated_at"] is not None
-        email_resource = (
-            db.query(ConnectionConfig).filter_by(key="email_connector").first()
-        )
-        assert email_resource.access.value == "write"
-        assert "secrets" not in email_connection
-
-        manual_webhook_connection = response_body["succeeded"][9]
+        manual_webhook_connection = response_body["succeeded"][8]
         assert manual_webhook_connection["access"] == "read"
         assert manual_webhook_connection["updated_at"] is not None
         manual_webhook_resource = (
@@ -565,7 +550,6 @@ class TestPatchConnections:
         mysql_resource.delete(db)
         mssql_resource.delete(db)
         bigquery_resource.delete(db)
-        email_resource.delete(db)
         manual_webhook_resource.delete(db)
 
     @mock.patch("fides.lib.db.base_class.OrmWrappedFidesBase.create_or_update")
