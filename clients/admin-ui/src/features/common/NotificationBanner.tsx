@@ -8,6 +8,8 @@ import {
 } from "@fidesui/react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { RoleRegistryEnum } from "~/types/api";
+import { selectThisUsersRoles } from "../user-management";
 
 import {
   selectShowNotificationBanner,
@@ -20,6 +22,8 @@ const DESCRIPTION =
 const NotificationBanner = () => {
   const showBanner = useAppSelector(selectShowNotificationBanner);
   const dispatch = useAppDispatch();
+
+  const userRoles = useAppSelector(selectThisUsersRoles);
 
   // if the user hasn't logged out, it's possible `showBanner` can be undefined
   // since the redux store hasn't reinitialized. in this case, we _do_ want to show the banner
@@ -35,6 +39,11 @@ const NotificationBanner = () => {
   };
 
   if (!isVisible) {
+    return null;
+  }
+
+  // Anyone who is not only a viewer should not see this banner
+  if (userRoles.length === 1 && userRoles[0] !== RoleRegistryEnum.VIEWER) {
     return null;
   }
 
