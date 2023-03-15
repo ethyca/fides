@@ -34,6 +34,10 @@ The types of changes are:
 * Retired legacy `navV2` feature flag [#2762](https://github.com/ethyca/fides/pull/2762)
 * Update Admin UI Layout to fill viewport height [#2812](https://github.com/ethyca/fides/pull/2812)
 
+### Fixed
+
+* Fixed issue where more than 1 populated custom fields removed a system from the datamap export [#2825](https://github.com/ethyca/fides/pull/2825)
+
 ## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
 
 ### Fixed
