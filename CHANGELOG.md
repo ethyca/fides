@@ -25,11 +25,13 @@ The types of changes are:
 * Warning about access control migration to the UI [#2842](https://github.com/ethyca/fides/pull/2842)
 * Adds Role Assignment UI [#2739](https://github.com/ethyca/fides/pull/2739)
 * Add an automated migration to give users a `viewer` role [#2821](https://github.com/ethyca/fides/pull/2821)
+* Adding Attentive erasure email connector [#2782](https://github.com/ethyca/fides/pull/2782)
 
 ### Changed
 
 * Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
 * Added `system.privacy_declaration.name` to datamap response [#2831][https://github.com/ethyca/fides/pull/2831/files]
+* Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
 
 ### Developer Experience
 
