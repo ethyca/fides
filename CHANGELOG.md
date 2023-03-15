@@ -38,6 +38,7 @@ The types of changes are:
 
 * Fixed issue where unsaved changes warning would always show up when running fidesplus [#2788](https://github.com/ethyca/fides/issues/2788)
 * Fixed issue where more than 1 populated custom fields removed a system from the datamap export [#2825](https://github.com/ethyca/fides/pull/2825)
+* Fixed problem in datamap export with datasets that had been updated via SaaS instantiation [#2841](https://github.com/ethyca/fides/pull/2841)
 
 ## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
 
