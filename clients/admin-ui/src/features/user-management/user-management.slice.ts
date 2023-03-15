@@ -6,7 +6,12 @@ import { utf8ToB64 } from "common/utils";
 import type { RootState } from "~/app/store";
 import { BASE_URL } from "~/constants";
 import { selectToken, selectUser } from "~/features/auth";
-import { ScopeRegistryEnum, System, UserForcePasswordReset } from "~/types/api";
+import {
+  RoleRegistryEnum,
+  ScopeRegistryEnum,
+  System,
+  UserForcePasswordReset,
+} from "~/types/api";
 
 import {
   User,
@@ -239,6 +244,27 @@ export const selectThisUsersScopes = createSelector(
     ).data;
 
     return permissions ? permissions.total_scopes : emptyScopes;
+  }
+);
+
+const emptyRoles: RoleRegistryEnum[] = [];
+/**
+ * In general, the UI should restrict based off of scopes, not roles to allow
+ * for flexibility when adding or removing roles.
+ * There are however, some unique cases where it is more useful to restrict
+ * off of role than scope. Make sure you use this selector intentionally!
+ */
+export const selectThisUsersRoles = createSelector(
+  [(RootState) => RootState, selectUser],
+  (RootState, user) => {
+    if (!user) {
+      return emptyRoles;
+    }
+    const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
+      RootState
+    ).data;
+
+    return permissions?.roles ?? emptyRoles;
   }
 );
 
