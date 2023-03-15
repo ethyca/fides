@@ -1,6 +1,9 @@
 import { ReactNode, useState } from "react";
 
-import { CustomFieldsList } from "~/features/common/custom-fields";
+import {
+  CustomFieldsList,
+  CustomFieldValues,
+} from "~/features/common/custom-fields";
 import { useCustomFields } from "~/features/common/custom-fields/hooks";
 import { RTKResult } from "~/features/common/types";
 import {
@@ -63,9 +66,15 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
 
+/**
+ * Transforms the attributes that are shared between taxonomy entities into values
+ * that Formik can easily handle.
+ * If the taxonomy entity has additional fields that need to be transformed,
+ * it should extend from this function.
+ */
 const transformTaxonomyBaseToInitialValues = (
   t: TaxonomyEntity,
-  customFieldValues?: Record<string, string | string[]>
+  customFieldValues?: CustomFieldValues
 ) => ({
   fides_key: t.fides_key ?? "",
   name: t.name ?? "",
@@ -75,6 +84,10 @@ const transformTaxonomyBaseToInitialValues = (
   customFieldValues,
 });
 
+/**
+ * Transforms the attributes that are shared between taxonomy entities into
+ * a taxonomy object ready to be consumed by the API
+ */
 const transformBaseFormValuesToEntity = (
   initialValues: FormValues,
   newValues: FormValues
@@ -157,7 +170,7 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
     />
   );
 
-  const handleTransformEntityToInitialValues = (entity: DataCategory) =>
+  const transformEntityToInitialValues = (entity: DataCategory) =>
     transformTaxonomyBaseToInitialValues(
       entity,
       customFields.customFieldValues
@@ -174,7 +187,7 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
     handleEdit,
     handleDelete,
     renderExtraFormFields,
-    transformEntityToInitialValues: handleTransformEntityToInitialValues,
+    transformEntityToInitialValues,
   };
 };
 

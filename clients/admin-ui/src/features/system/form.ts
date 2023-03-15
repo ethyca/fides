@@ -1,4 +1,7 @@
-import { CustomFieldsFormValues } from "~/features/common/custom-fields";
+import {
+  CustomFieldsFormValues,
+  CustomFieldValues,
+} from "~/features/common/custom-fields";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { DataProtectionImpactAssessment, System } from "~/types/api";
 
@@ -10,7 +13,7 @@ export interface FormValues
     progress?: DataProtectionImpactAssessment["progress"];
     link?: DataProtectionImpactAssessment["link"];
   };
-  customFieldValues?: Record<string, string | string[]>;
+  customFieldValues?: CustomFieldValues;
 }
 
 export const defaultInitialValues: FormValues = {
@@ -40,7 +43,7 @@ export const defaultInitialValues: FormValues = {
 
 export const transformSystemToFormValues = (
   system: System,
-  customFieldValues?: Record<string, string | string[]>
+  customFieldValues?: CustomFieldValues
 ): FormValues => {
   const { data_protection_impact_assessment: dpia } = system;
 

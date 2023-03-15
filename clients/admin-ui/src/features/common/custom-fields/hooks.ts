@@ -12,7 +12,7 @@ import {
 import { CustomFieldWithId, ResourceTypes } from "~/types/api";
 
 import { filterWithId } from "./helpers";
-import { CustomFieldsFormValues } from "./types";
+import { CustomFieldsFormValues, CustomFieldValues } from "./types";
 
 type UseCustomFieldsOptions = {
   resourceFidesKey?: string;
@@ -116,7 +116,7 @@ export const useCustomFields = ({
    * to pass into Formik
    */
   const customFieldValues = useMemo(() => {
-    const values: Record<string, string | string[]> = {};
+    const values: CustomFieldValues = {};
     if (definitionIdToCustomField) {
       definitionIdToCustomField.forEach((value, key) => {
         values[key] = value.value.toString();

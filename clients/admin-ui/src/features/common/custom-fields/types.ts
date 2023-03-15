@@ -28,6 +28,8 @@ export interface AllowListWithOptions extends AllowList {
   options: Option[];
 }
 
+export type CustomFieldValues = Record<string, string | string[] | undefined>;
+
 /**
  * The custom metadata fields are very dynamic and may not be rendered at all. If they are used,
  * their values are stored as a mapping from the field definition's ID to the value, which may be a
@@ -39,5 +41,5 @@ export interface CustomFieldsFormValues {
    * This is camel-cased because it is only used in UI code and must be handled specially when
    * submitting the form. It does not correspond with a snake-cased API field.
    */
-  customFieldValues?: Record<string, string | string[] | undefined>;
+  customFieldValues?: CustomFieldValues;
 }
