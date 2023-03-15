@@ -20,15 +20,10 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
       <link rel="icon" href="/favicon.ico" />
     </Head>
     <Header />
+    {/* TODO: remove this in a future release (see https://github.com/ethyca/fides/issues/2844) */}
     <NotificationBanner />
     <NavTopBar />
-    <Flex
-      as="main"
-      flexDirection="column"
-      gap="40px"
-      width="100vw"
-      height="100%"
-    >
+    <Flex as="main" flexDirection="column" gap="40px" height="100%">
       {children}
     </Flex>
   </Flex>

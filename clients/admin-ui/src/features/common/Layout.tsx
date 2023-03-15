@@ -53,6 +53,7 @@ const Layout = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Header />
+      {/* TODO: remove this in a future release (see https://github.com/ethyca/fides/issues/2844) */}
       <NotificationBanner />
       <NavTopBar />
       <Flex as="main" px={9} py={10} gap="40px" height="100%">
