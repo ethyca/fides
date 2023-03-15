@@ -134,16 +134,25 @@ class GenericErasureEmailConnector(BaseEmailConnector):
 
         # create an audit event for each privacy request ID
         for privacy_request in privacy_requests:
-            ExecutionLog.create(
-                db=db,
-                data={
-                    "connection_key": self.configuration.key,
-                    "dataset_name": self.configuration.name,
-                    "privacy_request_id": privacy_request.id,
-                    "action_type": ActionType.erasure,
-                    "status": ExecutionLogStatus.complete,
-                    "message": f"Erasure email instructions dispatched for {self.config.third_party_vendor_name}",
-                },
+            if privacy_request.id not in skipped_privacy_requests:
+                ExecutionLog.create(
+                    db=db,
+                    data={
+                        "connection_key": self.configuration.key,
+                        "dataset_name": self.configuration.name,
+                        "privacy_request_id": privacy_request.id,
+                        "action_type": ActionType.erasure,
+                        "status": ExecutionLogStatus.complete,
+                        "message": f"Erasure email instructions dispatched for {self.config.third_party_vendor_name}",
+                    },
+                )
+
+        if skipped_privacy_requests:
+            logger.info(
+                "Skipping email send for the following privacy request IDs: "
+                "{} on connector '{}': no matching identities detected.",
+                skipped_privacy_requests,
+                self.configuration.name,
             )
 
 

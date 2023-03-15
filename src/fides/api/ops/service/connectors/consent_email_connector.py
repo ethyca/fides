@@ -165,7 +165,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                         "connection_key": self.configuration.key,
                         "dataset_name": self.configuration.name,
                         "privacy_request_id": privacy_request.id,
-                        "action_type": ActionType.erasure,
+                        "action_type": ActionType.consent,
                         "status": ExecutionLogStatus.complete,
                         "message": f"Consent email instructions dispatched for '{self.configuration.name}'",
                     },
@@ -173,7 +173,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
 
         if skipped_privacy_requests:
             logger.info(
-                "Skipping email send for the following privacy request ids: "
+                "Skipping email send for the following privacy request IDs: "
                 "{} on connector '{}': no matching identities detected.",
                 skipped_privacy_requests,
                 self.configuration.name,

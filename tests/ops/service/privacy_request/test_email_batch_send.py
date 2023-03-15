@@ -419,7 +419,10 @@ class TestErasureEmailBatchSend:
         second_privacy_request_awaiting_consent_email_send,
         attentive_email_connection_config,
     ) -> None:
-        """Verify that a privacy request queued for a consent email doesn't trigger an erasure email."""
+        """
+        Test for batch erasure email, also verifies that a privacy request
+        queued for a consent email doesn't trigger an erasure email.
+        """
 
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete

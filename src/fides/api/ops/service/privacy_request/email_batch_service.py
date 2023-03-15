@@ -21,7 +21,7 @@ BATCH_EMAIL_SEND = "batch_email_send"
 
 
 class EmailExitState(Enum):
-    """A schema to describe where the consent email send process exited.
+    """A schema to describe where the email send process exited.
     For logging and testing"""
 
     no_applicable_privacy_requests = "no_applicable_privacy_requests"

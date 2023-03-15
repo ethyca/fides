@@ -16,12 +16,13 @@ depends_on = None
 
 
 def upgrade():
-    # Add to ConnectionType enum
+    # Add 'attentive' to ConnectionType enum and remove 'email'
+    op.execute("delete from connectionconfig where connection_type in ('email')")
     op.execute("alter type connectiontype rename to connectiontype_old")
     op.execute(
         "create type connectiontype as enum('postgres', 'mongodb', 'mysql', 'https', "
         "'snowflake', 'redshift', 'mssql', 'mariadb', 'bigquery', 'saas', 'manual', "
-        "'email', 'manual_webhook', 'timescale', 'fides', 'sovrn', 'attentive')"
+        "'manual_webhook', 'timescale', 'fides', 'sovrn', 'attentive')"
     )
     op.execute(
         (
@@ -45,8 +46,8 @@ def upgrade():
 
 
 def downgrade():
-    # Remove attentive from the connectiontype enum
-    op.execute("delete from connectionconfig where connectiontype in ('attentive')")
+    # Remove attentive from the connectiontype enum and restore email
+    op.execute("delete from connectionconfig where connection_type in ('attentive')")
     op.execute("alter type connectiontype rename to connectiontype_old")
     op.execute(
         "create type connectiontype as enum('postgres', 'mongodb', 'mysql', 'https', "

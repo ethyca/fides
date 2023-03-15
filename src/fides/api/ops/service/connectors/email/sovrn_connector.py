@@ -14,7 +14,3 @@ class SovrnConnector(GenericConsentEmailConnector):
     @property
     def identities_for_test_email(self) -> Dict[str, Any]:
         return {SOVRN_REQUIRED_IDENTITY: "test_ljt_reader_id"}
-
-    @property
-    def required_identities(self) -> List[str]:
-        return [SOVRN_REQUIRED_IDENTITY]
