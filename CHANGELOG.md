@@ -15,11 +15,12 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.8.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.9.0...main)
+
+## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
 
 ### Added
 
-* Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
 * The ability to assign users as system managers for a specific system [#2714](https://github.com/ethyca/fides/pull/2714)
 * New endpoints to add and remove users as system managers [#2726](https://github.com/ethyca/fides/pull/2726)
 * Warning about access control migration to the UI [#2842](https://github.com/ethyca/fides/pull/2842)
@@ -39,8 +40,17 @@ The types of changes are:
 ### Fixed
 
 * Fixed issue where unsaved changes warning would always show up when running fidesplus [#2788](https://github.com/ethyca/fides/issues/2788)
-* Fixed issue where more than 1 populated custom fields removed a system from the datamap export [#2825](https://github.com/ethyca/fides/pull/2825)
 * Fixed problem in datamap export with datasets that had been updated via SaaS instantiation [#2841](https://github.com/ethyca/fides/pull/2841)
+
+## [2.8.3](https://github.com/ethyca/fides/compare/2.8.2...2.8.3)
+
+### Added
+
+* Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
+
+### Fixed
+
+* Fixed issue where more than 1 populated custom fields removed a system from the datamap export [#2825](https://github.com/ethyca/fides/pull/2825)
 
 ## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
 
