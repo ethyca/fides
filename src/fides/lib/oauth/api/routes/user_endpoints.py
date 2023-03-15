@@ -18,7 +18,6 @@ from starlette.status import (
 )
 
 from fides.api.ops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_READ,
     USER_CREATE,
     USER_DELETE,
     USER_READ,
@@ -85,8 +84,8 @@ def create_user(
         db=db,
         data={
             "user_id": user.id,
-            "scopes": [PRIVACY_REQUEST_READ],
-        },  # TODO - Change this to Viewer Role by default?
+            "scopes": [],
+        },
     )
     return user
 

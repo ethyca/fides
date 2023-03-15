@@ -25,7 +25,7 @@ const Profile = ({ title, children }: Props) => (
           <BreadcrumbItem>
             <Link href={USER_MANAGEMENT_ROUTE} passHref>
               <BreadcrumbLink href={USER_MANAGEMENT_ROUTE}>
-                User Management
+                Management
               </BreadcrumbLink>
             </Link>
           </BreadcrumbItem>

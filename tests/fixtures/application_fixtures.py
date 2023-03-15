@@ -8,6 +8,7 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+from fideslang.models import Dataset
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
@@ -1411,7 +1412,7 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 @pytest.fixture(scope="function")
 def ctl_dataset(db: Session, example_datasets):
-    dataset = CtlDataset(
+    ds = Dataset(
         fides_key="postgres_example_subscriptions_dataset",
         organization_fides_key="default_organization",
         name="Postgres Example Subscribers Dataset",
@@ -1437,6 +1438,7 @@ def ctl_dataset(db: Session, example_datasets):
             },
         ],
     )
+    dataset = CtlDataset(**ds.dict())
     db.add(dataset)
     db.commit()
     yield dataset

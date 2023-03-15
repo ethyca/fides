@@ -317,15 +317,11 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                     for dataset_reference in dataset_references
                 ]
                 cartesian_product_of_declaration = []
-                if system_custom_field_data:
-                    for _, v in system_custom_field_data.items():
-                        for product in cartesian_product_of_declaration_builder:
+                for product in cartesian_product_of_declaration_builder:
+                    if system_custom_field_data:
+                        for _, v in system_custom_field_data.items():
                             product.append(v)
-                            cartesian_product_of_declaration.append(tuple(product))
-                else:
-                    cartesian_product_of_declaration = [
-                        tuple(x) for x in cartesian_product_of_declaration_builder
-                    ]
+                    cartesian_product_of_declaration.append(tuple(product))
 
                 output_list += cartesian_product_of_declaration
         else:

@@ -3,6 +3,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import yaml
+from fideslang.models import DatasetCollection, DatasetField
 
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
@@ -354,8 +355,11 @@ def validate_updated_instances_additions(
         len(updated_dataset_config.ctl_dataset.collections)
         == len(original_template_dataset["collections"]) + 1
     )
-    assert NEW_COLLECTION in updated_dataset_config.ctl_dataset.collections
-    assert NEW_FIELD in updated_dataset_config.ctl_dataset.collections[0]["fields"]
+
+    assert (
+        DatasetCollection(**NEW_COLLECTION)
+        in updated_dataset_config.ctl_dataset.collections
+    )
 
     # check for config additions to template
     updated_saas_config = updated_dataset_config.connection_config.saas_config

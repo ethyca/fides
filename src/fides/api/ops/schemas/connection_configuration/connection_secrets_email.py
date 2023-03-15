@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import BaseModel, EmailStr, Extra, root_validator
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
 
@@ -18,8 +18,8 @@ class EmailSchema(BaseModel):
     """Schema to validate the secrets needed for a generic email connector"""
 
     third_party_vendor_name: str
-    recipient_email_address: str
-    test_email_address: Optional[str]  # Email to send a connection test email
+    recipient_email_address: EmailStr
+    test_email_address: Optional[EmailStr]  # Email to send a connection test email
     advanced_settings: AdvancedSettings
 
     class Config:
