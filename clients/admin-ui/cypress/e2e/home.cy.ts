@@ -25,8 +25,7 @@ describe("Home page", () => {
     cy.login();
   });
 
-  // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
-  describe.skip("permissions", () => {
+  describe("permissions", () => {
     beforeEach(() => {
       // For these tests, let's say we always have systems and connectors
       cy.intercept("GET", "/api/v1/system", {

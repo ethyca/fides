@@ -55,31 +55,36 @@ const RoleOption = ({ label, roleKey, isSelected, isDisabled }: Props) => {
           </Text>
           <GreenCheckCircleIcon />
         </Flex>
-        <Flex alignItems="center">
-          <Text fontSize="sm" fontWeight="semibold" mr={1}>
-            Assigned systems
-          </Text>
-          <QuestionTooltip label="Assigned systems refer to those systems that have been specifically allocated to a user for management purposes. Users assigned to a system possess full edit permissions and are listed as the Data Steward for the respective system." />
-        </Flex>
-        <Button
-          disabled={isDisabled}
-          title={buttonTitle}
-          colorScheme="primary"
-          size="xs"
-          width="fit-content"
-          onClick={assignSystemsModal.onOpen}
-          data-testid="assign-systems-btn"
-        >
-          Assign systems +
-        </Button>
-        <AssignSystemsDeleteTable />
-        {/* By conditionally rendering the modal, we force it to reset its state
-        whenever it opens */}
-        {assignSystemsModal.isOpen ? (
-          <AssignSystemsModal
-            isOpen={assignSystemsModal.isOpen}
-            onClose={assignSystemsModal.onClose}
-          />
+        {/* The approver role cannot be assigned systems */}
+        {roleKey !== RoleRegistryEnum.APPROVER ? (
+          <>
+            <Flex alignItems="center">
+              <Text fontSize="sm" fontWeight="semibold" mr={1}>
+                Assigned systems
+              </Text>
+              <QuestionTooltip label="Assigned systems refer to those systems that have been specifically allocated to a user for management purposes. Users assigned to a system possess full edit permissions and are listed as the Data Steward for the respective system." />
+            </Flex>
+            <Button
+              disabled={isDisabled}
+              title={buttonTitle}
+              colorScheme="primary"
+              size="xs"
+              width="fit-content"
+              onClick={assignSystemsModal.onOpen}
+              data-testid="assign-systems-btn"
+            >
+              Assign systems +
+            </Button>
+            <AssignSystemsDeleteTable />
+            {/* By conditionally rendering the modal, we force it to reset its state
+                whenever it opens */}
+            {assignSystemsModal.isOpen ? (
+              <AssignSystemsModal
+                isOpen={assignSystemsModal.isOpen}
+                onClose={assignSystemsModal.onClose}
+              />
+            ) : null}
+          </>
         ) : null}
       </Stack>
     );

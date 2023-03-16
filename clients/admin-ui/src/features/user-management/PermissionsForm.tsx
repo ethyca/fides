@@ -14,11 +14,11 @@ import NextLink from "next/link";
 import { useAppSelector } from "~/app/hooks";
 import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum } from "~/types/api";
-import { ROLES } from "~/types/api/models/RolesDataMapping";
 
-import QuestionTooltip from "../common/QuestionTooltip";
 import RoleOption from "./RoleOption";
 import {
   selectActiveUserId,
