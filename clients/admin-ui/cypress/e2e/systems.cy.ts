@@ -494,7 +494,7 @@ describe("System management page", () => {
         });
         cy.getByTestId("continue-btn").click();
         cy.wait("@putSystem");
-        cy.getByTestId("toast-success-msg").contains("Data use case deleted");
+        cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
 
       it("deletes an accordion privacy declaration", () => {
@@ -508,7 +508,7 @@ describe("System management page", () => {
           expect(body.privacy_declarations.length).to.eql(1);
           expect(body.privacy_declarations[0].data_use !== "improve.system");
         });
-        cy.getByTestId("toast-success-msg").contains("Data use case deleted");
+        cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
     });
   });
