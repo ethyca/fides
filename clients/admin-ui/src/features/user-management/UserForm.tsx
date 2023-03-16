@@ -90,9 +90,11 @@ const UserForm = ({
       dispatch(setActiveUserId(result.data.id));
     }
   };
-  const validationSchema = canChangePassword
-    ? ValidationSchema
-    : ValidationSchema.omit(["password"]);
+
+  const validationSchema =
+    canChangePassword || isNewUser
+      ? ValidationSchema
+      : ValidationSchema.omit(["password"]);
 
   return (
     <Formik
