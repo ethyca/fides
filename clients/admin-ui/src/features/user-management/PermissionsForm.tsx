@@ -7,6 +7,7 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import { useHasRole } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 
@@ -63,12 +64,24 @@ const PermissionsForm = () => {
     toast(successToastParams("Permissions updated"));
   };
 
+  // This prevents users with contributor role from being able to assign owner roles
+  const isOwner = useHasRole([RoleRegistryEnum.OWNER]);
+
   if (!activeUserId) {
     return null;
   }
 
   if (isLoading) {
     return <Spinner />;
+  }
+
+  if (!isOwner && userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)) {
+    return (
+      <Text>
+        You do not have sufficient access to change this user&apos;s
+        permissions.
+      </Text>
+    );
   }
 
   const initialValues = userPermissions?.roles
@@ -97,6 +110,9 @@ const PermissionsForm = () => {
                   <RoleOption
                     key={role.roleKey}
                     isSelected={isSelected}
+                    isDisabled={
+                      role.roleKey === RoleRegistryEnum.OWNER ? !isOwner : false
+                    }
                     {...role}
                   />
                 );

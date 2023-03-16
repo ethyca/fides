@@ -22,15 +22,20 @@ interface Props {
   label: string;
   roleKey: RoleRegistryEnum;
   isSelected: boolean;
+  isDisabled: boolean;
 }
 
-const RoleOption = ({ label, roleKey, isSelected }: Props) => {
+const RoleOption = ({ label, roleKey, isSelected, isDisabled }: Props) => {
   const { setFieldValue } = useFormikContext<FormValues>();
   const assignSystemsModal = useDisclosure();
 
   const handleClick = () => {
     setFieldValue("roles", [roleKey]);
   };
+
+  const buttonTitle = isDisabled
+    ? "You do not have sufficient permissions to assign this role."
+    : undefined;
 
   if (isSelected) {
     return (
@@ -57,6 +62,8 @@ const RoleOption = ({ label, roleKey, isSelected }: Props) => {
           <QuestionTooltip label="Assigned systems refer to those systems that have been specifically allocated to a user for management purposes. Users assigned to a system possess full edit permissions and are listed as the Data Steward for the respective system." />
         </Flex>
         <Button
+          disabled={isDisabled}
+          title={buttonTitle}
           colorScheme="primary"
           size="xs"
           width="fit-content"
@@ -86,6 +93,8 @@ const RoleOption = ({ label, roleKey, isSelected }: Props) => {
       height="inherit"
       p={4}
       data-testid={`role-option-${label}`}
+      title={buttonTitle}
+      disabled={isDisabled}
     >
       {label}
     </Button>
