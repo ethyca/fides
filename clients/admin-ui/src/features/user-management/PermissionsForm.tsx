@@ -75,6 +75,14 @@ const PermissionsForm = () => {
     return <Spinner />;
   }
 
+  if (!isOwner && userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)) {
+    return (
+      <Text>
+        You do not have permissions to change this user&apos;s permissions.
+      </Text>
+    );
+  }
+
   const initialValues = userPermissions?.roles
     ? { roles: userPermissions.roles }
     : defaultInitialValues;
