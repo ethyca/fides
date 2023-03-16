@@ -78,7 +78,8 @@ const PermissionsForm = () => {
   if (!isOwner && userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)) {
     return (
       <Text>
-        You do not have permissions to change this user&apos;s permissions.
+        You do not have sufficient access to change this user&apos;s
+        permissions.
       </Text>
     );
   }
