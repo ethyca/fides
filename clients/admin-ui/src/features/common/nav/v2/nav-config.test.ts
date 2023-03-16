@@ -14,10 +14,12 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
   ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
   ScopeRegistryEnum.DATAMAP_READ,
-  ScopeRegistryEnum.CLI_OBJECTS_READ,
-  ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-  ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
-  ScopeRegistryEnum.USER_READ,
+  ScopeRegistryEnum.SYSTEM_CREATE,
+  ScopeRegistryEnum.SYSTEM_READ,
+  ScopeRegistryEnum.SYSTEM_UPDATE,
+  ScopeRegistryEnum.CTL_DATASET_CREATE,
+  ScopeRegistryEnum.USER_UPDATE,
+  ScopeRegistryEnum.DATA_CATEGORY_CREATE,
 ];
 
 describe("configureNavGroups", () => {
@@ -85,12 +87,11 @@ describe("configureNavGroups", () => {
     });
   });
 
-  // TODO: tests temporarily disabled due to https://github.com/ethyca/fides/issues/2769
-  describe.skip("configure by scopes", () => {
+  describe("configure by scopes", () => {
     it("does not render paths the user does not have scopes for", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
-        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
+        userScopes: [ScopeRegistryEnum.SYSTEM_READ],
       });
 
       expect(navGroups[0]).toMatchObject({

@@ -77,8 +77,7 @@ describe("configureTiles", () => {
     ]);
   });
 
-  // TODO: tests temporarily disabled due to https://github.com/ethyca/fides/issues/2769
-  describe.skip("configure by scopes", () => {
+  describe("configure by scopes", () => {
     it("returns no tiles if user has no scopes", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
