@@ -6,10 +6,10 @@ describe("Taxonomy management page", () => {
     stubTaxonomyEntities();
   });
 
-  // TODO: Update Cypress test to reflect the nav bar 2.0
-  it.skip("Can navigate to the taxonomy page", () => {
+  it("Can navigate to the taxonomy page", () => {
     cy.visit("/");
-    cy.getByTestId("nav-link-Taxonomy").click();
+    cy.contains("nav a", "Management").click();
+    cy.contains("nav a", "Taxonomy").click();
     cy.getByTestId("taxonomy-tabs");
     cy.getByTestId("tab-Data Categories");
     cy.getByTestId("tab-Data Uses");

@@ -1,6 +1,9 @@
 import { ReactNode, useState } from "react";
 
-import { CustomFieldsList } from "~/features/common/custom-fields";
+import {
+  CustomFieldsList,
+  CustomFieldValues,
+} from "~/features/common/custom-fields";
 import { useCustomFields } from "~/features/common/custom-fields/hooks";
 import { RTKResult } from "~/features/common/types";
 import {
@@ -63,14 +66,28 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
 
-const transformTaxonomyBaseToInitialValues = (t: TaxonomyEntity) => ({
+/**
+ * Transforms the attributes that are shared between taxonomy entities into values
+ * that Formik can easily handle.
+ * If the taxonomy entity has additional fields that need to be transformed,
+ * it should extend from this function.
+ */
+const transformTaxonomyBaseToInitialValues = (
+  t: TaxonomyEntity,
+  customFieldValues?: CustomFieldValues
+) => ({
   fides_key: t.fides_key ?? "",
   name: t.name ?? "",
   description: t.description ?? "",
   parent_key: t.parent_key ?? "",
   is_default: t.is_default ?? false,
+  customFieldValues,
 });
 
+/**
+ * Transforms the attributes that are shared between taxonomy entities into
+ * a taxonomy object ready to be consumed by the API
+ */
 const transformBaseFormValuesToEntity = (
   initialValues: FormValues,
   newValues: FormValues
@@ -89,7 +106,7 @@ const transformBaseFormValuesToEntity = (
     entity.fides_key = initialValues.fides_key;
   }
 
-  delete entity.definitionIdToCustomFieldValue;
+  delete entity.customFieldValues;
 
   return entity;
 };
@@ -153,6 +170,12 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
     />
   );
 
+  const transformEntityToInitialValues = (entity: DataCategory) =>
+    transformTaxonomyBaseToInitialValues(
+      entity,
+      customFields.customFieldValues
+    );
+
   return {
     data,
     isLoading,
@@ -164,7 +187,7 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
     handleEdit,
     handleDelete,
     renderExtraFormFields,
-    transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
+    transformEntityToInitialValues,
   };
 };
 
@@ -252,7 +275,10 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
   const handleDelete = deleteDataUseMutationTrigger;
 
   const transformEntityToInitialValues = (du: DataUse) => {
-    const base = transformTaxonomyBaseToInitialValues(du);
+    const base = transformTaxonomyBaseToInitialValues(
+      du,
+      customFields.customFieldValues
+    );
     return {
       ...base,
       legal_basis: du.legal_basis,
@@ -407,7 +433,10 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
   const handleDelete = deleteDataSubjectMutationTrigger;
 
   const transformEntityToInitialValues = (ds: DataSubject) => {
-    const base = transformTaxonomyBaseToInitialValues(ds);
+    const base = transformTaxonomyBaseToInitialValues(
+      ds,
+      customFields.customFieldValues
+    );
     return {
       ...base,
       rights: ds.rights?.values ?? [],

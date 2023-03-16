@@ -275,6 +275,18 @@ EXPECTED_RESPONSE_TWO_CUSTOM_FIELDS_ONE_MULTIVAL_TWO_SYSTEMS = [
 ]
 
 
+PRIVACY_DECLARATION_WITH_NAME_SYSTEM_ROW_RESPONSE_PAYLOAD = [
+    {
+        **HEADERS_ROW_RESPONSE_PAYLOAD,
+        "system.privacy_declaration.name": "Privacy Declaration Name",
+    },
+    {
+        **PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.privacy_declaration.name": "declaration-name-2",
+    },
+]
+
+
 @pytest.fixture
 def system_no_privacy_declarations(db):
     """
@@ -542,6 +554,38 @@ def test_datamap_with_privacy_declaration(
     assert response.status_code == expected_status_code
     if expected_response_payload is not None:
         assert response.json() == expected_response_payload
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("system_privacy_declarations")
+def test_datamap_with_privacy_declaration_with_name(
+    test_config: FidesConfig,
+    test_client: TestClient,
+) -> None:
+    response = test_client.get(
+        test_config.cli.server_url
+        + API_PREFIX
+        + "/datamap/default_organization?include_deprecated_columns=true",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == PRIVACY_DECLARATION_WITH_NAME_SYSTEM_ROW_RESPONSE_PAYLOAD
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("system_privacy_declarations")
+def test_datamap_with_privacy_declaration_without_name(
+    test_config: FidesConfig,
+    test_client: TestClient,
+) -> None:
+    response = test_client.get(
+        test_config.cli.server_url
+        + API_PREFIX
+        + "/datamap/default_organization?include_deprecated_columns=false",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_PRIVACY_DECLARATION
 
 
 @pytest.mark.integration

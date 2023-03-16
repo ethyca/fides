@@ -15,7 +15,32 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.8.3...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.9.0...main)
+
+## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
+
+### Added
+
+* The ability to assign users as system managers for a specific system [#2714](https://github.com/ethyca/fides/pull/2714)
+* New endpoints to add and remove users as system managers [#2726](https://github.com/ethyca/fides/pull/2726)
+* Warning about access control migration to the UI [#2842](https://github.com/ethyca/fides/pull/2842)
+* Adds Role Assignment UI [#2739](https://github.com/ethyca/fides/pull/2739)
+* Add an automated migration to give users a `viewer` role [#2821](https://github.com/ethyca/fides/pull/2821)
+
+### Changed
+
+* Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
+* Added `system.privacy_declaration.name` to datamap response [#2831][https://github.com/ethyca/fides/pull/2831/files]
+
+### Developer Experience
+
+* Retired legacy `navV2` feature flag [#2762](https://github.com/ethyca/fides/pull/2762)
+* Update Admin UI Layout to fill viewport height [#2812](https://github.com/ethyca/fides/pull/2812)
+
+### Fixed
+
+* Fixed issue where unsaved changes warning would always show up when running fidesplus [#2788](https://github.com/ethyca/fides/issues/2788)
+* Fixed problem in datamap export with datasets that had been updated via SaaS instantiation [#2841](https://github.com/ethyca/fides/pull/2841)
 
 ## [2.8.3](https://github.com/ethyca/fides/compare/2.8.2...2.8.3)
 
@@ -36,6 +61,7 @@ The types of changes are:
 
 ## [2.8.1](https://github.com/ethyca/fides/compare/2.8.0...2.8.1)
 
+
 ### Fixed
 
 * Disabled hiding Admin UI based on user scopes [#2771](https://github.com/ethyca/fides/pull/2771)
@@ -54,6 +80,7 @@ The types of changes are:
 * Access and erasure for Jira SaaS Connector [#1871](https://github.com/ethyca/fides/issues/1871)
 * Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
 * Improve "Upload a new dataset YAML" [#1531](https://github.com/ethyca/fides/pull/2258)
+* Input validation and sanitization for Privacy Request fields [#2655](https://github.com/ethyca/fides/pull/2655)
 * Access and erasure support for Yotpo [#2708](https://github.com/ethyca/fides/pull/2708)
 * Custom Field Library Tab [#527](https://github.com/ethyca/fides/pull/2693)
 * Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)

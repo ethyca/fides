@@ -67,13 +67,22 @@ const SystemInformationForm = ({
   withHeader,
   children,
 }: Props) => {
+  const customFields = useCustomFields({
+    resourceType: ResourceTypes.SYSTEM,
+    resourceFidesKey: passedInSystem?.fides_key,
+  });
+
   const initialValues = useMemo(
     () =>
       passedInSystem
-        ? transformSystemToFormValues(passedInSystem)
+        ? transformSystemToFormValues(
+            passedInSystem,
+            customFields.customFieldValues
+          )
         : defaultInitialValues,
-    [passedInSystem]
+    [passedInSystem, customFields.customFieldValues]
   );
+
   const [createSystemMutationTrigger, createSystemMutationResult] =
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
@@ -89,11 +98,6 @@ const SystemInformationForm = ({
   );
 
   const toast = useToast();
-
-  const customFields = useCustomFields({
-    resourceType: ResourceTypes.SYSTEM,
-    resourceFidesKey: passedInSystem?.fides_key,
-  });
 
   const handleSubmit = async (
     values: FormValues,

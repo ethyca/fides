@@ -18,7 +18,6 @@ from starlette.status import (
 )
 
 from fides.api.ops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_READ,
     USER_CREATE,
     USER_DELETE,
     USER_READ,
@@ -85,8 +84,8 @@ def create_user(
         db=db,
         data={
             "user_id": user.id,
-            "scopes": [PRIVACY_REQUEST_READ],
-        },  # TODO - Change this to Viewer Role by default?
+            "scopes": [],
+        },
     )
     return user
 
@@ -248,11 +247,18 @@ def perform_login(
             client_secret_btye_length,
             scopes=user.permissions.scopes,  # type: ignore
             roles=user.permissions.roles,  # type: ignore
+            systems=user.system_ids,  # type: ignore
             user_id=user.id,
         )
+    else:
+        # Refresh the client just in case - for example, scopes and roles were added via the db directly.
+        client.scopes = user.permissions.scopes  # type: ignore
+        client.roles = user.permissions.roles  # type: ignore
+        client.systems = user.system_ids  # type: ignore
+        client.save(db)
 
-    if not user.permissions.scopes and not user.permissions.roles:  # type: ignore
-        logger.info("User needs scopes and/or roles to login.")
+    if not user.permissions.scopes and not user.permissions.roles and not user.systems:  # type: ignore
+        logger.warning("User {} needs scopes, roles, or systems to login.", user.id)
         raise AuthorizationError(detail="Not Authorized for this action")
 
     user.last_login_at = datetime.utcnow()
