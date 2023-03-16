@@ -90,9 +90,11 @@ const UserForm = ({
       dispatch(setActiveUserId(result.data.id));
     }
   };
-  const validationSchema = canChangePassword
-    ? ValidationSchema
-    : ValidationSchema.omit(["password"]);
+
+  const validationSchema =
+    canChangePassword || isNewUser
+      ? ValidationSchema
+      : ValidationSchema.omit(["password"]);
 
   return (
     <Formik
@@ -137,6 +139,7 @@ const UserForm = ({
                 variant="block"
                 placeholder="Enter new username"
                 disabled={!isNewUser}
+                isRequired
               />
               <CustomTextInput
                 name="first_name"
@@ -160,6 +163,7 @@ const UserForm = ({
                   placeholder="********"
                   type="password"
                   tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                  isRequired
                 />
               ) : null}
             </Stack>
