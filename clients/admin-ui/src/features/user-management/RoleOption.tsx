@@ -33,6 +33,10 @@ const RoleOption = ({ label, roleKey, isSelected, isDisabled }: Props) => {
     setFieldValue("roles", [roleKey]);
   };
 
+  const buttonTitle = isDisabled
+    ? "You do not have sufficient permissions to assign this role."
+    : undefined;
+
   if (isSelected) {
     return (
       <Stack
@@ -59,11 +63,7 @@ const RoleOption = ({ label, roleKey, isSelected, isDisabled }: Props) => {
         </Flex>
         <Button
           disabled={isDisabled}
-          title={
-            isDisabled
-              ? "You do not have sufficient permissions to assign this role."
-              : ""
-          }
+          title={buttonTitle}
           colorScheme="primary"
           size="xs"
           width="fit-content"
@@ -84,24 +84,6 @@ const RoleOption = ({ label, roleKey, isSelected, isDisabled }: Props) => {
       </Stack>
     );
   }
-  if (isDisabled) {
-    return (
-      <Button
-        title="You do not have sufficient permissions to assign this role."
-        justifyContent="start"
-        backgroundColor="gray.400"
-        _hover={{
-          background: "gray.400",
-        }}
-        variant="outline"
-        height="inherit"
-        p={4}
-        data-testid={`role-option-${label}`}
-      >
-        {label}
-      </Button>
-    );
-  }
 
   return (
     <Button
@@ -111,6 +93,8 @@ const RoleOption = ({ label, roleKey, isSelected, isDisabled }: Props) => {
       height="inherit"
       p={4}
       data-testid={`role-option-${label}`}
+      title={buttonTitle}
+      disabled={isDisabled}
     >
       {label}
     </Button>
