@@ -73,7 +73,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import VIEWER
+from fides.lib.oauth.roles import APPROVER, VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -1346,13 +1346,11 @@ def user(db: Session):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=SCOPE_REGISTRY,
+        roles=[APPROVER],
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()
@@ -1664,9 +1662,7 @@ def system_manager(db: Session, system) -> System:
         systems=[system.id],
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": []}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id})
 
     db.add(client)
     db.commit()

@@ -54,7 +54,7 @@ def create_user_permissions(
     user_id: str,
     permissions: UserPermissionsCreate,
 ) -> FidesUserPermissions:
-    """Create user permissions with big picture roles and/or scopes."""
+    """Create user permissions with roles."""
     user = validate_user_id(db, user_id)
     if user.permissions is not None:  # type: ignore[attr-defined]
         raise HTTPException(
@@ -82,21 +82,19 @@ def update_user_permissions(
     user_id: str,
     permissions: UserPermissionsEdit,
 ) -> FidesUserPermissions:
-    """Update either a user's role(s) and/or scope(s).
+    """Update a user's role(s).  The UI assigns one role at a time, but multiple
+    roles are technically supported.
 
-    Typically we'll assign roles to a user and they'll inherit the associated scopes,
-    but we're still supporting assigning scopes directly as well.
+    Users inherit numerous scopes that are associated with their role.
     """
     user = validate_user_id(db, user_id)
     logger.info("Updated FidesUserPermission record")
 
     if user.client:
-        user.client.update(
-            db=db, data={"scopes": permissions.scopes, "roles": permissions.roles}
-        )
+        user.client.update(db=db, data={"roles": permissions.roles})
     return user.permissions.update(  # type: ignore[attr-defined]
         db=db,
-        data={"id": user.permissions.id, "user_id": user_id, "scopes": permissions.scopes, "roles": permissions.roles},  # type: ignore[attr-defined]
+        data={"id": user.permissions.id, "user_id": user_id, "roles": permissions.roles},  # type: ignore[attr-defined]
     )
 
 
@@ -112,14 +110,13 @@ async def get_user_permissions(
     user_id: str,
 ) -> Optional[FidesUserPermissions]:
     # A user is able to retrieve their own permissions.
-    if current_user.id == user_id:
+    if current_user and current_user.id == user_id:
         # The root user is a special case because they aren't persisted in the database.
         if current_user.id == CONFIG.security.oauth_root_client_id:
             logger.info("Created FidesUserPermission for root user")
             return FidesUserPermissions(
                 id=CONFIG.security.oauth_root_client_id,
                 user_id=CONFIG.security.oauth_root_client_id,
-                scopes=CONFIG.security.root_user_scopes,
                 roles=CONFIG.security.root_user_roles,
             )
 

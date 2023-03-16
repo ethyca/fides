@@ -79,7 +79,7 @@ def get_user_permissions(
     handle_cli_response(response, verbose=False)
 
     return (
-        response.json()["scopes"],
+        response.json()["total_scopes"],
         response.json()["roles"],
     )
 
@@ -180,18 +180,18 @@ def get_permissions_command(server_url: str) -> None:
 
     user_id = credentials.user_id
     auth_header = get_auth_header()
-    scopes, roles = get_user_permissions(user_id, auth_header, server_url)
+    total_scopes, roles = get_user_permissions(user_id, auth_header, server_url)
     systems: List[FidesKey] = get_systems_managed_by_user(
         user_id, auth_header, server_url
     )
 
-    print("Permissions (Directly-Assigned Scopes):")
-    for scope in scopes:
-        print(f"\t{scope}")
-
     print("Roles:")
     for role in roles:
         print(f"\t{role}")
+
+    print("Associated scopes:")
+    for scope in total_scopes:
+        print(f"\t{scope}")
 
     print("Systems Under Management:")
     for system in systems:

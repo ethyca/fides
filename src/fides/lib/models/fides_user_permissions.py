@@ -12,7 +12,6 @@ class FidesUserPermissions(Base):
     """The DB ORM model for FidesUserPermissions"""
 
     user_id = Column(String, ForeignKey(FidesUser.id), nullable=False, unique=True)
-    scopes = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
     roles = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
     user = relationship(
         FidesUser,
@@ -21,10 +20,16 @@ class FidesUserPermissions(Base):
 
     @property
     def total_scopes(self) -> List[str]:
-        """Returns the total model-level scopes the user has, either 1) scopes they are assigned directly,
-        or 2) Roles they have via their scopes."""
-        all_scopes = self.scopes or []
+        """Returns the scopes the user has via their roles."""
+        all_scopes = []
         for role in self.roles:
             all_scopes += ROLES_TO_SCOPES_MAPPING.get(role, [])
 
         return sorted(list(set(all_scopes)))
+
+    @property
+    def scopes(self) -> List[str]:
+        """Backwards-compatible property for use while the UI is still looking at userpermission.scopes
+        Users can no longer be assigned scopes directly.
+        """
+        return self.total_scopes

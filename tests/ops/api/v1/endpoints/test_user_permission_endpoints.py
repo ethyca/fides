@@ -23,7 +23,13 @@ from fides.core.config import CONFIG
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import OWNER, ROLES_TO_SCOPES_MAPPING, VIEWER
+from fides.lib.oauth.roles import (
+    APPROVER,
+    CONTRIBUTOR,
+    OWNER,
+    ROLES_TO_SCOPES_MAPPING,
+    VIEWER,
+)
 from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
 
@@ -43,37 +49,12 @@ class TestCreateUserPermissions:
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code
 
-    def test_create_user_permissions_invalid_scope(
-        self,
-        db,
-        api_client,
-        generate_auth_header,
-        user,
-        url,
-    ) -> None:
-        auth_header = generate_auth_header([USER_PERMISSION_CREATE])
-        user = FidesUser.create(
-            db=db,
-            data={"username": "user_1", "password": "test_password"},
-        )
-
-        body = {"user_id": user.id, "scopes": ["not a real scope"]}
-
-        response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
-        assert response.json()["detail"][0]["loc"] == ["body", "scopes", 0]
-        assert (
-            "value is not a valid enumeration member"
-            in response.json()["detail"][0]["msg"]
-        )
-        user.delete(db)
-
     def test_create_user_permissions_invalid_user_id(
         self, db, api_client, generate_auth_header
     ) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_CREATE])
         user_id = "bogus_user_id"
-        body = {"user_id": user_id, "scopes": [PRIVACY_REQUEST_READ]}
+        body = {"user_id": user_id, "roles": [VIEWER]}
         response = api_client.post(
             f"{V1_URL_PREFIX}/user/{user_id}/permission", headers=auth_header, json=body
         )
@@ -81,7 +62,7 @@ class TestCreateUserPermissions:
         assert HTTP_404_NOT_FOUND == response.status_code
         assert permissions is None
 
-    def test_create_user_permissions_add_scopes_no_client_to_update(
+    def test_create_user_permissions_no_client_to_update(
         self, db, api_client, generate_auth_header
     ) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_CREATE])
@@ -90,7 +71,7 @@ class TestCreateUserPermissions:
             data={"username": "user_1", "password": "test_password"},
         )
 
-        body = {"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+        body = {"user_id": user.id, "roles": [APPROVER]}
         response = api_client.post(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
@@ -98,13 +79,14 @@ class TestCreateUserPermissions:
         response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body["id"] == permissions.id
-        assert permissions.scopes == [PRIVACY_REQUEST_READ]
+        assert permissions.roles == [APPROVER]
         assert not user.client
         user.delete(db)
 
-    def test_create_user_permissions_add_scopes(
+    def test_create_user_permissions_add_scopes_are_ignored(
         self, db, api_client, generate_auth_header
     ) -> None:
+        """Test scopes in the request body are ignored - the UI may still be passing in scopes"""
         auth_header = generate_auth_header([USER_PERMISSION_CREATE])
         user = FidesUser.create(
             db=db,
@@ -120,7 +102,11 @@ class TestCreateUserPermissions:
         db.add(client)
         db.commit()
 
-        body = {"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+        body = {
+            "user_id": user.id,
+            "roles": [APPROVER],
+            "scopes": [PRIVACY_REQUEST_READ],
+        }
         response = api_client.post(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
@@ -128,10 +114,7 @@ class TestCreateUserPermissions:
         response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body["id"] == permissions.id
-        assert permissions.scopes == [PRIVACY_REQUEST_READ]
-        assert (
-            user.client.roles == []
-        ), "Roles not specified in request so they were overridden"
+        assert permissions.roles == [APPROVER]
         user.delete(db)
 
     def test_create_user_permissions_add_bad_role(
@@ -164,7 +147,7 @@ class TestCreateUserPermissions:
         client = ClientDetail(
             hashed_secret="thisisatest",
             salt="thisisstillatest",
-            scopes=[PRIVACY_REQUEST_READ],
+            scopes=[],
             roles=[],
             user_id=user.id,
         )
@@ -179,41 +162,13 @@ class TestCreateUserPermissions:
         response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body["id"] == permissions.id
-        assert permissions.scopes == []
+        assert (
+            permissions.scopes == ROLES_TO_SCOPES_MAPPING[VIEWER]
+        )  # Backwards compatible - these are the "scopes" associated with roles
         assert permissions.roles == [VIEWER]
-        assert client.scopes == [], "No scopes in body so they were overridden"
-        user.delete(db)
 
-    def test_create_roles_on_permission_object_and_client(
-        self, db, api_client, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header([USER_PERMISSION_CREATE])
-        user = FidesUser.create(
-            db=db,
-            data={"username": "user_1", "password": "test_password"},
-        )
-        client = ClientDetail(
-            hashed_secret="thisisatest",
-            salt="thisisstillatest",
-            scopes=[],
-            roles=[VIEWER],
-            user_id=user.id,
-        )
-        db.add(client)
-        db.commit()
-
-        body = {"user_id": user.id, "roles": [OWNER]}
-        response = api_client.post(
-            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
-        )
-        permissions = FidesUserPermissions.get_by(db, field="user_id", value=user.id)
-        response_body = response.json()
-        assert HTTP_201_CREATED == response.status_code
-        assert response_body["id"] == permissions.id
-        assert permissions.scopes == []
-        assert permissions.roles == [OWNER]
-        db.refresh(client)
-        assert client.roles == [OWNER]
+        assert client.roles == [VIEWER]
+        assert client.scopes == [], "User create flow doesn't override client scopes"
         user.delete(db)
 
 
@@ -233,32 +188,6 @@ class TestEditUserPermissions:
         response = api_client.put(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code
 
-    def test_edit_user_permissions_invalid_scope(
-        self,
-        db,
-        api_client,
-        generate_auth_header,
-        url,
-    ) -> None:
-        auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
-        user = FidesUser.create(
-            db=db,
-            data={"username": "user_1", "password": "test_password"},
-        )
-
-        body = {"scopes": ["not a real scope"]}
-
-        response = api_client.put(
-            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
-        )
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
-        assert response.json()["detail"][0]["loc"] == ["body", "scopes", 0]
-        assert (
-            "value is not a valid enumeration member"
-            in response.json()["detail"][0]["msg"]
-        )
-        user.delete(db)
-
     def test_edit_user_permissions_invalid_user_id(
         self, db, api_client, generate_auth_header
     ) -> None:
@@ -270,9 +199,9 @@ class TestEditUserPermissions:
         )
 
         permissions = FidesUserPermissions.create(
-            db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+            db=db, data={"user_id": user.id, "roles": [APPROVER]}
         )
-        body = {"id": permissions.id, "scopes": [PRIVACY_REQUEST_READ]}
+        body = {"id": permissions.id, "roles": [APPROVER]}
         response = api_client.put(
             f"{V1_URL_PREFIX}/user/{invalid_user_id}/permission",
             headers=auth_header,
@@ -298,7 +227,6 @@ class TestEditUserPermissions:
             db=db,
             data={
                 "user_id": user.id,
-                "scopes": [PRIVACY_REQUEST_READ],
                 "roles": [VIEWER],
             },
         )
@@ -308,83 +236,25 @@ class TestEditUserPermissions:
             db,
             CONFIG.security.oauth_client_id_length_bytes,
             CONFIG.security.oauth_client_secret_length_bytes,
-            scopes=[PRIVACY_REQUEST_READ],
             roles=[VIEWER],
             user_id=user.id,
         )
 
-        updated_scopes = [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]
-        body = {"scopes": updated_scopes}
+        updated_roles = [CONTRIBUTOR]
+        body = {"roles": updated_roles}
         response = api_client.put(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
         response_body = response.json()
         assert HTTP_200_OK == response.status_code
-        assert response_body["scopes"] == updated_scopes
-        assert (
-            response_body["roles"] == []
-        ), "Roles removed as they were not specified in the request"
+        assert response_body["roles"] == updated_roles
         assert response_body["id"] == permissions_id
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
-        assert client.scopes == updated_scopes
-        assert client.roles == []
+        assert client.roles == [CONTRIBUTOR]
 
         db.refresh(permissions)
-        assert permissions.scopes == updated_scopes
-        assert permissions.roles == []
-        assert permissions.id == permissions_id
-
-        user.delete(db)
-
-    def test_edit_user_scopes(self, db, api_client, generate_auth_header) -> None:
-        auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
-        user = FidesUser.create(
-            db=db,
-            data={"username": "user_1", "password": "test_password"},
-        )
-
-        permissions = FidesUserPermissions.create(
-            db=db,
-            data={
-                "user_id": user.id,
-                "scopes": [PRIVACY_REQUEST_READ],
-                "roles": [VIEWER],
-            },
-        )
-        permissions_id = permissions.id
-
-        ClientDetail.create_client_and_secret(
-            db,
-            CONFIG.security.oauth_client_id_length_bytes,
-            CONFIG.security.oauth_client_secret_length_bytes,
-            scopes=[PRIVACY_REQUEST_READ],
-            roles=[VIEWER],
-            user_id=user.id,
-        )
-
-        updated_scopes = [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]
-        # Note: It is odd that we have the permissions id in the request body.
-        # I've made it optional as the UI sends it.  Verify we ignore it.
-        body = {"id": "invalid_id", "scopes": updated_scopes}
-        response = api_client.put(
-            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
-        )
-        response_body = response.json()
-        assert HTTP_200_OK == response.status_code
-        assert response_body["scopes"] == updated_scopes
-        assert (
-            response_body["roles"] == []
-        ), "Roles removed as they were not specified in the request"
-        assert response_body["id"] == permissions_id
-
-        client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
-        assert client.scopes == updated_scopes
-        assert client.roles == []
-
-        db.refresh(permissions)
-        assert permissions.scopes == updated_scopes
-        assert permissions.roles == []
+        assert permissions.roles == [CONTRIBUTOR]
         assert permissions.id == permissions_id
 
         user.delete(db)
@@ -400,7 +270,6 @@ class TestEditUserPermissions:
             db=db,
             data={
                 "user_id": user.id,
-                "scopes": [PRIVACY_REQUEST_READ],
                 "roles": [VIEWER],
             },
         )
@@ -409,7 +278,6 @@ class TestEditUserPermissions:
             db,
             CONFIG.security.oauth_client_id_length_bytes,
             CONFIG.security.oauth_client_secret_length_bytes,
-            scopes=[PRIVACY_REQUEST_READ],
             roles=[VIEWER],
             user_id=user.id,
         )
@@ -420,17 +288,21 @@ class TestEditUserPermissions:
         )
         response_body = response.json()
         assert HTTP_200_OK == response.status_code
-        assert (
-            response_body["scopes"] == []
-        ), "Scopes removed as they were not specified in the request"
+        assert sorted(response_body["scopes"]) == sorted(
+            SCOPE_REGISTRY
+        ), "We return the scopes associated with roles for backwards compatibility"
         assert response_body["roles"] == [OWNER]
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
-        assert client.scopes == []
+        assert (
+            client.scopes == []
+        ), "Assert client scopes are not updated via the user permissions update flow"
         assert client.roles == [OWNER]
 
         db.refresh(permissions)
-        assert permissions.scopes == []
+        assert permissions.scopes == sorted(
+            SCOPE_REGISTRY
+        ), "For backwards compatibility"
         assert permissions.roles == [OWNER]
 
         user.delete(db)
@@ -454,7 +326,7 @@ class TestGetUserPermissions:
     @pytest.fixture(scope="function")
     def permissions(self, db, user) -> FidesUserPermissions:
         return FidesUserPermissions.create(
-            db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+            db=db, data={"user_id": user.id, "roles": [APPROVER]}
         )
 
     def test_get_user_permissions_not_authenticated(self, api_client, user):
@@ -525,45 +397,17 @@ class TestGetUserPermissions:
         assert HTTP_200_OK == response.status_code
         assert response_body["id"] == permissions.id
         assert response_body["user_id"] == user.id
-        assert response_body["scopes"] == [PRIVACY_REQUEST_READ]
-        assert response_body["roles"] == []
-        assert response_body["total_scopes"] == [PRIVACY_REQUEST_READ]
-
-    def test_get_user_permissions_outdated_scope(
-        self, db, api_client, user, auth_user, permissions
-    ) -> None:
-        user.permissions.scopes = [PRIVACY_REQUEST_READ, "OLD_DEPRECATED_SCOPE"]
-        user.permissions.save(db)
-
-        scopes = [USER_PERMISSION_READ]
-        ClientDetail.create_client_and_secret(
-            db,
-            CONFIG.security.oauth_client_id_length_bytes,
-            CONFIG.security.oauth_client_secret_length_bytes,
-            scopes=scopes,
-            user_id=auth_user.id,
-        )
-        auth_header = generate_auth_header_for_user(auth_user, scopes)
-
-        response = api_client.get(
-            f"{V1_URL_PREFIX}/user/{user.id}/permission",
-            headers=auth_header,
-        )
-        response_body = response.json()
-        assert HTTP_200_OK == response.status_code
-        assert response_body["id"] == permissions.id
-        assert response_body["user_id"] == user.id
-        assert response_body["scopes"] == [
-            PRIVACY_REQUEST_READ
-        ]  # Deprecated scope ignored
-        assert response_body["roles"] == []
-        assert response_body["total_scopes"] == [PRIVACY_REQUEST_READ]
+        assert (
+            response_body["scopes"] == ROLES_TO_SCOPES_MAPPING[APPROVER]
+        )  # For backwards compatibility
+        assert response_body["roles"] == [APPROVER]
+        assert response_body["total_scopes"] == ROLES_TO_SCOPES_MAPPING[APPROVER]
 
     def test_get_user_with_no_permissions_as_root(
         self, db, api_client, auth_user, root_auth_header
     ):
         FidesUserPermissions.create(
-            db=db, data={"user_id": auth_user.id, "scopes": None, "roles": None}
+            db=db, data={"user_id": auth_user.id, "roles": None}
         )
 
         response = api_client.get(
@@ -578,18 +422,21 @@ class TestGetUserPermissions:
 
     def test_get_current_user_permissions(self, db, api_client, auth_user) -> None:
         # Note: Does not include USER_PERMISSION_READ.
-        scopes = [PRIVACY_REQUEST_READ, SAAS_CONFIG_READ]
         ClientDetail.create_client_and_secret(
             db,
             CONFIG.security.oauth_client_id_length_bytes,
             CONFIG.security.oauth_client_secret_length_bytes,
-            scopes=scopes,
+            roles=[VIEWER],
             user_id=auth_user.id,
         )
-        auth_header = generate_auth_header_for_user(auth_user, scopes)
-        permissions = FidesUserPermissions.create(
-            db=db, data={"user_id": auth_user.id, "scopes": scopes}
+        auth_header = generate_auth_header_for_user(
+            auth_user, ROLES_TO_SCOPES_MAPPING[VIEWER]
         )
+
+        permissions = FidesUserPermissions.create(
+            db=db, data={"user_id": auth_user.id, "roles": [VIEWER]}
+        )
+        assert USER_PERMISSION_READ not in ROLES_TO_SCOPES_MAPPING[VIEWER]
 
         response = api_client.get(
             f"{V1_URL_PREFIX}/user/{auth_user.id}/permission",
@@ -599,9 +446,11 @@ class TestGetUserPermissions:
         assert HTTP_200_OK == response.status_code
         assert response_body["id"] == permissions.id
         assert response_body["user_id"] == auth_user.id
-        assert response_body["scopes"] == scopes
-        assert response_body["total_scopes"] == scopes
-        assert response_body["roles"] == []
+        assert (
+            response_body["scopes"] == ROLES_TO_SCOPES_MAPPING[VIEWER]
+        ), "Backwards compatible response"
+        assert response_body["total_scopes"] == ROLES_TO_SCOPES_MAPPING[VIEWER]
+        assert response_body["roles"] == [VIEWER]
 
     def test_get_current_root_user_permissions(
         self, api_client, oauth_root_client, root_auth_header
@@ -614,7 +463,7 @@ class TestGetUserPermissions:
         assert HTTP_200_OK == response.status_code
         assert response_body["id"] == oauth_root_client.id
         assert response_body["user_id"] == oauth_root_client.id
-        assert response_body["scopes"] == SCOPE_REGISTRY
+        assert response_body["scopes"] == sorted(SCOPE_REGISTRY)
         assert response_body["roles"] == [OWNER]
         assert response_body["total_scopes"] == sorted(SCOPE_REGISTRY)
 
@@ -656,7 +505,7 @@ class TestGetUserPermissions:
             headers=auth_header,
         )
         resp = response.json()
-        assert resp["scopes"] == []
+        assert resp["scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
         assert resp["roles"] == [VIEWER]
         assert resp["user_id"] == auth_user.id
         assert resp["total_scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
@@ -674,7 +523,7 @@ class TestGetUserPermissions:
             headers=root_auth_header,
         )
         resp = response.json()
-        assert resp["scopes"] == []
+        assert resp["scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
         assert resp["roles"] == [VIEWER]
         assert resp["user_id"] == auth_user.id
         assert resp["total_scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
@@ -707,7 +556,7 @@ class TestGetUserPermissions:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["scopes"] == []
+        assert resp["scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
         assert resp["roles"] == [VIEWER]
         assert resp["user_id"] == auth_user.id
         assert resp["total_scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])

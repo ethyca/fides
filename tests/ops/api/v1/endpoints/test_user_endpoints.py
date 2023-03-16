@@ -40,14 +40,15 @@ from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.lib.models.client import ADMIN_UI_ROOT, ClientDetail
+from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
-from fides.lib.oauth.roles import OWNER, VIEWER
+from fides.lib.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
@@ -156,7 +157,7 @@ class TestCreateUser:
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        assert len(user.permissions.scopes) == 0
+        assert len(user.permissions.scopes) == 0, "property for backwards compatibility"
 
     def test_create_user_as_root(
         self,
@@ -267,7 +268,7 @@ class TestDeleteUser:
         saved_user_id = user.id
 
         FidesUserPermissions.create(
-            db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+            db=db, data={"user_id": user.id, "roles": [APPROVER]}
         )
 
         assert user.permissions is not None
@@ -319,7 +320,7 @@ class TestDeleteUser:
         )
 
         FidesUserPermissions.create(
-            db=db, data={"user_id": user.id, "scopes": [USER_DELETE]}
+            db=db, data={"user_id": user.id, "roles": [CONTRIBUTOR]}
         )
 
         other_user = FidesUser.create(
@@ -333,7 +334,7 @@ class TestDeleteUser:
         saved_user_id = other_user.id
 
         FidesUserPermissions.create(
-            db=db, data={"user_id": other_user.id, "scopes": [PRIVACY_REQUEST_READ]}
+            db=db, data={"user_id": other_user.id, "roles": [APPROVER]}
         )
 
         assert other_user.permissions is not None
@@ -343,7 +344,7 @@ class TestDeleteUser:
             db,
             CONFIG.security.oauth_client_id_length_bytes,
             CONFIG.security.oauth_client_secret_length_bytes,
-            scopes=[USER_DELETE],
+            roles=[CONTRIBUTOR],
             user_id=user.id,
         )
 
@@ -351,7 +352,7 @@ class TestDeleteUser:
             db,
             CONFIG.security.oauth_client_id_length_bytes,
             CONFIG.security.oauth_client_secret_length_bytes,
-            scopes=[PRIVACY_REQUEST_READ],
+            roles=[APPROVER],
             user_id=other_user.id,
         )
 
@@ -359,7 +360,7 @@ class TestDeleteUser:
         saved_client_id = other_user_client.id
 
         payload = {
-            JWE_PAYLOAD_SCOPES: [USER_DELETE],
+            JWE_PAYLOAD_ROLES: [CONTRIBUTOR],
             JWE_PAYLOAD_CLIENT_ID: client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -384,7 +385,7 @@ class TestDeleteUser:
         )
         assert permissions_search is None
 
-    def test_delete_user_as_root(self, api_client, db, user):
+    def test_delete_user_as_root(self, api_client, db, user, root_auth_header):
         other_user = FidesUser.create(
             db=db,
             data={
@@ -394,8 +395,10 @@ class TestDeleteUser:
         )
 
         FidesUserPermissions.create(
-            db=db, data={"user_id": other_user.id, "scopes": [PRIVACY_REQUEST_READ]}
+            db=db, data={"user_id": other_user.id, "roles": [APPROVER]}
         )
+        saved_user_id = other_user.id
+        saved_permission_id = other_user.permissions.id
 
         user_client, _ = ClientDetail.create_client_and_secret(
             db,
@@ -405,24 +408,9 @@ class TestDeleteUser:
             user_id=other_user.id,
         )
         client_id = user_client.id
-        saved_user_id = other_user.id
-        saved_permission_id = other_user.permissions.id
-
-        # Temporarily set the user's client to be the Admin UI Root client
-        client = user.client
-        client.fides_key = ADMIN_UI_ROOT
-        client.save(db)
-
-        payload = {
-            JWE_PAYLOAD_SCOPES: [USER_DELETE],
-            JWE_PAYLOAD_CLIENT_ID: user.client.id,
-            JWE_ISSUED_AT: datetime.now().isoformat(),
-        }
-        jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
-        auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
-            f"{V1_URL_PREFIX}{USERS}/{other_user.id}", headers=auth_header
+            f"{V1_URL_PREFIX}{USERS}/{other_user.id}", headers=root_auth_header
         )
         assert HTTP_204_NO_CONTENT == response.status_code
 
@@ -439,10 +427,6 @@ class TestDeleteUser:
             db, field="id", value=saved_permission_id
         )
         assert permissions_search is None
-
-        # Admin client who made the request is not deleted
-        owner_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)
-        assert owner_client_search is not None
 
 
 class TestGetUsers:
@@ -872,9 +856,7 @@ class TestUserLogin:
             extract_payload(token, CONFIG.security.app_encryption_key)
         )
         assert token_data["client-id"] == user.client.id
-        assert token_data["scopes"] == [
-            PRIVACY_REQUEST_READ
-        ]  # Uses scopes on existing client
+        assert token_data["scopes"] == []  # Uses scopes on existing client
 
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
@@ -900,10 +882,8 @@ class TestUserLogin:
             extract_payload(token, CONFIG.security.app_encryption_key)
         )
         assert token_data["client-id"] == user.client.id
-        assert token_data["scopes"] == [
-            PRIVACY_REQUEST_READ
-        ]  # Uses scopes on existing client
-        assert token_data["roles"] == []
+        assert token_data["scopes"] == []
+        assert token_data["roles"] == [APPROVER]
 
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
@@ -1006,7 +986,6 @@ class TestUserLogin:
 
     def test_login_with_no_permissions(self, db, url, viewer_user, api_client):
         viewer_user.permissions.roles = []
-        viewer_user.permissions.scopes = []
         viewer_user.save(db)  # Make sure user doesn't have roles or scopes
 
         assert viewer_user.permissions is not None
