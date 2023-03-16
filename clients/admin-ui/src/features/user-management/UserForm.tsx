@@ -139,6 +139,7 @@ const UserForm = ({
                 variant="block"
                 placeholder="Enter new username"
                 disabled={!isNewUser}
+                isRequired
               />
               <CustomTextInput
                 name="first_name"
@@ -162,6 +163,7 @@ const UserForm = ({
                   placeholder="********"
                   type="password"
                   tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                  isRequired
                 />
               ) : null}
             </Stack>

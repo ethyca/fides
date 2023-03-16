@@ -372,7 +372,7 @@ export const CustomTextInput = ({
     );
   }
   return (
-    <FormControl isInvalid={isInvalid}>
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
           <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
