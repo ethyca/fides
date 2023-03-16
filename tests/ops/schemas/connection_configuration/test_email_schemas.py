@@ -27,6 +27,17 @@ class TestEmailSchema:
             ),
         )
 
+    def test_email_schema_invalid_email(self) -> None:
+        with pytest.raises(ValueError) as exc:
+            EmailSchema(
+                third_party_vendor_name="Dawn's Bakery",
+                recipient_email_address="to_email",
+                advanced_settings=AdvancedSettings(
+                    identity_types=IdentityTypes(email=True, phone_number=False)
+                ),
+            )
+        assert exc.value.errors()[0]["msg"] == "value is not a valid email address"
+
     def test_no_identities_supplied(self):
         with pytest.raises(ValueError) as exc:
             EmailSchema(
