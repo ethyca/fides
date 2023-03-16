@@ -7,6 +7,7 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import { useHasRole } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 
@@ -63,6 +64,10 @@ const PermissionsForm = () => {
     toast(successToastParams("Permissions updated"));
   };
 
+  // This prevents users with contributor role from being able to assign owner roles
+  const isOwner = useHasRole([RoleRegistryEnum.OWNER]);
+  console.log(`owner${isOwner}`);
+
   if (!activeUserId) {
     return null;
   }
@@ -93,10 +98,21 @@ const PermissionsForm = () => {
               </Flex>
               {ROLES.map((role) => {
                 const isSelected = values.roles.indexOf(role.roleKey) >= 0;
+                if (role.roleKey === RoleRegistryEnum.OWNER) {
+                  return (
+                    <RoleOption
+                      key={role.roleKey}
+                      isSelected={isSelected}
+                      isDisabled={!isOwner}
+                      {...role}
+                    />
+                  );
+                }
                 return (
                   <RoleOption
                     key={role.roleKey}
                     isSelected={isSelected}
+                    isDisabled={false}
                     {...role}
                   />
                 );
