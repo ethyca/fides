@@ -153,6 +153,8 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "VAULT_NAMESPACE",
             "-e",
             "VAULT_TOKEN",
+            "-e",
+            "FIDES__DEV_MODE=false",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
@@ -160,5 +162,6 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             OPS_TEST_DIR,
             "-m",
             "integration_saas",
+            "--tb=no",
         )
         session.run(*run_command, external=True)
