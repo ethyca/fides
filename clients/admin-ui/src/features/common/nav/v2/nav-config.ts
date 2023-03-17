@@ -105,7 +105,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.USER_PERMISSION_UPDATE,
         ],
       },
-      { title: "About Fides", path: "/management/about", scopes: [] },
+      {
+        title: "About Fides",
+        path: "/management/about",
+        scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
+      },
     ],
   },
 ];
