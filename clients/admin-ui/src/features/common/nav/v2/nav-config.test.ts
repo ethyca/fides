@@ -19,6 +19,7 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.SYSTEM_UPDATE,
   ScopeRegistryEnum.CTL_DATASET_CREATE,
   ScopeRegistryEnum.USER_UPDATE,
+  ScopeRegistryEnum.USER_READ,
   ScopeRegistryEnum.DATA_CATEGORY_CREATE,
 ];
 
@@ -115,11 +116,6 @@ describe("configureNavGroups", () => {
       expect(navGroups[0]).toMatchObject({
         title: "Home",
         children: [{ title: "Home", path: "/" }],
-      });
-
-      expect(navGroups[1]).toMatchObject({
-        title: "Management",
-        children: [{ title: "About Fides", path: "/management/about" }],
       });
     });
 
