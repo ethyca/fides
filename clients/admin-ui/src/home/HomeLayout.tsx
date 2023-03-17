@@ -13,7 +13,7 @@ type HomeLayoutProps = {
 };
 
 const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
-  <Flex data-testid={title} direction="column" height="100vh">
+  <Flex data-testid={title} direction="column" minWidth="1024px" height="100vh">
     <Head>
       <title>Fides Admin UI - {title}</title>
       <meta name="description" content="" />
@@ -23,7 +23,7 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
     {/* TODO: remove this in a future release (see https://github.com/ethyca/fides/issues/2844) */}
     <NotificationBanner />
     <NavTopBar />
-    <Flex as="main" flexDirection="column" gap="40px" height="100%">
+    <Flex as="main" flexDirection="column" gap="40px" overflow="auto">
       {children}
     </Flex>
   </Flex>
