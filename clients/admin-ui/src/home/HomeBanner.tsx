@@ -1,4 +1,4 @@
-import { Flex, Image, Spacer, Text } from "@fidesui/react";
+import { Box, Flex, Spacer, Text } from "@fidesui/react";
 import * as React from "react";
 
 import { useFeatures } from "~/features/common/features";
@@ -12,7 +12,15 @@ const HomeBanner: React.FC = () => {
       background="linear-gradient(180deg, #FFFFFF 0%, #F8F8FF 100%);"
       h="300px"
     >
-      <Flex flexDir="column" mt="40px" pos="absolute" px="36px" w="597px">
+      <Flex
+        flexDir="column"
+        height="300px"
+        width="600px"
+        paddingTop="10"
+        position="absolute"
+        paddingLeft="10"
+        paddingRight="10"
+      >
         {hasSystems && (
           <>
             <Text
@@ -68,9 +76,15 @@ const HomeBanner: React.FC = () => {
         )}
       </Flex>
       <Spacer />
-      <Flex flexShrink={0}>
-        <Image alt="" boxSize="100%" src="/images/config_splash.svg" />
-      </Flex>
+      <Flex
+        flexShrink={0}
+        width="100%"
+        height="300px"
+        backgroundImage="url('/images/config_splash.svg')"
+        backgroundSize="cover"
+        backgroundRepeat="no-repeat"
+        backgroundPosition="right"
+      />
     </Flex>
   );
 };
