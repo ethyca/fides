@@ -12,8 +12,8 @@ export const NavSideBar = () => {
   const router = useRouter();
   const nav = useNav({ path: router.pathname });
 
-  // Don't render the sidebar if no group is active or if the group only has one link.
-  if (!nav.active || nav.active.children.length <= 1) {
+  // Don't render the sidebar if no group is active
+  if (!nav.active) {
     return null;
   }
 
