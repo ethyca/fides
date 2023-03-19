@@ -1,4 +1,4 @@
-import { Center, Flex, SimpleGrid, Text } from "@fidesui/react";
+import { Flex, SimpleGrid, Text } from "@fidesui/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import * as React from "react";
@@ -11,8 +11,6 @@ import { selectThisUsersScopes } from "~/features/user-management";
 
 import { MODULE_CARD_ITEMS } from "./constants";
 import { configureTiles } from "./tile-config";
-
-const COLUMNS = 3;
 
 const HomeContent: React.FC = () => {
   const router = useRouter();
@@ -30,11 +28,8 @@ const HomeContent: React.FC = () => {
   );
 
   return (
-    <Center px="36px" data-testid="home-content">
-      <SimpleGrid
-        columns={list.length >= COLUMNS ? COLUMNS : list.length}
-        spacing="24px"
-      >
+    <Flex px="36px" data-testid="home-content">
+      <SimpleGrid columns={{ md: 2, lg: 3 }} spacing="24px">
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => {
@@ -50,6 +45,8 @@ const HomeContent: React.FC = () => {
                   overflow="hidden"
                   padding="16px 16px 20px 16px"
                   maxW="469.33px"
+                  border="1px solid"
+                  borderColor="transparent"
                   _hover={{
                     border: "1px solid",
                     borderColor: `${item.color}.500`,
@@ -96,7 +93,7 @@ const HomeContent: React.FC = () => {
             );
           })}
       </SimpleGrid>
-    </Center>
+    </Flex>
   );
 };
 
