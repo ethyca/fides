@@ -46,7 +46,12 @@ const Layout = ({
     isValidNotificationRoute;
 
   return (
-    <Flex data-testid={title} direction="column" minWidth="1024px" height="100vh">
+    <Flex
+      data-testid={title}
+      direction="column"
+      minWidth="container.md"
+      height="100vh"
+    >
       <Head>
         <title>Fides Admin UI - {title}</title>
         <meta name="description" content="Privacy Engineering Platform" />
@@ -56,7 +61,7 @@ const Layout = ({
       {/* TODO: remove this in a future release (see https://github.com/ethyca/fides/issues/2844) */}
       <NotificationBanner />
       <NavTopBar />
-      <Flex as="main" px={9} py={10} gap="40px" overflow="auto">
+      <Flex as="main" px={9} py={10} gap="40px" height="100%" overflow="auto">
         <Box flex={0} flexShrink={0}>
           <NavSideBar />
         </Box>
