@@ -274,6 +274,42 @@ EXPECTED_RESPONSE_TWO_CUSTOM_FIELDS_ONE_MULTIVAL_TWO_SYSTEMS = [
     PRIVACY_DECLARATION_SYSTEM_ROW_TWO_CUSTOM_FIELDS_ONE_MULTIVAL,
 ]
 
+EXPECTED_RESPONSE_TWO_SYSTEMS_TWO_CUSTOM_FIELDS_ONLY_PRIVACY_DECLARATIONS = [
+    {
+        **HEADERS_ROW_RESPONSE_PAYLOAD,
+        "system.country": "country",
+        "system.owner": "owner",
+    },
+    {
+        **NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.country": "usa",
+        "system.owner": "N/A",
+    },
+    {
+        **PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.country": "canada",
+        "system.owner": "Jane",
+    },
+]
+
+EXPECTED_RESPONSE_TWO_SYSTEMS_TWO_CUSTOM_FIELDS_ONLY_NO_PRIVACY_DECLARATIONS = [
+    {
+        **HEADERS_ROW_RESPONSE_PAYLOAD,
+        "system.country": "country",
+        "system.owner": "owner",
+    },
+    {
+        **NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.country": "usa",
+        "system.owner": "John",
+    },
+    {
+        **PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.country": "N/A",
+        "system.owner": "Jane",
+    },
+]
+
 
 PRIVACY_DECLARATION_WITH_NAME_SYSTEM_ROW_RESPONSE_PAYLOAD = [
     {
@@ -899,6 +935,83 @@ def test_datamap_two_custom_fields_two_systems(
     )
     assert response.status_code == 200
     assert response.json() == EXPECTED_RESPONSE_TWO_CUSTOM_FIELDS_TWO_SYSTEMS
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures(
+    "country_field_instance_no_privacy_declarations",
+    "owner_field_instance_no_privacy_declarations",
+    "owner_field_instance_privacy_declarations",
+    "country_field_instance_privacy_declarations",
+)
+def test_datamap_two_custom_fields_two_systems_added_different_order(
+    test_config,
+    test_client,
+):
+    """
+    Tests expected response with two systems - one with privacy declarations, one without -
+    and two custom fields populated on both systems. The two custom fields are populated
+    in different orders on each system, respectively. This helps surface any bugs in the code
+    that assume the same ordering of custom fields for each system (row) in the result set.
+    """
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/" + "default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == EXPECTED_RESPONSE_TWO_CUSTOM_FIELDS_TWO_SYSTEMS
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures(
+    "country_field_instance_no_privacy_declarations",
+    "owner_field_instance_privacy_declarations",
+    "country_field_instance_privacy_declarations",
+)
+def test_datamap_two_systems_two_custom_fields_only_privacy_declarations(
+    test_config,
+    test_client,
+):
+    """
+    Tests expected response with two systems - one with privacy declarations, one without -
+    and two custom fields populated on the system with privacy declarations,
+    and only one custom field populated on the system without privacy declarations.
+    """
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/" + "default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert (
+        response.json()
+        == EXPECTED_RESPONSE_TWO_SYSTEMS_TWO_CUSTOM_FIELDS_ONLY_PRIVACY_DECLARATIONS
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures(
+    "country_field_instance_no_privacy_declarations",
+    "owner_field_instance_no_privacy_declarations",
+    "owner_field_instance_privacy_declarations",
+)
+def test_datamap_two_systems_two_custom_fields_only_no_privacy_declarations(
+    test_config,
+    test_client,
+):
+    """
+    Tests expected response with two systems - one with privacy declarations, one without -
+    and two custom fields populated on the system with no privacy declarations,
+    and only one custom field populated on the system with privacy declarations.
+    """
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/" + "default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert (
+        response.json()
+        == EXPECTED_RESPONSE_TWO_SYSTEMS_TWO_CUSTOM_FIELDS_ONLY_NO_PRIVACY_DECLARATIONS
+    )
 
 
 @pytest.mark.integration

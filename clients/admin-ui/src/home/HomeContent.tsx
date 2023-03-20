@@ -16,9 +16,7 @@ const COLUMNS = 3;
 
 const HomeContent: React.FC = () => {
   const router = useRouter();
-  const { connectionsCount, systemsCount, plus } = useFeatures();
-  const hasConnections = connectionsCount > 0;
-  const hasSystems = systemsCount > 0;
+  const { plus } = useFeatures();
   const userScopes = useAppSelector(selectThisUsersScopes);
 
   const list = useMemo(
@@ -26,11 +24,9 @@ const HomeContent: React.FC = () => {
       configureTiles({
         config: MODULE_CARD_ITEMS,
         hasPlus: plus,
-        hasConnections,
-        hasSystems,
         userScopes,
       }),
-    [hasConnections, hasSystems, plus, userScopes]
+    [plus, userScopes]
   );
 
   return (

@@ -7,17 +7,18 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import { useHasRole } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum } from "~/types/api";
-import { ROLES } from "~/types/api/models/RolesDataMapping";
 
-import QuestionTooltip from "../common/QuestionTooltip";
 import RoleOption from "./RoleOption";
 import {
   selectActiveUserId,
@@ -63,12 +64,24 @@ const PermissionsForm = () => {
     toast(successToastParams("Permissions updated"));
   };
 
+  // This prevents users with contributor role from being able to assign owner roles
+  const isOwner = useHasRole([RoleRegistryEnum.OWNER]);
+
   if (!activeUserId) {
     return null;
   }
 
   if (isLoading) {
     return <Spinner />;
+  }
+
+  if (!isOwner && userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)) {
+    return (
+      <Text>
+        You do not have sufficient access to change this user&apos;s
+        permissions.
+      </Text>
+    );
   }
 
   const initialValues = userPermissions?.roles
@@ -97,6 +110,9 @@ const PermissionsForm = () => {
                   <RoleOption
                     key={role.roleKey}
                     isSelected={isSelected}
+                    isDisabled={
+                      role.roleKey === RoleRegistryEnum.OWNER ? !isOwner : false
+                    }
                     {...role}
                   />
                 );

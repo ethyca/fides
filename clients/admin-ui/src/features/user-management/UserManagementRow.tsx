@@ -17,7 +17,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { useGetUserPermissionsQuery } from "user-management/user-management.slice";
 
-import { ROLES } from "~/types/api/models/RolesDataMapping";
+import { ROLES } from "~/features/user-management/constants";
 
 import { USER_MANAGEMENT_ROUTE } from "../../constants";
 import DeleteUserModal from "./DeleteUserModal";
