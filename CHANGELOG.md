@@ -17,6 +17,14 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.9.0...main)
 
+### Changed
+
+- renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity"
+
+### Removed
+
+- removed the `privacyDeclarationDeprecatedFields` flag
+
 ## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
 
 ### Added
