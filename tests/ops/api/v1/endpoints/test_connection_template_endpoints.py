@@ -23,9 +23,7 @@ from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.connection_configuration.connection_config import SystemType
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
-    registry_file,
 )
-from fides.api.ops.util.saas_util import encode_file_contents
 from fides.lib.models.client import ClientDetail
 
 
