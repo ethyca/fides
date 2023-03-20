@@ -95,7 +95,6 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
           system={system}
           onCollision={collisionWarning}
           onSave={handleSave}
-          includeDeprecatedFields={flags.privacyDeclarationDeprecatedFields}
           {...dataProps}
         />
       )}
