@@ -68,7 +68,7 @@ def get_user_permissions(
     user_id: str, auth_header: Dict[str, str], server_url: str
 ) -> Tuple[List[str], List[str]]:
     """
-    List all of the directly-assigned scopes for the provided user.
+    Return a tuple of all the scopes the user has via their roles, and then the user's roles
     """
     get_permissions_path = USER_PERMISSIONS_PATH.format(user_id)
     response = requests.get(

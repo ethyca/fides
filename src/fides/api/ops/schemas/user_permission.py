@@ -10,7 +10,8 @@ from fides.lib.oauth.roles import RoleRegistryEnum
 class UserPermissionsCreate(BaseSchema):
     """Data required to create a FidesUserPermissions record
 
-    Users will be assigned a role(s) directly which are associated with many scopes.
+    Users will be assigned a role(s) directly which are associated with a list of scopes. Scopes
+    cannot be assigned directly to users.
     """
 
     roles: List[RoleRegistryEnum] = []
@@ -34,8 +35,10 @@ class UserPermissionsResponse(UserPermissionsCreate):
 
     id: str
     user_id: str
-    scopes: List[ScopeRegistryEnum]  # This should be removed once the UI is not using
-    total_scopes: List[ScopeRegistryEnum]
+    scopes: List[
+        ScopeRegistryEnum
+    ]  # This should be removed once the UI is not using.  Currently returning scopes inherited via roles here.
+    total_scopes: List[ScopeRegistryEnum]  # Scopes inherited via roles
 
     class Config:
         use_enum_values = True

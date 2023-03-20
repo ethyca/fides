@@ -33,6 +33,7 @@ router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
 
 def validate_user_id(db: Session, user_id: str) -> FidesUser:
+    """Get the user by id, otherwise throw a 404"""
     user = FidesUser.get_by(db, field="id", value=user_id)
 
     if not user:
