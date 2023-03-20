@@ -17,23 +17,26 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.9.1...main)
 
+### Changed
+* Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
+
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
 ### Added
 * Added Attentive erasure email connector [#2782](https://github.com/ethyca/fides/pull/2782)
 
 ### Changed
+* Improved standard layout for large width screens and polish misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
 * Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
 * Changed Auth0's authentication strategy from `bearer` to `oauth2_client_credentials` [#2820](https://github.com/ethyca/fides/pull/2820)
-* renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
+* Renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
 
 
 ### Fixed
 * Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
 
 ### Removed
-
-* removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
+* Removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
 
 ## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
 
