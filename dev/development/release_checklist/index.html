@@ -1004,7 +1004,7 @@ You're not viewing the latest version.
 <h3 id="general">General</h3>
 <ul>
 <li>[ ] Quickstart verified working and up-to-date</li>
-<li>[ ] <code>nox -s fides_env(test)</code> works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)</li>
+<li>[ ] <code>nox -s "fides_env(test)"</code> works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)</li>
 <li>[ ] <code>nox -s "build(sample)"</code> works on the release branch, creating the sample images (this is also prereq for <code>fides deploy up</code>)</li>
 <li>[ ] <code>fides deploy up --no-pull</code> works using the images built in previous step (verify the admin UI, privacy center, CLI and webserver)</li>
 </ul>
@@ -1032,7 +1032,6 @@ exit
 <h3 id="api">API</h3>
 <ul>
 <li>[ ] Verify that the generated API docs are correct</li>
-<li>[ ] Verify that the <a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/postman/Fides.postman_collection.json">Postman collection</a> has been updated</li>
 </ul>
 <h3 id="cli">CLI</h3>
 <p>Run these from within <code>nox -s dev -- shell</code></p>
