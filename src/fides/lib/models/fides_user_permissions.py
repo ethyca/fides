@@ -20,7 +20,7 @@ class FidesUserPermissions(Base):
 
     @property
     def total_scopes(self) -> List[str]:
-        """Returns the scopes the user has via their roles."""
+        """Returns the scopes the user has inherited via their roles."""
         all_scopes = []
         for role in self.roles:
             all_scopes += ROLES_TO_SCOPES_MAPPING.get(role, [])

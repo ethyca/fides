@@ -219,6 +219,11 @@ def user(db):
     db.commit()
     db.refresh(client)
     yield user
+    try:
+        client.delete(db)
+    except ObjectDeletedError:
+        pass
+    user.delete(db)
 
 
 @pytest.fixture

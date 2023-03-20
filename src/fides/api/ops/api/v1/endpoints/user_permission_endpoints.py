@@ -55,7 +55,7 @@ def create_user_permissions(
     user_id: str,
     permissions: UserPermissionsCreate,
 ) -> FidesUserPermissions:
-    """Create user permissions with roles."""
+    """Create user permissions with associated roles."""
     user = validate_user_id(db, user_id)
     if user.permissions is not None:  # type: ignore[attr-defined]
         raise HTTPException(
@@ -86,7 +86,7 @@ def update_user_permissions(
     """Update a user's role(s).  The UI assigns one role at a time, but multiple
     roles are technically supported.
 
-    Users inherit numerous scopes that are associated with their role.
+    Users inherit numerous scopes that are associated with their role(s).
     """
     user = validate_user_id(db, user_id)
     logger.info("Updated FidesUserPermission record")

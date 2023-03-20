@@ -10,7 +10,7 @@ from fides.lib.oauth.roles import RoleRegistryEnum
 class UserPermissionsCreate(BaseSchema):
     """Data required to create a FidesUserPermissions record
 
-    Users will be assigned a role(s) directly which are associated with a list of scopes. Scopes
+    Users will be assigned role(s) directly which are associated with a list of scopes. Scopes
     cannot be assigned directly to users.
     """
 
@@ -37,8 +37,10 @@ class UserPermissionsResponse(UserPermissionsCreate):
     user_id: str
     scopes: List[
         ScopeRegistryEnum
-    ]  # This should be removed once the UI is not using.  Currently returning scopes inherited via roles here.
-    total_scopes: List[ScopeRegistryEnum]  # Scopes inherited via roles
+    ]  # This should be removed once the UI is not using.  Currently returning "total_scopes" here.
+    total_scopes: List[
+        ScopeRegistryEnum
+    ]  # Returns a list of scopes inherited via roles
 
     class Config:
         use_enum_values = True
@@ -47,7 +49,7 @@ class UserPermissionsResponse(UserPermissionsCreate):
     def validate_obsolete_scopes(
         cls, scopes: List[ScopeRegistryEnum]
     ) -> List[ScopeRegistryEnum]:
-        """Filter out obsolete scopes if the scope registry has changed
+        """Filter out obsolete scopes if the scope registry has changed.
         This is just for backwards-compatibility. Scopes will no longer be assigned directly.
         """
         return [scope for scope in scopes or [] if scope in SCOPE_REGISTRY]

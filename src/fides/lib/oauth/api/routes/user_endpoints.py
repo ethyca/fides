@@ -55,6 +55,8 @@ def create_user(
     If `password` is sent as a base64 encoded string, it will automatically be decoded
     server-side before being encrypted and persisted.
     If `password` is sent as a plaintext string, it will be encrypted and persisted as is.
+
+    The user is given no roles by default.
     """
 
     # The root user is not stored in the database so make sure here that the user name
