@@ -49,7 +49,7 @@ const Layout = ({
     <Flex
       data-testid={title}
       direction="column"
-      minWidth="container.md"
+      minWidth="container.lg"
       height="100vh"
     >
       <Head>
@@ -61,7 +61,14 @@ const Layout = ({
       {/* TODO: remove this in a future release (see https://github.com/ethyca/fides/issues/2844) */}
       <NotificationBanner />
       <NavTopBar />
-      <Flex as="main" flexGrow={1} px={9} py={10} gap="40px" overflow="auto">
+      <Flex
+        as="main"
+        flexGrow={1}
+        paddingTop={10}
+        paddingX={10}
+        paddingBottom={11}
+        gap={10}
+      >
         <Box flex={0} flexShrink={0}>
           <NavSideBar />
         </Box>

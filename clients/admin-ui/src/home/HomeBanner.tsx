@@ -12,24 +12,10 @@ const HomeBanner: React.FC = () => {
   return (
     <Flex
       position="relative"
-      background="linear-gradient(180deg, #FFFFFF 0%, #F8F8FF 100%);"
       height={bannerHeight}
+      background="linear-gradient(180deg, #FFFFFF 0%, #F8F8FF 100%);"
+      overflow="hidden"
     >
-      {/* Add a scrim that blurs the background so the text is legible at small width */}
-      <Flex
-        flexShrink={0}
-        position="absolute"
-        height={bannerHeight}
-        width={bannerTextWidth}
-        maxWidth="100%"
-        backdropFilter="auto"
-        backdropBlur="5px"
-        sx={{
-          // 'mask' property needs to be prefixed in most browsers
-          WebkitMask: "linear-gradient(90deg, black 90%, transparent)",
-          Mask: "linear-gradient(90deg, black 90%, transparent)",
-        }}
-      />
       <Flex
         flexDir="column"
         position="absolute"
@@ -72,12 +58,15 @@ const HomeBanner: React.FC = () => {
           </>
         )}
       </Flex>
+      {/* Render the background image, using a min-width here to ensure there is
+      enough left margin to avoid colliding with the banner text above */}
       <Flex
         flexShrink={0}
         width="100%"
+        minWidth="1120px"
         height={bannerHeight}
         backgroundImage="url('/images/config_splash.svg')"
-        backgroundSize="cover"
+        backgroundSize="contain"
         backgroundRepeat="no-repeat"
         backgroundPosition="right"
       />

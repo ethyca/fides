@@ -28,8 +28,8 @@ const HomeContent: React.FC = () => {
   );
 
   return (
-    <Flex px="36px" data-testid="home-content">
-      <SimpleGrid columns={{ md: 2, lg: 3 }} spacing="24px">
+    <Flex paddingX={10} data-testid="home-content">
+      <SimpleGrid columns={{ md: 2, xl: 3 }} spacing="24px">
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => {
@@ -39,7 +39,6 @@ const HomeContent: React.FC = () => {
                 <Flex
                   background={`${item.color}.50`}
                   borderRadius="8px"
-                  boxShadow="base"
                   flexDirection="column"
                   maxH="164px"
                   overflow="hidden"

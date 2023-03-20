@@ -16,7 +16,7 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
   <Flex
     data-testid={title}
     direction="column"
-    minWidth="container.md"
+    minWidth="container.lg"
     height="100vh"
   >
     <Head>
@@ -32,8 +32,7 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
       as="main"
       flexGrow={1}
       flexDirection="column"
-      gap="40px"
-      overflow="auto"
+      gap={10}
     >
       {children}
     </Flex>
