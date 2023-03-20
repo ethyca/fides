@@ -10,7 +10,7 @@ import { AllowListUpdate } from "~/types/api";
 
 import CustomInput from "./form/CustomInput";
 import { AddIcon } from "./icons/AddIcon";
-import { TrashCanSolidIcon } from "./icons/TrashCanSolidIcon";
+import { TrashCanSolidIcon } from "../Icon/TrashCanSolidIcon";
 import { Layout } from "./Layout";
 
 const initialValues: AllowListUpdate = {

@@ -9,10 +9,10 @@ import {
   Th,
   Thead,
   Tr,
-  TrashCanSolidIcon,
   useDisclosure,
   useToast,
 } from "@fidesui/react";
+import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import ConfirmationModal from "common/ConfirmationModal";
 import { getErrorMessage } from "common/helpers";
 import { errorToastParams, successToastParams } from "common/toast";
@@ -78,11 +78,13 @@ export const AssignSystemsDeleteTable = () => {
             data-testid={`row-${system.fides_key}`}
           >
             <Td>{system.name}</Td>
-            <Td>
+            <Td textAlign="end">
               <IconButton
+                background="gray.50"
                 aria-label="Unassign system from user"
                 icon={<TrashCanSolidIcon />}
-                size="xs"
+                variant="outline"
+                size="sm"
                 onClick={onDeleteOpen}
                 data-testid="unassign-btn"
               />

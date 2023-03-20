@@ -7,7 +7,7 @@ import {
   IconButton,
   Stack,
   Text,
-  TrashCanSolidIcon,
+
   useDisclosure,
   useToast,
 } from "@fidesui/react";
@@ -25,6 +25,7 @@ import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { successToastParams } from "~/features/common/toast";
+import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 
 import PasswordManagement from "./PasswordManagement";
 import { User } from "./types";
@@ -41,8 +42,8 @@ export type FormValues = typeof defaultInitialValues;
 
 const ValidationSchema = Yup.object().shape({
   username: Yup.string().required().label("Username"),
-  first_name: Yup.string().label("First name"),
-  last_name: Yup.string().label("Last name"),
+  first_name: Yup.string().required().label("First name"),
+  last_name: Yup.string().required().label("Last name"),
   password: passwordValidation.label("Password"),
 });
 
@@ -123,7 +124,8 @@ const UserForm = ({
                         <IconButton
                           aria-label="delete"
                           icon={<TrashCanSolidIcon />}
-                          size="xs"
+                          variant="outline"
+                          size="sm"
                           onClick={deleteModal.onOpen}
                           data-testid="delete-user-btn"
                         />
@@ -147,6 +149,7 @@ const UserForm = ({
                 variant="block"
                 placeholder="Enter first name of user"
                 disabled={nameDisabled}
+                isRequired
               />
               <CustomTextInput
                 name="last_name"
@@ -154,6 +157,7 @@ const UserForm = ({
                 variant="block"
                 placeholder="Enter last name of user"
                 disabled={nameDisabled}
+                isRequired
               />
               {!activeUser ? (
                 <CustomTextInput
