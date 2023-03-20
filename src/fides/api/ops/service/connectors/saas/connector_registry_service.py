@@ -78,10 +78,14 @@ class ConnectorRegistry:
 
     @classmethod
     def connector_types(cls) -> List[str]:
+        """List of registered SaaS connector types"""
         return list(cls._templates.keys())
 
     @classmethod
     def get_connector_template(cls, connector_type: str) -> Optional[ConnectorTemplate]:
+        """
+        Returns an object containing the various SaaS connector artifacts
+        """
         return cls._templates.get(connector_type)
 
 
