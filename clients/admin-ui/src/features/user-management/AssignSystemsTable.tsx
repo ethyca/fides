@@ -12,9 +12,9 @@ import {
   useDisclosure,
   useToast,
 } from "@fidesui/react";
-import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import ConfirmationModal from "common/ConfirmationModal";
 import { getErrorMessage } from "common/helpers";
+import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import { errorToastParams, successToastParams } from "common/toast";
 import React from "react";
 

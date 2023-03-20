@@ -7,13 +7,13 @@ import {
   IconButton,
   Stack,
   Text,
-
   useDisclosure,
   useToast,
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { useAPIHelper } from "common/hooks";
+import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import React from "react";
@@ -25,7 +25,6 @@ import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { successToastParams } from "~/features/common/toast";
-import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 
 import PasswordManagement from "./PasswordManagement";
 import { User } from "./types";
