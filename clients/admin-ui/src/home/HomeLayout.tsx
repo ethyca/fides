@@ -28,12 +28,7 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
     {/* TODO: remove this in a future release (see https://github.com/ethyca/fides/issues/2844) */}
     <NotificationBanner />
     <NavTopBar />
-    <Flex
-      as="main"
-      flexGrow={1}
-      flexDirection="column"
-      gap={10}
-    >
+    <Flex as="main" flexGrow={1} flexDirection="column" gap={10}>
       {children}
     </Flex>
   </Flex>
