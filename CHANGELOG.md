@@ -52,7 +52,8 @@ The types of changes are:
 ### Changed
 
 * Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
-* Added `system.privacy_declaration.name` to datamap response [#2831][https://github.com/ethyca/fides/pull/2831/files]
+* Added `system.privacy_declaration.name` to datamap response [#2831](https://github.com/ethyca/fides/pull/2831/files)
+* UX cleanups in Role Management section of Admin UI [#2870](https://github.com/ethyca/fides/pull/2870)
 
 ### Developer Experience
 
