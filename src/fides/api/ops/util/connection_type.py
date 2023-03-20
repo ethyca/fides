@@ -14,10 +14,9 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
 )
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    load_registry,
-    registry_file,
+    ConnectorRegistry,
 )
-from fides.api.ops.util.saas_util import encode_file_contents, load_config
+from fides.api.ops.util.saas_util import load_config
 
 
 def connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:
@@ -95,20 +94,17 @@ def get_connection_types(
             ]
         )
     if system_type == SystemType.saas or system_type is None:
-        registry = load_registry(registry_file)
         saas_types: list[str] = sorted(
             [
                 saas_type
-                for saas_type in registry.connector_types()
+                for saas_type in ConnectorRegistry.connector_types()
                 if is_match(saas_type)
             ]
         )
 
         for item in saas_types:
-            if registry.get_connector_template(item) is not None:
-                connector_template = registry.get_connector_template(  # type: ignore[union-attr]
-                    item
-                )
+            if ConnectorRegistry.get_connector_template(item) is not None:
+                connector_template = ConnectorRegistry.get_connector_template(item)
 
             connection_system_types.append(
                 ConnectionSystemTypeMap(
@@ -117,7 +113,7 @@ def get_connection_types(
                     human_readable=connector_template.human_readable
                     if connector_template is not None
                     else "",
-                    encoded_icon=encode_file_contents(connector_template.icon)
+                    encoded_icon=connector_template.icon
                     if connector_template is not None
                     else None,
                 )

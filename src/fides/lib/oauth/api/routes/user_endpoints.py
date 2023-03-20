@@ -17,11 +17,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fides.api.ops.api.v1.scope_registry import (
-    USER_CREATE,
-    USER_DELETE,
-    USER_READ,
-)
+from fides.api.ops.api.v1.scope_registry import USER_CREATE, USER_DELETE, USER_READ
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import FidesConfig, get_config
 from fides.lib.exceptions import AuthorizationError

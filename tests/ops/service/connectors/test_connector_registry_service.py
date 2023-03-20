@@ -3,16 +3,20 @@ from unittest import mock
 from unittest.mock import Mock
 
 import yaml
-from fideslang.models import DatasetCollection, DatasetField
+from fideslang.models import DatasetCollection
 
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    ConnectorTemplate,
-    load_registry,
-    registry_file,
+    ConnectorRegistry,
     update_saas_configs,
 )
-from fides.api.ops.util.saas_util import load_config, load_dataset, load_yaml_as_string
+from fides.api.ops.util.saas_util import (
+    encode_file_contents,
+    load_config_from_string,
+    load_dataset_from_string,
+    load_yaml_as_string,
+)
 from fides.core.config.helpers import load_file
 
 NEW_CONFIG_DESCRIPTION = "new test config description"
@@ -40,19 +44,22 @@ NEW_COLLECTION = {
 
 class TestConnectionRegistry:
     def test_get_connector_template(self):
-        registry = load_registry(registry_file)
+        assert "mailchimp" in ConnectorRegistry.connector_types()
 
-        assert "mailchimp" in registry.connector_types()
+        assert ConnectorRegistry.get_connector_template("bad_key") is None
+        mailchimp_template = ConnectorRegistry.get_connector_template("mailchimp")
+        assert mailchimp_template
 
-        assert registry.get_connector_template("bad_key") is None
-        mailchimp_registry = registry.get_connector_template("mailchimp")
-
-        assert mailchimp_registry == ConnectorTemplate(
-            config="data/saas/config/mailchimp_config.yml",
-            dataset="data/saas/dataset/mailchimp_dataset.yml",
-            icon="data/saas/icon/mailchimp.svg",
-            human_readable="Mailchimp",
+        assert mailchimp_template.config == load_yaml_as_string(
+            "data/saas/config/mailchimp_config.yml"
         )
+        assert mailchimp_template.dataset == load_yaml_as_string(
+            "data/saas/dataset/mailchimp_dataset.yml"
+        )
+        assert mailchimp_template.icon == encode_file_contents(
+            "data/saas/icon/mailchimp.svg"
+        )
+        assert mailchimp_template.human_readable == "Mailchimp"
 
     @mock.patch(
         "fides.api.ops.service.connectors.saas.connector_registry_service.load_dataset_with_replacement"
@@ -151,23 +158,22 @@ def update_config(
     Then, confirm that the instances have been updated as expected, by
     invoking a plugged-in `validation_function`
     """
-    registry = load_registry(registry_file)
-    assert "mailchimp" in registry.connector_types()
+    assert "mailchimp" in ConnectorRegistry.connector_types()
 
-    mailchimp_template_config = load_config(
-        registry.get_connector_template("mailchimp").config
+    mailchimp_template_config = load_config_from_string(
+        ConnectorRegistry.get_connector_template("mailchimp").config
     )
-    mailchimp_template_dataset = load_dataset(
-        registry.get_connector_template("mailchimp").dataset
-    )[0]
+    mailchimp_template_dataset = load_dataset_from_string(
+        ConnectorRegistry.get_connector_template("mailchimp").dataset
+    )
     mailchimp_version = mailchimp_template_config["version"]
 
-    sendgrid_template_config = load_config(
-        registry.get_connector_template("sendgrid").config
+    sendgrid_template_config = load_config_from_string(
+        ConnectorRegistry.get_connector_template("sendgrid").config
     )
-    sendgrid_template_dataset = load_dataset(
-        registry.get_connector_template("sendgrid").dataset
-    )[0]
+    sendgrid_template_dataset = load_dataset_from_string(
+        ConnectorRegistry.get_connector_template("sendgrid").dataset
+    )
     sendgrid_version = sendgrid_template_config["version"]
 
     # confirm original version of template works as expected
@@ -229,7 +235,7 @@ def update_config(
     )
 
     # run update "script"
-    update_saas_configs(registry, db)
+    update_saas_configs(db)
 
     # confirm updates applied successfully
     secondary_mailchimp_dataset: DatasetConfig = DatasetConfig.filter(

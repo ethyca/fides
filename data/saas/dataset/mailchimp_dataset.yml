@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Mailchimp Dataset
-    description: A sample dataset representing the Mailchimp connector for Fidesops
+    description: A sample dataset representing the Mailchimp connector for Fides
     collections:
       - name: messages
         fields:

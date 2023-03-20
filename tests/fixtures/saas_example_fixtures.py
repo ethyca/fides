@@ -52,22 +52,22 @@ def saas_example_secrets():
 
 @pytest.fixture
 def saas_example_config() -> Dict:
-    return load_config("data/saas/config/saas_example_config.yml")
+    return load_config("tests/fixtures/saas/test_data/saas_example_config.yml")
 
 
 @pytest.fixture
 def saas_external_example_config() -> Dict:
-    return load_config("data/saas/config/saas_external_example_config.yml")
+    return load_config("tests/fixtures/saas/test_data/saas_external_example_config.yml")
 
 
 @pytest.fixture
 def saas_example_dataset() -> Dict:
-    return load_dataset("data/saas/dataset/saas_example_dataset.yml")[0]
+    return load_dataset("tests/fixtures/saas/test_data/saas_example_dataset.yml")[0]
 
 
 @pytest.fixture
 def saas_ctl_dataset(db: Session) -> Dict:
-    dataset = load_dataset("data/saas/dataset/saas_example_dataset.yml")[0]
+    dataset = load_dataset("tests/fixtures/saas/test_data/saas_example_dataset.yml")[0]
     ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
     yield ctl_dataset
     ctl_dataset.delete(db)
@@ -75,7 +75,7 @@ def saas_ctl_dataset(db: Session) -> Dict:
 
 @pytest.fixture
 def saas_external_example_dataset() -> Dict:
-    return load_dataset("data/saas/dataset/saas_example_dataset.yml")[1]
+    return load_dataset("tests/fixtures/saas/test_data/saas_example_dataset.yml")[1]
 
 
 @pytest.fixture(scope="function")

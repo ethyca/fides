@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Auth0 SaaS Config
+  name: Auth0
   type: auth0
-  description: A sample schema representing the Auth0 connector for Fidesops
+  description: A sample schema representing the Auth0 connector for Fides
   version: 0.0.1
 
   connector_params:

@@ -56,8 +56,6 @@ from fides.api.ops.common_exceptions import (
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    load_registry,
-    registry_file,
     update_saas_configs,
 )
 
@@ -273,9 +271,8 @@ async def setup_server() -> None:
 
     logger.info("Validating SaaS connector templates...")
     try:
-        registry = load_registry(registry_file)
         db = get_api_session()
-        update_saas_configs(registry, db)
+        update_saas_configs(db)
         logger.info("Finished loading saas templates")
     except Exception as e:
         logger.error(

@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
 from pydantic import Field, validator
-from fides.api.custom_types import SafeStr
 
+from fides.api.custom_types import SafeStr
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
