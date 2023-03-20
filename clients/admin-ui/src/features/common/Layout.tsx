@@ -61,7 +61,7 @@ const Layout = ({
       {/* TODO: remove this in a future release (see https://github.com/ethyca/fides/issues/2844) */}
       <NotificationBanner />
       <NavTopBar />
-      <Flex as="main" px={9} py={10} gap="40px" height="100%" overflow="auto">
+      <Flex as="main" flexGrow={1} px={9} py={10} gap="40px" overflow="auto">
         <Box flex={0} flexShrink={0}>
           <NavSideBar />
         </Box>

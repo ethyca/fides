@@ -11,6 +11,7 @@ const HomeBanner: React.FC = () => {
 
   return (
     <Flex
+      position="relative"  
       background="linear-gradient(180deg, #FFFFFF 0%, #F8F8FF 100%);"
       height={bannerHeight}
     >

@@ -30,9 +30,9 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
     <NavTopBar />
     <Flex
       as="main"
+      flexGrow={1}
       flexDirection="column"
       gap="40px"
-      height="100%"
       overflow="auto"
     >
       {children}
