@@ -1078,7 +1078,7 @@ class TestUser:
             CONFIG.cli.server_url,
         )
         assert scopes == []
-        assert roles == []
+        assert roles == [VIEWER]
 
         systems = get_systems_managed_by_user(
             system_manager.id,
