@@ -26,8 +26,7 @@ def upgrade():
         text(
             """
                 UPDATE client 
-                SET scopes = '{}', 
-                    roles = '{viewer}'
+                SET scopes = '{}'
                 FROM fidesuserpermissions
                 WHERE fidesuserpermissions.user_id = client.user_id;
             """
