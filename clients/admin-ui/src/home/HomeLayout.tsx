@@ -13,10 +13,7 @@ type HomeLayoutProps = {
 };
 
 const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
-  <Flex
-    data-testid={title}
-    direction="column"
-  >
+  <Flex data-testid={title} direction="column">
     <Head>
       <title>Fides Admin UI - {title}</title>
       <meta name="description" content="Privacy Engineering Platform" />
