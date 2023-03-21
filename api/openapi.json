@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.9.0"
+    "version": "2.9.1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5747,7 +5747,7 @@
                     "$ref": "#/components/schemas/FidesDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/SovrnEmailDocsSchema"
+                    "$ref": "#/components/schemas/SovrnDocsSchema"
                   }
                 ]
               }
@@ -12500,6 +12500,18 @@
         "type": "string",
         "description": "The purpose of a particular privacy request"
       },
+      "AdvancedSettings": {
+        "title": "AdvancedSettings",
+        "required": [
+          "identity_types"
+        ],
+        "type": "object",
+        "properties": {
+          "identity_types": {
+            "$ref": "#/components/schemas/IdentityTypes"
+          }
+        }
+      },
       "AdvancedSettingsWithExtendedIdentityTypes": {
         "title": "AdvancedSettingsWithExtendedIdentityTypes",
         "required": [
@@ -13138,8 +13150,8 @@
           "mariadb",
           "bigquery",
           "manual",
-          "email",
           "sovrn",
+          "attentive",
           "manual_webhook",
           "timescale",
           "fides"
@@ -13506,7 +13518,7 @@
                 "$ref": "#/components/schemas/FidesDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/SovrnEmailDocsSchema"
+                "$ref": "#/components/schemas/SovrnDocsSchema"
               }
             ]
           },
@@ -13525,8 +13537,7 @@
           "access",
           "erasure",
           "consent",
-          "erasure_email_post_send",
-          "consent_email_post_send",
+          "email_post_send",
           "post_webhooks"
         ],
         "description": "An enumeration."
@@ -14377,22 +14388,28 @@
       "EmailDocsSchema": {
         "title": "EmailDocsSchema",
         "required": [
-          "to_email"
+          "third_party_vendor_name",
+          "recipient_email_address",
+          "advanced_settings"
         ],
         "type": "object",
         "properties": {
-          "url": {
-            "title": "Url",
+          "third_party_vendor_name": {
+            "title": "Third Party Vendor Name",
             "type": "string"
           },
-          "to_email": {
-            "title": "To Email",
-            "type": "string"
-          },
-          "test_email": {
-            "title": "Test Email",
+          "recipient_email_address": {
+            "title": "Recipient Email Address",
             "type": "string",
             "format": "email"
+          },
+          "test_email_address": {
+            "title": "Test Email Address",
+            "type": "string",
+            "format": "email"
+          },
+          "advanced_settings": {
+            "$ref": "#/components/schemas/AdvancedSettings"
           }
         },
         "additionalProperties": false,
@@ -15002,6 +15019,24 @@
         },
         "additionalProperties": false,
         "description": "Some PII grouping pertaining to a human"
+      },
+      "IdentityTypes": {
+        "title": "IdentityTypes",
+        "required": [
+          "email",
+          "phone_number"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "boolean"
+          },
+          "phone_number": {
+            "title": "Phone Number",
+            "type": "boolean"
+          }
+        }
       },
       "IdentityVerificationConfigResponse": {
         "title": "IdentityVerificationConfigResponse",
@@ -16880,7 +16915,7 @@
           "in_processing",
           "complete",
           "paused",
-          "awaiting_consent_email_send",
+          "awaiting_email_send",
           "canceled",
           "error"
         ],
@@ -17699,7 +17734,7 @@
                 "$ref": "#/components/schemas/FidesDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/SovrnEmailDocsSchema"
+                "$ref": "#/components/schemas/SovrnDocsSchema"
               }
             ]
           },
@@ -17866,10 +17901,9 @@
         "additionalProperties": false,
         "description": "Snowflake Secrets Schema for API Docs"
       },
-      "SovrnEmailDocsSchema": {
-        "title": "SovrnEmailDocsSchema",
+      "SovrnDocsSchema": {
+        "title": "SovrnDocsSchema",
         "required": [
-          "recipient_email_address",
           "advanced_settings"
         ],
         "type": "object",
@@ -17881,11 +17915,14 @@
           },
           "recipient_email_address": {
             "title": "Recipient Email Address",
-            "type": "string"
+            "type": "string",
+            "format": "email",
+            "default": "privacy@sovrn.com"
           },
           "test_email_address": {
             "title": "Test Email Address",
-            "type": "string"
+            "type": "string",
+            "format": "email"
           },
           "advanced_settings": {
             "$ref": "#/components/schemas/AdvancedSettingsWithExtendedIdentityTypes"
