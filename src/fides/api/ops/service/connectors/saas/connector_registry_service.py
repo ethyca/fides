@@ -53,6 +53,9 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                 try:
                     icon = encode_file_contents(f"data/saas/icon/{connector_type}.svg")
                 except FileNotFoundError:
+                    logger.debug(
+                        f"Could not find the expected {connector_type}.svg in the data/saas/icon/ directory, using default icon"
+                    )
                     icon = encode_file_contents("data/saas/icon/default.svg")
 
                 # store connector template for retrieval
@@ -73,20 +76,30 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
 
 
 class ConnectorRegistry:
-    loader = FileConnectorTemplateLoader()
-    _templates: Dict[str, ConnectorTemplate] = loader.get_connector_templates()
+
+    _instance = None
+    _templates: Dict[str, ConnectorTemplate] = {}
+
+    @classmethod
+    def get_instance(cls) -> "ConnectorRegistry":
+        if cls._instance is None:
+            cls._instance = cls()
+            cls._instance._templates = (
+                FileConnectorTemplateLoader().get_connector_templates()
+            )
+        return cls._instance
 
     @classmethod
     def connector_types(cls) -> List[str]:
         """List of registered SaaS connector types"""
-        return list(cls._templates.keys())
+        return list(cls.get_instance()._templates.keys())
 
     @classmethod
     def get_connector_template(cls, connector_type: str) -> Optional[ConnectorTemplate]:
         """
         Returns an object containing the various SaaS connector artifacts
         """
-        return cls._templates.get(connector_type)
+        return cls.get_instance()._templates.get(connector_type)
 
 
 def create_connection_config_from_template_no_save(
@@ -189,10 +202,9 @@ def update_saas_configs(db: Session) -> None:
                         saas_config_instance,
                     )
                 except Exception:
-                    logger.error(
+                    logger.exception(
                         "Encountered error attempting to update SaaS config instance {}",
                         saas_config_instance.fides_key,
-                        exc_info=True,
                     )
 
 
