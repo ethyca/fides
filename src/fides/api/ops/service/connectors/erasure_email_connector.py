@@ -15,17 +15,15 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
 )
+from fides.api.ops.schemas.connection_configuration import EmailSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
-    AdvancedSettingsWithExtendedIdentityTypes,
-    ExtendedEmailSchema,
-    ExtendedIdentityTypes,
+    AdvancedSettings,
+    IdentityTypes,
 )
 from fides.api.ops.schemas.messaging.messaging import (
-    ConsentEmailFulfillmentBodyParams,
-    ConsentPreferencesByUser,
+    ErasureRequestBodyParams,
     MessagingActionType,
 )
-from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_email_connector import (
     BaseEmailConnector,
@@ -37,11 +35,11 @@ from fides.core.config import get_config
 
 CONFIG = get_config()
 
-CONSENT_EMAIL_CONNECTOR_TYPES = [ConnectionType.sovrn]
+ERASURE_EMAIL_CONNECTOR_TYPES = [ConnectionType.attentive]
 
 
-class GenericConsentEmailConnector(BaseEmailConnector):
-    """Generic Email Consent Connector that can be overridden for specific vendors"""
+class GenericErasureEmailConnector(BaseEmailConnector):
+    """Generic Email Erasure Connector that can be overridden for specific vendors"""
 
     @property
     def identities_for_test_email(self) -> Dict[str, Any]:
@@ -53,110 +51,88 @@ class GenericConsentEmailConnector(BaseEmailConnector):
 
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
-        self.config: ExtendedEmailSchema = ExtendedEmailSchema(
-            **configuration.secrets or {}
-        )
+        self.config = EmailSchema(**configuration.secrets or {})
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
-        Sends an email to the "test_email" configured, just to establish
-        that the email workflow is working.
+        Sends an email to the "test_email" configured, just to establish that the email workflow is working.
         """
+        logger.info("Starting test connection to {}", self.configuration.key)
+
+        db = Session.object_session(self.configuration)
 
         try:
             if not self.config.test_email_address:
                 raise MessageDispatchException(
                     f"Cannot test connection. No test email defined for {self.configuration.name}"
                 )
-
-            logger.info("Starting test connection to {}", self.configuration.key)
-
-            # synchronous since failure to send is considered a connection test failure
-            send_single_consent_email(
-                db=Session.object_session(self.configuration),
+            # synchronous for now since failure to send is considered a connection test failure
+            send_single_erasure_email(
+                db=db,
                 subject_email=self.config.test_email_address,
                 subject_name=self.config.third_party_vendor_name,
-                required_identities=self.required_identities,
-                user_consent_preferences=[
-                    ConsentPreferencesByUser(
-                        identities=self.identities_for_test_email,
-                        consent_preferences=[
-                            Consent(data_use="advertising", opt_in=False),
-                            Consent(data_use="improve", opt_in=True),
-                        ],
-                    )
-                ],
+                batch_identities=list(self.identities_for_test_email.values()),
                 test_mode=True,
             )
-
         except MessageDispatchException as exc:
-            logger.info("Email consent connector test failed with exception {}", exc)
+            logger.info("Email connector test failed with exception {}", exc)
             return ConnectionTestStatus.failed
         return ConnectionTestStatus.succeeded
 
     def needs_email(
         self, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
     ) -> bool:
-        """Schedules a consent email for consent privacy requests containing consent preferences and valid user identities"""
-
-        if not privacy_request.consent_preferences:
-            return False
-
-        consent_rules: List[Rule] = privacy_request.policy.get_rules_for_action(
-            action_type=ActionType.consent
+        """Schedules an erasure email for erasure privacy requests containing the required identities"""
+        erasure_rules: List[Rule] = privacy_request.policy.get_rules_for_action(
+            action_type=ActionType.erasure
         )
         return bool(
-            consent_rules
+            erasure_rules
             and filter_user_identities_for_connector(self.config, user_identities)
         )
 
     def batch_email_send(self, privacy_requests: Query) -> None:
         skipped_privacy_requests: List[str] = []
-        batched_consent_preferences: List[ConsentPreferencesByUser] = []
+        batched_identities: List[str] = []
 
         for privacy_request in privacy_requests:
             user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
             filtered_user_identities: Dict[
                 str, Any
             ] = filter_user_identities_for_connector(self.config, user_identities)
-            if filtered_user_identities and privacy_request.consent_preferences:
-                batched_consent_preferences.append(
-                    ConsentPreferencesByUser(
-                        identities=filtered_user_identities,
-                        consent_preferences=privacy_request.consent_preferences,
-                    )
-                )
+            if filtered_user_identities:
+                batched_identities.extend(filtered_user_identities.values())
             else:
                 skipped_privacy_requests.append(privacy_request.id)
 
-        if not batched_consent_preferences:
+        if not batched_identities:
             logger.info(
-                "Skipping consent email send for connector: '{}'. "
+                "Skipping erasure email send for connector: '{}'. "
                 "No corresponding user identities found for pending privacy requests.",
                 self.configuration.name,
             )
             return
 
         logger.info(
-            "Sending batched consent email for connector {}...",
+            "Sending batched erasure email for connector {}...",
             self.configuration.name,
         )
 
         db = Session.object_session(self.configuration)
 
         try:
-            send_single_consent_email(
+            send_single_erasure_email(
                 db=db,
                 subject_email=self.config.recipient_email_address,
                 subject_name=self.config.third_party_vendor_name,
-                required_identities=self.required_identities,
-                user_consent_preferences=batched_consent_preferences,
+                batch_identities=batched_identities,
                 test_mode=False,
             )
         except MessageDispatchException as exc:
-            logger.info("Consent email failed with exception {}", exc)
+            logger.info("Erasure email failed with exception {}", exc)
             raise
 
+        # create an audit event for each privacy request ID
         for privacy_request in privacy_requests:
             if privacy_request.id not in skipped_privacy_requests:
                 ExecutionLog.create(
@@ -165,9 +141,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                         "connection_key": self.configuration.key,
                         "dataset_name": self.configuration.name,
                         "privacy_request_id": privacy_request.id,
-                        "action_type": ActionType.consent,
+                        "action_type": ActionType.erasure,
                         "status": ExecutionLogStatus.complete,
-                        "message": f"Consent email instructions dispatched for '{self.configuration.name}'",
+                        "message": f"Erasure email instructions dispatched for {self.config.third_party_vendor_name}",
                     },
                 )
 
@@ -181,14 +157,12 @@ class GenericConsentEmailConnector(BaseEmailConnector):
 
 
 def get_identity_types_for_connector(
-    email_secrets: ExtendedEmailSchema,
+    email_secrets: EmailSchema,
 ) -> List[str]:
     """Return a list of identity types we need to email to the third party vendor."""
-    advanced_settings: AdvancedSettingsWithExtendedIdentityTypes = (
-        email_secrets.advanced_settings
-    )
-    identity_types: ExtendedIdentityTypes = advanced_settings.identity_types
-    flattened_list: List[str] = identity_types.cookie_ids
+    advanced_settings: AdvancedSettings = email_secrets.advanced_settings
+    identity_types: IdentityTypes = advanced_settings.identity_types
+    flattened_list: List[str] = []
 
     if identity_types.email:
         flattened_list.append("email")
@@ -199,7 +173,7 @@ def get_identity_types_for_connector(
 
 
 def filter_user_identities_for_connector(
-    secrets: ExtendedEmailSchema, user_identities: Dict[str, Any]
+    secrets: EmailSchema, user_identities: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Filter identities to just those specified for a given connector"""
     required_identities: List[str] = get_identity_types_for_connector(secrets)
@@ -210,29 +184,27 @@ def filter_user_identities_for_connector(
     }
 
 
-def send_single_consent_email(
+def send_single_erasure_email(
     db: Session,
     subject_email: str,
     subject_name: str,
-    required_identities: List[str],
-    user_consent_preferences: List[ConsentPreferencesByUser],
+    batch_identities: List[str],
     test_mode: bool = False,
 ) -> None:
-    """Sends a single consent email"""
+    """Sends a single erasure email"""
 
     org_name = get_org_name(db)
 
     dispatch_message(
         db=db,
-        action_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT,
+        action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
         to_identity=Identity(email=subject_email),
         service_type=get_email_messaging_config_service_type(db=db),
-        message_body_params=ConsentEmailFulfillmentBodyParams(
+        message_body_params=ErasureRequestBodyParams(
             controller=org_name,
             third_party_vendor_name=subject_name,
-            required_identities=required_identities,
-            requested_changes=user_consent_preferences,
+            identities=batch_identities,
         ),
         subject_override=f"{'Test notification' if test_mode else 'Notification'} "
-        f"of users' consent preference changes from {org_name}",
+        f"of user erasure requests from {org_name}",
     )
