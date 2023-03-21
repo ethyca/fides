@@ -34,7 +34,7 @@
     "title": "Manage your consent",
     "description": "Manage your consent preferences, including the option to select 'Do Not Sell My Personal Information'.",
     "identity_inputs": {
-      "email": "required",
+      "email": "optional",
       "phone": "optional"
     },
     "policy_key": "default_consent_policy",
