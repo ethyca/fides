@@ -223,7 +223,6 @@ def user(db):
         client.delete(db)
     except ObjectDeletedError:
         pass
-    user.delete(db)
 
 
 @pytest.fixture
