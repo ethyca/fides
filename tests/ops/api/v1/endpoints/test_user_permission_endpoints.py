@@ -23,7 +23,13 @@ from fides.core.config import CONFIG
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import OWNER, ROLES_TO_SCOPES_MAPPING, VIEWER
+from fides.lib.oauth.roles import (
+    APPROVER,
+    CONTRIBUTOR,
+    OWNER,
+    ROLES_TO_SCOPES_MAPPING,
+    VIEWER,
+)
 from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
 
@@ -434,6 +440,49 @@ class TestEditUserPermissions:
         assert permissions.roles == [OWNER]
 
         user.delete(db)
+
+    def test_making_user_a_contributor_does_not_affect_their_systems(
+        self, db, api_client, system_manager, generate_auth_header
+    ):
+        assert system_manager.systems
+        assert system_manager.permissions.roles == [VIEWER]
+
+        auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
+        body = {"id": system_manager.permissions.id, "roles": [CONTRIBUTOR]}
+        response = api_client.put(
+            f"{V1_URL_PREFIX}/user/{system_manager.id}/permission",
+            headers=auth_header,
+            json=body,
+        )
+        response_body = response.json()
+        assert HTTP_200_OK == response.status_code
+        assert response_body["roles"] == [CONTRIBUTOR]
+
+        db.refresh(system_manager)
+        assert system_manager.permissions.roles == [CONTRIBUTOR]
+        assert system_manager.systems
+
+    def test_making_user_an_approver_removes_their_systems(
+        self, db, api_client, system_manager, generate_auth_header
+    ):
+        """Approvers cannot be system managers, so downgrading this user's role removes them as a system manager"""
+        assert system_manager.systems
+        assert system_manager.permissions.roles == [VIEWER]
+
+        auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
+        body = {"id": system_manager.permissions.id, "roles": [APPROVER]}
+        response = api_client.put(
+            f"{V1_URL_PREFIX}/user/{system_manager.id}/permission",
+            headers=auth_header,
+            json=body,
+        )
+        response_body = response.json()
+        assert HTTP_200_OK == response.status_code
+        assert response_body["roles"] == [APPROVER]
+
+        db.refresh(system_manager)
+        assert system_manager.permissions.roles == [APPROVER]
+        assert not system_manager.systems
 
 
 class TestGetUserPermissions:

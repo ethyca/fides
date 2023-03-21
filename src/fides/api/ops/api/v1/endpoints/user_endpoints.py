@@ -265,7 +265,7 @@ def update_managed_systems(
             user.set_as_system_manager(db, system)
 
     # Removing systems for which the user in no longer a manager
-    for system in user.systems:
+    for system in user.systems.copy():
         if system not in retrieved_systems:
             user.remove_as_system_manager(db, system)
 

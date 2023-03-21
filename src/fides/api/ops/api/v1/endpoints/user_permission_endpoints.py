@@ -28,6 +28,7 @@ from fides.api.ops.util.oauth_util import (
 from fides.core.config import CONFIG
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.roles import APPROVER
 
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
@@ -94,10 +95,21 @@ def update_user_permissions(
         user.client.update(
             db=db, data={"scopes": permissions.scopes, "roles": permissions.roles}
         )
-    return user.permissions.update(  # type: ignore[attr-defined]
+    updated_user_perms = user.permissions.update(  # type: ignore[attr-defined]
         db=db,
         data={"id": user.permissions.id, "user_id": user_id, "scopes": permissions.scopes, "roles": permissions.roles},  # type: ignore[attr-defined]
     )
+
+    if user.systems and APPROVER in user.permissions.roles:  # type: ignore[attr-defined]
+        for system in user.systems.copy():
+            logger.info(
+                "Approvers cannot be system managers. Removing user {} as system manager of {}.",
+                user.id,
+                system.fides_key,
+            )
+            user.remove_as_system_manager(db, system)
+
+    return updated_user_perms
 
 
 @router.get(
