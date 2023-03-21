@@ -1,6 +1,6 @@
 import { Box, VStack } from "@fidesui/react";
 
-import { ROLES } from "~/types/api/models/RolesDataMapping";
+import { ROLES } from "~/features/user-management/constants";
 
 const RoleDescriptionDrawer = () => (
   <Box>

@@ -49,9 +49,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
       }
       toast.closeAll();
       toast(
-        successToastParams(
-          isDelete ? "Data use case deleted" : "Data use case saved"
-        )
+        successToastParams(isDelete ? "Data use deleted" : "Data use saved")
       );
       dispatch(setActiveSystem(result.data));
       return true;
