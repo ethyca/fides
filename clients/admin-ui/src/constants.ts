@@ -145,4 +145,4 @@ export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
 export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE =
   "/privacy-requests/configure";
-export const SYSTEM_ROUTE = "/system";
+export const SYSTEM_ROUTE = "/systems";

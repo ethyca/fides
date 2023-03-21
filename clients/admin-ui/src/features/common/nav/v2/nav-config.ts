@@ -1,3 +1,4 @@
+import { SYSTEM_ROUTE } from "~/constants";
 import { ScopeRegistryEnum } from "~/types/api";
 
 export type NavConfigRoute = {
@@ -57,7 +58,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
       {
         title: "View systems",
-        path: "/system",
+        path: SYSTEM_ROUTE,
         scopes: [ScopeRegistryEnum.SYSTEM_READ],
       },
       {

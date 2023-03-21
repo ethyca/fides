@@ -4,6 +4,8 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
+import { SYSTEM_ROUTE } from "~/constants";
+
 describe("System management with Plus features", () => {
   beforeEach(() => {
     cy.login();
@@ -13,7 +15,7 @@ describe("System management with Plus features", () => {
     cy.intercept("GET", "/api/v1/system", {
       fixture: "systems/systems.json",
     }).as("getSystems");
-    cy.visit("/system");
+    cy.visit(SYSTEM_ROUTE);
   });
 
   describe("custom metadata", () => {

@@ -2,6 +2,7 @@ import { Box, Breadcrumb, BreadcrumbItem, Heading } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
+import { SYSTEM_ROUTE } from "~/constants";
 import Layout from "~/features/common/Layout";
 import EditSystemFlow from "~/features/system/EditSystemFlow";
 
@@ -13,7 +14,7 @@ const ConfigureSystem: NextPage = () => (
     <Box mb={8}>
       <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
         <BreadcrumbItem>
-          <NextLink href="/system">System Connections</NextLink>
+          <NextLink href={SYSTEM_ROUTE}>System Connections</NextLink>
         </BreadcrumbItem>
         <BreadcrumbItem>
           <NextLink href="#">Configure your connection</NextLink>

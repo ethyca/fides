@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
+import { SYSTEM_ROUTE } from "~/constants";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import {
@@ -47,7 +48,7 @@ describe("configureNavGroups", () => {
     expect(navGroups[2]).toMatchObject({
       title: "Data map",
       children: [
-        { title: "View systems", path: "/system" },
+        { title: "View systems", path: SYSTEM_ROUTE },
         { title: "Add systems", path: "/add-systems" },
         { title: "Manage datasets", path: "/dataset" },
       ],
@@ -80,7 +81,7 @@ describe("configureNavGroups", () => {
       title: "Data map",
       children: [
         { title: "View map", path: "/datamap" },
-        { title: "View systems", path: "/system" },
+        { title: "View systems", path: "/systems" },
         { title: "Add systems", path: "/add-systems" },
         { title: "Manage datasets", path: "/dataset" },
         { title: "Classify systems", path: "/classify-systems" },
@@ -102,7 +103,7 @@ describe("configureNavGroups", () => {
 
       expect(navGroups[1]).toMatchObject({
         title: "Data map",
-        children: [{ title: "View systems", path: "/system" }],
+        children: [{ title: "View systems", path: "/systems" }],
       });
     });
 
@@ -145,7 +146,7 @@ describe("configureNavGroups", () => {
       expect(navGroups[2]).toMatchObject({
         title: "Data map",
         children: [
-          { title: "View systems", path: "/system" },
+          { title: "View systems", path: "/systems" },
           { title: "Add systems", path: "/add-systems" },
           { title: "Manage datasets", path: "/dataset" },
         ],
@@ -171,10 +172,10 @@ describe("findActiveNav", () => {
       },
     },
     {
-      path: "/system",
+      path: "/systems",
       expected: {
         title: "Data map",
-        path: "/system",
+        path: "/systems",
       },
     },
     {
