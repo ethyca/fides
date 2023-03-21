@@ -43,7 +43,7 @@ def create(
 
 @user.command()
 @click.pass_context
-@username_option
+@username_option # Allow these options to pull from env vars
 @password_option
 def login(ctx: click.Context, username: str, password: str) -> None:
     """
