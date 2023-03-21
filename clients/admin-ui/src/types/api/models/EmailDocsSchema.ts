@@ -6,7 +6,7 @@
  * EmailDocsSchema Secrets Schema for API Docs
  */
 export type EmailDocsSchema = {
-  url?: string;
-  to_email: string;
-  test_email?: string;
+  third_party_vendor_name: string;
+  recipient_email_address: string;
+  test_email_address?: string;
 };

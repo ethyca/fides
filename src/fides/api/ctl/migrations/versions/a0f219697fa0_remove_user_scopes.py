@@ -1,7 +1,7 @@
 """remove user scopes
 
 Revision ID: a0f219697fa0
-Revises: 50180bbbb959
+Revises: 54102bba36de
 Create Date: 2023-03-15 22:25:09.654149
 
 """
@@ -12,14 +12,13 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "a0f219697fa0"
-down_revision = "50180bbbb959"
+down_revision = "54102bba36de"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     op.drop_column("fidesuserpermissions", "scopes")
-
     """One last time - remove scopes from user clients"""
     bind = op.get_bind()
     bind.execute(

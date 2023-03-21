@@ -518,7 +518,23 @@ class TestGetUserPermissions:
         assert HTTP_200_OK == response.status_code
         assert response_body["id"] == oauth_root_client.id
         assert response_body["user_id"] == oauth_root_client.id
-        assert response_body["scopes"] == sorted(SCOPE_REGISTRY)
+        assert len(response_body["scopes"]) == len(SCOPE_REGISTRY)
+        assert response_body["scopes"] == SCOPE_REGISTRY
+        assert response_body["roles"] == [OWNER]
+        assert response_body["total_scopes"] == sorted(SCOPE_REGISTRY)
+
+        # Intentionally calling twice to make sure scopes didn't change
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/user/{oauth_root_client.id}/permission",
+            headers=root_auth_header,
+        )
+
+        response_body = response.json()
+        assert HTTP_200_OK == response.status_code
+        assert response_body["id"] == oauth_root_client.id
+        assert response_body["user_id"] == oauth_root_client.id
+        assert len(response_body["scopes"]) == len(SCOPE_REGISTRY)
+        assert response_body["scopes"] == SCOPE_REGISTRY
         assert response_body["roles"] == [OWNER]
         assert response_body["total_scopes"] == sorted(SCOPE_REGISTRY)
 
