@@ -1,6 +1,10 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
-import { SYSTEM_ROUTE } from "~/constants";
+import {
+  ADD_SYSTEMS_MANUAL_ROUTE,
+  ADD_SYSTEMS_ROUTE,
+  SYSTEM_ROUTE,
+} from "~/constants";
 
 describe("System management page", () => {
   beforeEach(() => {
@@ -67,9 +71,9 @@ describe("System management page", () => {
       });
 
       it("shows available system types and lets the user choose one", () => {
-        cy.visit("/add-systems");
+        cy.visit(ADD_SYSTEMS_ROUTE);
         cy.getByTestId("manual-btn").click();
-        cy.url().should("contain", "/add-systems/manual");
+        cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
         cy.wait("@getConnectionTypes");
         cy.getByTestId("header").contains("Choose a type of system");
         cy.getByTestId("bigquery-item");
@@ -85,7 +89,7 @@ describe("System management page", () => {
       });
 
       it("should allow searching", () => {
-        cy.visit("/add-systems/manual");
+        cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
         cy.wait("@getConnectionTypes");
         cy.getByTestId("bigquery-item");
         cy.getByTestId("system-catalog-search").type("db");
@@ -104,9 +108,9 @@ describe("System management page", () => {
       it("Can step through the flow", () => {
         cy.fixture("systems/system.json").then((system) => {
           // Fill in the describe form based on fixture data
-          cy.visit("/add-systems");
+          cy.visit(ADD_SYSTEMS_ROUTE);
           cy.getByTestId("manual-btn").click();
-          cy.url().should("contain", "/add-systems/manual");
+          cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
           cy.wait("@getSystems");
           cy.wait("@getConnectionTypes");
           cy.getByTestId("create-system-btn").click();
@@ -174,7 +178,7 @@ describe("System management page", () => {
       });
 
       it("can render a warning when there is unsaved data", () => {
-        cy.visit("/add-systems/manual");
+        cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
         cy.wait("@getSystems");
         cy.wait("@getConnectionTypes");
         cy.getByTestId("create-system-btn").click();

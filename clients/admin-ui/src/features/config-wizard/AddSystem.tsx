@@ -2,6 +2,7 @@ import { Box, Heading, SimpleGrid, Stack, Text } from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
+import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/constants";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
@@ -58,7 +59,7 @@ const AddSystem = () => {
             description="Manually add a system for services not covered by automated scanners"
             onClick={() => {
               dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
-              router.push("/add-systems/manual");
+              router.push(ADD_SYSTEMS_MANUAL_ROUTE);
             }}
             data-testid="manual-btn"
           />
