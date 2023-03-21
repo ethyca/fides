@@ -24,7 +24,6 @@ interface AccordionProps extends DataProps {
     newDeclaration: PrivacyDeclaration
   ) => Promise<boolean>;
   onDelete: (declaration: PrivacyDeclaration) => Promise<boolean>;
-  includeDeprecatedFields?: boolean;
 }
 
 const PrivacyDeclarationAccordionItem = ({

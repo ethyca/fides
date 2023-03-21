@@ -23,9 +23,15 @@ The types of changes are:
 ### Changed
 * Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
 * Changed Auth0's authentication strategy from `bearer` to `oauth2_client_credentials` [#2820](https://github.com/ethyca/fides/pull/2820)
+* renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity"
+
 
 ### Fixed
 * Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
+
+### Removed
+
+* removed the `privacyDeclarationDeprecatedFields` flag
 
 ## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
 
