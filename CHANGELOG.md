@@ -17,6 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.9.0...main)
 
+### Added
+* Added Attentive erasure email connector [#2782](https://github.com/ethyca/fides/pull/2782)
+
+### Changed
+* Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
+
 ### Fixed
 * Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
 

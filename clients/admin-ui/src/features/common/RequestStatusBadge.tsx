@@ -13,7 +13,7 @@ export const statusPropMap: {
     bg: "green.500",
     label: "Completed",
   },
-  awaiting_consent_email_send: {
+  awaiting_email_send: {
     bg: "gray.400",
     label: "Awaiting Email Send",
   },
