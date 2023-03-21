@@ -58,7 +58,7 @@ const AddSystem = () => {
             description="Manually add a system for services not covered by automated scanners"
             onClick={() => {
               dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
-              router.push("/add-systems/new");
+              router.push("/add-systems/manual");
             }}
             data-testid="manual-btn"
           />

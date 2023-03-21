@@ -46,7 +46,7 @@ const Header = ({
   );
 };
 
-const NewSystem: NextPage = () => {
+const NewManualSystem: NextPage = () => {
   const { systemOrDatamapRoute } = useInterzoneNav();
   const router = useRouter();
   const { step, connectorType } = router.query;
@@ -87,7 +87,7 @@ const NewSystem: NextPage = () => {
                   : undefined
               }
             >
-              <NextLink href="/add-systems/new">Choose your system</NextLink>
+              <NextLink href="/add-systems/manual">Choose your system</NextLink>
             </BreadcrumbItem>
             {currentStep === "describe-system" ? (
               <BreadcrumbItem color="complimentary.500">
@@ -113,4 +113,4 @@ const NewSystem: NextPage = () => {
   );
 };
 
-export default NewSystem;
+export default NewManualSystem;

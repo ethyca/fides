@@ -67,7 +67,7 @@ describe("System management page", () => {
       it("shows available system types and lets the user choose one", () => {
         cy.visit("/add-systems");
         cy.getByTestId("manual-btn").click();
-        cy.url().should("contain", "/add-systems/new");
+        cy.url().should("contain", "/add-systems/manual");
         cy.wait("@getConnectionTypes");
         cy.getByTestId("header").contains("Choose a type of system");
         cy.getByTestId("bigquery-item");
@@ -83,7 +83,7 @@ describe("System management page", () => {
       });
 
       it("should allow searching", () => {
-        cy.visit("/add-systems/new");
+        cy.visit("/add-systems/manual");
         cy.wait("@getConnectionTypes");
         cy.getByTestId("bigquery-item");
         cy.getByTestId("system-catalog-search").type("db");
@@ -104,7 +104,7 @@ describe("System management page", () => {
           // Fill in the describe form based on fixture data
           cy.visit("/add-systems");
           cy.getByTestId("manual-btn").click();
-          cy.url().should("contain", "/add-systems/new");
+          cy.url().should("contain", "/add-systems/manual");
           cy.wait("@getSystems");
           cy.wait("@getConnectionTypes");
           cy.getByTestId("create-system-btn").click();
@@ -172,7 +172,7 @@ describe("System management page", () => {
       });
 
       it("can render a warning when there is unsaved data", () => {
-        cy.visit("/add-systems/new");
+        cy.visit("/add-systems/manual");
         cy.wait("@getSystems");
         cy.wait("@getConnectionTypes");
         cy.getByTestId("create-system-btn").click();
