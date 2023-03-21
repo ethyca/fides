@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.9.0...main)
 
+### Fixed
+* Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
+
 ## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
 
 ### Added
