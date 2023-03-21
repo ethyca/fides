@@ -62,14 +62,20 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 
 # pylint: disable=wildcard-import, unused-wildcard-import
-from fides.api.ops.service.privacy_request.consent_email_batch_service import (
-    initiate_scheduled_batch_consent_email_send,
+from fides.api.ops.service.privacy_request.email_batch_service import (
+    initiate_scheduled_batch_email_send,
 )
 from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
 from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_cli
+from fides.api.ops.util.system_manager_oauth_util import (
+    get_system_fides_key,
+    get_system_schema,
+    verify_oauth_client_for_system_from_fides_key_cli,
+    verify_oauth_client_for_system_from_request_body_cli,
+)
 from fides.core.config import CONFIG
 from fides.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
@@ -83,7 +89,8 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     health.router,
     validate.router,
     view.router,
-    system.router,
+    system.system_connections_router,
+    system.system_router,
 ]
 
 
@@ -131,6 +138,12 @@ def create_fides_app(
         # This removes auth requirements for CLI-related endpoints
         # and is the default
         fastapi_app.dependency_overrides[verify_oauth_client_cli] = get_root_client
+        fastapi_app.dependency_overrides[
+            verify_oauth_client_for_system_from_request_body_cli
+        ] = get_system_schema
+        fastapi_app.dependency_overrides[
+            verify_oauth_client_for_system_from_fides_key_cli
+        ] = get_system_fides_key
     elif security_env == "prod":
         # This is the most secure, so all security deps are maintained
         pass
@@ -286,7 +299,7 @@ async def setup_server() -> None:
     if not scheduler.running:
         scheduler.start()
 
-    initiate_scheduled_batch_consent_email_send()
+    initiate_scheduled_batch_email_send()
 
     logger.debug("Sending startup analytics events...")
     await send_analytics_event(

@@ -23,7 +23,7 @@ class FidesUserPermissions(Base):
     def total_scopes(self) -> List[str]:
         """Returns the total model-level scopes the user has, either 1) scopes they are assigned directly,
         or 2) Roles they have via their scopes."""
-        all_scopes = self.scopes or []
+        all_scopes = self.scopes.copy() or []
         for role in self.roles:
             all_scopes += ROLES_TO_SCOPES_MAPPING.get(role, [])
 

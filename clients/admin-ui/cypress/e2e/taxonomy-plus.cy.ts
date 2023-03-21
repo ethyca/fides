@@ -218,9 +218,9 @@ describe("Taxonomy management with Plus features", () => {
     });
 
     const testIdSingle =
-      "input-definitionIdToCustomFieldValue.id-custom-field-definition-starter-pokemon";
+      "input-customFieldValues.id-custom-field-definition-starter-pokemon";
     const testIdMulti =
-      "input-definitionIdToCustomFieldValue.id-custom-field-definition-pokemon-party";
+      "input-customFieldValues.id-custom-field-definition-pokemon-party";
 
     it("initializes form fields with values returned by the API", () => {
       cy.getByTestId("custom-fields-list");

@@ -1,12 +1,20 @@
 import { useAppSelector } from "~/app/hooks";
-import { selectThisUsersScopes } from "~/features/user-management";
-import { ScopeRegistryEnum } from "~/types/api";
+import {
+  selectThisUsersRoles,
+  selectThisUsersScopes,
+} from "~/features/user-management";
+import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 export const useHasPermission = (scopes: ScopeRegistryEnum[]) => {
   const userScopes = useAppSelector(selectThisUsersScopes);
   return (
     userScopes.filter((userScope) => scopes.includes(userScope)).length > 0
   );
+};
+
+export const useHasRole = (roles: RoleRegistryEnum[]) => {
+  const userRoles = useAppSelector(selectThisUsersRoles);
+  return userRoles.filter((userRole) => roles.includes(userRole)).length > 0;
 };
 
 const Restrict = ({

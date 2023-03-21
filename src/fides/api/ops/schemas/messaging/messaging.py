@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from enum import Enum
-from re import compile as regex
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
-from fides.api.ops.models.privacy_request import CheckpointActionRequired
+from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.ops.schemas import Msg
 from fides.api.ops.schemas.privacy_request import Consent
 
@@ -73,7 +72,7 @@ class ErrorNotificationBodyParams(BaseModel):
 class SubjectIdentityVerificationBodyParams(BaseModel):
     """Body params required for subject identity verification email/sms template"""
 
-    verification_code: str
+    verification_code: SafeStr
     verification_code_ttl_seconds: int
 
     def get_verification_code_ttl_minutes(self) -> int:
@@ -86,7 +85,7 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
 class RequestReceiptBodyParams(BaseModel):
     """Body params required for privacy request receipt template"""
 
-    request_types: List[str]
+    request_types: List[SafeStr]
 
 
 class AccessRequestCompleteBodyParams(BaseModel):
@@ -99,7 +98,7 @@ class AccessRequestCompleteBodyParams(BaseModel):
 class RequestReviewDenyBodyParams(BaseModel):
     """Body params required for privacy request review deny template"""
 
-    rejection_reason: Optional[str]
+    rejection_reason: Optional[SafeStr]
 
 
 class ConsentPreferencesByUser(BaseModel):
@@ -138,6 +137,12 @@ class ConsentEmailFulfillmentBodyParams(BaseModel):
     requested_changes: List[ConsentPreferencesByUser]
 
 
+class ErasureRequestBodyParams(BaseModel):
+    controller: str
+    third_party_vendor_name: str
+    identities: List[str]
+
+
 class FidesopsMessage(
     BaseModel,
     smart_union=True,
@@ -153,7 +158,7 @@ class FidesopsMessage(
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             AccessRequestCompleteBodyParams,
-            List[CheckpointActionRequired],
+            ErasureRequestBodyParams,
         ]
     ]
 
@@ -262,7 +267,7 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
     twilio_account_sid: str
     twilio_auth_token: str
     twilio_messaging_service_sid: Optional[str]
-    twilio_sender_phone_number: Optional[str]
+    twilio_sender_phone_number: Optional[PhoneNumber]
 
     class Config:
         """Restrict adding other fields through this schema."""
@@ -276,12 +281,6 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
             raise ValueError(
                 "Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied."
             )
-        if sender_phone:
-            pattern = regex(r"^\+\d+$")
-            if not pattern.search(sender_phone):
-                raise ValueError(
-                    "Sender phone number must include country code, formatted like +15558675309"
-                )
         return values
 
 

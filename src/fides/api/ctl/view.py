@@ -21,7 +21,7 @@ router = APIRouter(
 @router.get(
     "/evaluations",
     dependencies=[
-        Security(verify_oauth_client_cli, scopes=[scope_registry.CLI_OBJECTS_READ])
+        Security(verify_oauth_client_cli, scopes=[scope_registry.EVALUATION_READ])
     ],
 )
 async def evaluation_view(db: AsyncSession = Depends(get_async_db)) -> HTMLResponse:

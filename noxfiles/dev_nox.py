@@ -9,6 +9,7 @@ from constants_nox import (
     COMPOSE_SERVICE_NAME,
     EXEC,
     EXEC_IT,
+    LOGIN,
     RUN_CYPRESS_TESTS,
     START_APP,
     START_APP_REMOTE_DEBUG,
@@ -17,6 +18,22 @@ from constants_nox import (
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 from utils_nox import COMPOSE_DOWN_VOLUMES
+
+
+@nox_session()
+def shell(session: Session) -> None:
+    """
+    Open a shell in an already-running Fides webesrver container.
+
+    If the container is not running, the command will fail.
+    """
+    shell_command = (*EXEC_IT, "/bin/bash")
+    try:
+        session.run(*shell_command, external=True)
+    except CommandFailed:
+        session.error(
+            "Could not connect to the webserver container. Please confirm it is running and try again."
+        )
 
 
 @nox_session()
@@ -170,6 +187,8 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     session.run(
         *START_TEST_ENV, "fides-ui", "fides-pc", external=True, env=test_env_vars
     )
+    session.log("Logging in...")
+    session.run(*LOGIN, external=True)
 
     session.log(
         "Running example setup scripts for DSR Automation tests... (scripts/load_examples.py)"

@@ -42,7 +42,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Configuration",
         path: "/privacy-requests/configure",
-        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
     ],
   },
@@ -53,28 +53,31 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "View map",
         path: "/datamap",
         requiresPlus: true,
-        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
       {
         title: "View systems",
         path: "/system",
-        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+        scopes: [ScopeRegistryEnum.SYSTEM_READ],
       },
       {
         title: "Add systems",
         path: "/add-systems",
-        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+        scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
       },
       {
         title: "Manage datasets",
         path: "/dataset",
-        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+        scopes: [
+          ScopeRegistryEnum.CTL_DATASET_CREATE,
+          ScopeRegistryEnum.CTL_DATASET_UPDATE,
+        ],
       },
       {
         title: "Classify systems",
         path: "/classify-systems",
         requiresPlus: true,
-        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+        scopes: [ScopeRegistryEnum.SYSTEM_UPDATE], // temporary scope until we decide what to do here
       },
     ],
   },
@@ -84,14 +87,29 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Taxonomy",
         path: "/taxonomy",
-        scopes: [], // TODO: temporarily disabled due to https://github.com/ethyca/fides/issues/2769
+        scopes: [
+          ScopeRegistryEnum.DATA_CATEGORY_CREATE,
+          ScopeRegistryEnum.DATA_CATEGORY_UPDATE,
+          ScopeRegistryEnum.DATA_USE_CREATE,
+          ScopeRegistryEnum.DATA_USE_UPDATE,
+          ScopeRegistryEnum.DATA_SUBJECT_CREATE,
+          ScopeRegistryEnum.DATA_SUBJECT_UPDATE,
+        ],
       },
       {
         title: "Users",
         path: "/user-management",
-        scopes: [ScopeRegistryEnum.USER_READ],
+        scopes: [
+          ScopeRegistryEnum.USER_UPDATE,
+          ScopeRegistryEnum.USER_CREATE,
+          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
+        ],
       },
-      { title: "About Fides", path: "/management/about", scopes: [] },
+      {
+        title: "About Fides",
+        path: "/management/about",
+        scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
+      },
     ],
   },
 ];

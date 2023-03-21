@@ -15,8 +15,8 @@ def test_get_connection_types():
     data = get_connection_types()
     assert (
         len(data)
-        == len(ConnectionType) + len(saas_template_registry.connector_types()) - 5
-    )  # there are 5 connection types that are not returned by the endpoint
+        == len(ConnectionType) + len(saas_template_registry.connector_types()) - 4
+    )  # there are 4 connection types that are not returned by the endpoint
 
     assert {
         "identifier": ConnectionType.postgres.value,

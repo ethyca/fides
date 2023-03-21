@@ -19,6 +19,7 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
+    JWE_PAYLOAD_SYSTEMS,
 )
 from fides.lib.db.base_class import Base
 from fides.lib.models.fides_user import FidesUser
@@ -27,6 +28,7 @@ from fides.lib.oauth.jwt import generate_jwe
 ADMIN_UI_ROOT = "admin_ui_root"
 DEFAULT_SCOPES: list[str] = []
 DEFAULT_ROLES: list[str] = []
+DEFAULT_SYSTEMS: list[str] = []
 
 
 class ClientDetail(Base):
@@ -40,6 +42,7 @@ class ClientDetail(Base):
     salt = Column(String, nullable=False)
     scopes = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
     roles = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
+    systems = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
     fides_key = Column(String, index=True, unique=True, nullable=True)
     user_id = Column(
         String, ForeignKey(FidesUser.id_field_path), nullable=True, unique=True
@@ -57,6 +60,7 @@ class ClientDetail(Base):
         user_id: str = None,
         encoding: str = "UTF-8",
         roles: list[str] | None = None,
+        systems: list[str] | None = None,
     ) -> tuple["ClientDetail", str]:
         """Creates a ClientDetail and returns that along with the unhashed secret
         so it can be returned to the user on create
@@ -70,6 +74,9 @@ class ClientDetail(Base):
 
         if not roles:
             roles = DEFAULT_ROLES
+
+        if not systems:
+            systems = DEFAULT_SYSTEMS
 
         salt = generate_salt()
         hashed_secret = hash_with_salt(
@@ -87,6 +94,7 @@ class ClientDetail(Base):
                 "fides_key": fides_key,
                 "user_id": user_id,
                 "roles": roles,
+                "systems": systems,
             },
         )
         return client, secret  # type: ignore
@@ -114,6 +122,7 @@ class ClientDetail(Base):
             JWE_PAYLOAD_SCOPES: self.scopes,
             JWE_ISSUED_AT: datetime.now().isoformat(),
             JWE_PAYLOAD_ROLES: self.roles,
+            JWE_PAYLOAD_SYSTEMS: self.systems,
         }
         return generate_jwe(json.dumps(payload), encryption_key)
 
@@ -147,6 +156,7 @@ def _get_root_client_detail(
             salt=config.security.oauth_root_client_secret_hash[1].decode(encoding),
             scopes=scopes,
             roles=roles,
+            systems=[],
         )
 
     return ClientDetail(
@@ -155,4 +165,5 @@ def _get_root_client_detail(
         salt=config.security.oauth_root_client_secret_hash[1].decode(encoding),
         scopes=DEFAULT_SCOPES,
         roles=DEFAULT_ROLES,
+        systems=DEFAULT_SYSTEMS,
     )

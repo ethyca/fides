@@ -13,6 +13,12 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
     SystemType,
 )
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
+from fides.api.ops.service.connectors.consent_email_connector import (
+    CONSENT_EMAIL_CONNECTOR_TYPES,
+)
+from fides.api.ops.service.connectors.erasure_email_connector import (
+    ERASURE_EMAIL_CONNECTOR_TYPES,
+)
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
@@ -76,10 +82,10 @@ def get_connection_types(
                     ConnectionType.saas,
                     ConnectionType.https,
                     ConnectionType.manual,
-                    ConnectionType.email,
                     ConnectionType.manual_webhook,
                     ConnectionType.fides,
                     ConnectionType.sovrn,
+                    ConnectionType.attentive,
                 ]
                 and is_match(conn_type.value)
             ]
@@ -148,7 +154,9 @@ def get_connection_types(
             [
                 email_type.value
                 for email_type in ConnectionType
-                if email_type == ConnectionType.sovrn and is_match(email_type.value)
+                if email_type
+                in ERASURE_EMAIL_CONNECTOR_TYPES + CONSENT_EMAIL_CONNECTOR_TYPES
+                and is_match(email_type.value)
             ]
         )
         connection_system_types.extend(
