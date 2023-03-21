@@ -7,6 +7,7 @@ const theme = extendTheme({
     global: {
       body: {
         bg: "white",
+        minWidth: "container.lg",
       },
     },
   },

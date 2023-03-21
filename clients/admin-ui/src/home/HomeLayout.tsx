@@ -16,8 +16,6 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
   <Flex
     data-testid={title}
     direction="column"
-    minWidth="container.lg"
-    height="100vh"
   >
     <Head>
       <title>Fides Admin UI - {title}</title>

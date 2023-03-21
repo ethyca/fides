@@ -49,8 +49,6 @@ const Layout = ({
     <Flex
       data-testid={title}
       direction="column"
-      minWidth="container.lg"
-      height="100vh"
     >
       <Head>
         <title>Fides Admin UI - {title}</title>
@@ -64,9 +62,7 @@ const Layout = ({
       <Flex
         as="main"
         flexGrow={1}
-        paddingTop={10}
-        paddingX={10}
-        paddingBottom={11}
+        padding={10}
         gap={10}
       >
         <Box flex={0} flexShrink={0}>
