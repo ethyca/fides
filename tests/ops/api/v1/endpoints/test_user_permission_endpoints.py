@@ -259,6 +259,61 @@ class TestEditUserPermissions:
 
         user.delete(db)
 
+    def test_edit_user_scopes_are_ignored(
+        self, db, api_client, generate_auth_header
+    ) -> None:
+        """Scopes in request are ignored as you can no longer edit user scopes"""
+        auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
+        user = FidesUser.create(
+            db=db,
+            data={"username": "user_1", "password": "test_password"},
+        )
+
+        permissions = FidesUserPermissions.create(
+            db=db,
+            data={
+                "user_id": user.id,
+                "roles": [VIEWER],
+            },
+        )
+
+        ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            roles=[VIEWER],
+            user_id=user.id,
+        )
+
+        body = {
+            "id": permissions.id,
+            "scopes": [PRIVACY_REQUEST_READ],
+            "roles": [OWNER],
+        }
+        response = api_client.put(
+            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
+        )
+        response_body = response.json()
+        assert HTTP_200_OK == response.status_code
+        assert sorted(response_body["scopes"]) == sorted(
+            SCOPE_REGISTRY
+        ), "We return the scopes associated with roles for backwards compatibility"
+        assert response_body["roles"] == [OWNER]
+
+        client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
+        assert (
+            client.scopes == []
+        ), "Assert client scopes are not updated via the user permissions update flow"
+        assert client.roles == [OWNER]
+
+        db.refresh(permissions)
+        assert permissions.scopes == sorted(
+            SCOPE_REGISTRY
+        ), "For backwards compatibility"
+        assert permissions.roles == [OWNER]
+
+        user.delete(db)
+
     def test_edit_user_roles(self, db, api_client, generate_auth_header) -> None:
         auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
         user = FidesUser.create(
