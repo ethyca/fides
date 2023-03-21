@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
@@ -9,6 +9,7 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NO
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.scope_registry import (
+    USER_PERMISSION_ASSIGN_OWNERS,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
@@ -28,6 +29,7 @@ from fides.api.ops.util.oauth_util import (
 from fides.core.config import CONFIG
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.roles import OWNER, RoleRegistryEnum
 
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
@@ -42,16 +44,31 @@ def validate_user_id(db: Session, user_id: str) -> FidesUser:
     return user
 
 
+async def owner_role_permission_check(
+    db: Session, roles: List[RoleRegistryEnum], authorization: str
+) -> None:
+    """Extra permissions check to assert that the token possesses the USER_PERMISSION_ASSIGN_OWNERS scope
+    if attempting to make another user an owner.
+    """
+    if OWNER in roles:
+        await verify_oauth_client(
+            security_scopes=SecurityScopes([USER_PERMISSION_ASSIGN_OWNERS]),
+            authorization=authorization,
+            db=db,
+        )
+
+
 @router.post(
     urls.USER_PERMISSIONS,
     dependencies=[Security(verify_oauth_client, scopes=[USER_PERMISSION_CREATE])],
     status_code=HTTP_201_CREATED,
     response_model=UserPermissionsResponse,
 )
-def create_user_permissions(
+async def create_user_permissions(
     *,
     db: Session = Depends(deps.get_db),
     user_id: str,
+    authorization: str = Security(oauth2_scheme),
     permissions: UserPermissionsCreate,
 ) -> FidesUserPermissions:
     """Create user permissions with big picture roles and/or scopes."""
@@ -62,6 +79,7 @@ def create_user_permissions(
             detail="This user already has permissions set.",
         )
 
+    await owner_role_permission_check(db, permissions.roles, authorization)
     if user.client:
         # Just in case - this shouldn't happen in practice.
         user.client.update(db=db, data=permissions.dict())
@@ -76,10 +94,11 @@ def create_user_permissions(
     dependencies=[Security(verify_oauth_client, scopes=[USER_PERMISSION_UPDATE])],
     response_model=UserPermissionsResponse,
 )
-def update_user_permissions(
+async def update_user_permissions(
     *,
     db: Session = Depends(deps.get_db),
     user_id: str,
+    authorization: str = Security(oauth2_scheme),
     permissions: UserPermissionsEdit,
 ) -> FidesUserPermissions:
     """Update either a user's role(s) and/or scope(s).
@@ -89,6 +108,8 @@ def update_user_permissions(
     """
     user = validate_user_id(db, user_id)
     logger.info("Updated FidesUserPermission record")
+
+    await owner_role_permission_check(db, permissions.roles, authorization)
 
     if user.client:
         user.client.update(

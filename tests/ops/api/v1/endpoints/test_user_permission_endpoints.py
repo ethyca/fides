@@ -14,6 +14,7 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SAAS_CONFIG_READ,
     SCOPE_REGISTRY,
+    USER_PERMISSION_ASSIGN_OWNERS,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
@@ -23,7 +24,14 @@ from fides.core.config import CONFIG
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
-from fides.lib.oauth.roles import OWNER, ROLES_TO_SCOPES_MAPPING, VIEWER
+from fides.lib.oauth.roles import (
+    APPROVER,
+    CONTRIBUTOR,
+    OWNER,
+    ROLES_TO_SCOPES_MAPPING,
+    VIEWER,
+    VIEWER_AND_APPROVER,
+)
 from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
 
@@ -187,7 +195,9 @@ class TestCreateUserPermissions:
     def test_create_roles_on_permission_object_and_client(
         self, db, api_client, generate_auth_header
     ) -> None:
-        auth_header = generate_auth_header([USER_PERMISSION_CREATE])
+        auth_header = generate_auth_header(
+            [USER_PERMISSION_CREATE, USER_PERMISSION_ASSIGN_OWNERS]
+        )
         user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
@@ -215,6 +225,69 @@ class TestCreateUserPermissions:
         db.refresh(client)
         assert client.roles == [OWNER]
         user.delete(db)
+
+    @pytest.mark.parametrize(
+        "acting_user,added_role,expected_response",
+        [
+            ("owner_user", APPROVER, HTTP_201_CREATED),
+            ("owner_user", VIEWER_AND_APPROVER, HTTP_201_CREATED),
+            ("owner_user", VIEWER, HTTP_201_CREATED),
+            ("owner_user", CONTRIBUTOR, HTTP_201_CREATED),
+            ("owner_user", OWNER, HTTP_201_CREATED),
+            ("contributor_user", APPROVER, HTTP_201_CREATED),
+            ("contributor_user", VIEWER_AND_APPROVER, HTTP_201_CREATED),
+            ("contributor_user", VIEWER, HTTP_201_CREATED),
+            ("contributor_user", CONTRIBUTOR, HTTP_201_CREATED),
+            ("contributor_user", OWNER, HTTP_403_FORBIDDEN),
+            ("viewer_user", APPROVER, HTTP_403_FORBIDDEN),
+            ("viewer_user", VIEWER_AND_APPROVER, HTTP_403_FORBIDDEN),
+            ("viewer_user", VIEWER, HTTP_403_FORBIDDEN),
+            ("viewer_user", CONTRIBUTOR, HTTP_403_FORBIDDEN),
+            ("viewer_user", OWNER, HTTP_403_FORBIDDEN),
+            ("viewer_and_approver_user", APPROVER, HTTP_403_FORBIDDEN),
+            (
+                "viewer_and_approver_user",
+                VIEWER_AND_APPROVER,
+                HTTP_403_FORBIDDEN,
+            ),
+            ("viewer_and_approver_user", VIEWER, HTTP_403_FORBIDDEN),
+            ("viewer_and_approver_user", CONTRIBUTOR, HTTP_403_FORBIDDEN),
+            ("viewer_and_approver_user", OWNER, HTTP_403_FORBIDDEN),
+            ("approver_user", APPROVER, HTTP_403_FORBIDDEN),
+            ("approver_user", VIEWER_AND_APPROVER, HTTP_403_FORBIDDEN),
+            ("approver_user", VIEWER, HTTP_403_FORBIDDEN),
+            ("approver_user", CONTRIBUTOR, HTTP_403_FORBIDDEN),
+            ("approver_user", OWNER, HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_create_user_roles_permission_matrix(
+        self,
+        db,
+        acting_user,
+        added_role,
+        expected_response,
+        request,
+        api_client,
+    ):
+        """Test asserting what roles can be granted to other users given your current role
+        when assigning initial user permissions"""
+        acting_user = request.getfixturevalue(acting_user)
+        updated_user = FidesUser.create(
+            db=db,
+            data={"username": "new_user", "password": "test_password"},
+        )
+
+        auth_header = generate_role_header_for_user(
+            acting_user, roles=acting_user.permissions.roles
+        )
+        body = {"user_id": updated_user.id, "roles": [added_role]}
+        response = api_client.post(
+            f"{V1_URL_PREFIX}/user/{updated_user.id}/permission",
+            headers=auth_header,
+            json=body,
+        )
+        assert response.status_code == expected_response
+        updated_user.delete(db)
 
 
 class TestEditUserPermissions:
@@ -390,7 +463,9 @@ class TestEditUserPermissions:
         user.delete(db)
 
     def test_edit_user_roles(self, db, api_client, generate_auth_header) -> None:
-        auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
+        auth_header = generate_auth_header(
+            [USER_PERMISSION_UPDATE, USER_PERMISSION_ASSIGN_OWNERS]
+        )
         user = FidesUser.create(
             db=db,
             data={"username": "user_1", "password": "test_password"},
@@ -434,6 +509,65 @@ class TestEditUserPermissions:
         assert permissions.roles == [OWNER]
 
         user.delete(db)
+
+    @pytest.mark.parametrize(
+        "acting_user,updating_role,updated_user,expected_response",
+        [
+            ("owner_user", APPROVER, "user", HTTP_200_OK),
+            ("owner_user", VIEWER_AND_APPROVER, "user", HTTP_200_OK),
+            ("owner_user", VIEWER, "user", HTTP_200_OK),
+            ("owner_user", CONTRIBUTOR, "user", HTTP_200_OK),
+            ("owner_user", OWNER, "user", HTTP_200_OK),
+            ("contributor_user", APPROVER, "user", HTTP_200_OK),
+            ("contributor_user", VIEWER_AND_APPROVER, "user", HTTP_200_OK),
+            ("contributor_user", VIEWER, "user", HTTP_200_OK),
+            ("contributor_user", CONTRIBUTOR, "user", HTTP_200_OK),
+            ("contributor_user", OWNER, "user", HTTP_403_FORBIDDEN),
+            ("viewer_user", APPROVER, "user", HTTP_403_FORBIDDEN),
+            ("viewer_user", VIEWER_AND_APPROVER, "user", HTTP_403_FORBIDDEN),
+            ("viewer_user", VIEWER, "user", HTTP_403_FORBIDDEN),
+            ("viewer_user", CONTRIBUTOR, "user", HTTP_403_FORBIDDEN),
+            ("viewer_user", OWNER, "user", HTTP_403_FORBIDDEN),
+            ("viewer_and_approver_user", APPROVER, "user", HTTP_403_FORBIDDEN),
+            (
+                "viewer_and_approver_user",
+                VIEWER_AND_APPROVER,
+                "user",
+                HTTP_403_FORBIDDEN,
+            ),
+            ("viewer_and_approver_user", VIEWER, "user", HTTP_403_FORBIDDEN),
+            ("viewer_and_approver_user", CONTRIBUTOR, "user", HTTP_403_FORBIDDEN),
+            ("viewer_and_approver_user", OWNER, "user", HTTP_403_FORBIDDEN),
+            ("approver_user", APPROVER, "user", HTTP_403_FORBIDDEN),
+            ("approver_user", VIEWER_AND_APPROVER, "user", HTTP_403_FORBIDDEN),
+            ("approver_user", VIEWER, "user", HTTP_403_FORBIDDEN),
+            ("approver_user", CONTRIBUTOR, "user", HTTP_403_FORBIDDEN),
+            ("approver_user", OWNER, "user", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_edit_user_roles_permission_matrix(
+        self,
+        acting_user,
+        updating_role,
+        updated_user,
+        expected_response,
+        request,
+        api_client,
+    ):
+        """Test asserting what roles can be granted to other users given your current role"""
+        acting_user = request.getfixturevalue(acting_user)
+        updated_user = request.getfixturevalue(updated_user)
+
+        auth_header = generate_role_header_for_user(
+            acting_user, roles=acting_user.permissions.roles
+        )
+        body = {"id": updated_user.permissions.id, "roles": [updating_role]}
+        response = api_client.put(
+            f"{V1_URL_PREFIX}/user/{updated_user.id}/permission",
+            headers=auth_header,
+            json=body,
+        )
+        assert response.status_code == expected_response
 
 
 class TestGetUserPermissions:
