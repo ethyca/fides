@@ -35,24 +35,12 @@ class UserPermissionsResponse(UserPermissionsCreate):
 
     id: str
     user_id: str
-    scopes: List[
-        ScopeRegistryEnum
-    ]  # This should be removed once the UI is not using.  Currently returning "total_scopes" here.
     total_scopes: List[
         ScopeRegistryEnum
     ]  # Returns a list of scopes inherited via roles
 
     class Config:
         use_enum_values = True
-
-    @validator("scopes", pre=True)
-    def validate_obsolete_scopes(
-        cls, scopes: List[ScopeRegistryEnum]
-    ) -> List[ScopeRegistryEnum]:
-        """Filter out obsolete scopes if the scope registry has changed.
-        This is just for backwards-compatibility. Scopes will no longer be assigned directly.
-        """
-        return [scope for scope in scopes or [] if scope in SCOPE_REGISTRY]
 
     @validator("total_scopes", pre=True)
     def validate_obsolete_total_scopes(

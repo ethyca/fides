@@ -162,9 +162,6 @@ class TestCreateUserPermissions:
         response_body = response.json()
         assert HTTP_201_CREATED == response.status_code
         assert response_body["id"] == permissions.id
-        assert (
-            permissions.scopes == ROLES_TO_SCOPES_MAPPING[VIEWER]
-        )  # Backwards compatible - these are the "scopes" associated with roles
         assert permissions.roles == [VIEWER]
 
         assert client.roles == [VIEWER]
@@ -295,9 +292,6 @@ class TestEditUserPermissions:
         )
         response_body = response.json()
         assert HTTP_200_OK == response.status_code
-        assert sorted(response_body["scopes"]) == sorted(
-            SCOPE_REGISTRY
-        ), "We return the scopes associated with roles for backwards compatibility"
         assert response_body["roles"] == [OWNER]
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
@@ -307,9 +301,6 @@ class TestEditUserPermissions:
         assert client.roles == [OWNER]
 
         db.refresh(permissions)
-        assert permissions.scopes == sorted(
-            SCOPE_REGISTRY
-        ), "For backwards compatibility"
         assert permissions.roles == [OWNER]
 
         user.delete(db)
@@ -343,9 +334,6 @@ class TestEditUserPermissions:
         )
         response_body = response.json()
         assert HTTP_200_OK == response.status_code
-        assert sorted(response_body["scopes"]) == sorted(
-            SCOPE_REGISTRY
-        ), "We return the scopes associated with roles for backwards compatibility"
         assert response_body["roles"] == [OWNER]
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
@@ -355,9 +343,6 @@ class TestEditUserPermissions:
         assert client.roles == [OWNER]
 
         db.refresh(permissions)
-        assert permissions.scopes == sorted(
-            SCOPE_REGISTRY
-        ), "For backwards compatibility"
         assert permissions.roles == [OWNER]
 
         user.delete(db)
@@ -452,9 +437,6 @@ class TestGetUserPermissions:
         assert HTTP_200_OK == response.status_code
         assert response_body["id"] == permissions.id
         assert response_body["user_id"] == user.id
-        assert (
-            response_body["scopes"] == ROLES_TO_SCOPES_MAPPING[APPROVER]
-        )  # For backwards compatibility
         assert response_body["roles"] == [APPROVER]
         assert response_body["total_scopes"] == ROLES_TO_SCOPES_MAPPING[APPROVER]
 
@@ -470,7 +452,6 @@ class TestGetUserPermissions:
             headers=root_auth_header,
         )
         resp = response.json()
-        assert resp["scopes"] == []
         assert resp["roles"] == []
         assert resp["total_scopes"] == []
         assert resp["user_id"] == auth_user.id
@@ -501,9 +482,6 @@ class TestGetUserPermissions:
         assert HTTP_200_OK == response.status_code
         assert response_body["id"] == permissions.id
         assert response_body["user_id"] == auth_user.id
-        assert (
-            response_body["scopes"] == ROLES_TO_SCOPES_MAPPING[VIEWER]
-        ), "Backwards compatible response"
         assert response_body["total_scopes"] == ROLES_TO_SCOPES_MAPPING[VIEWER]
         assert response_body["roles"] == [VIEWER]
 
@@ -518,8 +496,6 @@ class TestGetUserPermissions:
         assert HTTP_200_OK == response.status_code
         assert response_body["id"] == oauth_root_client.id
         assert response_body["user_id"] == oauth_root_client.id
-        assert len(response_body["scopes"]) == len(SCOPE_REGISTRY)
-        assert response_body["scopes"] == SCOPE_REGISTRY
         assert response_body["roles"] == [OWNER]
         assert response_body["total_scopes"] == sorted(SCOPE_REGISTRY)
 
@@ -533,8 +509,6 @@ class TestGetUserPermissions:
         assert HTTP_200_OK == response.status_code
         assert response_body["id"] == oauth_root_client.id
         assert response_body["user_id"] == oauth_root_client.id
-        assert len(response_body["scopes"]) == len(SCOPE_REGISTRY)
-        assert response_body["scopes"] == SCOPE_REGISTRY
         assert response_body["roles"] == [OWNER]
         assert response_body["total_scopes"] == sorted(SCOPE_REGISTRY)
 
@@ -576,7 +550,6 @@ class TestGetUserPermissions:
             headers=auth_header,
         )
         resp = response.json()
-        assert resp["scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
         assert resp["roles"] == [VIEWER]
         assert resp["user_id"] == auth_user.id
         assert resp["total_scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
@@ -594,7 +567,6 @@ class TestGetUserPermissions:
             headers=root_auth_header,
         )
         resp = response.json()
-        assert resp["scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
         assert resp["roles"] == [VIEWER]
         assert resp["user_id"] == auth_user.id
         assert resp["total_scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
@@ -627,7 +599,6 @@ class TestGetUserPermissions:
         )
         assert response.status_code == 200
         resp = response.json()
-        assert resp["scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])
         assert resp["roles"] == [VIEWER]
         assert resp["user_id"] == auth_user.id
         assert resp["total_scopes"] == sorted(ROLES_TO_SCOPES_MAPPING[VIEWER])

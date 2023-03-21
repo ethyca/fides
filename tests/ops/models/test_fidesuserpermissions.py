@@ -1,10 +1,6 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_CREATE,
-    PRIVACY_REQUEST_READ,
-)
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.roles import CONTRIBUTOR, ROLES_TO_SCOPES_MAPPING, VIEWER
@@ -24,7 +20,6 @@ class TestFidesUserPermissions:
 
         assert permissions.user_id == user.id
         assert permissions.roles == [CONTRIBUTOR]
-        assert sorted(permissions.scopes) == ROLES_TO_SCOPES_MAPPING[CONTRIBUTOR]
         assert permissions.created_at is not None
         assert permissions.updated_at is not None
 
@@ -50,9 +45,6 @@ class TestFidesUserPermissions:
                 "roles": [VIEWER],
             },
         )
-        assert (
-            permissions.scopes == ROLES_TO_SCOPES_MAPPING[VIEWER]
-        ), "For backwards compatibility"
         assert permissions.total_scopes == ROLES_TO_SCOPES_MAPPING[VIEWER]
         user.delete(db)
 
@@ -66,6 +58,5 @@ class TestFidesUserPermissions:
             db=db,
             data={"user_id": user.id},
         )
-        assert permissions.scopes == [], "Scopes property for backwards compatibility"
         assert permissions.total_scopes == []
         user.delete(db)

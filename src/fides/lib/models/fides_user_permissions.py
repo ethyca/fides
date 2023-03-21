@@ -26,10 +26,3 @@ class FidesUserPermissions(Base):
             all_scopes += ROLES_TO_SCOPES_MAPPING.get(role, [])
 
         return sorted(list(set(all_scopes)))
-
-    @property
-    def scopes(self) -> List[str]:
-        """Backwards-compatible property for use while the UI is still looking at userpermission.scopes
-        Users can no longer be assigned scopes directly.
-        """
-        return self.total_scopes
