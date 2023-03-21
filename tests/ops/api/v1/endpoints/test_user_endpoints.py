@@ -935,7 +935,7 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == viewer_user.id
 
-    def test_login_with_systems_only(self, db, url, system_manager, api_client, system):
+    def test_login_with_systems(self, db, url, system_manager, api_client, system):
         # Delete existing client for test purposes
         system_manager.client.delete(db)
         body = {
@@ -959,7 +959,7 @@ class TestUserLogin:
         )
         assert token_data["client-id"] == system_manager.client.id
         assert token_data["scopes"] == []  # Uses scopes on existing client
-        assert token_data["roles"] == []  # Uses roles on existing client
+        assert token_data["roles"] == [VIEWER]  # Uses roles on existing client
         assert token_data["systems"] == [system.id]
 
         assert "user_data" in list(response.json().keys())
