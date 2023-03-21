@@ -14,11 +14,11 @@ import {
 } from "@fidesui/react";
 import ConfirmationModal from "common/ConfirmationModal";
 import { getErrorMessage } from "common/helpers";
-import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import { errorToastParams, successToastParams } from "common/toast";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { System } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 

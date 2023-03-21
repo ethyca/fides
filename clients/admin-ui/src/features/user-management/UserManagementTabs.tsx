@@ -42,12 +42,12 @@ const UserManagementTabs = ({
           <Box
             position="absolute"
             top="114px"
-            right="24px"
+            right={6}
+            height="calc(100% + 100px)"
             overflowY="scroll"
-            padding="24px"
+            padding={6}
             w="35%"
             borderLeftWidth="1px"
-            borderBottomWidth="1px"
           >
             <RoleDescriptionDrawer />
           </Box>
