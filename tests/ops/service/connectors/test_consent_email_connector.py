@@ -4,9 +4,9 @@ import pytest
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionTestStatus
-from fides.api.ops.schemas.connection_configuration.connection_secrets_sovrn import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
-    ExtendedConsentEmailSchema,
+    ExtendedEmailSchema,
     ExtendedIdentityTypes,
 )
 from fides.api.ops.schemas.messaging.messaging import (
@@ -15,16 +15,18 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.service.connectors.consent_email_connector import (
-    GenericEmailConsentConnector,
+    GenericConsentEmailConnector,
     filter_user_identities_for_connector,
-    get_consent_email_connection_configs,
     get_identity_types_for_connector,
     send_single_consent_email,
 )
+from fides.api.ops.service.privacy_request.request_runner_service import (
+    get_consent_email_connection_configs,
+)
 
 
-class TestEmailConsentConnectorMethods:
-    email_and_ljt_readerID_defined = ExtendedConsentEmailSchema(
+class TestConsentEmailConnectorMethods:
+    email_and_ljt_readerID_defined = ExtendedEmailSchema(
         third_party_vendor_name="Dawn's Bookstore",
         recipient_email_address="test@example.com",
         advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
@@ -34,7 +36,7 @@ class TestEmailConsentConnectorMethods:
         ),
     )
 
-    phone_defined = ExtendedConsentEmailSchema(
+    phone_defined = ExtendedEmailSchema(
         third_party_vendor_name="Dawn's Bookstore",
         recipient_email_address="test@example.com",
         advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
@@ -44,7 +46,7 @@ class TestEmailConsentConnectorMethods:
         ),
     )
 
-    ljt_readerID_defined = ExtendedConsentEmailSchema(
+    ljt_readerID_defined = ExtendedEmailSchema(
         third_party_vendor_name="Dawn's Bookstore",
         recipient_email_address="test@example.com",
         advanced_settings=AdvancedSettingsWithExtendedIdentityTypes(
@@ -169,13 +171,15 @@ class TestEmailConsentConnectorMethods:
         assert not mock_dispatch.called
         assert (
             exc.value.message
-            == "Cannot send an email requesting consent preference changes to third-party vendor. No organization name found."
+            == "Cannot send an email to third-party vendor. No organization name found."
         )
 
     @mock.patch(
         "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
     )
-    def test_send_single_consent_email(self, mock_dispatch, test_fides_org, db):
+    def test_send_single_consent_email(
+        self, mock_dispatch, test_fides_org, db, messaging_config
+    ):
         consent_preferences = [
             ConsentPreferencesByUser(
                 identities={"email": "customer-1@example.com"},
@@ -235,12 +239,68 @@ class TestEmailConsentConnectorMethods:
             == "Test notification of users' consent preference changes from Test Org"
         )
 
+    def test_needs_email(
+        self,
+        db,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+    ):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is True
+        )
 
-class TestSovrnEmailConsentConnector:
+    def test_needs_email_without_consent_preferences(
+        self,
+        db,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+    ):
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is False
+        )
+
+    def test_needs_email_without_consent_rules(
+        self, test_sovrn_consent_email_connector, privacy_request
+    ):
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request,
+            )
+            is False
+        )
+
+    def test_needs_email_unsupported_identity(
+        self, test_sovrn_consent_email_connector, privacy_request_with_consent_policy
+    ):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"email": "test@example.com"},
+                privacy_request_with_consent_policy,
+            )
+            is False
+        )
+
+
+class TestSovrnConnector:
     def test_generic_identities_for_test_email_property(
         self, sovrn_email_connection_config
     ):
-        generic_connector = GenericEmailConsentConnector(sovrn_email_connection_config)
+        generic_connector = GenericConsentEmailConnector(sovrn_email_connection_config)
         assert generic_connector.identities_for_test_email == {
             "email": "test_email@example.com"
         }

@@ -7,7 +7,7 @@ import type { AdvancedSettingsWithExtendedIdentityTypes } from "./AdvancedSettin
 /**
  * SovrnDocsSchema Secrets Schema for API Docs
  */
-export type SovrnEmailDocsSchema = {
+export type SovrnDocsSchema = {
   third_party_vendor_name?: string;
   recipient_email_address: string;
   test_email_address?: string;
