@@ -8,7 +8,6 @@ from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
-from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas import Msg
 from fides.api.ops.schemas.privacy_request import Consent
 
@@ -138,6 +137,12 @@ class ConsentEmailFulfillmentBodyParams(BaseModel):
     requested_changes: List[ConsentPreferencesByUser]
 
 
+class ErasureRequestBodyParams(BaseModel):
+    controller: str
+    third_party_vendor_name: str
+    identities: List[str]
+
+
 class FidesopsMessage(
     BaseModel,
     smart_union=True,
@@ -153,7 +158,7 @@ class FidesopsMessage(
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             AccessRequestCompleteBodyParams,
-            List[CheckpointActionRequired],
+            ErasureRequestBodyParams,
         ]
     ]
 

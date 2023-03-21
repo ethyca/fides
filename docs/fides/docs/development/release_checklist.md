@@ -9,7 +9,7 @@ This checklist should be copy/pasted into the final pre-release PR, and checked 
 ### General
 
 - [ ] Quickstart verified working and up-to-date
-- [ ] `nox -s fides_env(test)` works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)
+- [ ] `nox -s "fides_env(test)"` works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)
 - [ ] `nox -s "build(sample)"` works on the release branch, creating the sample images (this is also prereq for `fides deploy up`)
 - [ ] `fides deploy up --no-pull` works using the images built in previous step (verify the admin UI, privacy center, CLI and webserver)
 
@@ -31,7 +31,6 @@ Next, run the following checks against the environment you've spun up using `fid
 ### API
 
 - [ ] Verify that the generated API docs are correct
-- [ ] Verify that the [Postman collection](https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/postman/Fides.postman_collection.json) has been updated
 
 ### CLI
 
