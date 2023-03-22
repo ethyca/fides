@@ -1,8 +1,8 @@
 saas_config:
   fides_key: mailchimp_override_connector_example
-  name: Mailchimp SaaS Override Config
+  name: Mailchimp
   type: mailchimp
-  description: A sample schema representing the Mailchimp connector for Fidesops that includes request function overrides
+  description: A sample schema representing the Mailchimp for Fides that includes request function overrides
   version: 0.0.1
 
   connector_params:

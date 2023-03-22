@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Zendesk SaaS Config
+  name: Zendesk
   type: zendesk
   description: A sample schema representing the Zendesk connector for Fides
   version: 0.0.1

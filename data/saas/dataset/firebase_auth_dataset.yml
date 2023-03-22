@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Firebase Auth Dataset
-    description: A sample dataset representing the Firebase Auth connector for Fidesops
+    description: A sample dataset representing the Firebase Auth connector for Fides
     collections:
       - name: user
         fields:

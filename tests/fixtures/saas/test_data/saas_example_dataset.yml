@@ -1,7 +1,7 @@
 dataset:
   - fides_key: saas_connector_example
     name: SaaS Example Dataset
-    description: A sample dataset representing a SaaS connector for Fidesops
+    description: A sample dataset representing a SaaS connector for Fides
     collections:
       - name: messages
         fields:
@@ -239,4 +239,3 @@ dataset:
         fields:
           - name: customer_id
             data_categories: [system.operations]
-
