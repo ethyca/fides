@@ -36,7 +36,7 @@ const About: NextPage = () => {
           </Text>
         </Box>
 
-        {features.plusVersion && (
+        {features.plusVersion ? (
           <Box>
             <Text as="span" fontWeight="bold">
               Fides Plus Version:{" "}
@@ -45,7 +45,7 @@ const About: NextPage = () => {
               {features.plusVersion}
             </Text>
           </Box>
-        )}
+        ) : null}
 
         <Divider />
 
