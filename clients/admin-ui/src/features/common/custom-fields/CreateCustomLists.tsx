@@ -5,12 +5,12 @@ import * as Yup from "yup";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { useUpsertAllowListMutation } from "~/features/plus/plus.slice";
 import { AllowListUpdate } from "~/types/api";
 
 import CustomInput from "./form/CustomInput";
 import { AddIcon } from "./icons/AddIcon";
-import { TrashCanSolidIcon } from "./icons/TrashCanSolidIcon";
 import { Layout } from "./Layout";
 
 const initialValues: AllowListUpdate = {
