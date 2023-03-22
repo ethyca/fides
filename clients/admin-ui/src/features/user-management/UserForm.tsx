@@ -41,8 +41,8 @@ export type FormValues = typeof defaultInitialValues;
 
 const ValidationSchema = Yup.object().shape({
   username: Yup.string().required().label("Username"),
-  first_name: Yup.string().required().label("First name"),
-  last_name: Yup.string().required().label("Last name"),
+  first_name: Yup.string().label("First name"),
+  last_name: Yup.string().label("Last name"),
   password: passwordValidation.label("Password"),
 });
 
@@ -148,7 +148,6 @@ const UserForm = ({
                 variant="block"
                 placeholder="Enter first name of user"
                 disabled={nameDisabled}
-                isRequired
               />
               <CustomTextInput
                 name="last_name"
@@ -156,7 +155,6 @@ const UserForm = ({
                 variant="block"
                 placeholder="Enter last name of user"
                 disabled={nameDisabled}
-                isRequired
               />
               {!activeUser ? (
                 <CustomTextInput
