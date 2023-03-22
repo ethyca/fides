@@ -38,56 +38,56 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header>
-      <Flex
-        height={12}
-        width="100%"
-        paddingX={10}
-        justifyContent="space-between"
-        alignItems="center"
-        backgroundColor="gray.50"
-      >
-        <NextLink href={INDEX_ROUTE} passHref>
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <Link display="flex">
-            <Image src={logoImage} width={83} height={26} alt="Fides Logo" />
-          </Link>
-        </NextLink>
-        <Flex alignItems="center">
-          <Link href="https://ethyca.github.io/fides/" isExternal>
-            <Button size="sm" variant="ghost">
-              <QuestionIcon color="gray.700" boxSize={4} />
-            </Button>
-          </Link>
-          {username && (
-            <Menu>
-              <MenuButton
-                as={Button}
-                size="sm"
-                variant="ghost"
-                data-testid="header-menu-button"
-              >
-                <UserIcon color="gray.700" />
-              </MenuButton>
-              <MenuList shadow="xl">
-                <Stack px={3} py={2} spacing={1}>
-                  <Text fontWeight="medium">{username}</Text>
-                </Stack>
+    <Flex
+      as="header"
+      height={12}
+      width="100%"
+      paddingX={10}
+      flexShrink={0}
+      justifyContent="space-between"
+      alignItems="center"
+      backgroundColor="gray.50"
+    >
+      <NextLink href={INDEX_ROUTE} passHref>
+        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+        <Link display="flex">
+          <Image src={logoImage} width={83} height={26} alt="Fides Logo" />
+        </Link>
+      </NextLink>
+      <Flex alignItems="center">
+        <Link href="https://ethyca.github.io/fides/" isExternal>
+          <Button size="sm" variant="ghost">
+            <QuestionIcon color="gray.700" boxSize={4} />
+          </Button>
+        </Link>
+        {username && (
+          <Menu>
+            <MenuButton
+              as={Button}
+              size="sm"
+              variant="ghost"
+              data-testid="header-menu-button"
+            >
+              <UserIcon color="gray.700" />
+            </MenuButton>
+            <MenuList shadow="xl">
+              <Stack px={3} py={2} spacing={1}>
+                <Text fontWeight="medium">{username}</Text>
+              </Stack>
 
-                <MenuDivider />
-                <MenuItem
-                  _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                  onClick={handleLogout}
-                  data-testid="header-menu-sign-out"
-                >
-                  Sign out
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          )}
-        </Flex>
+              <MenuDivider />
+              <MenuItem
+                _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                onClick={handleLogout}
+                data-testid="header-menu-sign-out"
+              >
+                Sign out
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        )}
       </Flex>
-    </header>
+    </Flex>
   );
 };
 

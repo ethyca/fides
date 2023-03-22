@@ -17,6 +17,7 @@ export const NavTopBar = () => {
       height={12}
       paddingX={10}
       gap={1}
+      flexShrink={0}
       alignItems="center"
       borderBottom="1px"
       borderColor="gray.100"
