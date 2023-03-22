@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.9.0.post0.dev12"
+    "version": "2.9.0.post0.dev13"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -11992,6 +11992,9 @@
             "OAuth2ClientCredentialsBearer": [
               "user-permission:update"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       },
@@ -12050,6 +12053,9 @@
             "OAuth2ClientCredentialsBearer": [
               "user-permission:create"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       }
@@ -17853,6 +17859,7 @@
           "user:password-reset",
           "user-permission:create",
           "user-permission:update",
+          "user-permission:assign_owners",
           "user-permission:read",
           "validate:exec",
           "webhook:create_or_update",
