@@ -22,6 +22,7 @@ The types of changes are:
 * Changed UI paths in the admin-ui [#2869](https://github.com/ethyca/fides/pull/2892)
   * `/add-systems/new` --> `/add-systems/manual`
   * `/system` --> `/systems`
+* Added individual ID routes for systems [#2902](https://github.com/ethyca/fides/pull/2902)
 
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
