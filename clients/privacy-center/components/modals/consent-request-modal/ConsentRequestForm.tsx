@@ -108,20 +108,32 @@ const useConsentRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
-      email: emailValidation(identityInputs?.email)
-          .test('one of email or phone entered', 'You must enter either email or phone', (value, context) => {
-            if (identityInputs?.email === "optional" && identityInputs?.phone === "optional") {
-              return Boolean(context.parent.phone || context.parent.email)
-            }
-            return true
-          }),
-      phone: phoneValidation(identityInputs?.phone)
-          .test('one of email or phone entered', 'You must enter either email or phone', (value, context) => {
-        if (identityInputs?.email === "optional" && identityInputs?.phone === "optional") {
-          return Boolean(context.parent.phone || context.parent.email)
+      email: emailValidation(identityInputs?.email).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (value, context) => {
+          if (
+            identityInputs?.email === "optional" &&
+            identityInputs?.phone === "optional"
+          ) {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
         }
-        return true
-      }),
+      ),
+      phone: phoneValidation(identityInputs?.phone).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (value, context) => {
+          if (
+            identityInputs?.email === "optional" &&
+            identityInputs?.phone === "optional"
+          ) {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
+        }
+      ),
     }),
   });
 
@@ -199,7 +211,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                   value={values.email}
                   isInvalid={touched.email && Boolean(errors.email)}
                   isDisabled={Boolean(
-                      typeof values.phone !== "undefined" && values.phone
+                    typeof values.phone !== "undefined" && values.phone
                   )}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
@@ -211,7 +223,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 isInvalid={touched.phone && Boolean(errors.phone)}
                 isRequired={identityInputs.phone === "required"}
                 isDisabled={Boolean(
-                    typeof values.email !== "undefined" && values.email
+                  typeof values.email !== "undefined" && values.email
                 )}
               >
                 <FormLabel>Phone</FormLabel>

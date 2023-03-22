@@ -19,7 +19,6 @@ describe("Smoke test", () => {
       cy.get("input#name").type("Jenny");
       cy.get("input#email").type("jenny@example.com");
 
-      cy.get("input#phone").type("555 867 5309");
       cy.get("button").contains("Continue").click();
     });
 
