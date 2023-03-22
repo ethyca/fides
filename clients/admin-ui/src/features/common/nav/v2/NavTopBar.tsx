@@ -14,11 +14,11 @@ export const NavTopBar = () => {
   return (
     <Flex
       as="nav"
+      height={12}
+      paddingX={10}
       gap={1}
-      px={10}
-      py={2}
+      alignItems="center"
       borderBottom="1px"
-      borderTop="1px"
       borderColor="gray.100"
     >
       {nav.groups.map((group) => {

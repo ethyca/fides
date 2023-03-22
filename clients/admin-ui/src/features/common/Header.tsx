@@ -16,6 +16,7 @@ import NextLink from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import logoImage from "~/../public/logo.svg";
 import { INDEX_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
@@ -39,21 +40,26 @@ const Header: React.FC = () => {
   return (
     <header>
       <Flex
-        bg="gray.50"
+        height={12}
         width="100%"
-        py={3}
-        px={10}
+        paddingX={10}
         justifyContent="space-between"
         alignItems="center"
+        backgroundColor="gray.50"
       >
         <NextLink href={INDEX_ROUTE} passHref>
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <Link display="flex">
-            <Image src="/logo.svg" width={83} height={26} alt="Fides Logo" />
+            <Image src={logoImage} width={83} height={26} alt="Fides Logo" />
           </Link>
         </NextLink>
         <Flex alignItems="center">
-          {username ? (
+          <Link href="https://ethyca.github.io/fides/" isExternal>
+            <Button size="sm" variant="ghost">
+              <QuestionIcon color="gray.700" boxSize={4} />
+            </Button>
+          </Link>
+          {username && (
             <Menu>
               <MenuButton
                 as={Button}
@@ -78,18 +84,6 @@ const Header: React.FC = () => {
                 </MenuItem>
               </MenuList>
             </Menu>
-          ) : (
-            <>
-              <QuestionIcon boxSize={5} />
-              <Link
-                href="https://ethyca.github.io/fides/"
-                isExternal
-                color="gray.700"
-                fontWeight="400"
-              >
-                Get help (Fides community)
-              </Link>
-            </>
           )}
         </Flex>
       </Flex>
