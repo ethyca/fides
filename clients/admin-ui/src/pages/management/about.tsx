@@ -36,13 +36,13 @@ const About: NextPage = () => {
           </Text>
         </Box>
 
-        {features.plus_version && (
+        {features.plusVersion && (
           <Box>
             <Text as="span" fontWeight="bold">
               Fides Plus Version:{" "}
             </Text>
             <Text as="pre" display="inline">
-              {features.plus_version}
+              {features.plusVersion}
             </Text>
           </Box>
         )}
