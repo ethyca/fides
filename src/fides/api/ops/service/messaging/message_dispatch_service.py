@@ -381,7 +381,7 @@ def _mailchimp_transactional_dispatcher(
             "message": {
                 "from_email": from_email,
                 "subject": message.subject,
-                "text": message.body,
+                "html": message.body,
                 # On Mailchimp Transactional's free plan `to` must be an email of the same
                 # domain as `from_email`
                 "to": [{"email": to.strip(), "type": "to"}],
