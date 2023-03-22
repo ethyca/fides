@@ -20,7 +20,7 @@ The types of changes are:
 ### Changed
 * Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
 * Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
-* Changed about page to say "Fides Core Version:" over "Fides Version. [#2899](https://github.com/ethyca/fides/pull/2899)
+* Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
 
 ### Fixed
 * Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
