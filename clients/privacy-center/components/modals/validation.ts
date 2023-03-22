@@ -16,10 +16,6 @@ export const emailValidation = (option?: string) => {
     validation = validation.required("Email is required");
   } else {
     validation = validation.optional();
-    Yup.string().when(['phone'], {
-      is: (phone: string) => !phone,
-      then: validation = validation.required("Email is required")
-    })
   }
   return validation;
 };
@@ -34,10 +30,6 @@ export const phoneValidation = (option?: string) => {
     validation = validation.required("Phone is required");
   } else {
     validation = validation.optional();
-    Yup.string().when(['email'], {
-      is: (email: string) => !email,
-      then: validation = validation.required("Phone is required")
-    })
   }
   return validation;
 };
