@@ -36,10 +36,19 @@ const UserManagementTabs = ({
       label: "Permissions",
       content: (
         <Flex gap="97px">
-          <Box w={{ base: "100%", md: "65%", xl: "55%" }}>
+          <Box w={{ base: "100%", md: "50%", xl: "50%" }}>
             <PermissionsForm />
           </Box>
-          <Box w={{ base: "100%", md: "35%", xl: "45%" }}>
+          <Box
+            position="absolute"
+            top="114px"
+            right={6}
+            height="calc(100% + 100px)"
+            overflowY="scroll"
+            padding={6}
+            w="35%"
+            borderLeftWidth="1px"
+          >
             <RoleDescriptionDrawer />
           </Box>
         </Flex>
