@@ -191,12 +191,20 @@ def aws_region_option(command: Callable) -> Callable:
 
 
 def prompt_username(ctx: click.Context, param: str, value: str) -> str:
+    """Check the config for a compatible username. If unavailable, prompt the user to provide one."""
+    config_value = ctx.obj["CONFIG"].user.username
+    if config_value:
+        return config_value
     if not value:
         value = click.prompt(text="Username")
     return value
 
 
 def prompt_password(ctx: click.Context, param: str, value: str) -> str:
+    """Check the config for a compatible password. If unavailable, prompt the user to provide one."""
+    config_value = ctx.obj["CONFIG"].user.password
+    if config_value:
+        return config_value
     if not value:
         value = click.prompt(text="Password", hide_input=True)
     return value
@@ -207,6 +215,7 @@ def username_option(command: Callable) -> Callable:
         "-u",
         "--username",
         default="",
+        help="If not provided, will be pulled from the config file or prompted for.",
         callback=prompt_username,
     )(command)
     return command
@@ -217,6 +226,7 @@ def password_option(command: Callable) -> Callable:
         "-p",
         "--password",
         default="",
+        help="If not provided, will be pulled from the config file or prompted for.",
         callback=prompt_password,
     )(command)
     return command

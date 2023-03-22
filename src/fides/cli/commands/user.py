@@ -20,6 +20,7 @@ def user(ctx: click.Context) -> None:
 
 @user.command()
 @click.pass_context
+# TODO: These should be arguments, not options
 @username_option
 @password_option
 @first_name_option
@@ -43,11 +44,12 @@ def create(
 
 @user.command()
 @click.pass_context
-@username_option # Allow these options to pull from env vars
+@username_option
 @password_option
 def login(ctx: click.Context, username: str, password: str) -> None:
     """
-    Generate a user access token and write it to a credentials file.
+    Authenticate with the webserver and generate a user access token.
+    Then store those credentials in a credentials file.
     """
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
