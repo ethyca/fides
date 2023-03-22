@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Changed
 * Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
+* Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
 
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
