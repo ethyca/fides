@@ -40,9 +40,6 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.roles import (
     APPROVER,
@@ -211,18 +208,21 @@ def user(db):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=SCOPE_REGISTRY,
+        roles=[APPROVER],
+        scopes=[],
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()
     db.refresh(client)
     yield user
+    try:
+        client.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture
@@ -804,9 +804,7 @@ def owner_user(db):
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [OWNER]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [OWNER]})
 
     db.add(client)
     db.commit()
@@ -827,14 +825,11 @@ def viewer_user(db):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=[],
         roles=[VIEWER],
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
 
     db.add(client)
     db.commit()
@@ -861,7 +856,7 @@ def contributor_user(db):
     )
 
     FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [CONTRIBUTOR]}
+        db=db, data={"user_id": user.id, "roles": [CONTRIBUTOR]}
     )
 
     db.add(client)
@@ -889,7 +884,7 @@ def viewer_and_approver_user(db):
     )
 
     FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER_AND_APPROVER]}
+        db=db, data={"user_id": user.id, "roles": [VIEWER_AND_APPROVER]}
     )
 
     db.add(client)
@@ -916,9 +911,7 @@ def approver_user(db):
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [APPROVER]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()
@@ -967,7 +960,6 @@ def system_manager_client(db, system):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=[],
         roles=[],
         systems=[system.id],
     )

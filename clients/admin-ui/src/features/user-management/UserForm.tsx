@@ -7,7 +7,6 @@ import {
   IconButton,
   Stack,
   Text,
-  TrashCanSolidIcon,
   useDisclosure,
   useToast,
 } from "@fidesui/react";
@@ -24,6 +23,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
+import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { successToastParams } from "~/features/common/toast";
 
 import PasswordManagement from "./PasswordManagement";
@@ -123,7 +123,8 @@ const UserForm = ({
                         <IconButton
                           aria-label="delete"
                           icon={<TrashCanSolidIcon />}
-                          size="xs"
+                          variant="outline"
+                          size="sm"
                           onClick={deleteModal.onOpen}
                           data-testid="delete-user-btn"
                         />
