@@ -20,6 +20,10 @@ The types of changes are:
 ### Changed
 * Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
 
+### Fixed
+* Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
+
+
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
 ### Added
@@ -34,7 +38,6 @@ The types of changes are:
 
 ### Fixed
 * Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
-* Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
 
 ### Removed
 * Removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
