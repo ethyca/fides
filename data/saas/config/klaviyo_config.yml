@@ -10,6 +10,7 @@ saas_config:
       default_value: a.klaviyo.com
     - name: api_key
     - name: revision
+      default_value: '2023-02-03'
 
   client_config:
     protocol: https
@@ -21,7 +22,7 @@ saas_config:
           - name: Authorization
             value: Klaviyo-API-Key <api_key>
           - name: revision
-            value: '2023-02-03'
+            value: <revision>
 
   test_request:
     method: GET
