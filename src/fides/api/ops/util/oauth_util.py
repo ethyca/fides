@@ -167,7 +167,6 @@ async def verify_oauth_client(
     the security environment.
     """
     token_data, client = extract_token_and_load_client(authorization, db)
-
     if not has_permissions(
         token_data=token_data, client=client, endpoint_scopes=security_scopes
     ):
