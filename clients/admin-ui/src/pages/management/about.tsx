@@ -29,7 +29,7 @@ const About: NextPage = () => {
 
         <Box>
           <Text as="span" fontWeight="bold">
-            Version:{" "}
+            Fides Core Version:{" "}
           </Text>
           <Text as="pre" display="inline">
             {features.version}
