@@ -62,7 +62,9 @@ const ConfigureSystem: NextPage = () => {
         </Breadcrumb>
       </Box>
       {!system ? (
-        <Text>Could not find a system with id {systemId}</Text>
+        <Text data-testid="system-not-found">
+          Could not find a system with id {systemId}
+        </Text>
       ) : (
         <EditSystemFlow />
       )}
