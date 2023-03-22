@@ -75,6 +75,7 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
         return self.templates
 
 
+# pylint: disable=protected-access
 class ConnectorRegistry:
 
     _instance = None
