@@ -333,8 +333,7 @@ const Consent: NextPage = () => {
         >
           <Image
             src={config.logo_path}
-            height="56px"
-            width="304px"
+            height="68px"
             alt="Logo"
           />
         </Flex>
