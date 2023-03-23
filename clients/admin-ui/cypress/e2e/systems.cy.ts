@@ -265,6 +265,7 @@ describe("System management page", () => {
 
     it("Can go directly to a system's edit page", () => {
       cy.visit("/systems/configure/fidesctl_system");
+      cy.wait("@getFidesctlSystem");
       cy.getByTestId("input-name").should("have.value", "Fidesctl System");
 
       cy.intercept("GET", "/api/v1/system/*", {
@@ -495,7 +496,7 @@ describe("System management page", () => {
     });
 
     it("can have multiple of the same data use if the names are different", () => {
-      cy.visit("/system");
+      cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
