@@ -39,7 +39,7 @@ const SystemCard = ({ system }: SystemCardProps) => {
 
   const handleEdit = () => {
     dispatch(setActiveSystem(system));
-    router.push(`${SYSTEM_ROUTE}/configure`);
+    router.push(`${SYSTEM_ROUTE}/configure/${system.fides_key}`);
   };
 
   const handleDelete = async () => {

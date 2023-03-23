@@ -15,7 +15,6 @@ describe("System management with Plus features", () => {
     cy.intercept("GET", "/api/v1/system", {
       fixture: "systems/systems.json",
     }).as("getSystems");
-    cy.visit(SYSTEM_ROUTE);
   });
 
   describe("custom metadata", () => {
@@ -53,10 +52,7 @@ describe("System management with Plus features", () => {
     });
 
     it("can populate initial custom metadata", () => {
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
 
       // Should not be able to save while form is untouched
       cy.getByTestId("save-btn").should("be.disabled");
@@ -76,7 +72,9 @@ describe("System management with Plus features", () => {
         expect(interception.request.body.id).to.eql(
           "id-custom-field-pokemon-party"
         );
-        expect(interception.request.body.resource_id).to.eql("fidesctl_system");
+        expect(interception.request.body.resource_id).to.eql(
+          "demo_analytics_system"
+        );
         expect(interception.request.body.value).to.eql([
           "Charmander",
           "Eevee",
