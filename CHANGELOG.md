@@ -20,6 +20,8 @@ The types of changes are:
 ### Changed
 * Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
 * Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
+* Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
+
 
 ### Fixed
 * Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
