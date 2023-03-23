@@ -63,7 +63,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   const collisionWarning = () => {
     toast(
       errorToastParams(
-        "A declaration already exists with that Processing Activity and Data Use in this system. Please supply a different data use."
+        "A declaration already exists with that Data Use and Processing Activity in this system."
       )
     );
   };

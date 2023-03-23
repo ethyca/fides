@@ -97,7 +97,7 @@ export const PrivacyDeclarationFormComponents = ({
         label="Processing Activity"
         name="name"
         variant="stacked"
-        tooltip="The personal data processing activity or activities associated with this data use."
+        tooltip="The personal data processing activity or activities associated with this data use. This will be appended to the title of this declaration."
       />
       <CustomSelect
         name="data_categories"
@@ -180,7 +180,7 @@ export const usePrivacyDeclarationForm = ({
     )[0];
     if (thisDataUse) {
       return initialValues.name
-        ? initialValues.name + " - " + thisDataUse.name
+        ? thisDataUse.name?.concat(" - ", initialValues.name)
         : initialValues.data_use;
     }
     return undefined;
