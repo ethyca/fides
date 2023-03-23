@@ -1,5 +1,8 @@
-import { Flex, Image, Text } from "@fidesui/react";
+import { Flex, Icon, Image, Text } from "@fidesui/react";
 import React from "react";
+import * as mdIcons from 'react-icons/md'
+import * as faIcons from 'react-icons/fa'
+
 
 type CardProps = {
   title: string;
@@ -48,7 +51,13 @@ const Card: React.FC<CardProps> = ({
       outline: "none",
     }}
   >
+    { 
+    iconPath.toLowerCase().startsWith('md:') ? // Material Design icons
+    <Icon boxSize="32px" as={mdIcons[iconPath.split(':')[1] as keyof typeof mdIcons]} color="complimentary.500"></Icon> :
+    iconPath.toLowerCase().startsWith('fa:') ? // FontAwesome icons
+    <Icon boxSize="32px" as={faIcons[iconPath.split(':')[1] as keyof typeof faIcons]} color="complimentary.500"></Icon> :
     <Image alt={description} boxSize="32px" src={iconPath} />
+    }
     <Text
       color="gray.600"
       fontSize="md"
