@@ -40,6 +40,7 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_READ,
     SYSTEM_MANAGER_READ,
     SYSTEM_READ,
+    USER_PERMISSION_ASSIGN_OWNERS,
     USER_READ,
     WEBHOOK_READ,
 )
@@ -116,6 +117,7 @@ not_contributor_scopes = [
     MESSAGING_DELETE,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     CONFIG_UPDATE,
+    USER_PERMISSION_ASSIGN_OWNERS,
 ]
 
 ROLES_TO_SCOPES_MAPPING: Dict[str, List] = {

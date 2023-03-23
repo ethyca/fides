@@ -127,6 +127,7 @@ export const useFlags = () => {
 export type Features = {
   version: string | undefined;
   plus: boolean;
+  plusVersion: string | undefined;
   systemsCount: number;
   connectionsCount: number;
   dataFlowScanning: boolean;
@@ -143,6 +144,7 @@ export const useFeatures = (): Features => {
   const version = health?.version;
 
   const plus = plusHealth !== undefined;
+  const plusVersion = plusHealth?.fidesplus_version;
   const dataFlowScanning = plusHealth
     ? !!plusHealth.system_scanner.enabled
     : false;
@@ -156,6 +158,7 @@ export const useFeatures = (): Features => {
   return {
     version,
     plus,
+    plusVersion,
     systemsCount,
     connectionsCount,
     dataFlowScanning,

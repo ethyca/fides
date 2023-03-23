@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Yotpo Loyalty & Referrals SaaS Config
+  name: Yotpo Loyalty & Referrals
   type: yotpo_loyalty
   description: A sample schema representing the Yotpo Loyalty & Referrals connector for Fides
   version: 0.1.0
