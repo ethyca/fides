@@ -256,3 +256,13 @@ def last_name_option(command: Callable) -> Callable:
         default="",
     )(command)
     return command
+
+
+def username_argument(command: Callable) -> Callable:
+    command = click.argument("username", type=str)(command)
+    return command
+
+
+def password_argument(command: Callable) -> Callable:
+    command = click.argument("password", type=str)(command)
+    return command

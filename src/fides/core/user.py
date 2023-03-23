@@ -139,14 +139,15 @@ def create_command(
         server_url=server_url,
     )
     user_id = user_response.json()["id"]
+    new_user_roles = CONFIG.security.root_user_roles
     update_user_permissions(
         user_id=user_id,
         scopes=CONFIG.security.root_user_scopes,
         auth_header=auth_header,
         server_url=server_url,
-        roles=CONFIG.security.root_user_roles,
+        roles=new_user_roles,
     )
-    echo_green(f"User: '{username}' created and assigned permissions.")
+    echo_green(f"User: '{username}' created and assigned permissions: {new_user_roles}")
 
 
 def login_command(username: str, password: str, server_url: str) -> str:

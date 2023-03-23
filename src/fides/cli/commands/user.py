@@ -6,6 +6,8 @@ from fides.cli.options import (
     last_name_option,
     password_option,
     username_option,
+    username_argument,
+    password_argument,
 )
 from fides.core.user import create_command, get_permissions_command, login_command
 
@@ -20,9 +22,8 @@ def user(ctx: click.Context) -> None:
 
 @user.command()
 @click.pass_context
-# TODO: These should be arguments, not options
-@username_option
-@password_option
+@username_argument
+@password_argument
 @first_name_option
 @last_name_option
 def create(
