@@ -181,7 +181,7 @@ export const usePrivacyDeclarationForm = ({
     if (thisDataUse) {
       return initialValues.name
         ? thisDataUse.name?.concat(" - ", initialValues.name)
-        : initialValues.data_use;
+        : thisDataUse.name;
     }
     return undefined;
   }, [allDataUses, initialValues]);
