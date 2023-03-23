@@ -38,12 +38,12 @@ saas_config:
           path: /api/2/useractivity
           query_params:
             - name: user
-              value: <user_search_matches_amplitude_id>
+              value: <user_matches_amplitude_id>
           param_values:
-            - name: user_search_matches_amplitude_id
+            - name: user_matches_amplitude_id
               references:
                 - dataset: <instance_fides_key>
-                  field: user_search.matches.amplitude_id
+                  field: user.matches.amplitude_id
                   direction: from
         delete:
           method: POST
@@ -57,7 +57,7 @@ saas_config:
           param_values:
             - name: email
               identity: email
-    - name: user_search
+    - name: user
       requests:
         read:
           method: GET

@@ -175,7 +175,7 @@ dataset:
                 data_categories: [system.operations]
                 fidesops_meta:
                   data_type: integer
-      - name: user_search
+      - name: user
         fields:
           - name: type
             data_categories: [system.operations]

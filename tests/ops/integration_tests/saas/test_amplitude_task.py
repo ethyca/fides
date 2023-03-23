@@ -53,7 +53,7 @@ async def test_amplitude_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:user_search"],
+        v[f"{dataset_name}:user"],
         min_size=1,
         keys=[
             "type",
@@ -73,7 +73,7 @@ async def test_amplitude_access_request_task(
 
     
     # verify we only returned data for our identity email
-    assert v[f"{dataset_name}:user_search"][0]["matches"][0]['user_id'] == amplitude_identity_email
+    assert v[f"{dataset_name}:user"][0]["matches"][0]['user_id'] == amplitude_identity_email
 
     assert v[f"{dataset_name}:user_activity"][0]["userData"]['user_id'] == amplitude_identity_email
 
@@ -114,7 +114,7 @@ async def test_amplitude_erasure_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:user_search"],
+        v[f"{dataset_name}:user"],
         min_size=1,
         keys=[
             "type",
@@ -143,7 +143,7 @@ async def test_amplitude_erasure_request_task(
     )
 
     assert x == {
-        f"{dataset_name}:user_search": 0,
+        f"{dataset_name}:user": 0,
         f"{dataset_name}:user_activity": 1
     }
 
