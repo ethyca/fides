@@ -331,11 +331,7 @@ const Consent: NextPage = () => {
           justifyContent="center"
           alignItems="center"
         >
-          <Image
-            src={config.logo_path}
-            height="68px"
-            alt="Logo"
-          />
+          <Image src={config.logo_path} height="68px" alt="Logo" />
         </Flex>
       </header>
 
