@@ -313,6 +313,8 @@ def register_custom_functions(script: str) -> None:
     safe_builtins["__import__"] = custom_guarded_import
     safe_builtins["_getitem_"] = getitem
     safe_builtins["staticmethod"] = staticmethod
+
+    # pylint: disable=exec-used
     exec(
         restricted_code,
         {
@@ -335,8 +337,8 @@ class CustomRestrictingNodeTransformer(RestrictingNodeTransformer):
 
 def custom_guarded_import(
     name: str,
-    globals: Optional[dict] = None,
-    locals: Optional[dict] = None,
+    _globals: Optional[dict] = None,
+    _locals: Optional[dict] = None,
     fromlist: Optional[Tuple[str, ...]] = None,
     level: int = 0,
 ) -> Any:
@@ -357,4 +359,4 @@ def custom_guarded_import(
         raise SyntaxError(f"Import of '{name}' module is not allowed.")
     if fromlist is None:
         fromlist = ()
-    return __import__(name, globals, locals, fromlist, level)
+    return __import__(name, _globals, _locals, fromlist, level)
