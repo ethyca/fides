@@ -7,9 +7,9 @@ saas_config:
 
   connector_params:
     - name: domain
-      default_value: ethyca-test.gorgias.com
-    - name: api_key
     - name: username
+    - name: api_key
+      label: API Key
 
   client_config:
     protocol: https
@@ -23,12 +23,6 @@ saas_config:
   test_request:
     method: GET
     path: /api/customers
-    query_params:
-      - name: email
-        value: <email>
-    param_values:
-      - name: email
-        identity: email
 
   endpoints:
     - name: customer
@@ -56,7 +50,7 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-    - name: search
+    - name: resource_search
       requests:
         read:
           method: POST

@@ -31,7 +31,7 @@ async def test_gorgias_access_request_task(
     gorgias_dataset_config,
     gorgias_identity_email,
 ) -> None:
-    """Full access request based on the gorgias SaaS config"""
+    """Full access request based on the Gorgias SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_gorgias_access_request_task_{random.randint(0, 1000)}"
@@ -74,7 +74,7 @@ async def test_gorgias_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:search"],
+        v[f"{dataset_name}:resource_search"],
         min_size=1,
         keys=[
             "data",
@@ -162,8 +162,6 @@ async def test_gorgias_access_request_task(
     assert v[f"{dataset_name}:customer"][0]["email"] == gorgias_identity_email
     user_id = v[f"{dataset_name}:customer"][0]["id"]
 
-    # assert v[f"{dataset_name}:user_identities"][0]["value"] == gorgias_identity_email
-
     for ticket in v[f"{dataset_name}:tickets"]:
         assert ticket["customer"]['id'] == user_id
 
@@ -180,7 +178,7 @@ async def test_gorgias_erasure_request_task(
     gorgias_erasure_identity_email,
     gorgias_create_erasure_data,
 ) -> None:
-    """Full erasure request based on the gorgias SaaS config"""
+    """Full erasure request based on the Gorgias SaaS config"""
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
@@ -226,7 +224,7 @@ async def test_gorgias_erasure_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:search"],
+        v[f"{dataset_name}:resource_search"],
         min_size=1,
         keys=[
             "data",
@@ -323,7 +321,7 @@ async def test_gorgias_erasure_request_task(
 
     assert x == {
         f"{dataset_name}:customer": 1,
-        f"{dataset_name}:search": 0,
+        f"{dataset_name}:resource_search": 0,
         f"{dataset_name}:tickets": 1,
         f"{dataset_name}:ticket_message": 1,
     }

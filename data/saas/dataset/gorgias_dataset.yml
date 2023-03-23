@@ -51,7 +51,7 @@ dataset:
                   data_type: string
           - name: data
           - name: note
-      - name: search
+      - name: resource_search
         fields:
           - name: data
             fidesops_meta:
