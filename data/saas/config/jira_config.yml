@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Jira SaaS Config
+  name: Jira
   type: jira
   description: A sample schema representing the Jira connector for Fides
   version: 0.1.0

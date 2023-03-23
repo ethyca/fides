@@ -16,8 +16,6 @@ from fides.api.ops.common_exceptions import (
 )
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.application_config import ApplicationConfig
-from fides.api.ops.models.connectionconfig import AccessLevel
-from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
 from fides.api.ops.models.privacy_request import (
     ActionType,
@@ -35,7 +33,6 @@ from fides.api.ops.schemas.masking.masking_configuration import (
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
-    EmailForActionType,
     MessagingActionType,
     MessagingServiceType,
 )
@@ -55,9 +52,8 @@ from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
-    needs_consent_email_send,
+    needs_batch_email_send,
     run_webhooks_and_report_status,
-    upload_access_results,
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import CONFIG
@@ -1644,214 +1640,6 @@ def test_privacy_request_log_failure(
         assert sent_event.extra_data == {"privacy_request": pr.id}
 
 
-class TestPrivacyRequestsEmailConnector:
-    @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
-    @pytest.mark.integration
-    def test_create_and_process_erasure_request_email_connector(
-        self,
-        mailgun_send,
-        email_connection_config,
-        erasure_policy,
-        integration_postgres_config,
-        run_privacy_request_task,
-        email_dataset_config,
-        postgres_example_test_dataset_config_read_access,
-        messaging_config,
-        db,
-    ):
-        """
-        Asserts that mailgun was called and verifies email template renders without error
-        """
-        rule = erasure_policy.rules[0]
-        target = rule.targets[0]
-        target.data_category = "user.childrens"
-        target.save(db=db)
-
-        email = "customer-1@example.com"
-        data = {
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_key": erasure_policy.key,
-            "identity": {"email": email},
-        }
-
-        pr = get_privacy_request_results(
-            db,
-            erasure_policy,
-            run_privacy_request_task,
-            data,
-        )
-        pr.delete(db=db)
-        assert mailgun_send.called
-        args = mailgun_send.call_args.args
-        assert type(args[0]) == MessagingConfig
-        assert type(args[1]) == EmailForActionType
-
-    @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
-    @pytest.mark.integration
-    def test_create_and_process_erasure_request_email_connector_email_send_error(
-        self,
-        mailgun_send,
-        email_connection_config,
-        erasure_policy,
-        integration_postgres_config,
-        run_privacy_request_task,
-        email_dataset_config,
-        postgres_example_test_dataset_config_read_access,
-        db,
-    ):
-        """
-        Force error by having no messaging config setup
-        """
-        rule = erasure_policy.rules[0]
-        target = rule.targets[0]
-        target.data_category = "user.childrens"
-        target.save(db=db)
-
-        email = "customer-1@example.com"
-        data = {
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_key": erasure_policy.key,
-            "identity": {"email": email},
-        }
-
-        pr = get_privacy_request_results(
-            db,
-            erasure_policy,
-            run_privacy_request_task,
-            data,
-        )
-        db.refresh(pr)
-        assert pr.status == PrivacyRequestStatus.error
-        assert pr.get_failed_checkpoint_details() == CheckpointActionRequired(
-            step=CurrentStep.erasure_email_post_send,
-            collection=None,
-            action_needed=None,
-        )
-        cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
-            CurrentStep.erasure, "email_dataset"
-        )
-        assert len(cached_email_contents) == 3
-        assert {
-            contents.collection.collection for contents in cached_email_contents
-        } == {"payment", "children", "daycare_customer"}
-
-        pr.delete(db=db)
-        assert mailgun_send.called is False
-
-    @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
-    @pytest.mark.integration
-    def test_email_connector_read_only_permissions(
-        self,
-        mailgun_send,
-        email_connection_config,
-        erasure_policy,
-        integration_postgres_config,
-        run_privacy_request_task,
-        email_dataset_config,
-        messaging_config,
-        postgres_example_test_dataset_config_read_access,
-        db,
-    ):
-        """
-        Set messaging config to read only - don't send message in this case.
-        """
-        rule = erasure_policy.rules[0]
-        target = rule.targets[0]
-        target.data_category = "user.childrens"
-        target.save(db=db)
-
-        email_connection_config.access = AccessLevel.read
-        email_connection_config.save(db)
-
-        email = "customer-1@example.com"
-        data = {
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_key": erasure_policy.key,
-            "identity": {"email": email},
-        }
-
-        pr = get_privacy_request_results(
-            db,
-            erasure_policy,
-            run_privacy_request_task,
-            data,
-        )
-        db.refresh(pr)
-        assert pr.status == PrivacyRequestStatus.complete
-        cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
-            CurrentStep.erasure, "email_dataset"
-        )
-        assert (
-            len(cached_email_contents) == 0
-        ), "No data cached to erase, because this connector is read-only"
-
-        pr.delete(db=db)
-        assert (
-            mailgun_send.called is False
-        ), "Email not sent because the connection was read only"
-
-    @mock.patch(
-        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
-    @pytest.mark.integration
-    def test_email_connector_no_updates_needed(
-        self,
-        mailgun_send,
-        email_connection_config,
-        erasure_policy,
-        integration_postgres_config,
-        run_privacy_request_task,
-        email_dataset_config,
-        messaging_config,
-        postgres_example_test_dataset_config_read_access,
-        db,
-    ):
-        """
-        Don't send an email when there are no erasures needed
-        """
-        rule = erasure_policy.rules[0]
-        target = rule.targets[0]
-        target.data_category = "user.job_title"  # Add a data category that does not apply to the email dataset
-        target.save(db=db)
-
-        email = "customer-1@example.com"
-        data = {
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_key": erasure_policy.key,
-            "identity": {"email": email},
-        }
-
-        pr = get_privacy_request_results(
-            db,
-            erasure_policy,
-            run_privacy_request_task,
-            data,
-        )
-        db.refresh(pr)
-        assert pr.status == PrivacyRequestStatus.complete
-        cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
-            CurrentStep.erasure, "email_dataset"
-        )
-        assert {
-            contents.collection.collection for contents in cached_email_contents
-        } == {"payment", "children", "daycare_customer"}
-
-        assert not any(
-            [contents.action_needed[0].update for contents in cached_email_contents]
-        )
-
-        pr.delete(db=db)
-        assert (
-            mailgun_send.called is False
-        ), "Email not sent because no updates are needed. Data category doesn't apply to any of the collections."
-
-
 class TestPrivacyRequestsEmailNotifications:
     @pytest.fixture(scope="function")
     def privacy_request_complete_email_notification_enabled(self, db):
@@ -2280,50 +2068,47 @@ class TestConsentEmailStep:
         db.refresh(privacy_request_with_consent_policy)
         assert (
             privacy_request_with_consent_policy.status
-            == PrivacyRequestStatus.awaiting_consent_email_send
+            == PrivacyRequestStatus.awaiting_email_send
         )
-        assert (
-            privacy_request_with_consent_policy.awaiting_consent_email_send_at
-            is not None
-        )
+        assert privacy_request_with_consent_policy.awaiting_email_send_at is not None
 
-    def test_needs_consent_email_send_no_consent_preferences(
+    def test_needs_batch_email_send_no_consent_preferences(
         self, db, privacy_request_with_consent_policy
     ):
-        assert not needs_consent_email_send(
+        assert not needs_batch_email_send(
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
 
-    def test_needs_consent_email_send_no_email_consent_connections(
+    def test_needs_batch_email_send_no_email_consent_connections(
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
             Consent(data_use="advertising", opt_in=False).dict()
         ]
         privacy_request_with_consent_policy.save(db)
-        assert not needs_consent_email_send(
-            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
-        )
-
-    @pytest.mark.usefixtures("sovrn_email_connection_config")
-    def test_needs_consent_email_send_no_relevant_identities(
-        self, db, privacy_request_with_consent_policy
-    ):
-        privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
-        ]
-        privacy_request_with_consent_policy.save(db)
-        assert not needs_consent_email_send(
+        assert not needs_batch_email_send(
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
-    def test_needs_consent_email_send(self, db, privacy_request_with_consent_policy):
+    def test_needs_batch_email_send_no_relevant_identities(
+        self, db, privacy_request_with_consent_policy
+    ):
         privacy_request_with_consent_policy.consent_preferences = [
             Consent(data_use="advertising", opt_in=False).dict()
         ]
         privacy_request_with_consent_policy.save(db)
-        assert needs_consent_email_send(
+        assert not needs_batch_email_send(
+            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
+        )
+
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_needs_batch_email_send(self, db, privacy_request_with_consent_policy):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        privacy_request_with_consent_policy.save(db)
+        assert needs_batch_email_send(
             db,
             {"email": "customer-1@example.com", "ljt_readerID": "12345"},
             privacy_request_with_consent_policy,

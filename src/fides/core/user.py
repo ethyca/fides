@@ -68,7 +68,7 @@ def get_user_permissions(
     user_id: str, auth_header: Dict[str, str], server_url: str
 ) -> Tuple[List[str], List[str]]:
     """
-    List all of the directly-assigned scopes for the provided user.
+    Return a tuple of the total scopes the user has inherited via their roles, plus their roles
     """
     get_permissions_path = USER_PERMISSIONS_PATH.format(user_id)
     response = requests.get(
@@ -79,7 +79,7 @@ def get_user_permissions(
     handle_cli_response(response, verbose=False)
 
     return (
-        response.json()["scopes"],
+        response.json()["total_scopes"],
         response.json()["roles"],
     )
 
@@ -181,18 +181,18 @@ def get_permissions_command(server_url: str) -> None:
 
     user_id = credentials.user_id
     auth_header = get_auth_header()
-    scopes, roles = get_user_permissions(user_id, auth_header, server_url)
+    total_scopes, roles = get_user_permissions(user_id, auth_header, server_url)
     systems: List[FidesKey] = get_systems_managed_by_user(
         user_id, auth_header, server_url
     )
 
-    print("Permissions (Directly-Assigned Scopes):")
-    for scope in scopes:
-        print(f"\t{scope}")
-
     print("Roles:")
     for role in roles:
         print(f"\t{role}")
+
+    print("Associated scopes:")
+    for scope in total_scopes:
+        print(f"\t{scope}")
 
     print("Systems Under Management:")
     for system in systems:

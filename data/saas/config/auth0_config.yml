@@ -1,21 +1,42 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Auth0 SaaS Config
+  name: Auth0
   type: auth0
-  description: A sample schema representing the Auth0 connector for Fidesops
-  version: 0.0.1
+  description: A sample schema representing the Auth0 connector for Fides
+  version: 0.0.2
 
   connector_params:
     - name: domain
-    - name: access_token
+    - name: client_id
+      label: Client ID
+    - name: client_secret
 
   client_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: bearer
+      strategy: oauth2_client_credentials
       configuration:
-        token: <access_token>
+        token_request:
+          method: POST
+          path: /oauth/token
+          body: |
+            {
+              "grant_type": "client_credentials",
+              "audience": "https://<domain>/api/v2/",
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>"
+            }
+        refresh_request:
+          method: POST
+          path: /oauth/token
+          body: |
+            {
+              "grant_type": "client_credentials",
+              "audience": "https://<domain>/api/v2/",
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>"
+            }
 
   test_request:
     method: GET
@@ -36,13 +57,9 @@ saas_config:
           param_values:
             - name: email
               identity: email
-        update:
-          method: PATCH
+        delete:
+          method: DELETE
           path: /api/v2/users/<user_id>
-          body: |
-            {
-              <masked_object_fields>
-            }
           param_values:
             - name: user_id
               references:

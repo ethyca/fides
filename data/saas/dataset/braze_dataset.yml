@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Braze Dataset
-    description: A sample dataset representing the Braze connector for Fidesops
+    description: A sample dataset representing the Braze connector for Fides
     collections:
       - name: user
         fields:

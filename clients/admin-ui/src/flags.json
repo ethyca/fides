@@ -15,11 +15,5 @@
     "development": true,
     "test": true,
     "production": false
-  },
-  "privacyDeclarationDeprecatedFields": {
-    "description": "Show deprecated fields when adding/editing privacy declarations.",
-    "development": true,
-    "production": false,
-    "test": false
   }
 }

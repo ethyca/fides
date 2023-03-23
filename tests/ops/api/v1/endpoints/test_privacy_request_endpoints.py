@@ -87,6 +87,7 @@ from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
@@ -1450,7 +1451,7 @@ class TestGetPrivacyRequests:
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
         privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -1461,7 +1462,7 @@ class TestGetPrivacyRequests:
         data = response.json()["items"][0]
         assert data["status"] == "error"
         assert data["action_required_details"] == {
-            "step": "erasure_email_post_send",
+            "step": "email_post_send",
             "collection": None,
             "action_needed": None,
         }
@@ -1947,7 +1948,7 @@ class TestApprovePrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -1993,7 +1994,7 @@ class TestApprovePrivacyRequest:
         privacy_request_review_notification_enabled,
     ):
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2122,7 +2123,7 @@ class TestDenyPrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2193,7 +2194,7 @@ class TestDenyPrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2817,7 +2818,7 @@ class TestBulkRestartFromFailure:
         privacy_requests[0].save(db)
 
         privacy_requests[0].cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -2834,7 +2835,7 @@ class TestBulkRestartFromFailure:
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_requests[0].id,
-            from_step=CurrentStep.erasure_email_post_send.value,
+            from_step=CurrentStep.email_post_send.value,
             from_webhook_id=None,
         )
 
@@ -2963,7 +2964,7 @@ class TestRestartFromFailure:
         privacy_request.save(db)
 
         privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -2975,7 +2976,7 @@ class TestRestartFromFailure:
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_request.id,
-            from_step=CurrentStep.erasure_email_post_send.value,
+            from_step=CurrentStep.email_post_send.value,
             from_webhook_id=None,
         )
 

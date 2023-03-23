@@ -56,14 +56,12 @@ from fides.api.ops.common_exceptions import (
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    load_registry,
-    registry_file,
     update_saas_configs,
 )
 
 # pylint: disable=wildcard-import, unused-wildcard-import
-from fides.api.ops.service.privacy_request.consent_email_batch_service import (
-    initiate_scheduled_batch_consent_email_send,
+from fides.api.ops.service.privacy_request.email_batch_service import (
+    initiate_scheduled_batch_email_send,
 )
 from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
@@ -273,9 +271,8 @@ async def setup_server() -> None:
 
     logger.info("Validating SaaS connector templates...")
     try:
-        registry = load_registry(registry_file)
         db = get_api_session()
-        update_saas_configs(registry, db)
+        update_saas_configs(db)
         logger.info("Finished loading saas templates")
     except Exception as e:
         logger.error(
@@ -299,7 +296,7 @@ async def setup_server() -> None:
     if not scheduler.running:
         scheduler.start()
 
-    initiate_scheduled_batch_consent_email_send()
+    initiate_scheduled_batch_email_send()
 
     logger.debug("Sending startup analytics events...")
     await send_analytics_event(
