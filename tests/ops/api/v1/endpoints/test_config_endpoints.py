@@ -10,6 +10,7 @@ from fides.api.ops.api.v1 import scope_registry as scopes
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.storage.storage import StorageType
+from fides.lib.oauth.roles import CONTRIBUTOR, OWNER, VIEWER
 
 
 class TestPatchApplicationConfig:
@@ -22,7 +23,7 @@ class TestPatchApplicationConfig:
         return {
             "storage": {"active_default_storage_type": StorageType.s3.value},
             "notifications": {
-                "notification_service_type": "TWILIO_TEXT",
+                "notification_service_type": "twilio_text",
                 "send_request_completion_notification": True,
                 "send_request_receipt_notification": True,
                 "send_request_review_notification": True,
@@ -45,6 +46,27 @@ class TestPatchApplicationConfig:
         auth_header = generate_auth_header([scopes.CONFIG_READ])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
+
+    def test_patch_application_config_viewer_role(
+        self, api_client: TestClient, payload, url, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[VIEWER])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_patch_application_config_contributor_role(
+        self, api_client: TestClient, payload, url, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[CONTRIBUTOR])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_patch_application_config_admin_role(
+        self, api_client: TestClient, payload, url, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
 
     def test_patch_application_config_with_invalid_key(
         self,
@@ -173,7 +195,7 @@ class TestPatchApplicationConfig:
         updated_payload = {
             "execution": {"subject_identity_verification_required": False},
             "notifications": {
-                "notification_service_type": "MAILGUN",
+                "notification_service_type": "mailgun",
                 "send_request_completion_notification": False,
             },
         }
@@ -190,7 +212,7 @@ class TestPatchApplicationConfig:
             is False
         )
         assert (
-            response_settings["notifications"]["notification_service_type"] == "MAILGUN"
+            response_settings["notifications"]["notification_service_type"] == "mailgun"
         )
         assert (
             response_settings["notifications"]["send_request_completion_notification"]
@@ -211,7 +233,7 @@ class TestPatchApplicationConfig:
         )
         assert (
             db_settings.api_set["notifications"]["notification_service_type"]
-            == "MAILGUN"
+            == "mailgun"
         )
         assert (
             db_settings.api_set["notifications"]["send_request_completion_notification"]
@@ -368,7 +390,7 @@ class TestGetApplicationConfigApiSet:
             response_settings["notifications"]["notification_service_type"]
             == payload_single_notification_property["notifications"][
                 "notification_service_type"
-            ].upper()
+            ]
         )
 
 
@@ -382,7 +404,7 @@ class TestDeleteApplicationConfig:
         return {
             "storage": {"active_default_storage_type": StorageType.s3.value},
             "notifications": {
-                "notification_service_type": "TWILIO_TEXT",
+                "notification_service_type": "twilio_text",
                 "send_request_completion_notification": True,
                 "send_request_receipt_notification": True,
                 "send_request_review_notification": True,

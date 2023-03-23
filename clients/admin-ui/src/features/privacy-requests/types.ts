@@ -1,6 +1,6 @@
 export type PrivacyRequestStatus =
   | "approved"
-  | "awaiting_consent_email_send"
+  | "awaiting_email_send"
   | "complete"
   | "denied"
   | "error"

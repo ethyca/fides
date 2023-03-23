@@ -8,46 +8,6 @@ describe("Config Wizard", () => {
     }).as("getOrganization");
   });
 
-  // TODO: Update Cypress test to reflect the nav bar 2.0
-  describe.skip("Organization setup", () => {
-    beforeEach(() => {
-      cy.intercept("PUT", "/api/v1/organization**", {
-        fixture: "organization.json",
-      }).as("updateOrganization");
-    });
-
-    it("Can fill in an organization", () => {
-      cy.fixture("organization.json").then((org) => {
-        cy.intercept("GET", "/api/v1/organization/*", {
-          body: { org, name: null, description: null },
-        }).as("getEmptyOrganization");
-      });
-      cy.visit("/add-systems");
-      cy.getByTestId("guided-setup-btn").click();
-      cy.wait("@getEmptyOrganization");
-
-      cy.getByTestId("organization-info-form");
-      cy.getByTestId("input-name").type("Updated name");
-      cy.getByTestId("input-description")
-        .clear()
-        .type("Updated description")
-        .should("have.value", "Updated description");
-      cy.getByTestId("submit-btn").click();
-      cy.wait("@updateOrganization").then((interception) => {
-        const { body } = interception.request;
-        expect(body.fides_key).to.eq("default_organization");
-        expect(body.description).to.eq("Updated description");
-      });
-      cy.getByTestId("add-systems");
-    });
-
-    it("Can skip the org flow if an organization already exists", () => {
-      cy.visit("/add-systems");
-      cy.getByTestId("guided-setup-btn").click();
-      cy.getByTestId("add-systems");
-    });
-  });
-
   describe("AWS scan steps", () => {
     beforeEach(() => {
       stubSystemCrud();

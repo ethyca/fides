@@ -103,7 +103,6 @@ jobs:
         test_selection:
           - "check_fides_annotations"
           - "fides_db_scan"
-          - "generate_docs"
           - "docs_check"
           - "minimal_config_startup"
 

@@ -11,7 +11,6 @@ import { useAlert } from "common/hooks/useAlert";
 import yaml, { YAMLException } from "js-yaml";
 import React, { useRef, useState } from "react";
 
-import { useFeatures } from "~/features/common/features";
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
 import { useGetAllDatasetsQuery } from "~/features/dataset";
@@ -40,9 +39,6 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   );
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
-  const {
-    flags: { navV2 },
-  } = useFeatures();
   const warningDisclosure = useDisclosure();
   const { data: allDatasets } = useGetAllDatasetsQuery();
   const [overWrittenKeys, setOverWrittenKeys] = useState<string[]>([]);
@@ -104,7 +100,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
         <Editor
           defaultLanguage="yaml"
           defaultValue={yamlData}
-          height={navV2 ? "calc(100vh - 526px" : "calc(100vh - 394px)"}
+          height="calc(100vh - 526px)"
           onChange={handleChange}
           onMount={handleMount}
           options={{

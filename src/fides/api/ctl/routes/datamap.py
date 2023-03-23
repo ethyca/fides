@@ -32,6 +32,11 @@ API_EXTRA_COLUMNS = {
     "system.ingress": "Related Systems which receive data to this System",
     "system.egress": "Related Systems which send data to this System",
 }
+
+DEPRECATED_COLUMNS = {
+    "system.privacy_declaration.name": "Privacy Declaration Name",
+}
+
 DATAMAP_COLUMNS_API = {**DATAMAP_COLUMNS, **API_EXTRA_COLUMNS}
 
 router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
@@ -100,6 +105,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 async def export_datamap(
     organization_fides_key: str,
     response: Response,
+    include_deprecated_columns: bool = False,
     db: AsyncSession = Depends(get_async_db),
 ) -> List[Dict[str, Any]]:
     """
@@ -161,21 +167,29 @@ async def export_datamap(
         server_resource_dict
     )
 
-    formatted_datamap = format_datamap_values(joined_system_dataset_df, custom_columns)
+    formatted_datamap = format_datamap_values(
+        joined_system_dataset_df, custom_columns, include_deprecated_columns
+    )
+    columns = {**DATAMAP_COLUMNS_API, **custom_columns}
+    if include_deprecated_columns:
+        columns = {**columns, **DEPRECATED_COLUMNS}
 
-    # prepend column names
-    formatted_datamap = [DATAMAP_COLUMNS_API] + formatted_datamap
+    formatted_datamap = [columns] + formatted_datamap
     return formatted_datamap
 
 
 def format_datamap_values(
-    joined_system_dataset_df: DataFrame, custom_columns: Dict[str, str]
+    joined_system_dataset_df: DataFrame,
+    custom_columns: Dict[str, str],
+    include_deprecated_columns: bool = False,
 ) -> List[Dict[str, str]]:
     """
     Formats the joined DataFrame to return the data as records.
     """
 
     columns = {**DATAMAP_COLUMNS_API, **custom_columns}
+    if include_deprecated_columns:
+        columns = {**columns, **DEPRECATED_COLUMNS}
 
     limited_columns_df = DataFrame(
         joined_system_dataset_df,

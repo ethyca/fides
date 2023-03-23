@@ -37,7 +37,7 @@ import { useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
-type Variant = "inline" | "stacked";
+type Variant = "inline" | "stacked" | "block";
 
 interface CustomInputProps {
   disabled?: boolean;
@@ -372,7 +372,7 @@ export const CustomTextInput = ({
     );
   }
   return (
-    <FormControl isInvalid={isInvalid}>
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
           <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>

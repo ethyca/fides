@@ -15,7 +15,87 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.7.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.9.1...main)
+
+### Changed
+* Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
+* Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
+* Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
+* Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
+
+### Fixed
+* Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
+
+## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
+
+### Added
+* Added Attentive erasure email connector [#2782](https://github.com/ethyca/fides/pull/2782)
+
+### Changed
+* Improved standard layout for large width screens and polish misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
+* Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
+* Changed Auth0's authentication strategy from `bearer` to `oauth2_client_credentials` [#2820](https://github.com/ethyca/fides/pull/2820)
+* Renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
+* UX cleanups in Role Management section of Admin UI [#2870](https://github.com/ethyca/fides/pull/2870)
+
+
+### Fixed
+* Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
+
+### Removed
+* Removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
+
+## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
+
+### Added
+
+* The ability to assign users as system managers for a specific system [#2714](https://github.com/ethyca/fides/pull/2714)
+* New endpoints to add and remove users as system managers [#2726](https://github.com/ethyca/fides/pull/2726)
+* Warning about access control migration to the UI [#2842](https://github.com/ethyca/fides/pull/2842)
+* Adds Role Assignment UI [#2739](https://github.com/ethyca/fides/pull/2739)
+* Add an automated migration to give users a `viewer` role [#2821](https://github.com/ethyca/fides/pull/2821)
+
+### Changed
+
+* Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
+* Added `system.privacy_declaration.name` to datamap response [#2831](https://github.com/ethyca/fides/pull/2831/files)
+
+### Developer Experience
+
+* Retired legacy `navV2` feature flag [#2762](https://github.com/ethyca/fides/pull/2762)
+* Update Admin UI Layout to fill viewport height [#2812](https://github.com/ethyca/fides/pull/2812)
+
+### Fixed
+
+* Fixed issue where unsaved changes warning would always show up when running fidesplus [#2788](https://github.com/ethyca/fides/issues/2788)
+* Fixed problem in datamap export with datasets that had been updated via SaaS instantiation [#2841](https://github.com/ethyca/fides/pull/2841)
+* Fixed problem in datamap export with inconsistent custom field ordering [#2859](https://github.com/ethyca/fides/pull/2859)
+
+## [2.8.3](https://github.com/ethyca/fides/compare/2.8.2...2.8.3)
+
+### Added
+
+* Serialise `bson.ObjectId` types in SAR data packages [#2785](https://github.com/ethyca/fides/pull/2785)
+
+### Fixed
+
+* Fixed issue where more than 1 populated custom fields removed a system from the datamap export [#2825](https://github.com/ethyca/fides/pull/2825)
+
+## [2.8.2](https://github.com/ethyca/fides/compare/2.8.1...2.8.2)
+
+### Fixed
+
+* Resolved a bug that stopped custom fields populating the visual datamap [#2775](https://github.com/ethyca/fides/pull/2775)
+* Patch appconfig migration to handle existing db record [#2780](https://github.com/ethyca/fides/pull/2780)
+
+## [2.8.1](https://github.com/ethyca/fides/compare/2.8.0...2.8.1)
+
+
+### Fixed
+
+* Disabled hiding Admin UI based on user scopes [#2771](https://github.com/ethyca/fides/pull/2771)
+
+## [2.8.0](https://github.com/ethyca/fides/compare/2.7.1...2.8.0)
 
 ### Added
 
@@ -29,10 +109,12 @@ The types of changes are:
 * Access and erasure for Jira SaaS Connector [#1871](https://github.com/ethyca/fides/issues/1871)
 * Access and erasure support for Delighted [#2244](https://github.com/ethyca/fides/pull/2244)
 * Improve "Upload a new dataset YAML" [#1531](https://github.com/ethyca/fides/pull/2258)
+* Input validation and sanitization for Privacy Request fields [#2655](https://github.com/ethyca/fides/pull/2655)
 * Access and erasure support for Yotpo [#2708](https://github.com/ethyca/fides/pull/2708)
 * Custom Field Library Tab [#527](https://github.com/ethyca/fides/pull/2693)
 * Allow SendGrid template usage [#2728](https://github.com/ethyca/fides/pull/2728)
 * Added ConnectorRunner to simplify SaaS connector testing [#1795](https://github.com/ethyca/fides/pull/1795)
+* Adds support for Mailchimp Transactional as a messaging config [#2742](https://github.com/ethyca/fides/pull/2742)
 
 ### Changed
 
@@ -49,6 +131,7 @@ The types of changes are:
 * Update the CLI aesthetics & docstrings [#2703](https://github.com/ethyca/fides/pull/2703)
 * Updates Roles->Scopes Mapping [#2744](https://github.com/ethyca/fides/pull/2744)
 * Return user scopes as an enum, as well as total scopes [#2741](https://github.com/ethyca/fides/pull/2741)
+* Update `MessagingServiceType` enum to be lowercased throughout [#2746](https://github.com/ethyca/fides/pull/2746)
 
 ### Developer Experience
 

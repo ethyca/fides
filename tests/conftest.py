@@ -38,10 +38,8 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
+    JWE_PAYLOAD_SYSTEMS,
 )
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.roles import (
     APPROVER,
@@ -210,18 +208,21 @@ def user(db):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=SCOPE_REGISTRY,
+        roles=[APPROVER],
+        scopes=[],
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()
     db.refresh(client)
     yield user
+    try:
+        client.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture
@@ -652,7 +653,7 @@ def privacy_request_review_notification_disabled(db):
 def set_notification_service_type_mailgun(db):
     """Set default notification service type"""
     original_value = CONFIG.notifications.notification_service_type
-    CONFIG.notifications.notification_service_type = MessagingServiceType.MAILGUN.value
+    CONFIG.notifications.notification_service_type = MessagingServiceType.mailgun.value
     ApplicationConfig.update_config_set(db, CONFIG)
     db.commit()
     yield
@@ -718,6 +719,48 @@ def _generate_auth_role_header(
     return _build_jwt
 
 
+@pytest.fixture(scope="function")
+def oauth_system_client(db: Session, system) -> Generator:
+    """Return a client that has system for authentication purposes"""
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        systems=[system.id],
+    )  # Intentionally adding all roles here so the client will always
+    # have a role that matches a role on a token for testing
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+
+
+@pytest.fixture(scope="function")
+def generate_system_manager_header(
+    oauth_system_client,
+) -> Callable[[Any], Dict[str, str]]:
+    return _generate_system_manager_header(
+        oauth_system_client, CONFIG.security.app_encryption_key
+    )
+
+
+def _generate_system_manager_header(
+    oauth_system_client, app_encryption_key
+) -> Callable[[Any], Dict[str, str]]:
+    client_id = oauth_system_client.id
+
+    def _build_jwt(systems: List[str]) -> Dict[str, str]:
+        payload = {
+            JWE_PAYLOAD_ROLES: [],
+            JWE_PAYLOAD_CLIENT_ID: client_id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+            JWE_PAYLOAD_SYSTEMS: systems,
+        }
+        jwe = generate_jwe(json.dumps(payload), app_encryption_key)
+        return {"Authorization": "Bearer " + jwe}
+
+    return _build_jwt
+
+
 @pytest.fixture
 def owner_client(db):
     """Return a client with an "owner" role for authentication purposes."""
@@ -761,9 +804,7 @@ def owner_user(db):
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [OWNER]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [OWNER]})
 
     db.add(client)
     db.commit()
@@ -784,13 +825,38 @@ def viewer_user(db):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=[],
         roles=[VIEWER],
         user_id=user.id,
     )
 
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def contributor_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_contributor_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[CONTRIBUTOR],
+        user_id=user.id,
+    )
+
     FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER]}
+        db=db, data={"user_id": user.id, "roles": [CONTRIBUTOR]}
     )
 
     db.add(client)
@@ -798,3 +864,107 @@ def viewer_user(db):
     db.refresh(client)
     yield user
     user.delete(db)
+
+
+@pytest.fixture
+def viewer_and_approver_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_and_approver_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER_AND_APPROVER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "roles": [VIEWER_AND_APPROVER]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def approver_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_approver_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[APPROVER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture(scope="function")
+def system(db: Session) -> System:
+
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "data_responsibility_title": "Processor",
+            "privacy_declarations": [
+                {
+                    "name": "Collect data for marketing",
+                    "data_categories": ["user.device.cookie_id"],
+                    "data_use": "advertising",
+                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                    "data_subjects": ["customer"],
+                    "dataset_references": None,
+                    "egress": None,
+                    "ingress": None,
+                }
+            ],
+            "data_protection_impact_assessment": {
+                "is_required": False,
+                "progress": None,
+                "link": None,
+            },
+        },
+    )
+    return system
+
+
+@pytest.fixture
+def system_manager_client(db, system):
+    """Return a client assigned to a system for authentication purposes."""
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        roles=[],
+        systems=[system.id],
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+    client.delete(db)

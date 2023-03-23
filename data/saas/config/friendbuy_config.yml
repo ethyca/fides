@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Friendbuy SaaS Config
+  name: Friendbuy
   type: friendbuy
-  description: A sample schema representing the Friendbuy connector for Fidesops
+  description: A sample schema representing the Friendbuy connector for Fides
   version: 0.0.1
 
   connector_params:

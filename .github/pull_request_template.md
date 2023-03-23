@@ -17,6 +17,7 @@ Closes #<issue>
 * [ ] Issue Requirements are Met
 * [ ] Relevant Follow-Up Issues Created
 * [ ] Update `CHANGELOG.md`
+* [ ] For API changes, the [Postman collection](https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/postman/Fides.postman_collection.json) has been updated
 
 ### Description Of Changes
 

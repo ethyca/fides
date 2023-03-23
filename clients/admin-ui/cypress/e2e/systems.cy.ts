@@ -8,10 +8,10 @@ describe("System management page", () => {
     }).as("getSystems");
   });
 
-  // TODO: Update Cypress test to reflect the nav bar 2.0
-  it.skip("Can navigate to the system management page", () => {
+  it("Can navigate to the system management page", () => {
     cy.visit("/");
-    cy.getByTestId("nav-link-Systems").click();
+    cy.contains("nav a", "Data map").click();
+    cy.contains("nav a", "View systems").click();
     cy.wait("@getSystems");
     cy.getByTestId("system-management");
   });
@@ -283,8 +283,10 @@ describe("System management page", () => {
         expect(body.joint_controller.name).to.eql(controllerName);
       });
 
-      // add another privacy declaration
+      // Switch to the Data Uses tab
       cy.getByTestId("tab-Data uses").click();
+
+      // add another privacy declaration
       const secondDataUse = "advertising";
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
@@ -492,7 +494,7 @@ describe("System management page", () => {
         });
         cy.getByTestId("continue-btn").click();
         cy.wait("@putSystem");
-        cy.getByTestId("toast-success-msg").contains("Data use case deleted");
+        cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
 
       it("deletes an accordion privacy declaration", () => {
@@ -506,7 +508,7 @@ describe("System management page", () => {
           expect(body.privacy_declarations.length).to.eql(1);
           expect(body.privacy_declarations[0].data_use !== "improve.system");
         });
-        cy.getByTestId("toast-success-msg").contains("Data use case deleted");
+        cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
     });
   });

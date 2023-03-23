@@ -59,8 +59,7 @@ export const PrivacyDeclarationFormComponents = ({
   allDataSubjects,
   allDatasets,
   onDelete,
-  includeDeprecatedFields,
-}: DataProps & Pick<Props, "onDelete" | "includeDeprecatedFields">) => {
+}: DataProps & Pick<Props, "onDelete">) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
@@ -93,14 +92,13 @@ export const PrivacyDeclarationFormComponents = ({
         variant="stacked"
         singleValueBlock
       />
-      {includeDeprecatedFields ? (
-        <CustomTextInput
-          id="name"
-          label="Privacy declaration name (deprecated)"
-          name="name"
-          variant="stacked"
-        />
-      ) : null}
+      <CustomTextInput
+        id="name"
+        label="Processing Activity"
+        name="name"
+        variant="stacked"
+        tooltip="The personal data processing activity or activities associated with this data use."
+      />
       <CustomSelect
         name="data_categories"
         label="Data categories"
@@ -232,7 +230,6 @@ interface Props {
   ) => Promise<boolean>;
   onDelete: (declaration: PrivacyDeclaration) => Promise<boolean>;
   initialValues?: PrivacyDeclaration;
-  includeDeprecatedFields?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({

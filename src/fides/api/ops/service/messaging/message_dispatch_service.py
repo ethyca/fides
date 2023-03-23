@@ -19,7 +19,6 @@ from fides.api.ops.models.messaging import (  # type: ignore[attr-defined]
     get_messaging_method,
 )
 from fides.api.ops.models.privacy_request import (
-    CheckpointActionRequired,
     PrivacyRequestError,
     PrivacyRequestNotifications,
 )
@@ -27,6 +26,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     ConsentEmailFulfillmentBodyParams,
     EmailForActionType,
+    ErasureRequestBodyParams,
     ErrorNotificationBodyParams,
     FidesopsMessage,
     MessagingActionType,
@@ -122,7 +122,7 @@ def dispatch_message(
             SubjectIdentityVerificationBodyParams,
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
-            List[CheckpointActionRequired],
+            ErasureRequestBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
@@ -159,7 +159,7 @@ def dispatch_message(
         )
     else:  # pragma: no cover
         # This is here as a fail safe, but it should be impossible to reach because
-        # is controlled by a datbase enum field.
+        # is controlled by a database enum field.
         logger.error("Notification service type is not valid: {}", service_type)
         raise MessageDispatchException(
             f"Notification service type is not valid: {service_type}"
@@ -168,9 +168,9 @@ def dispatch_message(
     logger.info(
         "Retrieving appropriate dispatcher for email service: {}", messaging_service
     )
-    dispatcher: Optional[
-        Callable[[MessagingConfig, Any, Optional[str]], None]
-    ] = _get_dispatcher_from_config_type(message_service_type=messaging_service)
+    dispatcher: Optional[Callable] = _get_dispatcher_from_config_type(
+        message_service_type=messaging_service
+    )
     if not dispatcher:
         logger.error(
             "Dispatcher has not been implemented for message service type: {}",
@@ -277,9 +277,13 @@ def _build_email(  # pylint: disable=too-many-return-statements
     if action_type == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT:
         base_template = get_email_template(action_type)
         return EmailForActionType(
-            subject="Data erasure request",
+            subject=f"Notification of user erasure requests from {body_params.controller}",
             body=base_template.render(
-                {"dataset_collection_action_required": body_params}
+                {
+                    "controller": body_params.controller,
+                    "third_party_vendor_name": body_params.third_party_vendor_name,
+                    "identities": body_params.identities,
+                }
             ),
         )
     if action_type == MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT:
@@ -343,15 +347,76 @@ def _build_email(  # pylint: disable=too-many-return-statements
 
 def _get_dispatcher_from_config_type(
     message_service_type: MessagingServiceType,
-) -> Optional[Callable[[MessagingConfig, Any, Optional[str]], None]]:
+) -> Optional[Callable]:
     """Determines which dispatcher to use based on message service type"""
-    if message_service_type == MessagingServiceType.MAILGUN:
-        return _mailgun_dispatcher
-    if message_service_type == MessagingServiceType.TWILIO_TEXT:
-        return _twilio_sms_dispatcher
-    if message_service_type == MessagingServiceType.TWILIO_EMAIL:
-        return _twilio_email_dispatcher
-    return None
+    handler = {
+        MessagingServiceType.mailgun: _mailgun_dispatcher,
+        MessagingServiceType.mailchimp_transactional: _mailchimp_transactional_dispatcher,
+        MessagingServiceType.twilio_text: _twilio_sms_dispatcher,
+        MessagingServiceType.twilio_email: _twilio_email_dispatcher,
+    }
+    return handler.get(message_service_type)  # type: ignore
+
+
+def _mailchimp_transactional_dispatcher(
+    messaging_config: MessagingConfig,
+    message: EmailForActionType,
+    to: Optional[str],
+) -> None:
+    """Dispatches email using Mailchimp Transactional"""
+    if not to:
+        logger.error("Message failed to send. No email identity supplied.")
+        raise MessageDispatchException("No email identity supplied.")
+
+    if not messaging_config.details or not messaging_config.secrets:
+        logger.error(
+            "Message failed to send. No Mailchimp Transactional config details or secrets supplied."
+        )
+        raise MessageDispatchException(
+            "No Mailchimp Transactional config details or secrets supplied."
+        )
+
+    from_email = messaging_config.details[MessagingServiceDetails.EMAIL_FROM.value]
+    data = json.dumps(
+        {
+            "key": messaging_config.secrets[
+                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
+            ],
+            "message": {
+                "from_email": from_email,
+                "subject": message.subject,
+                "text": message.body,
+                # On Mailchimp Transactional's free plan `to` must be an email of the same
+                # domain as `from_email`
+                "to": [{"email": to.strip(), "type": "to"}],
+            },
+        }
+    )
+
+    response = requests.post(
+        "https://mandrillapp.com/api/1.0/messages/send",
+        headers={"Content-Type": "application/json"},
+        data=data,
+    )
+    if not response.ok:
+        logger.error("Email failed to send with status code: %s" % response.status_code)
+        raise MessageDispatchException(
+            f"Email failed to send with status code {response.status_code}"
+        )
+
+    send_data = response.json()[0]
+    email_rejected = send_data.get("status", "rejected") == "rejected"
+    if email_rejected:
+        reason = send_data.get("reject_reason", "Fides Error")
+        explanations = {
+            "soft-bounce": "A temporary error occured with the target inbox. For example, this inbox could be full. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
+            "hard-bounce": "A permanent error occured with the target inbox. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
+            "recipient-domain-mismatch": f"You are not authorised to send email to this domain from {from_email}.",
+        }
+        explanation = explanations.get(reason, "")
+        raise MessageDispatchException(
+            f"Verification email unable to send due to reason: {reason}. {explanation}"
+        )
 
 
 def _mailgun_dispatcher(
@@ -359,15 +424,17 @@ def _mailgun_dispatcher(
     message: EmailForActionType,
     to: Optional[str],
 ) -> None:
-    """Dispatches email using mailgun"""
+    """Dispatches email using Mailgun"""
     if not to:
         logger.error("Message failed to send. No email identity supplied.")
         raise MessageDispatchException("No email identity supplied.")
+
     if not messaging_config.details or not messaging_config.secrets:
         logger.error(
             "Message failed to send. No mailgun config details or secrets supplied."
         )
         raise MessageDispatchException("No mailgun config details or secrets supplied.")
+
     base_url = (
         "https://api.mailgun.net"
         if messaging_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value] is False
@@ -457,7 +524,6 @@ def _twilio_email_dispatcher(
         )
 
     try:
-
         sg = sendgrid.SendGridAPIClient(
             api_key=messaging_config.secrets[
                 MessagingServiceSecrets.TWILIO_API_KEY.value

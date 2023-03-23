@@ -75,7 +75,7 @@ class TestConsentRequest:
         """Overrides autouse fixture to set notification service type to twilio sms"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = (
-            MessagingServiceType.TWILIO_TEXT.value
+            MessagingServiceType.twilio_text.value
         )
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
@@ -84,8 +84,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
@@ -97,8 +96,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
@@ -117,8 +115,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
         "disable_redis",
     )
@@ -130,8 +127,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
     def test_consent_request_subject_verification_disabled_no_email(
@@ -144,8 +140,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
@@ -157,8 +152,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
@@ -185,8 +179,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")

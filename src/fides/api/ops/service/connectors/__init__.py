@@ -11,15 +11,10 @@ from fides.api.ops.models.connectionconfig import ConnectionType as ConnectionTy
 from fides.api.ops.service.connectors.base_connector import (
     BaseConnector as BaseConnector,
 )
-from fides.api.ops.service.connectors.consent_email_connector import (
-    GenericEmailConsentConnector as EmailConsentConnector,
+from fides.api.ops.service.connectors.email.attentive_connector import (
+    AttentiveConnector,
 )
-from fides.api.ops.service.connectors.consent_email_connector import (
-    SovrnConsentConnector as SovrnConsentConnector,
-)
-from fides.api.ops.service.connectors.email_connector import (
-    EmailConnector as EmailConnector,
-)
+from fides.api.ops.service.connectors.email.sovrn_connector import SovrnConnector
 from fides.api.ops.service.connectors.fides_connector import (
     FidesConnector as FidesConnector,
 )
@@ -64,22 +59,22 @@ from fides.api.ops.service.connectors.timescale_connector import (
 )
 
 supported_connectors: Dict[str, Any] = {
-    ConnectionType.postgres.value: PostgreSQLConnector,
-    ConnectionType.mongodb.value: MongoDBConnector,
-    ConnectionType.mysql.value: MySQLConnector,
-    ConnectionType.redshift.value: RedshiftConnector,
-    ConnectionType.snowflake.value: SnowflakeConnector,
-    ConnectionType.https.value: HTTPSConnector,
-    ConnectionType.saas.value: SaaSConnector,
-    ConnectionType.mssql.value: MicrosoftSQLServerConnector,
-    ConnectionType.mariadb.value: MariaDBConnector,
+    ConnectionType.attentive.value: AttentiveConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
-    ConnectionType.manual.value: ManualConnector,
-    ConnectionType.email.value: EmailConnector,
-    ConnectionType.manual_webhook.value: ManualWebhookConnector,
-    ConnectionType.timescale.value: TimescaleConnector,
     ConnectionType.fides.value: FidesConnector,
-    ConnectionType.sovrn.value: SovrnConsentConnector,
+    ConnectionType.https.value: HTTPSConnector,
+    ConnectionType.manual.value: ManualConnector,
+    ConnectionType.manual_webhook.value: ManualWebhookConnector,
+    ConnectionType.mariadb.value: MariaDBConnector,
+    ConnectionType.mongodb.value: MongoDBConnector,
+    ConnectionType.mssql.value: MicrosoftSQLServerConnector,
+    ConnectionType.mysql.value: MySQLConnector,
+    ConnectionType.postgres.value: PostgreSQLConnector,
+    ConnectionType.redshift.value: RedshiftConnector,
+    ConnectionType.saas.value: SaaSConnector,
+    ConnectionType.snowflake.value: SnowflakeConnector,
+    ConnectionType.sovrn.value: SovrnConnector,
+    ConnectionType.timescale.value: TimescaleConnector,
 }
 
 
