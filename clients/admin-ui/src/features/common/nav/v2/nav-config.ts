@@ -1,5 +1,5 @@
+import { Features, FlagNames } from "~/features/common/features/features.slice";
 import { ScopeRegistryEnum } from "~/types/api";
-import { Features, FlagConfig, FlagNames } from "~/features/common/features/features.slice";
 
 export type NavConfigRoute = {
   title?: string;
@@ -219,8 +219,7 @@ export const configureNavGroups = ({
 
       // If the target route is protected by a feature flag that is not enabled,
       // exclude it from the group
-      if (route.requiresFlag && (!flags || !flags[route.requiresFlag]))
-      {
+      if (route.requiresFlag && (!flags || !flags[route.requiresFlag])) {
         return;
       }
 

@@ -43,7 +43,12 @@ export const FlagControl = ({
       </Box>
 
       <Box>
-        <FormLabel margin={0} fontSize="sm" htmlFor={`flag-${flag}`} title={flag}>
+        <FormLabel
+          margin={0}
+          fontSize="sm"
+          htmlFor={`flag-${flag}`}
+          title={flag}
+        >
           {camelToSentenceCase(flag)}
         </FormLabel>
       </Box>

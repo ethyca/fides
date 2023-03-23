@@ -57,7 +57,11 @@ const About: NextPage = () => {
             Reset
           </Button>
         </Flex>
-        <Grid gridTemplateColumns="1fr 2fr 6fr" gridRowGap={2} alignItems="center">
+        <Grid
+          gridTemplateColumns="1fr 2fr 6fr"
+          gridRowGap={2}
+          alignItems="center"
+        >
           {FLAG_NAMES.map((flag) => (
             <FlagControl
               key={flag}
