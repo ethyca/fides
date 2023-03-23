@@ -448,13 +448,13 @@ describe("System management page", () => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
-      // "improve.system" and "test-1" are already being used
+      // "improve.system" and "Store system data." are already being used
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
         cy.getByTestId("input-data_use").type(`improve.system{enter}`);
-        cy.getByTestId("input-name").type(`test-1{enter}`);
+        cy.getByTestId("input-name").type(`Store system data.{enter}`);
         cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
         cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
         cy.getByTestId("save-btn").click();
@@ -485,12 +485,34 @@ describe("System management page", () => {
       cy.getByTestId(`accordion-header-improve.system`);
       cy.getByTestId(`accordion-header-advertising`).click();
 
-      // try to change 'advertising' to 'improve.system'
+      // try to change 'advertising' to 'improve.system' and make their names match
       cy.getByTestId("advertising-form").within(() => {
         cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("input-name").clear().type(`Store system data.{enter}`);
         cy.getByTestId("save-btn").click();
       });
       cy.getByTestId("toast-error-msg");
+    });
+
+    it("can have multiple of the same data use if the names are different", () => {
+      cy.visit("/system");
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("edit-btn").click();
+      });
+      // "improve.system" and "Store system data." are already being used
+      // use "improve.system" again but a different name
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("add-btn").click();
+      cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
+      cy.getByTestId("new-declaration-form").within(() => {
+        cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("input-name").type(`A different description.{enter}`);
+        cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
+        cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
+        cy.getByTestId("save-btn").click();
+      });
+      cy.getByTestId("toast-success-msg");
     });
 
     describe("delete privacy declaration", () => {

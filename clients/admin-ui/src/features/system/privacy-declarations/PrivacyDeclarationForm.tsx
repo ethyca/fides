@@ -27,6 +27,8 @@ import {
   PrivacyDeclaration,
 } from "~/types/api";
 
+import { PrivacyDeclarationWithId } from "./types";
+
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
     .min(1, "Must assign at least one data category")
@@ -45,6 +47,18 @@ const defaultInitialValues: PrivacyDeclaration = {
 };
 
 type FormValues = typeof defaultInitialValues;
+
+const transformPrivacyDeclarationToHaveId = (
+  privacyDeclaration: PrivacyDeclaration
+) => ({
+  ...privacyDeclaration,
+  id: `${privacyDeclaration.data_use} - ${privacyDeclaration.name}`,
+});
+
+export const transformPrivacyDeclarationsToHaveId = (
+  privacyDeclarations: PrivacyDeclaration[]
+): PrivacyDeclarationWithId[] =>
+  privacyDeclarations.map(transformPrivacyDeclarationToHaveId);
 
 export interface DataProps {
   allDataCategories: DataCategory[];
@@ -72,7 +86,7 @@ export const PrivacyDeclarationFormComponents = ({
     : [];
 
   const handleDelete = async () => {
-    await onDelete(initialValues);
+    await onDelete(transformPrivacyDeclarationToHaveId(initialValues));
     deleteModal.onClose();
   };
 
@@ -179,7 +193,9 @@ export const usePrivacyDeclarationForm = ({
       (du) => du.fides_key === initialValues.data_use
     )[0];
     if (thisDataUse) {
-      return thisDataUse.name;
+      return initialValues.name
+        ? `${thisDataUse.name} - ${initialValues.name}`
+        : thisDataUse.name;
     }
     return undefined;
   }, [allDataUses, initialValues]);
@@ -188,7 +204,10 @@ export const usePrivacyDeclarationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const success = await onSubmit(values, formikHelpers);
+    const success = await onSubmit(
+      transformPrivacyDeclarationToHaveId(values),
+      formikHelpers
+    );
     if (success) {
       // Reset state such that isDirty will be checked again before next save
       formikHelpers.resetForm({ values });
@@ -225,11 +244,11 @@ export const usePrivacyDeclarationForm = ({
 
 interface Props {
   onSubmit: (
-    values: PrivacyDeclaration,
+    values: PrivacyDeclarationWithId,
     formikHelpers: FormikHelpers<PrivacyDeclaration>
   ) => Promise<boolean>;
-  onDelete: (declaration: PrivacyDeclaration) => Promise<boolean>;
-  initialValues?: PrivacyDeclaration;
+  onDelete: (declaration: PrivacyDeclarationWithId) => Promise<boolean>;
+  initialValues?: PrivacyDeclarationWithId;
 }
 
 export const PrivacyDeclarationForm = ({
