@@ -1,10 +1,12 @@
 import { ScopeRegistryEnum } from "~/types/api";
+import { Features, FlagConfig, FlagNames } from "~/features/common/features/features.slice";
 
 export type NavConfigRoute = {
   title?: string;
   path: string;
   exact?: boolean;
   requiresPlus?: boolean;
+  requiresFlag?: FlagNames;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
 };
@@ -42,6 +44,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Configuration",
         path: "/privacy-requests/configure",
+        requiresFlag: "privacyRequestsConfiguration",
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
     ],
@@ -96,6 +99,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Organization",
         path: "/management/organization",
+        requiresFlag: "organizationManagement",
         scopes: [
           ScopeRegistryEnum.ORGANIZATION_READ,
           ScopeRegistryEnum.ORGANIZATION_UPDATE,
@@ -186,14 +190,12 @@ export const configureNavGroups = ({
   config,
   userScopes,
   hasPlus = false,
-  hasAccessToPrivacyRequestConfigurations = false,
-  hasAccessToOrganizationManagement = false,
+  flags,
 }: {
   config: NavConfigGroup[];
   userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
-  hasAccessToPrivacyRequestConfigurations?: boolean;
-  hasAccessToOrganizationManagement?: boolean;
+  flags?: Partial<Features["flags"]>;
 }): NavGroup[] => {
   const navGroups: NavGroup[] = [];
 
@@ -215,19 +217,10 @@ export const configureNavGroups = ({
         return;
       }
 
-      // If the target route is protected by a feature flag that is disabled,
+      // If the target route is protected by a feature flag that is not enabled,
       // exclude it from the group
-      if (
-        route.path === "/privacy-requests/configure" &&
-        !hasAccessToPrivacyRequestConfigurations
-      ) {
-        return;
-      }
-
-      if (
-        route.path === "/management/organization" &&
-        !hasAccessToOrganizationManagement
-      ) {
+      if (route.requiresFlag && (!flags || !flags[route.requiresFlag]))
+      {
         return;
       }
 

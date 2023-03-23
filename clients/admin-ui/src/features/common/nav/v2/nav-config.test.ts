@@ -59,7 +59,6 @@ describe("configureNavGroups", () => {
       title: "Management",
       children: [
         { title: "Users", path: "/user-management" },
-        { title: "Organization", path: "/management/organization" },
         { title: "Taxonomy", path: "/taxonomy" },
         { title: "About Fides", path: "/management/about" },
       ],
@@ -151,6 +150,45 @@ describe("configureNavGroups", () => {
           { title: "View systems", path: "/system" },
           { title: "Add systems", path: "/add-systems" },
           { title: "Manage datasets", path: "/dataset" },
+        ],
+      });
+    });
+  });
+
+  describe("configure by feature flags", () => {
+    it("excludes feature flagged routes when disabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        flags: undefined,
+      });
+
+      expect(navGroups[3]).toMatchObject({
+        title: "Management",
+        children: [
+          { title: "Users", path: "/user-management" },
+          { title: "Taxonomy", path: "/taxonomy" },
+          { title: "About Fides", path: "/management/about" },
+        ],
+      });
+    });
+
+    it("includes feature flagged routes when enabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        flags: {
+          organizationManagement: true,
+        },
+      });
+
+      expect(navGroups[3]).toMatchObject({
+        title: "Management",
+        children: [
+          { title: "Users", path: "/user-management" },
+          { title: "Organization", path: "/management/organization" },
+          { title: "Taxonomy", path: "/taxonomy" },
+          { title: "About Fides", path: "/management/about" },
         ],
       });
     });
