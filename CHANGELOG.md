@@ -19,6 +19,10 @@ The types of changes are:
 
 ### Changed
 * Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
+* Changed UI paths in the admin-ui [#2869](https://github.com/ethyca/fides/pull/2892)
+  * `/add-systems/new` --> `/add-systems/manual`
+  * `/system` --> `/systems`
+* Added individual ID routes for systems [#2902](https://github.com/ethyca/fides/pull/2902)
 * Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
 * Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
 * Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
