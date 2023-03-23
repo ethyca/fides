@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ExecutionApplicationConfig } from "./ExecutionApplicationConfig";
+import type { NotificationApplicationConfig } from "./NotificationApplicationConfig";
 import type { StorageApplicationConfig } from "./StorageApplicationConfig";
 
 /**
@@ -12,5 +14,7 @@ import type { StorageApplicationConfig } from "./StorageApplicationConfig";
  * the application config that is properly hooked up to the global pydantic config module.
  */
 export type ApplicationConfig = {
-  storage: StorageApplicationConfig;
+  storage?: StorageApplicationConfig;
+  notifications?: NotificationApplicationConfig;
+  execution?: ExecutionApplicationConfig;
 };

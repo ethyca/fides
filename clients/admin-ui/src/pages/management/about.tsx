@@ -36,6 +36,17 @@ const About: NextPage = () => {
           </Text>
         </Box>
 
+        {features.plusVersion ? (
+          <Box>
+            <Text as="span" fontWeight="bold">
+              Fides Plus Version:{" "}
+            </Text>
+            <Text as="pre" display="inline">
+              {features.plusVersion}
+            </Text>
+          </Box>
+        ) : null}
+
         <Divider />
 
         <Grid gridTemplateColumns="1fr 1fr 3fr">

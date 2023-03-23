@@ -8,14 +8,12 @@ import type { MessagingServiceDetailsTwilioEmail } from "./MessagingServiceDetai
 import type { MessagingServiceType } from "./MessagingServiceType";
 
 /**
- * Messaging Config Response Schema
+ * Base model shared by messaging config requests to provide validation on request inputs
  */
-export type MessagingConfigResponse = {
+export type MessagingConfigRequestBase = {
   service_type: MessagingServiceType;
   details?:
     | MessagingServiceDetailsMailgun
     | MessagingServiceDetailsTwilioEmail
     | MessagingServiceDetailsMailchimpTransactional;
-  name: string;
-  key: string;
 };
