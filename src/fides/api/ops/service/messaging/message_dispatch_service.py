@@ -408,6 +408,7 @@ def _mailchimp_transactional_dispatcher(
             "soft-bounce": "A temporary error occured with the target inbox. For example, this inbox could be full. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
             "hard-bounce": "A permanent error occured with the target inbox. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
             "recipient-domain-mismatch": f"You are not authorised to send email to this domain from {from_email}.",
+            "unsigned": f"The sending domain for {from_email} has not been fully configured for Mailchimp Transactional. See https://mailchimp.com/developer/transactional/docs/authentication-delivery/#authentication/ for more info.",
         }
         explanation = explanations.get(reason, "")
         raise MessageDispatchException(
