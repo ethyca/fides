@@ -43,14 +43,17 @@ const PrivacyDeclarationManager = ({
       return system.privacy_declarations;
     }
     return system.privacy_declarations.filter(
-      (pd) => pd.data_use !== newDeclaration.data_use
+      (pd) => pd.name !== newDeclaration.name
     );
   }, [newDeclaration, system]);
 
   const checkAlreadyExists = (values: PrivacyDeclaration) => {
     if (
-      accordionDeclarations.filter((d) => d.data_use === values.data_use)
-        .length > 0
+      accordionDeclarations.filter((d) =>
+        values.name
+          ? d.name === values.name && d.data_use === values.data_use
+          : d.data_use === values.data_use && d.name === ""
+      ).length > 0
     ) {
       onCollision();
       return true;
@@ -83,7 +86,7 @@ const PrivacyDeclarationManager = ({
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
     const updatedDeclarations = accordionDeclarations.map((dec) =>
-      dec.data_use === oldDeclaration.data_use ? updatedDeclaration : dec
+      dec.name === oldDeclaration.name ? updatedDeclaration : dec
     );
     return handleSave(updatedDeclarations);
   };
@@ -106,7 +109,7 @@ const PrivacyDeclarationManager = ({
 
   const handleDelete = async (declarationToDelete: PrivacyDeclaration) => {
     const updatedDeclarations = system.privacy_declarations.filter(
-      (dec) => dec.data_use !== declarationToDelete.data_use
+      (dec) => dec.name !== declarationToDelete.name
     );
     return handleSave(updatedDeclarations, true);
   };

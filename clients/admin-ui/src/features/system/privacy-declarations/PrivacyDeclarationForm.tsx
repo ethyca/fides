@@ -179,7 +179,9 @@ export const usePrivacyDeclarationForm = ({
       (du) => du.fides_key === initialValues.data_use
     )[0];
     if (thisDataUse) {
-      return thisDataUse.name;
+      return initialValues.name
+        ? initialValues.name + " - " + thisDataUse.name
+        : initialValues.data_use;
     }
     return undefined;
   }, [allDataUses, initialValues]);
