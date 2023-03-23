@@ -12,7 +12,8 @@ const RoleDescriptionDrawer = () => (
         <Box
           width="100%"
           key={role.roleKey}
-          padding="16px"
+          padding={4}
+          borderRadius="md"
           backgroundColor="blue.50"
           fontSize="14px"
         >

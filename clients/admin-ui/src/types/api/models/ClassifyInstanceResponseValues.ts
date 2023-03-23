@@ -16,5 +16,5 @@ export type ClassifyInstanceResponseValues = {
   id: string;
   created_at: string;
   updated_at: string;
-  has_labels: boolean;
+  has_labels?: boolean;
 };

@@ -980,10 +980,10 @@ class TestUser:
         )
 
         credentials = read_credentials_file(credentials_path)
-        scopes, roles = get_user_permissions(
+        total_scopes, roles = get_user_permissions(
             credentials.user_id, get_auth_header(), CONFIG.cli.server_url
         )
-        assert scopes == SCOPE_REGISTRY
+        assert set(total_scopes) == set(SCOPE_REGISTRY)
         assert roles == [OWNER]
 
     @pytest.mark.unit
@@ -1019,12 +1019,12 @@ class TestUser:
             ],
             env={"FIDES_CREDENTIALS_PATH": credentials_path},
         )
-        scopes, roles = get_user_permissions(
+        total_scopes, roles = get_user_permissions(
             CONFIG.security.oauth_root_client_id,
             get_auth_header(),
             CONFIG.cli.server_url,
         )
-        assert scopes == SCOPE_REGISTRY
+        assert set(total_scopes) == set(SCOPE_REGISTRY)
         assert roles == [OWNER]
 
     @pytest.mark.unit
@@ -1072,12 +1072,12 @@ class TestUser:
             ],
             env={"FIDES_CREDENTIALS_PATH": credentials_path},
         )
-        scopes, roles = get_user_permissions(
+        total_scopes, roles = get_user_permissions(
             system_manager.id,
             get_auth_header(),
             CONFIG.cli.server_url,
         )
-        assert scopes == []
+        assert total_scopes == []
         assert roles == []
 
         systems = get_systems_managed_by_user(

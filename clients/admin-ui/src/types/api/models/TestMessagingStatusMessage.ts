@@ -5,7 +5,7 @@
 import type { MessagingConnectionTestStatus } from "./MessagingConnectionTestStatus";
 
 /**
- * A schema for checking status of message config.
+ * A schema for testing functionality of a messaging config.
  */
 export type TestMessagingStatusMessage = {
   msg: string;
