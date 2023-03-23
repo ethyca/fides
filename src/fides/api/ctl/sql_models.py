@@ -4,8 +4,10 @@
 Contains all of the SqlAlchemy models for the Fides resources.
 """
 
+from __future__ import annotations
+
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Type
 
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import BaseModel
@@ -19,6 +21,7 @@ from sqlalchemy import (
     TypeDecorator,
     UniqueConstraint,
     cast,
+    select,
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import BYTEA
@@ -289,6 +292,18 @@ class System(Base, FidesBase):
     users = relationship(
         "FidesUser", secondary="systemmanager", back_populates="systems"
     )
+
+    @classmethod
+    def get_system_data_uses(cls: Type[System], db: Session):
+        """
+        Utility method to get all data uses associated with a System instance
+        """
+        data_uses = set()
+        for row in db.execute(select(cls.privacy_declarations)).all():
+            declarations: List[dict[str, Any]] = row[0]
+            for declaration in declarations:
+                data_uses.add(declaration["data_use"])
+        return data_uses
 
 
 class SystemModel(BaseModel):

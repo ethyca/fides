@@ -65,7 +65,9 @@ class FidesUser(Base):
         return hashed_password, salt
 
     @classmethod
-    def create(cls, db: Session, data: dict[str, Any]) -> FidesUser:
+    def create(
+        cls, db: Session, data: dict[str, Any], check_name: bool = True
+    ) -> FidesUser:
         """Create a FidesUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
         hashed_password, salt = FidesUser.hash_password(data["password"])
@@ -79,6 +81,7 @@ class FidesUser(Base):
                 "first_name": data.get("first_name"),
                 "last_name": data.get("last_name"),
             },
+            check_name=check_name,
         )
 
         return user  # type: ignore
