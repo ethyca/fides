@@ -1,8 +1,6 @@
 import random
-import time
 
 import pytest
-import requests
 
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -31,7 +29,7 @@ async def test_amplitude_access_request_task(
     amplitude_dataset_config,
     amplitude_identity_email,
 ) -> None:
-    """Full access request based on the amplitude SaaS config"""
+    """Full access request based on the Amplitude SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_amplitude_access_request_task_{random.randint(0, 1000)}"
@@ -89,7 +87,7 @@ async def test_amplitude_erasure_request_task(
     amplitude_erasure_identity_email,
     amplitude_create_erasure_data,
 ) -> None:
-    """Full erasure request based on the amplitude SaaS config"""
+    """Full erasure request based on the Amplitude SaaS config"""
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete

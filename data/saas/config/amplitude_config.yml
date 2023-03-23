@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Amplitude SaaS Config
+  name: Amplitude
   type: amplitude
   description: A sample schema representing the Amplitude connector for Fides
   version: 0.1.0
