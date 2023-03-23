@@ -85,6 +85,23 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Management",
     routes: [
       {
+        title: "Users",
+        path: "/user-management",
+        scopes: [
+          ScopeRegistryEnum.USER_UPDATE,
+          ScopeRegistryEnum.USER_CREATE,
+          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
+        ],
+      },
+      {
+        title: "Organization",
+        path: "/management/organization",
+        scopes: [
+          ScopeRegistryEnum.ORGANIZATION_READ,
+          ScopeRegistryEnum.ORGANIZATION_UPDATE,
+        ],
+      },
+      {
         title: "Taxonomy",
         path: "/taxonomy",
         scopes: [
@@ -94,15 +111,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.DATA_USE_UPDATE,
           ScopeRegistryEnum.DATA_SUBJECT_CREATE,
           ScopeRegistryEnum.DATA_SUBJECT_UPDATE,
-        ],
-      },
-      {
-        title: "Users",
-        path: "/user-management",
-        scopes: [
-          ScopeRegistryEnum.USER_UPDATE,
-          ScopeRegistryEnum.USER_CREATE,
-          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
         ],
       },
       {
@@ -179,11 +187,13 @@ export const configureNavGroups = ({
   userScopes,
   hasPlus = false,
   hasAccessToPrivacyRequestConfigurations = false,
+  hasAccessToOrganizationManagement = false,
 }: {
   config: NavConfigGroup[];
   userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
   hasAccessToPrivacyRequestConfigurations?: boolean;
+  hasAccessToOrganizationManagement?: boolean;
 }): NavGroup[] => {
   const navGroups: NavGroup[] = [];
 
@@ -205,6 +215,8 @@ export const configureNavGroups = ({
         return;
       }
 
+      // If the target route is protected by a feature flag that is disabled,
+      // exclude it from the group
       if (
         route.path === "/privacy-requests/configure" &&
         !hasAccessToPrivacyRequestConfigurations
@@ -212,6 +224,15 @@ export const configureNavGroups = ({
         return;
       }
 
+      if (
+        route.path === "/management/organization" &&
+        !hasAccessToOrganizationManagement
+      ) {
+        return;
+      }
+
+      // If the target route is protected by a scope that the user does not
+      // have, exclude it from the group
       if (!navRouteInScope(route, userScopes)) {
         return;
       }

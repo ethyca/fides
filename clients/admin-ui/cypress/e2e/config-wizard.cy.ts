@@ -4,7 +4,7 @@ describe("Config Wizard", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("getOrganization");
   });
 

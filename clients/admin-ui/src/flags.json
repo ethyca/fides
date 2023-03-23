@@ -15,5 +15,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "organizationManagement": {
+    "description": "Management page to configure Organization details for RoPA reporting, messaging, etc.",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

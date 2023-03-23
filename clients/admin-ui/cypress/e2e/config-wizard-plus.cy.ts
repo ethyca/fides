@@ -23,11 +23,11 @@ describe("Config wizard with plus settings", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("getOrganization");
 
     cy.intercept("PUT", "/api/v1/organization**", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("updateOrganization");
   });
 

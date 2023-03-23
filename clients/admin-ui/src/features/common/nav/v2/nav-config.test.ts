@@ -21,6 +21,8 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.USER_UPDATE,
   ScopeRegistryEnum.USER_READ,
   ScopeRegistryEnum.DATA_CATEGORY_CREATE,
+  ScopeRegistryEnum.ORGANIZATION_READ,
+  ScopeRegistryEnum.ORGANIZATION_UPDATE,
 ];
 
 describe("configureNavGroups", () => {
@@ -56,8 +58,9 @@ describe("configureNavGroups", () => {
     expect(navGroups[3]).toMatchObject({
       title: "Management",
       children: [
-        { title: "Taxonomy", path: "/taxonomy" },
         { title: "Users", path: "/user-management" },
+        { title: "Organization", path: "/management/organization" },
+        { title: "Taxonomy", path: "/taxonomy" },
         { title: "About Fides", path: "/management/about" },
       ],
     });
