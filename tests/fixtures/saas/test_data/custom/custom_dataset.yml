@@ -1,0 +1,9 @@
+dataset:
+  - fides_key: custom
+    name: Custom Dataset
+    description: A sample dataset representing a custom connector for Fides
+    collections:
+      - name: user
+        fields:
+          - name: id
+            data_categories: [user.unique_id]

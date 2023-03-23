@@ -6,7 +6,6 @@ import yaml
 from fideslang.models import DatasetCollection
 
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     update_saas_configs,

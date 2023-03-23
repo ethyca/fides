@@ -28,7 +28,12 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
     StringRewriteMaskingStrategy,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.api.ops.util.saas_util import load_config
+from fides.api.ops.util.saas_util import (
+    encode_file_contents,
+    load_as_string,
+    load_config,
+    load_yaml_as_string,
+)
 from fides.lib.models.client import ClientDetail
 from tests.fixtures.application_fixtures import load_dataset
 
@@ -621,3 +626,25 @@ def erasure_policy_complete_mask(
         erasure_policy.delete(db)
     except ObjectDeletedError:
         pass
+
+
+@pytest.fixture
+def custom_config() -> str:
+    return load_yaml_as_string("tests/fixtures/saas/test_data/custom/custom_config.yml")
+
+
+@pytest.fixture
+def custom_dataset() -> str:
+    return load_yaml_as_string(
+        "tests/fixtures/saas/test_data/custom/custom_dataset.yml"
+    )
+
+
+@pytest.fixture
+def custom_icon() -> str:
+    return encode_file_contents("tests/fixtures/saas/test_data/custom/custom.svg")
+
+
+@pytest.fixture
+def custom_functions() -> str:
+    return load_as_string("tests/fixtures/saas/test_data/custom/custom_functions.py")
