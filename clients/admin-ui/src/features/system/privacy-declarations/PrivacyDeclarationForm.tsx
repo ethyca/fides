@@ -52,7 +52,9 @@ const transformPrivacyDeclarationToHaveId = (
   privacyDeclaration: PrivacyDeclaration
 ) => ({
   ...privacyDeclaration,
-  id: `${privacyDeclaration.data_use} - ${privacyDeclaration.name}`,
+  id: privacyDeclaration.name
+    ? `${privacyDeclaration.data_use} - ${privacyDeclaration.name}`
+    : privacyDeclaration.data_use,
 });
 
 export const transformPrivacyDeclarationsToHaveId = (
