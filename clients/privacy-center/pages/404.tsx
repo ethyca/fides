@@ -57,8 +57,8 @@ const Custom404 = () => (
               <Image
                 src={config.logo_path}
                 alt="Logo"
-                width="124px"
-                height="38px"
+                maxWidth="200px"
+                maxHeight="100px"
               />
             </Box>
           </Stack>
@@ -70,8 +70,8 @@ const Custom404 = () => (
               <Image
                 src={config.logo_path}
                 alt="Logo"
-                width="124px"
-                height="38px"
+                maxWidth="200px"
+                maxHeight="100px"
               />
             </Link>
           </NextLink>
