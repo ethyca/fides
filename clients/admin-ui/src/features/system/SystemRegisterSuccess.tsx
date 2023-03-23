@@ -18,6 +18,7 @@ import {
 import { useRouter } from "next/router";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { SYSTEM_ROUTE } from "~/constants";
 import {
   selectAllSystems,
   setActiveSystem,
@@ -43,7 +44,7 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
   const onFinish = () => {
     dispatch(setActiveSystem(undefined));
 
-    router.push("/system");
+    router.push(SYSTEM_ROUTE);
   };
 
   return (

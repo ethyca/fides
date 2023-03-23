@@ -1,10 +1,9 @@
-from time import sleep
-
 import pytest
 
 from fides.api.ops.models.policy import Policy
 from tests.fixtures.saas.yotpo_reviews_fixtures import YotpoReviewsTestClient
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
 @pytest.mark.integration_saas
@@ -42,12 +41,10 @@ class TestYotpoReviewsConnector:
             "yotpo_reviews_external_dataset:yotpo_reviews_external_collection": 0,
         }
 
-        # wait for the update to propagate
-        sleep(180)
-
-        response = yotpo_reviews_test_client.get_customer(external_id)
-        assert response and response.ok
-
-        customer = response.json()["customers"][0]
-        assert customer["first_name"] == "MASKED"
-        assert customer["last_name"] == "MASKED"
+        # get_customer will return None if the first_name has been masked
+        poll_for_existence(
+            yotpo_reviews_test_client.get_customer,
+            (external_id,),
+            interval=30,
+            existence_desired=False,
+        )

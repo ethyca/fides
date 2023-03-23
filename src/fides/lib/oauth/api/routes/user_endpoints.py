@@ -55,6 +55,8 @@ def create_user(
     If `password` is sent as a base64 encoded string, it will automatically be decoded
     server-side before being encrypted and persisted.
     If `password` is sent as a plaintext string, it will be encrypted and persisted as is.
+
+    The user is given no roles by default.
     """
 
     # The root user is not stored in the database so make sure here that the user name
@@ -78,10 +80,7 @@ def create_user(
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
         db=db,
-        data={
-            "user_id": user.id,
-            "scopes": [],
-        },
+        data={"user_id": user.id, "roles": []},
     )
     return user
 
@@ -241,20 +240,19 @@ def perform_login(
             db,
             client_id_byte_length,
             client_secret_btye_length,
-            scopes=user.permissions.scopes,  # type: ignore
+            scopes=[],  # type: ignore
             roles=user.permissions.roles,  # type: ignore
             systems=user.system_ids,  # type: ignore
             user_id=user.id,
         )
     else:
         # Refresh the client just in case - for example, scopes and roles were added via the db directly.
-        client.scopes = user.permissions.scopes  # type: ignore
         client.roles = user.permissions.roles  # type: ignore
         client.systems = user.system_ids  # type: ignore
         client.save(db)
 
-    if not user.permissions.scopes and not user.permissions.roles and not user.systems:  # type: ignore
-        logger.warning("User {} needs scopes, roles, or systems to login.", user.id)
+    if not user.permissions.roles and not user.systems:  # type: ignore
+        logger.warning("User {} needs roles or systems to login.", user.id)
         raise AuthorizationError(detail="Not Authorized for this action")
 
     user.last_login_at = datetime.utcnow()

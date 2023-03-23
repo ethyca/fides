@@ -55,8 +55,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
-        )  # there are 5 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
+        )  # there are 4 connection types that are not returned by the endpoint
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -299,14 +299,20 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=email", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 1
+        assert len(data) == 2
         assert data == [
+            {
+                "identifier": "attentive",
+                "type": "email",
+                "human_readable": "Attentive",
+                "encoded_icon": None,
+            },
             {
                 "identifier": "sovrn",
                 "type": "email",
                 "human_readable": "Sovrn",
                 "encoded_icon": None,
-            }
+            },
         ]
 
 

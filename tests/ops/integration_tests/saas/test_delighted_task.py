@@ -1,7 +1,6 @@
 import random
 
 import pytest
-import requests
 
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -11,6 +10,7 @@ from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 CONFIG = get_config()
 
@@ -180,14 +180,18 @@ async def test_delighted_erasure_request_task(
     }
 
     # person
-    response = delighted_test_client.get_person(delighted_erasure_identity_email)
-    response_body = response.json()
-    assert response_body == []
+    poll_for_existence(
+        delighted_test_client.get_person,
+        (delighted_erasure_identity_email,),
+        existence_desired=False,
+    )
 
     # survey response
-    response = delighted_test_client.get_survey_responses(person["id"])
-    # since survey_response is deleted, it won't be available so response is 404
-    assert response.status_code == 404
+    poll_for_existence(
+        delighted_test_client.get_survey_responses,
+        (person["id"],),
+        existence_desired=False,
+    )
 
     # reset
     CONFIG.execution.masking_strict = masking_strict

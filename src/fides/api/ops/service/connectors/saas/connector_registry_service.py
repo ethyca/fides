@@ -257,10 +257,9 @@ def update_saas_configs(db: Session) -> None:
                         saas_config_instance,
                     )
                 except Exception:
-                    logger.error(
+                    logger.exception(
                         "Encountered error attempting to update SaaS config instance {}",
                         saas_config_instance.fides_key,
-                        exc_info=True,
                     )
 
 

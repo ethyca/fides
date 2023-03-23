@@ -1,5 +1,11 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
+import {
+  ADD_SYSTEMS_MANUAL_ROUTE,
+  ADD_SYSTEMS_ROUTE,
+  SYSTEM_ROUTE,
+} from "~/constants";
+
 describe("System management page", () => {
   beforeEach(() => {
     cy.login();
@@ -18,7 +24,7 @@ describe("System management page", () => {
 
   describe("Can view data", () => {
     beforeEach(() => {
-      cy.visit("/system");
+      cy.visit(SYSTEM_ROUTE);
     });
 
     it("Can render system cards", () => {
@@ -65,9 +71,9 @@ describe("System management page", () => {
       });
 
       it("shows available system types and lets the user choose one", () => {
-        cy.visit("/add-systems");
+        cy.visit(ADD_SYSTEMS_ROUTE);
         cy.getByTestId("manual-btn").click();
-        cy.url().should("contain", "/add-systems/new");
+        cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
         cy.wait("@getConnectionTypes");
         cy.getByTestId("header").contains("Choose a type of system");
         cy.getByTestId("bigquery-item");
@@ -83,7 +89,7 @@ describe("System management page", () => {
       });
 
       it("should allow searching", () => {
-        cy.visit("/add-systems/new");
+        cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
         cy.wait("@getConnectionTypes");
         cy.getByTestId("bigquery-item");
         cy.getByTestId("system-catalog-search").type("db");
@@ -102,9 +108,9 @@ describe("System management page", () => {
       it("Can step through the flow", () => {
         cy.fixture("systems/system.json").then((system) => {
           // Fill in the describe form based on fixture data
-          cy.visit("/add-systems");
+          cy.visit(ADD_SYSTEMS_ROUTE);
           cy.getByTestId("manual-btn").click();
-          cy.url().should("contain", "/add-systems/new");
+          cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
           cy.wait("@getSystems");
           cy.wait("@getConnectionTypes");
           cy.getByTestId("create-system-btn").click();
@@ -172,7 +178,7 @@ describe("System management page", () => {
       });
 
       it("can render a warning when there is unsaved data", () => {
-        cy.visit("/add-systems/new");
+        cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
         cy.wait("@getSystems");
         cy.wait("@getConnectionTypes");
         cy.getByTestId("create-system-btn").click();
@@ -208,7 +214,7 @@ describe("System management page", () => {
     });
 
     it("Can delete a system from its card", () => {
-      cy.visit("/system");
+      cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("delete-btn").click();
@@ -233,7 +239,7 @@ describe("System management page", () => {
           },
         },
       }).as("deleteSystemError");
-      cy.visit("/system");
+      cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("delete-btn").click();
@@ -249,7 +255,25 @@ describe("System management page", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
-      cy.visit("/system");
+      cy.fixture("systems/systems.json").then((systems) => {
+        cy.intercept("GET", "/api/v1/system/*", {
+          body: systems[0],
+        }).as("getFidesctlSystem");
+      });
+      cy.visit(SYSTEM_ROUTE);
+    });
+
+    it("Can go directly to a system's edit page", () => {
+      cy.visit("/systems/configure/fidesctl_system");
+      cy.getByTestId("input-name").should("have.value", "Fidesctl System");
+
+      cy.intercept("GET", "/api/v1/system/*", {
+        statusCode: 404,
+      }).as("getNotFoundSystem");
+
+      // and can render a not found state
+      cy.visit("/systems/configure/system-that-does-not-exist");
+      cy.getByTestId("system-not-found");
     });
 
     it("Can go through the edit flow", () => {
@@ -257,7 +281,9 @@ describe("System management page", () => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
-      cy.url().should("contain", "/system/configure");
+      cy.url().should("contain", "/systems/configure/fidesctl_system");
+
+      cy.wait("@getFidesctlSystem");
 
       // check that the form has the proper values filled in
       cy.getByTestId("input-name").should("have.value", "Fidesctl System");
@@ -408,10 +434,15 @@ describe("System management page", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
+      cy.fixture("systems/systems.json").then((systems) => {
+        cy.intercept("GET", "/api/v1/system/*", {
+          body: systems[0],
+        }).as("getFidesctlSystem");
+      });
     });
 
     it("warns when a data use is being added that is already used", () => {
-      cy.visit("/system");
+      cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
@@ -437,15 +468,13 @@ describe("System management page", () => {
     });
 
     it("warns when a data use is being edited to one that is already used", () => {
-      cy.intercept("GET", "/api/v1/system", {
-        fixture: "systems/systems_with_data_uses.json",
-      }).as("getSystemsWithDataUses");
-      cy.visit("/system");
-      cy.wait("@getSystemsWithDataUses");
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
-        cy.getByTestId("edit-btn").click();
+      cy.fixture("systems/systems_with_data_uses.json").then((systems) => {
+        cy.intercept("GET", "/api/v1/system/*", {
+          body: systems[0],
+        }).as("getFidesctlSystemWithDataUses");
       });
+      cy.visit(`${SYSTEM_ROUTE}/configure/fidesctl_system`);
+      cy.wait("@getFidesctlSystemWithDataUses");
 
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
@@ -464,15 +493,14 @@ describe("System management page", () => {
 
     describe("delete privacy declaration", () => {
       beforeEach(() => {
-        cy.intercept("GET", "/api/v1/system", {
-          fixture: "systems/systems_with_data_uses.json",
-        }).as("getSystemsWithDataUses");
-        cy.visit("/system");
-        cy.wait("@getSystemsWithDataUses");
-        cy.getByTestId("system-fidesctl_system").within(() => {
-          cy.getByTestId("more-btn").click();
-          cy.getByTestId("edit-btn").click();
+        cy.fixture("systems/systems_with_data_uses.json").then((systems) => {
+          cy.intercept("GET", "/api/v1/system/*", {
+            body: systems[0],
+          }).as("getFidesctlSystemWithDataUses");
         });
+        cy.visit(`${SYSTEM_ROUTE}/configure/fidesctl_system`);
+        cy.wait("@getFidesctlSystemWithDataUses");
+
         cy.getByTestId("tab-Data uses").click();
       });
 
