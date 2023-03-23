@@ -319,6 +319,7 @@ describe("System management page", () => {
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
         cy.getByTestId("input-data_use").type(`${secondDataUse}{enter}`);
+        cy.getByTestId("input-name").type(`test-1{enter}`);
         cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
         cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
         cy.getByTestId("save-btn").click();
@@ -441,18 +442,19 @@ describe("System management page", () => {
       });
     });
 
-    it("warns when a data use is being added that is already used", () => {
+    it("warns when a data use and processing activity is being added that is already used", () => {
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
-      // "improve.system" is already being used
+      // "improve.system" and "test-1" are already being used
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
         cy.getByTestId("input-data_use").type(`improve.system{enter}`);
+        cy.getByTestId("input-name").type(`test-1{enter}`);
         cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
         cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
         cy.getByTestId("save-btn").click();
