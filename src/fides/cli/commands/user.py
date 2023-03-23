@@ -4,10 +4,10 @@ import rich_click as click
 from fides.cli.options import (
     first_name_option,
     last_name_option,
-    password_option,
-    username_option,
-    username_argument,
     password_argument,
+    password_option,
+    username_argument,
+    username_option,
 )
 from fides.core.user import create_command, get_permissions_command, login_command
 
