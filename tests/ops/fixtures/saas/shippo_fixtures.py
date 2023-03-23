@@ -112,12 +112,10 @@ def shippo_create_erasure_data(
     shippo_connection_config: ConnectionConfig, shippo_erasure_identity_email: str
 ) -> None:
 
-    sleep(60)
-
     shippo_secrets = shippo_connection_config.secrets
     base_url = f"https://{shippo_secrets['domain']}"
     headers = {
-        "Authorization": f"ShippoToken {jira_secrets['api_key']}",
+        "Authorization": f"ShippoToken {shippo_secrets['api_key']}",
     }
 
     # address

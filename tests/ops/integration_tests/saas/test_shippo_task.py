@@ -31,7 +31,7 @@ async def test_shippo_access_request_task(
     shippo_dataset_config,
     shippo_identity_email,
 ) -> None:
-    """Full access request based on the shippo SaaS config"""
+    """Full access request based on the Shippo SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_shippo_access_request_task_{random.randint(0, 1000)}"
@@ -111,6 +111,10 @@ async def test_shippo_access_request_task(
     )
 
     # verify we only returned data for our identity email
-    assert v[f"{dataset_name}:addresses"][0]["email"] == shippo_identity_email
-    user_id = v[f"{dataset_name}:addresses"][0]["object_id"]
+    
+    for address in v[f"{dataset_name}:addresses"]:
+        assert address["email"] == shippo_identity_email
+
+    for order in v[f"{dataset_name}:orders"]:
+        assert order["object_owner"] == shippo_identity_email
 

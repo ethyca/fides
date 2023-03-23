@@ -1,6 +1,6 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: shippo
+    name: Shippo Dataset
     description: A sample dataset representing the Shippo connector for Fides
     collections:
       - name: addresses
