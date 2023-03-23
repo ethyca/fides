@@ -911,6 +911,7 @@ def credentials_path(tmp_path_factory) -> str:
     return str(credentials_path)
 
 
+@pytest.mark.integration
 class TestUser:
     """
     Test the "user" command group.
@@ -918,7 +919,6 @@ class TestUser:
     Most tests rely on previous tests.
     """
 
-    @pytest.mark.unit
     def test_user_login_provide_credentials(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
@@ -941,7 +941,75 @@ class TestUser:
         print(result.output)
         assert result.exit_code == 0
 
-    @pytest.mark.unit
+    def test_user_login_env_var_failed(
+        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
+    ) -> None:
+        """
+        Test logging in as a user with a provided username and password
+        provided via env vars, but the username is invalid.
+        """
+        print(credentials_path)
+        result = test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "user",
+                "login",
+            ],
+            env={
+                "FIDES_CREDENTIALS_PATH": credentials_path,
+                "FIDES__USER__USERNAME": "fakeuser",
+                "FIDES__USER__PASSWORD": "Testpassword1!",
+            },
+        )
+        print(result.output)
+        assert result.exit_code == 1
+
+    def test_user_login_env_var_password(
+        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
+    ) -> None:
+        """
+        Test logging in as a user with a provided username but password
+        provided via env vars.
+        """
+        print(credentials_path)
+        result = test_cli_runner.invoke(
+            cli,
+            ["-f", test_config_path, "user", "login", "-u", "root_user"],
+            env={
+                "FIDES_CREDENTIALS_PATH": credentials_path,
+                "FIDES__USER__PASSWORD": "Testpassword1!",
+            },
+        )
+        print(result.output)
+        assert result.exit_code == 0
+
+    def test_user_login_env_var_credentials(
+        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
+    ) -> None:
+        """
+        Test logging in as a user with a provided username and password
+        provided via env vars.
+        """
+        print(credentials_path)
+        result = test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "user",
+                "login",
+            ],
+            env={
+                "FIDES_CREDENTIALS_PATH": credentials_path,
+                "FIDES__USER__USERNAME": "root_user",
+                "FIDES__USER__PASSWORD": "Testpassword1!",
+            },
+        )
+        print(result.output)
+        assert result.exit_code == 0
+
     def test_user_create(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
@@ -984,7 +1052,6 @@ class TestUser:
         assert set(total_scopes) == set(SCOPE_REGISTRY)
         assert roles == [OWNER]
 
-    @pytest.mark.unit
     def test_user_permissions_valid(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
@@ -998,7 +1065,6 @@ class TestUser:
         print(result.output)
         assert result.exit_code == 0
 
-    @pytest.mark.unit
     def test_get_self_user_permissions(
         self, test_config_path, test_cli_runner, credentials_path
     ) -> None:
@@ -1051,7 +1117,6 @@ class TestUser:
         )
         assert systems == []
 
-    @pytest.mark.unit
     def test_get_other_user_perms_and_systems(
         self, test_config_path, test_cli_runner, credentials_path, system_manager
     ) -> None:
@@ -1085,7 +1150,6 @@ class TestUser:
         )
         assert systems == [system_manager.systems[0].fides_key]
 
-    @pytest.mark.unit
     def test_user_permissions_not_found(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:

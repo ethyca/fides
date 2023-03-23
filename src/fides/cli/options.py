@@ -201,7 +201,7 @@ def prompt_username(ctx: click.Context, param: str, value: str) -> str:
         click.echo("> Username found in configuration file.")
         return config_value
 
-    value = click.prompt(text="Username")
+    value = click.prompt(text="Username")  # pragma: no cover
     return value
 
 
@@ -216,7 +216,7 @@ def prompt_password(ctx: click.Context, param: str, value: str) -> str:
         click.echo("> Password found in configuration file.")
         return config_value
 
-    value = click.prompt(text="Password", hide_input=True)
+    value = click.prompt(text="Password", hide_input=True)  # pragma: no cover
     return value
 
 
