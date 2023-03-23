@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: OneSignal SaaS Config
+  name: OneSignal
   type: onesignal
   description: A sample schema representing the OneSignal connector for Fides
   version: 0.1.0
@@ -8,8 +8,10 @@ saas_config:
   connector_params:
     - name: domain
       default_value: onesignal.com
-    - name: player_id
     - name: api_token
+
+  external_references:
+    - name: player_id
     - name: app_id
 
   client_config:
@@ -24,34 +26,41 @@ saas_config:
 
   test_request:
     method: GET
-    path: /api/v1/players?app_id=<app_id>
-    param_values:
+    path: /api/v1/players
+    query_params:
       - name: app_id
-        connector_param: app_id
+        value: <app_id_value>
+    param_values:
+      - name: app_id_value
+        references:
+          - app_id
 
   endpoints:
     - name: devices
       requests:
         read:
           method: GET
-          path: '/api/v1/players/<player_id>?app_id=<app_id>'
-          param_values:
-            - name: player_id
-              connector_param: player_id
+          path: '/api/v1/players/<player_id_value>'
+          query_params:
             - name: app_id
-              connector_param: app_id
+              value: <app_id_value>
+          param_values:
+            - name: player_id_value
+              references:
+                - player_id
+            - name: app_id_value
+              references:
+                - app_id
             - name: placeholder
               identity: email
         update:
           method: PUT
-          path: /api/v1/players/<devices_id>
+          path: /api/v1/players/<player_id_value>
           body: |
             {
               <all_object_fields> 
             }
           param_values:
-            - name: devices_id
+            - name: player_id_value
               references:
-                - dataset: <instance_fides_key>
-                  field: devices.id
-                  direction: from
+                - player_id

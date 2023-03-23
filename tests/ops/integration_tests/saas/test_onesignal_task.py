@@ -1,5 +1,4 @@
 import random
-import time
 
 import pytest
 import requests
@@ -32,7 +31,7 @@ async def test_onesignal_access_request_task(
     onesignal_dataset_config,
     onesignal_identity_email,
 ) -> None:
-    """Full access request based on the onesignal SaaS config"""
+    """Full access request based on the OneSignal SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_onesignal_access_request_task_{random.randint(0, 1000)}"
