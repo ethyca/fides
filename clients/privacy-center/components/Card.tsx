@@ -1,8 +1,8 @@
 import { Flex, Icon, Image, Text } from "@fidesui/react";
 import React from "react";
-import * as mdIcons from 'react-icons/md'
-import * as faIcons from 'react-icons/fa'
-
+import * as mdIcons from "react-icons/md";
+import * as faIcons from "react-icons/fa";
+import { IconType } from "react-icons";
 
 type CardProps = {
   title: string;
@@ -10,6 +10,33 @@ type CardProps = {
   description: string;
   onClick: () => void;
 };
+
+enum IconProviders {
+  MD = "md",
+  FA = "fa",
+}
+
+function iconResolver(iconPath: string, description: string) {
+  const prefixCandidate = iconPath.toLowerCase().split(":")[0];
+  const hasPrefix =
+    Object.values<string>(IconProviders).includes(prefixCandidate);
+  if (hasPrefix) {
+    let iconType: IconType;
+    switch (prefixCandidate) {
+      case IconProviders.MD:
+        iconType = mdIcons[iconPath.split(":")[1] as keyof typeof mdIcons];
+        break;
+      case IconProviders.FA:
+        iconType = faIcons[iconPath.split(":")[1] as keyof typeof faIcons];
+        break;
+      default:
+        iconType = faIcons.FaRegQuestionCircle;
+        break;
+    }
+    return <Icon boxSize="32px" as={iconType} color="complimentary.500" />;
+  }
+  return <Image alt={description} boxSize="32px" src={iconPath} />;
+}
 
 const Card: React.FC<CardProps> = ({
   title,
@@ -51,13 +78,7 @@ const Card: React.FC<CardProps> = ({
       outline: "none",
     }}
   >
-    { 
-    iconPath.toLowerCase().startsWith('md:') ? // Material Design icons
-    <Icon boxSize="32px" as={mdIcons[iconPath.split(':')[1] as keyof typeof mdIcons]} color="complimentary.500"></Icon> :
-    iconPath.toLowerCase().startsWith('fa:') ? // FontAwesome icons
-    <Icon boxSize="32px" as={faIcons[iconPath.split(':')[1] as keyof typeof faIcons]} color="complimentary.500"></Icon> :
-    <Image alt={description} boxSize="32px" src={iconPath} />
-    }
+    {iconResolver(iconPath, description)}
     <Text
       color="gray.600"
       fontSize="md"
