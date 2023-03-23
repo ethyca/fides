@@ -81,7 +81,7 @@ describe("configureNavGroups", () => {
       title: "Data map",
       children: [
         { title: "View map", path: "/datamap" },
-        { title: "View systems", path: "/systems" },
+        { title: "View systems", path: SYSTEM_ROUTE },
         { title: "Add systems", path: "/add-systems" },
         { title: "Manage datasets", path: "/dataset" },
         { title: "Classify systems", path: "/classify-systems" },
@@ -103,7 +103,7 @@ describe("configureNavGroups", () => {
 
       expect(navGroups[1]).toMatchObject({
         title: "Data map",
-        children: [{ title: "View systems", path: "/systems" }],
+        children: [{ title: "View systems", path: SYSTEM_ROUTE }],
       });
     });
 
@@ -146,7 +146,7 @@ describe("configureNavGroups", () => {
       expect(navGroups[2]).toMatchObject({
         title: "Data map",
         children: [
-          { title: "View systems", path: "/systems" },
+          { title: "View systems", path: SYSTEM_ROUTE },
           { title: "Add systems", path: "/add-systems" },
           { title: "Manage datasets", path: "/dataset" },
         ],
@@ -172,10 +172,10 @@ describe("findActiveNav", () => {
       },
     },
     {
-      path: "/systems",
+      path: SYSTEM_ROUTE,
       expected: {
         title: "Data map",
-        path: "/systems",
+        path: SYSTEM_ROUTE,
       },
     },
     {
