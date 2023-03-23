@@ -16,7 +16,7 @@ enum IconProviders {
   FA = "fa",
 }
 
-function iconResolver(iconPath: string, description: string) {
+function iconResolver(iconPath: string, description: string): JSX.Element {
   const prefixCandidate = iconPath.toLowerCase().split(":")[0];
   const hasPrefix =
     Object.values<string>(IconProviders).includes(prefixCandidate);
