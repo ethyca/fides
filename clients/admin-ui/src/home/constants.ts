@@ -1,5 +1,5 @@
 import {
-  CONFIG_WIZARD_ROUTE,
+  ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
   DATASTORE_CONNECTION_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
@@ -38,7 +38,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     color: "orange",
     description:
       "As your organization grows you can continue adding systems to your Fides data map.",
-    href: `${CONFIG_WIZARD_ROUTE}`,
+    href: `${ADD_SYSTEMS_ROUTE}`,
     key: ModuleCardKeys.ADD_SYSTEMS,
     name: "Add systems",
     sortOrder: 1,
