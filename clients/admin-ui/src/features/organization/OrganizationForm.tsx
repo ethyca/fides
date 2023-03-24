@@ -35,6 +35,11 @@ export const defaultInitialValues: OrganizationFormValues = {
   name: "",
 };
 
+// NOTE: These transform functions are (basically) unnecessary right now, since
+// the form values are an exact match to the Organization object. However, in
+// future iterations some transformation is likely to be necessary, so we've
+// put these transform functions in place ahead of time to make future updates
+// easier to make
 export const transformOrganizationToFormValues = (
   organization: Organization
 ): OrganizationFormValues => ({ ...organization });
