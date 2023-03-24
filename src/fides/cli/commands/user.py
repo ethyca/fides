@@ -4,7 +4,9 @@ import rich_click as click
 from fides.cli.options import (
     first_name_option,
     last_name_option,
+    password_argument,
     password_option,
+    username_argument,
     username_option,
 )
 from fides.core.user import create_command, get_permissions_command, login_command
@@ -20,8 +22,8 @@ def user(ctx: click.Context) -> None:
 
 @user.command()
 @click.pass_context
-@username_option
-@password_option
+@username_argument
+@password_argument
 @first_name_option
 @last_name_option
 def create(
@@ -47,7 +49,8 @@ def create(
 @password_option
 def login(ctx: click.Context, username: str, password: str) -> None:
     """
-    Generate a user access token and write it to a credentials file.
+    Authenticate with the webserver and generate a user access token.
+    Then store those credentials in a credentials file.
     """
     config = ctx.obj["CONFIG"]
     server_url = config.cli.server_url
