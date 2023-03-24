@@ -33,10 +33,11 @@ The types of changes are:
 * Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
 * Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
 
-
 ### Fixed
 
 * Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
+* Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
+* Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
 * Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
 * Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
 
@@ -45,10 +46,8 @@ The types of changes are:
 
 * Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
 * use HTML property, not text, when dispatching Mailchimp Transactional emails [#2901](https://github.com/ethyca/fides/pull/2901)
-
-### Fixed
-* Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
-* Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
+* Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
+* Remove policy key from Privacy Center submission modal [#2912](https://github.com/ethyca/fides/pull/2912)
 
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
