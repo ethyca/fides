@@ -4,17 +4,24 @@ import { useMemo, useState } from "react";
 import { PrivacyDeclaration, System } from "~/types/api";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
-import { DataProps, PrivacyDeclarationForm } from "./PrivacyDeclarationForm";
+import {
+  DataProps,
+  PrivacyDeclarationForm,
+  transformPrivacyDeclarationsToHaveId,
+} from "./PrivacyDeclarationForm";
+import { PrivacyDeclarationWithId } from "./types";
 
-type FormValues = PrivacyDeclaration;
-
-const transformFormValuesToDeclaration = (
-  formValues: FormValues
-): PrivacyDeclaration => ({
-  ...formValues,
-  // Fill in an empty string for name because of https://github.com/ethyca/fideslang/issues/98
-  name: formValues.name ?? "",
-});
+const transformDeclarationForSubmission = (
+  formValues: PrivacyDeclarationWithId
+): PrivacyDeclaration => {
+  // Remove the id which is only a frontend artifact
+  const { id, ...values } = formValues;
+  return {
+    ...values,
+    // Fill in an empty string for name because of https://github.com/ethyca/fideslang/issues/98
+    name: values.name ?? "",
+  };
+};
 
 interface Props {
   system: System;
@@ -35,22 +42,24 @@ const PrivacyDeclarationManager = ({
 
   const [showNewForm, setShowNewForm] = useState(false);
   const [newDeclaration, setNewDeclaration] = useState<
-    PrivacyDeclaration | undefined
+    PrivacyDeclarationWithId | undefined
   >(undefined);
 
   const accordionDeclarations = useMemo(() => {
-    if (!newDeclaration) {
-      return system.privacy_declarations;
-    }
-    return system.privacy_declarations.filter(
-      (pd) => pd.data_use !== newDeclaration.data_use
+    const declarations = transformPrivacyDeclarationsToHaveId(
+      system.privacy_declarations
     );
+    if (!newDeclaration) {
+      return declarations;
+    }
+    return declarations.filter((pd) => pd.id !== newDeclaration.id);
   }, [newDeclaration, system]);
 
   const checkAlreadyExists = (values: PrivacyDeclaration) => {
     if (
-      accordionDeclarations.filter((d) => d.data_use === values.data_use)
-        .length > 0
+      accordionDeclarations.filter(
+        (d) => d.data_use === values.data_use && d.name === values.name
+      ).length > 0
     ) {
       onCollision();
       return true;
@@ -59,23 +68,23 @@ const PrivacyDeclarationManager = ({
   };
 
   const handleSave = async (
-    updatedDeclarations: PrivacyDeclaration[],
+    updatedDeclarations: PrivacyDeclarationWithId[],
     isDelete?: boolean
   ) => {
     const transformedDeclarations = updatedDeclarations.map((d) =>
-      transformFormValuesToDeclaration(d)
+      transformDeclarationForSubmission(d)
     );
     const success = await onSave(transformedDeclarations, isDelete);
     return success;
   };
 
   const handleEditDeclaration = async (
-    oldDeclaration: PrivacyDeclaration,
-    updatedDeclaration: PrivacyDeclaration
+    oldDeclaration: PrivacyDeclarationWithId,
+    updatedDeclaration: PrivacyDeclarationWithId
   ) => {
     // Do not allow editing a privacy declaration to have the same data use as one that already exists
     if (
-      updatedDeclaration.data_use !== oldDeclaration.data_use &&
+      updatedDeclaration.id !== oldDeclaration.id &&
       checkAlreadyExists(updatedDeclaration)
     ) {
       return false;
@@ -83,12 +92,12 @@ const PrivacyDeclarationManager = ({
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
     const updatedDeclarations = accordionDeclarations.map((dec) =>
-      dec.data_use === oldDeclaration.data_use ? updatedDeclaration : dec
+      dec.id === oldDeclaration.id ? updatedDeclaration : dec
     );
     return handleSave(updatedDeclarations);
   };
 
-  const saveNewDeclaration = async (values: PrivacyDeclaration) => {
+  const saveNewDeclaration = async (values: PrivacyDeclarationWithId) => {
     if (checkAlreadyExists(values)) {
       return false;
     }
@@ -104,14 +113,18 @@ const PrivacyDeclarationManager = ({
     setNewDeclaration(undefined);
   };
 
-  const handleDelete = async (declarationToDelete: PrivacyDeclaration) => {
-    const updatedDeclarations = system.privacy_declarations.filter(
-      (dec) => dec.data_use !== declarationToDelete.data_use
-    );
+  const handleDelete = async (
+    declarationToDelete: PrivacyDeclarationWithId
+  ) => {
+    const updatedDeclarations = transformPrivacyDeclarationsToHaveId(
+      system.privacy_declarations
+    ).filter((dec) => dec.id !== declarationToDelete.id);
     return handleSave(updatedDeclarations, true);
   };
 
-  const handleDeleteNew = async (declarationToDelete: PrivacyDeclaration) => {
+  const handleDeleteNew = async (
+    declarationToDelete: PrivacyDeclarationWithId
+  ) => {
     const success = await handleDelete(declarationToDelete);
     if (success) {
       setShowNewForm(false);
