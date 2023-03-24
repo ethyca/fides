@@ -37,6 +37,7 @@ The types of changes are:
 ### Fixed
 
 * Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
+* Remove policy key from Privacy Center submission modal [#2912](https://github.com/ethyca/fides/pull/2912)
 
 ### Fixed
 * Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
