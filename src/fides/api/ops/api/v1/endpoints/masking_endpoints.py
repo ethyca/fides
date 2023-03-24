@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Security
 from loguru import logger
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
@@ -16,11 +16,22 @@ from fides.api.ops.schemas.masking.masking_strategy_description import (
 from fides.api.ops.schemas.policy import PolicyMaskingSpec
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client_prod
+from fides.api.ops.api.v1.scope_registry import MASKING_EXEC, MASKING_READ
 
 router = APIRouter(tags=["Masking"], prefix=V1_URL_PREFIX)
 
-# TODO: add auth to these endpoints
-@router.put(MASKING, response_model=MaskingAPIResponse)
+
+@router.put(
+    MASKING,
+    response_model=MaskingAPIResponse,
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[MASKING_EXEC],
+        )
+    ],
+)
 def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
     """Masks the value(s) provided using the provided masking strategy"""
     try:
@@ -58,7 +69,16 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.get(MASKING_STRATEGY, response_model=List[MaskingStrategyDescription])
+@router.get(
+    MASKING_STRATEGY,
+    response_model=List[MaskingStrategyDescription],
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[MASKING_READ],
+        )
+    ],
+)
 def list_masking_strategies() -> List[MaskingStrategyDescription]:
     """Lists available masking strategies with instructions on how to use them"""
     logger.info("Getting available masking strategies")
