@@ -4,6 +4,7 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
+
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
@@ -26,10 +27,17 @@ secrets = get_secrets("aircall")
 @pytest.fixture(scope="session")
 def aircall_secrets(saas_config):
     return {
-        "domain": pydash.get(saas_config, "aircall.domain") or secrets["domain"],        
+        "domain": pydash.get(saas_config, "aircall.domain") or secrets["domain"], 
+        "api_id": pydash.get(saas_config, "aircall.api_id") or secrets["api_id"],
         "api_token": pydash.get(saas_config, "aircall.api_token") or secrets["api_token"],
+
     }
 
+@pytest.fixture(scope="session")
+def formatted_phone_number(saas_config):  
+    n =  pydash.get(saas_config, "aircall.identity_phone_number") or secrets["identity_phone_number"]  
+    n = n[2:]                                                                                                                         
+    return "+1 "+format(int(n[:-1]), ",").replace(",", "-") + n[-1] 
 
 @pytest.fixture(scope="session")
 def aircall_identity_email(saas_config):
@@ -125,10 +133,8 @@ def aircall_create_erasure_data(
 
     aircall_secrets = aircall_connection_config.secrets
     base_url = f"https://{aircall_secrets['domain']}"
-    headers = {
-            "Authorization": f"Basic {aircall_secrets['api_token']}",
-        }
-
+    auth = aircall_secrets["api_id"], aircall_secrets["api_token"]
+    
     # contact
 
     body = {
@@ -147,6 +153,6 @@ def aircall_create_erasure_data(
         ]
     }
 
-    contact_response = requests.post(url=f"{base_url}/v1/contacts", headers=headers, json=body)
+    contact_response = requests.post(url=f"{base_url}/v1/contacts", auth=auth, json=body)
     sleep(30)
     yield contact_response.ok

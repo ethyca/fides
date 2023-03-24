@@ -1,6 +1,4 @@
 import random
-import time
-
 import pytest
 import requests
 
@@ -30,6 +28,7 @@ async def test_aircall_access_request_task_with_phone_number(
     aircall_connection_config,
     aircall_dataset_config,
     aircall_identity_phone_number,
+    formatted_phone_number
 ) -> None:
     """Full access request based on the aircall SaaS config"""
 
@@ -104,6 +103,8 @@ async def test_aircall_access_request_task_with_phone_number(
     )
     # verify we only returned data for our identity email
     assert v[f"{dataset_name}:contact"][0]["phone_numbers"][0]["value"] == aircall_identity_phone_number
+    assert v[f"{dataset_name}:calls"][0]["contact"]['phone_numbers'][0]["value"] == formatted_phone_number
+    
 
 
 @pytest.mark.integration_saas
@@ -119,7 +120,7 @@ async def test_aircall_erasure_request_task(
     aircall_erasure_identity_email,
     aircall_create_erasure_data,
 ) -> None:
-    """Full erasure request based on the aircall SaaS config"""
+    """Full erasure request based on the Aircall SaaS config"""
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete
@@ -160,40 +161,7 @@ async def test_aircall_erasure_request_task(
             "emails",
         ],
     )
-
-    # assert_rows_match(
-    #     v[f"{dataset_name}:calls"],
-    #     min_size=1,
-    #     keys=[
-    #         "id",
-    #         "direct_link",
-    #         "direction",
-    #         "status",
-    #         "missed_call_reason",
-    #         "started_at",
-    #         "answered_at",
-    #         "ended_at",
-    #         "duration",
-    #         "voicemail",
-    #         "recording",
-    #         "asset",
-    #         "raw_digits",
-    #         "user",
-    #         "contact",
-    #         "archived",
-    #         "assigned_to",
-    #         "tags",
-    #         "transferred_by",
-    #         "transferred_to",
-    #         "teams",
-    #         "number",
-    #         "cost",
-    #         "country_code_a2",
-    #         "pricing_type",
-    #         "comments"
-    #     ],
-    # )
-
+    
     x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -205,21 +173,18 @@ async def test_aircall_erasure_request_task(
     )
 
     assert x == {
-        # f"{dataset_name}:customer": 0,
         f"{dataset_name}:contact": 1,
         f"{dataset_name}:calls": 0,
     }
 
     aircall_secrets = aircall_connection_config.secrets
     base_url = f"https://{aircall_secrets['domain']}"
-    headers = {
-            "Authorization": f"Basic {aircall_secrets['api_token']}",
-        }
+    auth = aircall_secrets["api_id"], aircall_secrets["api_token"]
 
     # contact search
     response = requests.get(
         url=f"{base_url}/v1/contacts/search",
-        headers=headers,
+        auth=auth,
         params={"phone_number": aircall_erasure_identity_phone_number},
     )
 
