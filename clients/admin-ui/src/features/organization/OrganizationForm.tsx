@@ -105,7 +105,7 @@ export const OrganizationForm = ({
       onSubmit={handleSubmit}
       validationSchema={OrganizationFormValidationSchema}
     >
-      {({ dirty, isValid }) => (
+      {({ dirty,  isValid }) => (
         <Form data-testid="organization-form">
           <Stack spacing={4}>
             <CustomTextInput
@@ -113,7 +113,7 @@ export const OrganizationForm = ({
               name="fides_key"
               label="Fides Key"
               disabled
-              tooltip="A unique key that identifies this Organization"
+              tooltip="A unique key that identifies your organization. Not editable via UI."
               variant="stacked"
             />
             <CustomTextInput
@@ -121,7 +121,7 @@ export const OrganizationForm = ({
               name="name"
               label="Name"
               disabled={isLoading}
-              tooltip="User-friendly name for your Organization, used in messaging to end-users and other public locations."
+              tooltip="User-friendly name for your organization, used in messaging to end-users and other public locations."
               variant="stacked"
             />
             <CustomTextInput
@@ -129,10 +129,10 @@ export const OrganizationForm = ({
               name="description"
               label="Description"
               disabled={isLoading}
-              tooltip="Short description of your Organization, your services, etc."
+              tooltip="Short description of your organization, your services, etc."
               variant="stacked"
             />
-            <Box>
+            <Box textAlign="right">
               <Button
                 type="submit"
                 variant="primary"
