@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Stripe SaaS Config
+  name: Stripe
   type: stripe
   description: A sample schema representing the Stripe connector for Fides
   version: 0.0.2

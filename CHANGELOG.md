@@ -50,20 +50,49 @@ The types of changes are:
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
 ### Added
+
+* Allow users to configure their username and password via the config file [#2884](https://github.com/ethyca/fides/pull/2884)
+
+### Changed
+
+* Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
+* Changed UI paths in the admin-ui [#2869](https://github.com/ethyca/fides/pull/2892)
+  * `/add-systems/new` --> `/add-systems/manual`
+  * `/system` --> `/systems`
+* Added individual ID routes for systems [#2902](https://github.com/ethyca/fides/pull/2902)
+* Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
+* Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
+* Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
+* Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
+
+
+### Fixed
+
+* Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
+* Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
+
+### Fixed
+* Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
+* Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
+
+## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
+
+### Added
+
 * Added Attentive erasure email connector [#2782](https://github.com/ethyca/fides/pull/2782)
 
 ### Changed
+* Improved standard layout for large width screens and polish misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
 * Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
 * Changed Auth0's authentication strategy from `bearer` to `oauth2_client_credentials` [#2820](https://github.com/ethyca/fides/pull/2820)
-* renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
-
+* Renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
+* UX cleanups in Role Management section of Admin UI [#2870](https://github.com/ethyca/fides/pull/2870)
 
 ### Fixed
 * Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
 
 ### Removed
-
-* removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
+* Removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
 
 ## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
 
@@ -78,7 +107,7 @@ The types of changes are:
 ### Changed
 
 * Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
-* Added `system.privacy_declaration.name` to datamap response [#2831][https://github.com/ethyca/fides/pull/2831/files]
+* Added `system.privacy_declaration.name` to datamap response [#2831](https://github.com/ethyca/fides/pull/2831/files)
 
 ### Developer Experience
 

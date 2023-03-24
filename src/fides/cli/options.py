@@ -191,14 +191,32 @@ def aws_region_option(command: Callable) -> Callable:
 
 
 def prompt_username(ctx: click.Context, param: str, value: str) -> str:
-    if not value:
-        value = click.prompt(text="Username")
+    """Check the config for a compatible username. If unavailable, prompt the user to provide one."""
+    config_value = ctx.obj["CONFIG"].user.username
+
+    if value:
+        return value
+
+    if config_value:
+        click.echo("> Username found in configuration file.")
+        return config_value
+
+    value = click.prompt(text="Username")  # pragma: no cover
     return value
 
 
 def prompt_password(ctx: click.Context, param: str, value: str) -> str:
-    if not value:
-        value = click.prompt(text="Password", hide_input=True)
+    """Check the config for a compatible password. If unavailable, prompt the user to provide one."""
+    config_value = ctx.obj["CONFIG"].user.password
+
+    if value:
+        return value
+
+    if config_value:
+        click.echo("> Password found in configuration file.")
+        return config_value
+
+    value = click.prompt(text="Password", hide_input=True)  # pragma: no cover
     return value
 
 
@@ -206,6 +224,7 @@ def username_option(command: Callable) -> Callable:
     command = click.option(
         "-u",
         "--username",
+        help="If not provided, will be pulled from the config file or prompted for.",
         default="",
         callback=prompt_username,
     )(command)
@@ -216,6 +235,7 @@ def password_option(command: Callable) -> Callable:
     command = click.option(
         "-p",
         "--password",
+        help="If not provided, will be pulled from the config file or prompted for.",
         default="",
         callback=prompt_password,
     )(command)
@@ -237,4 +257,14 @@ def last_name_option(command: Callable) -> Callable:
         "--last-name",
         default="",
     )(command)
+    return command
+
+
+def username_argument(command: Callable) -> Callable:
+    command = click.argument("username", type=str)(command)
+    return command
+
+
+def password_argument(command: Callable) -> Callable:
+    command = click.argument("password", type=str)(command)
     return command

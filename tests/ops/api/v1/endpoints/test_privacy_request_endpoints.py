@@ -87,6 +87,7 @@ from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
@@ -1947,7 +1948,7 @@ class TestApprovePrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -1993,7 +1994,7 @@ class TestApprovePrivacyRequest:
         privacy_request_review_notification_enabled,
     ):
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2122,7 +2123,7 @@ class TestDenyPrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2193,7 +2194,7 @@ class TestDenyPrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }

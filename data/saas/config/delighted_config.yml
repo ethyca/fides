@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Delighted SaaS Config
+  name: Delighted
   type: delighted
   description: A sample schema representing the Delighted connector for Fides
   version: 0.1.0

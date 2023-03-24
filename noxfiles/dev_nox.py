@@ -23,7 +23,7 @@ from utils_nox import COMPOSE_DOWN_VOLUMES
 @nox_session()
 def shell(session: Session) -> None:
     """
-    Open a shell in an already-running Fides webesrver container.
+    Open a shell in an already-running Fides webserver container.
 
     If the container is not running, the command will fail.
     """
