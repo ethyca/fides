@@ -16,62 +16,31 @@ import {
   Stack,
   Switch,
   Text,
-  useToast,
 } from "@fidesui/react";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 
-import { useAppSelector } from "~/app/hooks";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+
 import SearchBar from "~/features/common/SearchBar";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetAllSystemsQuery } from "~/features/system";
 import { SEARCH_FILTER } from "~/features/system/SystemsManagement";
 import { System } from "~/types/api";
 
 import AssignSystemsTable from "./AssignSystemsTable";
-import {
-  selectActiveUserId,
-  selectActiveUsersManagedSystems,
-  useGetUserManagedSystemsQuery,
-  useUpdateUserManagedSystemsMutation,
-} from "./user-management.slice";
 
 const AssignSystemsModal = ({
   isOpen,
   onClose,
-}: Pick<ModalProps, "isOpen" | "onClose">) => {
-  const activeUserId = useAppSelector(selectActiveUserId);
+  assignedSystems,
+  onAssignedSystemChange,
+}: Pick<ModalProps, "isOpen" | "onClose"> & {assignedSystems: System[], onAssignedSystemChange: (systems: System[]) => void}) => {
   const { data: allSystems } = useGetAllSystemsQuery();
-  useGetUserManagedSystemsQuery(activeUserId as string, {
-    skip: !activeUserId,
-  });
-  const [updateUserManagedSystemsTrigger, { isLoading: isSubmitting }] =
-    useUpdateUserManagedSystemsMutation();
   const [searchFilter, setSearchFilter] = useState("");
-  const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
-  const [assignedSystems, setAssignedSystems] = useState<System[]>(
-    initialManagedSystems
+  const [selectedSystems, setSelectedSystems] = useState<System[]>(
+    assignedSystems
   );
-  const toast = useToast();
 
-  useEffect(() => {
-    setAssignedSystems(initialManagedSystems);
-  }, [initialManagedSystems]);
-
-  const handleAssign = async () => {
-    if (!activeUserId) {
-      return;
-    }
-    const fidesKeys = assignedSystems.map((s) => s.fides_key);
-    const result = await updateUserManagedSystemsTrigger({
-      userId: activeUserId,
-      fidesKeys,
-    });
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-      return;
-    }
-    toast(successToastParams("Updated users permissions"));
+  const handleConfirm = async () => {
+    onAssignedSystemChange(selectedSystems)
     onClose();
   };
 
@@ -88,19 +57,19 @@ const AssignSystemsModal = ({
   const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
     if (checked && allSystems) {
-      setAssignedSystems(filteredSystems);
+      setSelectedSystems(filteredSystems);
     } else {
       const notFilteredSystems = allSystems
         ? allSystems.filter((system) => !filteredSystems.includes(system))
         : [];
-      setAssignedSystems(notFilteredSystems);
+      setSelectedSystems(notFilteredSystems);
     }
   };
 
   const allSystemsAssigned = useMemo(() => {
-    const assignedSet = new Set(assignedSystems.map((s) => s.fides_key));
+    const assignedSet = new Set(selectedSystems.map((s) => s.fides_key));
     return filteredSystems.every((item) => assignedSet.has(item.fides_key));
-  }, [filteredSystems, assignedSystems]);
+  }, [filteredSystems, selectedSystems]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
@@ -114,7 +83,7 @@ const AssignSystemsModal = ({
         >
           <Text>Assign systems</Text>
           <Badge bg="green.500" color="white" px={1}>
-            Assigned to {initialManagedSystems.length} systems
+            Assigned to {assignedSystems.length} systems
           </Badge>
         </ModalHeader>
         <ModalBody data-testid="assign-systems-modal-body">
@@ -154,8 +123,8 @@ const AssignSystemsModal = ({
               />
               <AssignSystemsTable
                 allSystems={filteredSystems}
-                assignedSystems={assignedSystems}
-                onChange={setAssignedSystems}
+                assignedSystems={selectedSystems}
+                onChange={setSelectedSystems}
               />
             </Stack>
           )}
@@ -173,9 +142,8 @@ const AssignSystemsModal = ({
             {!emptySystems ? (
               <Button
                 colorScheme="primary"
-                onClick={handleAssign}
+                onClick={handleConfirm}
                 data-testid="confirm-btn"
-                isLoading={isSubmitting}
               >
                 Confirm
               </Button>
