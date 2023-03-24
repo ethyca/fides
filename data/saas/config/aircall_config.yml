@@ -1,6 +1,6 @@
 saas_config:
     fides_key: <instance_fides_key>
-    name: Aircall SaaS Config
+    name: Aircall
     type: aircall
     description: A sample schema representing the Aircall connector for Fides
     version: 0.1.0
