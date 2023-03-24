@@ -19,7 +19,6 @@ import {
 } from "@fidesui/react";
 import { ChangeEvent, useMemo, useState } from "react";
 
-
 import SearchBar from "~/features/common/SearchBar";
 import { useGetAllSystemsQuery } from "~/features/system";
 import { SEARCH_FILTER } from "~/features/system/SystemsManagement";
@@ -32,15 +31,17 @@ const AssignSystemsModal = ({
   onClose,
   assignedSystems,
   onAssignedSystemChange,
-}: Pick<ModalProps, "isOpen" | "onClose"> & {assignedSystems: System[], onAssignedSystemChange: (systems: System[]) => void}) => {
+}: Pick<ModalProps, "isOpen" | "onClose"> & {
+  assignedSystems: System[];
+  onAssignedSystemChange: (systems: System[]) => void;
+}) => {
   const { data: allSystems } = useGetAllSystemsQuery();
   const [searchFilter, setSearchFilter] = useState("");
-  const [selectedSystems, setSelectedSystems] = useState<System[]>(
-    assignedSystems
-  );
+  const [selectedSystems, setSelectedSystems] =
+    useState<System[]>(assignedSystems);
 
   const handleConfirm = async () => {
-    onAssignedSystemChange(selectedSystems)
+    onAssignedSystemChange(selectedSystems);
     onClose();
   };
 

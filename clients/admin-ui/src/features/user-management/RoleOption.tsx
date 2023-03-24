@@ -11,7 +11,7 @@ import {
 } from "@fidesui/react";
 import { useFormikContext } from "formik";
 
-import {RoleRegistryEnum, System} from "~/types/api";
+import { RoleRegistryEnum, System } from "~/types/api";
 
 import QuestionTooltip from "../common/QuestionTooltip";
 import AssignSystemsModal from "./AssignSystemsModal";
@@ -27,7 +27,14 @@ interface Props {
   onAssignedSystemChange: (systems: System[]) => void;
 }
 
-const RoleOption = ({ label, roleKey, isSelected, isDisabled , assignedSystems, onAssignedSystemChange}: Props) => {
+const RoleOption = ({
+  label,
+  roleKey,
+  isSelected,
+  isDisabled,
+  assignedSystems,
+  onAssignedSystemChange,
+}: Props) => {
   const { setFieldValue } = useFormikContext<FormValues>();
   const assignSystemsModal = useDisclosure();
 
@@ -77,7 +84,10 @@ const RoleOption = ({ label, roleKey, isSelected, isDisabled , assignedSystems, 
             >
               Assign systems +
             </Button>
-            <AssignSystemsDeleteTable assignedSystems={assignedSystems} onAssignedSystemChange={onAssignedSystemChange}/>
+            <AssignSystemsDeleteTable
+              assignedSystems={assignedSystems}
+              onAssignedSystemChange={onAssignedSystemChange}
+            />
             {/* By conditionally rendering the modal, we force it to reset its state
                 whenever it opens */}
             {assignSystemsModal.isOpen ? (

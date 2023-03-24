@@ -10,6 +10,7 @@ import {
 import { useHasRole } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
+import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { USER_MANAGEMENT_ROUTE } from "~/constants";
@@ -17,13 +18,15 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
-import {RoleRegistryEnum, System} from "~/types/api";
+import { RoleRegistryEnum, System } from "~/types/api";
 
-import {useEffect, useState} from "react";
 import RoleOption from "./RoleOption";
 import {
-  selectActiveUserId, selectActiveUsersManagedSystems, useGetUserManagedSystemsQuery,
-  useGetUserPermissionsQuery, useUpdateUserManagedSystemsMutation,
+  selectActiveUserId,
+  selectActiveUsersManagedSystems,
+  useGetUserManagedSystemsQuery,
+  useGetUserPermissionsQuery,
+  useUpdateUserManagedSystemsMutation,
   useUpdateUserPermissionsMutation,
 } from "./user-management.slice";
 
@@ -41,7 +44,7 @@ const PermissionsForm = () => {
   });
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
-      initialManagedSystems
+    initialManagedSystems
   );
   const [updateUserManagedSystemsTrigger] =
     useUpdateUserManagedSystemsMutation();
@@ -151,7 +154,7 @@ const PermissionsForm = () => {
                 colorScheme="primary"
                 type="submit"
                 isLoading={isSubmitting}
-                disabled={!dirty && (assignedSystems === initialManagedSystems)}
+                disabled={!dirty && assignedSystems === initialManagedSystems}
                 data-testid="save-btn"
               >
                 Save

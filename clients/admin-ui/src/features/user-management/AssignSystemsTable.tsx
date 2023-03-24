@@ -20,7 +20,13 @@ import {
   useGetUserManagedSystemsQuery,
 } from "./user-management.slice";
 
-export const AssignSystemsDeleteTable = ({assignedSystems, onAssignedSystemChange} : {assignedSystems: System[], onAssignedSystemChange: (systems: System[]) => void}) => {
+export const AssignSystemsDeleteTable = ({
+  assignedSystems,
+  onAssignedSystemChange,
+}: {
+  assignedSystems: System[];
+  onAssignedSystemChange: (systems: System[]) => void;
+}) => {
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
@@ -32,11 +38,11 @@ export const AssignSystemsDeleteTable = ({assignedSystems, onAssignedSystemChang
 
   const onDelete = (system: System) => {
     onAssignedSystemChange(
-        assignedSystems.filter(
-            (assignedSystem) => assignedSystem.fides_key !== system.fides_key
-        )
+      assignedSystems.filter(
+        (assignedSystem) => assignedSystem.fides_key !== system.fides_key
+      )
     );
-  }
+  };
 
   return (
     <Table size="sm" data-testid="assign-systems-delete-table">
