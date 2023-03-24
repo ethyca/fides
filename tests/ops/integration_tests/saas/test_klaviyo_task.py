@@ -1,6 +1,4 @@
 import random
-import time
-
 import pytest
 import requests
 
@@ -82,7 +80,7 @@ async def test_klaviyo_erasure_request_task(
     klaviyo_erasure_identity_email,
     klaviyo_create_erasure_data,
 ) -> None:
-    """Full erasure request based on the klaviyo SaaS config"""
+    """Full erasure request based on the Klaviyo SaaS config"""
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete

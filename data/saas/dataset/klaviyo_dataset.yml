@@ -1,6 +1,6 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: klaviyo
+    name: Klaviyo
     description: A sample dataset representing the Klaviyo connector for Fides
     collections:
       - name: profiles

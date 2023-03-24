@@ -113,8 +113,6 @@ def klaviyo_create_erasure_data(
     klaviyo_connection_config: ConnectionConfig, klaviyo_erasure_identity_email: str
 ) -> None:
 
-    # sleep(60)
-
     klaviyo_secrets = klaviyo_connection_config.secrets
     base_url = f"https://{klaviyo_secrets['domain']}"
     headers = {
