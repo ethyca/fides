@@ -31,6 +31,8 @@ The types of changes are:
 * Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
 * Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
 * Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
+* Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
+
 
 ### Fixed
 
