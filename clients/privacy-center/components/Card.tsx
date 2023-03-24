@@ -11,9 +11,13 @@ type CardProps = {
   onClick: () => void;
 };
 
+/**
+ * IconProviders maps to the react-icons libraries supported by Fides.
+ * The values of the enum elements are the prefix to indicate that the iconPath should use an icon library instead of a relative path or URL.
+ */
 enum IconProviders {
-  MD = "md",
-  FA = "fa",
+  MATERIALDESIGN = "md",
+  FONTAWESOME = "fa",
 }
 
 function iconResolver(iconPath: string, description: string): JSX.Element {
@@ -23,10 +27,10 @@ function iconResolver(iconPath: string, description: string): JSX.Element {
   if (hasPrefix) {
     let iconType: IconType;
     switch (prefixCandidate) {
-      case IconProviders.MD:
+      case IconProviders.MATERIALDESIGN:
         iconType = mdIcons[iconPath.split(":")[1] as keyof typeof mdIcons];
         break;
-      case IconProviders.FA:
+      case IconProviders.FONTAWESOME:
         iconType = faIcons[iconPath.split(":")[1] as keyof typeof faIcons];
         break;
       default:
