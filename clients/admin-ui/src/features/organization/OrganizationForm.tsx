@@ -14,10 +14,14 @@ import {
 } from "~/features/organization";
 import { Organization } from "~/types/api";
 
-// NOTE: A valid Organization is _required_ to use this form - it doesn't
-// support creating/deleting Organizations. Since Fides will automatically
-// create the "default_organization" on startup, this Organization should be
-// fetched prior to rendering
+// NOTE: This form only supports *editing* Organizations right now, and
+// does not support creation/deletion. Since Fides will automatically create the
+// "default_organization" on startup, this works!
+//
+// However, note that if the provided `organization` prop is null, the form
+// will still render but all fields will be disabled and it will display as
+// "loading". This allows the form to render immediately while the parent
+// fetches the Organization via the API
 interface OrganizationFormProps {
   organization?: Organization;
   onSuccess?: (organization: Organization) => void;
