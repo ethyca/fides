@@ -105,7 +105,7 @@ export const OrganizationForm = ({
       onSubmit={handleSubmit}
       validationSchema={OrganizationFormValidationSchema}
     >
-      {({ dirty,  isValid }) => (
+      {({ dirty, isValid }) => (
         <Form data-testid="organization-form">
           <Stack spacing={4}>
             <CustomTextInput
