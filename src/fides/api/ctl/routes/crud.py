@@ -41,7 +41,7 @@ from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.v1.scope_registry import CREATE, DELETE, READ, UPDATE
 from fides.api.ops.schemas.dataset import validate_data_categories_against_db
-from fides.api.ops.util.oauth_util import verify_oauth_client_cli
+from fides.api.ops.util.oauth_util import verify_oauth_client_prod
 
 
 async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:
@@ -84,7 +84,7 @@ for model_type, fides_model in model_map.items():
         status_code=status.HTTP_201_CREATED,
         dependencies=[
             Security(
-                verify_oauth_client_cli,
+                verify_oauth_client_prod,
                 scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}"],
             )
         ],
@@ -125,7 +125,7 @@ for model_type, fides_model in model_map.items():
         "/",
         dependencies=[
             Security(
-                verify_oauth_client_cli,
+                verify_oauth_client_prod,
                 scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
             )
         ],
@@ -144,7 +144,7 @@ for model_type, fides_model in model_map.items():
         "/{fides_key}",
         dependencies=[
             Security(
-                verify_oauth_client_cli,
+                verify_oauth_client_prod,
                 scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{READ}"],
             )
         ],
@@ -168,7 +168,7 @@ for model_type, fides_model in model_map.items():
             response_model=fides_model,
             dependencies=[
                 Security(
-                    verify_oauth_client_cli,
+                    verify_oauth_client_prod,
                     scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{UPDATE}"],
                 )
             ],
@@ -210,7 +210,7 @@ for model_type, fides_model in model_map.items():
         "/upsert",
         dependencies=[
             Security(
-                verify_oauth_client_cli,
+                verify_oauth_client_prod,
                 scopes=[
                     f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}",
                     f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{UPDATE}",
@@ -297,7 +297,7 @@ for model_type, fides_model in model_map.items():
             "/{fides_key}",
             dependencies=[
                 Security(
-                    verify_oauth_client_cli,
+                    verify_oauth_client_prod,
                     scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{DELETE}"],
                 )
             ],

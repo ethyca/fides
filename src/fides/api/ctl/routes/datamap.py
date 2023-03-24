@@ -20,7 +20,7 @@ from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ctl.utils.errors import DatabaseUnavailableError, NotFoundError
 from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.util.oauth_util import verify_oauth_client_cli
+from fides.api.ops.util.oauth_util import verify_oauth_client_prod
 from fides.core.export import build_joined_dataframe
 from fides.core.export_helpers import DATAMAP_COLUMNS
 
@@ -45,7 +45,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 @router.get(
     "/{organization_fides_key}",
     dependencies=[
-        Security(verify_oauth_client_cli, scopes=[scope_registry.DATAMAP_READ])
+        Security(verify_oauth_client_prod, scopes=[scope_registry.DATAMAP_READ])
     ],
     status_code=status.HTTP_200_OK,
     responses={
