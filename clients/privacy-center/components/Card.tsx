@@ -21,6 +21,7 @@ enum IconProviders {
 }
 
 function iconResolver(iconPath: string, description: string): JSX.Element {
+  const iconBoxSize = "32px";
   const prefixCandidate = iconPath.toLowerCase().split(":")[0];
   const hasPrefix =
     Object.values<string>(IconProviders).includes(prefixCandidate);
@@ -37,9 +38,11 @@ function iconResolver(iconPath: string, description: string): JSX.Element {
         iconType = faIcons.FaRegQuestionCircle;
         break;
     }
-    return <Icon boxSize="32px" as={iconType} color="complimentary.500" />;
+    return (
+      <Icon boxSize={iconBoxSize} as={iconType} color="complimentary.500" />
+    );
   }
-  return <Image alt={description} boxSize="32px" src={iconPath} />;
+  return <Image alt={description} boxSize={iconBoxSize} src={iconPath} />;
 }
 
 const Card: React.FC<CardProps> = ({
