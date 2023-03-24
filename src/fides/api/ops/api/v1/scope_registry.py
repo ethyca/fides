@@ -270,6 +270,8 @@ SCOPE_DOCS = {
     EVALUATION_UPDATE: "Update evaluations",
     FIDES_TAXONOMY_UPDATE: "Update default fides taxonomy description",
     GENERATE_EXEC: "",
+    MASKING_EXEC: "Execute a masking strategy",
+    MASKING_READ: "Read masking strategies",
     MESSAGING_CREATE_OR_UPDATE: "",
     MESSAGING_DELETE: "",
     MESSAGING_READ: "",
