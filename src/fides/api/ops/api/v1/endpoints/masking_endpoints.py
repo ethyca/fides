@@ -19,7 +19,7 @@ from fides.api.ops.util.api_router import APIRouter
 
 router = APIRouter(tags=["Masking"], prefix=V1_URL_PREFIX)
 
-
+# TODO: add auth to these endpoints
 @router.put(MASKING, response_model=MaskingAPIResponse)
 def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
     """Masks the value(s) provided using the provided masking strategy"""
