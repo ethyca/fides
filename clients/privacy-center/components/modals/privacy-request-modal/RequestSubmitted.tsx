@@ -11,12 +11,10 @@ import {
 
 type RequestSubmittedProps = {
   onClose: () => void;
-  action: any;
 };
 
 const RequestSubmitted: React.FC<RequestSubmittedProps> = ({
   onClose,
-  action,
 }) => (
   <>
     <HStack justifyContent="center" data-testid="request-submitted">
@@ -39,7 +37,7 @@ const RequestSubmitted: React.FC<RequestSubmittedProps> = ({
 
     <ModalBody>
       <Text fontSize="sm" color="gray.500" mb={4}>
-        Thanks for your {action.policy_key} Request. A member of our team will
+        Thanks for your request. A member of our team will
         review and be in contact with you shortly.
       </Text>
     </ModalBody>
