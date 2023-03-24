@@ -102,7 +102,6 @@ def get_systems_managed_by_user(
 
 def update_user_permissions(
     user_id: str,
-    scopes: List[str],
     auth_header: Dict[str, str],
     server_url: str,
     roles: List[str],
@@ -110,7 +109,7 @@ def update_user_permissions(
     """
     Update user permissions for a given user.
     """
-    request_data = {"scopes": scopes, "id": user_id, "roles": roles}
+    request_data = {"id": user_id, "roles": roles}
     set_permissions_path = USER_PERMISSIONS_PATH.format(user_id)
     response = requests.put(
         server_url + set_permissions_path,
@@ -142,7 +141,6 @@ def create_command(
     new_user_roles = CONFIG.security.root_user_roles
     update_user_permissions(
         user_id=user_id,
-        scopes=CONFIG.security.root_user_scopes,
         auth_header=auth_header,
         server_url=server_url,
         roles=new_user_roles,
