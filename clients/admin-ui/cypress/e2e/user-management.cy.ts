@@ -258,14 +258,11 @@ describe("User management", () => {
           cy.getByTestId("row-fidesctl_system").within(() => {
             cy.getByTestId("unassign-btn").click();
           });
-          cy.getByTestId("remove-fidesctl_system-confirmation-modal").within(
-            () => {
-              cy.getByTestId("continue-btn").click({ force: true });
-            }
-          );
-          cy.wait("@removeUserManagedSystem").then((interception) => {
-            const { url } = interception.request;
-            expect(url).contains("fidesctl_system");
+          cy.getByTestId("save-btn").click();
+
+          cy.wait("@updateUserManagedSystems").then((interception) => {
+            const { body } = interception.request;
+            expect(body).to.eql([]);
           });
         });
       });
@@ -292,6 +289,7 @@ describe("User management", () => {
             });
           });
           cy.getByTestId("confirm-btn").click();
+          cy.getByTestId("save-btn").click();
 
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
@@ -331,6 +329,7 @@ describe("User management", () => {
           });
 
           cy.getByTestId("confirm-btn").click();
+          cy.getByTestId("save-btn").click();
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql([]);
