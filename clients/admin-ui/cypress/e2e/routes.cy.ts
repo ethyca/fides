@@ -1,5 +1,6 @@
 import { stubPlus } from "cypress/support/stubs";
 
+import { ADD_SYSTEMS_ROUTE } from "~/constants";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Routes", () => {
@@ -22,7 +23,7 @@ describe("Routes", () => {
     it("admins can access many routes", () => {
       cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.visit("/");
-      cy.visit("/add-systems");
+      cy.visit(ADD_SYSTEMS_ROUTE);
       cy.wait("@getSystems");
       cy.getByTestId("add-systems");
       cy.visit("/privacy-requests");
@@ -50,7 +51,7 @@ describe("Routes", () => {
       ].forEach((role) => {
         cy.assumeRole(role);
         // cannot access /add-systems
-        cy.visit("/add-systems");
+        cy.visit(ADD_SYSTEMS_ROUTE);
         cy.getByTestId("add-systems").should("not.exist");
         cy.getByTestId("home-content");
         // cannot access /datastore-connection

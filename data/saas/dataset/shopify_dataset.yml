@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Shopify Dataset
-    description: A sample dataset representing the Shopify connector for Fidesops
+    description: A sample dataset representing the Shopify connector for Fides
     collections:
       - name: customers
         fields:

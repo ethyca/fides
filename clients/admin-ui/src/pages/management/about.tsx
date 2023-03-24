@@ -29,12 +29,23 @@ const About: NextPage = () => {
 
         <Box>
           <Text as="span" fontWeight="bold">
-            Version:{" "}
+            Fides Core Version:{" "}
           </Text>
           <Text as="pre" display="inline">
             {features.version}
           </Text>
         </Box>
+
+        {features.plusVersion ? (
+          <Box>
+            <Text as="span" fontWeight="bold">
+              Fides Plus Version:{" "}
+            </Text>
+            <Text as="pre" display="inline">
+              {features.plusVersion}
+            </Text>
+          </Box>
+        ) : null}
 
         <Divider />
 

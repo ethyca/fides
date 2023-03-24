@@ -19,13 +19,22 @@ The types of changes are:
 
 ### Changed
 * Improved standard layout for large width screens and polished misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
+* Changed UI paths in the admin-ui [#2869](https://github.com/ethyca/fides/pull/2892)
+  * `/add-systems/new` --> `/add-systems/manual`
+  * `/system` --> `/systems`
+* Added individual ID routes for systems [#2902](https://github.com/ethyca/fides/pull/2902)
 * Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
+* Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
+* Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
 * Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
 
 
 ### Fixed
 * Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
 
+### Fixed
+* Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
+* Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
 
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
