@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.9.0.post0.dev22"
+    "version": "2.9.0.post0.dev23"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18592,28 +18592,32 @@
       },
       "UserPermissionsCreate": {
         "title": "UserPermissionsCreate",
+        "required": [
+          "roles"
+        ],
         "type": "object",
         "properties": {
           "roles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleRegistryEnum"
-            },
-            "default": []
+            }
           }
         },
         "description": "Data required to create a FidesUserPermissions record\n\nUsers will be assigned role(s) directly which are associated with a list of scopes. Scopes\ncannot be assigned directly to users."
       },
       "UserPermissionsEdit": {
         "title": "UserPermissionsEdit",
+        "required": [
+          "roles"
+        ],
         "type": "object",
         "properties": {
           "roles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleRegistryEnum"
-            },
-            "default": []
+            }
           },
           "id": {
             "title": "Id",
@@ -18625,6 +18629,7 @@
       "UserPermissionsResponse": {
         "title": "UserPermissionsResponse",
         "required": [
+          "roles",
           "id",
           "user_id",
           "total_scopes"
@@ -18635,8 +18640,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleRegistryEnum"
-            },
-            "default": []
+            }
           },
           "id": {
             "title": "Id",
