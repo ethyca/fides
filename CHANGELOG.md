@@ -31,10 +31,15 @@ The types of changes are:
 * Deprecated adding scopes to users directly; you can only add roles. [#2848](https://github.com/ethyca/fides/pull/2848/files)
 * Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
 * Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
+* Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
+
 
 ### Fixed
 
 * Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
+* Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
+
+### Fixed
 * Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
 * Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
 

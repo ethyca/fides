@@ -14,7 +14,7 @@ class UserPermissionsCreate(BaseSchema):
     cannot be assigned directly to users.
     """
 
-    roles: List[RoleRegistryEnum] = []
+    roles: List[RoleRegistryEnum]
 
     class Config:
         """So roles are strings when we add to the db"""
