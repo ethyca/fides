@@ -32,6 +32,7 @@ The types of changes are:
 * Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
 * Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
 * Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
+* Tie together save states for user permissions and systems [2913](https://github.com/ethyca/fides/pull/2913)
 
 
 ### Fixed
