@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.9.2"
+    "version": "2.9.0.post0.dev28"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4870,7 +4870,7 @@
           "Users"
         ],
         "summary": "Create User",
-        "description": "Create a user given a username and password.\nIf `password` is sent as a base64 encoded string, it will automatically be decoded\nserver-side before being encrypted and persisted.\nIf `password` is sent as a plaintext string, it will be encrypted and persisted as is.",
+        "description": "Create a user given a username and password.\nIf `password` is sent as a base64 encoded string, it will automatically be decoded\nserver-side before being encrypted and persisted.\nIf `password` is sent as a plaintext string, it will be encrypted and persisted as is.\n\nThe user is given no roles by default.",
         "operationId": "create_user_api_v1_user_post",
         "parameters": [
           {
@@ -11942,7 +11942,7 @@
           "User Permissions"
         ],
         "summary": "Update User Permissions",
-        "description": "Update either a user's role(s) and/or scope(s).\n\nTypically we'll assign roles to a user and they'll inherit the associated scopes,\nbut we're still supporting assigning scopes directly as well.",
+        "description": "Update a user's role(s).  The UI assigns one role at a time, but multiple\nroles are technically supported.\n\nUsers inherit numerous scopes that are associated with their role(s).",
         "operationId": "update_user_permissions_api_v1_user__user_id__permission_put",
         "parameters": [
           {
@@ -11992,6 +11992,9 @@
             "OAuth2ClientCredentialsBearer": [
               "user-permission:update"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       },
@@ -12000,7 +12003,7 @@
           "User Permissions"
         ],
         "summary": "Create User Permissions",
-        "description": "Create user permissions with big picture roles and/or scopes.",
+        "description": "Create user permissions with associated roles.",
         "operationId": "create_user_permissions_api_v1_user__user_id__permission_post",
         "parameters": [
           {
@@ -12050,6 +12053,9 @@
             "OAuth2ClientCredentialsBearer": [
               "user-permission:create"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       }
@@ -17853,6 +17859,7 @@
           "user:password-reset",
           "user-permission:create",
           "user-permission:update",
+          "user-permission:assign_owners",
           "user-permission:read",
           "validate:exec",
           "webhook:create_or_update",
@@ -18585,42 +18592,32 @@
       },
       "UserPermissionsCreate": {
         "title": "UserPermissionsCreate",
+        "required": [
+          "roles"
+        ],
         "type": "object",
         "properties": {
-          "scopes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ScopeRegistryEnum"
-            },
-            "default": []
-          },
           "roles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleRegistryEnum"
-            },
-            "default": []
+            }
           }
         },
-        "description": "Data required to create a FidesUserPermissions record\n\nUsers will generally be assigned role(s) directly which are associated with many scopes,\nbut we also will continue to support the ability to be assigned specific individual scopes."
+        "description": "Data required to create a FidesUserPermissions record\n\nUsers will be assigned role(s) directly which are associated with a list of scopes. Scopes\ncannot be assigned directly to users."
       },
       "UserPermissionsEdit": {
         "title": "UserPermissionsEdit",
+        "required": [
+          "roles"
+        ],
         "type": "object",
         "properties": {
-          "scopes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ScopeRegistryEnum"
-            },
-            "default": []
-          },
           "roles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleRegistryEnum"
-            },
-            "default": []
+            }
           },
           "id": {
             "title": "Id",
@@ -18632,25 +18629,18 @@
       "UserPermissionsResponse": {
         "title": "UserPermissionsResponse",
         "required": [
-          "scopes",
+          "roles",
           "id",
           "user_id",
           "total_scopes"
         ],
         "type": "object",
         "properties": {
-          "scopes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ScopeRegistryEnum"
-            }
-          },
           "roles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleRegistryEnum"
-            },
-            "default": []
+            }
           },
           "id": {
             "title": "Id",

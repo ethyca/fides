@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "772783a7df7fa92e8111d0c08e207381" # string
+analytics_id = "9acc2a145128bcb69059222f1643ae35" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -305,6 +305,12 @@ analytics_opt_out = true # boolean
 # An arbitrary string used to encrypt the user data stored in the
 # database. Encryption is implemented using PGP.
 encryption_key = "test_encryption_key" # string
+
+# The username used to log into the Fides webserver.
+username = "" # string
+
+# The password used to log into the Fides webserver.
+password = "" # string
 
 #------------#
 #-- CELERY --#
