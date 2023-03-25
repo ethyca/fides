@@ -18,8 +18,8 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.9.1...main)
 
 ### Added
-
 * Allow users to configure their username and password via the config file [#2884](https://github.com/ethyca/fides/pull/2884)
+* Add an Organization Management page (beta) [#2908](https://github.com/ethyca/fides/pull/2908) 
 
 ### Changed
 
