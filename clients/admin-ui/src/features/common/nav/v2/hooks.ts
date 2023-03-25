@@ -1,10 +1,13 @@
+import {
+  configureNavGroups,
+  findActiveNav,
+  NAV_CONFIG,
+} from "@fidesui/components";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { selectThisUsersScopes } from "~/features/user-management";
-
-import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
 
 export const useNav = ({ path }: { path: string }) => {
   const features = useFeatures();

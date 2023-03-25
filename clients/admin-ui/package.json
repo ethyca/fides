@@ -28,8 +28,8 @@
   "dependencies": {
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
-    "@fidesui/components": "^0.3.0",
-    "@fidesui/react": "^0.0.21",
+    "@fidesui/components": "^0.5.0",
+    "@fidesui/react": "^0.0.22",
     "@fontsource/inter": "^4.5.4",
     "@monaco-editor/react": "^4.4.5",
     "@reduxjs/toolkit": "^1.8.0",
