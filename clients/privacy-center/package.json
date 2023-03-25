@@ -31,7 +31,7 @@
     "@emotion/styled": "^11.10.5",
     "@fidesui/react": "^0.0.21",
     "@fontsource/inter": "^4.5.4",
-    "@reduxjs/toolkit": "^1.9.1",
+    "@reduxjs/toolkit": "^1.9.3",
     "fides-consent": "./packages/fides-consent",
     "formik": "^2.2.9",
     "framer-motion": "^5",
