@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.9.0.post0.dev28"
+    "version": "2.9.0.post0.dev30"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -6941,7 +6941,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "masking:exec"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/masking/strategy": {
@@ -6967,7 +6974,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "masking:read"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/oauth/token": {
@@ -17807,6 +17821,8 @@
           "evaluation:update",
           "fides_taxonomy:update",
           "generate:exec",
+          "masking:exec",
+          "masking:read",
           "messaging:create_or_update",
           "messaging:delete",
           "messaging:read",
