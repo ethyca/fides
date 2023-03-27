@@ -629,22 +629,28 @@ def erasure_policy_complete_mask(
 
 
 @pytest.fixture
-def custom_config() -> str:
-    return load_yaml_as_string("tests/fixtures/saas/test_data/custom/custom_config.yml")
-
-
-@pytest.fixture
-def custom_dataset() -> str:
+def planet_express_config() -> str:
     return load_yaml_as_string(
-        "tests/fixtures/saas/test_data/custom/custom_dataset.yml"
+        "tests/fixtures/saas/test_data/planet_express/planet_express_config.yml"
     )
 
 
 @pytest.fixture
-def custom_icon() -> str:
-    return encode_file_contents("tests/fixtures/saas/test_data/custom/custom.svg")
+def planet_express_dataset() -> str:
+    return load_yaml_as_string(
+        "tests/fixtures/saas/test_data/planet_express/planet_express_dataset.yml"
+    )
 
 
 @pytest.fixture
-def custom_functions() -> str:
-    return load_as_string("tests/fixtures/saas/test_data/custom/custom_functions.py")
+def planet_express_icon() -> str:
+    return encode_file_contents(
+        "tests/fixtures/saas/test_data/planet_express/planet_express.svg"
+    )
+
+
+@pytest.fixture
+def planet_express_functions() -> str:
+    return load_as_string(
+        "tests/fixtures/saas/test_data/planet_express/planet_express_functions.py"
+    )

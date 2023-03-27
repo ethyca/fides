@@ -21,8 +21,8 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.saas_util import assign_placeholders
 
 
-@register("custom_user_access", [SaaSRequestType.READ])
-def custom_user_access(
+@register("planet_express_user_access", [SaaSRequestType.READ])
+def planet_express_user_access(
     client: AuthenticatedClient,
     node: TraversalNode,
     policy: Policy,
@@ -33,7 +33,7 @@ def custom_user_access(
     return [{"id": 1}]
 
 
-class CustomAuthenticationConfiguration(StrategyConfiguration):
+class PlanetExpressAuthenticationConfiguration(StrategyConfiguration):
     """
     Parameters for custom authentication
     """
@@ -42,15 +42,15 @@ class CustomAuthenticationConfiguration(StrategyConfiguration):
     secret_handshake: str
 
 
-class CustomAuthenticationStrategy(AuthenticationStrategy):
+class PlanetExpressAuthenticationStrategy(AuthenticationStrategy):
     """
     Adds the secrets to the request
     """
 
-    name = "custom"
-    configuration_model = CustomAuthenticationConfiguration
+    name = "planet_express"
+    configuration_model = PlanetExpressAuthenticationConfiguration
 
-    def __init__(self, configuration: CustomAuthenticationConfiguration):
+    def __init__(self, configuration: PlanetExpressAuthenticationConfiguration):
         self.secret_knock = configuration.secret_knock
         self.secret_handshake = configuration.secret_handshake
 

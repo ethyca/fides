@@ -56,16 +56,16 @@ class TestCustomConnectorTemplateLoader:
         assert connector_templates == {}
 
     def test_file_connector_template_loader_invalid_template(
-        self, db, custom_dataset, custom_icon, custom_functions
+        self, db, planet_express_dataset, planet_express_icon, planet_express_functions
     ):
         # save custom connector template to the database
         custom_template = CustomConnectorTemplate(
-            key="custom",
-            name="Custom",
-            config="custom_config",
-            dataset=custom_dataset,
-            icon=custom_icon,
-            functions=custom_functions,
+            key="planet_express",
+            name="Planet Express",
+            config="planet_express_config",
+            dataset=planet_express_dataset,
+            icon=planet_express_icon,
+            functions=planet_express_functions,
         )
         custom_template.save(db=db)
 
@@ -76,24 +76,26 @@ class TestCustomConnectorTemplateLoader:
 
         with pytest.raises(NoSuchSaaSRequestOverrideException):
             SaaSRequestOverrideFactory.get_override(
-                "custom_user_access", SaaSRequestType.READ
+                "planet_express_user_access", SaaSRequestType.READ
             )
 
         # assert the strategy was not registered
         authentication_strategies = AuthenticationStrategy.get_strategies()
-        assert "custom" not in [strategy.name for strategy in authentication_strategies]
+        assert "planet_express" not in [
+            strategy.name for strategy in authentication_strategies
+        ]
 
     def test_file_connector_template_loader_invalid_functions(
-        self, db, custom_config, custom_dataset, custom_icon
+        self, db, planet_express_config, planet_express_dataset, planet_express_icon
     ):
         # save custom connector template to the database
         custom_template = CustomConnectorTemplate(
-            key="custom",
-            name="Custom",
-            config=custom_config,
-            dataset=custom_dataset,
-            icon=custom_icon,
-            functions="custom_functions",
+            key="planet_express",
+            name="Planet Express",
+            config=planet_express_config,
+            dataset=planet_express_dataset,
+            icon=planet_express_icon,
+            functions="planet_express_functions",
         )
         custom_template.save(db=db)
 
@@ -103,18 +105,23 @@ class TestCustomConnectorTemplateLoader:
         assert connector_templates == {}
 
     def test_file_connector_template_loader_custom_connector_functions_disabled(
-        self, db, custom_config, custom_dataset, custom_icon, custom_functions
+        self,
+        db,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+        planet_express_functions,
     ):
         CONFIG.security.allow_custom_connector_functions = False
 
         # save custom connector template to the database
         custom_template = CustomConnectorTemplate(
-            key="custom",
-            name="Custom",
-            config=custom_config,
-            dataset=custom_dataset,
-            icon=custom_icon,
-            functions=custom_functions,
+            key="planet_express",
+            name="Planet Express",
+            config=planet_express_config,
+            dataset=planet_express_dataset,
+            icon=planet_express_icon,
+            functions=planet_express_functions,
         )
         custom_template.save(db=db)
 
@@ -125,17 +132,19 @@ class TestCustomConnectorTemplateLoader:
 
         with pytest.raises(NoSuchSaaSRequestOverrideException):
             SaaSRequestOverrideFactory.get_override(
-                "custom_user_access", SaaSRequestType.READ
+                "planet_express_user_access", SaaSRequestType.READ
             )
 
         # assert the strategy was not registered
         authentication_strategies = AuthenticationStrategy.get_strategies()
-        assert "custom" not in [strategy.name for strategy in authentication_strategies]
+        assert "planet_express" not in [
+            strategy.name for strategy in authentication_strategies
+        ]
 
         CONFIG.security.allow_custom_connector_functions = True
 
-    def test_file_connector_template_loader_custom_connector_functions_disabled_no_custom_functions(
-        self, db, custom_config, custom_dataset, custom_icon
+    def test_file_connector_template_loader_custom_connector_functions_disabled_no_planet_express_functions(
+        self, db, planet_express_config, planet_express_dataset, planet_express_icon
     ):
         """
         A connector template with no custom functions should still be loaded
@@ -146,11 +155,11 @@ class TestCustomConnectorTemplateLoader:
 
         # save custom connector template to the database
         custom_template = CustomConnectorTemplate(
-            key="custom",
-            name="Custom",
-            config=custom_config,
-            dataset=custom_dataset,
-            icon=custom_icon,
+            key="planet_express",
+            name="Planet Express",
+            config=planet_express_config,
+            dataset=planet_express_dataset,
+            icon=planet_express_icon,
             functions=None,
         )
         custom_template.save(db=db)
@@ -159,27 +168,32 @@ class TestCustomConnectorTemplateLoader:
         loader = CustomConnectorTemplateLoader()
         connector_templates = loader.get_connector_templates()
         assert connector_templates == {
-            "custom": ConnectorTemplate(
-                config=custom_config,
-                dataset=custom_dataset,
-                icon=custom_icon,
-                human_readable="Custom",
+            "planet_express": ConnectorTemplate(
+                config=planet_express_config,
+                dataset=planet_express_dataset,
+                icon=planet_express_icon,
+                human_readable="Planet Express",
             )
         }
 
         CONFIG.security.allow_custom_connector_functions = True
 
     def test_file_connector_template_loader(
-        self, db, custom_config, custom_dataset, custom_icon, custom_functions
+        self,
+        db,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+        planet_express_functions,
     ):
         # save custom connector template to the database
         custom_template = CustomConnectorTemplate(
-            key="custom",
-            name="Custom",
-            config=custom_config,
-            dataset=custom_dataset,
-            icon=custom_icon,
-            functions=custom_functions,
+            key="planet_express",
+            name="Planet Express",
+            config=planet_express_config,
+            dataset=planet_express_dataset,
+            icon=planet_express_icon,
+            functions=planet_express_functions,
         )
         custom_template.save(db=db)
 
@@ -189,22 +203,24 @@ class TestCustomConnectorTemplateLoader:
 
         # verify that the template in the registry is the same as the one in the database
         assert connector_templates == {
-            "custom": ConnectorTemplate(
-                config=custom_config,
-                dataset=custom_dataset,
-                icon=custom_icon,
-                human_readable="Custom",
+            "planet_express": ConnectorTemplate(
+                config=planet_express_config,
+                dataset=planet_express_dataset,
+                icon=planet_express_icon,
+                human_readable="Planet Express",
             )
         }
 
         # assert the request override was registered
         SaaSRequestOverrideFactory.get_override(
-            "custom_user_access", SaaSRequestType.READ
+            "planet_express_user_access", SaaSRequestType.READ
         )
 
         # assert the strategy was registered
         authentication_strategies = AuthenticationStrategy.get_strategies()
-        assert "custom" in [strategy.name for strategy in authentication_strategies]
+        assert "planet_express" in [
+            strategy.name for strategy in authentication_strategies
+        ]
 
 
 class TestRegisterCustomFunctions:

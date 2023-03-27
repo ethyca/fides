@@ -1,27 +1,26 @@
 from typing import Optional
 
-import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.custom_connector_template import CustomConnectorTemplate
-from fides.api.ops.util.saas_util import (
-    encode_file_contents,
-    load_as_string,
-    load_yaml_as_string,
-)
 
 
 class TestCustomConnectorTemplate:
     def test_create_custom_connector_template(
-        self, db: Session, custom_config, custom_dataset, custom_icon, custom_functions
+        self,
+        db: Session,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+        planet_express_functions,
     ) -> None:
         template = CustomConnectorTemplate(
-            key="custom",
-            name="Custom",
-            config=custom_config,
-            dataset=custom_dataset,
-            icon=custom_icon,
-            functions=custom_functions,
+            key="planet_express",
+            name="Planet Express",
+            config=planet_express_config,
+            dataset=planet_express_dataset,
+            icon=planet_express_icon,
+            functions=planet_express_functions,
         )
         template.save(db=db)
 
@@ -29,10 +28,12 @@ class TestCustomConnectorTemplate:
         # that the values are the same as what we persisted
         custom_connector: Optional[
             CustomConnectorTemplate
-        ] = CustomConnectorTemplate.get_by_key_or_id(db=db, data={"key": "custom"})
+        ] = CustomConnectorTemplate.get_by_key_or_id(
+            db=db, data={"key": "planet_express"}
+        )
         assert custom_connector
-        assert custom_connector.name == "Custom"
-        assert custom_connector.config == custom_config
-        assert custom_connector.dataset == custom_dataset
-        assert custom_connector.icon == custom_icon
-        assert custom_connector.functions == custom_functions
+        assert custom_connector.name == "Planet Express"
+        assert custom_connector.config == planet_express_config
+        assert custom_connector.dataset == planet_express_dataset
+        assert custom_connector.icon == planet_express_icon
+        assert custom_connector.functions == planet_express_functions

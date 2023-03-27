@@ -1,8 +1,8 @@
 saas_config:
-  fides_key: custom
-  name: Custom
-  type: custom
-  description: A sample schema representing a custom connector for Fides
+  fides_key: planet_express
+  name: Planet Express
+  type: planet_express
+  description: A sample schema representing the Planet Express connector for Fides
   version: 0.0.1
 
   connector_params:
@@ -25,7 +25,7 @@ saas_config:
     - name: user
       requests:
         read:
-          request_override: custom_user_access
+          request_override: planet_express_user_access
           param_values:
             - name: email
               identity: email
