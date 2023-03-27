@@ -253,7 +253,6 @@ class TestPatchApplicationConfig:
         payload,
         db: Session,
     ):
-
         payload = {"notifications": {"send_request_completion_notification": False}}
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.patch(
@@ -279,7 +278,6 @@ class TestPatchApplicationConfig:
         payload,
         db: Session,
     ):
-
         payload = {
             "notifications": {"notification_service_type": "invalid_service_type"}
         }

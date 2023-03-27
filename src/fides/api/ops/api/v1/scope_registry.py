@@ -35,6 +35,7 @@ EXEC = "exec"
 FIDES_TAXONOMY = "fides_taxonomy"
 GENERATE = "generate"
 INSTANTIATE = "instantiate"
+MASKING = "masking"
 MESSAGING = "messaging"
 ORGANIZATION = "organization"
 PASSWORD_RESET = "password-reset"
@@ -134,6 +135,9 @@ EVALUATION_DELETE = f"{EVALUATION}:{DELETE}"
 FIDES_TAXONOMY_UPDATE = f"{FIDES_TAXONOMY}:{UPDATE}"
 
 GENERATE_EXEC = f"{GENERATE}:{EXEC}"
+
+MASKING_EXEC = f"{MASKING}:{EXEC}"
+MASKING_READ = f"{MASKING}:{READ}"
 
 MESSAGING_CREATE_OR_UPDATE = f"{MESSAGING}:{CREATE_OR_UPDATE}"
 MESSAGING_DELETE = f"{MESSAGING}:{DELETE}"
@@ -266,6 +270,8 @@ SCOPE_DOCS = {
     EVALUATION_UPDATE: "Update evaluations",
     FIDES_TAXONOMY_UPDATE: "Update default fides taxonomy description",
     GENERATE_EXEC: "",
+    MASKING_EXEC: "Execute a masking strategy",
+    MASKING_READ: "Read masking strategies",
     MESSAGING_CREATE_OR_UPDATE: "",
     MESSAGING_DELETE: "",
     MESSAGING_READ: "",

@@ -825,7 +825,6 @@ class TestGetConnections:
         integration_manual_config,
         url,
     ):
-
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         items = resp.json()["items"]

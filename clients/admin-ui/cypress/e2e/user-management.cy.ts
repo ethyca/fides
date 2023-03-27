@@ -232,9 +232,6 @@ describe("User management", () => {
         cy.intercept("PUT", "/api/v1/user/*/system-manager", {
           fixture: "systems/systems.json",
         }).as("updateUserManagedSystems");
-        cy.intercept("DELETE", "/api/v1/user/*/system-manager/*", {
-          body: {},
-        }).as("removeUserManagedSystem");
         cy.intercept("GET", "/api/v1/system", {
           fixture: "systems/systems.json",
         }).as("getSystems");
@@ -258,14 +255,11 @@ describe("User management", () => {
           cy.getByTestId("row-fidesctl_system").within(() => {
             cy.getByTestId("unassign-btn").click();
           });
-          cy.getByTestId("remove-fidesctl_system-confirmation-modal").within(
-            () => {
-              cy.getByTestId("continue-btn").click({ force: true });
-            }
-          );
-          cy.wait("@removeUserManagedSystem").then((interception) => {
-            const { url } = interception.request;
-            expect(url).contains("fidesctl_system");
+          cy.getByTestId("save-btn").click();
+
+          cy.wait("@updateUserManagedSystems").then((interception) => {
+            const { body } = interception.request;
+            expect(body).to.eql(["demo_analytics_system", "demo_marketing_system"]);
           });
         });
       });
@@ -292,7 +286,9 @@ describe("User management", () => {
             });
           });
           cy.getByTestId("confirm-btn").click();
+          cy.getByTestId("save-btn").click();
 
+          cy.wait("@updatePermission")
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql([
@@ -331,6 +327,8 @@ describe("User management", () => {
           });
 
           cy.getByTestId("confirm-btn").click();
+          cy.getByTestId("save-btn").click();
+          cy.wait("@updatePermission")
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql([]);
