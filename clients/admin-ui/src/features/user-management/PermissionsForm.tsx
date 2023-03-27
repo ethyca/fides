@@ -10,6 +10,7 @@ import {
 import { useHasRole } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
+import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { USER_MANAGEMENT_ROUTE } from "~/constants";
@@ -17,12 +18,15 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
-import { RoleRegistryEnum } from "~/types/api";
+import { RoleRegistryEnum, System } from "~/types/api";
 
 import RoleOption from "./RoleOption";
 import {
   selectActiveUserId,
+  selectActiveUsersManagedSystems,
+  useGetUserManagedSystemsQuery,
   useGetUserPermissionsQuery,
+  useUpdateUserManagedSystemsMutation,
   useUpdateUserPermissionsMutation,
 } from "./user-management.slice";
 
@@ -35,6 +39,19 @@ export type FormValues = typeof defaultInitialValues;
 const PermissionsForm = () => {
   const toast = useToast();
   const activeUserId = useAppSelector(selectActiveUserId);
+  useGetUserManagedSystemsQuery(activeUserId as string, {
+    skip: !activeUserId,
+  });
+  const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
+  const [assignedSystems, setAssignedSystems] = useState<System[]>(
+    initialManagedSystems
+  );
+  const [updateUserManagedSystemsTrigger] =
+    useUpdateUserManagedSystemsMutation();
+
+  useEffect(() => {
+    setAssignedSystems(initialManagedSystems);
+  }, [initialManagedSystems]);
 
   const { data: userPermissions, isLoading } = useGetUserPermissionsQuery(
     activeUserId ?? "",
@@ -50,15 +67,24 @@ const PermissionsForm = () => {
     if (!activeUserId) {
       return;
     }
-    const result = await updateUserPermissionMutationTrigger({
+    const userPermissionsResult = await updateUserPermissionMutationTrigger({
       user_id: activeUserId,
       // Scopes are not editable in the UI, but make sure we retain whatever scopes
       // the user might've already had
       payload: { scopes: userPermissions?.scopes, roles: values.roles },
     });
 
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+    if (isErrorResult(userPermissionsResult)) {
+      toast(errorToastParams(getErrorMessage(userPermissionsResult.error)));
+      return;
+    }
+    const fidesKeys = assignedSystems.map((s) => s.fides_key);
+    const userSystemsResult = await updateUserManagedSystemsTrigger({
+      userId: activeUserId,
+      fidesKeys,
+    });
+    if (isErrorResult(userSystemsResult)) {
+      toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
       return;
     }
     toast(successToastParams("Permissions updated"));
@@ -113,6 +139,8 @@ const PermissionsForm = () => {
                     isDisabled={
                       role.roleKey === RoleRegistryEnum.OWNER ? !isOwner : false
                     }
+                    assignedSystems={assignedSystems}
+                    onAssignedSystemChange={setAssignedSystems}
                     {...role}
                   />
                 );
@@ -126,7 +154,7 @@ const PermissionsForm = () => {
                 colorScheme="primary"
                 type="submit"
                 isLoading={isSubmitting}
-                disabled={!dirty}
+                disabled={!dirty && assignedSystems === initialManagedSystems}
                 data-testid="save-btn"
               >
                 Save

@@ -26,6 +26,7 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api import urn_registry as urls
 from fides.lib.oauth.api.deps import get_db
+from fides.lib.oauth.roles import VIEWER
 from fides.lib.oauth.schemas.oauth import AccessToken
 from fides.lib.oauth.schemas.user import (
     UserCreate,
@@ -80,7 +81,7 @@ def create_user(
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
         db=db,
-        data={"user_id": user.id, "roles": []},
+        data={"user_id": user.id, "roles": [VIEWER]},
     )
     return user
 

@@ -65,7 +65,6 @@ FROM messagingconfig"""
 
     result = conn.execute(statement)
     for row in result:
-
         op.execute(
             f"UPDATE messagingconfig SET service_type = '{row[0]}' WHERE id = '{row[1]}';"
         )
@@ -123,7 +122,6 @@ FROM messagingconfig"""
 
     result = conn.execute(statement)
     for row in result:
-
         op.execute(
             f"UPDATE messagingconfig SET service_type = '{row[0]}' WHERE id = '{row[1]}';"
         )

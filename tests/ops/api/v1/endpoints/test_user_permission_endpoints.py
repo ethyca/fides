@@ -138,6 +138,43 @@ class TestCreateUserPermissions:
             in response_body["detail"][0]["msg"]
         )
 
+    def test_create_user_permissions_roles_are_an_empty_list(
+        self, db, api_client, generate_auth_header
+    ) -> None:
+        """If roles are an empty list, user will have no roles"""
+        auth_header = generate_auth_header([USER_PERMISSION_CREATE])
+        user = FidesUser.create(
+            db=db,
+            data={"username": "user_1", "password": "test_password"},
+        )
+
+        body = {"user_id": user.id, "roles": []}
+        response = api_client.post(
+            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
+        )
+        permissions = FidesUserPermissions.get_by(db, field="user_id", value=user.id)
+        response_body = response.json()
+        assert HTTP_201_CREATED == response.status_code
+        assert response_body["roles"] == []
+        assert permissions.roles == []
+        user.delete(db)
+
+    def test_create_user_permissions_no_role_key(
+        self, db, api_client, generate_auth_header
+    ) -> None:
+        """Roles key explicitly required"""
+        auth_header = generate_auth_header([USER_PERMISSION_CREATE])
+        user = FidesUser.create(
+            db=db,
+            data={"username": "user_1", "password": "test_password"},
+        )
+
+        body = {"user_id": user.id}
+        response = api_client.post(
+            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
+        )
+        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+
     def test_create_user_permissions_add_roles(
         self, db, api_client, generate_auth_header
     ) -> None:
@@ -269,10 +306,11 @@ class TestEditUserPermissions:
             headers=auth_header,
             json=body,
         )
+        assert HTTP_404_NOT_FOUND == response.status_code
+
         permissions = FidesUserPermissions.get_by(
             db, field="user_id", value=invalid_user_id
         )
-        assert HTTP_404_NOT_FOUND == response.status_code
         assert permissions is None
         user.delete(db)
 
@@ -410,6 +448,82 @@ class TestEditUserPermissions:
             client.scopes == []
         ), "Assert client scopes are not updated via the user permissions update flow"
         assert client.roles == [OWNER]
+
+        db.refresh(permissions)
+        assert permissions.roles == [OWNER]
+
+        user.delete(db)
+
+    def test_edit_user_roles_remove_role(
+        self, db, api_client, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(
+            [USER_PERMISSION_UPDATE, USER_PERMISSION_ASSIGN_OWNERS]
+        )
+        user = FidesUser.create(
+            db=db,
+            data={"username": "user_1", "password": "test_password"},
+        )
+
+        permissions = FidesUserPermissions.create(
+            db=db,
+            data={
+                "user_id": user.id,
+                "roles": [OWNER],
+            },
+        )
+
+        ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            roles=[VIEWER],
+            user_id=user.id,
+        )
+
+        body = {"id": permissions.id, "roles": []}
+        response = api_client.put(
+            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
+        )
+        response_body = response.json()
+        assert HTTP_200_OK == response.status_code
+        assert response_body["roles"] == []
+
+        client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
+        assert (
+            client.scopes == []
+        ), "Assert client scopes are not updated via the user permissions update flow"
+        assert client.roles == []
+
+        db.refresh(permissions)
+        assert permissions.roles == []
+
+        user.delete(db)
+
+    def test_edit_user_roles_request_no_role_key(
+        self, db, api_client, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(
+            [USER_PERMISSION_UPDATE, USER_PERMISSION_ASSIGN_OWNERS]
+        )
+        user = FidesUser.create(
+            db=db,
+            data={"username": "user_1", "password": "test_password"},
+        )
+
+        permissions = FidesUserPermissions.create(
+            db=db,
+            data={
+                "user_id": user.id,
+                "roles": [OWNER],
+            },
+        )
+
+        body = {"id": permissions.id}
+        response = api_client.put(
+            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
+        )
+        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
 
         db.refresh(permissions)
         assert permissions.roles == [OWNER]
@@ -685,7 +799,6 @@ class TestGetUserPermissions:
     def test_get_other_user_roles_as_root(
         self, db, api_client, auth_user, root_auth_header
     ):
-
         FidesUserPermissions.create(
             db=db, data={"user_id": auth_user.id, "roles": [VIEWER]}
         )

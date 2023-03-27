@@ -118,7 +118,6 @@ def kustomer_dataset_config(
 def kustomer_create_erasure_data(
     kustomer_connection_config: ConnectionConfig, kustomer_erasure_identity_email: str
 ) -> None:
-
     kustomer_secrets = kustomer_connection_config.secrets
     base_url = f"https://{kustomer_secrets['domain']}"
     headers = {

@@ -79,7 +79,6 @@ def test_generate(
     generate_target: str,
     test_client: TestClient,
 ) -> None:
-
     data = {
         "organization_key": "default_organization",
         "generate": {
@@ -115,7 +114,6 @@ def test_generate_failure(
     generate_target: str,
     test_client: TestClient,
 ) -> None:
-
     data = {
         "organization_key": "default_organization",
         "generate": {

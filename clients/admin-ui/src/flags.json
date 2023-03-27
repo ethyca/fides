@@ -1,17 +1,24 @@
 {
   "privacyRequestsConfiguration": {
+    "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage.",
     "development": true,
     "test": true,
-    "production": false,
-    "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage."
+    "production": false
   },
   "datasetClassificationUpdates": {
+    "description": "Enable per-collection dataset classification instead of bulk updates.",
     "development": true,
     "production": false,
     "test": false
   },
   "customFields": {
     "description": "Custom fields can be added to many forms throughout Fides. You can create, show, and hide custom fields that you add to Fides at any time.",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "organizationManagement": {
+    "description": "Management page to configure Organization details for RoPA reporting, messaging, etc.",
     "development": true,
     "test": true,
     "production": false

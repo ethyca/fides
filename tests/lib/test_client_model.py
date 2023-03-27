@@ -213,7 +213,6 @@ def test_client_create_access_code_jwe(oauth_client, config):
 
 
 def test_client_create_access_code_jwe_owner_client(owner_client, config):
-
     jwe = owner_client.create_access_code_jwe(config.security.app_encryption_key)
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
@@ -226,7 +225,6 @@ def test_client_create_access_code_jwe_owner_client(owner_client, config):
 
 
 def test_client_create_access_code_jwe_viewer_client(viewer_client, config):
-
     jwe = viewer_client.create_access_code_jwe(config.security.app_encryption_key)
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
@@ -239,7 +237,6 @@ def test_client_create_access_code_jwe_viewer_client(viewer_client, config):
 
 
 def test_client_create_access_code_with_systems(system_manager_client, config, system):
-
     jwe = system_manager_client.create_access_code_jwe(
         config.security.app_encryption_key
     )

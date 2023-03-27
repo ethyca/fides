@@ -127,7 +127,8 @@ class TaskResources:
 
     def cache_results_with_placeholders(self, key: str, value: Any) -> None:
         """Cache raw results from node. Object will be
-        stored in redis under 'PLACEHOLDER_RESULTS__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS"""
+        stored in redis under 'PLACEHOLDER_RESULTS__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS
+        """
         self.cache.set_encoded_object(
             f"PLACEHOLDER_RESULTS__{self.request.id}__{key}", value
         )

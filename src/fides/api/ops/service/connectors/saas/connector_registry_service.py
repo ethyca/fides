@@ -2,11 +2,11 @@ import os
 from abc import ABC, abstractmethod
 from ast import AST, AnnAssign
 from operator import getitem
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from AccessControl.ZopeGuards import safe_builtins
 from loguru import logger
-from packaging.version import LegacyVersion, Version
+from packaging.version import Version
 from packaging.version import parse as parse_version
 from RestrictedPython import compile_restricted
 from RestrictedPython.transformer import RestrictingNodeTransformer
@@ -123,7 +123,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
 
 # pylint: disable=protected-access
 class ConnectorRegistry:
-
     _instance = None
     _templates: Dict[str, ConnectorTemplate] = {}
 
@@ -231,9 +230,7 @@ def update_saas_configs(db: Session) -> None:
             connector_type
         )
         saas_config = SaaSConfig(**load_config_from_string(template.config))
-        template_version: Union[LegacyVersion, Version] = parse_version(
-            saas_config.version
-        )
+        template_version: Version = parse_version(saas_config.version)
 
         connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
             db=db,
