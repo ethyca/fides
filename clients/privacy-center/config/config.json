@@ -9,11 +9,10 @@
       "policy_key": "default_access_policy",
       "icon_path": "/download.svg",
       "title": "Access your data",
-      "description": "Please provide either an email or a phone number. We will provide you a report of all your personal data.",
+      "description": "Please provide an email. We will provide you a report of all your personal data.",
       "identity_inputs": {
         "name": "optional",
-        "email": "optional",
-        "phone": "optional"
+        "email": "required"
       }
     },
     {
@@ -23,8 +22,7 @@
       "description": "We will erase all of your personal data. This action cannot be undone.",
       "identity_inputs": {
         "name": "optional",
-        "email": "optional",
-        "phone": "optional"
+        "email": "required"
       }
     }
   ],
@@ -34,8 +32,7 @@
     "title": "Manage your consent",
     "description": "Manage your consent preferences, including the option to select 'Do Not Sell My Personal Information'.",
     "identity_inputs": {
-      "email": "optional",
-      "phone": "optional"
+      "email": "required"
     },
     "policy_key": "default_consent_policy",
     "consentOptions": [
