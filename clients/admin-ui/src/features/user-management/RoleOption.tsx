@@ -2,6 +2,7 @@
  * A component for choosing a role, meant to be embedded in a Formik form
  */
 import {
+  Box,
   Button,
   Flex,
   GreenCheckCircleIcon,
@@ -17,6 +18,8 @@ import QuestionTooltip from "../common/QuestionTooltip";
 import AssignSystemsModal from "./AssignSystemsModal";
 import { AssignSystemsDeleteTable } from "./AssignSystemsTable";
 import { type FormValues } from "./PermissionsForm";
+import React from "react";
+import ConfirmationModal from "common/ConfirmationModal";
 
 interface Props {
   label: string;
@@ -37,9 +40,22 @@ const RoleOption = ({
 }: Props) => {
   const { setFieldValue } = useFormikContext<FormValues>();
   const assignSystemsModal = useDisclosure();
+  const {
+    isOpen: chooseApproverIsOpen,
+    onOpen: chooseApproverOpen,
+    onClose: chooseApproverClose,
+  } = useDisclosure();
+
+  const handleRoleChange = () => {
+    setFieldValue("roles", [roleKey]);
+  }
 
   const handleClick = () => {
-    setFieldValue("roles", [roleKey]);
+    if ((assignedSystems.length > 0) && (roleKey === RoleRegistryEnum.APPROVER)) {
+      // approvers cannot be system managers on back-end
+      chooseApproverOpen()
+    }
+    handleRoleChange()
   };
 
   const buttonTitle = isDisabled
@@ -105,18 +121,31 @@ const RoleOption = ({
   }
 
   return (
-    <Button
-      onClick={handleClick}
-      justifyContent="start"
-      variant="outline"
-      height="inherit"
-      p={4}
-      data-testid={`role-option-${label}`}
-      title={buttonTitle}
-      disabled={isDisabled}
-    >
-      {label}
-    </Button>
+    <Box>
+      <Button
+          onClick={handleClick}
+          justifyContent="start"
+          variant="outline"
+          height="inherit"
+          p={4}
+          data-testid={`role-option-${label}`}
+          title={buttonTitle}
+          disabled={isDisabled}
+      >
+        {label}
+      </Button>
+      <ConfirmationModal
+          isOpen={chooseApproverIsOpen}
+          onClose={chooseApproverClose}
+          onConfirm={() => handleRoleChange}
+          title="Change role to Approver"
+          testId={`choose-role-option-${label}-confirmation-modal`}
+          continueButtonText="Yes"
+          message={
+            <Text>Approvers cannot be system managers. Any systems assigned to this user will be removed. Are you sure you wish to proceed? </Text>
+          }
+      />
+    </Box>
   );
 };
 

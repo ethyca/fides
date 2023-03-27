@@ -90,7 +90,7 @@ const PermissionsForm = () => {
     toast(successToastParams("Permissions updated"));
   };
 
-  // This prevents users with contributor role from being able to assign owner roles
+  // This prevents logged-in users with contributor role from being able to assign owner roles
   const isOwner = useHasRole([RoleRegistryEnum.OWNER]);
 
   if (!activeUserId) {
