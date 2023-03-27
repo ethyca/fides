@@ -15,9 +15,10 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.9.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.9.2...main)
 
 ### Added
+
 * Allow users to configure their username and password via the config file [#2884](https://github.com/ethyca/fides/pull/2884)
 * Add authentication to the `masking` endpoints as well as accompanying scopes [#2909](https://github.com/ethyca/fides/pull/2909)
 * Add an Organization Management page (beta) [#2908](https://github.com/ethyca/fides/pull/2908)
@@ -36,34 +37,36 @@ The types of changes are:
 * Tie together save states for user permissions and systems [#2913](https://github.com/ethyca/fides/pull/2913)
 * Removing payment types from Stripe connector params [#2915](https://github.com/ethyca/fides/pull/2915)
 
-
 ### Fixed
 
 * Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
-* Remove policy key from Privacy Center submission modal [#2912](https://github.com/ethyca/fides/pull/2912)
-* Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
 * Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
 * Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
+
+## [2.9.2](https://github.com/ethyca/fides/compare/2.9.1...2.9.2)
+### Fixed
+
+* Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
+* use HTML property, not text, when dispatching Mailchimp Transactional emails [#2901](https://github.com/ethyca/fides/pull/2901)
+* Remove policy key from Privacy Center submission modal [#2912](https://github.com/ethyca/fides/pull/2912)
 
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
 ### Added
-
 * Added Attentive erasure email connector [#2782](https://github.com/ethyca/fides/pull/2782)
 
 ### Changed
-* Improved standard layout for large width screens and polish misc. pages [#2869](https://github.com/ethyca/fides/pull/2869)
 * Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
 * Changed Auth0's authentication strategy from `bearer` to `oauth2_client_credentials` [#2820](https://github.com/ethyca/fides/pull/2820)
-* Renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
-* UX cleanups in Role Management section of Admin UI [#2870](https://github.com/ethyca/fides/pull/2870)
+* renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
 
 
 ### Fixed
 * Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
 
 ### Removed
-* Removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
+
+* removed the `privacyDeclarationDeprecatedFields` flag [#711](https://github.com/ethyca/fidesplus/issues/711)
 
 ## [2.9.0](https://github.com/ethyca/fides/compare/2.8.3...2.9.0)
 
