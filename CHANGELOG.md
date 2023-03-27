@@ -21,6 +21,7 @@ The types of changes are:
 * Allow users to configure their username and password via the config file [#2884](https://github.com/ethyca/fides/pull/2884)
 * Add authentication to the `masking` endpoints as well as accompanying scopes [#2909](https://github.com/ethyca/fides/pull/2909)
 * Add an Organization Management page (beta) [#2908](https://github.com/ethyca/fides/pull/2908)
+* Adds assigned systems to user management table [#2922](https://github.com/ethyca/fides/pull/2922)
 
 ### Changed
 

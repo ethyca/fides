@@ -15,7 +15,10 @@ import {
 } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
-import {useGetUserManagedSystemsQuery, useGetUserPermissionsQuery} from "user-management/user-management.slice";
+import {
+  useGetUserManagedSystemsQuery,
+  useGetUserPermissionsQuery,
+} from "user-management/user-management.slice";
 
 import { ROLES } from "~/features/user-management/constants";
 
@@ -39,8 +42,8 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
     skip: !user.id,
   });
   const { data: userSystems } = useGetUserManagedSystemsQuery(user.id ?? "", {
-    skip: !user.id
-  })
+    skip: !user.id,
+  });
   const permissionsLabels: string[] = [];
   if (userPermissions && userPermissions.roles) {
     userPermissions.roles.forEach((permissionRole) => {
@@ -91,21 +94,21 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
           ))}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
-            <Badge
-                bg="gray.500"
-                color="white"
-                paddingLeft="8px"
-                textTransform="none"
-                paddingRight="8px"
-                height="18px"
-                lineHeight="18px"
-                borderRadius="6px"
-                fontWeight="500"
-                textAlign="center"
-                data-testid="user-permissions-badge"
-            >
-              {userSystems ? userSystems.length : 0}
-            </Badge>
+          <Badge
+            bg="gray.500"
+            color="white"
+            paddingLeft="8px"
+            textTransform="none"
+            paddingRight="8px"
+            height="18px"
+            lineHeight="18px"
+            borderRadius="6px"
+            fontWeight="500"
+            textAlign="center"
+            data-testid="user-permissions-badge"
+          >
+            {userSystems ? userSystems.length : 0}
+          </Badge>
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {user.created_at ? new Date(user.created_at).toUTCString() : null}
