@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Doordash Dataset
-    description: A sample dataset representing the Doordash connector for Fidesops
+    description: A sample dataset representing the Doordash connector for Fides
     collections:
       - name: deliveries
         fields:

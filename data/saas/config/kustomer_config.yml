@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Kustomer SaaS Config
+  name: Kustomer
   type: kustomer
   description: A sample schema representing the Kustomer connector for Fides
   version: 0.1.0

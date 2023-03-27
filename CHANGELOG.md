@@ -20,6 +20,8 @@ The types of changes are:
 ### Added
 
 * Allow users to configure their username and password via the config file [#2884](https://github.com/ethyca/fides/pull/2884)
+* Add authentication to the `masking` endpoints as well as accompanying scopes [#2909](https://github.com/ethyca/fides/pull/2909)
+* Add an Organization Management page (beta) [#2908](https://github.com/ethyca/fides/pull/2908)
 
 ### Changed
 
@@ -32,6 +34,8 @@ The types of changes are:
 * Changed About Fides page to say "Fides Core Version:" over "Version". [#2899](https://github.com/ethyca/fides/pull/2899)
 * Polish Admin UI header & navigation [#2897](https://github.com/ethyca/fides/pull/2897)
 * Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
+* Tie together save states for user permissions and systems [#2913](https://github.com/ethyca/fides/pull/2913)
+* Removing payment types from Stripe connector params [#2915](https://github.com/ethyca/fides/pull/2915)
 
 ### Fixed
 
@@ -44,7 +48,6 @@ The types of changes are:
 
 * Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
 * use HTML property, not text, when dispatching Mailchimp Transactional emails [#2901](https://github.com/ethyca/fides/pull/2901)
-* Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
 * Remove policy key from Privacy Center submission modal [#2912](https://github.com/ethyca/fides/pull/2912)
 
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
@@ -78,7 +81,7 @@ The types of changes are:
 ### Changed
 
 * Removed "progressive" navigation that would hide Admin UI tabs until Systems / Connections were configured [#2762](https://github.com/ethyca/fides/pull/2762)
-* Added `system.privacy_declaration.name` to datamap response [#2831][https://github.com/ethyca/fides/pull/2831/files]
+* Added `system.privacy_declaration.name` to datamap response [#2831](https://github.com/ethyca/fides/pull/2831/files)
 
 ### Developer Experience
 

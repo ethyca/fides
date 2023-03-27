@@ -134,19 +134,23 @@ class DelightedTestClient:
             json={"person": person_id, "score": "3"},
         )
 
-    def get_person(self, email) -> Response:
-        return requests.get(
+    def get_person(self, email) -> Any:
+        response = requests.get(
             url=f"{self.base_url}/v1/people.json",
             auth=self.auth,
             params={"email": email},
         )
+        if len(response.json()):
+            return response
 
-    def get_survey_responses(self, person_id) -> Response:
-        return requests.get(
+    def get_survey_responses(self, person_id) -> Any:
+        response = requests.get(
             url=f"{self.base_url}/v1/survey_responses",
             auth=self.auth,
             params={"person_id": person_id},
         )
+        if response.ok:
+            return response
 
 
 @pytest.fixture(scope="function")

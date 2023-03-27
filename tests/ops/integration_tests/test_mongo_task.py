@@ -336,7 +336,6 @@ async def test_composite_key_erasure(
     db,
     integration_mongodb_config: ConnectionConfig,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{uuid4()}")
     policy = erasure_policy("A")
     customer = Collection(
@@ -517,7 +516,6 @@ async def test_object_querying_mongo(
     integration_mongodb_config,
     integration_postgres_config,
 ):
-
     postgres_config = copy.copy(integration_postgres_config)
 
     dataset_postgres = Dataset(**example_datasets[0])

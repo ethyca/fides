@@ -25,7 +25,6 @@ from fides.lib.db.base_class import Base
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.jwt import generate_jwe
 
-ADMIN_UI_ROOT = "admin_ui_root"
 DEFAULT_SCOPES: list[str] = []
 DEFAULT_ROLES: list[str] = []
 DEFAULT_SYSTEMS: list[str] = []

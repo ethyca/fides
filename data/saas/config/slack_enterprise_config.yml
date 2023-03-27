@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Slack Enterprise SaaS Config
+  name: Slack Enterprise
   type: slack_enterprise
   description: A sample schema representing the Slack Enterprise connector for Fides
   version: 0.0.1

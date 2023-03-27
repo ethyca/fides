@@ -1,4 +1,3 @@
-from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
@@ -20,6 +19,7 @@ from fides.api.ops.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.lib.cryptography import cryptographic_util
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("yotpo_loyalty")
@@ -176,4 +176,9 @@ def yotpo_loyalty_erasure_data(
     )
     assert response.ok
 
-    sleep(60)
+    poll_for_existence(
+        yotpo_loyalty_test_client.get_customer,
+        (yotpo_loyalty_erasure_identity_email,),
+        interval=30,
+        verification_count=3,
+    )

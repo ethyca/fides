@@ -18,6 +18,8 @@ from fides.api.ops.api.v1.scope_registry import (
     DATAMAP_READ,
     DATASET_READ,
     EVALUATION_READ,
+    MASKING_EXEC,
+    MASKING_READ,
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
@@ -40,6 +42,7 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_READ,
     SYSTEM_MANAGER_READ,
     SYSTEM_READ,
+    USER_PERMISSION_ASSIGN_OWNERS,
     USER_READ,
     WEBHOOK_READ,
 )
@@ -93,6 +96,8 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ
     DATA_SUBJECT_READ,
     DATA_USE_READ,
     EVALUATION_READ,
+    MASKING_EXEC,
+    MASKING_READ,
     ORGANIZATION_READ,
     POLICY_READ,
     PRIVACY_REQUEST_READ,
@@ -116,6 +121,7 @@ not_contributor_scopes = [
     MESSAGING_DELETE,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     CONFIG_UPDATE,
+    USER_PERMISSION_ASSIGN_OWNERS,
 ]
 
 ROLES_TO_SCOPES_MAPPING: Dict[str, List] = {

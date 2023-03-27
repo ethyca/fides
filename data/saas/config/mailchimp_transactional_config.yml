@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Mailchimp Transactional SaaS Config
+  name: Mailchimp Transactional (Mandrill)
   type: mailchimp_transactional
   description: A sample schema representing the Mailchimp Transactional (Mandrill) connector for Fides
   version: 0.0.1
@@ -24,7 +24,6 @@ saas_config:
   test_request:
     method: GET
     path: /users/ping
-
 
   consent_requests:
     opt_in:

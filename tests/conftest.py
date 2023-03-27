@@ -40,9 +40,6 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.roles import (
     APPROVER,
@@ -135,7 +132,6 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 def config():
-
     CONFIG.test_mode = True
     yield CONFIG
 
@@ -211,18 +207,21 @@ def user(db):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=SCOPE_REGISTRY,
+        roles=[APPROVER],
+        scopes=[],
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()
     db.refresh(client)
     yield user
+    try:
+        client.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture
@@ -804,9 +803,7 @@ def owner_user(db):
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [OWNER]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [OWNER]})
 
     db.add(client)
     db.commit()
@@ -827,14 +824,93 @@ def viewer_user(db):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=[],
         roles=[VIEWER],
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER]}
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def contributor_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_contributor_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
     )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[CONTRIBUTOR],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "roles": [CONTRIBUTOR]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def viewer_and_approver_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_and_approver_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER_AND_APPROVER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "roles": [VIEWER_AND_APPROVER]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def approver_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_approver_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[APPROVER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()
@@ -845,7 +921,6 @@ def viewer_user(db):
 
 @pytest.fixture(scope="function")
 def system(db: Session) -> System:
-
     system = System.create(
         db=db,
         data={
@@ -883,7 +958,6 @@ def system_manager_client(db, system):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=[],
         roles=[],
         systems=[system.id],
     )

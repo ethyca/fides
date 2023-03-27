@@ -11,11 +11,6 @@ from sqlalchemy.orm import Session
 from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
-from fides.api.ops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_CREATE,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_TRANSFER,
-)
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.core.config import CONFIG
 from fides.lib.db.base_class import FidesBase
@@ -23,6 +18,7 @@ from fides.lib.exceptions import KeyOrNameAlreadyExists
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.roles import OWNER
 from fides.lib.utils.text import to_snake_case
 
 from .crud import create_resource, list_resource
@@ -89,14 +85,7 @@ def create_or_update_parent_user() -> None:
         )
         FidesUserPermissions.create(
             db=db_session,
-            data={
-                "user_id": user.id,
-                "scopes": [
-                    PRIVACY_REQUEST_CREATE,
-                    PRIVACY_REQUEST_READ,
-                    PRIVACY_REQUEST_TRANSFER,
-                ],
-            },
+            data={"user_id": user.id, "roles": [OWNER]},
         )
 
 
@@ -302,7 +291,6 @@ def load_default_dsr_policies() -> None:
     inserts them to target a default set of data categories if not.
     """
     with sync_session() as db_session:  # type: ignore[attr-defined]
-
         client_id = get_client_id(db_session)
 
         # By default, include all categories *except* those related to a user's

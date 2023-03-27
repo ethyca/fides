@@ -35,6 +35,7 @@ EXEC = "exec"
 FIDES_TAXONOMY = "fides_taxonomy"
 GENERATE = "generate"
 INSTANTIATE = "instantiate"
+MASKING = "masking"
 MESSAGING = "messaging"
 ORGANIZATION = "organization"
 PASSWORD_RESET = "password-reset"
@@ -61,6 +62,8 @@ USER_PERMISSION = "user-permission"
 VALIDATE = "validate"
 VIEW_DATA = "view_data"
 WEBHOOK = "webhook"
+
+ASSIGN_OWNERS = "assign_owners"
 
 CLIENT_CREATE = f"{CLIENT}:{CREATE}"
 CLIENT_DELETE = f"{CLIENT}:{DELETE}"
@@ -133,6 +136,9 @@ FIDES_TAXONOMY_UPDATE = f"{FIDES_TAXONOMY}:{UPDATE}"
 
 GENERATE_EXEC = f"{GENERATE}:{EXEC}"
 
+MASKING_EXEC = f"{MASKING}:{EXEC}"
+MASKING_READ = f"{MASKING}:{READ}"
+
 MESSAGING_CREATE_OR_UPDATE = f"{MESSAGING}:{CREATE_OR_UPDATE}"
 MESSAGING_DELETE = f"{MESSAGING}:{DELETE}"
 MESSAGING_READ = f"{MESSAGING}:{READ}"
@@ -203,6 +209,7 @@ USER_PASSWORD_RESET = f"{USER}:{PASSWORD_RESET}"
 USER_PERMISSION_CREATE = f"{USER_PERMISSION}:{CREATE}"
 USER_PERMISSION_UPDATE = f"{USER_PERMISSION}:{UPDATE}"
 USER_PERMISSION_READ = f"{USER_PERMISSION}:{READ}"
+USER_PERMISSION_ASSIGN_OWNERS = f"{USER_PERMISSION}:{ASSIGN_OWNERS}"
 
 VALIDATE_EXEC = f"{VALIDATE}:{EXEC}"
 
@@ -263,6 +270,8 @@ SCOPE_DOCS = {
     EVALUATION_UPDATE: "Update evaluations",
     FIDES_TAXONOMY_UPDATE: "Update default fides taxonomy description",
     GENERATE_EXEC: "",
+    MASKING_EXEC: "Execute a masking strategy",
+    MASKING_READ: "Read masking strategies",
     MESSAGING_CREATE_OR_UPDATE: "",
     MESSAGING_DELETE: "",
     MESSAGING_READ: "",
@@ -315,6 +324,7 @@ SCOPE_DOCS = {
     USER_PASSWORD_RESET: "Reset another user's password",
     USER_PERMISSION_CREATE: "Create user permissions",
     USER_PERMISSION_UPDATE: "Update user permissions",
+    USER_PERMISSION_ASSIGN_OWNERS: "Assign the owner role to a user",
     USER_PERMISSION_READ: "View user permissions",
     VALIDATE_EXEC: "",
     WEBHOOK_CREATE_OR_UPDATE: "Create or update web hooks",
