@@ -5,62 +5,44 @@ import {
   Table,
   Tbody,
   Td,
-  Text,
   Th,
   Thead,
   Tr,
-  useDisclosure,
-  useToast,
 } from "@fidesui/react";
-import ConfirmationModal from "common/ConfirmationModal";
-import { getErrorMessage } from "common/helpers";
-import { errorToastParams, successToastParams } from "common/toast";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { System } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
 
 import {
   selectActiveUserId,
-  selectActiveUsersManagedSystems,
   useGetUserManagedSystemsQuery,
-  useRemoveUserManagedSystemMutation,
 } from "./user-management.slice";
 
-export const AssignSystemsDeleteTable = () => {
+export const AssignSystemsDeleteTable = ({
+  assignedSystems,
+  onAssignedSystemChange,
+}: {
+  assignedSystems: System[];
+  onAssignedSystemChange: (systems: System[]) => void;
+}) => {
   const activeUserId = useAppSelector(selectActiveUserId);
-  const {
-    isOpen: deleteIsOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
   });
-  const assignedSystems = useAppSelector(selectActiveUsersManagedSystems);
-  const toast = useToast();
-  const [removeUserManagedSystemTrigger] = useRemoveUserManagedSystemMutation();
-  const handleDelete = async (system: System) => {
-    if (!activeUserId) {
-      return;
-    }
-    const result = await removeUserManagedSystemTrigger({
-      userId: activeUserId,
-      systemKey: system.fides_key,
-    });
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-    } else {
-      toast(successToastParams("Successfully removed system"));
-      onDeleteClose();
-    }
-  };
 
   if (assignedSystems.length === 0) {
     return null;
   }
+
+  const onDelete = (system: System) => {
+    onAssignedSystemChange(
+      assignedSystems.filter(
+        (assignedSystem) => assignedSystem.fides_key !== system.fides_key
+      )
+    );
+  };
 
   return (
     <Table size="sm" data-testid="assign-systems-delete-table">
@@ -85,19 +67,8 @@ export const AssignSystemsDeleteTable = () => {
                 icon={<TrashCanSolidIcon />}
                 variant="outline"
                 size="sm"
-                onClick={onDeleteOpen}
+                onClick={() => onDelete(system)}
                 data-testid="unassign-btn"
-              />
-              <ConfirmationModal
-                isOpen={deleteIsOpen}
-                onClose={onDeleteClose}
-                onConfirm={() => handleDelete(system)}
-                title="Remove System"
-                testId={`remove-${system.fides_key}-confirmation-modal`}
-                continueButtonText="Yes, Remove System"
-                message={
-                  <Text>Are you sure you want to remove this system?</Text>
-                }
               />
             </Td>
           </Tr>
