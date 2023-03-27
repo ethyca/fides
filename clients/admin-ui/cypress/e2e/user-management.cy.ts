@@ -232,9 +232,6 @@ describe("User management", () => {
         cy.intercept("PUT", "/api/v1/user/*/system-manager", {
           fixture: "systems/systems.json",
         }).as("updateUserManagedSystems");
-        cy.intercept("DELETE", "/api/v1/user/*/system-manager/*", {
-          body: {},
-        }).as("removeUserManagedSystem");
         cy.intercept("GET", "/api/v1/system", {
           fixture: "systems/systems.json",
         }).as("getSystems");
@@ -262,7 +259,7 @@ describe("User management", () => {
 
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
-            expect(body).to.eql([]);
+            expect(body).to.eql(["demo_analytics_system", "demo_marketing_system"]);
           });
         });
       });
@@ -291,6 +288,7 @@ describe("User management", () => {
           cy.getByTestId("confirm-btn").click();
           cy.getByTestId("save-btn").click();
 
+          cy.wait("@updatePermission")
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql([
@@ -330,6 +328,7 @@ describe("User management", () => {
 
           cy.getByTestId("confirm-btn").click();
           cy.getByTestId("save-btn").click();
+          cy.wait("@updatePermission")
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql([]);
