@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import os
 from abc import ABC, abstractmethod
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional
 
 from loguru import logger
-from packaging.version import LegacyVersion, Version
+from packaging.version import Version
 from packaging.version import parse as parse_version
 from sqlalchemy.orm import Session
 
@@ -176,9 +176,7 @@ def update_saas_configs(db: Session) -> None:
             connector_type
         )
         saas_config = SaaSConfig(**load_config_from_string(template.config))
-        template_version: Union[LegacyVersion, Version] = parse_version(
-            saas_config.version
-        )
+        template_version: Version = parse_version(saas_config.version)
 
         connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
             db=db,
