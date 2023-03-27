@@ -43,11 +43,10 @@ const RoleOption = ({
 
   const handleRoleChange = () => {
     setFieldValue("roles", [roleKey]);
-  }
+  };
 
   const handleClick = () => {
-
-    handleRoleChange()
+    handleRoleChange();
   };
 
   const buttonTitle = isDisabled
@@ -114,14 +113,14 @@ const RoleOption = ({
 
   return (
     <Button
-        onClick={handleClick}
-        justifyContent="start"
-        variant="outline"
-        height="inherit"
-        p={4}
-        data-testid={`role-option-${label}`}
-        title={buttonTitle}
-        disabled={isDisabled}
+      onClick={handleClick}
+      justifyContent="start"
+      variant="outline"
+      height="inherit"
+      p={4}
+      data-testid={`role-option-${label}`}
+      title={buttonTitle}
+      disabled={isDisabled}
     >
       {label}
     </Button>

@@ -1,16 +1,25 @@
-import {Button, ButtonGroup, Flex, Spinner, Stack, Text, useDisclosure, useToast,} from "@fidesui/react";
-import {useHasRole} from "common/Restrict";
-import {Form, Formik} from "formik";
+import {
+  Button,
+  ButtonGroup,
+  Flex,
+  Spinner,
+  Stack,
+  Text,
+  useDisclosure,
+  useToast,
+} from "@fidesui/react";
+import { useHasRole } from "common/Restrict";
+import { Form, Formik } from "formik";
 import NextLink from "next/link";
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 
-import {useAppSelector} from "~/app/hooks";
-import {USER_MANAGEMENT_ROUTE} from "~/constants";
-import {getErrorMessage, isErrorResult} from "~/features/common/helpers";
+import { useAppSelector } from "~/app/hooks";
+import { USER_MANAGEMENT_ROUTE } from "~/constants";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import {errorToastParams, successToastParams} from "~/features/common/toast";
-import {ROLES} from "~/features/user-management/constants";
-import {RoleRegistryEnum, System} from "~/types/api";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { ROLES } from "~/features/user-management/constants";
+import { RoleRegistryEnum, System } from "~/types/api";
 
 import ConfirmationModal from "common/ConfirmationModal";
 import RoleOption from "./RoleOption";
@@ -63,7 +72,7 @@ const PermissionsForm = () => {
 
   const updatePermissions = async (values: FormValues) => {
     if (chooseApproverIsOpen) {
-      chooseApproverClose()
+      chooseApproverClose();
     }
     if (!activeUserId) {
       return;
@@ -89,20 +98,23 @@ const PermissionsForm = () => {
       return;
     }
     toast(successToastParams("Permissions updated"));
-  }
+  };
 
   const handleSubmit = async (values: FormValues) => {
     if (!activeUserId) {
       return;
     }
-    console.log(assignedSystems)
-    console.log(values.roles)
-    console.log(Boolean(values.roles.includes(RoleRegistryEnum.APPROVER)))
-    if ((assignedSystems.length > 0) && (values.roles.includes(RoleRegistryEnum.APPROVER))) {
+    console.log(assignedSystems);
+    console.log(values.roles);
+    console.log(Boolean(values.roles.includes(RoleRegistryEnum.APPROVER)));
+    if (
+      assignedSystems.length > 0 &&
+      values.roles.includes(RoleRegistryEnum.APPROVER)
+    ) {
       // approvers cannot be system managers on back-end
-      chooseApproverOpen()
+      chooseApproverOpen();
     } else {
-      await updatePermissions(values)
+      await updatePermissions(values);
     }
   };
 
@@ -178,15 +190,18 @@ const PermissionsForm = () => {
             </ButtonGroup>
           </Stack>
           <ConfirmationModal
-              isOpen={chooseApproverIsOpen}
-              onClose={chooseApproverClose}
-              onConfirm={() => updatePermissions(values)}
-              title="Change role to Approver"
-              testId="downgrade-to-approver-confirmation-modal"
-              continueButtonText="Yes"
-              message={
-                <Text>Switching to an approver role will remove all assigned systems. Do you wish to proceed?</Text>
-              }
+            isOpen={chooseApproverIsOpen}
+            onClose={chooseApproverClose}
+            onConfirm={() => updatePermissions(values)}
+            title="Change role to Approver"
+            testId="downgrade-to-approver-confirmation-modal"
+            continueButtonText="Yes"
+            message={
+              <Text>
+                Switching to an approver role will remove all assigned systems.
+                Do you wish to proceed?
+              </Text>
+            }
           />
         </Form>
       )}

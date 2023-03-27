@@ -38,6 +38,8 @@ The types of changes are:
 * Removing payment types from Stripe connector params [#2915](https://github.com/ethyca/fides/pull/2915)
 * Change Privacy Center email placeholder text [#2935](https://github.com/ethyca/fides/pull/2935)
 * Restricted setting Approvers as System Managers [#2891](https://github.com/ethyca/fides/pull/2891)
+* Adds confirmation modal when downgrading user to "approver" role via Admin UI [#2924](https://github.com/ethyca/fides/pull/2924)
+
 
 ### Fixed
 
