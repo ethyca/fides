@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Iterable, List, Optional, Union
 
 from loguru import logger
+from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
 from sqlalchemy.orm import Session
 
@@ -76,7 +77,6 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
 
 # pylint: disable=protected-access
 class ConnectorRegistry:
-
     _instance = None
     _templates: Dict[str, ConnectorTemplate] = {}
 

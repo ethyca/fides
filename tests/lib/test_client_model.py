@@ -237,7 +237,6 @@ def test_client_create_access_code_jwe_viewer_client(viewer_client, config):
 
 
 def test_client_create_access_code_with_systems(system_manager_client, config, system):
-
     jwe = system_manager_client.create_access_code_jwe(
         config.security.app_encryption_key
     )

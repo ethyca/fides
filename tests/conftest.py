@@ -921,7 +921,6 @@ def approver_user(db):
 
 @pytest.fixture(scope="function")
 def system(db: Session) -> System:
-
     system = System.create(
         db=db,
         data={
