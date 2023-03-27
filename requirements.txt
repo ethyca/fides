@@ -21,7 +21,8 @@ loguru>=0.5,<0.6
 multidimensional_urlencode==0.0.4
 okta==2.7.0
 openpyxl==3.0.9
-packaging==21.3
+# Packaging versions later than this cause a breaking change
+packaging==21.2
 pandas==1.4.3
 passlib[bcrypt]==1.7.4
 plotly==5.13.1
