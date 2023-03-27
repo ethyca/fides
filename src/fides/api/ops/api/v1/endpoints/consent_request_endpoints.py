@@ -207,19 +207,18 @@ def get_consent_preferences(
     *, db: Session = Depends(get_db), data: Identity
 ) -> ConsentPreferences:
     """Gets the consent preferences for the specified user."""
-    if data.email:
-        lookup = data.email
-    elif data.phone_number:
-        lookup = data.phone_number
-    else:
+    if not data.email and not data.phone_number:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="No identity information provided"
         )
 
+    # From the above check we know at least one exists
+    lookup = data.email if data.email else data.phone_number
+
     identity = ProvidedIdentity.filter(
         db,
         conditions=(
-            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(lookup))
+            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(str(lookup)))
             & (ProvidedIdentity.privacy_request_id.is_(None))
         ),
     ).first()

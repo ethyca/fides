@@ -248,24 +248,14 @@ class TestMessageDispatchService:
         )
 
     def test_fidesops_email_parse_object(self):
-        body = [
-            CheckpointActionRequired(
-                step=CurrentStep.erasure,
-                collection=CollectionAddress("email_dataset", "test_collection"),
-                action_needed=[
-                    ManualAction(
-                        locators={"email": "test@example.com"},
-                        get=None,
-                        update={"phone": "null_rewrite"},
-                    )
-                ],
-            )
-        ]
-
         FidesopsMessage.parse_obj(
             {
                 "action_type": MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
-                "body_params": [action.dict() for action in body],
+                "body_params": {
+                    "controller": "Test Organization",
+                    "third_party_vendor_name": "System",
+                    "identities": ["test@example.com"],
+                },
             }
         )
 

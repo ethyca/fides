@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Rollbar Dataset
-    description: A sample dataset representing the Rollbar connector for Fidesops
+    description: A sample dataset representing the Rollbar connector for Fides
     collections:
       - name: projects
         fields:

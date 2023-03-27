@@ -33,9 +33,8 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_saas impo
     validate_saas_secrets_external_references,
 )
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
     create_connection_config_from_template_no_save,
-    load_registry,
-    registry_file,
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
@@ -144,8 +143,7 @@ def patch_connection_configs(
                             detail="saas_connector_type is missing",
                         )
 
-                    registry = load_registry(registry_file)
-                    connector_template = registry.get_connector_template(
+                    connector_template = ConnectorRegistry.get_connector_template(
                         config.saas_connector_type
                     )
                     if not connector_template:

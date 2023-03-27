@@ -57,10 +57,10 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   return (
     <>
       <Box color="gray.700" fontSize="14px" h="80px">
-        Configure your {connectionOption!.human_readable} email connector by
-        providing the connector name, description and a test email address. Once
-        you have saved the details, you can click test email to check the format
-        of the email.
+        Configure your {connectionOption!.human_readable} connector by providing
+        the connector name, description and a test email address. Once you have
+        saved the details, you can click test email to check the format of the
+        email.
       </Box>
       <ConnectorParametersForm
         data={data}

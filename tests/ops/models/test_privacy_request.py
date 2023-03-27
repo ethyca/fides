@@ -731,7 +731,7 @@ class TestCanRunFromCheckpoint:
     def test_can_run_from_checkpoint(self):
         assert (
             can_run_checkpoint(
-                request_checkpoint=CurrentStep.erasure_email_post_send,
+                request_checkpoint=CurrentStep.email_post_send,
                 from_checkpoint=CurrentStep.erasure,
             )
             is True

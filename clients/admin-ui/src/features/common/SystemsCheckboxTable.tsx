@@ -115,6 +115,7 @@ export const SystemsCheckboxTable = ({
               title="Select All"
               isChecked={allChecked}
               onChange={handleChangeAll}
+              data-testid="select-all"
             />
           </Th>
           {columns.map((c) => (

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Optional
 from unittest import mock
 from uuid import uuid4
 
@@ -8,6 +8,7 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+from fideslang.models import Dataset
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
@@ -15,6 +16,7 @@ from toml import load as load_toml
 from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ctl.sql_models import System
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -71,6 +73,7 @@ from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.roles import APPROVER, VIEWER
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -1161,6 +1164,7 @@ def _create_privacy_request_for_policy(
     db: Session,
     policy: Policy,
     status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
+    email_identity: Optional[str] = "test@example.com",
 ) -> PrivacyRequest:
     data = {
         "external_id": f"ext-{str(uuid4())}",
@@ -1194,7 +1198,6 @@ def _create_privacy_request_for_policy(
         db=db,
         data=data,
     )
-    email_identity = "test@example.com"
     identity_kwargs = {"email": email_identity}
     pr.cache_identity(identity_kwargs)
     pr.persist_identity(
@@ -1212,6 +1215,18 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
         policy,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_erasure_policy(
+    db: Session, erasure_policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        erasure_policy,
     )
     yield privacy_request
     privacy_request.delete(db)
@@ -1249,7 +1264,21 @@ def privacy_request_awaiting_consent_email_send(
         db,
         consent_policy,
     )
-    privacy_request.status = PrivacyRequestStatus.awaiting_consent_email_send
+    privacy_request.status = PrivacyRequestStatus.awaiting_email_send
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_awaiting_erasure_email_send(
+    db: Session, erasure_policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        erasure_policy,
+    )
+    privacy_request.status = PrivacyRequestStatus.awaiting_email_send
     privacy_request.save(db)
     yield privacy_request
     privacy_request.delete(db)
@@ -1332,37 +1361,6 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
 
 
 @pytest.fixture(scope="function")
-def user(db: Session):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fidesops_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-        },
-    )
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=SCOPE_REGISTRY,
-        user_id=user.id,
-    )
-
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
-
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    yield user
-    try:
-        client.delete(db)
-    except ObjectDeletedError:
-        pass
-    user.delete(db)
-
-
-@pytest.fixture(scope="function")
 def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     pr = PrivacyRequest.create(
         db=db,
@@ -1383,7 +1381,7 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 @pytest.fixture(scope="function")
 def ctl_dataset(db: Session, example_datasets):
-    dataset = CtlDataset(
+    ds = Dataset(
         fides_key="postgres_example_subscriptions_dataset",
         organization_fides_key="default_organization",
         name="Postgres Example Subscribers Dataset",
@@ -1409,6 +1407,7 @@ def ctl_dataset(db: Session, example_datasets):
             },
         ],
     )
+    dataset = CtlDataset(**ds.dict())
     db.add(dataset)
     db.commit()
     yield dataset
@@ -1643,13 +1642,33 @@ def authenticated_fides_client(
 
 
 @pytest.fixture(scope="function")
-def system(db: Session) -> System:
-    system = System.create(
+def system_manager(db: Session, system) -> System:
+    user = FidesUser.create(
         db=db,
         data={
-            "fides_key": f"system_key-f{uuid4()}",
-            "name": f"system-{uuid4()}",
-            "description": "fixture-made-system",
+            "username": "test_system_manager_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
         },
     )
-    return system
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER],
+        user_id=user.id,
+        systems=[system.id],
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+
+    user.set_as_system_manager(db, system)
+    yield user
+    try:
+        user.remove_as_system_manager(db, system)
+    except SystemManagerException:
+        pass
+    user.delete(db)

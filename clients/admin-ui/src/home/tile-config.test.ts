@@ -9,8 +9,8 @@ const ALL_SCOPES_FOR_TILES = [
   ScopeRegistryEnum.DATAMAP_READ,
   ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW,
   ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
-  ScopeRegistryEnum.CLI_OBJECTS_READ,
-  ScopeRegistryEnum.CLI_OBJECTS_CREATE,
+  ScopeRegistryEnum.SYSTEM_READ,
+  ScopeRegistryEnum.SYSTEM_CREATE,
 ];
 
 describe("configureTiles", () => {
@@ -18,7 +18,6 @@ describe("configureTiles", () => {
     const tiles = configureTiles({
       config: MODULE_CARD_ITEMS,
       hasPlus: false,
-      hasSystems: true,
       userScopes: ALL_SCOPES_FOR_TILES,
     });
 
@@ -29,56 +28,12 @@ describe("configureTiles", () => {
     const tiles = configureTiles({
       config: MODULE_CARD_ITEMS,
       hasPlus: true,
-      hasSystems: true,
       userScopes: ALL_SCOPES_FOR_TILES,
     });
     expect(tiles.filter((t) => t.href === "/datamap").length).toEqual(1);
   });
 
-  it("can exclude tiles that require systems or connectors", () => {
-    const tiles = configureTiles({
-      config: MODULE_CARD_ITEMS,
-      hasPlus: true,
-      hasSystems: false,
-      hasConnections: false,
-      userScopes: ALL_SCOPES_FOR_TILES,
-    });
-    expect(tiles.map((t) => t.name)).toEqual([
-      "Add systems",
-      "Configure privacy requests",
-    ]);
-  });
-
-  it("can include tiles that require systems", () => {
-    const tiles = configureTiles({
-      config: MODULE_CARD_ITEMS,
-      hasPlus: true,
-      hasSystems: true,
-      userScopes: ALL_SCOPES_FOR_TILES,
-    });
-    expect(tiles.map((t) => t.name)).toEqual([
-      "View data map",
-      "Add systems",
-      "View systems",
-      "Configure privacy requests",
-    ]);
-  });
-
-  it("can include tiles that require connectors", () => {
-    const tiles = configureTiles({
-      config: MODULE_CARD_ITEMS,
-      hasConnections: true,
-      userScopes: ALL_SCOPES_FOR_TILES,
-    });
-    expect(tiles.map((t) => t.name)).toEqual([
-      "Add systems",
-      "Configure privacy requests",
-      "Review privacy requests",
-    ]);
-  });
-
-  // TODO: tests temporarily disabled due to https://github.com/ethyca/fides/issues/2769
-  describe.skip("configure by scopes", () => {
+  describe("configure by scopes", () => {
     it("returns no tiles if user has no scopes", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
@@ -100,7 +55,7 @@ describe("configureTiles", () => {
     it("conditionally shows add systems based on scope", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
-        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
+        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
       });
       expect(tiles.map((t) => t.name)).toEqual(["Add systems"]);
     });
@@ -117,7 +72,6 @@ describe("configureTiles", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
         hasPlus: true,
-        hasSystems: true,
         userScopes: [ScopeRegistryEnum.DATAMAP_READ],
       });
       expect(tiles.map((t) => t.name)).toEqual(["View data map"]);
@@ -126,7 +80,6 @@ describe("configureTiles", () => {
     it("conditionally shows reviewing privacy requests", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
-        hasConnections: true,
         userScopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW],
       });
       expect(tiles.map((t) => t.name)).toEqual(["Review privacy requests"]);
@@ -135,7 +88,6 @@ describe("configureTiles", () => {
     it("can combine scopes to show multiple tiles", () => {
       const tiles = configureTiles({
         config: MODULE_CARD_ITEMS,
-        hasConnections: true,
         userScopes: [
           ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW,
           ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,

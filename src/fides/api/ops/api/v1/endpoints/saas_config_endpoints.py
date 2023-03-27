@@ -37,6 +37,7 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
     SaasConnectionTemplateValues,
 )
+from fides.api.ops.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
@@ -50,10 +51,7 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_authori
 )
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
-    ConnectorTemplate,
     create_connection_config_from_template_no_save,
-    load_registry,
-    registry_file,
     upsert_dataset_config_from_template,
 )
 from fides.api.ops.util.api_router import APIRouter
@@ -285,10 +283,9 @@ def instantiate_connection_from_template(
     fields are provided, persists the associated connection config and dataset to the database.
     """
 
-    registry: ConnectorRegistry = load_registry(registry_file)
-    connector_template: Optional[ConnectorTemplate] = registry.get_connector_template(
-        saas_connector_type
-    )
+    connector_template: Optional[
+        ConnectorTemplate
+    ] = ConnectorRegistry.get_connector_template(saas_connector_type)
     if not connector_template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

@@ -27,6 +27,8 @@ import {
   PrivacyDeclaration,
 } from "~/types/api";
 
+import { PrivacyDeclarationWithId } from "./types";
+
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
     .min(1, "Must assign at least one data category")
@@ -46,6 +48,20 @@ const defaultInitialValues: PrivacyDeclaration = {
 
 type FormValues = typeof defaultInitialValues;
 
+const transformPrivacyDeclarationToHaveId = (
+  privacyDeclaration: PrivacyDeclaration
+) => ({
+  ...privacyDeclaration,
+  id: privacyDeclaration.name
+    ? `${privacyDeclaration.data_use} - ${privacyDeclaration.name}`
+    : privacyDeclaration.data_use,
+});
+
+export const transformPrivacyDeclarationsToHaveId = (
+  privacyDeclarations: PrivacyDeclaration[]
+): PrivacyDeclarationWithId[] =>
+  privacyDeclarations.map(transformPrivacyDeclarationToHaveId);
+
 export interface DataProps {
   allDataCategories: DataCategory[];
   allDataUses: DataUse[];
@@ -59,8 +75,7 @@ export const PrivacyDeclarationFormComponents = ({
   allDataSubjects,
   allDatasets,
   onDelete,
-  includeDeprecatedFields,
-}: DataProps & Pick<Props, "onDelete" | "includeDeprecatedFields">) => {
+}: DataProps & Pick<Props, "onDelete">) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<FormValues>();
   const deleteModal = useDisclosure();
@@ -73,7 +88,7 @@ export const PrivacyDeclarationFormComponents = ({
     : [];
 
   const handleDelete = async () => {
-    await onDelete(initialValues);
+    await onDelete(transformPrivacyDeclarationToHaveId(initialValues));
     deleteModal.onClose();
   };
 
@@ -93,14 +108,13 @@ export const PrivacyDeclarationFormComponents = ({
         variant="stacked"
         singleValueBlock
       />
-      {includeDeprecatedFields ? (
-        <CustomTextInput
-          id="name"
-          label="Privacy declaration name (deprecated)"
-          name="name"
-          variant="stacked"
-        />
-      ) : null}
+      <CustomTextInput
+        id="name"
+        label="Processing Activity"
+        name="name"
+        variant="stacked"
+        tooltip="The personal data processing activity or activities associated with this data use."
+      />
       <CustomSelect
         name="data_categories"
         label="Data categories"
@@ -181,7 +195,9 @@ export const usePrivacyDeclarationForm = ({
       (du) => du.fides_key === initialValues.data_use
     )[0];
     if (thisDataUse) {
-      return thisDataUse.name;
+      return initialValues.name
+        ? `${thisDataUse.name} - ${initialValues.name}`
+        : thisDataUse.name;
     }
     return undefined;
   }, [allDataUses, initialValues]);
@@ -190,7 +206,10 @@ export const usePrivacyDeclarationForm = ({
     values: FormValues,
     formikHelpers: FormikHelpers<FormValues>
   ) => {
-    const success = await onSubmit(values, formikHelpers);
+    const success = await onSubmit(
+      transformPrivacyDeclarationToHaveId(values),
+      formikHelpers
+    );
     if (success) {
       // Reset state such that isDirty will be checked again before next save
       formikHelpers.resetForm({ values });
@@ -227,12 +246,11 @@ export const usePrivacyDeclarationForm = ({
 
 interface Props {
   onSubmit: (
-    values: PrivacyDeclaration,
+    values: PrivacyDeclarationWithId,
     formikHelpers: FormikHelpers<PrivacyDeclaration>
   ) => Promise<boolean>;
-  onDelete: (declaration: PrivacyDeclaration) => Promise<boolean>;
-  initialValues?: PrivacyDeclaration;
-  includeDeprecatedFields?: boolean;
+  onDelete: (declaration: PrivacyDeclarationWithId) => Promise<boolean>;
+  initialValues?: PrivacyDeclarationWithId;
 }
 
 export const PrivacyDeclarationForm = ({

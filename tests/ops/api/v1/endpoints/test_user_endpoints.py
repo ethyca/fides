@@ -19,6 +19,9 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
     STORAGE_READ,
+    SYSTEM_MANAGER_DELETE,
+    SYSTEM_MANAGER_READ,
+    SYSTEM_MANAGER_UPDATE,
     USER_CREATE,
     USER_DELETE,
     USER_PASSWORD_RESET,
@@ -37,14 +40,15 @@ from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.lib.models.client import ADMIN_UI_ROOT, ClientDetail
+from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload
-from fides.lib.oauth.roles import OWNER, VIEWER
+from fides.lib.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from tests.conftest import generate_auth_header_for_user
 
 page_size = Params().size
@@ -153,6 +157,9 @@ class TestCreateUser:
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
+        assert user.permissions.roles == [
+            VIEWER
+        ], "User given viewer role by default on create"
 
     def test_create_user_as_root(
         self,
@@ -263,7 +270,7 @@ class TestDeleteUser:
         saved_user_id = user.id
 
         FidesUserPermissions.create(
-            db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+            db=db, data={"user_id": user.id, "roles": [APPROVER]}
         )
 
         assert user.permissions is not None
@@ -315,7 +322,7 @@ class TestDeleteUser:
         )
 
         FidesUserPermissions.create(
-            db=db, data={"user_id": user.id, "scopes": [USER_DELETE]}
+            db=db, data={"user_id": user.id, "roles": [CONTRIBUTOR]}
         )
 
         other_user = FidesUser.create(
@@ -329,7 +336,7 @@ class TestDeleteUser:
         saved_user_id = other_user.id
 
         FidesUserPermissions.create(
-            db=db, data={"user_id": other_user.id, "scopes": [PRIVACY_REQUEST_READ]}
+            db=db, data={"user_id": other_user.id, "roles": [APPROVER]}
         )
 
         assert other_user.permissions is not None
@@ -339,7 +346,7 @@ class TestDeleteUser:
             db,
             CONFIG.security.oauth_client_id_length_bytes,
             CONFIG.security.oauth_client_secret_length_bytes,
-            scopes=[USER_DELETE],
+            roles=[CONTRIBUTOR],
             user_id=user.id,
         )
 
@@ -347,7 +354,7 @@ class TestDeleteUser:
             db,
             CONFIG.security.oauth_client_id_length_bytes,
             CONFIG.security.oauth_client_secret_length_bytes,
-            scopes=[PRIVACY_REQUEST_READ],
+            roles=[APPROVER],
             user_id=other_user.id,
         )
 
@@ -355,7 +362,7 @@ class TestDeleteUser:
         saved_client_id = other_user_client.id
 
         payload = {
-            JWE_PAYLOAD_SCOPES: [USER_DELETE],
+            JWE_PAYLOAD_ROLES: [CONTRIBUTOR],
             JWE_PAYLOAD_CLIENT_ID: client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -380,7 +387,7 @@ class TestDeleteUser:
         )
         assert permissions_search is None
 
-    def test_delete_user_as_root(self, api_client, db, user):
+    def test_delete_user_as_root(self, api_client, db, user, root_auth_header):
         other_user = FidesUser.create(
             db=db,
             data={
@@ -390,8 +397,10 @@ class TestDeleteUser:
         )
 
         FidesUserPermissions.create(
-            db=db, data={"user_id": other_user.id, "scopes": [PRIVACY_REQUEST_READ]}
+            db=db, data={"user_id": other_user.id, "roles": [APPROVER]}
         )
+        saved_user_id = other_user.id
+        saved_permission_id = other_user.permissions.id
 
         user_client, _ = ClientDetail.create_client_and_secret(
             db,
@@ -401,24 +410,9 @@ class TestDeleteUser:
             user_id=other_user.id,
         )
         client_id = user_client.id
-        saved_user_id = other_user.id
-        saved_permission_id = other_user.permissions.id
-
-        # Temporarily set the user's client to be the Admin UI Root client
-        client = user.client
-        client.fides_key = ADMIN_UI_ROOT
-        client.save(db)
-
-        payload = {
-            JWE_PAYLOAD_SCOPES: [USER_DELETE],
-            JWE_PAYLOAD_CLIENT_ID: user.client.id,
-            JWE_ISSUED_AT: datetime.now().isoformat(),
-        }
-        jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
-        auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
-            f"{V1_URL_PREFIX}{USERS}/{other_user.id}", headers=auth_header
+            f"{V1_URL_PREFIX}{USERS}/{other_user.id}", headers=root_auth_header
         )
         assert HTTP_204_NO_CONTENT == response.status_code
 
@@ -435,10 +429,6 @@ class TestDeleteUser:
             db, field="id", value=saved_permission_id
         )
         assert permissions_search is None
-
-        # Admin client who made the request is not deleted
-        owner_client_search = ClientDetail.get_by(db, field="id", value=user.client.id)
-        assert owner_client_search is not None
 
 
 class TestGetUsers:
@@ -868,9 +858,7 @@ class TestUserLogin:
             extract_payload(token, CONFIG.security.app_encryption_key)
         )
         assert token_data["client-id"] == user.client.id
-        assert token_data["scopes"] == [
-            PRIVACY_REQUEST_READ
-        ]  # Uses scopes on existing client
+        assert token_data["scopes"] == []  # Uses scopes on existing client
 
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
@@ -896,10 +884,8 @@ class TestUserLogin:
             extract_payload(token, CONFIG.security.app_encryption_key)
         )
         assert token_data["client-id"] == user.client.id
-        assert token_data["scopes"] == [
-            PRIVACY_REQUEST_READ
-        ]  # Uses scopes on existing client
-        assert token_data["roles"] == []
+        assert token_data["scopes"] == []
+        assert token_data["roles"] == [APPROVER]
 
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == user.id
@@ -931,9 +917,77 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == viewer_user.id
 
+    def test_login_with_systems_only(self, db, url, system_manager, api_client, system):
+        # Delete existing client for test purposes
+        system_manager.client.delete(db)
+        body = {
+            "username": system_manager.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        assert system_manager.client is None  # client does not exist
+        assert system_manager.permissions is not None
+        assert system_manager.system_ids == [system.id]
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(system_manager)
+        assert system_manager.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == system_manager.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == []  # Uses roles on existing client
+        assert token_data["systems"] == [system.id]
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == system_manager.id
+
+    def test_login_after_system_deleted(
+        self, db, url, system_manager, api_client, system
+    ):
+        """Test that client is updated on login just in case.  A system delete doesn't update the client.
+        There could be other direct-db updates that didn't persist to the client.
+        """
+        assert system_manager.client
+        assert system_manager.client.systems == [system.id]
+        assert system_manager.system_ids == [system.id]
+
+        system_manager.permissions.roles = [VIEWER]
+        system_manager.save(db=db)
+
+        db.delete(system)
+        db.commit()
+
+        body = {
+            "username": system_manager.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(system_manager)
+        assert system_manager.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == system_manager.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == [VIEWER]  # Uses roles on existing client
+        assert token_data["systems"] == []
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == system_manager.id
+
     def test_login_with_no_permissions(self, db, url, viewer_user, api_client):
         viewer_user.permissions.roles = []
-        viewer_user.permissions.scopes = []
         viewer_user.save(db)  # Make sure user doesn't have roles or scopes
 
         assert viewer_user.permissions is not None
@@ -1159,3 +1213,358 @@ class TestUserLogout:
         # Even though client doesn't exist, we still return a 204
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == HTTP_204_NO_CONTENT
+
+
+class TestUpdateSystemsManagedByUser:
+    @pytest.fixture(scope="function")
+    def url(self, user) -> str:
+        return V1_URL_PREFIX + f"/user/{user.id}/system-manager"
+
+    def test_update_system_manager_not_authenticated(
+        self, api_client: TestClient, url: str
+    ) -> None:
+        resp = api_client.put(url, headers={})
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_update_system_manager_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
+        resp = api_client.put(url, headers=auth_header)
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_update_system_manager_user_not_found(
+        self, api_client: TestClient, generate_auth_header, url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+        resp = api_client.put(
+            V1_URL_PREFIX + f"/user/bad_user/system-manager",
+            headers=auth_header,
+            json=["bad_fides_key"],
+        )
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        assert resp.json()["detail"] == f"No user found with id bad_user."
+
+    def test_update_system_manager_system_not_found(
+        self, api_client: TestClient, generate_auth_header, url, user
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+        resp = api_client.put(url, headers=auth_header, json=["bad_fides_key"])
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        assert (
+            resp.json()["detail"]
+            == f"Cannot add user {user.id} as system manager. System(s) not found."
+        )
+
+    def test_update_system_manager_dupe_systems_in_request(
+        self, api_client: TestClient, generate_auth_header, url, system, user
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+        resp = api_client.put(
+            url, headers=auth_header, json=[system.fides_key, system.fides_key]
+        )
+        assert resp.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            resp.json()["detail"]
+            == f"Cannot add user {user.id} as system manager. Duplicate systems in request body."
+        )
+
+    def test_update_system_manager(
+        self, api_client: TestClient, generate_auth_header, url, system, user, db
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+        resp = api_client.put(url, headers=auth_header, json=[system.fides_key])
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+        assert len(response_body) == 1
+        assert response_body[0]["fides_key"] == system.fides_key
+
+        db.refresh(user)
+        assert user.systems == [system]
+
+    def test_update_system_manager_user_is_already_a_manager(
+        self, api_client: TestClient, generate_auth_header, url, system, user, db
+    ) -> None:
+        assert user.systems == []
+        user.set_as_system_manager(db, system)
+        assert user.systems == [system]
+
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+        resp = api_client.put(url, headers=auth_header, json=[system.fides_key])
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+        assert len(response_body) == 1
+        assert response_body[0]["fides_key"] == system.fides_key
+
+        db.refresh(user)
+        assert user.systems == [system]
+
+    def test_update_system_manager_existing_system_not_in_request(
+        self, api_client: TestClient, generate_auth_header, url, system, user, db
+    ) -> None:
+        assert user.systems == []
+        user.set_as_system_manager(db, system)
+        assert user.systems == [system]
+
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
+        resp = api_client.put(url, headers=auth_header, json=[])
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+        assert len(response_body) == 0
+
+        db.refresh(user)
+        assert user.systems == []
+
+
+class TestGetSystemsUserManages:
+    @pytest.fixture(scope="function")
+    def url(self, user) -> str:
+        return V1_URL_PREFIX + f"/user/{user.id}/system-manager"
+
+    def test_get_systems_managed_by_user_not_authenticated(
+        self, api_client: TestClient, url: str
+    ) -> None:
+        resp = api_client.get(url, headers={})
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_get_systems_managed_by_user_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        # Note no user attached to this client, so it can't check to see
+        # if the user is accessing itself
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_get_systems_managed_by_self(
+        self, api_client: TestClient, url, user, system, db
+    ) -> None:
+        """User can view their own systems even if they don't necessarily have the correct scopes"""
+        user.set_as_system_manager(db, system)
+        auth_header = generate_auth_header_for_user(user, [])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        assert len(resp.json()) == 1
+        assert resp.json()[0]["fides_key"] == system.fides_key
+
+    def test_get_systems_managed_by_other_user(
+        self, api_client: TestClient, url, user, system, db
+    ) -> None:
+        """User need read system manager permissions to be able to view someone else's systems"""
+        user.set_as_system_manager(db, system)
+        another_user = FidesUser.create(
+            db=db,
+            data={
+                "username": "another_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            },
+        )
+        client = ClientDetail(
+            hashed_secret="thisisatest",
+            salt="thisisstillatest",
+            scopes=SCOPE_REGISTRY,
+            user_id=another_user.id,
+        )
+        db.add(client)
+        db.commit()
+
+        auth_header = generate_auth_header_for_user(another_user, [])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+        client.delete(db=db)
+        another_user.delete(db)
+
+    def test_get_systems_managed_by_user_not_found(
+        self, api_client: TestClient, generate_auth_header, url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
+        resp = api_client.get(
+            V1_URL_PREFIX + f"/user/bad_user/system-manager", headers=auth_header
+        )
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        assert resp.json()["detail"] == f"No user found with id bad_user."
+
+    def test_get_systems_managed_by_user_none_exist(
+        self, api_client: TestClient, generate_auth_header, url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        assert resp.json() == []
+
+    def test_get_systems_managed_by_user(
+        self, api_client: TestClient, generate_auth_header, url, user, system, db
+    ) -> None:
+        user.set_as_system_manager(db, system)
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        assert len(resp.json()) == 1
+        assert resp.json()[0]["fides_key"] == system.fides_key
+
+
+class TestGetSpecificSystemUserManages:
+    @pytest.fixture(scope="function")
+    def url(self, user, system) -> str:
+        return V1_URL_PREFIX + f"/user/{user.id}/system-manager/{system.fides_key}"
+
+    def test_get_system_managed_by_user_not_authenticated(
+        self, api_client: TestClient, url: str
+    ) -> None:
+        resp = api_client.get(url, headers={})
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_get_system_managed_by_user_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        # Note that no user is attached to this client so we can't check
+        # to see if the user is accessing its own systems
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_get_system_managed_by_self(
+        self, api_client: TestClient, url, user, system, db
+    ) -> None:
+        """User can view their own systems even if they don't necessarily have the correct scopes"""
+        user.set_as_system_manager(db, system)
+        auth_header = generate_auth_header_for_user(user, [])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        assert resp.json()["fides_key"] == system.fides_key
+
+    def test_get_system_managed_by_other_user(
+        self, api_client: TestClient, url, user, system, db
+    ) -> None:
+        """User need read system manager permissions to be able to view someone else's systems"""
+        user.set_as_system_manager(db, system)
+        another_user = FidesUser.create(
+            db=db,
+            data={
+                "username": "another_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            },
+        )
+        client = ClientDetail(
+            hashed_secret="thisisatest",
+            salt="thisisstillatest",
+            scopes=SCOPE_REGISTRY,
+            user_id=another_user.id,
+        )
+        db.add(client)
+        db.commit()
+
+        auth_header = generate_auth_header_for_user(another_user, [])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+        client.delete(db=db)
+        another_user.delete(db)
+
+    def test_get_system_managed_by_user_not_found(
+        self, api_client: TestClient, generate_auth_header, url, system
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
+        resp = api_client.get(
+            V1_URL_PREFIX + f"/user/bad_user/system-manager/{system.fides_key}",
+            headers=auth_header,
+        )
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        assert resp.json()["detail"] == f"No user found with id bad_user."
+
+    def test_get_system_managed_by_user_system_does_not_exist(
+        self, api_client: TestClient, generate_auth_header, url, user
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
+        resp = api_client.get(
+            V1_URL_PREFIX + f"/user/{user.id}/system-manager/bad_system",
+            headers=auth_header,
+        )
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        assert resp.json()["detail"] == f"No system found with fides_key bad_system."
+
+    def test_get_system_not_managed_by_user(
+        self, api_client: TestClient, generate_auth_header, url, user, system
+    ) -> None:
+        assert not user.systems
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        assert (
+            resp.json()["detail"]
+            == f"User {user.id} is not a manager of system {system.fides_key}"
+        )
+
+    def test_get_system_managed_by_user(
+        self, api_client: TestClient, generate_auth_header, url, user, system, db
+    ) -> None:
+        user.set_as_system_manager(db, system)
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        assert resp.json()["fides_key"] == system.fides_key
+
+
+class TestRemoveUserAsSystemManager:
+    @pytest.fixture(scope="function")
+    def url(self, user, system) -> str:
+        return V1_URL_PREFIX + f"/user/{user.id}/system-manager/{system.fides_key}"
+
+    def test_delete_user_as_system_manager_not_authenticated(
+        self, api_client: TestClient, url: str
+    ) -> None:
+        resp = api_client.delete(url, headers={})
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_delete_user_as_system_manager_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_delete_user_as_system_manager_user_not_found(
+        self, api_client: TestClient, generate_auth_header, url, system
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_DELETE])
+        resp = api_client.delete(
+            V1_URL_PREFIX + f"/user/bad_user/system-manager/{system.fides_key}",
+            headers=auth_header,
+        )
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        assert resp.json()["detail"] == f"No user found with id bad_user."
+
+    def test_delete_user_as_system_manager_from_nonexistent_system(
+        self, api_client: TestClient, generate_auth_header, url, user
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_DELETE])
+        resp = api_client.delete(
+            V1_URL_PREFIX + f"/user/{user.id}/system-manager/bad_system",
+            headers=auth_header,
+        )
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        assert resp.json()["detail"] == f"No system found with fides_key bad_system."
+
+    def test_remove_user_from_system_not_managed_by_user(
+        self, api_client: TestClient, generate_auth_header, url, user, system
+    ) -> None:
+        assert not user.systems
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        assert (
+            resp.json()["detail"]
+            == f"Cannot delete user as system manager. User {user.id} is not a manager of system {system.fides_key}."
+        )
+
+    def test_delete_user_as_system_manager(
+        self, api_client: TestClient, generate_auth_header, url, user, system, db
+    ) -> None:
+        user.set_as_system_manager(db, system)
+        auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == HTTP_204_NO_CONTENT
+
+        db.refresh(user)
+        assert user.systems == []

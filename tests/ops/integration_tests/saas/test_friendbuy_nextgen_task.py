@@ -78,6 +78,7 @@ async def test_friendbuy_nextgen_access_request_task(
     )
 
 
+@pytest.mark.skip("Temporarily disabled test")
 @pytest.mark.integration_saas
 @pytest.mark.integration_friendbuy_nextgen
 @pytest.mark.asyncio

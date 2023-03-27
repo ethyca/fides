@@ -8,23 +8,21 @@ import {
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
 
-import { PrivacyDeclaration } from "~/types/api";
-
 import {
   DataProps,
   PrivacyDeclarationFormComponents,
   usePrivacyDeclarationForm,
   ValidationSchema,
 } from "./PrivacyDeclarationForm";
+import { PrivacyDeclarationWithId } from "./types";
 
 interface AccordionProps extends DataProps {
-  privacyDeclarations: PrivacyDeclaration[];
+  privacyDeclarations: PrivacyDeclarationWithId[];
   onEdit: (
-    oldDeclaration: PrivacyDeclaration,
-    newDeclaration: PrivacyDeclaration
+    oldDeclaration: PrivacyDeclarationWithId,
+    newDeclaration: PrivacyDeclarationWithId
   ) => Promise<boolean>;
-  onDelete: (declaration: PrivacyDeclaration) => Promise<boolean>;
-  includeDeprecatedFields?: boolean;
+  onDelete: (declaration: PrivacyDeclarationWithId) => Promise<boolean>;
 }
 
 const PrivacyDeclarationAccordionItem = ({
@@ -32,11 +30,11 @@ const PrivacyDeclarationAccordionItem = ({
   onEdit,
   onDelete,
   ...dataProps
-}: { privacyDeclaration: PrivacyDeclaration } & Omit<
+}: { privacyDeclaration: PrivacyDeclarationWithId } & Omit<
   AccordionProps,
   "privacyDeclarations"
 >) => {
-  const handleEdit = (newValues: PrivacyDeclaration) =>
+  const handleEdit = (newValues: PrivacyDeclarationWithId) =>
     onEdit(privacyDeclaration, newValues);
 
   const { initialValues, renderHeader, handleSubmit } =
@@ -101,7 +99,7 @@ const PrivacyDeclarationAccordion = ({
         // The closest is 'data_use' but that is only enforced on the frontend and can change
         // This results in the "Saved" indicator not appearing if you change the 'data_use' in the form
         // The fix would be to enforce a key, either on the backend, or through a significant workaround on the frontend
-        key={dec.data_use}
+        key={dec.id}
         privacyDeclaration={dec}
         {...props}
       />
