@@ -292,6 +292,5 @@ def has_scope_subset(user_scopes: List[str], endpoint_scopes: SecurityScopes) ->
     return True
 
 
-# This is a workaround so that we can override CLI-related endpoints and
-# all other endpoints separately.
-verify_oauth_client_cli = copy_func(verify_oauth_client)
+# This allows us to selectively enforce auth depending on user environment settings
+verify_oauth_client_prod = copy_func(verify_oauth_client)
