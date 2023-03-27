@@ -1,25 +1,18 @@
-import {
-  Button,
-  ButtonGroup,
-  Flex,
-  Spinner,
-  Stack,
-  Text,
-  useToast,
-} from "@fidesui/react";
-import { useHasRole } from "common/Restrict";
-import { Form, Formik } from "formik";
+import {Button, ButtonGroup, Flex, Spinner, Stack, Text, useDisclosure, useToast,} from "@fidesui/react";
+import {useHasRole} from "common/Restrict";
+import {Form, Formik} from "formik";
 import NextLink from "next/link";
-import { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 
-import { useAppSelector } from "~/app/hooks";
-import { USER_MANAGEMENT_ROUTE } from "~/constants";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import {useAppSelector} from "~/app/hooks";
+import {USER_MANAGEMENT_ROUTE} from "~/constants";
+import {getErrorMessage, isErrorResult} from "~/features/common/helpers";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { ROLES } from "~/features/user-management/constants";
-import { RoleRegistryEnum, System } from "~/types/api";
+import {errorToastParams, successToastParams} from "~/features/common/toast";
+import {ROLES} from "~/features/user-management/constants";
+import {RoleRegistryEnum, System} from "~/types/api";
 
+import ConfirmationModal from "common/ConfirmationModal";
 import RoleOption from "./RoleOption";
 import {
   selectActiveUserId,
@@ -42,6 +35,11 @@ const PermissionsForm = () => {
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
   });
+  const {
+    isOpen: chooseApproverIsOpen,
+    onOpen: chooseApproverOpen,
+    onClose: chooseApproverClose,
+  } = useDisclosure();
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
     initialManagedSystems
@@ -63,7 +61,10 @@ const PermissionsForm = () => {
   const [updateUserPermissionMutationTrigger] =
     useUpdateUserPermissionsMutation();
 
-  const handleSubmit = async (values: FormValues) => {
+  const updatePermissions = async (values: FormValues) => {
+    if (chooseApproverIsOpen) {
+      chooseApproverClose()
+    }
     if (!activeUserId) {
       return;
     }
@@ -88,6 +89,21 @@ const PermissionsForm = () => {
       return;
     }
     toast(successToastParams("Permissions updated"));
+  }
+
+  const handleSubmit = async (values: FormValues) => {
+    if (!activeUserId) {
+      return;
+    }
+    console.log(assignedSystems)
+    console.log(values.roles)
+    console.log(Boolean(values.roles.includes(RoleRegistryEnum.APPROVER)))
+    if ((assignedSystems.length > 0) && (values.roles.includes(RoleRegistryEnum.APPROVER))) {
+      // approvers cannot be system managers on back-end
+      chooseApproverOpen()
+    } else {
+      await updatePermissions(values)
+    }
   };
 
   // This prevents logged-in users with contributor role from being able to assign owner roles
@@ -161,6 +177,17 @@ const PermissionsForm = () => {
               </Button>
             </ButtonGroup>
           </Stack>
+          <ConfirmationModal
+              isOpen={chooseApproverIsOpen}
+              onClose={chooseApproverClose}
+              onConfirm={() => updatePermissions(values)}
+              title="Change role to Approver"
+              testId="downgrade-to-approver-confirmation-modal"
+              continueButtonText="Yes"
+              message={
+                <Text>Approvers cannot be system managers. Any systems assigned to this user will be removed. Are you sure you wish to proceed? </Text>
+              }
+          />
         </Form>
       )}
     </Formik>

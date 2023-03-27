@@ -40,21 +40,13 @@ const RoleOption = ({
 }: Props) => {
   const { setFieldValue } = useFormikContext<FormValues>();
   const assignSystemsModal = useDisclosure();
-  const {
-    isOpen: chooseApproverIsOpen,
-    onOpen: chooseApproverOpen,
-    onClose: chooseApproverClose,
-  } = useDisclosure();
 
   const handleRoleChange = () => {
     setFieldValue("roles", [roleKey]);
   }
 
   const handleClick = () => {
-    if ((assignedSystems.length > 0) && (roleKey === RoleRegistryEnum.APPROVER)) {
-      // approvers cannot be system managers on back-end
-      chooseApproverOpen()
-    }
+
     handleRoleChange()
   };
 
@@ -121,31 +113,18 @@ const RoleOption = ({
   }
 
   return (
-    <Box>
-      <Button
-          onClick={handleClick}
-          justifyContent="start"
-          variant="outline"
-          height="inherit"
-          p={4}
-          data-testid={`role-option-${label}`}
-          title={buttonTitle}
-          disabled={isDisabled}
-      >
-        {label}
-      </Button>
-      <ConfirmationModal
-          isOpen={chooseApproverIsOpen}
-          onClose={chooseApproverClose}
-          onConfirm={() => handleRoleChange}
-          title="Change role to Approver"
-          testId={`choose-role-option-${label}-confirmation-modal`}
-          continueButtonText="Yes"
-          message={
-            <Text>Approvers cannot be system managers. Any systems assigned to this user will be removed. Are you sure you wish to proceed? </Text>
-          }
-      />
-    </Box>
+    <Button
+        onClick={handleClick}
+        justifyContent="start"
+        variant="outline"
+        height="inherit"
+        p={4}
+        data-testid={`role-option-${label}`}
+        title={buttonTitle}
+        disabled={isDisabled}
+    >
+      {label}
+    </Button>
   );
 };
 
