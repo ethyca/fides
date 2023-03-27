@@ -2,7 +2,6 @@
  * A component for choosing a role, meant to be embedded in a Formik form
  */
 import {
-  Box,
   Button,
   Flex,
   GreenCheckCircleIcon,
@@ -11,6 +10,7 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { useFormikContext } from "formik";
+import React from "react";
 
 import { RoleRegistryEnum, System } from "~/types/api";
 
@@ -18,8 +18,6 @@ import QuestionTooltip from "../common/QuestionTooltip";
 import AssignSystemsModal from "./AssignSystemsModal";
 import { AssignSystemsDeleteTable } from "./AssignSystemsTable";
 import { type FormValues } from "./PermissionsForm";
-import React from "react";
-import ConfirmationModal from "common/ConfirmationModal";
 
 interface Props {
   label: string;

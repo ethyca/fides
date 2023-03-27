@@ -8,6 +8,7 @@ import {
   useDisclosure,
   useToast,
 } from "@fidesui/react";
+import ConfirmationModal from "common/ConfirmationModal";
 import { useHasRole } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
@@ -21,7 +22,6 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, System } from "~/types/api";
 
-import ConfirmationModal from "common/ConfirmationModal";
 import RoleOption from "./RoleOption";
 import {
   selectActiveUserId,
@@ -104,9 +104,6 @@ const PermissionsForm = () => {
     if (!activeUserId) {
       return;
     }
-    console.log(assignedSystems);
-    console.log(values.roles);
-    console.log(Boolean(values.roles.includes(RoleRegistryEnum.APPROVER)));
     if (
       assignedSystems.length > 0 &&
       values.roles.includes(RoleRegistryEnum.APPROVER)
