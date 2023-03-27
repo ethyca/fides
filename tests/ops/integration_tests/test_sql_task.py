@@ -129,7 +129,6 @@ async def test_composite_key_erasure(
     db,
     integration_postgres_config: ConnectionConfig,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=str(uuid4()))
     policy = erasure_policy("A")
     customer = Collection(
@@ -279,7 +278,6 @@ async def test_postgres_access_request_task(
     integration_postgres_config,
     postgres_integration_db,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
@@ -452,7 +450,6 @@ async def test_mssql_access_request_task(
     connection_config_mssql,
     mssql_integration_db,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
@@ -540,7 +537,6 @@ async def test_mysql_access_request_task(
     connection_config_mysql,
     mysql_integration_db,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
@@ -933,7 +929,6 @@ async def test_access_erasure_type_conversion(
 class TestRetrievingData:
     @pytest.fixture
     def connector(self, integration_postgres_config):
-
         return get_connector(integration_postgres_config)
 
     @pytest.fixture

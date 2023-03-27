@@ -952,7 +952,6 @@ class TestCreateRules:
         policy,
         storage_config,
     ):
-
         data = [
             {
                 "name": "test access rule",
@@ -1062,7 +1061,6 @@ class TestCreateRules:
         generate_auth_header,
         policy,
     ):
-
         data = [
             {
                 "name": "test erasure rule",

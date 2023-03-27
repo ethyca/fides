@@ -105,7 +105,9 @@ class AuthenticatedClient:
                     sleep_time = backoff_factor * (2 ** (attempt + 1))
                     try:
                         return func(*args, **kwargs)
-                    except RequestFailureResponseException as exc:  # pylint: disable=W0703
+                    except (
+                        RequestFailureResponseException
+                    ) as exc:  # pylint: disable=W0703
                         response: Response = exc.response
                         status_code: int = response.status_code
                         last_exception = ClientUnsuccessfulException(

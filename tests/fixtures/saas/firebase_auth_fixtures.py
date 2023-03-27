@@ -49,7 +49,6 @@ def firebase_auth_dataset() -> Dict[str, Any]:
 
 @pytest.fixture(scope="session")
 def firebase_auth_secrets(saas_config):
-
     return {
         "domain": pydash.get(saas_config, "firebase_auth.domain") or secrets["domain"],
         "type": pydash.get(saas_config, "firebase_auth.type") or secrets["type"],

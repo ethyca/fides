@@ -332,7 +332,8 @@ class TestMaskValues:
     def test_flexible_config(self, api_client: TestClient, generate_auth_header):
         auth_header = generate_auth_header(scopes=[MASKING_EXEC])
         """Test that this request is allowed.  Allow the configuration to be
-        very flexible so different configuration requirements by many masking strategies are supported"""
+        very flexible so different configuration requirements by many masking strategies are supported
+        """
         value = "my_email"
         request = {
             "values": [value],

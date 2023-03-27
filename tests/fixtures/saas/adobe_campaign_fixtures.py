@@ -128,7 +128,6 @@ def adobe_campaign_erasure_data(
     adobe_campaign_connection_config: ConnectionConfig,
     adobe_campaign_erasure_identity_email: str,
 ) -> None:
-
     secrets = adobe_campaign_connection_config.secrets
     base_url = f"https://{secrets['domain']}/{secrets['organization_id']}"
     headers = {
