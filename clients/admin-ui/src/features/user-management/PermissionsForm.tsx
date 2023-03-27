@@ -185,7 +185,7 @@ const PermissionsForm = () => {
               testId="downgrade-to-approver-confirmation-modal"
               continueButtonText="Yes"
               message={
-                <Text>Approvers cannot be system managers. Any systems assigned to this user will be removed. Are you sure you wish to proceed? </Text>
+                <Text>Switching to an approver role will remove all assigned systems. Do you wish to proceed?</Text>
               }
           />
         </Form>
