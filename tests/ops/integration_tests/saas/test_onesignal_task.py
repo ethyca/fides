@@ -94,7 +94,7 @@ async def test_onesignal_erasure_request_task(
     onesignal_erasure_identity_email,
     onesignal_create_erasure_data,
 ) -> None:
-    """Full erasure request based on the onesignal SaaS config"""
+    """Full erasure request based on the OneSignal SaaS config"""
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete
@@ -165,12 +165,12 @@ async def test_onesignal_erasure_request_task(
 
     # user
     response = requests.get(
-        url=f"{base_url}/api/v1/players/"f"{onesignal_secrets['player_id']}",
+        url=f"{base_url}/api/v1/players/"f"{onesignal_create_erasure_data}",
         headers=headers,
         params={"app_id": f"{onesignal_secrets['app_id']}"},
     )
     device_response=response.json()
     #check data is updated or not
-    # assert device_response["tags"]["first_name"] == "MASKED"
+    assert device_response["identifier"] == onesignal_erasure_identity_email
 
     CONFIG.execution.masking_strict = masking_strict

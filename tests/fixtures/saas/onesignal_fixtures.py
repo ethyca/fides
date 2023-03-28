@@ -27,7 +27,7 @@ secrets = get_secrets("onesignal")
 def onesignal_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "onesignal.domain") or secrets["domain"],
-        "api_token": pydash.get(saas_config, "onesignal.api_token") or secrets["api_token"],
+        "api_key": pydash.get(saas_config, "onesignal.api_key") or secrets["api_key"],
         "app_id": pydash.get(saas_config, "onesignal.app_id") or secrets["app_id"],
         "player_id": pydash.get(saas_config, "onesignal.player_id")
         or secrets["player_id"],
