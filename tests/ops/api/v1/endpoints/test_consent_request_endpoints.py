@@ -260,7 +260,11 @@ class TestConsentVerify:
     )
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_email_provided(
-        self, mock_verify_identity: MagicMock, db, api_client, verification_code
+        self,
+        mock_verify_identity: MagicMock,
+        db,
+        api_client,
+        verification_code,
     ):
         provided_identity_data = {
             "privacy_request_id": None,
@@ -282,7 +286,7 @@ class TestConsentVerify:
         )
 
         assert response.status_code == 404
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
         assert "missing" in response.json()["detail"]
 
     @pytest.mark.usefixtures(
@@ -304,7 +308,7 @@ class TestConsentVerify:
             json={"code": verification_code},
         )
         assert response.status_code == 200
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
         assert response.json()["consent"] is None
 
     @pytest.mark.usefixtures(
@@ -344,7 +348,7 @@ class TestConsentVerify:
             json={"code": verification_code},
         )
         assert response.status_code == 200
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
         expected_consent_data: list[dict[str, Any]] = [
             {
                 "data_use": "email",
@@ -449,7 +453,10 @@ class TestGetConsentUnverified:
 
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_unverified_no_email_provided(
-        self, mock_verify_identity: MagicMock, db, api_client
+        self,
+        mock_verify_identity: MagicMock,
+        db,
+        api_client,
     ):
         provided_identity_data = {
             "privacy_request_id": None,
@@ -832,7 +839,7 @@ class TestSaveConsent:
             },
         ]
         assert response.json()["consent"] == expected_consent_data
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
 
         db.refresh(consent_request)
         assert (
@@ -858,6 +865,7 @@ class TestSaveConsent:
                 "data_use_description": None,
             },
         ], "Only executable consent preferences stored"
+        assert consent_request.preferences == expected_consent_data
 
         assert mock_run_privacy_request.called
 
@@ -913,7 +921,7 @@ class TestSaveConsent:
 
         assert response.status_code == 200
 
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
         db.refresh(consent_request)
         assert consent_request.privacy_request.status == PrivacyRequestStatus.pending
         assert not mock_run_privacy_request.called
