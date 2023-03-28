@@ -467,7 +467,8 @@ def _filter_privacy_request_queryset(
         )
     if action_type:
         policy_ids_for_action_type = (
-            db.query(Rule.action_type == action_type)
+            db.query(Rule)
+            .filter(Rule.action_type == action_type)
             .with_entities(Rule.policy_id)
             .distinct()
         )
