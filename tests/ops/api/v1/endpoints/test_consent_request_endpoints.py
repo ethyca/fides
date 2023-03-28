@@ -363,6 +363,63 @@ class TestConsentVerify:
         ]
         assert response.json()["consent"] == expected_consent_data
 
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_verify_consent_stores_verified_at(
+        self,
+        provided_identity_and_consent_request,
+        db,
+        api_client,
+        verification_code,
+    ):
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+            },
+        ]
+
+        for data in deepcopy(consent_data):
+            data["provided_identity_id"] = provided_identity.id
+            Consent.create(db, data=data)
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+
+        expected_consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+                "has_gpc_flag": False,
+                "conflicts_with_gpc": False,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+                "has_gpc_flag": False,
+                "conflicts_with_gpc": False,
+            },
+        ]
+        assert response.json()["consent"] == expected_consent_data
+
+        db.refresh(consent_request)
+        assert consent_request.identity_verified_at is not None
+
 
 class TestGetConsentUnverified:
     def test_consent_unverified_no_consent_request_id(self, api_client):
