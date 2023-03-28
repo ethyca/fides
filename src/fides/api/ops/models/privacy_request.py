@@ -884,7 +884,7 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     )
 
     preferences = Column(
-        MutableDict.as_mutable(JSONB),
+        MutableList.as_mutable(JSONB),
         nullable=True,
     )
 
