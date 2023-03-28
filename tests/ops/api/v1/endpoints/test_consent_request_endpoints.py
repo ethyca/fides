@@ -27,26 +27,6 @@ from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
 from fides.core.config import CONFIG
 
 
-@pytest.fixture(scope="function")
-def provided_identity_and_consent_request(db):
-    provided_identity_data = {
-        "privacy_request_id": None,
-        "field_name": "email",
-        "hashed_value": ProvidedIdentity.hash_value("test@email.com"),
-        "encrypted_value": {"value": "test@email.com"},
-    }
-    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
-
-    consent_request_data = {
-        "provided_identity_id": provided_identity.id,
-    }
-    consent_request = ConsentRequest.create(db, data=consent_request_data)
-
-    yield provided_identity, consent_request
-    provided_identity.delete(db=db)
-    consent_request.delete(db=db)
-
-
 @pytest.fixture
 def disable_redis():
     current = CONFIG.redis.enabled
