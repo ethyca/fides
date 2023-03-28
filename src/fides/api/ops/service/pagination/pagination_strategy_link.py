@@ -16,7 +16,6 @@ from fides.api.ops.util.logger import Pii
 
 
 class LinkPaginationStrategy(PaginationStrategy):
-
     name = "link"
     configuration_model = LinkPaginationConfiguration
 

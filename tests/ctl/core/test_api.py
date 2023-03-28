@@ -417,7 +417,6 @@ class TestCrud:
 
 @pytest.mark.unit
 class TestSystemUpdate:
-
     updated_system_name = "Updated System Name"
 
     @pytest.fixture(scope="function")

@@ -112,7 +112,6 @@ def dataset_config_hubspot(
 
 
 class HubspotTestClient:
-
     headers: object = {}
     base_url: str = ""
 

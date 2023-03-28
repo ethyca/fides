@@ -19,7 +19,6 @@ class SafeStr(str):
 
     @classmethod
     def validate(cls, value: str) -> str:
-
         # HTML Escapes
         value = escape(value)
 

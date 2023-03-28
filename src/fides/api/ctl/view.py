@@ -10,7 +10,7 @@ from fides.api.ctl.routes.crud import list_resource  # type: ignore[attr-defined
 from fides.api.ctl.sql_models import Evaluation  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api.v1 import scope_registry
-from fides.api.ops.util.oauth_util import verify_oauth_client_cli
+from fides.api.ops.util.oauth_util import verify_oauth_client_prod
 
 router = APIRouter(
     tags=["View"],
@@ -21,7 +21,7 @@ router = APIRouter(
 @router.get(
     "/evaluations",
     dependencies=[
-        Security(verify_oauth_client_cli, scopes=[scope_registry.EVALUATION_READ])
+        Security(verify_oauth_client_prod, scopes=[scope_registry.EVALUATION_READ])
     ],
 )
 async def evaluation_view(db: AsyncSession = Depends(get_async_db)) -> HTMLResponse:

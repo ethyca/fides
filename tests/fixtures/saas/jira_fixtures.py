@@ -118,7 +118,6 @@ def jira_dataset_config(
 def jira_create_erasure_data(
     jira_connection_config: ConnectionConfig, jira_erasure_identity_email: str
 ) -> None:
-
     jira_secrets = jira_connection_config.secrets
     base_url = f"https://{jira_secrets['domain']}"
 

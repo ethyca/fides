@@ -12,7 +12,6 @@ def get_s3_session(
 ) -> Session:
     """Abstraction to retrieve s3 session using secrets"""
     if auth_method == S3AuthMethod.SECRET_KEYS.value:
-
         if storage_secrets is None:
             err_msg = "Storage secrets not found for S3 storage."
             logger.warning(err_msg)
