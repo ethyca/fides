@@ -1,7 +1,7 @@
 """create custom_connector_template
 
 Revision ID: 8615ac51e78b
-Revises: a0f219697fa0
+Revises: 39a23bc016ea
 Create Date: 2023-03-20 15:11:52.634508
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "8615ac51e78b"
-down_revision = "a0f219697fa0"
+down_revision = "39a23bc016ea"
 branch_labels = None
 depends_on = None
 
