@@ -46,6 +46,7 @@ The types of changes are:
 ### Developer Experience
 
 * Update frontend npm packages (admin-ui, privacy-center, cypress-e2e) [#2921](https://github.com/ethyca/fides/pull/2921)
+
 ## [2.9.2](https://github.com/ethyca/fides/compare/2.9.1...2.9.2)
 ### Fixed
 
