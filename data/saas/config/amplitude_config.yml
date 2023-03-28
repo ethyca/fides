@@ -26,9 +26,6 @@ saas_config:
     query_params:
       - name: user
         value: 12345@gmail.com
-    param_values:
-      - name: email
-        identity: email
 
   endpoints:
     - name: user_activity
