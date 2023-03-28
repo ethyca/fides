@@ -1,4 +1,3 @@
-from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
