@@ -30,7 +30,7 @@ async def test_klaviyo_access_request_task(
     klaviyo_dataset_config,
     klaviyo_identity_email,
 ) -> None:
-    """Full access request based on the klaviyo SaaS config"""
+    """Full access request based on the Klaviyo SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_klaviyo_access_request_task_{random.randint(0, 1000)}"
