@@ -316,7 +316,7 @@ class ExternalDatasetReference(BaseModel):
 
 class SaaSConfigBase(BaseModel):
     """
-    Used to store base info for a saas config
+    Used to store base info for a SaaS config
     """
 
     fides_key: FidesKey

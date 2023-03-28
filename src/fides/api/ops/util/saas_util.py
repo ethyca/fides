@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import yaml
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
-from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.common_exceptions import FidesopsException, ValidationError
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -43,7 +43,12 @@ def load_config(filename: str) -> Dict:
 
 def load_config_from_string(string: str) -> Dict:
     """Loads the SaaS config dict from the yaml string"""
-    return yaml.safe_load(string).get("saas_config", [])
+    try:
+        return yaml.safe_load(string)["saas_config"]
+    except:
+        raise ValidationError(
+            "Config contents do not contain a 'saas_config' key at the root level."
+        )
 
 
 def load_as_string(filename: str) -> str:
@@ -79,7 +84,12 @@ def load_datasets(filename: str) -> Dict:
 
 def load_dataset_from_string(string: str) -> Dict:
     """Loads the dataset dict from the yaml string"""
-    return yaml.safe_load(string).get("dataset", [])[0]
+    try:
+        return yaml.safe_load(string)["dataset"][0]
+    except:
+        raise ValidationError(
+            "Dataset contents do not contain a 'dataset' key at the root level."
+        )
 
 
 def replace_dataset_placeholders(

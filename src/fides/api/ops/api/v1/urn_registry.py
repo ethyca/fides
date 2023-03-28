@@ -134,6 +134,7 @@ YAML_DATASETS = YAML + DATASETS
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
+REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
 
 SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 

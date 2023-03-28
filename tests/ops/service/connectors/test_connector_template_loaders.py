@@ -43,21 +43,34 @@ class TestFileConnectorTemplateLoader:
         assert mailchimp_connector.human_readable == "Mailchimp"
 
     def test_file_connector_template_loader_connector_not_found(self):
-        loader = FileConnectorTemplateLoader()
-        connector_templates = loader.get_connector_templates()
+        connector_templates = FileConnectorTemplateLoader.get_connector_templates()
 
         assert connector_templates.get("not_found") is None
 
 
 class TestCustomConnectorTemplateLoader:
+    @pytest.fixture(autouse=True)
+    def reset_custom_connector_template_loader(self):
+        """
+        Resets the CustomConnectorTemplateLoader singleton instance before each test.
+        """
+        CustomConnectorTemplateLoader._instance = None
+
     def test_file_connector_template_loader_no_templates(self):
-        loader = CustomConnectorTemplateLoader()
-        connector_templates = loader.get_connector_templates()
+        CONFIG.security.allow_custom_connector_functions = True
+
+        connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {}
 
     def test_file_connector_template_loader_invalid_template(
-        self, db, planet_express_dataset, planet_express_icon, planet_express_functions
+        self,
+        db,
+        planet_express_dataset,
+        planet_express_icon,
+        planet_express_functions,
     ):
+        CONFIG.security.allow_custom_connector_functions = True
+
         # save custom connector template to the database
         custom_template = CustomConnectorTemplate(
             key="planet_express",
@@ -70,8 +83,7 @@ class TestCustomConnectorTemplateLoader:
         custom_template.save(db=db)
 
         # verify the custom functions aren't loaded if the template is invalid
-        loader = CustomConnectorTemplateLoader()
-        connector_templates = loader.get_connector_templates()
+        connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {}
 
         with pytest.raises(NoSuchSaaSRequestOverrideException):
@@ -86,8 +98,14 @@ class TestCustomConnectorTemplateLoader:
         ]
 
     def test_file_connector_template_loader_invalid_functions(
-        self, db, planet_express_config, planet_express_dataset, planet_express_icon
+        self,
+        db,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
     ):
+        CONFIG.security.allow_custom_connector_functions = True
+
         # save custom connector template to the database
         custom_template = CustomConnectorTemplate(
             key="planet_express",
@@ -100,8 +118,7 @@ class TestCustomConnectorTemplateLoader:
         custom_template.save(db=db)
 
         # verify nothing is loaded if the custom functions fail to load
-        loader = CustomConnectorTemplateLoader()
-        connector_templates = loader.get_connector_templates()
+        connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {}
 
     def test_file_connector_template_loader_custom_connector_functions_disabled(
@@ -126,8 +143,7 @@ class TestCustomConnectorTemplateLoader:
         custom_template.save(db=db)
 
         # load custom connector templates from the database
-        loader = CustomConnectorTemplateLoader()
-        connector_templates = loader.get_connector_templates()
+        connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {}
 
         with pytest.raises(NoSuchSaaSRequestOverrideException):
@@ -141,10 +157,12 @@ class TestCustomConnectorTemplateLoader:
             strategy.name for strategy in authentication_strategies
         ]
 
-        CONFIG.security.allow_custom_connector_functions = True
-
-    def test_file_connector_template_loader_custom_connector_functions_disabled_no_planet_express_functions(
-        self, db, planet_express_config, planet_express_dataset, planet_express_icon
+    def test_file_connector_template_loader_custom_connector_functions_disabled_custom_functions(
+        self,
+        db,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
     ):
         """
         A connector template with no custom functions should still be loaded
@@ -165,8 +183,7 @@ class TestCustomConnectorTemplateLoader:
         custom_template.save(db=db)
 
         # load custom connector templates from the database
-        loader = CustomConnectorTemplateLoader()
-        connector_templates = loader.get_connector_templates()
+        connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {
             "planet_express": ConnectorTemplate(
                 config=planet_express_config,
@@ -176,8 +193,6 @@ class TestCustomConnectorTemplateLoader:
             )
         }
 
-        CONFIG.security.allow_custom_connector_functions = True
-
     def test_file_connector_template_loader(
         self,
         db,
@@ -186,6 +201,8 @@ class TestCustomConnectorTemplateLoader:
         planet_express_icon,
         planet_express_functions,
     ):
+        CONFIG.security.allow_custom_connector_functions = True
+
         # save custom connector template to the database
         custom_template = CustomConnectorTemplate(
             key="planet_express",
@@ -198,8 +215,7 @@ class TestCustomConnectorTemplateLoader:
         custom_template.save(db=db)
 
         # load custom connector templates from the database
-        loader = CustomConnectorTemplateLoader()
-        connector_templates = loader.get_connector_templates()
+        connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
 
         # verify that the template in the registry is the same as the one in the database
         assert connector_templates == {
@@ -207,6 +223,7 @@ class TestCustomConnectorTemplateLoader:
                 config=planet_express_config,
                 dataset=planet_express_dataset,
                 icon=planet_express_icon,
+                functions=planet_express_functions,
                 human_readable="Planet Express",
             )
         }

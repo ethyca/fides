@@ -1,0 +1,27 @@
+saas_config:
+  fides_key: planet_express
+  name: Planet Express
+  type: planet_express
+  description: A sample schema representing the Planet Express connector for Fides
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        password: <api_key>
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          request_override: planet_express_user_access
+          param_values:
+            - name: email
+              identity: email
