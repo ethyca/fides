@@ -115,8 +115,6 @@ def onesignal_create_erasure_data(
     onesignal_connection_config: ConnectionConfig, onesignal_erasure_identity_email: str
 ) -> None:
 
-    sleep(60)
-
     onesignal_secrets = onesignal_connection_config.secrets
     base_url = f"https://{onesignal_secrets['domain']}"
     headers={}
