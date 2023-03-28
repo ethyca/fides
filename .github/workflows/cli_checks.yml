@@ -14,7 +14,7 @@ on:
       - "main"
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10.7"
+  DEFAULT_PYTHON_VERSION: "3.10.10"
 
 jobs:
   Fides-Deploy:
