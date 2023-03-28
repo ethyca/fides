@@ -383,6 +383,7 @@ def _filter_privacy_request_queryset(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    action_type: Optional[ActionType] = None,
 ) -> Query:
     """
     Utility method to apply filters to our privacy request query.
@@ -464,6 +465,14 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.status == PrivacyRequestStatus.error,
             PrivacyRequest.finished_processing_at > errored_gt,
         )
+    if action_type:
+        policy_ids_for_action_type = (
+            db.query(Rule)
+            .filter(Rule.action_type == action_type)
+            .with_entities(Rule.policy_id)
+            .distinct()
+        )
+        query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
 
     return query
 
@@ -556,6 +565,7 @@ def get_request_status(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     download_csv: Optional[bool] = False,
@@ -585,6 +595,7 @@ def get_request_status(
         errored_lt,
         errored_gt,
         external_id,
+        action_type,
     )
 
     logger.info(
