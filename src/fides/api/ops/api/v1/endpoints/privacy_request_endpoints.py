@@ -466,14 +466,12 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
     if action_type:
-        policy_ids_for_action_type = db.query(
-            Rule.action_type == action_type
-        ).with_entities(
-            Rule.policy_id
-        ).distinct()
-        query = query.filter(
-            PrivacyRequest.policy_id.in_(policy_ids_for_action_type)
+        policy_ids_for_action_type = (
+            db.query(Rule.action_type == action_type)
+            .with_entities(Rule.policy_id)
+            .distinct()
         )
+        query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
 
     return query
 
