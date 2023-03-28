@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.9.3a0.post0.dev4"
+    "version": "2.9.3a0.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8852,6 +8852,14 @@
               "type": "string"
             },
             "name": "external_id",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ActionType"
+            },
+            "name": "action_type",
             "in": "query"
           },
           {
