@@ -1,7 +1,7 @@
 """add privacynotice tables
 
 Revision ID: 6d6b0b7cbb36
-Revises: a0f219697fa0
+Revises: 39a23bc016ea
 Create Date: 2023-03-22 12:09:47.395190
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "6d6b0b7cbb36"
-down_revision = "a0f219697fa0"
+down_revision = "39a23bc016ea"
 branch_labels = None
 depends_on = None
 
