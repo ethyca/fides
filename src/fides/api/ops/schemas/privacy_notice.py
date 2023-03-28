@@ -1,14 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional, Type
+from typing import List, Optional
 
 from pydantic import conlist
-from sqlalchemy.orm import Session
-from starlette.exceptions import HTTPException
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from fides.api.ctl.sql_models import DataUse  # type: ignore[attr-defined]
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_notice import (
     ConsentMechanism,
@@ -53,23 +49,6 @@ class PrivacyNotice(BaseSchema):
         for data_use in self.data_uses or []:
             if data_use not in valid_data_uses:
                 raise ValueError(f"Unknown data_use '{data_use}'")
-
-    @classmethod
-    def validate_notice_data_uses(
-        cls: Type[PrivacyNotice],
-        privacy_notices: List[PrivacyNotice],
-        db: Session,
-    ) -> None:
-        """
-        Ensures that all the provided `PrivacyNotice`s have valid data uses.
-        Raises a 422 HTTP exception if an unknown data use is found on any `PrivacyNotice`
-        """
-        valid_data_uses = [data_use.fides_key for data_use in DataUse.query(db).all()]
-        try:
-            for privacy_notice in privacy_notices:
-                privacy_notice.validate_data_uses(valid_data_uses)
-        except ValueError as e:
-            raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
 
 class PrivacyNoticeCreation(PrivacyNotice):

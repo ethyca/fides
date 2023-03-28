@@ -78,7 +78,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         Overrides the base update method to automatically bump the version of the
         PrivacyNotice record and also create a new PrivacyNoticeHistory entry
         """
-        # history record data is identical to privacy notice record data
+        # history record data is identical to old privacy notice record data
         # except the notice's 'id' must be moved to the FK column
         # and is no longer the history record 'id' column
         history_data = {
@@ -97,12 +97,20 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             "displayed_in_privacy_modal": self.displayed_in_privacy_modal,
             "privacy_notice_id": self.id,
         }
-        PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
 
-        # on any update to a privacy notice record, its version must be incremented
-        # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
-        data["version"] = float(self.version) + 1.0
-        return super().update(db=db, data=data)  # type: ignore
+        # run through potential updates now
+        for key, value in data.items():
+            setattr(self, key, value)
+
+        # only if there's a modification do we write the history data "frozen" above
+        if db.is_modified(self):
+            PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
+
+            # on any update to a privacy notice record, its version must be incremented
+            # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
+            self.version = float(self.version) + 1.0  # type: ignore
+            self.save(db)
+        return self
 
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
         """
@@ -142,7 +150,7 @@ def check_conflicting_data_uses(
     if they occurred in `PrivacyNotice`s that are associated with the same `PrivacyNoticeRegion`.
     """
     # first, we map the existing [region -> data use] associations based on the set of
-    # exisiting notices.
+    # existing notices.
     # this gives us a simple "lookup table" for region and data use conflicts in incoming notices
     uses_by_region: Dict[PrivacyNoticeRegion, List[Tuple[str, str]]] = defaultdict(list)
     for privacy_notice in existing_privacy_notices:
@@ -174,9 +182,9 @@ def check_conflicting_data_uses(
                         raise ValidationError(
                             message=f"Privacy Notice '{notice_name}' has already assigned data use '{existing_use}' to region '{region}'"
                         )
-            # add the data use to our map, to effectively include it in validation against the
-            # following incoming records
-            region_uses.append((data_use, privacy_notice.name))
+                # add the data use to our map, to effectively include it in validation against the
+                # following incoming records
+                region_uses.append((data_use, privacy_notice.name))
 
 
 class PrivacyNoticeHistory(PrivacyNoticeBase, Base):

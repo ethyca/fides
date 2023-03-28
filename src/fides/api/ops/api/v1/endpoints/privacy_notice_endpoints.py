@@ -14,7 +14,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.ctl.sql_models import System  # type: ignore
+from fides.api.ctl.sql_models import DataUse, System  # type: ignore
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
@@ -45,7 +45,7 @@ def get_privacy_notice_list(
     params: Params = Depends(),
     show_disabled: Optional[bool] = True,
     region: Optional[PrivacyNoticeRegion] = None,
-    systems_applicable: Optional[bool] = True,
+    systems_applicable: Optional[bool] = False,
 ) -> AbstractPage[PrivacyNotice]:
     """
     Return a paginated list of PrivacyNotice records in this system.
@@ -98,6 +98,22 @@ def get_privacy_notice(
     return get_privacy_notice_or_error(db, privacy_notice_id)  # type: ignore[return-value]
 
 
+def validate_notice_data_uses(
+    privacy_notices: List[schemas.PrivacyNotice],
+    db: Session,
+) -> None:
+    """
+    Ensures that all the provided `PrivacyNotice`s have valid data uses.
+    Raises a 422 HTTP exception if an unknown data use is found on any `PrivacyNotice`
+    """
+    valid_data_uses = [data_use.fides_key for data_use in DataUse.query(db).all()]
+    try:
+        for privacy_notice in privacy_notices:
+            privacy_notice.validate_data_uses(valid_data_uses)
+    except ValueError as e:
+        raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
+
+
 @router.post(
     urls.PRIVACY_NOTICE,
     status_code=HTTP_200_OK,
@@ -117,7 +133,7 @@ def create_privacy_notices(
     To avoid any confusing or unexpected behavior, the entire operation is void
     if any of the input data does not satisfy validation criteria.
     """
-    schemas.PrivacyNotice.validate_notice_data_uses(privacy_notices, db)
+    validate_notice_data_uses(privacy_notices, db)
 
     existing_notices = (
         PrivacyNotice.query(db).filter(PrivacyNotice.disabled.is_(False)).all()
@@ -157,7 +173,7 @@ def prepare_privacy_notice_patches(
     for existing_notice in PrivacyNotice.query(db).all():
         existing_notices[existing_notice.id] = existing_notice
 
-    # then associate existing existing notices with their updates
+    # then associate existing notices with their updates
     # we'll return this set of data to actually process updates
     updates_and_existing: List[Tuple[schemas.PrivacyNoticeWithId, PrivacyNotice]] = []
     for update_data in privacy_notice_updates:
@@ -169,10 +185,10 @@ def prepare_privacy_notice_patches(
 
         updates_and_existing.append((update_data, existing_notices[update_data.id]))
 
-    # we temporarily store proposed update data in-memory for validation puposes only
+    # we temporarily store proposed update data in-memory for validation purposes only
     validation_updates = []
     for (update_data, existing_notice) in updates_and_existing:
-        # add the patched update to our temporary updatse for validation
+        # add the patched update to our temporary updates for validation
         validation_updates.append(
             existing_notice.dry_update(data=update_data.dict(exclude_unset=True))
         )
@@ -187,6 +203,24 @@ def prepare_privacy_notice_patches(
 
     # return the tuples of update data associated with their existing db records
     return updates_and_existing
+
+
+def ensure_unique_ids(
+    privacy_notices: List[schemas.PrivacyNoticeWithId],
+) -> None:
+    """
+    Ensures that all the provided `PrivacyNotice`s have unique IDs
+    Raises a 422 HTTP exception if there is more than one PrivacyNotice with the same ID
+    """
+    ids = set()
+    for privacy_notice in privacy_notices:
+        if privacy_notice.id not in ids:
+            ids.add(privacy_notice.id)
+        else:
+            raise HTTPException(
+                HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"More than one provided PrivacyNotice with ID {privacy_notice.id}.",
+            )
 
 
 @router.patch(
@@ -209,9 +243,12 @@ def update_privacy_notices(
     if any of the input data does not satisfy validation criteria, or if any
     input privacy notice is not found.
     """
-    schemas.PrivacyNotice.validate_notice_data_uses(privacy_notice_updates, db)
+    ensure_unique_ids(privacy_notice_updates)
+    validate_notice_data_uses(privacy_notice_updates, db)
 
-    updates_and_existing = prepare_privacy_notice_patches(privacy_notice_updates, db)
+    updates_and_existing: List[
+        Tuple[schemas.PrivacyNoticeWithId, PrivacyNotice]
+    ] = prepare_privacy_notice_patches(privacy_notice_updates, db)
     return [
         existing_notice.update(db, data=update_data.dict(exclude_unset=True))
         for (update_data, existing_notice) in updates_and_existing

@@ -73,9 +73,9 @@ class TestGetPrivacyNotices:
 
         assert "items" in data
 
-        # assert only 2 of 3 notices are in response since those are tied to systems via data use
-        assert data["total"] == 2
-        assert len(data["items"]) == 2
+        # assert all 3 notices are in the response
+        assert data["total"] == 3
+        assert len(data["items"]) == 3
 
         # now we just assert the expected fields are on each response item
         for notice_detail in data["items"]:
@@ -121,11 +121,11 @@ class TestGetPrivacyNotices:
         assert resp.status_code == 200
         data = resp.json()
         assert "items" in data
-        # assert only 2 notices are in response since we're effectively filtering by systems_applicable
-        assert data["total"] == 1
-        assert len(data["items"]) == 1
+        # assert all 3 notices are in response since we're not filtering
+        assert data["total"] == 3
+        assert len(data["items"]) == 3
 
-        # now test that setting the param to true works the same as the default
+        # now test that setting the param to true works
         resp = api_client.get(
             url + "?systems_applicable=true",
             headers=auth_header,
@@ -135,11 +135,11 @@ class TestGetPrivacyNotices:
 
         assert "items" in data
 
-        # assert only 2 notices are in response since we're filtering for systems_applicable=true
+        # assert only 1 notice is in response since we're filtering for systems_applicable=true
         assert data["total"] == 1
         assert len(data["items"]) == 1
 
-        # now test that disabling the filter works as expected
+        # now test that disabling the filter works the same as the default
         resp = api_client.get(
             url + "?systems_applicable=false",
             headers=auth_header,
@@ -920,6 +920,31 @@ class TestPatchPrivacyNotices:
             headers=auth_header,
         )
         assert resp.status_code == 403
+
+    def test_patch_duplicate_privacy_notices_throws_error(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        patch_privacy_notice_payload: dict[str, Any],
+        privacy_notice: PrivacyNotice,
+        db,
+    ):
+        """
+        Test that attempting a PATCH with multiple privacy requests with the same ID
+        throws a 422
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_UPDATE])
+
+        # just create a slightly altered privacy request entity, keep the ID the same
+        patch_request_cloned: dict[str, Any] = patch_privacy_notice_payload.copy()
+        patch_request_cloned["name"] = "a different name udpate"
+        resp = api_client.patch(
+            url,
+            headers=auth_header,
+            json=[patch_privacy_notice_payload, patch_request_cloned],
+        )
+        assert resp.status_code == 422
 
     def test_patch_invalid_privacy_notice(
         self,
