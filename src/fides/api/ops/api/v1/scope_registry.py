@@ -41,6 +41,7 @@ MESSAGING = "messaging"
 ORGANIZATION = "organization"
 PASSWORD_RESET = "password-reset"
 POLICY = "policy"
+PRIVACY_NOTICE = "privacy-notice"
 PRIVACY_REQUEST = "privacy-request"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
@@ -153,6 +154,10 @@ ORGANIZATION_DELETE = f"{ORGANIZATION}:{DELETE}"
 POLICY_CREATE_OR_UPDATE = f"{POLICY}:{CREATE_OR_UPDATE}"
 POLICY_DELETE = f"{POLICY}:{DELETE}"
 POLICY_READ = f"{POLICY}:{READ}"
+
+PRIVACY_NOTICE_CREATE = f"{PRIVACY_NOTICE}:{CREATE}"
+PRIVACY_NOTICE_UPDATE = f"{PRIVACY_NOTICE}:{UPDATE}"
+PRIVACY_NOTICE_READ = f"{PRIVACY_NOTICE}:{READ}"
 
 PRIVACY_REQUEST_CALLBACK_RESUME = f"{PRIVACY_REQUEST}:{RESUME}"  # User has permission to restart a paused privacy request
 PRIVACY_REQUEST_CREATE = f"{PRIVACY_REQUEST}:{CREATE}"
@@ -286,6 +291,9 @@ SCOPE_DOCS = {
     POLICY_CREATE_OR_UPDATE: "Create or modify policies",
     POLICY_DELETE: "Remove policies",
     POLICY_READ: "View policies",
+    PRIVACY_NOTICE_CREATE: "Create privacy notices",
+    PRIVACY_NOTICE_UPDATE: "Update privacy notices",
+    PRIVACY_NOTICE_READ: "View privacy notices",
     PRIVACY_REQUEST_CREATE: "",
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",

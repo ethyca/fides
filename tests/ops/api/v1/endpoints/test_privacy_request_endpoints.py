@@ -820,6 +820,30 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert resp["items"][0].get("identity") is None
 
+    def test_filter_privacy_requests_by_action(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        executable_consent_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url + f"?action_type=access", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+
+        response = api_client.get(url + f"?action_type=consent", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+
+        response = api_client.get(url + f"?action_type=erasure", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 0
+
     def test_filter_privacy_requests_by_status(
         self,
         api_client: TestClient,

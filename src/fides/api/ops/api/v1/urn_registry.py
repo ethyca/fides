@@ -59,6 +59,10 @@ MESSAGING_TEST = "/messaging/config/test"
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
 
+# Privacy Notice URLs
+PRIVACY_NOTICE = "/privacy-notice"
+PRIVACY_NOTICE_DETAIL = "/privacy-notice/{privacy_notice_id}"
+
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"

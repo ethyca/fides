@@ -57,6 +57,12 @@ def load_as_string(filename: str) -> str:
         return file.read()
 
 
+def load_as_string(filename: str) -> str:
+    file_path = load_file([filename])
+    with open(file_path, "r", encoding="utf-8") as file:
+        return file.read()
+
+
 def replace_config_placeholders(
     config: str, string_to_replace: str, replacement: str
 ) -> Dict:

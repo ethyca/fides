@@ -30,20 +30,13 @@ export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    login(
-      state,
-      { payload: { user_data, token_data } }: PayloadAction<LoginResponse>
-    ) {
-      return Object.assign(state, {
-        user: user_data,
-        token: token_data.access_token,
-      });
+    login(draftState, action: PayloadAction<LoginResponse>) {
+      draftState.user = action.payload.user_data;
+      draftState.token = action.payload.token_data.access_token;
     },
-    logout(state) {
-      return Object.assign(state, {
-        user: null,
-        token: null,
-      });
+    logout(draftState) {
+      draftState.user = null;
+      draftState.token = null;
     },
   },
 });

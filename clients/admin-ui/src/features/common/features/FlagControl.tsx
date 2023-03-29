@@ -11,10 +11,13 @@ export const FlagControl = ({
   defaultValue,
   override,
 }: {
-  flag: typeof FLAG_NAMES[number];
+  flag: (typeof FLAG_NAMES)[number];
   value: FlagValue;
   defaultValue: FlagValue;
-  override: (args: { flag: typeof FLAG_NAMES[number]; value: boolean }) => void;
+  override: (args: {
+    flag: (typeof FLAG_NAMES)[number];
+    value: boolean;
+  }) => void;
 }) => {
   if (typeof value !== "boolean") {
     // Only supporting modifying boolean flags for now.

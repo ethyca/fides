@@ -274,7 +274,7 @@ class Rule(Base):
         return super().save(db=db)
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
+    def create(cls, db: Session, *, data: Dict[str, Any], check_name: bool = True) -> FidesBase:  # type: ignore[override]
         """Validate this object's data before deferring to the superclass on create"""
         policy_id: Optional[str] = data.get("policy_id")
 
@@ -302,7 +302,7 @@ class Rule(Base):
             storage_destination_id=data.get("storage_destination_id"),
             masking_strategy=data.get("masking_strategy"),
         )
-        return super().create(db=db, data=data)
+        return super().create(db=db, data=data, check_name=check_name)
 
     def delete(self, db: Session) -> Optional[FidesBase]:
         """Cascade delete all targets on deletion of a Rule."""
@@ -445,7 +445,7 @@ class RuleTarget(Base):
         return db_obj  # type: ignore[return-value]
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
+    def create(cls, db: Session, *, data: Dict[str, Any], check_name: bool = True) -> FidesBase:  # type: ignore[override]
         """Validate data_category on object creation."""
         data_category = data.get("data_category")
         if not data_category:
@@ -482,7 +482,7 @@ class RuleTarget(Base):
 
             _validate_rule_target_collection(erasure_categories)
 
-        return super().create(db=db, data=data)
+        return super().create(db=db, data=data, check_name=check_name)
 
     def save(self, db: Session) -> FidesBase:
         """Validate data_category on object save."""

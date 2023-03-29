@@ -42,6 +42,7 @@ from fides.lib.exceptions import AuthenticationError
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload
+from fides.lib.oauth.roles import APPROVER
 from fides.lib.oauth.schemas.user import (
     UserForcePasswordReset,
     UserPasswordReset,
@@ -80,24 +81,34 @@ def _validate_current_user(user_id: str, user_from_token: FidesUser) -> None:
 
 @router.put(
     urls.USER_DETAIL,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_UPDATE])],
+    dependencies=[Security(verify_oauth_client)],
     status_code=HTTP_200_OK,
     response_model=UserResponse,
 )
-def update_user(
+async def update_user(
     *,
     db: Session = Depends(deps.get_db),
+    authorization: str = Security(oauth2_scheme),
+    current_user: FidesUser = Depends(get_current_user),
     user_id: str,
     data: UserUpdate,
 ) -> FidesUser:
     """
-    Update a user given a `user_id`. By default this is limited to users
-    updating their own data.
+    Update a user given a `user_id`. If the user is not updating their own data,
+    they need the USER_UPDATE scope
     """
     user = FidesUser.get(db=db, object_id=user_id)
     if not user:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found."
+        )
+
+    is_this_user = user.id == current_user.id
+    if not is_this_user:
+        await verify_oauth_client(
+            security_scopes=Security(verify_oauth_client, scopes=[USER_UPDATE]),
+            authorization=authorization,
+            db=db,
         )
 
     user.update(db=db, data=data.dict())
@@ -231,6 +242,18 @@ def update_managed_systems(
     """
     user = validate_user_id(db, user_id)
 
+    if not (user.permissions and user.permissions.roles):  # type: ignore
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"User {user_id} needs permissions before they can be assigned as system manager.",
+        )
+
+    if APPROVER in user.permissions.roles:  # type: ignore
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"User {user_id} is an {APPROVER} and cannot be assigned as a system manager.",
+        )
+
     if len(set(systems)) != len(systems):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -252,7 +275,7 @@ def update_managed_systems(
             user.set_as_system_manager(db, system)
 
     # Removing systems for which the user in no longer a manager
-    for system in user.systems:
+    for system in user.systems.copy():
         if system not in retrieved_systems:
             user.remove_as_system_manager(db, system)
 

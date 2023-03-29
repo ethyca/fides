@@ -241,6 +241,10 @@ class ConnectorRegistry:
     def get_instance(cls) -> "ConnectorRegistry":
         if cls._instance is None:
             cls._instance = cls()
+            cls._instance._templates = {
+                **FileConnectorTemplateLoader().get_connector_templates(),
+                **CustomConnectorTemplateLoader().get_connector_templates(),
+            }
         return cls._instance
 
     @classmethod
@@ -266,6 +270,13 @@ class ConnectorRegistry:
         Returns an object containing the various SaaS connector artifacts
         """
         return cls._get_combined_templates().get(connector_type)
+
+    @classmethod
+    def register_template(
+        cls, connector_type: str, template: ConnectorTemplate
+    ) -> None:
+        """Used to register new connector templates during runtime"""
+        cls.get_instance()._templates[connector_type] = template
 
 
 def create_connection_config_from_template_no_save(
