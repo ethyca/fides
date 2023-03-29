@@ -37,7 +37,7 @@ from fides.api.ops.util.saas_util import (
     replace_dataset_placeholders,
 )
 from fides.core.config import CONFIG
-from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str, str_to_b64_str
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 
 
 class ConnectorTemplateLoader(ABC):
@@ -144,6 +144,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         # register the template in the loader's template dictionary
         cls.get_instance()._templates[template.key] = connector_template  # type: ignore
 
+    # pylint: disable=too-many-branches
     @classmethod
     def save_template(cls, db: Session, zip_file: ZipFile) -> None:
         """
@@ -236,6 +237,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
 
 class ConnectorRegistry:
     _instance = None
+    _templates: Dict[str, ConnectorTemplate] = {}
 
     @classmethod
     def get_instance(cls) -> "ConnectorRegistry":

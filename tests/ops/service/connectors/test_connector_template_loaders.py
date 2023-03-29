@@ -58,7 +58,7 @@ class TestCustomConnectorTemplateLoader:
         """
         CustomConnectorTemplateLoader._instance = None
 
-    def test_file_connector_template_loader_no_templates(self):
+    def test_custom_connector_template_loader_no_templates(self):
         CONFIG.security.allow_custom_connector_functions = True
 
         connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
