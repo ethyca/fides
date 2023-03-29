@@ -552,7 +552,7 @@ class TestPostPrivacyNotices:
             "name": "test privacy notice 1",
             "description": "my test privacy notice",
             "origin": "privacy_notice_template_1",
-            "regions": [PrivacyNoticeRegion.eu.value, PrivacyNoticeRegion.us_ca.value],
+            "regions": [PrivacyNoticeRegion.eu_be.value, PrivacyNoticeRegion.us_ca.value],
             "consent_mechanism": ConsentMechanism.opt_in.value,
             "data_uses": ["advertising"],
             "enforcement_level": EnforcementLevel.system_wide.value,
@@ -657,7 +657,7 @@ class TestPostPrivacyNotices:
         assert resp.status_code == 422
 
         notice_request_bad_region["regions"] = [
-            PrivacyNoticeRegion.eu.value,
+            PrivacyNoticeRegion.eu_be.value,
             "invalid_region",
         ]
         # try post with one invalid region one valid region specified, should be rejected
@@ -740,7 +740,7 @@ class TestPostPrivacyNotices:
         # change the name on the copied notice so that it's "different"
         notice_request_identical_use["name"] = "different notice name"
         # keep one overlapping region with other request notice, no overlaps with
-        notice_request_identical_use["regions"] = [PrivacyNoticeRegion.eu.value]
+        notice_request_identical_use["regions"] = [PrivacyNoticeRegion.eu_be.value]
         resp = api_client.post(
             url,
             headers=auth_header,
@@ -753,7 +753,7 @@ class TestPostPrivacyNotices:
         # change the name on the copied notice so that it's "different"
         notice_request_child_use["name"] = "different notice name"
         # keep one overlapping region with other request notice, no overlaps with
-        notice_request_child_use["region"] = [PrivacyNoticeRegion.eu.value]
+        notice_request_child_use["region"] = [PrivacyNoticeRegion.eu_be.value]
         # update our data_use to be a child of the other request notice
         notice_request_child_use["data_use"] = ["advertising.first_party"]
 
@@ -1139,7 +1139,7 @@ class TestPatchPrivacyNotices:
         assert resp.status_code == 422
 
         patch_privacy_notice_payload_bad_region["regions"] = [
-            PrivacyNoticeRegion.eu.value,
+            PrivacyNoticeRegion.eu_be.value,
             "invalid_region",
         ]
         # try patch with one invalid region one valid region specified, should be rejected

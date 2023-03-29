@@ -19,11 +19,37 @@ class PrivacyNoticeRegion(Enum):
     Enum is not formalized in the DB because it is subject to frequent change
     """
 
-    us_ca = "us_ca"
-    us_co = "us_co"
-    us_va = "us_va"
-    us_ut = "us_ut"
-    eu = "eu"
+    us_ca = "us_ca"  # california
+    us_co = "us_co"  # colorado
+    us_va = "us_va"  # virginia
+    us_ut = "us_ut"  # utah
+    eu_be = "eu_be"  # belgium
+    eu_bg = "eu_bg"  # bulgaria
+    eu_cz = "eu_cz"  # czechia
+    eu_dk = "eu_dk"  # denmark
+    eu_de = "eu_de"  # germany
+    eu_ee = "eu_ee"  # estonia
+    eu_ie = "eu_ie"  # ireland
+    eu_el = "eu_el"  # greece
+    eu_es = "eu_es"  # spain
+    eu_fr = "eu_fr"  # france
+    eu_hr = "eu_hr"  # croatia
+    eu_it = "eu_it"  # italy
+    eu_cy = "eu_cy"  # cyprus
+    eu_lv = "eu_lv"  # latvia
+    eu_lt = "eu_lt"  # lithuania
+    eu_lu = "eu_lu"  # luxembourg
+    eu_hu = "eu_hu"  # hungary
+    eu_mt = "eu_mt"  # malta
+    eu_nl = "eu_nl"  # netherlands
+    eu_at = "eu_at"  # austria
+    eu_pl = "eu_pl"  # poland
+    eu_pt = "eu_pt"  # portugal
+    eu_ro = "eu_ro"  # romania
+    eu_si = "eu_si"  # slovenia
+    eu_sk = "eu_sk"  # slovakia
+    eu_fi = "eu_fi"  # finland
+    eu_se = "eu_se"  # sweden
 
 
 class ConsentMechanism(Enum):
