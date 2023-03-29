@@ -3,7 +3,6 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import React from "react";
 
-import { useFeatures } from "~/features/common/features";
 import Header from "~/features/common/Header";
 import { NavSideBar } from "~/features/common/nav/v2/NavSideBar";
 import { NavTopBar } from "~/features/common/nav/v2/NavTopBar";
@@ -22,7 +21,6 @@ const Layout = ({
   children: React.ReactNode;
   title: string;
 }) => {
-  const features = useFeatures();
   const router = useRouter();
   const isValidNotificationRoute =
     router.pathname === "/privacy-requests" ||

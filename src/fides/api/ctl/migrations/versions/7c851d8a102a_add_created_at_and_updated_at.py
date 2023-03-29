@@ -31,7 +31,6 @@ SQL_MODEL_LIST = [
 
 
 def upgrade():
-
     for table_name in SQL_MODEL_LIST:
         op.add_column(
             table_name,
@@ -54,7 +53,6 @@ def upgrade():
 
 
 def downgrade():
-
     for table_name in SQL_MODEL_LIST:
         op.drop_column(table_name, "created_at")
         op.drop_column(table_name, "updated_at")

@@ -32,7 +32,6 @@ class NotificationSettings(FidesSettings):
     def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
         if value:
-
             valid_values = [
                 "mailgun",
                 "twilio_text",

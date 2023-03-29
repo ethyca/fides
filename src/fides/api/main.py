@@ -67,7 +67,7 @@ from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
-from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_cli
+from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_prod
 from fides.api.ops.util.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -133,9 +133,8 @@ def create_fides_app(
     fastapi_app.include_router(api_router)
 
     if security_env == "dev":
-        # This removes auth requirements for CLI-related endpoints
-        # and is the default
-        fastapi_app.dependency_overrides[verify_oauth_client_cli] = get_root_client
+        # This removes auth requirements for specific endpoints
+        fastapi_app.dependency_overrides[verify_oauth_client_prod] = get_root_client
         fastapi_app.dependency_overrides[
             verify_oauth_client_for_system_from_request_body_cli
         ] = get_system_schema
@@ -273,7 +272,7 @@ async def setup_server() -> None:
     try:
         db = get_api_session()
         update_saas_configs(db)
-        logger.info("Finished loading saas templates")
+        logger.info("Finished loading SaaS templates")
     except Exception as e:
         logger.error(
             "Error occurred during SaaS connector template validation: {}",

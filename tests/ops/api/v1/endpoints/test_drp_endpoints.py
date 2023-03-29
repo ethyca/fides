@@ -121,7 +121,6 @@ class TestCreateDrpPrivacyRequest:
         policy_drp_action,
         cache,
     ):
-
         identity = {"email": "test@example.com", "address": "something"}
         encoded_identity: str = jwt.encode(
             identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
@@ -181,7 +180,6 @@ class TestCreateDrpPrivacyRequest:
         api_client: TestClient,
         policy_drp_action,
     ):
-
         original_secret = CONFIG.security.drp_jwt_secret
         CONFIG.security.drp_jwt_secret = None
         identity = {"email": "test@example.com"}
@@ -203,7 +201,6 @@ class TestCreateDrpPrivacyRequest:
         api_client: TestClient,
         policy_drp_action,
     ):
-
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
             identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
@@ -224,7 +221,6 @@ class TestCreateDrpPrivacyRequest:
         api_client: TestClient,
         policy_drp_action,
     ):
-
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
             identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
@@ -245,7 +241,6 @@ class TestCreateDrpPrivacyRequest:
         api_client: TestClient,
         policy,
     ):
-
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
             identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"

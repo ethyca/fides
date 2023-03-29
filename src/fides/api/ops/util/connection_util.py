@@ -118,7 +118,6 @@ def patch_connection_configs(
     configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
     system: Optional[System] = None,
 ) -> BulkPutConnectionConfiguration:
-
     created_or_updated: List[ConnectionConfigurationResponse] = []
     failed: List[BulkUpdateFailed] = []
     logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))

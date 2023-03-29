@@ -44,7 +44,7 @@ def firebase_auth_user_access(  # pylint: disable=R0914
         for email in emails:
             try:
                 user = auth.get_user_by_email(email, app=app)
-                processed_data.append(_user_record_to_row(user))
+                processed_data.append(user_record_to_row(user))
             except UserNotFoundError:
                 logger.warning(
                     f"Could not find user with email {Pii(email)} in firebase"
@@ -54,7 +54,7 @@ def firebase_auth_user_access(  # pylint: disable=R0914
         for phone_number in phone_numbers:
             try:
                 user = auth.get_user_by_phone_number(phone_number, app=app)
-                processed_data.append(_user_record_to_row(user))
+                processed_data.append(user_record_to_row(user))
             except UserNotFoundError:
                 logger.warning(
                     f"Could not find user with phone_number {Pii(phone_number)} in firebase"
@@ -66,7 +66,7 @@ def firebase_auth_user_access(  # pylint: disable=R0914
     return processed_data
 
 
-def _user_record_to_row(user: UserRecord) -> Row:
+def user_record_to_row(user: UserRecord) -> Row:
     """
     Translates a Firebase `UserRecord` to a Fides access request result `Row`
     """
@@ -115,7 +115,7 @@ def firebase_auth_user_update(
     rows_updated = 0
     # each update_params dict correspond to a record that needs to be updated
     for row_param_values in param_values_per_row:
-        user: UserRecord = _retrieve_user_record(privacy_request, row_param_values, app)
+        user: UserRecord = retrieve_user_record(privacy_request, row_param_values, app)
         masked_fields = row_param_values["masked_object_fields"]
         email = masked_fields.get("email", user.email)
         display_name = masked_fields.get("display_name", user.display_name)
@@ -158,13 +158,13 @@ def firebase_auth_user_delete(
     rows_updated = 0
     # each update_params dict correspond to a record that needs to be updated
     for row_param_values in param_values_per_row:
-        user: UserRecord = _retrieve_user_record(privacy_request, row_param_values, app)
+        user: UserRecord = retrieve_user_record(privacy_request, row_param_values, app)
         auth.delete_user(user.uid, app=app)
         rows_updated += 1
     return rows_updated
 
 
-def _retrieve_user_record(
+def retrieve_user_record(
     privacy_request: PrivacyRequest, row_param_values: Dict[str, Any], app: App
 ) -> UserRecord:
     """

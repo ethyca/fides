@@ -28,7 +28,7 @@ describe("Smoke test", () => {
     cy.origin(ADMIN_UI_URL, () => {
       // Makes custom commands available to all subsequent cy.origin() commands
       // https://docs.cypress.io/api/commands/origin#Custom-commands
-      require("../support/commands");
+      Cypress.require("../support/commands");
       cy.login();
       cy.get("div").contains("Review privacy requests").click();
       let numCompletedRequests = 0;

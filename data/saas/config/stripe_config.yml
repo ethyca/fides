@@ -3,13 +3,12 @@ saas_config:
   name: Stripe
   type: stripe
   description: A sample schema representing the Stripe connector for Fides
-  version: 0.0.2
+  version: 0.0.3
 
   connector_params:
     - name: domain
       default_value: api.stripe.com
     - name: api_key
-    - name: payment_types
 
   client_config:
     protocol: https
@@ -141,8 +140,6 @@ saas_config:
           method: GET
           path: /v1/customers/<customer_id>/payment_methods
           query_params:
-            - name: type
-              value: <type>
             - name: limit
               value: 100
           param_values:
@@ -151,8 +148,6 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: type
-              connector_param: payment_types
           data_path: data
           pagination:
             strategy: cursor
@@ -161,6 +156,7 @@ saas_config:
               field: id
         update:
           method: POST
+          ignore_errors: true # payment methods of type us_bank_account cannot be updated at this time.
           path: /v1/payment_methods/<payment_method_id>
           headers:
             - name: Content-Type

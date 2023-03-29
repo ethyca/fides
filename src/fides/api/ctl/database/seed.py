@@ -291,7 +291,6 @@ def load_default_dsr_policies() -> None:
     inserts them to target a default set of data categories if not.
     """
     with sync_session() as db_session:  # type: ignore[attr-defined]
-
         client_id = get_client_id(db_session)
 
         # By default, include all categories *except* those related to a user's
