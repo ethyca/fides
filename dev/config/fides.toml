@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "a3405c40ff892521f4d2bc7e0e7215aa" # string
+analytics_id = "261923ae96dd3db5627c5cc9c989d813" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -292,6 +292,11 @@ root_username = "" # string
 # The number of seconds that a pre-signed download URL when using S3
 # storage will be valid. The default is equal to 5 days.
 subject_request_download_link_ttl_seconds = 432000 # integer
+
+# Enables or disables the ability to import connector templates with
+# custom functions. When enabled, custom functions which will be loaded
+# in a restricted environment to minimize security risks.
+allow_custom_connector_functions = false # boolean
 
 #----------#
 #-- USER --#
