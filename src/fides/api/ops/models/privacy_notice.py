@@ -79,7 +79,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         db: Session,
         *,
         data: dict[str, Any],
-        check_name: bool = True,
+        check_name: bool = False,
     ) -> PrivacyNotice:
         created = super().create(db=db, data=data, check_name=check_name)
 
