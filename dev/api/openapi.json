@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.9.3a0.post0.dev9"
+    "version": "2.9.3a0.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4989,7 +4989,7 @@
           "Users"
         ],
         "summary": "Update User",
-        "description": "Update a user given a `user_id`. By default this is limited to users\nupdating their own data.",
+        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the USER_UPDATE scope",
         "operationId": "update_user_api_v1_user__user_id__put",
         "parameters": [
           {
@@ -5036,9 +5036,7 @@
         },
         "security": [
           {
-            "OAuth2ClientCredentialsBearer": [
-              "user:update"
-            ]
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       },
