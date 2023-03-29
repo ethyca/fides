@@ -8,7 +8,8 @@ export type IdentityInputs = {
 
 export type Config = {
   title: string;
-  description: string[];
+  description: string;
+  description_subtext?: string[];
   addendum?: string[];
   server_url_development?: string;
   server_url_production?: string;

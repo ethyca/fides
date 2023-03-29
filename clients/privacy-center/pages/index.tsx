@@ -131,7 +131,18 @@ const Home: NextPage = () => {
               {config.title}
             </Heading>
 
-            {config.description.map((paragraph) => {
+            <Text
+              fontSize={["small", "medium"]}
+              fontWeight="medium"
+              maxWidth={624}
+              textAlign="center"
+              color="gray.600"
+              data-testid="description-paragraph"
+            >
+              {config.description}
+            </Text>
+
+            {config.description_subtext?.map((paragraph) => {
               return (
                 <Text
                   fontSize={["small", "medium"]}
