@@ -137,7 +137,7 @@ const Home: NextPage = () => {
               maxWidth={624}
               textAlign="center"
               color="gray.600"
-              data-testid="description-paragraph"
+              data-testid="description"
             >
               {config.description}
             </Text>
@@ -149,7 +149,7 @@ const Home: NextPage = () => {
                 maxWidth={624}
                 textAlign="center"
                 color="gray.600"
-                data-testid="description-paragraph"
+                data-testid={`description-${index}`}
                 key={`description-${index}`}
               >
                 {paragraph}
@@ -166,7 +166,7 @@ const Home: NextPage = () => {
               fontWeight="medium"
               maxWidth={624}
               color="gray.600"
-              data-testid="addendum-paragraph"
+              data-testid={`addendum-${index}`}
               key={`addendum-${index}`}
             >
               {paragraph}
