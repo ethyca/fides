@@ -5,12 +5,14 @@ import {
   Spinner,
   Stack,
   Text,
+  useDisclosure,
   useToast,
 } from "@fidesui/react";
+import ConfirmationModal from "common/ConfirmationModal";
 import { useHasRole } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { USER_MANAGEMENT_ROUTE } from "~/constants";
@@ -42,6 +44,11 @@ const PermissionsForm = () => {
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
   });
+  const {
+    isOpen: chooseApproverIsOpen,
+    onOpen: chooseApproverOpen,
+    onClose: chooseApproverClose,
+  } = useDisclosure();
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
     initialManagedSystems
@@ -63,7 +70,15 @@ const PermissionsForm = () => {
   const [updateUserPermissionMutationTrigger] =
     useUpdateUserPermissionsMutation();
 
-  const handleSubmit = async (values: FormValues) => {
+  const updatePermissions = async (values: FormValues) => {
+    let skipAssigningSystems = false;
+    if (chooseApproverIsOpen) {
+      // Unassigning systems from viewer role happens automatically on BE when the role is saved.
+      // If we attempt to assign systems to the viewer role, the BE will throw an error,
+      // so we skip calling the endpoint.
+      skipAssigningSystems = true;
+      chooseApproverClose();
+    }
     if (!activeUserId) {
       return;
     }
@@ -78,19 +93,36 @@ const PermissionsForm = () => {
       toast(errorToastParams(getErrorMessage(userPermissionsResult.error)));
       return;
     }
-    const fidesKeys = assignedSystems.map((s) => s.fides_key);
-    const userSystemsResult = await updateUserManagedSystemsTrigger({
-      userId: activeUserId,
-      fidesKeys,
-    });
-    if (isErrorResult(userSystemsResult)) {
-      toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
-      return;
+    if (!skipAssigningSystems) {
+      const fidesKeys = assignedSystems.map((s) => s.fides_key);
+      const userSystemsResult = await updateUserManagedSystemsTrigger({
+        userId: activeUserId,
+        fidesKeys,
+      });
+      if (isErrorResult(userSystemsResult)) {
+        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
+        return;
+      }
     }
     toast(successToastParams("Permissions updated"));
   };
 
-  // This prevents users with contributor role from being able to assign owner roles
+  const handleSubmit = async (values: FormValues) => {
+    if (!activeUserId) {
+      return;
+    }
+    if (
+      assignedSystems.length > 0 &&
+      values.roles.includes(RoleRegistryEnum.APPROVER)
+    ) {
+      // approvers cannot be system managers on back-end
+      chooseApproverOpen();
+    } else {
+      await updatePermissions(values);
+    }
+  };
+
+  // This prevents logged-in users with contributor role from being able to assign owner roles
   const isOwner = useHasRole([RoleRegistryEnum.OWNER]);
 
   if (!activeUserId) {
@@ -161,6 +193,20 @@ const PermissionsForm = () => {
               </Button>
             </ButtonGroup>
           </Stack>
+          <ConfirmationModal
+            isOpen={chooseApproverIsOpen}
+            onClose={chooseApproverClose}
+            onConfirm={() => updatePermissions(values)}
+            title="Change role to Approver"
+            testId="downgrade-to-approver-confirmation-modal"
+            continueButtonText="Yes"
+            message={
+              <Text>
+                Switching to an approver role will remove all assigned systems.
+                Do you wish to proceed?
+              </Text>
+            }
+          />
         </Form>
       )}
     </Formik>

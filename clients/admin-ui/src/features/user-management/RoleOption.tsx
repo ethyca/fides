@@ -10,6 +10,7 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { useFormikContext } from "formik";
+import React from "react";
 
 import { RoleRegistryEnum, System } from "~/types/api";
 
@@ -38,7 +39,7 @@ const RoleOption = ({
   const { setFieldValue } = useFormikContext<FormValues>();
   const assignSystemsModal = useDisclosure();
 
-  const handleClick = () => {
+  const handleRoleChange = () => {
     setFieldValue("roles", [roleKey]);
   };
 
@@ -106,7 +107,7 @@ const RoleOption = ({
 
   return (
     <Button
-      onClick={handleClick}
+      onClick={handleRoleChange}
       justifyContent="start"
       variant="outline"
       height="inherit"
