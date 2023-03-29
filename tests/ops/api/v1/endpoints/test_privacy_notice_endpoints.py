@@ -609,6 +609,24 @@ class TestPostPrivacyNotices:
         )
         assert resp.status_code == 422
 
+    def test_post_invalid_privacy_notice_includes_id(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        notice_request: dict[str, Any],
+        notice_request_2: dict[str, Any],
+    ):
+        """
+        Test posting privacy notice(s) with an ID field is rejected
+        """
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_CREATE])
+        notice_request_with_id: dict[str, Any] = notice_request.copy()
+        notice_request_with_id["id"] = "pn_1"
+
+        resp = api_client.post(url, headers=auth_header, json=[notice_request_with_id])
+        assert resp.status_code == 422
+
     def test_post_invalid_privacy_notice_invalid_values(
         self,
         api_client: TestClient,

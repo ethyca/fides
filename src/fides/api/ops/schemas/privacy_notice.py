@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import conlist
+from pydantic import Extra, conlist
 
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_notice import (
@@ -40,6 +40,7 @@ class PrivacyNotice(BaseSchema):
 
         use_enum_values = True
         orm_mode = True
+        extra = Extra.forbid
 
     def validate_data_uses(self, valid_data_uses: List[str]) -> None:
         """
