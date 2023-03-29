@@ -1100,6 +1100,47 @@ dataset:
     - name: preferences
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: custom_connector_template
+    description: 'A table used to hold custom connector templates which include a SaaS config, dataset, and an optional icon and functions'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: config
+      description: 'Fides Generated Description for Column: config'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: dataset
+      description: 'Fides Generated Description for Column: dataset'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: functions
+      description: 'Fides Generated Description for Column: functions'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: icon
+      description: 'Fides Generated Description for Column: icon'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: key
+      description: 'Fides Generated Description for Column: key'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: name
+      description: 'Fides Generated Description for Column: name'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: datasetconfig
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
