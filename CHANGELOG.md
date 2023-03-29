@@ -41,7 +41,7 @@ The types of changes are:
 * Change Privacy Center email placeholder text [#2935](https://github.com/ethyca/fides/pull/2935)
 * Restricted setting Approvers as System Managers [#2891](https://github.com/ethyca/fides/pull/2891)
 * Adds confirmation modal when downgrading user to "approver" role via Admin UI [#2924](https://github.com/ethyca/fides/pull/2924)
-
+* Changed the toast message for new users to include access control info [#2939](https://github.com/ethyca/fides/pull/2939)
 
 ### Fixed
 
