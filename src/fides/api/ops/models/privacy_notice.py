@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Tuple, Type
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
@@ -73,43 +73,60 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     accepts or rejects to indicate their consent for particular data uses
     """
 
+    @classmethod
+    def create(
+        cls: Type[PrivacyNotice],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = True,
+    ) -> PrivacyNotice:
+        created = super().create(db=db, data=data, check_name=check_name)
+
+        # create the history after the initial object creation succeeds, to avoid
+        # writing history if the creation fails and so that we can get the generated ID
+        history_data = {**data, "privacy_notice_id": created.id}
+        PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
+        return created
+
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyNotice:
         """
         Overrides the base update method to automatically bump the version of the
         PrivacyNotice record and also create a new PrivacyNoticeHistory entry
         """
-        # history record data is identical to old privacy notice record data
-        # except the notice's 'id' must be moved to the FK column
-        # and is no longer the history record 'id' column
-        history_data = {
-            "name": self.name,
-            "description": self.description or None,
-            "origin": self.origin or None,
-            "regions": self.regions,
-            "consent_mechanism": self.consent_mechanism,
-            "data_uses": self.data_uses,
-            "enforcement_level": self.enforcement_level,
-            "version": self.version,
-            "disabled": self.disabled,
-            "has_gpc_flag": self.has_gpc_flag,
-            "displayed_in_privacy_center": self.displayed_in_privacy_center,
-            "displayed_in_banner": self.displayed_in_banner,
-            "displayed_in_privacy_modal": self.displayed_in_privacy_modal,
-            "privacy_notice_id": self.id,
-        }
 
         # run through potential updates now
         for key, value in data.items():
             setattr(self, key, value)
 
-        # only if there's a modification do we write the history data "frozen" above
+        # only if there's a modification do we write the history record
         if db.is_modified(self):
-            PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
-
             # on any update to a privacy notice record, its version must be incremented
             # version gets incremented by a full integer, i.e. 1.0 -> 2.0 -> 3.0
             self.version = float(self.version) + 1.0  # type: ignore
             self.save(db)
+
+            # history record data is identical to the new privacy notice record data
+            # except the notice's 'id' must be moved to the FK column
+            # and is no longer the history record 'id' column
+            history_data = {
+                "name": self.name,
+                "description": self.description or None,
+                "origin": self.origin or None,
+                "regions": self.regions,
+                "consent_mechanism": self.consent_mechanism,
+                "data_uses": self.data_uses,
+                "enforcement_level": self.enforcement_level,
+                "version": self.version,
+                "disabled": self.disabled,
+                "has_gpc_flag": self.has_gpc_flag,
+                "displayed_in_privacy_center": self.displayed_in_privacy_center,
+                "displayed_in_banner": self.displayed_in_banner,
+                "displayed_in_privacy_modal": self.displayed_in_privacy_modal,
+                "privacy_notice_id": self.id,
+            }
+            PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
+
         return self
 
     def dry_update(self, *, data: dict[str, Any]) -> FidesBase:

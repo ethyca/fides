@@ -1371,10 +1371,12 @@ class TestPatchPrivacyNotices:
         assert response_notice["updated_at"] > before_update
         assert response_notice["disabled"]
 
-        # assert a history record was created and has the old privacy notice data
-        history_record: PrivacyNoticeHistory = PrivacyNoticeHistory.get_by(
-            db=db, field="privacy_notice_id", value=privacy_notice.id
-        )
+        # assert our old history record has the old privacy notice data
+        history_record: PrivacyNoticeHistory = (
+            PrivacyNoticeHistory.query(db=db)
+            .filter(PrivacyNoticeHistory.privacy_notice_id == privacy_notice.id)
+            .filter(PrivacyNoticeHistory.version == 1.0)
+        ).first()
         assert (
             history_record.name
             == privacy_notice.name
@@ -1401,6 +1403,24 @@ class TestPatchPrivacyNotices:
             == privacy_notice.disabled
             != patch_privacy_notice_payload["disabled"]
         )
+
+        # assert there's a new history record with the new privacy notice data
+        history_record: PrivacyNoticeHistory = (
+            PrivacyNoticeHistory.query(db=db)
+            .filter(PrivacyNoticeHistory.privacy_notice_id == privacy_notice.id)
+            .filter(PrivacyNoticeHistory.version == 2.0)
+        ).first()
+        assert history_record.name == patch_privacy_notice_payload["name"]
+        assert [
+            region.value for region in history_record.regions
+        ] == patch_privacy_notice_payload["regions"]
+        assert (
+            history_record.consent_mechanism.value
+            == patch_privacy_notice_payload["consent_mechanism"]
+        )
+        assert history_record.data_uses == patch_privacy_notice_payload["data_uses"]
+        assert history_record.version == 2.0
+        assert history_record.disabled == patch_privacy_notice_payload["disabled"]
 
         # assert the db privacy notice record has the updated values
         db_notice: PrivacyNotice = PrivacyNotice.get(
@@ -1471,32 +1491,23 @@ class TestPatchPrivacyNotices:
         assert response_notice["updated_at"] > before_update
         assert response_notice["disabled"]
 
-        # assert a history record was created and has the old privacy notice data
-        history_record: PrivacyNoticeHistory = PrivacyNoticeHistory.get_by(
-            db=db, field="privacy_notice_id", value=privacy_notice.id
-        )
-        assert history_record.name == old_name != patch_privacy_notice_payload["name"]
+        # assert a new history record was created and has the new privacy notice data
+        history_record: PrivacyNoticeHistory = (
+            PrivacyNoticeHistory.query(db=db)
+            .filter(PrivacyNoticeHistory.privacy_notice_id == privacy_notice.id)
+            .filter(PrivacyNoticeHistory.version == 2.0)
+        ).first()
+        assert history_record.name == patch_privacy_notice_payload["name"]
+        assert [
+            region.value for region in history_record.regions
+        ] == patch_privacy_notice_payload["regions"]
         assert (
-            history_record.regions
-            == old_regions
-            != patch_privacy_notice_payload["regions"]
+            history_record.consent_mechanism.value
+            == patch_privacy_notice_payload["consent_mechanism"]
         )
-        assert (
-            history_record.consent_mechanism
-            == old_consent_mechanism
-            != patch_privacy_notice_payload["consent_mechanism"]
-        )
-        assert (
-            history_record.data_uses
-            == old_data_uses
-            != patch_privacy_notice_payload["data_uses"]
-        )
-        assert history_record.version == 1.0
-        assert (
-            history_record.disabled
-            == privacy_notice.disabled
-            != patch_privacy_notice_payload["disabled"]
-        )
+        assert history_record.data_uses == patch_privacy_notice_payload["data_uses"]
+        assert history_record.version == 2.0
+        assert history_record.disabled == patch_privacy_notice_payload["disabled"]
 
         # assert the db privacy notice record has the updated values
         db_notice: PrivacyNotice = PrivacyNotice.get(
@@ -1542,10 +1553,15 @@ class TestPatchPrivacyNotices:
         assert response_notice_2["updated_at"] > before_update
         assert not response_notice_2["disabled"]
 
-        # assert a history record was created and has the old privacy notice data
-        history_record_2: PrivacyNoticeHistory = PrivacyNoticeHistory.get_by(
-            db=db, field="privacy_notice_id", value=privacy_notice_us_ca_provide.id
-        )
+        # assert a new history record was created and has the new privacy notice data
+        history_record_2: PrivacyNoticeHistory = (
+            PrivacyNoticeHistory.query(db=db)
+            .filter(
+                PrivacyNoticeHistory.privacy_notice_id
+                == privacy_notice_us_ca_provide.id
+            )
+            .filter(PrivacyNoticeHistory.version == 2.0)
+        ).first()
         assert history_record_2.name == privacy_notice_us_ca_provide.name
         assert history_record_2.regions == privacy_notice_us_ca_provide.regions
         assert (
@@ -1553,9 +1569,12 @@ class TestPatchPrivacyNotices:
             == privacy_notice_us_ca_provide.consent_mechanism
         )
         assert history_record_2.data_uses == privacy_notice_us_ca_provide.data_uses
-        assert history_record_2.description is None
+        assert (
+            history_record_2.description
+            == patch_privacy_notice_payload_us_ca_provide["description"]
+        )
         assert history_record_2.origin is None
-        assert history_record_2.version == 1.0
+        assert history_record_2.version == 2.0
         assert history_record_2.disabled == privacy_notice_us_ca_provide.disabled
 
         # assert the db privacy notice record has the updated values
@@ -1622,10 +1641,15 @@ class TestPatchPrivacyNotices:
         assert response_notice["updated_at"] < datetime.now().isoformat()
         assert response_notice["updated_at"] > before_update
 
-        # assert a history record was created and has the old privacy notice data
-        history_record: PrivacyNoticeHistory = PrivacyNoticeHistory.get_by(
-            db=db, field="privacy_notice_id", value=privacy_notice_us_ca_provide.id
-        )
+        # assert a history record was created and has the new privacy notice data
+        history_record: PrivacyNoticeHistory = (
+            PrivacyNoticeHistory.query(db=db)
+            .filter(
+                PrivacyNoticeHistory.privacy_notice_id
+                == privacy_notice_us_ca_provide.id
+            )
+            .filter(PrivacyNoticeHistory.version == 2.0)
+        ).first()
         assert history_record.name == privacy_notice_us_ca_provide.name
         assert history_record.regions == privacy_notice_us_ca_provide.regions
         assert (
@@ -1633,9 +1657,12 @@ class TestPatchPrivacyNotices:
             == privacy_notice_us_ca_provide.consent_mechanism
         )
         assert history_record.data_uses == privacy_notice_us_ca_provide.data_uses
-        assert history_record.description is None
+        assert (
+            history_record.description
+            == patch_privacy_notice_payload_us_ca_provide["description"]
+        )
         assert history_record.origin is None
-        assert history_record.version == 1.0
+        assert history_record.version == 2.0
         assert history_record.disabled == privacy_notice_us_ca_provide.disabled
 
         # assert the db privacy notice record has the updated values
@@ -1694,7 +1721,7 @@ class TestPatchPrivacyNotices:
         assert response_notice_2["updated_at"] < datetime.now().isoformat()
         assert response_notice_2["updated_at"] > before_update_2
 
-        # assert a second history record was created and has the old privacy notice data
+        # assert a third history record was created and has the new privacy notice data
         assert (
             len(
                 PrivacyNoticeHistory.query(db)
@@ -1704,8 +1731,32 @@ class TestPatchPrivacyNotices:
                 )
                 .all()
             )
-            == 2
-        )  # should have 2 history records now pointing to this notice
+            == 3
+        )  # should have 3 history records now pointing to this notice
+        history_record_3: PrivacyNoticeHistory = (
+            PrivacyNoticeHistory.query(db)
+            .filter(
+                PrivacyNoticeHistory.privacy_notice_id
+                == privacy_notice_us_ca_provide.id
+            )
+            .filter(PrivacyNoticeHistory.version == 3.0)
+            .first()
+        )  # find the latest history record
+        assert history_record_3.name == "an updated name"
+        assert history_record_3.regions == privacy_notice_us_ca_provide.regions
+        assert (
+            history_record_3.consent_mechanism
+            == privacy_notice_us_ca_provide.consent_mechanism
+        )
+        assert history_record_3.data_uses == privacy_notice_us_ca_provide.data_uses
+        assert (
+            history_record_3.description
+            == patch_privacy_notice_payload_us_ca_provide["description"]
+        )
+        assert history_record_3.version == 3.0
+        assert history_record_3.disabled == privacy_notice_us_ca_provide.disabled
+
+        # assert old history record hasn't changed
         history_record_2: PrivacyNoticeHistory = (
             PrivacyNoticeHistory.query(db)
             .filter(
@@ -1714,7 +1765,7 @@ class TestPatchPrivacyNotices:
             )
             .filter(PrivacyNoticeHistory.version == 2.0)
             .first()
-        )  # find the latest history record
+        )
         assert history_record_2.name == old_name
         assert history_record_2.regions == privacy_notice_us_ca_provide.regions
         assert (

@@ -4,6 +4,25 @@ from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeHist
 
 
 class TestPrivacyNoticeModel:
+    def test_create(self, db: Session, privacy_notice: PrivacyNotice):
+        """
+        Ensure our create override works as expected to create a history object
+        """
+        # our fixture should have created a privacy notice and therefore a similar history object
+        assert len(PrivacyNotice.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 1
+
+        history_object = PrivacyNoticeHistory.all(db)[0]
+        assert history_object.name == privacy_notice.name
+        assert history_object.data_uses == privacy_notice.data_uses
+        assert history_object.version == privacy_notice.version
+        assert history_object.privacy_notice_id == privacy_notice.id
+
+        # make sure our create method still auto-populates as needed
+        assert privacy_notice.created_at is not None
+        assert privacy_notice.updated_at is not None
+        assert privacy_notice.id is not None
+
     def test_update_no_updates_no_history(
         self, db: Session, privacy_notice: PrivacyNotice
     ):
@@ -11,7 +30,7 @@ class TestPrivacyNoticeModel:
         Ensure updating with no real updates doesn't actually add a history record
         """
         assert len(PrivacyNotice.all(db)) == 1
-        assert len(PrivacyNoticeHistory.all(db)) == 0
+        assert len(PrivacyNoticeHistory.all(db)) == 1
 
         old_name = privacy_notice.name
         old_data_uses = privacy_notice.data_uses
@@ -24,7 +43,7 @@ class TestPrivacyNoticeModel:
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
-        assert len(PrivacyNoticeHistory.all(db)) == 0
+        assert len(PrivacyNoticeHistory.all(db)) == 1
 
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
@@ -40,7 +59,7 @@ class TestPrivacyNoticeModel:
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
-        assert len(PrivacyNoticeHistory.all(db)) == 0
+        assert len(PrivacyNoticeHistory.all(db)) == 1
 
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
@@ -53,7 +72,7 @@ class TestPrivacyNoticeModel:
         Specifically look at the history table and version changes
         """
         assert len(PrivacyNotice.all(db)) == 1
-        assert len(PrivacyNoticeHistory.all(db)) == 0
+        assert len(PrivacyNoticeHistory.all(db)) == 1
 
         old_name = privacy_notice.name
         old_data_uses = privacy_notice.data_uses
@@ -67,14 +86,29 @@ class TestPrivacyNoticeModel:
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
-        assert len(PrivacyNoticeHistory.all(db)) == 1
+        assert len(PrivacyNoticeHistory.all(db)) == 2
 
         db.refresh(privacy_notice)
         assert privacy_notice.name == "updated name"
         assert privacy_notice.data_uses == old_data_uses
         assert privacy_notice.version == 2.0
 
-        notice_history = PrivacyNoticeHistory.all(db)[0]
+        # make sure our latest entry in history table corresponds to current record
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(PrivacyNoticeHistory.version == 2.0)
+            .first()
+        )
+        assert notice_history.name == "updated name"
+        assert notice_history.data_uses == old_data_uses
+        assert notice_history.version == 2.0
+
+        # and that previous record hasn't changed
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(PrivacyNoticeHistory.version == 1.0)
+            .first()
+        )
         assert notice_history.name == old_name
         assert notice_history.data_uses == old_data_uses
         assert notice_history.version == 1.0
@@ -95,13 +129,24 @@ class TestPrivacyNoticeModel:
 
         # assert we have expected db records
         assert len(PrivacyNotice.all(db)) == 1
-        assert len(PrivacyNoticeHistory.all(db)) == 2
+        assert len(PrivacyNoticeHistory.all(db)) == 3
 
         db.refresh(privacy_notice)
         assert privacy_notice.name == "updated name again"
         assert privacy_notice.data_uses == ["data_use_1", "data_use_2"]
         assert privacy_notice.version == 3.0
 
+        # make sure our latest entry in history table corresponds to current record
+        notice_history = (
+            PrivacyNoticeHistory.query(db)
+            .filter(PrivacyNoticeHistory.version == 3.0)
+            .first()
+        )
+        assert notice_history.name == "updated name again"
+        assert notice_history.data_uses == ["data_use_1", "data_use_2"]
+        assert notice_history.version == 3.0
+
+        # and that previous record hasn't changed
         notice_history = (
             PrivacyNoticeHistory.query(db)
             .filter(PrivacyNoticeHistory.version == 2.0)
@@ -166,7 +211,7 @@ class TestPrivacyNoticeModel:
         """
 
         assert len(PrivacyNotice.all(db)) == 1
-        assert len(PrivacyNoticeHistory.all(db)) == 0
+        assert len(PrivacyNoticeHistory.all(db)) == 1
         old_name = privacy_notice.name
 
         updated_notice = privacy_notice.dry_update(data={"name": "updated name"})
@@ -180,7 +225,7 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.name == old_name
 
         # ensure no PrivacyNoticeHistory entries were created
-        assert len(PrivacyNoticeHistory.all(db)) == 0
+        assert len(PrivacyNoticeHistory.all(db)) == 1
 
         # ensure our dry update object is totally dissociated from the original object
         updated_notice.name = "another updated name"
