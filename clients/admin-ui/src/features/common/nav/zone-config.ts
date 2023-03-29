@@ -7,7 +7,7 @@ export const ZONE_CONFIG = configureZones({
 
   zones: [
     {
-      basePath: "/datamap",
+      basePath: "/plus",
       development: {
         host: "localhost:4000",
       },

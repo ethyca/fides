@@ -1,3 +1,4 @@
+import { DATAMAP_ROUTE } from "@fidesui/components";
 import { describe, expect, it } from "@jest/globals";
 
 import { ScopeRegistryEnum } from "~/types/api";
@@ -21,7 +22,7 @@ describe("configureTiles", () => {
       userScopes: ALL_SCOPES_FOR_TILES,
     });
 
-    expect(tiles.filter((t) => t.href === "/datamap").length).toEqual(0);
+    expect(tiles.filter((t) => t.href === DATAMAP_ROUTE).length).toEqual(0);
   });
 
   it("includes datamap view if plus", () => {
@@ -30,7 +31,7 @@ describe("configureTiles", () => {
       hasPlus: true,
       userScopes: ALL_SCOPES_FOR_TILES,
     });
-    expect(tiles.filter((t) => t.href === "/datamap").length).toEqual(1);
+    expect(tiles.filter((t) => t.href === DATAMAP_ROUTE).length).toEqual(1);
   });
 
   describe("configure by scopes", () => {

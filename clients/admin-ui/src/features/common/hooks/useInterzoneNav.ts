@@ -1,4 +1,5 @@
-import { SYSTEM_ROUTE } from "~/constants";
+import { DATAMAP_ROUTE, SYSTEM_ROUTE } from "@fidesui/components";
+
 import { useFeatures } from "~/features/common/features";
 import { resolveLink } from "~/features/common/nav/zone-config";
 
@@ -6,7 +7,7 @@ export const useInterzoneNav = () => {
   const features = useFeatures();
 
   const datamapRoute = resolveLink({
-    href: "/datamap",
+    href: DATAMAP_ROUTE,
     basePath: "/",
   });
 

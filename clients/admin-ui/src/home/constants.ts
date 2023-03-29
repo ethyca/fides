@@ -4,7 +4,8 @@ import {
   DATASTORE_CONNECTION_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
   SYSTEM_ROUTE,
-} from "~/constants";
+} from "@fidesui/components";
+
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { ModuleCardConfig } from "./types";
