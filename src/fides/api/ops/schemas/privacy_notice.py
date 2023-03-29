@@ -30,10 +30,10 @@ class PrivacyNotice(BaseSchema):
     data_uses: Optional[conlist(SafeStr, min_items=1)]  # type: ignore
     enforcement_level: Optional[EnforcementLevel]
     disabled: Optional[bool] = False
-    has_gpc_flag: Optional[bool]
-    displayed_in_privacy_center: Optional[bool]
-    displayed_in_privacy_modal: Optional[bool]
-    displayed_in_banner: Optional[bool]
+    has_gpc_flag: Optional[bool] = False
+    displayed_in_privacy_center: Optional[bool] = True
+    displayed_in_privacy_modal: Optional[bool] = True
+    displayed_in_banner: Optional[bool] = True
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""

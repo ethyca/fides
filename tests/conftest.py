@@ -952,6 +952,39 @@ def system(db: Session) -> System:
     return system
 
 
+@pytest.fixture(scope="function")
+def system_third_party_sharing(db: Session) -> System:
+    system_third_party_sharing = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "data_responsibility_title": "Processor",
+            "privacy_declarations": [
+                {
+                    "name": "Collect data for third party sharing",
+                    "data_categories": ["user.device.cookie_id"],
+                    "data_use": "third_party_sharing",
+                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                    "data_subjects": ["customer"],
+                    "dataset_references": None,
+                    "egress": None,
+                    "ingress": None,
+                }
+            ],
+            "data_protection_impact_assessment": {
+                "is_required": False,
+                "progress": None,
+                "link": None,
+            },
+        },
+    )
+    return system_third_party_sharing
+
+
 @pytest.fixture
 def system_manager_client(db, system):
     """Return a client assigned to a system for authentication purposes."""

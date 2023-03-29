@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
@@ -6,7 +6,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import conlist
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 from starlette.exceptions import HTTPException
 from starlette.status import (
     HTTP_200_OK,
@@ -30,6 +30,28 @@ from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
 
+DataUseMap = Dict[str, List[schemas.PrivacyNoticeResponse]]
+
+
+def generate_notice_query(
+    db: Session,
+    show_disabled: Optional[bool] = True,
+    systems_applicable: Optional[bool] = False,
+    region: PrivacyNoticeRegion = None,
+) -> Query:
+    """
+    Helper function to generate a `PrivacyNotice` query based on certain parameterizations
+    """
+    notice_query = db.query(PrivacyNotice)
+    if not show_disabled:
+        notice_query = notice_query.filter(PrivacyNotice.disabled.is_(False))
+    if region is not None:
+        notice_query = notice_query.filter(PrivacyNotice.regions.contains([region]))
+    if systems_applicable:
+        data_uses = System.get_system_data_uses(db)
+        notice_query = notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
+    return notice_query
+
 
 @router.get(
     urls.PRIVACY_NOTICE,
@@ -48,20 +70,58 @@ def get_privacy_notice_list(
     systems_applicable: Optional[bool] = False,
 ) -> AbstractPage[PrivacyNotice]:
     """
-    Return a paginated list of PrivacyNotice records in this system.
+    Return a paginated list of `PrivacyNotice` records in this system.
     Includes some query params to help filter the list if needed
     """
     logger.info("Finding all PrivacyNotices with pagination params '{}'", params)
-    notice_query = db.query(PrivacyNotice)
-    if not show_disabled:
-        notice_query = notice_query.filter(PrivacyNotice.disabled.is_(False))
-    if region is not None:
-        notice_query = notice_query.filter(PrivacyNotice.regions.contains([region]))
-    if systems_applicable:
-        data_uses = System.get_system_data_uses(db)
-        notice_query = notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
+    notice_query = generate_notice_query(
+        db=db,
+        show_disabled=show_disabled,
+        systems_applicable=systems_applicable,
+        region=region,
+    )
     privacy_notices = notice_query.order_by(PrivacyNotice.created_at.desc())
     return paginate(privacy_notices, params=params)
+
+
+@router.get(
+    urls.PRIVACY_NOTICE_BY_DATA_USE,
+    status_code=HTTP_200_OK,
+    response_model=DataUseMap,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_NOTICE_READ])
+    ],
+)
+def get_privacy_notice_by_data_use(
+    *, db: Session = Depends(deps.get_db)
+) -> Dict[str, Any]:
+    """
+    Endpoint to retrieve a map of `DataUse`s with their corresponding `PrivacyNotice`s
+
+    Only `DataUse`s that are associated with a `System` are included in the map.
+
+    `DataUse`s that do not have any `PrivacyNotice` associated with them are included
+    in the map, with empty lists.
+    """
+
+    # get all data uses associated with a system, and seed our response map
+    # with those data uses as keys
+    system_data_uses = System.get_system_data_uses(db)
+    notices_by_data_use: DataUseMap = {data_use: [] for data_use in system_data_uses}
+
+    # get all notices that are not disabled and share a data use with a system
+    notice_query = generate_notice_query(
+        db=db, show_disabled=False, systems_applicable=True
+    )
+    # for each notice, check each of its data uses, and add it to the
+    # corresponding map entry, if it exists. do not create map entries
+    # if they don't exits already - the data use is not associated with a system
+    for notice in notice_query.all():
+        for data_use in notice.data_uses:
+            if data_use in notices_by_data_use:
+                notices_by_data_use[data_use].append(notice)
+
+    return notices_by_data_use
 
 
 def get_privacy_notice_or_error(db: Session, notice_id: str) -> PrivacyNotice:

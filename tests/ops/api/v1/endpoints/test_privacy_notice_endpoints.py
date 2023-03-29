@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any, Dict
+from datetime import datetime, timezone
+from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
 from fideslang import DataUse
+from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
@@ -16,6 +17,7 @@ from fides.api.ops.api.v1.endpoints.privacy_notice_endpoints import (
 )
 from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_NOTICE,
+    PRIVACY_NOTICE_BY_DATA_USE,
     PRIVACY_NOTICE_DETAIL,
     V1_URL_PREFIX,
 )
@@ -26,7 +28,10 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.schemas.privacy_notice import PrivacyNoticeCreation
+from fides.api.ops.schemas.privacy_notice import (
+    PrivacyNoticeCreation,
+    PrivacyNoticeResponse,
+)
 
 
 class TestValidateDataUses:
@@ -541,6 +546,325 @@ class TestGetPrivacyNoticeDetail:
         assert data["displayed_in_banner"] == privacy_notice.displayed_in_banner
 
 
+class TestGetPrivacyNoticesByDataUse:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + PRIVACY_NOTICE_BY_DATA_USE
+
+    def test_get_privacy_notice_by_data_use_unauthenticated(self, url, api_client):
+        resp = api_client.get(url)
+        assert resp.status_code == 401
+
+    def test_get_privacy_notice_by_data_use_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.STORAGE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    PRIVACY_NOTICE_NAME = "example privacy notice"
+    NOW = datetime.now(
+        timezone.utc
+    ).isoformat()  # store this as a constant for consistency
+
+    @pytest.mark.parametrize(
+        "system_fixtures,privacy_notices,expected_response",
+        [
+            (
+                ["system"],
+                [
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-1",
+                        name=f"{PRIVACY_NOTICE_NAME}-1",
+                        regions=[
+                            PrivacyNoticeRegion.us_ca,
+                            PrivacyNoticeRegion.us_co,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["advertising", "third_party_sharing"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    )
+                ],
+                {
+                    "advertising": [
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-1",
+                            name=f"{PRIVACY_NOTICE_NAME}-1",
+                            regions=[
+                                PrivacyNoticeRegion.us_ca,
+                                PrivacyNoticeRegion.us_co,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["advertising", "third_party_sharing"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        )
+                    ],
+                },
+            ),
+            (
+                ["system"],
+                [
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-1",
+                        name=f"{PRIVACY_NOTICE_NAME}-1",
+                        regions=[
+                            PrivacyNoticeRegion.us_ca,
+                            PrivacyNoticeRegion.us_co,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["advertising", "third_party_sharing"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-2",
+                        name=f"{PRIVACY_NOTICE_NAME}-2",
+                        regions=[
+                            PrivacyNoticeRegion.eu_be,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["advertising"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                ],
+                {
+                    "advertising": [
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-1",
+                            name=f"{PRIVACY_NOTICE_NAME}-1",
+                            regions=[
+                                PrivacyNoticeRegion.us_ca,
+                                PrivacyNoticeRegion.us_co,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["advertising", "third_party_sharing"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        ),
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-2",
+                            name=f"{PRIVACY_NOTICE_NAME}-2",
+                            regions=[
+                                PrivacyNoticeRegion.eu_be,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["advertising"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        ),
+                    ],
+                },
+            ),
+            (
+                ["system", "system_third_party_sharing"],
+                [
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-1",
+                        name=f"{PRIVACY_NOTICE_NAME}-1",
+                        regions=[
+                            PrivacyNoticeRegion.us_ca,
+                            PrivacyNoticeRegion.us_co,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["advertising", "third_party_sharing"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-2",
+                        name=f"{PRIVACY_NOTICE_NAME}-2",
+                        regions=[
+                            PrivacyNoticeRegion.eu_be,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["advertising"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                ],
+                {
+                    "advertising": [
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-1",
+                            name=f"{PRIVACY_NOTICE_NAME}-1",
+                            regions=[
+                                PrivacyNoticeRegion.us_ca,
+                                PrivacyNoticeRegion.us_co,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["advertising", "third_party_sharing"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        ),
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-2",
+                            name=f"{PRIVACY_NOTICE_NAME}-2",
+                            regions=[
+                                PrivacyNoticeRegion.eu_be,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["advertising"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        ),
+                    ],
+                    "third_party_sharing": [
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-1",
+                            name=f"{PRIVACY_NOTICE_NAME}-1",
+                            regions=[
+                                PrivacyNoticeRegion.us_ca,
+                                PrivacyNoticeRegion.us_co,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["advertising", "third_party_sharing"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        ),
+                    ],
+                },
+            ),
+            (
+                ["system", "system_third_party_sharing"],
+                [
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-1",
+                        name=f"{PRIVACY_NOTICE_NAME}-1",
+                        regions=[
+                            PrivacyNoticeRegion.us_ca,
+                            PrivacyNoticeRegion.us_co,
+                        ],
+                        disabled=True,  # test that disabling removes from map
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["advertising", "third_party_sharing"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-2",
+                        name=f"{PRIVACY_NOTICE_NAME}-2",
+                        regions=[
+                            PrivacyNoticeRegion.eu_be,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["advertising"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                ],
+                {
+                    "advertising": [
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-2",
+                            name=f"{PRIVACY_NOTICE_NAME}-2",
+                            regions=[
+                                PrivacyNoticeRegion.eu_be,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["advertising"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        ),
+                    ],
+                    "third_party_sharing": [],
+                },
+            ),
+            (
+                ["system"],
+                [
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-1",
+                        name=f"{PRIVACY_NOTICE_NAME}-1",
+                        regions=[
+                            PrivacyNoticeRegion.us_ca,
+                            PrivacyNoticeRegion.us_co,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=[
+                            "third_party_sharing"
+                        ],  # data use is not applicable to any system
+                        enforcement_level=EnforcementLevel.system_wide,
+                    ),
+                ],
+                {"advertising": []},
+            ),
+        ],
+    )
+    def test_get_privacy_notice_by_data_use(
+        self,
+        system_fixtures: List[str],
+        privacy_notices: List[PrivacyNotice],
+        expected_response: Dict[str, Any],
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+        request,
+    ):
+        # load the provided system fixutres
+        for system_fixture in system_fixtures:
+            request.getfixturevalue(system_fixture)
+
+        # add the provided privacy notices to the db, i.e. seed our data
+        for privacy_notice in privacy_notices:
+            privacy_notice.save(db)
+
+        # execute the request to get the data use map
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+
+        # validate our response looks as expected
+        # to avoid ordering issues, check expected/returned response request by request
+        for (data_use, notices) in resp.json().items():
+            assert data_use in expected_response
+            expected_notices: List = expected_response[data_use]
+            for notice_response in notices:
+                notice_response = PrivacyNoticeResponse(**notice_response)
+                assert notice_response in expected_notices
+                expected_notices.remove(notice_response)  # remove matched request
+            assert (
+                not expected_notices
+            )  # no requests should remain, i.e. confirm lists are identical
+
+
 class TestPostPrivacyNotices:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -552,7 +876,10 @@ class TestPostPrivacyNotices:
             "name": "test privacy notice 1",
             "description": "my test privacy notice",
             "origin": "privacy_notice_template_1",
-            "regions": [PrivacyNoticeRegion.eu_be.value, PrivacyNoticeRegion.us_ca.value],
+            "regions": [
+                PrivacyNoticeRegion.eu_be.value,
+                PrivacyNoticeRegion.us_ca.value,
+            ],
             "consent_mechanism": ConsentMechanism.opt_in.value,
             "data_uses": ["advertising"],
             "enforcement_level": EnforcementLevel.system_wide.value,
