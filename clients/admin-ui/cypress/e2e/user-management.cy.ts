@@ -27,6 +27,12 @@ describe("User management", () => {
         }).as("updateUser");
       });
 
+      it("cannot add new users", () => {
+        cy.visit("/user-management");
+        cy.wait("@getAllUsers");
+        cy.getByTestId("add-new-user-btn").should("not.exist");
+      });
+
       it("can access their own profile but not their permissions", () => {
         cy.visit("/user-management");
         cy.wait("@getAllUsers");
