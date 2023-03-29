@@ -4,6 +4,7 @@ from zipfile import BadZipFile, ZipFile
 
 from fastapi import Depends, HTTPException, UploadFile
 from fastapi.params import Security
+from fastapi.responses import JSONResponse
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -351,7 +352,7 @@ def instantiate_connection_from_template(
 async def register_custom_connector_template(
     connector_template: UploadFile,
     db: Session = Depends(deps.get_db),
-) -> None:
+) -> JSONResponse:
     """
     Registers a custom connector template from a zip file uploaded by the user.
     The endpoint performs the following steps:
@@ -375,3 +376,7 @@ async def register_custom_connector_template(
     except Exception as exc:
         logger.exception("Error loading connector template from zip file.")
         raise HTTPException(status_code=400, detail=str(exc))
+
+    return JSONResponse(
+        content={"message": "Connector template successfully registered."}
+    )

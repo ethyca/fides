@@ -37,6 +37,7 @@ from fides.api.ops.util.saas_util import (
     replace_dataset_placeholders,
 )
 from fides.core.config import CONFIG
+from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str, str_to_b64_str
 
 
 class ConnectorTemplateLoader(ABC):
@@ -141,7 +142,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             )
 
         # register the template in the loader's template dictionary
-        cls._instance._templates[template.key] = connector_template  # type: ignore
+        cls.get_instance()._templates[template.key] = connector_template  # type: ignore
 
     @classmethod
     def save_template(cls, db: Session, zip_file: ZipFile) -> None:
@@ -156,7 +157,13 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         function_contents = None
 
         for info in zip_file.infolist():
-            file_contents = zip_file.read(info).decode()
+            try:
+                file_contents = zip_file.read(info).decode()
+            except UnicodeDecodeError:
+                # skip any hidden metadata files that can't be decoded with UTF-8
+                logger.debug(f"Unable to decode the file: {info.filename}")
+                continue
+
             if info.filename.endswith("config.yml"):
                 if not config_contents:
                     config_contents = file_contents
@@ -173,7 +180,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                     )
             elif info.filename.endswith(".svg"):
                 if not icon_contents:
-                    icon_contents = file_contents
+                    icon_contents = str_to_b64_str(file_contents)
                 else:
                     raise ValidationError(
                         "Multiple svg files found, only one is allowed."
@@ -197,7 +204,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         connector_type = config["type"]
         human_readable = config["name"]
 
-        custom_connector_template = CustomConnectorTemplate(
+        template = CustomConnectorTemplate(
             key=connector_type,
             name=human_readable,
             config=config_contents,
@@ -207,10 +214,20 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         )
 
         # attempt to register the template, raises an exception if validation fails
-        cls._register_template(custom_connector_template)
+        cls._register_template(template)
 
         # save the custom connector to the database if it passed validation
-        custom_connector_template.save(db=db)
+        CustomConnectorTemplate.create_or_update(
+            db=db,
+            data={
+                "key": connector_type,
+                "name": human_readable,
+                "config": config_contents,
+                "dataset": dataset_contents,
+                "icon": icon_contents,
+                "functions": function_contents,
+            },
+        )
 
     @classmethod
     def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:

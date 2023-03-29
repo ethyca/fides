@@ -1,4 +1,5 @@
 import os
+from zipfile import ZipFile
 
 import pytest
 
@@ -19,6 +20,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.ops.util.saas_util import encode_file_contents, load_yaml_as_string
 from fides.core.config import CONFIG
+from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
 
 class TestFileConnectorTemplateLoader:
@@ -62,7 +64,7 @@ class TestCustomConnectorTemplateLoader:
         connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {}
 
-    def test_file_connector_template_loader_invalid_template(
+    def test_custom_connector_template_loader_invalid_template(
         self,
         db,
         planet_express_dataset,
@@ -97,7 +99,7 @@ class TestCustomConnectorTemplateLoader:
             strategy.name for strategy in authentication_strategies
         ]
 
-    def test_file_connector_template_loader_invalid_functions(
+    def test_custom_connector_template_loader_invalid_functions(
         self,
         db,
         planet_express_config,
@@ -121,7 +123,7 @@ class TestCustomConnectorTemplateLoader:
         connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {}
 
-    def test_file_connector_template_loader_custom_connector_functions_disabled(
+    def test_custom_connector_template_loader_custom_connector_functions_disabled(
         self,
         db,
         planet_express_config,
@@ -157,7 +159,7 @@ class TestCustomConnectorTemplateLoader:
             strategy.name for strategy in authentication_strategies
         ]
 
-    def test_file_connector_template_loader_custom_connector_functions_disabled_custom_functions(
+    def test_custom_connector_template_loader_custom_connector_functions_disabled_custom_functions(
         self,
         db,
         planet_express_config,
@@ -193,7 +195,7 @@ class TestCustomConnectorTemplateLoader:
             )
         }
 
-    def test_file_connector_template_loader(
+    def test_custom_connector_template_loader(
         self,
         db,
         planet_express_config,
@@ -238,6 +240,68 @@ class TestCustomConnectorTemplateLoader:
         assert "planet_express" in [
             strategy.name for strategy in authentication_strategies
         ]
+
+    def test_custom_connector_save_template(
+        self,
+        db,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+        planet_express_functions,
+    ):
+        CustomConnectorTemplateLoader.save_template(
+            db,
+            ZipFile(
+                create_zip_file(
+                    {
+                        "config.yml": planet_express_config,
+                        "dataset.yml": planet_express_dataset,
+                        "functions.py": planet_express_functions,
+                        "icon.svg": planet_express_icon,
+                    }
+                )
+            ),
+        )
+
+        # verify that a connector template can updated with no issue
+        CustomConnectorTemplateLoader.save_template(
+            db,
+            ZipFile(
+                create_zip_file(
+                    {
+                        "config.yml": planet_express_config,
+                        "dataset.yml": planet_express_dataset,
+                        "functions.py": planet_express_functions,
+                        "icon.svg": planet_express_icon,
+                    }
+                )
+            ),
+        )
+
+    def test_custom_connector_template_loader_disallowed_modules(
+        self,
+        db,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+    ):
+        CONFIG.security.allow_custom_connector_functions = True
+
+        with pytest.raises(SyntaxError) as exc:
+            CustomConnectorTemplateLoader.save_template(
+                db,
+                ZipFile(
+                    create_zip_file(
+                        {
+                            "config.yml": planet_express_config,
+                            "dataset.yml": planet_express_dataset,
+                            "functions.py": "import os",
+                            "icon.svg": planet_express_icon,
+                        }
+                    )
+                ),
+            )
+        assert "Import of 'os' module is not allowed." == str(exc.value)
 
 
 class TestRegisterCustomFunctions:

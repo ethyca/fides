@@ -1,9 +1,7 @@
 import json
-from io import BytesIO
-from typing import Dict, Optional
+from typing import Optional
 from unittest import mock
 from unittest.mock import Mock
-from zipfile import ZipFile
 
 import pytest
 from sqlalchemy.orm import Session
@@ -31,6 +29,7 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.core.config import CONFIG
 from tests.ops.api.v1.endpoints.test_dataset_endpoints import _reject_key
+from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
 
 @pytest.mark.unit_saas
@@ -460,27 +459,6 @@ class TestAuthorizeConnection:
 
 
 class TestRegisterConnectorTemplate:
-    def create_zip_file(self, file_data: Dict[str, str]) -> BytesIO:
-        """
-        Create a zip file in memory with the given files.
-
-        Args:
-            files (Dict[str, str]): A mapping of filenames to their contents
-
-        Returns:
-            io.BytesIO: An in-memory zip file with the specified files.
-        """
-        zip_buffer = BytesIO()
-
-        with ZipFile(zip_buffer, "w") as zip_file:
-            for filename, file_content in file_data.items():
-                zip_file.writestr(filename, file_content)
-
-        # resetting the file position pointer to the beginning of the stream
-        # so the tests can read the zip file from the beginning
-        zip_buffer.seek(0)
-        return zip_buffer
-
     @pytest.fixture
     def register_connector_template_url(self) -> str:
         return V1_URL_PREFIX + REGISTER_CONNECTOR_TEMPLATE
@@ -493,7 +471,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_dataset,
@@ -509,7 +487,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "dataset.yml": planet_express_dataset,
                 "functions.py": planet_express_functions,
@@ -524,7 +502,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": "planet_express_config",
                 "dataset.yml": planet_express_dataset,
@@ -541,7 +519,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_invalid_config,
                 "dataset.yml": planet_express_dataset,
@@ -557,7 +535,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "functions.py": planet_express_functions,
@@ -572,7 +550,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": "planet_express_dataset",
@@ -589,7 +567,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_invalid_dataset,
@@ -605,10 +583,26 @@ class TestRegisterConnectorTemplate:
         planet_express_dataset,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_dataset,
+                "icon.svg": planet_express_icon,
+            }
+        )
+
+    @pytest.fixture
+    def connector_template_invalid_functions(
+        self,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+    ):
+        return create_zip_file(
+            {
+                "config.yml": planet_express_config,
+                "dataset.yml": planet_express_dataset,
+                "functions.py": "import os",
                 "icon.svg": planet_express_icon,
             }
         )
@@ -620,7 +614,7 @@ class TestRegisterConnectorTemplate:
         planet_express_dataset,
         planet_express_functions,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_dataset,
@@ -636,7 +630,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "1_config.yml": planet_express_config,
                 "2_config.yml": planet_express_config,
@@ -654,7 +648,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "1_dataset.yml": planet_express_dataset,
@@ -672,7 +666,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_dataset,
@@ -690,7 +684,7 @@ class TestRegisterConnectorTemplate:
         planet_express_functions,
         planet_express_icon,
     ):
-        return self.create_zip_file(
+        return create_zip_file(
             {
                 "config.yml": planet_express_config,
                 "dataset.yml": planet_express_dataset,
@@ -719,7 +713,11 @@ class TestRegisterConnectorTemplate:
     @pytest.mark.parametrize(
         "zip_file, status_code, details",
         [
-            ("complete_connector_template", 200, None),
+            (
+                "complete_connector_template",
+                200,
+                {"message": "Connector template successfully registered."},
+            ),
             (
                 "connector_template_missing_config",
                 400,
@@ -758,8 +756,16 @@ class TestRegisterConnectorTemplate:
                     "detail": "1 validation error for ConnectorTemplate\ndataset -> collections -> 0 -> name\n  field required (type=value_error.missing)"
                 },
             ),
-            ("connector_template_no_functions", 200, None),
-            ("connector_template_no_icon", 200, None),
+            (
+                "connector_template_no_functions",
+                200,
+                {"message": "Connector template successfully registered."},
+            ),
+            (
+                "connector_template_no_icon",
+                200,
+                {"message": "Connector template successfully registered."},
+            ),
             (
                 "connector_template_duplicate_configs",
                 400,
@@ -783,6 +789,11 @@ class TestRegisterConnectorTemplate:
                 "connector_template_duplicate_icons",
                 400,
                 {"detail": "Multiple svg files found, only one is allowed."},
+            ),
+            (
+                "connector_template_invalid_functions",
+                400,
+                {"detail": "Import of 'os' module is not allowed."},
             ),
         ],
     )
@@ -819,7 +830,7 @@ class TestRegisterConnectorTemplate:
             (
                 "connector_template_no_functions",
                 200,
-                None,
+                {"message": "Connector template successfully registered."},
             ),
         ],
     )
