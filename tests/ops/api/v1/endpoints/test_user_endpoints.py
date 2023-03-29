@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from uuid import uuid4
 
 import pytest
 from fastapi_pagination import Params
@@ -15,6 +16,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
+from fides.api.ctl.sql_models import System
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
@@ -1359,12 +1361,41 @@ class TestUpdateSystemsManagedByUser:
         db.refresh(viewer_user)
         assert viewer_user.systems == [system]
 
-    def test_update_system_manager_existing_system_not_in_request(
+    def test_update_system_manager_existing_system_not_in_request_which_removes_system(
         self, api_client: TestClient, generate_auth_header, url, system, viewer_user, db
     ) -> None:
+        second_system = System.create(
+            db=db,
+            data={
+                "fides_key": f"system_key-f{uuid4()}",
+                "name": f"system-{uuid4()}",
+                "description": "fixture-made-system",
+                "organization_fides_key": "default_organization",
+                "system_type": "Service",
+                "data_responsibility_title": "Processor",
+                "privacy_declarations": [
+                    {
+                        "name": "Collect data for marketing",
+                        "data_categories": ["user.device.cookie_id"],
+                        "data_use": "advertising",
+                        "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                        "data_subjects": ["customer"],
+                        "dataset_references": None,
+                        "egress": None,
+                        "ingress": None,
+                    }
+                ],
+                "data_protection_impact_assessment": {
+                    "is_required": False,
+                    "progress": None,
+                    "link": None,
+                },
+            },
+        )
         assert viewer_user.systems == []
         viewer_user.set_as_system_manager(db, system)
-        assert viewer_user.systems == [system]
+        viewer_user.set_as_system_manager(db, second_system)
+        assert viewer_user.systems == [system, second_system]
 
         auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
         resp = api_client.put(url, headers=auth_header, json=[])
@@ -1374,6 +1405,7 @@ class TestUpdateSystemsManagedByUser:
 
         db.refresh(viewer_user)
         assert viewer_user.systems == []
+        second_system.delete(db)
 
 
 class TestGetSystemsUserManages:
