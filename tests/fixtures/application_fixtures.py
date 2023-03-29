@@ -32,6 +32,12 @@ from fides.api.ops.models.policy import (
     Rule,
     RuleTarget,
 )
+from fides.api.ops.models.privacy_notice import (
+    ConsentMechanism,
+    EnforcementLevel,
+    PrivacyNotice,
+    PrivacyNoticeRegion,
+)
 from fides.api.ops.models.privacy_request import (
     ConsentRequest,
     PrivacyRequest,
@@ -1379,6 +1385,63 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     )
     yield pr
     pr.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_notice(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice",
+            "description": "a sample privacy notice configuration",
+            "origin": "privacy_notice_template_1",
+            "regions": [
+                PrivacyNoticeRegion.us_ca,
+                PrivacyNoticeRegion.us_co,
+            ],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_us_ca_provide(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice us_ca provide",
+            # no description or origin on this privacy notice to help
+            # cover edge cases due to column nullability
+            "regions": [PrivacyNoticeRegion.us_ca],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["provide"],
+            "enforcement_level": EnforcementLevel.system_wide,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice us_co third_party_sharing",
+            "description": "a sample privacy notice configuration",
+            "origin": "privacy_notice_template_2",
+            "regions": [PrivacyNoticeRegion.us_co],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+        },
+    )
+
+    yield privacy_notice
 
 
 @pytest.fixture(scope="function")
