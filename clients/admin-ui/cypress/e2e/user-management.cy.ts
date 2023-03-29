@@ -84,6 +84,9 @@ describe("User management", () => {
 
   describe("View users", () => {
     it("can view all users", () => {
+      cy.intercept("/api/v1/user/*/system-manager", {
+        fixture: "systems/systems.json",
+      });
       cy.visit("/user-management");
       cy.wait("@getAllUsers");
       const numUsers = 4;
@@ -91,7 +94,11 @@ describe("User management", () => {
         .find("tbody > tr")
         .then((rows) => {
           expect(rows.length).to.eql(numUsers);
-        });
+        })
+        .first()
+        cy.getByTestId("user-systems-badge")
+        cy.contains("4")
+      ;
     });
   });
 
