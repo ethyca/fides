@@ -78,7 +78,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
             <Badge
               bg="gray.500"
               color="white"
-              paddingLeft="8px"
+              paddingLeft="2"
               textTransform="none"
               paddingRight="8px"
               height="18px"
@@ -97,7 +97,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
           <Badge
             bg="gray.500"
             color="white"
-            paddingLeft="8px"
+            paddingLeft="2"
             textTransform="none"
             paddingRight="8px"
             height="18px"
@@ -105,7 +105,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
             borderRadius="6px"
             fontWeight="500"
             textAlign="center"
-            data-testid="user-permissions-badge"
+            data-testid="user-systems-badge"
           >
             {userSystems ? userSystems.length : 0}
           </Badge>
