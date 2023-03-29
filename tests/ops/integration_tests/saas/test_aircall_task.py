@@ -30,7 +30,7 @@ async def test_aircall_access_request_task_with_phone_number(
     aircall_identity_phone_number,
     formatted_phone_number
 ) -> None:
-    """Full access request based on the aircall SaaS config"""
+    """Full access request based on the Aircall SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_aircall_access_request_task_{random.randint(0, 1000)}"
