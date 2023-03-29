@@ -27,9 +27,8 @@ const Layout = ({
   const isValidNotificationRoute =
     router.pathname === "/privacy-requests" ||
     router.pathname === "/datastore-connection";
-  const skip = !(
-    features.flags.privacyRequestsConfiguration && isValidNotificationRoute
-  );
+  const privacyRequestsConfiguration = false;
+  const skip = !(privacyRequestsConfiguration && isValidNotificationRoute);
 
   const { data: activeMessagingProvider } = useGetActiveMessagingProviderQuery(
     undefined,
@@ -41,7 +40,7 @@ const Layout = ({
   });
 
   const showConfigurationBanner =
-    features.flags.privacyRequestsConfiguration &&
+    privacyRequestsConfiguration &&
     (!activeMessagingProvider || !activeStorage) &&
     isValidNotificationRoute;
 

@@ -9,14 +9,13 @@ import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
 export const useNav = ({ path }: { path: string }) => {
   const features = useFeatures();
   const userScopes = useAppSelector(selectThisUsersScopes);
-
+  const privacyRequestsConfiguration = false;
   const navGroups = useMemo(
     () =>
       configureNavGroups({
         config: NAV_CONFIG,
         hasPlus: features.plus,
-        hasAccessToPrivacyRequestConfigurations:
-          features.flags.privacyRequestsConfiguration,
+        hasAccessToPrivacyRequestConfigurations: privacyRequestsConfiguration,
         userScopes,
       }),
     [features, userScopes]
