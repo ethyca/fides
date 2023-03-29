@@ -1,6 +1,13 @@
+import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
+from fides.api.ops.common_exceptions import ValidationError
+from fides.api.ops.models.privacy_notice import (
+    PrivacyNotice,
+    PrivacyNoticeHistory,
+    PrivacyNoticeRegion,
+    check_conflicting_data_uses,
+)
 
 
 class TestPrivacyNoticeModel:
@@ -232,3 +239,360 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.name == old_name
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
+
+    @pytest.mark.parametrize(
+        "should_error,new_privacy_notices,existing_privacy_notices",
+        [
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    )
+                ],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising", "third_party_sharing"],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us_co],
+                    )
+                ],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising", "third_party_sharing"],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    )
+                ],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=[
+                            "advertising.first_party.contextual",
+                            "third_party_sharing",
+                        ],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    )
+                ],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising", "third_party_sharing"],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party.contextual", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    )
+                ],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising", "third_party_sharing"],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    )
+                ],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising.third_party", "third_party_sharing"],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    )
+                ],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising", "third_party_sharing"],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.us_va],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    )
+                ],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising", "third_party_sharing"],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    ),
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    ),
+                ],
+                [],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["advertising"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                ],
+                [],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["third_party_sharing", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                ],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["third_party_sharing", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=[
+                            "advertising.first_party",
+                            "advertising.third_party",
+                        ],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                    PrivacyNotice(
+                        name="pn_3",
+                        data_uses=[
+                            "advertising.first_party",
+                            "advertising.third_party",
+                        ],
+                        regions=[PrivacyNoticeRegion.us_co],
+                    ),
+                    PrivacyNotice(
+                        name="pn_4",
+                        data_uses=["personalize"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                ],
+            ),
+            (
+                True,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=["third_party_sharing", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=[
+                            "advertising.first_party",
+                            "advertising.third_party",
+                        ],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                    PrivacyNotice(
+                        name="pn_3",
+                        data_uses=[
+                            "advertising.first_party",
+                            "advertising.third_party",
+                        ],
+                        regions=[PrivacyNoticeRegion.us_co],
+                    ),
+                    PrivacyNotice(
+                        name="pn_4",
+                        data_uses=["personalize"],
+                        regions=[PrivacyNoticeRegion.us_ca],
+                    ),
+                ],
+                [],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        data_uses=[
+                            "advertising.first_party.contextual",
+                            "third_party_sharing",
+                        ],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        disabled=True,
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    )
+                ],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        disabled=True,
+                        data_uses=[
+                            "advertising.first_party.contextual",
+                            "third_party_sharing",
+                        ],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    )
+                ],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        disabled=True,
+                        data_uses=[
+                            "advertising.first_party.contextual",
+                            "third_party_sharing",
+                        ],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    )
+                ],
+                [
+                    PrivacyNotice(
+                        name="pn_2",
+                        disabled=True,
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    )
+                ],
+            ),
+            (
+                False,
+                [
+                    PrivacyNotice(
+                        name="pn_1",
+                        disabled=True,
+                        data_uses=[
+                            "advertising.first_party.contextual",
+                            "third_party_sharing",
+                        ],
+                        regions=[PrivacyNoticeRegion.us_ca, PrivacyNoticeRegion.eu],
+                    ),
+                    PrivacyNotice(
+                        name="pn_2",
+                        data_uses=["advertising.first_party", "personalize"],
+                        regions=[PrivacyNoticeRegion.us_co, PrivacyNoticeRegion.eu],
+                    ),
+                ],
+                [],
+            ),
+        ],
+    )
+    def test_conflicting_data_uses(
+        self, should_error, new_privacy_notices, existing_privacy_notices
+    ):
+        if should_error:
+            with pytest.raises(ValidationError):
+                check_conflicting_data_uses(
+                    new_privacy_notices=new_privacy_notices,
+                    existing_privacy_notices=existing_privacy_notices,
+                )
+        else:
+            check_conflicting_data_uses(
+                new_privacy_notices=new_privacy_notices,
+                existing_privacy_notices=existing_privacy_notices,
+            )
