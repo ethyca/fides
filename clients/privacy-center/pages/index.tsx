@@ -150,6 +150,7 @@ const Home: NextPage = () => {
                 textAlign="center"
                 color="gray.600"
                 data-testid={`description-${index}`}
+                // eslint-disable-next-line react/no-array-index-key
                 key={`description-${index}`}
               >
                 {paragraph}
@@ -167,6 +168,7 @@ const Home: NextPage = () => {
               maxWidth={624}
               color="gray.600"
               data-testid={`addendum-${index}`}
+              // eslint-disable-next-line react/no-array-index-key
               key={`addendum-${index}`}
             >
               {paragraph}
