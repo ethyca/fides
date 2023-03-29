@@ -72,7 +72,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"consent:read\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"messaging:create_or_update\",\n    \"messaging:read\",\n    \"messaging:delete\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"privacy-request-notifications:create_or_update\",\n    \"privacy-request-notifications:read\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"system_manager:delete\",\n    \"system_manager:update\",\n    \"system_manager:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\",\n    \"user-permission:create\",\n    \"user-permission:update\"\n]",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"consent:read\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"messaging:create_or_update\",\n    \"messaging:read\",\n    \"messaging:delete\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-notice:create\",\n    \"privacy-notice:read\",\n    \"privacy-notice:update\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"privacy-request-notifications:create_or_update\",\n    \"privacy-request-notifications:read\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"system_manager:delete\",\n    \"system_manager:update\",\n    \"system_manager:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\",\n    \"user-permission:create\",\n    \"user-permission:update\"\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5114,6 +5114,172 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Privacy Notices",
+			"item": [
+				{
+					"name": "Create Privacy Notices",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"name\": \"Profiling\",\n    \"regions\": [\n      \"us_ca\",\n      \"us_ut\"\n    ],\n    \"description\": \"Making a decision solely by automated means.\",\n    \"consent_mechanism\": \"opt_in\",\n    \"data_uses\": [\n      \"personalize\"\n    ],\n    \"enforcement_level\": \"system_wide\",\n    \"has_gpc_flag\": false\n  },\n  {\n    \"name\": \"Essential\",\n    \"regions\": [\n      \"eu\"\n    ],\n    \"description\": \"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n    \"consent_mechanism\": \"necessary\",\n    \"data_uses\": [\n      \"provide.service\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Privacy Notice",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"id\": \"{{privacy_notice_id}}\",\n    \"data_uses\": [\n      \"third_party_sharing\"\n    ]\n  }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Privacy Notices",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice?systems_applicable=false&show_disabled=true",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice"
+							],
+							"query": [
+								{
+									"key": "systems_applicable",
+									"value": "false"
+								},
+								{
+									"key": "show_disabled",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Privacy Notice",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice/{{privacy_notice_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice",
+								"{{privacy_notice_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -5423,6 +5589,11 @@
 		},
 		{
 			"key": "twilio_messaging_service_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "privacy_notice_id",
 			"value": "",
 			"type": "string"
 		}
