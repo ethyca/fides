@@ -12,6 +12,7 @@ import { selectThisUsersScopes } from "~/features/user-management";
 export const useNav = ({ path }: { path: string }) => {
   const features = useFeatures();
   const userScopes = useAppSelector(selectThisUsersScopes);
+
   const navGroups = useMemo(
     () =>
       configureNavGroups({
