@@ -130,20 +130,39 @@ const Home: NextPage = () => {
             >
               {config.title}
             </Heading>
-            <Text
-              fontSize={["small", "medium"]}
-              fontWeight="medium"
-              maxWidth={624}
-              textAlign="center"
-              color="gray.600"
-              data-testid="description"
-            >
-              {config.description}
-            </Text>
+
+            {config.description.map((paragraph) => {
+              return (
+                <Text
+                  fontSize={["small", "medium"]}
+                  fontWeight="medium"
+                  maxWidth={624}
+                  textAlign="center"
+                  color="gray.600"
+                  data-testid="description-paragraph"
+                >
+                  {paragraph}
+                </Text>
+              );
+            })}
           </Stack>
           <Flex m={-2} flexDirection={["column", "column", "row"]}>
             {content}
           </Flex>
+
+          {config.addendum?.map((paragraph) => {
+            return (
+              <Text
+                fontSize={["small", "medium"]}
+                fontWeight="medium"
+                maxWidth={624}
+                color="gray.600"
+                data-testid="addendum-paragraph"
+              >
+                {paragraph}
+              </Text>
+            );
+          })}
         </Stack>
         <PrivacyRequestModal
           isOpen={isPrivacyModalOpen}
