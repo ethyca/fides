@@ -1,6 +1,9 @@
 {
   "title": "Take control of your data",
-  "description": "When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
+  "description": [
+    "When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control."
+  ],
+  "addendum": ["This is text that appears after the privacy options."],
   "server_url_development": "http://localhost:8080/api/v1",
   "server_url_production": "http://localhost:8080/api/v1",
   "logo_path": "/logo.svg",
