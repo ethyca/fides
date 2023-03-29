@@ -71,7 +71,12 @@ const PermissionsForm = () => {
     useUpdateUserPermissionsMutation();
 
   const updatePermissions = async (values: FormValues) => {
+    let skipAssigningSystems = false;
     if (chooseApproverIsOpen) {
+      // Unassigning systems from viewer role happens automatically on BE when the role is saved.
+      // If we attempt to assign systems to the viewer role, the BE will throw an error,
+      // so we skip calling the endpoint.
+      skipAssigningSystems = true;
       chooseApproverClose();
     }
     if (!activeUserId) {
@@ -88,14 +93,16 @@ const PermissionsForm = () => {
       toast(errorToastParams(getErrorMessage(userPermissionsResult.error)));
       return;
     }
-    const fidesKeys = assignedSystems.map((s) => s.fides_key);
-    const userSystemsResult = await updateUserManagedSystemsTrigger({
-      userId: activeUserId,
-      fidesKeys,
-    });
-    if (isErrorResult(userSystemsResult)) {
-      toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
-      return;
+    if (!skipAssigningSystems) {
+      const fidesKeys = assignedSystems.map((s) => s.fides_key);
+      const userSystemsResult = await updateUserManagedSystemsTrigger({
+        userId: activeUserId,
+        fidesKeys,
+      });
+      if (isErrorResult(userSystemsResult)) {
+        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
+        return;
+      }
     }
     toast(successToastParams("Permissions updated"));
   };
