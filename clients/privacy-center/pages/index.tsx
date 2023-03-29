@@ -142,38 +142,36 @@ const Home: NextPage = () => {
               {config.description}
             </Text>
 
-            {config.description_subtext?.map((paragraph) => {
-              return (
-                <Text
-                  fontSize={["small", "medium"]}
-                  fontWeight="medium"
-                  maxWidth={624}
-                  textAlign="center"
-                  color="gray.600"
-                  data-testid="description-paragraph"
-                >
-                  {paragraph}
-                </Text>
-              );
-            })}
+            {config.description_subtext?.map((paragraph, index) => (
+              <Text
+                fontSize={["small", "medium"]}
+                fontWeight="medium"
+                maxWidth={624}
+                textAlign="center"
+                color="gray.600"
+                data-testid="description-paragraph"
+                key={`description-${index}`}
+              >
+                {paragraph}
+              </Text>
+            ))}
           </Stack>
           <Flex m={-2} flexDirection={["column", "column", "row"]}>
             {content}
           </Flex>
 
-          {config.addendum?.map((paragraph) => {
-            return (
-              <Text
-                fontSize={["small", "medium"]}
-                fontWeight="medium"
-                maxWidth={624}
-                color="gray.600"
-                data-testid="addendum-paragraph"
-              >
-                {paragraph}
-              </Text>
-            );
-          })}
+          {config.addendum?.map((paragraph, index) => (
+            <Text
+              fontSize={["small", "medium"]}
+              fontWeight="medium"
+              maxWidth={624}
+              color="gray.600"
+              data-testid="addendum-paragraph"
+              key={`addendum-${index}`}
+            >
+              {paragraph}
+            </Text>
+          ))}
         </Stack>
         <PrivacyRequestModal
           isOpen={isPrivacyModalOpen}
