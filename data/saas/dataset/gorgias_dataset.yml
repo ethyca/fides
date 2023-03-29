@@ -6,7 +6,7 @@ dataset:
       - name: customer
         fields:
           - name: id
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
               data_type: integer
