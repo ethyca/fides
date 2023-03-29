@@ -43,10 +43,6 @@ const RoleOption = ({
     setFieldValue("roles", [roleKey]);
   };
 
-  const handleClick = () => {
-    handleRoleChange();
-  };
-
   const buttonTitle = isDisabled
     ? "You do not have sufficient permissions to assign this role."
     : undefined;
@@ -111,7 +107,7 @@ const RoleOption = ({
 
   return (
     <Button
-      onClick={handleClick}
+      onClick={handleRoleChange}
       justifyContent="start"
       variant="outline"
       height="inherit"
