@@ -1138,8 +1138,7 @@ class TestUser:
             get_auth_header(),
             CONFIG.cli.server_url,
         )
-        assert total_scopes == []
-        assert roles == []
+        assert roles == [VIEWER]
 
         systems = get_systems_managed_by_user(
             system_manager.id,

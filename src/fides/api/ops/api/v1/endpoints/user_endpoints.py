@@ -42,6 +42,7 @@ from fides.lib.exceptions import AuthenticationError
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.oauth_util import extract_payload
+from fides.lib.oauth.roles import APPROVER
 from fides.lib.oauth.schemas.user import (
     UserForcePasswordReset,
     UserPasswordReset,
@@ -231,6 +232,18 @@ def update_managed_systems(
     """
     user = validate_user_id(db, user_id)
 
+    if not (user.permissions and user.permissions.roles):  # type: ignore
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"User {user_id} needs permissions before they can be assigned as system manager.",
+        )
+
+    if APPROVER in user.permissions.roles:  # type: ignore
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"User {user_id} is an {APPROVER} and cannot be assigned as a system manager.",
+        )
+
     if len(set(systems)) != len(systems):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -252,7 +265,7 @@ def update_managed_systems(
             user.set_as_system_manager(db, system)
 
     # Removing systems for which the user in no longer a manager
-    for system in user.systems:
+    for system in user.systems.copy():
         if system not in retrieved_systems:
             user.remove_as_system_manager(db, system)
 

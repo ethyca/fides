@@ -813,6 +813,32 @@ def owner_user(db):
 
 
 @pytest.fixture
+def approver_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[APPROVER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
 def viewer_user(db):
     user = FidesUser.create(
         db=db,
@@ -885,32 +911,6 @@ def viewer_and_approver_user(db):
     FidesUserPermissions.create(
         db=db, data={"user_id": user.id, "roles": [VIEWER_AND_APPROVER]}
     )
-
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
-def approver_user(db):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fides_approver_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-        },
-    )
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=[],
-        roles=[APPROVER],
-        user_id=user.id,
-    )
-
-    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()

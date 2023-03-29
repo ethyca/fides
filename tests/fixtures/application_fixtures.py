@@ -10,7 +10,7 @@ import yaml
 from faker import Faker
 from fideslang.models import Dataset
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import ObjectDeletedError
+from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
@@ -1661,7 +1661,7 @@ def system_manager(db: Session, system) -> System:
         systems=[system.id],
     )
 
-    FidesUserPermissions.create(db=db, data={"user_id": user.id})
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
 
     db.add(client)
     db.commit()
@@ -1671,7 +1671,7 @@ def system_manager(db: Session, system) -> System:
     yield user
     try:
         user.remove_as_system_manager(db, system)
-    except SystemManagerException:
+    except (SystemManagerException, StaleDataError):
         pass
     user.delete(db)
 
