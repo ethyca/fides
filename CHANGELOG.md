@@ -37,6 +37,7 @@ The types of changes are:
 * Tie together save states for user permissions and systems [#2913](https://github.com/ethyca/fides/pull/2913)
 * Removing payment types from Stripe connector params [#2915](https://github.com/ethyca/fides/pull/2915)
 * Viewer role can now access a restricted version of the user management page [#2933](https://github.com/ethyca/fides/pull/2933)
+* Change Privacy Center email placeholder text [#2935](https://github.com/ethyca/fides/pull/2935)
 
 ### Fixed
 
@@ -49,6 +50,7 @@ The types of changes are:
 * Update frontend npm packages (admin-ui, privacy-center, cypress-e2e) [#2921](https://github.com/ethyca/fides/pull/2921)
 
 ## [2.9.2](https://github.com/ethyca/fides/compare/2.9.1...2.9.2)
+
 ### Fixed
 
 * Allow multiple data uses as long as their processing activity name is different [#2905](https://github.com/ethyca/fides/pull/2905)
@@ -58,15 +60,17 @@ The types of changes are:
 ## [2.9.1](https://github.com/ethyca/fides/compare/2.9.0...2.9.1)
 
 ### Added
+
 * Added Attentive erasure email connector [#2782](https://github.com/ethyca/fides/pull/2782)
 
 ### Changed
+
 * Removed dataset based email connectors [#2782](https://github.com/ethyca/fides/pull/2782)
 * Changed Auth0's authentication strategy from `bearer` to `oauth2_client_credentials` [#2820](https://github.com/ethyca/fides/pull/2820)
 * renamed the privacy declarations field "Privacy declaration name (deprecated)" to "Processing Activity" [#711](https://github.com/ethyca/fidesplus/issues/711)
 
-
 ### Fixed
+
 * Fixed issue where the scopes list passed into FidesUserPermission could get mutated with the total_scopes call [#2883](https://github.com/ethyca/fides/pull/2883)
 
 ### Removed
@@ -117,7 +121,6 @@ The types of changes are:
 * Patch appconfig migration to handle existing db record [#2780](https://github.com/ethyca/fides/pull/2780)
 
 ## [2.8.1](https://github.com/ethyca/fides/compare/2.8.0...2.8.1)
-
 
 ### Fixed
 
@@ -186,11 +189,12 @@ The types of changes are:
 ## [2.7.0](https://github.com/ethyca/fides/compare/2.6.6...2.7.0)
 
 * Fides API
+
   * Access and erasure support for Braintree [#2223](https://github.com/ethyca/fides/pull/2223)
   * Added route to send a test message [#2585](https://github.com/ethyca/fides/pull/2585)
   * Add default storage configuration functionality and associated APIs [#2438](https://github.com/ethyca/fides/pull/2438)
-
 * Admin UI
+
   * Custom Metadata [#2536](https://github.com/ethyca/fides/pull/2536)
     * Create Custom Lists
     * Create Custom Field Definition
@@ -199,6 +203,7 @@ The types of changes are:
     * Bulk edit custom field values [#2612](https://github.com/ethyca/fides/issues/2612)
     * Custom metadata UI Polish [#2624](https://github.com/ethyca/fides/pull/2625)
 * Privacy Center
+
   * The consent config default value can depend on whether Global Privacy Control is enabled. [#2341](https://github.com/ethyca/fides/pull/2341)
   * When GPC is enabled, the UI indicates which data uses are opted out by default. [#2596](https://github.com/ethyca/fides/pull/2596)
   * `inspectForBrowserIdentities` now also looks for `ljt_readerID`. [#2543](https://github.com/ethyca/fides/pull/2543)
@@ -269,7 +274,6 @@ The types of changes are:
 ### Fixed
 
 - Issue addressing missing field in dataset migration [#2510](https://github.com/ethyca/fides/pull/2510)
-
 
 ## [2.6.1](https://github.com/ethyca/fides/compare/2.6.0...2.6.1)
 
@@ -687,8 +691,8 @@ The types of changes are:
 - Dataset generation enhancements using Fides Classify for Plus users:
 
   - Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
-
 - Fides Admin UI:
+
   - Configure Connector after creation [#1204](https://github.com/ethyca/fides/pull/1356)
 
 ### Fixed
@@ -1008,7 +1012,7 @@ The types of changes are:
 
 - Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 - Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
-- Dataset UI and config wizard docs added (<https://github.com/ethyca/fides/pull/697>)
+- Dataset UI and config wizard docs added ([https://github.com/ethyca/fides/pull/697](https://github.com/ethyca/fides/pull/697))
 - The fides README now walks through generating a datamap [#746](https://github.com/ethyca/fides/pull/746)
 
 ### Fixed

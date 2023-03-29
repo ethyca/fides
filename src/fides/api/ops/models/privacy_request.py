@@ -847,14 +847,24 @@ class Consent(Base):
     """The DB ORM model for Consent."""
 
     provided_identity_id = Column(
-        String, ForeignKey(ProvidedIdentity.id), nullable=False
+        String,
+        ForeignKey(ProvidedIdentity.id),
+        nullable=False,
     )
     data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
-    has_gpc_flag = Column(Boolean, server_default="f", default=False, nullable=False)
+    has_gpc_flag = Column(
+        Boolean,
+        server_default="f",
+        default=False,
+        nullable=False,
+    )
     conflicts_with_gpc = Column(
-        Boolean, server_default="f", default=False, nullable=False
+        Boolean,
+        server_default="f",
+        default=False,
+        nullable=False,
     )
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
@@ -868,10 +878,19 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     provided_identity_id = Column(
         String, ForeignKey(ProvidedIdentity.id), nullable=False
     )
-
     provided_identity = relationship(
         ProvidedIdentity,
         back_populates="consent_request",
+    )
+
+    preferences = Column(
+        MutableList.as_mutable(JSONB),
+        nullable=True,
+    )
+
+    identity_verified_at = Column(
+        DateTime(timezone=True),
+        nullable=True,
     )
 
     privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
@@ -884,12 +903,18 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
-    def verify_identity(self, provided_code: str) -> None:
+    def verify_identity(
+        self,
+        db: Session,
+        provided_code: str,
+    ) -> None:
         """
         A method to call the internal identity verification method provided by the
         `IdentityVerificationMixin`.
         """
         self._verify_identity(provided_code=provided_code)
+        self.identity_verified_at = datetime.utcnow()
+        self.save(db)
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.

@@ -28,7 +28,12 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
     StringRewriteMaskingStrategy,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.api.ops.util.saas_util import load_config
+from fides.api.ops.util.saas_util import (
+    encode_file_contents,
+    load_as_string,
+    load_config,
+    load_yaml_as_string,
+)
 from fides.lib.models.client import ClientDetail
 from tests.fixtures.application_fixtures import load_dataset
 
@@ -621,3 +626,31 @@ def erasure_policy_complete_mask(
         erasure_policy.delete(db)
     except ObjectDeletedError:
         pass
+
+
+@pytest.fixture
+def planet_express_config() -> str:
+    return load_yaml_as_string(
+        "tests/fixtures/saas/test_data/planet_express/planet_express_config.yml"
+    )
+
+
+@pytest.fixture
+def planet_express_dataset() -> str:
+    return load_yaml_as_string(
+        "tests/fixtures/saas/test_data/planet_express/planet_express_dataset.yml"
+    )
+
+
+@pytest.fixture
+def planet_express_icon() -> str:
+    return encode_file_contents(
+        "tests/fixtures/saas/test_data/planet_express/planet_express.svg"
+    )
+
+
+@pytest.fixture
+def planet_express_functions() -> str:
+    return load_as_string(
+        "tests/fixtures/saas/test_data/planet_express/planet_express_functions.py"
+    )
