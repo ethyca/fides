@@ -1,0 +1,13 @@
+{
+    "fides_key": "default_organization",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Edited Organization",
+    "description": "An edited organization description",
+    "organization_parent_key": null,
+    "controller": null,
+    "data_protection_officer": null,
+    "fidesctl_meta": null,
+    "representative": null,
+    "security_policy": null
+}

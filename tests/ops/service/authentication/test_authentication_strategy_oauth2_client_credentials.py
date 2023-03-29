@@ -22,7 +22,9 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_client_
 
 
 @pytest.fixture(scope="function")
-def oauth2_client_credentials_configuration() -> OAuth2ClientCredentialsAuthenticationStrategy:
+def oauth2_client_credentials_configuration() -> (
+    OAuth2ClientCredentialsAuthenticationStrategy
+):
     return {
         "token_request": {
             "method": "POST",

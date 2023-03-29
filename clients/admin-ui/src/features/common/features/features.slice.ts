@@ -14,9 +14,8 @@ import { Env, FlagsFor, NamesFor, ValueFor } from "./types";
 
 export const FLAG_CONFIG = configureFlags(flagDefaults);
 export type FlagConfig = typeof FLAG_CONFIG;
-export const FLAG_NAMES = Object.keys(FLAG_CONFIG) as Array<
-  NamesFor<FlagConfig>
->;
+export type FlagNames = NamesFor<FlagConfig>;
+export const FLAG_NAMES = Object.keys(FLAG_CONFIG) as Array<FlagNames>;
 
 type FeaturesState = {
   flags: Partial<FlagConfig>;
@@ -127,6 +126,7 @@ export const useFlags = () => {
 export type Features = {
   version: string | undefined;
   plus: boolean;
+  plusVersion: string | undefined;
   systemsCount: number;
   connectionsCount: number;
   dataFlowScanning: boolean;
@@ -143,6 +143,7 @@ export const useFeatures = (): Features => {
   const version = health?.version;
 
   const plus = plusHealth !== undefined;
+  const plusVersion = plusHealth?.fidesplus_version;
   const dataFlowScanning = plusHealth
     ? !!plusHealth.system_scanner.enabled
     : false;
@@ -156,6 +157,7 @@ export const useFeatures = (): Features => {
   return {
     version,
     plus,
+    plusVersion,
     systemsCount,
     connectionsCount,
     dataFlowScanning,

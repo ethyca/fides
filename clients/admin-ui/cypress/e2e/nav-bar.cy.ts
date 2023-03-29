@@ -1,4 +1,3 @@
-// TODO: Update Cypress test to reflect the nav bar 2.0
 describe("Nav Bar", () => {
   beforeEach(() => {
     cy.login();

@@ -132,7 +132,6 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 def config():
-
     CONFIG.test_mode = True
     yield CONFIG
 
@@ -924,7 +923,6 @@ def viewer_and_approver_user(db):
 
 @pytest.fixture(scope="function")
 def system(db: Session) -> System:
-
     system = System.create(
         db=db,
         data={

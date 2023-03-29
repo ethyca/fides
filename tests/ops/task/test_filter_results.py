@@ -343,7 +343,11 @@ class TestFilterResults:
             "B": "b",
         }
 
-        assert select_and_save_field(final_results, flat, FieldPath("K", "L"),) == {
+        assert select_and_save_field(
+            final_results,
+            flat,
+            FieldPath("K", "L"),
+        ) == {
             "A": "a",
             "C": ["d", "e", "f"],
             "D": ["g", "h", "i", "j"],

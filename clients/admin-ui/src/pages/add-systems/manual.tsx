@@ -4,6 +4,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
+import { ADD_SYSTEMS_MANUAL_ROUTE, ADD_SYSTEMS_ROUTE } from "~/constants";
 import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
 import Layout from "~/features/common/Layout";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -46,7 +47,7 @@ const Header = ({
   );
 };
 
-const NewSystem: NextPage = () => {
+const NewManualSystem: NextPage = () => {
   const { systemOrDatamapRoute } = useInterzoneNav();
   const router = useRouter();
   const { step, connectorType } = router.query;
@@ -78,7 +79,7 @@ const NewSystem: NextPage = () => {
               <NextLink href={systemOrDatamapRoute}>Data map</NextLink>
             </BreadcrumbItem>
             <BreadcrumbItem>
-              <NextLink href="/add-systems">Add systems</NextLink>
+              <NextLink href={ADD_SYSTEMS_ROUTE}>Add systems</NextLink>
             </BreadcrumbItem>
             <BreadcrumbItem
               color={
@@ -87,7 +88,9 @@ const NewSystem: NextPage = () => {
                   : undefined
               }
             >
-              <NextLink href="/add-systems/new">Choose your system</NextLink>
+              <NextLink href={ADD_SYSTEMS_MANUAL_ROUTE}>
+                Choose your system
+              </NextLink>
             </BreadcrumbItem>
             {currentStep === "describe-system" ? (
               <BreadcrumbItem color="complimentary.500">
@@ -113,4 +116,4 @@ const NewSystem: NextPage = () => {
   );
 };
 
-export default NewSystem;
+export default NewManualSystem;

@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Domo SaaS Config
+  name: Domo
   type: domo
-  description: A sample schema representing the Domo connector for Fidesops
+  description: A sample schema representing the Domo connector for Fides
   version: 0.0.1
 
   connector_params:

@@ -11,4 +11,5 @@ export type Endpoint = {
   name: string;
   requests: SaaSRequestMap;
   after?: Array<string>;
+  erase_after?: Array<string>;
 };

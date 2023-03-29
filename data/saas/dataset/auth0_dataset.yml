@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Auth0 Dataset
-    description: A sample dataset representing the Auth0 connector for Fidesops
+    description: A sample dataset representing the Auth0 connector for Fides
     collections:
       - name: users
         fields:

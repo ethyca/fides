@@ -157,6 +157,9 @@ class TestCreateUser:
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
+        assert user.permissions.roles == [
+            VIEWER
+        ], "User given viewer role by default on create"
 
     def test_create_user_as_root(
         self,

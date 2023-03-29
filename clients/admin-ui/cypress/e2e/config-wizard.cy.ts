@@ -1,10 +1,12 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
+import { ADD_SYSTEMS_ROUTE } from "~/constants";
+
 describe("Config Wizard", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("getOrganization");
   });
 
@@ -13,7 +15,7 @@ describe("Config Wizard", () => {
       stubSystemCrud();
       stubTaxonomyEntities();
 
-      cy.visit("/add-systems");
+      cy.visit(ADD_SYSTEMS_ROUTE);
       // Select AWS to move to form step.
       cy.getByTestId("add-systems");
       cy.getByTestId("aws-btn").click();
@@ -105,7 +107,7 @@ describe("Config Wizard", () => {
       stubSystemCrud();
       stubTaxonomyEntities();
 
-      cy.visit("/add-systems");
+      cy.visit(ADD_SYSTEMS_ROUTE);
       // Select Okta to move to form step.
       cy.getByTestId("add-systems");
       cy.getByTestId("okta-btn").click();

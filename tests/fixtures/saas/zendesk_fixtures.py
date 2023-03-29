@@ -95,7 +95,6 @@ def zendesk_erasure_data(
     zendesk_client: ZendeskClient,
     zendesk_erasure_identity_email: str,
 ) -> Generator:
-
     # customer
     response = zendesk_client.create_user(zendesk_erasure_identity_email)
     assert response.ok

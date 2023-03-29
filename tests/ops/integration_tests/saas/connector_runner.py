@@ -163,7 +163,6 @@ class ConnectorRunner:
         erasure_policy: Policy,
         identities: Dict[str, Any],
     ) -> Tuple[Dict, Dict]:
-
         fides_key = self.connection_config.key
         privacy_request = PrivacyRequest(
             id=f"test_{fides_key}_access_request_{random.randint(0, 1000)}"
