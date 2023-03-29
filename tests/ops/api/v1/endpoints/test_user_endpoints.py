@@ -647,6 +647,52 @@ class TestUpdateUser:
         assert user_data["first_name"] == NEW_FIRST_NAME
         assert user_data["last_name"] == NEW_LAST_NAME
 
+    def test_user_cannot_update_different_name_without_scope(
+        self, api_client, url_no_id, user, application_user
+    ) -> None:
+        NEW_FIRST_NAME = "another"
+        NEW_LAST_NAME = "name"
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[],
+        )
+        resp = api_client.put(
+            f"{url_no_id}/{user.id}",
+            headers=auth_header,
+            json={
+                "first_name": NEW_FIRST_NAME,
+                "last_name": NEW_LAST_NAME,
+            },
+        )
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_user_can_update_their_own_name_without_scope(
+        self, api_client, url_no_id, application_user
+    ) -> None:
+        NEW_FIRST_NAME = "another"
+        NEW_LAST_NAME = "name"
+
+        auth_header = generate_auth_header_for_user(
+            user=application_user,
+            scopes=[],
+        )
+        resp = api_client.put(
+            f"{url_no_id}/{application_user.id}",
+            headers=auth_header,
+            json={
+                "first_name": NEW_FIRST_NAME,
+                "last_name": NEW_LAST_NAME,
+            },
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == application_user.username
+        assert user_data["id"] == application_user.id
+        assert user_data["created_at"] == application_user.created_at.isoformat()
+        assert user_data["first_name"] == NEW_FIRST_NAME
+        assert user_data["last_name"] == NEW_LAST_NAME
+
 
 class TestUpdateUserPassword:
     @pytest.fixture(scope="function")

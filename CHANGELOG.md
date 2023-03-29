@@ -36,6 +36,7 @@ The types of changes are:
 * Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
 * Tie together save states for user permissions and systems [#2913](https://github.com/ethyca/fides/pull/2913)
 * Removing payment types from Stripe connector params [#2915](https://github.com/ethyca/fides/pull/2915)
+* Viewer role can now access a restricted version of the user management page [#2933](https://github.com/ethyca/fides/pull/2933)
 * Change Privacy Center email placeholder text [#2935](https://github.com/ethyca/fides/pull/2935)
 * Restricted setting Approvers as System Managers [#2891](https://github.com/ethyca/fides/pull/2891)
 

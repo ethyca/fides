@@ -81,24 +81,34 @@ def _validate_current_user(user_id: str, user_from_token: FidesUser) -> None:
 
 @router.put(
     urls.USER_DETAIL,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_UPDATE])],
+    dependencies=[Security(verify_oauth_client)],
     status_code=HTTP_200_OK,
     response_model=UserResponse,
 )
-def update_user(
+async def update_user(
     *,
     db: Session = Depends(deps.get_db),
+    authorization: str = Security(oauth2_scheme),
+    current_user: FidesUser = Depends(get_current_user),
     user_id: str,
     data: UserUpdate,
 ) -> FidesUser:
     """
-    Update a user given a `user_id`. By default this is limited to users
-    updating their own data.
+    Update a user given a `user_id`. If the user is not updating their own data,
+    they need the USER_UPDATE scope
     """
     user = FidesUser.get(db=db, object_id=user_id)
     if not user:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found."
+        )
+
+    is_this_user = user.id == current_user.id
+    if not is_this_user:
+        await verify_oauth_client(
+            security_scopes=Security(verify_oauth_client, scopes=[USER_UPDATE]),
+            authorization=authorization,
+            db=db,
         )
 
     user.update(db=db, data=data.dict())

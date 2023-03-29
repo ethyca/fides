@@ -1,4 +1,5 @@
 import { utf8ToB64 } from "~/features/common/utils";
+import { RoleRegistryEnum } from "~/types/api";
 
 const CYPRESS_USER_ID = "123";
 const USER_1_ID = "fid_ee8f54ce-19f7-4640-b311-1cc1e77e7166";
@@ -15,6 +16,70 @@ describe("User management", () => {
     cy.intercept("/api/v1/user/*/permission", {
       fixture: "user-management/permissions.json",
     }).as("getPermissions");
+  });
+
+  describe("permissions", () => {
+    describe("viewers", () => {
+      beforeEach(() => {
+        cy.assumeRole(RoleRegistryEnum.VIEWER);
+        cy.intercept("PUT", "/api/v1/user/*", {
+          fixture: "user-management/user.json",
+        }).as("updateUser");
+      });
+
+      it("cannot add new users", () => {
+        cy.visit("/user-management");
+        cy.wait("@getAllUsers");
+        cy.getByTestId("add-new-user-btn").should("not.exist");
+      });
+
+      it("can access their own profile but not their permissions", () => {
+        cy.visit("/user-management");
+        cy.wait("@getAllUsers");
+        cy.getByTestId(`row-${CYPRESS_USER_ID}`).click();
+        cy.url().should(
+          "contain",
+          `/user-management/profile/${CYPRESS_USER_ID}`
+        );
+
+        // can edit their name
+        cy.getByTestId("input-first_name").type("edit");
+        cy.getByTestId("save-user-btn").click();
+        cy.wait("@updateUser").then((interception) => {
+          const { body } = interception.request;
+          expect(body.first_name).to.equal("Cypressedit");
+        });
+
+        cy.getByTestId("tab-Permissions").should("be.disabled");
+      });
+
+      it("cannot access another user's profile", () => {
+        cy.visit("/user-management");
+        cy.wait("@getAllUsers");
+
+        // try via the menu button
+        cy.getByTestId(`row-${USER_1_ID}`).within(() => {
+          cy.getByTestId("menu-btn").should("not.exist");
+        });
+
+        // try via clicking the row
+        cy.getByTestId(`row-${USER_1_ID}`).click();
+        cy.url().should("not.contain", "profile");
+        // should still be on the table view
+        cy.getByTestId("user-management-table");
+      });
+
+      it("cannot go directly to a different user's profile", () => {
+        cy.fixture("user-management/user.json").then((user) => {
+          // have to change the user ID so that we are going to a different user
+          const user1 = { ...user, id: USER_1_ID };
+          cy.intercept("/api/v1/user/*", { body: user1 }).as("getUser1");
+        });
+        cy.visit(`/user-management/profile/${USER_1_ID}`);
+        // should be redirected to the home page
+        cy.url().should("eq", "http://localhost:3000/");
+      });
+    });
   });
 
   describe("View users", () => {
@@ -259,7 +324,10 @@ describe("User management", () => {
 
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
-            expect(body).to.eql(["demo_analytics_system", "demo_marketing_system"]);
+            expect(body).to.eql([
+              "demo_analytics_system",
+              "demo_marketing_system",
+            ]);
           });
         });
       });
@@ -288,7 +356,7 @@ describe("User management", () => {
           cy.getByTestId("confirm-btn").click();
           cy.getByTestId("save-btn").click();
 
-          cy.wait("@updatePermission")
+          cy.wait("@updatePermission");
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql([
@@ -328,7 +396,7 @@ describe("User management", () => {
 
           cy.getByTestId("confirm-btn").click();
           cy.getByTestId("save-btn").click();
-          cy.wait("@updatePermission")
+          cy.wait("@updatePermission");
           cy.wait("@updateUserManagedSystems").then((interception) => {
             const { body } = interception.request;
             expect(body).to.eql([]);
