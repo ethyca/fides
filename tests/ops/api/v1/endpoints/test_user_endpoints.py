@@ -1301,9 +1301,7 @@ class TestUpdateSystemsManagedByUser:
             },
         )
 
-        FidesUserPermissions.create(
-            db=db, data={"user_id": new_user.id, "scopes": [], "roles": []}
-        )
+        FidesUserPermissions.create(db=db, data={"user_id": new_user.id, "roles": []})
         url = V1_URL_PREFIX + f"/user/{new_user.id}/system-manager"
         auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
         resp = api_client.put(url, headers=auth_header, json=[system.fides_key])
