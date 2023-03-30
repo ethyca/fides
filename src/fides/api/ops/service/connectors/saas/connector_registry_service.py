@@ -35,6 +35,7 @@ from fides.api.ops.util.saas_util import (
     load_yaml_as_string,
     replace_config_placeholders,
     replace_dataset_placeholders,
+    replace_version,
 )
 from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
@@ -53,7 +54,12 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
     """
 
     _instance = None
-    _templates: Dict[str, ConnectorTemplate] = {}
+
+    def __new__(cls: Any, *args: Any, **kwargs: Any) -> "FileConnectorTemplateLoader":
+        if cls._instance is None:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+            cls._instance._templates = {}
+        return cls._instance
 
     @classmethod
     def get_instance(cls) -> "FileConnectorTemplateLoader":
@@ -79,7 +85,9 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
 
                     # store connector template for retrieval
                     try:
-                        cls._templates[connector_type] = ConnectorTemplate(
+                        cls.get_instance()._templates[  # type: ignore[attr-defined]
+                            connector_type
+                        ] = ConnectorTemplate(
                             config=load_yaml_as_string(config_file),
                             dataset=load_yaml_as_string(
                                 f"data/saas/dataset/{connector_type}_dataset.yml"
@@ -94,7 +102,7 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
 
     @classmethod
     def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:
-        return cls.get_instance()._templates
+        return cls.get_instance()._templates  # type: ignore[attr-defined]
 
 
 class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
@@ -103,19 +111,50 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
     """
 
     _instance = None
-    _templates: Dict[str, ConnectorTemplate] = {}
+
+    def __new__(cls: Any, *args: Any, **kwargs: Any) -> "CustomConnectorTemplateLoader":
+        if cls._instance is None:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+            cls._instance._templates = {}
+        return cls._instance
 
     @classmethod
     def get_instance(cls) -> "CustomConnectorTemplateLoader":
         if cls._instance is None:
-            logger.info("Loading connectors templates from the database")
+            logger.info("Loading connectors templates from the database.")
             cls._instance = cls()
-            for template in CustomConnectorTemplate.all(db=get_api_session()):
+            db = get_api_session()
+            for template in CustomConnectorTemplate.all(db=db):
+                if template.replaceable and cls._replacement_available(template):
+                    logger.info(
+                        f"Replacing {template.key} connector template with newer version."
+                    )
+                    template.delete(db=db)
+                    continue
                 try:
                     cls._register_template(template)
                 except Exception:
                     logger.exception("Unable to load {} connector", template.key)
         return cls._instance
+
+    @staticmethod
+    def _replacement_available(template: CustomConnectorTemplate) -> bool:
+        """
+        Check the connector templates in the FileConnectorTemplateLoader and return if a newer version is available.
+        """
+        replacement_connector = (
+            FileConnectorTemplateLoader.get_connector_templates().get(template.key)
+        )
+        if not replacement_connector:
+            return False
+
+        custom_saas_config = SaaSConfig(**load_config_from_string(template.config))
+        replacement_saas_config = SaaSConfig(
+            **load_config_from_string(replacement_connector.config)
+        )
+        return parse_version(replacement_saas_config.version) > parse_version(
+            custom_saas_config.version
+        )
 
     @classmethod
     def _register_template(
@@ -200,10 +239,28 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         if not dataset_contents:
             raise ValidationError("Zip file does not contain a dataset.yml file.")
 
-        # extract connector_type and human_readable values from the SaaS config
-        config = load_config_from_string(config_contents)
-        connector_type = config["type"]
-        human_readable = config["name"]
+        # extract connector_type, human_readable, and replaceable values from the SaaS config
+        saas_config = SaaSConfig(**load_config_from_string(config_contents))
+        connector_type = saas_config.type
+        human_readable = saas_config.name
+        replaceable = saas_config.replaceable
+
+        # if the incoming connector is flagged as replaceable we will update the version to match
+        # that of the existing connector template this way the custom connector template can be
+        # removed once a newer version is bundled with Fides
+        if replaceable:
+            existing_connector = (
+                FileConnectorTemplateLoader.get_connector_templates().get(
+                    connector_type
+                )
+            )
+            if existing_connector:
+                existing_config = SaaSConfig(
+                    **load_config_from_string(existing_connector.config)
+                )
+                config_contents = replace_version(
+                    config_contents, existing_config.version
+                )
 
         template = CustomConnectorTemplate(
             key=connector_type,
@@ -212,6 +269,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             dataset=dataset_contents,
             icon=icon_contents,
             functions=function_contents,
+            replaceable=replaceable,
         )
 
         # attempt to register the template, raises an exception if validation fails
@@ -227,28 +285,16 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                 "dataset": dataset_contents,
                 "icon": icon_contents,
                 "functions": function_contents,
+                "replaceable": replaceable,
             },
         )
 
     @classmethod
     def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:
-        return cls.get_instance()._templates
+        return cls.get_instance()._templates  # type: ignore[attr-defined]
 
 
 class ConnectorRegistry:
-    _instance = None
-    _templates: Dict[str, ConnectorTemplate] = {}
-
-    @classmethod
-    def get_instance(cls) -> "ConnectorRegistry":
-        if cls._instance is None:
-            cls._instance = cls()
-            cls._instance._templates = {
-                **FileConnectorTemplateLoader().get_connector_templates(),
-                **CustomConnectorTemplateLoader().get_connector_templates(),
-            }
-        return cls._instance
-
     @classmethod
     def _get_combined_templates(cls) -> Dict[str, ConnectorTemplate]:
         """
@@ -273,13 +319,6 @@ class ConnectorRegistry:
         """
         return cls._get_combined_templates().get(connector_type)
 
-    @classmethod
-    def register_template(
-        cls, connector_type: str, template: ConnectorTemplate
-    ) -> None:
-        """Used to register new connector templates during runtime"""
-        cls.get_instance()._templates[connector_type] = template
-
 
 def create_connection_config_from_template_no_save(
     db: Session,
@@ -288,7 +327,7 @@ def create_connection_config_from_template_no_save(
     system_id: Optional[str] = None,
 ) -> ConnectionConfig:
     """Creates a SaaS connection config from a template without saving it."""
-    # Load saas config from template and replace every instance of "<instance_fides_key>" with the fides_key
+    # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
     # the user has chosen
     config_from_template: Dict = replace_config_placeholders(
         template.config, "<instance_fides_key>", template_values.instance_key

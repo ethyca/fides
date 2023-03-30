@@ -385,3 +385,14 @@ def to_pascal_case(s: str) -> str:
     s = s.title()
     s = s.replace("_", "")
     return s
+
+
+def replace_version(saas_config: str, new_version: str) -> str:
+    """
+    Replace the version number in the given saas_config string with the provided new_version.
+    """
+    version_pattern = r"version:\s*[\d\.]+"
+    updated_config = re.sub(
+        version_pattern, f"version: {new_version}", saas_config, count=1
+    )
+    return updated_config

@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: planet_express
+  fides_key: <instance_fides_key>
   name: Planet Express
   type: planet_express
   description: A sample schema representing the Planet Express connector for Fides

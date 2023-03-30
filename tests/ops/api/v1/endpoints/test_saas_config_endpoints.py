@@ -812,7 +812,13 @@ class TestRegisterConnectorTemplate:
         response = api_client.post(
             register_connector_template_url,
             headers=auth_header,
-            files={"connector_template": request.getfixturevalue(zip_file)},
+            files={
+                "file": (
+                    "template.zip",
+                    request.getfixturevalue(zip_file).read(),
+                    "application/zip",
+                )
+            },
         )
         assert response.status_code == status_code
         assert response.json() == details
@@ -849,7 +855,13 @@ class TestRegisterConnectorTemplate:
         response = api_client.post(
             register_connector_template_url,
             headers=auth_header,
-            files={"connector_template": request.getfixturevalue(zip_file)},
+            files={
+                "file": (
+                    "template.zip",
+                    request.getfixturevalue(zip_file).read(),
+                    "application/zip",
+                )
+            },
         )
         assert response.status_code == status_code
         assert response.json() == details

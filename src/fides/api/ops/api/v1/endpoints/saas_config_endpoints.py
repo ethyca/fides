@@ -2,7 +2,7 @@ from io import BytesIO
 from typing import Optional
 from zipfile import BadZipFile, ZipFile
 
-from fastapi import Depends, HTTPException, UploadFile
+from fastapi import Body, Depends, HTTPException
 from fastapi.params import Security
 from fastapi.responses import JSONResponse
 from fideslang.validation import FidesKey
@@ -349,8 +349,8 @@ def instantiate_connection_from_template(
     REGISTER_CONNECTOR_TEMPLATE,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_REGISTER])],
 )
-async def register_custom_connector_template(
-    connector_template: UploadFile,
+def register_custom_connector_template(
+    file: bytes = Body(..., media_type="application/zip"),
     db: Session = Depends(deps.get_db),
 ) -> JSONResponse:
     """
@@ -361,18 +361,14 @@ async def register_custom_connector_template(
     2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.
 
     If the uploaded file is not a valid zip file or there are any validation errors
-    when creating the ConnectorTemplates an HTTP 400 status code is returned.
+    when creating the ConnectorTemplates an HTTP 400 status code with error details is returned.
     """
 
-    contents = await connector_template.read()
-
     try:
-        zip_file = ZipFile(BytesIO(contents), "r")
+        with ZipFile(BytesIO(file), "r") as zip_file:
+            CustomConnectorTemplateLoader.save_template(db=db, zip_file=zip_file)
     except BadZipFile:
         raise HTTPException(status_code=400, detail="Invalid zip file")
-
-    try:
-        CustomConnectorTemplateLoader.save_template(db=db, zip_file=zip_file)
     except Exception as exc:
         logger.exception("Error loading connector template from zip file.")
         raise HTTPException(status_code=400, detail=str(exc))

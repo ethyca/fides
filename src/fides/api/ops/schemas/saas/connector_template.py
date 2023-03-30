@@ -25,11 +25,19 @@ class ConnectorTemplate(BaseModel):
     @validator("config")
     def validate_config(cls, config: str) -> str:
         """Validates the config at the given path"""
-        SaaSConfig(**load_config_from_string(config))
+        saas_config = SaaSConfig(**load_config_from_string(config))
+        if saas_config.fides_key != "<instance_fides_key>":
+            raise ValueError(
+                "Hard-coded fides_key detected in the config, replace all instances of it with <instance_fides_key>"
+            )
         return config
 
     @validator("dataset")
     def validate_dataset(cls, dataset: str) -> str:
         """Validates the dataset at the given path"""
-        Dataset(**load_dataset_from_string(dataset))
+        saas_dataset = Dataset(**load_dataset_from_string(dataset))
+        if saas_dataset.fides_key != "<instance_fides_key>":
+            raise ValueError(
+                "Hard-coded fides_key detected in the dataset, replace all instances of it with <instance_fides_key>"
+            )
         return dataset

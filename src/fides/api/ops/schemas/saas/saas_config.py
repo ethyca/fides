@@ -355,6 +355,7 @@ class SaaSConfig(SaaSConfigBase):
 
     description: str
     version: str
+    replaceable: bool = False
     connector_params: List[ConnectorParam]
     external_references: Optional[List[ExternalDatasetReference]]
     client_config: ClientConfig
