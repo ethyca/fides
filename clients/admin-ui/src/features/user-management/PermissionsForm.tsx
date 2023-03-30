@@ -71,17 +71,20 @@ const PermissionsForm = () => {
     useUpdateUserPermissionsMutation();
 
   const updatePermissions = async (values: FormValues) => {
-    let skipAssigningSystems = false;
     if (chooseApproverIsOpen) {
-      // Unassigning systems from viewer role happens automatically on BE when the role is saved.
-      // If we attempt to assign systems to the viewer role, the BE will throw an error,
-      // so we skip calling the endpoint.
-      skipAssigningSystems = true;
       chooseApproverClose();
     }
     if (!activeUserId) {
       return;
     }
+
+    // Unassigning systems from an approver happens automatically on BE when the role is saved.
+    // If we attempt to assign systems to the approver role, the BE will throw an error,
+    // so we skip calling the endpoint.
+    const skipAssigningSystems = values.roles.includes(
+      RoleRegistryEnum.APPROVER
+    );
+
     const userPermissionsResult = await updateUserPermissionMutationTrigger({
       user_id: activeUserId,
       // Scopes are not editable in the UI, but make sure we retain whatever scopes
