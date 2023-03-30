@@ -52,6 +52,7 @@ The types of changes are:
 * Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
 * Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
 * Align role dscription drawer of Admin UI with top nav: [#2932](https://github.com/ethyca/fides/pull/2932)
+* Fixed error message when a user is assigned to be an approver without any systems [#2953](https://github.com/ethyca/fides/pull/2953)
 
 ### Developer Experience
 
