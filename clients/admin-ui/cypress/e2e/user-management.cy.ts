@@ -95,10 +95,9 @@ describe("User management", () => {
         .then((rows) => {
           expect(rows.length).to.eql(numUsers);
         })
-        .first()
-        cy.getByTestId("user-systems-badge")
-        cy.contains("4")
-      ;
+        .first();
+      cy.getByTestId("user-systems-badge");
+      cy.contains("4");
     });
   });
 
@@ -307,6 +306,26 @@ describe("User management", () => {
         cy.intercept("GET", "/api/v1/system", {
           fixture: "systems/systems.json",
         }).as("getSystems");
+      });
+
+      describe("approver cannot have systems", () => {
+        beforeEach(() => {
+          cy.visit(`/user-management/profile/${USER_1_ID}`);
+          cy.getByTestId("tab-Permissions").click();
+          cy.wait("@getSystems");
+          cy.wait("@getUserManagedSystems");
+        });
+
+        it("can warn when assigning an approver", () => {
+          cy.getByTestId("role-option-Approver").click();
+          cy.getByTestId("save-btn").click();
+          cy.getByTestId("downgrade-to-approver-confirmation-modal").within(
+            () => {
+              cy.getByTestId("continue-btn").click();
+            }
+          );
+          cy.wait("@updatePermission");
+        });
       });
 
       describe("in role option", () => {
