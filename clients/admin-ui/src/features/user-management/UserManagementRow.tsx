@@ -1,18 +1,12 @@
 import {
   Badge,
-  Button,
-  ButtonGroup, IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  MoreIcon,
-  Portal,
+  ButtonGroup,
+  IconButton,
   Td,
-  Text,
   Tr,
   useDisclosure,
 } from "@fidesui/react";
+import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import { useRouter } from "next/router";
 import React from "react";
 import {
@@ -29,7 +23,6 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import DeleteUserModal from "./DeleteUserModal";
 import { User } from "./types";
-import {TrashCanSolidIcon} from "common/Icon/TrashCanSolidIcon";
 
 interface UserManagementRowProps {
   user: User;
@@ -124,11 +117,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         <Td pl={0} py={1} onClick={handleEditUser}>
           {user.created_at ? new Date(user.created_at).toUTCString() : null}
         </Td>
-        <Restrict
-          scopes={[
-            ScopeRegistryEnum.USER_DELETE,
-          ]}
-        >
+        <Restrict scopes={[ScopeRegistryEnum.USER_DELETE]}>
           <Td pr={0} py={1} textAlign="end" position="relative">
             <ButtonGroup>
               <IconButton
