@@ -35,11 +35,6 @@ const classificationStatuses = (resource: GenerateTypes) => {
       tooltip: `This ${resourceSingular} must be manually updated.`,
       color: "red",
     },
-    unknown: {
-      title: "Unknown",
-      tooltip: `This ${resourceSingular} must be manually updated.`,
-      color: "gray",
-    },
   };
 };
 
@@ -51,24 +46,29 @@ const ClassificationStatusBadge = ({
   status: ClassificationStatus | undefined;
   resource: GenerateTypes;
 } & BadgeProps) => {
-  const statusDisplay = classificationStatuses(resource)[status ?? "unknown"];
-  return (
-    <Tooltip
-      data-testid="classification-status-badge"
-      label={statusDisplay.tooltip}
-    >
-      <Badge
-        variant="solid"
-        colorScheme={statusDisplay.color}
-        w="100%"
-        textAlign="center"
-        {...badgeProps}
+  const statusDisplay = classificationStatuses(resource)[status];
+  if (status) {
+    return (
+      <Tooltip
         data-testid="classification-status-badge"
+        label={statusDisplay.tooltip}
       >
-        {statusDisplay.title}
-      </Badge>
-    </Tooltip>
-  );
+        <Badge
+          variant="solid"
+          colorScheme={statusDisplay.color}
+          w="100%"
+          textAlign="center"
+          {...badgeProps}
+          data-testid="classification-status-badge"
+        >
+          {statusDisplay.title}
+        </Badge>
+      </Tooltip>
+    );
+  } else {
+    // do not return a badge if no classification performed
+    return null;
+  }
 };
 
 export default ClassificationStatusBadge;
