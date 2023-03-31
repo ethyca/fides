@@ -87,9 +87,7 @@ const PermissionsForm = () => {
 
     const userPermissionsResult = await updateUserPermissionMutationTrigger({
       user_id: activeUserId,
-      // Scopes are not editable in the UI, but make sure we retain whatever scopes
-      // the user might've already had
-      payload: { scopes: userPermissions?.scopes, roles: values.roles },
+      payload: { roles: values.roles },
     });
 
     if (isErrorResult(userPermissionsResult)) {
