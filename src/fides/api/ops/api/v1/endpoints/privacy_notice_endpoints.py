@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
@@ -92,9 +92,7 @@ def get_privacy_notice_list(
         Security(verify_oauth_client, scopes=[scope_registry.PRIVACY_NOTICE_READ])
     ],
 )
-def get_privacy_notice_by_data_use(
-    *, db: Session = Depends(deps.get_db)
-) -> Dict[str, Any]:
+def get_privacy_notice_by_data_use(*, db: Session = Depends(deps.get_db)) -> DataUseMap:
     """
     Endpoint to retrieve a map of `DataUse`s with their corresponding `PrivacyNotice`s
 
