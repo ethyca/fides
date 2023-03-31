@@ -9,7 +9,7 @@ import {
   useToast,
 } from "@fidesui/react";
 import ConfirmationModal from "common/ConfirmationModal";
-import { useHasRole } from "common/Restrict";
+import { useHasPermission } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
-import { RoleRegistryEnum, System } from "~/types/api";
+import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
 import RoleOption from "./RoleOption";
 import {
@@ -126,7 +126,9 @@ const PermissionsForm = () => {
   };
 
   // This prevents logged-in users with contributor role from being able to assign owner roles
-  const isOwner = useHasRole([RoleRegistryEnum.OWNER]);
+  const canAssignOwner = useHasPermission([
+    ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
+  ]);
 
   if (!activeUserId) {
     return null;
@@ -136,7 +138,10 @@ const PermissionsForm = () => {
     return <Spinner />;
   }
 
-  if (!isOwner && userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)) {
+  if (
+    !canAssignOwner &&
+    userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)
+  ) {
     return (
       <Text>
         You do not have sufficient access to change this user&apos;s
@@ -172,7 +177,9 @@ const PermissionsForm = () => {
                     key={role.roleKey}
                     isSelected={isSelected}
                     isDisabled={
-                      role.roleKey === RoleRegistryEnum.OWNER ? !isOwner : false
+                      role.roleKey === RoleRegistryEnum.OWNER
+                        ? !canAssignOwner
+                        : false
                     }
                     assignedSystems={assignedSystems}
                     onAssignedSystemChange={setAssignedSystems}
