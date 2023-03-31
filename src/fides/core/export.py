@@ -23,6 +23,7 @@ from fides.core.export_helpers import (
     union_data_categories_in_joined_dataframe,
 )
 from fides.core.utils import echo_green, get_all_level_fields
+from fides.lib.models.fides_user import FidesUser
 
 EMPTY_COLUMN_PLACEHOLDER = "N/A"
 
@@ -175,6 +176,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             "system.data_protection_impact_assessment.progress",
             "system.data_protection_impact_assessment.link",
             "dataset.fides_key",
+            "system.users",
         )
     ]
 
@@ -236,7 +238,8 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                     # and we also maintain our ordered list of custom field headers
                     system_custom_field_headers.append(key_string)
                 if isinstance(value, list):
-                    system_custom_field_data[key_string] = ", ".join(value)
+                    list_values = [r.username if type(FidesUser) else r for r in value]
+                    system_custom_field_data[key_string] = ", ".join(list_values)
                 else:
                     system_custom_field_data[key_string] = value
 
