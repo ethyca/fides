@@ -1,8 +1,10 @@
 """Contains the nox sessions for docker-related tasks."""
 import platform
-from typing import List
+import re
+from typing import List, Optional
 
 import nox
+from packaging.version import Version
 
 from constants_nox import (
     IMAGE,
@@ -15,16 +17,177 @@ from constants_nox import (
     SAMPLE_APP_IMAGE,
 )
 
+# from packaging import Version
 
-def get_current_tag() -> str:
-    """Get the current git tag."""
+
+RELEASE_BRANCH_REGEX = "release-(([0-9]+\.)+[0-9]+)"
+RC_TAG_REGEX = "{release_version}rc([0-9]+)"
+RELEASE_TAG_REGEX = "(([0-9]+\.)+[0-9]+)"
+MAIN_BUILD_TAG_REGEX = "{release_version}b0"
+
+
+def get_current_tag(existing: bool = False) -> Optional[str]:
+    """
+    Get the current git tag.
+
+    If `exists` is true, this tag must already exist.
+    Otherwise, a tag is generated via `git describe --tags --dirty --always`,
+    which includes "dirty" tags if the working tree has local modifications.
+    """
     from git.repo import Repo
 
     repo = Repo()
+    if existing:  # checks for an existing tag on current commit
+        return next(
+            (tag.name for tag in get_all_tags(repo) if tag.commit == repo.head.commit),
+            None,
+        )
     git_session = repo.git()
     git_session.fetch("--force", "--tags")
     current_tag = git_session.describe("--tags", "--dirty", "--always")
     return current_tag
+
+
+def get_all_tags(repo):
+    """
+    Returns a list of all tags in the repo, sorted by committed date, latest first
+    """
+
+    git_session = repo.git()
+    git_session.fetch("--force", "--tags")
+    return sorted(repo.tags, key=lambda t: t.commit.committed_datetime, reverse=True)
+
+
+@nox.session()
+def deploy_tag(session: nox.Session) -> str:
+    """
+    dry_run = don't actually tag or push, just show the tag that will be generated
+    tag = generate and apply a tag locally
+    push = push the generated tag
+    push_current = push the current tag
+    """
+    from git.repo import Repo
+
+    repo = Repo()
+    current_tag = get_current_tag(
+        existing=True
+    )  # first get an existing tag if we've got one
+    generated_tag = generate_tag(session, repo)
+    if "dry_run" in session.posargs:
+        session.log(f"Dry-run -- would generate deploy tag: {generated_tag}")
+    if "push_current" in session.posargs:
+        session.log(f"Pushing current tag {current_tag} to remote (origin)")
+        repo.remotes.origin.push(current_tag)
+        return
+    if "tag" in session.posargs:  # generate and apply a tag if we've been told to tag
+        session.log(f"Tagging current HEAD commit with tag: {current_tag}")
+        repo.create_tag(generated_tag)
+    if "push" in session.posargs:
+        session.log(f"Pushing generated tag {generated_tag} to remote (origin)")
+        repo.remotes.origin.push(generated_tag)
+
+
+def next_release_increment(session, repo):
+    """Helper to generate the next release 'increment' based on latest release tag found"""
+    latest_release = next(
+        tag.name
+        for tag in get_all_tags(repo)
+        if re.fullmatch(RELEASE_TAG_REGEX, tag.name)
+    )
+    if not latest_release:  # this would be bad...
+        session.error("Could not identify the latest release!")
+    latest_release = Version(latest_release)
+    return Version(
+        f"{latest_release.major}.{latest_release.minor}.{latest_release.micro + 1}"
+    )
+
+
+def generate_tag(session: nox.Session, repo) -> str:
+    """Generate a tag used for package deployment"""
+
+    # get current branch
+    branch = repo.active_branch
+    branch_name = branch.name
+
+    if branch_name == "main":  # main
+        next_release = next_release_increment(session, repo)
+        # find our latest beta tag of "next" rleease
+        latest_beta_tag = next(
+            (
+                re.fullmatch(f"{next_release}b([0-9]+)", tag.name)
+                for tag in get_all_tags(repo)
+                if re.fullmatch(f"{next_release}b([0-9]+)", tag.name)
+            ),
+            None,
+        )
+        if latest_beta_tag:  # if we have an existing beta tag, increment it
+            session.log(
+                f"Found existing beta tag {latest_beta_tag.group(0)}, incrementing it"
+            )
+            tag_increment = (
+                int(latest_beta_tag.group(1)) + 1
+            )  # increment the beta tag by 1
+            return f"{next_release}b{tag_increment}"
+            # return the full [version_number]a[increment
+
+        # we don't have an existing beta tag, so start at 0!
+        return f"{next_release}b0"
+
+    if release_branch_match := re.fullmatch(
+        RELEASE_BRANCH_REGEX, branch_name
+    ):  # release branch
+
+        # determine our release number based on branch name
+        try:
+            release_version = release_branch_match.group(1)
+        except IndexError:  # we shouldn't hit this, but just to be safe
+            session.error(
+                f"Could not determine release number of release branch {branch_name}"
+            )
+
+        # find our latest rc tag of current rleease
+        latest_rc_tag = next(
+            (
+                re.fullmatch(f"{release_version}rc([0-9]+)", tag.name)
+                for tag in get_all_tags(repo)
+                if re.fullmatch(f"{release_version}rc([0-9]+)", tag.name)
+            ),
+            None,
+        )
+        if latest_rc_tag:  # if we have an existing rc tag, increment it
+            session.log(
+                f"Found existing rc tag {latest_rc_tag.group(0)}, incrementing it"
+            )
+            tag_increment = int(latest_rc_tag.group(1)) + 1  # increment the rc tag by 1
+            return f"{release_version}rc{tag_increment}"
+            # return the full [version_number]rc[increment] tag
+
+        # we don't have an existing rc tag, so start at 1!
+        return f"{release_version}rc1"
+
+    # assume feature branch as default case
+    next_release = next_release_increment(session, repo)
+    # find our latest alpha tag of "next" rleease
+    latest_alpha_tag = next(
+        (
+            re.fullmatch(f"{next_release}a([0-9]+)", tag.name)
+            for tag in get_all_tags(repo)
+            if re.fullmatch(f"{next_release}a([0-9]+)", tag.name)
+        ),
+        None,
+    )
+    if latest_alpha_tag:  # if we have an existing alpha tag, increment it
+        session.log(
+            f"Found existing alpha tag {latest_alpha_tag.group(0)}, incrementing it"
+        )
+        tag_increment = (
+            int(latest_alpha_tag.group(1)) + 1
+        )  # increment the alpha tag by 1
+        return f"{next_release}a{tag_increment}"
+        # return the full [version_number]a[increment] tag
+
+    # we don't have an existing alpha tag, so start at 0!
+    return f"{next_release}a0"
 
 
 def get_current_image() -> str:
