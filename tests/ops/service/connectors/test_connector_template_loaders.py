@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 from zipfile import ZipFile
 
 import pytest
-from loguru import logger
 
 from fides.api.ops.common_exceptions import NoSuchSaaSRequestOverrideException
 from fides.api.ops.models.custom_connector_template import CustomConnectorTemplate
@@ -62,7 +61,7 @@ class TestFileConnectorTemplateLoader:
 
 class TestCustomConnectorTemplateLoader:
     @pytest.fixture(autouse=True)
-    def reset_custom_connector_template_data(self):
+    def reset_connector_template_loaders(self):
         """
         Resets the loader singleton instances before each test
         """

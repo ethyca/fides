@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from zipfile import ZipFile
 
 from AccessControl.ZopeGuards import safe_builtins
+from fideslang.models import Dataset
 from loguru import logger
 from packaging.version import Version
 from packaging.version import parse as parse_version
@@ -32,6 +33,7 @@ from fides.api.ops.util.saas_util import (
     encode_file_contents,
     load_config,
     load_config_from_string,
+    load_dataset_from_string,
     load_yaml_as_string,
     replace_config_placeholders,
     replace_dataset_placeholders,
@@ -239,8 +241,11 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         if not dataset_contents:
             raise ValidationError("Zip file does not contain a dataset.yml file.")
 
-        # extract connector_type, human_readable, and replaceable values from the SaaS config
+        # early validation of SaaS config and dataset
         saas_config = SaaSConfig(**load_config_from_string(config_contents))
+        Dataset(**load_dataset_from_string(dataset_contents))
+
+        # extract connector_type, human_readable, and replaceable values from the SaaS config
         connector_type = saas_config.type
         human_readable = saas_config.name
         replaceable = saas_config.replaceable
