@@ -163,5 +163,5 @@ human_readable = "Recharge"
 [shippo]
 config = "data/saas/config/shippo_config.yml"
 dataset = "data/saas/dataset/shippo_dataset.yml"
-icon = "data/saas/icon/default.svg"
+icon = "data/saas/icon/shippo.svg"
 human_readable = "Shippo"
