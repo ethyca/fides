@@ -49,7 +49,7 @@ const Card: React.FC<CardProps> = ({
       outline: "none",
     }}
   >
-    <ResolvedIcon iconPath={iconPath} iconBoxSize={"32px"} description={description}/>
+    <ResolvedIcon iconPath={iconPath} iconBoxSize="32px" description={description}/>
     <Text
       color="gray.600"
       fontSize="md"
