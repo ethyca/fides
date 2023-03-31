@@ -1,8 +1,6 @@
-import { Flex, Icon, Image, Text } from "@fidesui/react";
+import { Flex, Text } from "@fidesui/react";
 import React from "react";
-import * as mdIcons from "react-icons/md";
-import * as faIcons from "react-icons/fa";
-import { IconType } from "react-icons";
+import ResolvedIcon from "./ResolvedIcon";
 
 type CardProps = {
   title: string;
@@ -10,40 +8,6 @@ type CardProps = {
   description: string;
   onClick: () => void;
 };
-
-/**
- * IconProviders maps to the react-icons libraries supported by Fides.
- * The values of the enum elements are the prefix to indicate that the iconPath should use an icon library instead of a relative path or URL.
- */
-enum IconProviders {
-  MATERIALDESIGN = "md",
-  FONTAWESOME = "fa",
-}
-
-function iconResolver(iconPath: string, description: string): JSX.Element {
-  const iconBoxSize = "32px";
-  const prefixCandidate = iconPath.toLowerCase().split(":")[0];
-  const hasPrefix =
-    Object.values<string>(IconProviders).includes(prefixCandidate);
-  if (hasPrefix) {
-    let iconType: IconType;
-    switch (prefixCandidate) {
-      case IconProviders.MATERIALDESIGN:
-        iconType = mdIcons[iconPath.split(":")[1] as keyof typeof mdIcons];
-        break;
-      case IconProviders.FONTAWESOME:
-        iconType = faIcons[iconPath.split(":")[1] as keyof typeof faIcons];
-        break;
-      default:
-        iconType = faIcons.FaRegQuestionCircle;
-        break;
-    }
-    return (
-      <Icon boxSize={iconBoxSize} as={iconType} color="complimentary.500" />
-    );
-  }
-  return <Image alt={description} boxSize={iconBoxSize} src={iconPath} />;
-}
 
 const Card: React.FC<CardProps> = ({
   title,
@@ -85,7 +49,7 @@ const Card: React.FC<CardProps> = ({
       outline: "none",
     }}
   >
-    {iconResolver(iconPath, description)}
+    <ResolvedIcon iconPath={iconPath} iconBoxSize={"32px"} description={description}/>
     <Text
       color="gray.600"
       fontSize="md"
