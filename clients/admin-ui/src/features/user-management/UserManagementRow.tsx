@@ -1,7 +1,7 @@
 import {
   Badge,
   Button,
-  ButtonGroup,
+  ButtonGroup, IconButton,
   Menu,
   MenuButton,
   MenuItem,
@@ -29,6 +29,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import DeleteUserModal from "./DeleteUserModal";
 import { User } from "./types";
+import {TrashCanSolidIcon} from "common/Icon/TrashCanSolidIcon";
 
 interface UserManagementRowProps {
   user: User;
@@ -125,44 +126,19 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         </Td>
         <Restrict
           scopes={[
-            ScopeRegistryEnum.USER_UPDATE,
             ScopeRegistryEnum.USER_DELETE,
           ]}
         >
           <Td pr={0} py={1} textAlign="end" position="relative">
             <ButtonGroup>
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  size="xs"
-                  bg="white"
-                  data-testid="menu-btn"
-                >
-                  <MoreIcon color="gray.700" w={18} h={18} />
-                </MenuButton>
-                <Portal>
-                  <MenuList shadow="xl" data-testid={`menu-${user.id}`}>
-                    <Restrict scopes={[ScopeRegistryEnum.USER_UPDATE]}>
-                      <MenuItem
-                        _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                        onClick={handleEditUser}
-                        data-testid="edit-btn"
-                      >
-                        <Text fontSize="sm">Edit</Text>
-                      </MenuItem>
-                    </Restrict>
-                    <Restrict scopes={[ScopeRegistryEnum.USER_DELETE]}>
-                      <MenuItem
-                        _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                        onClick={deleteModal.onOpen}
-                        data-testid="delete-btn"
-                      >
-                        <Text fontSize="sm">Delete</Text>
-                      </MenuItem>
-                    </Restrict>
-                  </MenuList>
-                </Portal>
-              </Menu>
+              <IconButton
+                aria-label="delete"
+                icon={<TrashCanSolidIcon />}
+                variant="outline"
+                size="sm"
+                onClick={deleteModal.onOpen}
+                data-testid="delete-user-btn"
+              />
             </ButtonGroup>
           </Td>
         </Restrict>
