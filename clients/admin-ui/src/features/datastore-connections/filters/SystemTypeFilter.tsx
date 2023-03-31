@@ -1,3 +1,4 @@
+import { Box } from "@fidesui/react";
 import SelectDropdown from "common/dropdown/SelectDropdown";
 import React from "react";
 import { useSelector } from "react-redux";
@@ -30,14 +31,16 @@ const SystemTypeFilter: React.FC<SystemTypeFilterProps> = ({ width }) => {
   };
 
   return (
-    <SelectDropdown
-      enableSorting={false}
-      label="System Type"
-      list={list}
-      onChange={handleChange}
-      selectedValue={system_type?.toString()}
-      width={width}
-    />
+    <Box>
+      <SelectDropdown
+        enableSorting={false}
+        label="System Type"
+        list={list}
+        menuButtonProps={{ width }}
+        onChange={handleChange}
+        selectedValue={system_type?.toString()}
+      />
+    </Box>
   );
 };
 

@@ -1,9 +1,14 @@
 /// <reference types="cypress" />
 
-import { STORAGE_ROOT_KEY, USER_PRIVILEGES } from "~/constants";
+import { STORAGE_ROOT_KEY } from "~/constants";
+import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
-Cypress.Commands.add("getByTestId", (selector, ...args) =>
-  cy.get(`[data-testid='${selector}']`, ...args)
+Cypress.Commands.add("getByTestId", (selector, options) =>
+  cy.get(`[data-testid='${selector}']`, options)
+);
+
+Cypress.Commands.add("getByTestIdPrefix", (prefix, options) =>
+  cy.get(`[data-testid^='${prefix}']`, options)
 );
 
 Cypress.Commands.add("login", () => {
@@ -23,10 +28,19 @@ Cypress.Commands.add("login", () => {
       );
     });
     cy.intercept("/api/v1/user/*/permission", {
+      fixture: "user-management/permissions.json",
+    }).as("getUserPermission");
+  });
+});
+
+Cypress.Commands.add("assumeRole", (role) => {
+  cy.fixture("scopes/roles-to-scopes.json").then((mapping) => {
+    const scopes: ScopeRegistryEnum[] = mapping[role];
+    cy.intercept("/api/v1/user/*/permission", {
       body: {
-        id: body.user_data.id,
-        user_id: body.user_data.id,
-        scopes: USER_PRIVILEGES.map((up) => up.scope),
+        id: 123,
+        user_id: 123,
+        total_scopes: scopes,
       },
     }).as("getUserPermission");
   });
@@ -34,24 +48,43 @@ Cypress.Commands.add("login", () => {
 
 declare global {
   namespace Cypress {
+    type GetBy = (
+      selector: string,
+      options?: Partial<
+        Cypress.Loggable &
+          Cypress.Timeoutable &
+          Cypress.Withinable &
+          Cypress.Shadow
+      >
+    ) => Chainable<JQuery<HTMLElement>>;
+
     interface Chainable {
       /**
-       * Custom command to select DOM element by data-testid attribute
+       * Custom command to select DOM element by data-testid attribute.
        * @example cy.getByTestId('clear-btn')
        */
-      getByTestId(
-        selector: string,
-        options?: Partial<
-          Cypress.Loggable &
-            Cypress.Timeoutable &
-            Cypress.Withinable &
-            Cypress.Shadow
-        >
-      ): Chainable<JQuery<HTMLElement>>;
+      getByTestId: GetBy;
+      /**
+       * Custom command to select DOM element by the prefix of a data-testid attribute. Useful for
+       * elements that get rendered in a list where each item has its own unique id.
+       *
+       * @example
+       * cy.getByTestIdPrefix('row')
+       * // => [ tr#01, tr#02, ..., tr#20]
+       * // Versus:
+       * cy.getByTestId('row-13')
+       * // => tr#13
+       */
+      getByTestIdPrefix: GetBy;
       /**
        * Programmatically login with a mock user
        */
       login(): void;
+      /**
+       * Stub a user with the scopes associated with a role
+       * @example cy.assumeRole(RoleRegistryEnum.OWNER)
+       */
+      assumeRole(role: RoleRegistryEnum): void;
     }
   }
 }

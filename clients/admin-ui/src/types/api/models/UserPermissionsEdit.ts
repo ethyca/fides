@@ -2,10 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { RoleRegistryEnum } from "./RoleRegistryEnum";
+import type { ScopeRegistryEnum } from "./ScopeRegistryEnum";
+
 /**
- * Data required to edit a FidesUserPermissions record
+ * Data required to edit a FidesUserPermissions record.
  */
 export type UserPermissionsEdit = {
-  scopes: Array<string>;
-  id: string;
+  scopes?: Array<ScopeRegistryEnum>;
+  roles?: Array<RoleRegistryEnum>;
+  id?: string;
 };

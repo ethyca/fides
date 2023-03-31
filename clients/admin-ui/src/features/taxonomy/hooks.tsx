@@ -1,32 +1,30 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
+import {
+  CustomFieldsList,
+  CustomFieldValues,
+} from "~/features/common/custom-fields";
+import { useCustomFields } from "~/features/common/custom-fields/hooks";
 import { RTKResult } from "~/features/common/types";
 import {
   DataCategory,
-  DataQualifier,
   DataSubject,
   DataSubjectRightsEnum,
   DataUse,
   IncludeExcludeEnum,
   LegalBasisEnum,
+  ResourceTypes,
   SpecialCategoriesEnum,
 } from "~/types/api";
 
 import { YesNoOptions } from "../common/constants";
 import {
-  CustomCreatableMultiSelect,
-  CustomMultiSelect,
+  CustomCreatableSelect,
   CustomRadioGroup,
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
 import { enumToOptions } from "../common/helpers";
-import {
-  useCreateDataQualifierMutation,
-  useDeleteDataQualifierMutation,
-  useGetAllDataQualifiersQuery,
-  useUpdateDataQualifierMutation,
-} from "../data-qualifier/data-qualifier.slice";
 import {
   useCreateDataSubjectMutation,
   useDeleteDataSubjectMutation,
@@ -39,35 +37,84 @@ import {
   useGetAllDataUsesQuery,
   useUpdateDataUseMutation,
 } from "../data-use/data-use.slice";
+import { parentKeyFromFidesKey } from "./helpers";
 import {
   useCreateDataCategoryMutation,
   useDeleteDataCategoryMutation,
   useGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
 } from "./taxonomy.slice";
-import type { FormValues } from "./TaxonomyFormBase";
-import { Labels, TaxonomyEntity } from "./types";
+import { FormValues, Labels, TaxonomyEntity } from "./types";
 
 export interface TaxonomyHookData<T extends TaxonomyEntity> {
   data?: TaxonomyEntity[];
   isLoading: boolean;
   labels: Labels;
-  handleCreate: (entity: T) => RTKResult<TaxonomyEntity>;
-  handleEdit: (entity: T) => RTKResult<TaxonomyEntity>;
+  resourceType?: ResourceTypes;
+  entityToEdit: T | null;
+  setEntityToEdit: (entity: T | null) => void;
+  handleCreate: (
+    initialValues: FormValues,
+    newValues: FormValues
+  ) => RTKResult<TaxonomyEntity>;
+  handleEdit: (
+    initialValues: FormValues,
+    newValues: FormValues
+  ) => RTKResult<TaxonomyEntity>;
   handleDelete: (key: string) => RTKResult<string>;
   renderExtraFormFields?: (entity: T) => ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
 
-const transformTaxonomyBaseToInitialValues = (t: TaxonomyEntity) => ({
+/**
+ * Transforms the attributes that are shared between taxonomy entities into values
+ * that Formik can easily handle.
+ * If the taxonomy entity has additional fields that need to be transformed,
+ * it should extend from this function.
+ */
+const transformTaxonomyBaseToInitialValues = (
+  t: TaxonomyEntity,
+  customFieldValues?: CustomFieldValues
+) => ({
   fides_key: t.fides_key ?? "",
   name: t.name ?? "",
   description: t.description ?? "",
   parent_key: t.parent_key ?? "",
   is_default: t.is_default ?? false,
+  customFieldValues,
 });
 
+/**
+ * Transforms the attributes that are shared between taxonomy entities into
+ * a taxonomy object ready to be consumed by the API
+ */
+const transformBaseFormValuesToEntity = (
+  initialValues: FormValues,
+  newValues: FormValues
+) => {
+  const isCreate = initialValues.fides_key === "";
+
+  // parent_key and fides_keys are immutable
+  // parent_key also needs to be undefined, not an empty string, if there is no parent element
+  const entity = { ...newValues };
+  if (isCreate) {
+    const parentKey = parentKeyFromFidesKey(newValues.fides_key);
+    entity.parent_key = parentKey === "" ? undefined : parentKey;
+  } else {
+    entity.parent_key =
+      initialValues.parent_key === "" ? undefined : initialValues.parent_key;
+    entity.fides_key = initialValues.fides_key;
+  }
+
+  delete entity.customFieldValues;
+
+  return entity;
+};
+
 export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
+  const resourceType = ResourceTypes.DATA_CATEGORY;
+  const [entityToEdit, setEntityToEdit] = useState<DataCategory | null>(null);
+
   const { data, isLoading } = useGetAllDataCategoriesQuery();
 
   const labels = {
@@ -77,22 +124,77 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
     parent_key: "Parent category",
   };
 
-  const [handleEdit] = useUpdateDataCategoryMutation();
-  const [handleDelete] = useDeleteDataCategoryMutation();
-  const [handleCreate] = useCreateDataCategoryMutation();
+  const [createDataCategoryMutationTrigger] = useCreateDataCategoryMutation();
+  const [updateDataCategoryMutationTrigger] = useUpdateDataCategoryMutation();
+  const [deleteDataCategoryMutationTrigger] = useDeleteDataCategoryMutation();
+
+  const customFields = useCustomFields({
+    resourceFidesKey: entityToEdit?.fides_key,
+    resourceType,
+  });
+
+  const handleCreate = async (
+    initialValues: FormValues,
+    newValues: FormValues
+  ) => {
+    const payload = transformBaseFormValuesToEntity(initialValues, newValues);
+    const result = await createDataCategoryMutationTrigger(payload);
+
+    if (customFields.isEnabled) {
+      await customFields.upsertCustomFields(newValues);
+    }
+
+    return result;
+  };
+
+  const handleEdit = async (
+    initialValues: FormValues,
+    newValues: FormValues
+  ) => {
+    const payload = transformBaseFormValuesToEntity(initialValues, newValues);
+    const result = updateDataCategoryMutationTrigger(payload);
+
+    if (customFields.isEnabled) {
+      await customFields.upsertCustomFields(newValues);
+    }
+
+    return result;
+  };
+
+  const handleDelete = deleteDataCategoryMutationTrigger;
+
+  const renderExtraFormFields = (formValues: FormValues) => (
+    <CustomFieldsList
+      resourceFidesKey={formValues.fides_key}
+      resourceType={resourceType}
+    />
+  );
+
+  const transformEntityToInitialValues = (entity: DataCategory) =>
+    transformTaxonomyBaseToInitialValues(
+      entity,
+      customFields.customFieldValues
+    );
 
   return {
     data,
     isLoading,
     labels,
+    resourceType,
+    entityToEdit,
+    setEntityToEdit,
     handleCreate,
     handleEdit,
     handleDelete,
-    transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
+    renderExtraFormFields,
+    transformEntityToInitialValues,
   };
 };
 
 export const useDataUse = (): TaxonomyHookData<DataUse> => {
+  const resourceType = ResourceTypes.DATA_USE;
+  const [entityToEdit, setEntityToEdit] = useState<DataUse | null>(null);
+
   const { data, isLoading } = useGetAllDataUsesQuery();
 
   const labels = {
@@ -108,8 +210,9 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       "Legitimate interest impact assessment",
   };
 
-  const [edit] = useUpdateDataUseMutation();
-  const [create] = useCreateDataUseMutation();
+  const [createDataUseMutationTrigger] = useCreateDataUseMutation();
+  const [updateDataUseMutationTrigger] = useUpdateDataUseMutation();
+  const [deleteDataUseMutationTrigger] = useDeleteDataUseMutation();
 
   const transformFormValuesToEntity = (formValues: DataUse) => ({
     ...formValues,
@@ -132,15 +235,50 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
         : formValues.special_category,
   });
 
-  const [handleDelete] = useDeleteDataUseMutation();
-  const handleEdit = (entity: DataUse) =>
-    edit(transformFormValuesToEntity(entity));
+  const customFields = useCustomFields({
+    resourceFidesKey: entityToEdit?.fides_key,
+    resourceType,
+  });
 
-  const handleCreate = (entity: DataUse) =>
-    create(transformFormValuesToEntity(entity));
+  const handleCreate = async (
+    initialValues: FormValues,
+    newValues: FormValues
+  ) => {
+    const payload = transformFormValuesToEntity(
+      transformBaseFormValuesToEntity(initialValues, newValues)
+    );
+    const result = await createDataUseMutationTrigger(payload);
+
+    if (customFields.isEnabled) {
+      await customFields.upsertCustomFields(newValues);
+    }
+
+    return result;
+  };
+
+  const handleEdit = async (
+    initialValues: FormValues,
+    newValues: FormValues
+  ) => {
+    const payload = transformFormValuesToEntity(
+      transformBaseFormValuesToEntity(initialValues, newValues)
+    );
+    const result = updateDataUseMutationTrigger(payload);
+
+    if (customFields.isEnabled) {
+      await customFields.upsertCustomFields(newValues);
+    }
+
+    return result;
+  };
+
+  const handleDelete = deleteDataUseMutationTrigger;
 
   const transformEntityToInitialValues = (du: DataUse) => {
-    const base = transformTaxonomyBaseToInitialValues(du);
+    const base = transformTaxonomyBaseToInitialValues(
+      du,
+      customFields.customFieldValues
+    );
     return {
       ...base,
       legal_basis: du.legal_basis,
@@ -172,11 +310,13 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
         options={specialCategories}
         isClearable
       />
-      <CustomCreatableMultiSelect
+      <CustomCreatableSelect
         name="recipients"
         label={labels.recipient}
         options={[]}
         size="sm"
+        disableMenu
+        isMulti
       />
       <CustomRadioGroup
         name="legitimate_interest"
@@ -189,6 +329,10 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
           label={labels.legitimate_interest_impact_assessment}
         />
       ) : null}
+      <CustomFieldsList
+        resourceFidesKey={formValues.fides_key}
+        resourceType={resourceType}
+      />
     </>
   );
 
@@ -196,6 +340,9 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     data,
     isLoading,
     labels,
+    resourceType,
+    entityToEdit,
+    setEntityToEdit,
     handleCreate,
     handleEdit,
     handleDelete,
@@ -205,6 +352,9 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
 };
 
 export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
+  const resourceType = ResourceTypes.DATA_SUBJECT;
+  const [entityToEdit, setEntityToEdit] = useState<DataSubject | null>(null);
+
   const { data, isLoading } = useGetAllDataSubjectsQuery();
 
   const labels = {
@@ -216,9 +366,9 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     automatic_decisions: "Automatic decisions or profiling",
   };
 
-  const [edit] = useUpdateDataSubjectMutation();
-  const [create] = useCreateDataSubjectMutation();
-  const [handleDelete] = useDeleteDataSubjectMutation();
+  const [createDataSubjectMutationTrigger] = useCreateDataSubjectMutation();
+  const [updateDataSubjectMutationTrigger] = useUpdateDataSubjectMutation();
+  const [deleteDataSubjectMutationTrigger] = useDeleteDataSubjectMutation();
 
   const transformFormValuesToEntity = (entity: DataSubject) => {
     const transformedEntity: DataSubject = {
@@ -243,14 +393,50 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     return transformedEntity;
   };
 
-  const handleEdit = (entity: DataSubject) =>
-    edit(transformFormValuesToEntity(entity));
+  const customFields = useCustomFields({
+    resourceFidesKey: entityToEdit?.fides_key,
+    resourceType,
+  });
 
-  const handleCreate = (entity: DataSubject) =>
-    create(transformFormValuesToEntity(entity));
+  const handleCreate = async (
+    initialValues: FormValues,
+    newValues: FormValues
+  ) => {
+    const payload = transformFormValuesToEntity(
+      transformBaseFormValuesToEntity(initialValues, newValues)
+    );
+    const result = await createDataSubjectMutationTrigger(payload);
+
+    if (customFields.isEnabled) {
+      await customFields.upsertCustomFields(newValues);
+    }
+
+    return result;
+  };
+
+  const handleEdit = async (
+    initialValues: FormValues,
+    newValues: FormValues
+  ) => {
+    const payload = transformFormValuesToEntity(
+      transformBaseFormValuesToEntity(initialValues, newValues)
+    );
+    const result = updateDataSubjectMutationTrigger(payload);
+
+    if (customFields.isEnabled) {
+      await customFields.upsertCustomFields(newValues);
+    }
+
+    return result;
+  };
+
+  const handleDelete = deleteDataSubjectMutationTrigger;
 
   const transformEntityToInitialValues = (ds: DataSubject) => {
-    const base = transformTaxonomyBaseToInitialValues(ds);
+    const base = transformTaxonomyBaseToInitialValues(
+      ds,
+      customFields.customFieldValues
+    );
     return {
       ...base,
       rights: ds.rights?.values ?? [],
@@ -264,10 +450,11 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
 
   const renderExtraFormFields = (entity: DataSubject) => (
     <>
-      <CustomMultiSelect
+      <CustomSelect
         name="rights"
         label={labels.rights}
         options={enumToOptions(DataSubjectRightsEnum)}
+        isMulti
       />
       {/* @ts-ignore because of discrepancy between form and entity type, again */}
       {entity.rights && entity.rights.length ? (
@@ -282,6 +469,10 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
         label={labels.automatic_decisions}
         options={YesNoOptions}
       />
+      <CustomFieldsList
+        resourceFidesKey={entity.fides_key}
+        resourceType={resourceType}
+      />
     </>
   );
 
@@ -289,35 +480,13 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     data,
     isLoading,
     labels,
+    resourceType,
+    entityToEdit,
+    setEntityToEdit,
     handleCreate,
     handleEdit,
     handleDelete,
     renderExtraFormFields,
     transformEntityToInitialValues,
-  };
-};
-
-export const useDataQualifier = (): TaxonomyHookData<DataQualifier> => {
-  const { data, isLoading } = useGetAllDataQualifiersQuery();
-
-  const labels = {
-    fides_key: "Data qualifier",
-    name: "Data qualifier name",
-    description: "Data qualifier description",
-    parent_key: "Parent data qualifier",
-  };
-
-  const [handleCreate] = useCreateDataQualifierMutation();
-  const [handleEdit] = useUpdateDataQualifierMutation();
-  const [handleDelete] = useDeleteDataQualifierMutation();
-
-  return {
-    data,
-    isLoading,
-    labels,
-    handleCreate,
-    handleEdit,
-    handleDelete,
-    transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
   };
 };

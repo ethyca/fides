@@ -70,7 +70,8 @@ class WebhookOrder(BaseSchema):
 
 class PolicyWebhookUpdateResponse(BaseSchema):
     """Response schema after a PATCH to a single webhook - because updating the order of this webhook can update the
-    order of other webhooks, new_order will include the new order if order was adjusted at all"""
+    order of other webhooks, new_order will include the new order if order was adjusted at all
+    """
 
     resource: PolicyWebhookResponse
     new_order: List[WebhookOrder]

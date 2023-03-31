@@ -4,12 +4,12 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from fides.api.ctl.utils.logger import setup as setup_fidesapi_logger
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 alembic_config = context.config
-fides_config = get_config()
+fides_config = CONFIG
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

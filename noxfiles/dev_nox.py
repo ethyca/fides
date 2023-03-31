@@ -7,8 +7,10 @@ from nox.command import CommandFailed
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
-    RUN,
-    RUN_NO_DEPS,
+    EXEC,
+    EXEC_IT,
+    LOGIN,
+    RUN_CYPRESS_TESTS,
     START_APP,
     START_APP_REMOTE_DEBUG,
     START_TEST_ENV,
@@ -19,8 +21,43 @@ from utils_nox import COMPOSE_DOWN_VOLUMES
 
 
 @nox_session()
+def shell(session: Session) -> None:
+    """
+    Open a shell in an already-running Fides webserver container.
+
+    If the container is not running, the command will fail.
+    """
+    shell_command = (*EXEC_IT, "/bin/bash")
+    try:
+        session.run(*shell_command, external=True)
+    except CommandFailed:
+        session.error(
+            "Could not connect to the webserver container. Please confirm it is running and try again."
+        )
+
+
+@nox_session()
 def dev(session: Session) -> None:
-    """Spin up the application. Uses positional arguments for additional features."""
+    """
+    Spin up the Fides webserver in development mode alongside it's Postgres
+    database and Redis cache. Use positional arguments to run other services
+    like privacy center, shell, admin UI, etc. (see usage for examples)
+
+    Usage:
+      'nox -s dev' - runs the Fides weserver, database, and cache
+      'nox -s dev -- shell' - also open a shell on the Fides webserver
+      'nox -s dev -- ui' - also build and run the Admin UI
+      'nox -s dev -- pc' - also build and run the Privacy Center
+      'nox -s dev -- remote_debug' - run with remote debugging enabled (see docker-compose.remote-debug.yml)
+      'nox -s dev -- worker' - also run a Fides worker
+      'nox -s dev -- child' - also run a Fides child node
+      'nox -s dev -- <datastore>' - also run a test datastore (e.g. 'mssql', 'mongodb')
+
+    Note that you can combine any of the above arguments together, for example:
+      'nox -s dev -- shell ui pc'
+
+    See noxfiles/dev_nox.py for more info
+    """
 
     build(session, "dev")
     session.notify("teardown")
@@ -56,7 +93,8 @@ def dev(session: Session) -> None:
     if not datastores:
         if open_shell:
             session.run(*START_APP, external=True)
-            session.run(*RUN, "/bin/bash", external=True)
+            session.log("~~Remember to login with `fides user login`!~~")
+            session.run(*EXEC_IT, "/bin/bash", external=True)
         else:
             if remote_debug:
                 session.run(*START_APP_REMOTE_DEBUG, external=True)
@@ -72,6 +110,26 @@ def dev(session: Session) -> None:
             datastores=datastores,
             remote_debug=remote_debug,
         )
+
+
+@nox_session()
+def cypress_tests(session: Session) -> None:
+    """
+    End-to-end Cypress tests designed to be run as part of the 'e2e_test' session.
+    """
+    session.log("Running Cypress tests...")
+    session.run(*RUN_CYPRESS_TESTS, external=True)
+
+
+@nox_session()
+def e2e_test(session: Session) -> None:
+    """
+    Spins up the test_env session and runs Cypress E2E tests against it.
+    """
+    session.log("Running end-to-end tests...")
+    session.notify("fides_env(test)", posargs=["test"])
+    session.notify("cypress_tests")
+    session.notify("teardown")
 
 
 @nox_session()
@@ -92,9 +150,14 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
 
     Posargs:
         test = instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
+        keep_alive = does not automatically call teardown after the session
     """
 
-    shell_command = "fides" if "test" in session.posargs else "/bin/bash"
+    is_test = "test" in session.posargs
+    keep_alive = "keep_alive" in session.posargs
+
+    exec_command = EXEC if any([is_test, keep_alive]) else EXEC_IT
+    shell_command = "fides" if any([is_test, keep_alive]) else "/bin/bash"
 
     # Temporarily override some ENV vars as needed. To set local secrets, see 'example.env'
     test_env_vars = {
@@ -110,7 +173,8 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         session.error(
             "Failed to cleanly teardown existing containers & volumes. Please exit out of all other and try again"
         )
-    session.notify("teardown", posargs=["volumes"])
+    if not keep_alive:
+        session.notify("teardown", posargs=["volumes"])
 
     session.log("Building images...")
     build(session, fides_image)
@@ -123,12 +187,14 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     session.run(
         *START_TEST_ENV, "fides-ui", "fides-pc", external=True, env=test_env_vars
     )
+    session.log("Logging in...")
+    session.run(*LOGIN, external=True)
 
     session.log(
         "Running example setup scripts for DSR Automation tests... (scripts/load_examples.py)"
     )
     session.run(
-        *RUN_NO_DEPS,
+        *EXEC,
         "python",
         "/fides/scripts/load_examples.py",
         external=True,
@@ -139,7 +205,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         "Pushing example resources for Data Mapping tests... (demo_resources/*)"
     )
     session.run(
-        *RUN_NO_DEPS,
+        *EXEC,
         "fides",
         "push",
         "demo_resources/",
@@ -165,10 +231,13 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     )
     if fides_image == "test":
         session.log(
-            "Fides Admin UI (production build) running at http://localhost:8080 (user: 'fidestest', pass: 'Apassword1!')"
+            "Fides Admin UI (production build) running at http://localhost:8080 (user: 'root_user', pass: 'Testpassword1!')"
         )
     session.log(
-        "Fides Admin UI (dev) running at http://localhost:3000 (user: 'fidestest', pass: 'Apassword1!')"
+        "Run 'fides user login' to authenticate the CLI (user: 'root_user', pass: 'Testpassword1!')"
+    )
+    session.log(
+        "Fides Admin UI (dev) running at http://localhost:3000 (user: 'root_user', pass: 'Testpassword1!')"
     )
     session.log(
         "Fides Privacy Center (production build) running at http://localhost:3001 (user: 'jane@example.com')"
@@ -180,7 +249,8 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         "Example Mongo Database running at localhost:27017 (user: 'mongo_test', pass: 'mongo_pass', db: 'mongo_test')"
     )
     session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
-    session.run(*RUN_NO_DEPS, shell_command, external=True, env=test_env_vars)
+    if not keep_alive:
+        session.run(*exec_command, shell_command, external=True, env=test_env_vars)
 
 
 @nox_session()

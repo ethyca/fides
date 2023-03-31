@@ -1,5 +1,6 @@
 import { stubPlus } from "cypress/support/stubs";
 
+import { ADD_SYSTEMS_ROUTE } from "~/constants";
 import { ClusterHealth } from "~/types/api";
 
 /**
@@ -8,10 +9,10 @@ import { ClusterHealth } from "~/types/api";
  */
 const goToDataFlowScanner = () => {
   // Go through the initial config wizard steps
-  cy.visit("/add-systems");
+  cy.visit(ADD_SYSTEMS_ROUTE);
 
   // Select Runtime scanner to move to scan step.
-  cy.getByTestId("add-system-form");
+  cy.getByTestId("add-systems");
   cy.getByTestId("data-flow-scan-btn").click();
 };
 
@@ -23,11 +24,11 @@ describe("Config wizard with plus settings", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("getOrganization");
 
     cy.intercept("PUT", "/api/v1/organization**", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("updateOrganization");
   });
 
@@ -42,11 +43,11 @@ describe("Config wizard with plus settings", () => {
           cluster_error: null,
         },
       });
-      cy.visit("/add-systems");
-      cy.getByTestId("add-system-form");
+      cy.visit(ADD_SYSTEMS_ROUTE);
+      cy.getByTestId("add-systems");
 
       cy.wait("@getPlusHealth");
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("data-flow-scan-btn").should("be.disabled");
       cy.getByTestId("cluster-health-indicator").should("not.exist");
     });
@@ -61,11 +62,11 @@ describe("Config wizard with plus settings", () => {
           cluster_error: null,
         },
       });
-      cy.visit("/add-systems");
-      cy.getByTestId("add-system-form");
+      cy.visit(ADD_SYSTEMS_ROUTE);
+      cy.getByTestId("add-systems");
 
       cy.wait("@getPlusHealth");
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("data-flow-scan-btn").should("be.disabled");
       cy.getByTestId("cluster-health-indicator")
         .invoke("attr", "title")
@@ -74,11 +75,11 @@ describe("Config wizard with plus settings", () => {
 
     it("Can show the scanner as enabled and healthy", () => {
       stubPlus(true);
-      cy.visit("/add-systems");
-      cy.getByTestId("add-system-form");
+      cy.visit(ADD_SYSTEMS_ROUTE);
+      cy.getByTestId("add-systems");
 
       cy.wait("@getPlusHealth");
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("data-flow-scan-btn").should("be.enabled");
       cy.getByTestId("cluster-health-indicator")
         .invoke("attr", "title")
@@ -230,17 +231,16 @@ describe("Config wizard with plus settings", () => {
       // No results message
       cy.getByTestId("no-results");
       cy.getByTestId("back-btn").click();
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
     });
 
-    // TODO: Update Cypress test to reflect the nav bar 2.0
-    it.skip("Resets the flow when it is completed", () => {
+    it("Resets the flow when it is completed", () => {
       goToDataFlowScanner();
       cy.wait("@putScanResults");
       cy.getByTestId("scan-results");
       cy.getByTestId("register-btn").click();
-      cy.getByTestId("nav-link-Add Systems").click();
-      cy.getByTestId("setup");
+      cy.visit(ADD_SYSTEMS_ROUTE);
+      cy.getByTestId("add-systems");
     });
 
     it("Can render an error", () => {
@@ -257,7 +257,7 @@ describe("Config wizard with plus settings", () => {
       cy.getByTestId("generic-msg");
       //   Canceling should bring us back to the add system form
       cy.getByTestId("cancel-btn").click();
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
     });
   });
 });

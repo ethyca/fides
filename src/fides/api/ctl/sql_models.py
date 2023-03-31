@@ -4,10 +4,13 @@
 Contains all of the SqlAlchemy models for the Fides resources.
 """
 
+from __future__ import annotations
+
 from enum import Enum as EnumType
-from typing import Dict
+from typing import Any, Dict, List, Optional, Set, Type
 
 from fideslang.models import Dataset as FideslangDataset
+from pydantic import BaseModel
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
@@ -25,7 +28,7 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG
 from fides.lib.db.base import (  # type: ignore[attr-defined]
     Base,
     ClientDetail,
@@ -33,8 +36,6 @@ from fides.lib.db.base import (  # type: ignore[attr-defined]
     FidesUserPermissions,
 )
 from fides.lib.db.base_class import FidesBase as FideslibBase
-
-CONFIG: FidesConfig = get_config()
 
 
 class FidesBase(FideslibBase):
@@ -286,6 +287,42 @@ class System(Base, FidesBase):
     data_protection_impact_assessment = Column(JSON)
     egress = Column(JSON)
     ingress = Column(JSON)
+
+    users = relationship(
+        "FidesUser", secondary="systemmanager", back_populates="systems"
+    )
+
+    @classmethod
+    def get_system_data_uses(cls: Type[System], db: Session) -> Set[str]:
+        """
+        Utility method to get any data use that is associated with at least one System
+        """
+        data_uses = set()
+        for row in db.query(System.privacy_declarations).all():
+            declarations: List[dict[str, Any]] = row[0]
+            for declaration in declarations:
+                data_use = declaration.get("data_use", None)
+                if data_use is not None:
+                    data_uses.add(data_use)
+        return data_uses
+
+
+class SystemModel(BaseModel):
+    fides_key: str
+    registry_id: str
+    meta: Optional[Dict[str, Any]]
+    fidesctl_meta: Optional[Dict[str, Any]]
+    system_type: str
+    data_responsibility_title: Optional[str]
+    system_dependencies: Optional[List[str]]
+    joint_controller: Optional[str]
+    third_country_transfers: Optional[List[str]]
+    privacy_declarations: Optional[Dict[str, Any]]
+    administrating_department: Optional[str]
+    data_protection_impact_assessment: Optional[Dict[str, Any]]
+    egress: Optional[Dict[str, Any]]
+    ingress: Optional[Dict[str, Any]]
+    value: Optional[List[Any]]
 
 
 class SystemScans(Base):

@@ -2,7 +2,6 @@ include LICENSE
 include README.md
 include requirements.txt
 include dev-requirements.txt
-include optional-requirements.txt
 include dangerous-requirements.txt
 include versioneer.py
 include src/fides/api/ctl/alembic.ini

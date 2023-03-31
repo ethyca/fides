@@ -23,10 +23,7 @@ from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.connection_configuration.connection_config import SystemType
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
-    load_registry,
-    registry_file,
 )
-from fides.api.ops.util.saas_util import encode_file_contents
 from fides.lib.models.client import ClientDetail
 
 
@@ -34,10 +31,6 @@ class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
         return V1_URL_PREFIX + CONNECTION_TYPES
-
-    @pytest.fixture(scope="session")
-    def saas_template_registry(self):
-        return load_registry(registry_file)
 
     def test_get_connection_types_not_authenticated(self, api_client, url):
         resp = api_client.get(url, headers={})
@@ -55,7 +48,6 @@ class TestGetConnections:
         api_client: TestClient,
         generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(url, headers=auth_header)
@@ -63,8 +55,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(saas_template_registry.connector_types()) - 5
-        )  # there are 5 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
+        )  # there are 4 connection types that are not returned by the endpoint
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -72,15 +64,13 @@ class TestGetConnections:
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
         } in data
-        first_saas_type = saas_template_registry.connector_types().pop()
-        first_saas_template = saas_template_registry.get_connector_template(
-            first_saas_type
-        )
+        first_saas_type = ConnectorRegistry.connector_types().pop()
+        first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
         assert {
             "identifier": first_saas_type,
             "type": SystemType.saas.value,
             "human_readable": first_saas_template.human_readable,
-            "encoded_icon": encode_file_contents(first_saas_template.icon),
+            "encoded_icon": first_saas_template.icon,
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -93,7 +83,6 @@ class TestGetConnections:
         api_client,
         generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
@@ -101,9 +90,9 @@ class TestGetConnections:
         expected_saas_templates = [
             (
                 connector_type,
-                saas_template_registry.get_connector_template(connector_type),
+                ConnectorRegistry.get_connector_template(connector_type),
             )
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
@@ -111,7 +100,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "encoded_icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": saas_template[1].icon,
             }
             for saas_template in expected_saas_templates
         ]
@@ -127,9 +116,9 @@ class TestGetConnections:
         expected_saas_templates = [
             (
                 connector_type,
-                saas_template_registry.get_connector_template(connector_type),
+                ConnectorRegistry.get_connector_template(connector_type),
             )
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
@@ -137,7 +126,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "encoded_icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": saas_template[1].icon,
             }
             for saas_template in expected_saas_templates
         ]
@@ -165,11 +154,7 @@ class TestGetConnections:
             assert expected_data in data
 
     def test_search_connection_types_case_insensitive(
-        self,
-        api_client,
-        generate_auth_header,
-        url,
-        saas_template_registry: ConnectorRegistry,
+        self, api_client, generate_auth_header, url
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
@@ -177,9 +162,9 @@ class TestGetConnections:
         expected_saas_types = [
             (
                 connector_type,
-                saas_template_registry.get_connector_template(connector_type),
+                ConnectorRegistry.get_connector_template(connector_type),
             )
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
@@ -187,7 +172,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "encoded_icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": saas_template[1].icon,
             }
             for saas_template in expected_saas_types
         ]
@@ -212,9 +197,9 @@ class TestGetConnections:
         expected_saas_types = [
             (
                 connector_type,
-                saas_template_registry.get_connector_template(connector_type),
+                ConnectorRegistry.get_connector_template(connector_type),
             )
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
@@ -222,7 +207,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "encoded_icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": saas_template[1].icon,
             }
             for saas_template in expected_saas_types
         ]
@@ -248,13 +233,7 @@ class TestGetConnections:
         for expected_data in expected_saas_data:
             assert expected_data in data
 
-    def test_search_system_type(
-        self,
-        api_client,
-        generate_auth_header,
-        url,
-        saas_template_registry: ConnectorRegistry,
-    ):
+    def test_search_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
         resp = api_client.get(url + "?system_type=nothing", headers=auth_header)
@@ -263,7 +242,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == len(saas_template_registry.connector_types())
+        assert len(data) == len(ConnectorRegistry.connector_types())
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         assert resp.status_code == 200
@@ -275,7 +254,6 @@ class TestGetConnections:
         api_client,
         generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
@@ -287,7 +265,7 @@ class TestGetConnections:
         data = resp.json()["items"]
         expected_saas_types = [
             connector_type
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         assert len(data) == len(expected_saas_types)
@@ -310,9 +288,31 @@ class TestGetConnections:
             {
                 "identifier": "manual_webhook",
                 "type": "manual",
-                "human_readable": "Manual Webhook",
+                "human_readable": "Manual Process",
                 "encoded_icon": None,
             }
+        ]
+
+    def test_search_email_type(self, api_client, generate_auth_header, url):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+
+        resp = api_client.get(url + "?system_type=email", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+        assert len(data) == 2
+        assert data == [
+            {
+                "identifier": "attentive",
+                "type": "email",
+                "human_readable": "Attentive",
+                "encoded_icon": None,
+            },
+            {
+                "identifier": "sovrn",
+                "type": "email",
+                "human_readable": "Sovrn",
+                "encoded_icon": None,
+            },
         ]
 
 

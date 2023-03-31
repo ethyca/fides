@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Sentry SaaS Config
+  name: Sentry
   type: sentry
-  description: A sample schema representing the Sentry connector for Fidesops
+  description: A sample schema representing the Sentry connector for Fides
   version: 0.0.1
 
   connector_params:

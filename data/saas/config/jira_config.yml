@@ -1,0 +1,51 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Jira
+  type: jira
+  description: A sample schema representing the Jira connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: username
+      description: This is an admin email that corresponds with the given API key.
+    - name: api_key
+      label: API Key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <username>
+        password: <api_key>
+
+  test_request:
+    method: GET
+    path: /rest/api/3/users/search
+
+  endpoints:
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /rest/api/3/user/search
+          query_params:
+            - name: query
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+        delete:
+          method: DELETE
+          path: /rest/api/3/user
+          query_params:
+            - name: accountId
+              value: <account_id>
+          param_values:
+            - name: account_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.accountId
+                  direction: from

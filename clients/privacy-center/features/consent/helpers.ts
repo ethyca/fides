@@ -1,78 +1,58 @@
-import { CookieKeyConsent } from "fides-consent";
+import {
+  ConsentContext,
+  CookieKeyConsent,
+  resolveConsentValue,
+} from "fides-consent";
+
 import { ConfigConsentOption } from "~/types/config";
+import { FidesKeyToConsent, GpcStatus } from "./types";
 
-import { ConsentItem, ApiUserConsents, ApiUserConsent } from "./types";
-
-export const makeConsentItems = (
-  data: ApiUserConsents,
-  consentOptions: ConfigConsentOption[]
-): ConsentItem[] => {
-  if (data.consent) {
-    const newConsentItems: ConsentItem[] = [];
-    const userConsentMap: { [key: string]: ApiUserConsent } = {};
-    data.consent.forEach((option) => {
-      const key = option.data_use;
-      userConsentMap[key] = option;
-    });
-    consentOptions.forEach((d) => {
-      if (d.fidesDataUseKey in userConsentMap) {
-        const currentConsent = userConsentMap[d.fidesDataUseKey];
-
-        newConsentItems.push({
-          consentValue: currentConsent.opt_in,
-          defaultValue: d.default ? d.default : false,
-          description: currentConsent.data_use_description
-            ? currentConsent.data_use_description
-            : d.description,
-          fidesDataUseKey: currentConsent.data_use,
-          highlight: d.highlight ?? false,
-          name: d.name,
-          url: d.url,
-          cookieKeys: d.cookieKeys ?? [],
-          executable: d.executable ?? false,
-        });
-      } else {
-        newConsentItems.push({
-          fidesDataUseKey: d.fidesDataUseKey,
-          name: d.name,
-          description: d.description,
-          highlight: d.highlight ?? false,
-          url: d.url,
-          defaultValue: d.default ? d.default : false,
-          cookieKeys: d.cookieKeys ?? [],
-          executable: d.executable ?? false,
-        });
-      }
-    });
-
-    return newConsentItems;
-  }
-
-  return consentOptions.map((option) => ({
-    fidesDataUseKey: option.fidesDataUseKey,
-    name: option.name,
-    description: option.description,
-    highlight: option.highlight ?? false,
-    url: option.url,
-    defaultValue: option.default ? option.default : false,
-    cookieKeys: option.cookieKeys ?? [],
-    executable: option.executable ?? false,
-  }));
-};
-
-export const makeCookieKeyConsent = (
-  consentItems: ConsentItem[]
-): CookieKeyConsent => {
+export const makeCookieKeyConsent = ({
+  consentOptions,
+  fidesKeyToConsent,
+  consentContext,
+}: {
+  consentOptions: ConfigConsentOption[];
+  fidesKeyToConsent: FidesKeyToConsent;
+  consentContext: ConsentContext;
+}): CookieKeyConsent => {
   const cookieKeyConsent: CookieKeyConsent = {};
-  consentItems.forEach((item) => {
-    const consent =
-      item.consentValue === undefined ? item.defaultValue : item.consentValue;
+  consentOptions.forEach((option) => {
+    const defaultValue = resolveConsentValue(option.default, consentContext);
+    const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
 
-    item.cookieKeys?.forEach((cookieKey) => {
+    option.cookieKeys?.forEach((cookieKey) => {
       const previousConsent = cookieKeyConsent[cookieKey];
+      // For a cookie key to have consent, _all_ data uses that target that cookie key
+      // must have consent.
       cookieKeyConsent[cookieKey] =
-        previousConsent === undefined ? consent : previousConsent && consent;
+        previousConsent === undefined ? value : previousConsent && value;
     });
   });
   return cookieKeyConsent;
+};
+
+export const getGpcStatus = ({
+  value,
+  consentOption,
+  consentContext,
+}: {
+  value: boolean;
+  consentOption: ConfigConsentOption;
+  consentContext: ConsentContext;
+}): GpcStatus => {
+  // If GPC is not enabled, it won't be applied at all.
+  if (!consentContext.globalPrivacyControl) {
+    return GpcStatus.NONE;
+  }
+  // Options that are plain booleans apply without considering GPC.
+  if (typeof consentOption.default !== "object") {
+    return GpcStatus.NONE;
+  }
+
+  if (value === consentOption.default.globalPrivacyControl) {
+    return GpcStatus.APPLIED;
+  }
+
+  return GpcStatus.OVERRIDDEN;
 };

@@ -25,6 +25,7 @@ interface Props {
   isLoading?: boolean;
   returnFocusOnClose?: boolean;
   isCentered?: boolean;
+  testId?: string;
 }
 const ConfirmationModal = ({
   isOpen,
@@ -39,16 +40,17 @@ const ConfirmationModal = ({
   isLoading,
   returnFocusOnClose,
   isCentered,
+  testId = "confirmation-modal",
 }: Props) => (
   <Modal
     isOpen={isOpen}
     onClose={onClose}
     size="lg"
-    returnFocusOnClose={returnFocusOnClose || true}
+    returnFocusOnClose={returnFocusOnClose ?? true}
     isCentered={isCentered}
   >
     <ModalOverlay />
-    <ModalContent textAlign="center" p={2} data-testid="confirmation-modal">
+    <ModalContent textAlign="center" p={2} data-testid={testId}>
       {title ? <ModalHeader fontWeight="medium">{title}</ModalHeader> : null}
       {message ? <ModalBody>{message}</ModalBody> : null}
       <ModalFooter>

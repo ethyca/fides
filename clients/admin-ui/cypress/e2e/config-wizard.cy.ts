@@ -1,51 +1,13 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
+import { ADD_SYSTEMS_ROUTE } from "~/constants";
+
 describe("Config Wizard", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
-      fixture: "organization.json",
+      fixture: "organizations/default_organization.json",
     }).as("getOrganization");
-  });
-
-  // TODO: Update Cypress test to reflect the nav bar 2.0
-  describe.skip("Organization setup", () => {
-    beforeEach(() => {
-      cy.intercept("PUT", "/api/v1/organization**", {
-        fixture: "organization.json",
-      }).as("updateOrganization");
-    });
-
-    it("Can fill in an organization", () => {
-      cy.fixture("organization.json").then((org) => {
-        cy.intercept("GET", "/api/v1/organization/*", {
-          body: { org, name: null, description: null },
-        }).as("getEmptyOrganization");
-      });
-      cy.visit("/add-systems");
-      cy.getByTestId("guided-setup-btn").click();
-      cy.wait("@getEmptyOrganization");
-
-      cy.getByTestId("organization-info-form");
-      cy.getByTestId("input-name").type("Updated name");
-      cy.getByTestId("input-description")
-        .clear()
-        .type("Updated description")
-        .should("have.value", "Updated description");
-      cy.getByTestId("submit-btn").click();
-      cy.wait("@updateOrganization").then((interception) => {
-        const { body } = interception.request;
-        expect(body.fides_key).to.eq("default_organization");
-        expect(body.description).to.eq("Updated description");
-      });
-      cy.getByTestId("add-system-form");
-    });
-
-    it("Can skip the org flow if an organization already exists", () => {
-      cy.visit("/add-systems");
-      cy.getByTestId("guided-setup-btn").click();
-      cy.getByTestId("add-system-form");
-    });
   });
 
   describe("AWS scan steps", () => {
@@ -53,9 +15,9 @@ describe("Config Wizard", () => {
       stubSystemCrud();
       stubTaxonomyEntities();
 
-      cy.visit("/add-systems");
+      cy.visit(ADD_SYSTEMS_ROUTE);
       // Select AWS to move to form step.
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("aws-btn").click();
       // Fill form
       cy.getByTestId("authenticate-aws-form");
@@ -136,7 +98,7 @@ describe("Config Wizard", () => {
           cy.getByTestId("close-scan-in-progress").click();
           cy.contains("Cancel Scan!");
           cy.contains("Yes, Cancel").click();
-          cy.contains("Add Systems");
+          cy.getByTestId("add-systems");
         });
     });
   });
@@ -145,9 +107,9 @@ describe("Config Wizard", () => {
       stubSystemCrud();
       stubTaxonomyEntities();
 
-      cy.visit("/add-systems");
+      cy.visit(ADD_SYSTEMS_ROUTE);
       // Select Okta to move to form step.
-      cy.getByTestId("add-system-form");
+      cy.getByTestId("add-systems");
       cy.getByTestId("okta-btn").click();
       // Fill form
       cy.getByTestId("authenticate-okta-form");

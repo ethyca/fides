@@ -17,7 +17,7 @@ from starlette.status import (
 )
 
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
-from fides.api.ops.api.deps import get_db
+from fides.api.ops.api.deps import get_config_proxy, get_db
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
@@ -57,11 +57,12 @@ from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.core.config import get_config
+from fides.core.config import CONFIG
+from fides.core.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
-CONFIG = get_config()
+
 CONFIG_JSON_PATH = "clients/privacy-center/config/config.json"
 
 
@@ -73,6 +74,7 @@ CONFIG_JSON_PATH = "clients/privacy-center/config/config.json"
 def create_consent_request(
     *,
     db: Session = Depends(get_db),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
     data: Identity,
 ) -> ConsentRequestResponse:
     """Creates a verification code for the user to verify access to manage consent preferences."""
@@ -97,7 +99,7 @@ def create_consent_request(
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
-    if CONFIG.execution.subject_identity_verification_required:
+    if config_proxy.execution.subject_identity_verification_required:
         try:
             send_verification_code_to_user(db, consent_request, data)
         except MessageDispatchException as exc:
@@ -125,7 +127,9 @@ def consent_request_verify(
 ) -> ConsentPreferences:
     """Verifies the verification code and returns the current consent preferences if successful."""
     _, provided_identity = _get_consent_request_and_provided_identity(
-        db=db, consent_request_id=consent_request_id, verification_code=data.code
+        db=db,
+        consent_request_id=consent_request_id,
+        verification_code=data.code,
     )
 
     if not provided_identity.hashed_value:
@@ -168,11 +172,14 @@ def consent_request_verify(
     },
 )
 def get_consent_preferences_no_id(
-    *, db: Session = Depends(get_db), consent_request_id: str
+    *,
+    db: Session = Depends(get_db),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
+    consent_request_id: str,
 ) -> ConsentPreferences:
     """Returns the current consent preferences if successful."""
 
-    if CONFIG.execution.subject_identity_verification_required:
+    if config_proxy.execution.subject_identity_verification_required:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Retrieving consent preferences without identity verification is "
@@ -181,7 +188,9 @@ def get_consent_preferences_no_id(
         )
 
     _, provided_identity = _get_consent_request_and_provided_identity(
-        db=db, consent_request_id=consent_request_id, verification_code=None
+        db=db,
+        consent_request_id=consent_request_id,
+        verification_code=None,
     )
 
     if not provided_identity.hashed_value:
@@ -199,22 +208,23 @@ def get_consent_preferences_no_id(
     response_model=ConsentPreferences,
 )
 def get_consent_preferences(
-    *, db: Session = Depends(get_db), data: Identity
+    *,
+    db: Session = Depends(get_db),
+    data: Identity,
 ) -> ConsentPreferences:
     """Gets the consent preferences for the specified user."""
-    if data.email:
-        lookup = data.email
-    elif data.phone_number:
-        lookup = data.phone_number
-    else:
+    if not data.email and not data.phone_number:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="No identity information provided"
         )
 
+    # From the above check we know at least one exists
+    lookup = data.email if data.email else data.phone_number
+
     identity = ProvidedIdentity.filter(
         db,
         conditions=(
-            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(lookup))
+            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(str(lookup)))
             & (ProvidedIdentity.privacy_request_id.is_(None))
         ),
     ).first()
@@ -267,6 +277,7 @@ def queue_privacy_request_to_propagate_consent(
     logger.info("Executable consent options: {}", executable_data_uses)
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
         db=db,
+        config_proxy=ConfigProxy(db),
         data=[
             PrivacyRequestCreate(
                 identity=identity,
@@ -303,6 +314,8 @@ def set_consent_preferences(
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
+    consent_request.preferences = [schema.dict() for schema in data.consent]
+    consent_request.save(db=db)
 
     if not provided_identity.hashed_value:
         raise HTTPException(
@@ -358,7 +371,7 @@ def _get_or_create_provided_identity(
     identity_data: Identity,
 ) -> ProvidedIdentity:
     """Based on target identity type, retrieves or creates associated ProvidedIdentity"""
-    target_identity_type: str = infer_target_identity_type(identity_data)
+    target_identity_type: str = infer_target_identity_type(db, identity_data)
 
     if target_identity_type == ProvidedIdentityType.email.value and identity_data.email:
         identity = ProvidedIdentity.filter(
@@ -418,6 +431,7 @@ def _get_or_create_provided_identity(
 
 
 def infer_target_identity_type(
+    db: Session,
     identity_data: Identity,
 ) -> str:
     """
@@ -428,7 +442,7 @@ def infer_target_identity_type(
     """
     if identity_data.email and identity_data.phone_number:
         messaging_method = get_messaging_method(
-            CONFIG.notifications.notification_service_type
+            ConfigProxy(db).notifications.notification_service_type
         )
         if messaging_method == MessagingMethod.EMAIL:
             target_identity_type = ProvidedIdentityType.email.value
@@ -455,12 +469,16 @@ def _get_consent_request_and_provided_identity(
 
     if not consent_request:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Consent request not found"
+            status_code=HTTP_404_NOT_FOUND,
+            detail="Consent request not found",
         )
 
-    if CONFIG.execution.subject_identity_verification_required:
+    if ConfigProxy(db).execution.subject_identity_verification_required:
         try:
-            consent_request.verify_identity(verification_code)
+            consent_request.verify_identity(
+                db,
+                verification_code,
+            )
         except IdentityVerificationException as exc:
             raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
         except PermissionError as exc:
@@ -470,7 +488,8 @@ def _get_consent_request_and_provided_identity(
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 
     provided_identity: ProvidedIdentity | None = ProvidedIdentity.get_by_key_or_id(
-        db, data={"id": consent_request.provided_identity_id}
+        db,
+        data={"id": consent_request.provided_identity_id},
     )
 
     # It shouldn't be possible to hit this because the cascade delete of the identity
@@ -500,6 +519,8 @@ def _prepare_consent_preferences(
                 data_use=x.data_use,
                 data_use_description=x.data_use_description,
                 opt_in=x.opt_in,
+                has_gpc_flag=x.has_gpc_flag,
+                conflicts_with_gpc=x.conflicts_with_gpc,
             )
             for x in consent
         ],

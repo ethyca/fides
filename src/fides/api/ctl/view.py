@@ -1,7 +1,7 @@
 """
 Contains api endpoints for fides web pages
 """
-from fastapi import Depends
+from fastapi import Depends, Security
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,6 +9,8 @@ from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.crud import list_resource  # type: ignore[attr-defined]
 from fides.api.ctl.sql_models import Evaluation  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.api.ops.api.v1 import scope_registry
+from fides.api.ops.util.oauth_util import verify_oauth_client_prod
 
 router = APIRouter(
     tags=["View"],
@@ -16,7 +18,12 @@ router = APIRouter(
 )
 
 
-@router.get("/evaluations")
+@router.get(
+    "/evaluations",
+    dependencies=[
+        Security(verify_oauth_client_prod, scopes=[scope_registry.EVALUATION_READ])
+    ],
+)
 async def evaluation_view(db: AsyncSession = Depends(get_async_db)) -> HTMLResponse:
     "Returns an html document with a list of evaluations"
 

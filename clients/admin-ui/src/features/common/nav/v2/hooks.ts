@@ -1,21 +1,27 @@
+import {
+  configureNavGroups,
+  findActiveNav,
+  NAV_CONFIG,
+} from "@fidesui/components";
 import { useMemo } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-
-import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
+import { selectThisUsersScopes } from "~/features/user-management";
 
 export const useNav = ({ path }: { path: string }) => {
   const features = useFeatures();
+  const userScopes = useAppSelector(selectThisUsersScopes);
 
   const navGroups = useMemo(
     () =>
       configureNavGroups({
         config: NAV_CONFIG,
         hasPlus: features.plus,
-        hasSystems: features.systemsCount > 0,
-        hasConnections: features.connectionsCount > 0,
+        flags: features.flags,
+        userScopes,
       }),
-    [features]
+    [features, userScopes]
   );
 
   const activeNav = useMemo(

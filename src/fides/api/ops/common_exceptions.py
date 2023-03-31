@@ -29,6 +29,10 @@ class StorageUploadError(FidesopsException):
     """Data cannot be uploaded to storage destination"""
 
 
+class SystemManagerException(FidesopsException):
+    """Exception class when there are errors making a systemmanager"""
+
+
 class ConnectionException(FidesopsException):
     """Exception class when there are errors making a connection"""
 
@@ -55,6 +59,10 @@ class InvalidDataLengthValidationError(ValueError):
 
 class RuleValidationError(ValueError):
     """The Rule you are trying to create has invalid data"""
+
+
+class StorageConfigValidationError(ValueError):
+    """The Storage Config you are trying to create has invalid data"""
 
 
 class InvalidDataTypeValidationError(ValueError):

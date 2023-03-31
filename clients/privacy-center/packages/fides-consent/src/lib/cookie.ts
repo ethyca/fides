@@ -1,4 +1,7 @@
 import { getCookie, setCookie, Types } from "typescript-cookie";
+import { ConsentConfig } from "./consent-config";
+import { ConsentContext } from "./consent-context";
+import { resolveConsentValue } from "./consent-value";
 
 /**
  * A mapping from the cookie keys (configurable strings) to the resolved consent value.
@@ -25,8 +28,37 @@ const CODEC: Types.CookieCodecConfig<string, string> = {
   encodeValue: encodeURIComponent,
 };
 
+export const makeDefaults = ({
+  config,
+  context,
+}: {
+  config: ConsentConfig;
+  context: ConsentContext;
+}): CookieKeyConsent => {
+  const defaults: CookieKeyConsent = {};
+  config.options.forEach(({ cookieKeys, default: current }) => {
+    if (current === undefined) {
+      return;
+    }
+
+    const value = resolveConsentValue(current, context);
+
+    cookieKeys.forEach((cookieKey) => {
+      const previous = defaults[cookieKey];
+      if (previous === undefined) {
+        defaults[cookieKey] = value;
+        return;
+      }
+
+      defaults[cookieKey] = previous && value;
+    });
+  });
+
+  return defaults;
+};
+
 export const getConsentCookie = (
-  defaults: CookieKeyConsent = {}
+  defaults: CookieKeyConsent
 ): CookieKeyConsent => {
   if (typeof document === "undefined") {
     return defaults;
@@ -62,7 +94,7 @@ export const setConsentCookie = (cookieKeyConsent: CookieKeyConsent) => {
   //
   // TODO: This won't second-level domains like co.uk:
   //   privacy.example.co.uk -> co.uk # ERROR
-  const rootDomain = window.location.hostname.split(".").slice(-2).join(".")
+  const rootDomain = window.location.hostname.split(".").slice(-2).join(".");
 
   setCookie(
     CONSENT_COOKIE_NAME,

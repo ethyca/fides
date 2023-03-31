@@ -18,6 +18,7 @@ CONSENT_REQUEST_VERIFY = "/consent-request/{consent_request_id}/verify"
 TOKEN = "/oauth/token"
 CLIENT = "/oauth/client"
 SCOPE = "/oauth/scope"
+ROLE = "/oauth/role"
 CLIENT_BY_ID = "/oauth/client/{client_id}"
 CLIENT_SCOPE = "/oauth/client/{client_id}/scope"
 OAUTH_CALLBACK = "/oauth/callback"
@@ -36,15 +37,31 @@ STORAGE_CONFIG = "/storage/config"
 STORAGE_SECRETS = "/storage/config/{config_key}/secret"
 STORAGE_BY_KEY = "/storage/config/{config_key}"
 STORAGE_UPLOAD = "/storage/{request_id}"
+STORAGE_DEFAULT = "/storage/default"
+STORAGE_ACTIVE_DEFAULT = "/storage/default/active"
+STORAGE_STATUS = "/storage/default/status"
+STORAGE_DEFAULT_SECRETS = "/storage/default/{storage_type}/secret"
+STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
+
 
 # Email URLs
 MESSAGING_CONFIG = "/messaging/config"
 MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
+MESSAGING_DEFAULT = "/messaging/default"
+MESSAGING_ACTIVE_DEFAULT = "/messaging/default/active"
+MESSAGING_STATUS = "/messaging/default/status"
+MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
+MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
+MESSAGING_TEST = "/messaging/config/test"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
+
+# Privacy Notice URLs
+PRIVACY_NOTICE = "/privacy-notice"
+PRIVACY_NOTICE_DETAIL = "/privacy-notice/{privacy_notice_id}"
 
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
@@ -129,6 +146,8 @@ USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
+SYSTEM_MANAGER = "/user/{user_id}/system-manager"
+SYSTEM_MANAGER_DETAIL = "/user/{user_id}/system-manager/{system_key}"
 
 # User Permission URLs
 USER_PERMISSIONS = "/user/{user_id}/permission"

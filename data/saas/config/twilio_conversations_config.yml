@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Twilio Conversations SaaS Config
+  name: Twilio Conversations
   type: twilio_conversations
-  description: A sample schema representing the Twilio Conversations connector for Fidesops
+  description: A sample schema representing the Twilio Conversations connector for Fides
   version: 0.0.2
 
   connector_params:

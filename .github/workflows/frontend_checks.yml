@@ -52,7 +52,7 @@ jobs:
         node-version: [16.x]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -105,11 +105,11 @@ jobs:
       - name: Format
         run: npm run format:ci
 
-      - name: Jest test
-        run: npm run test:ci
-
       - name: Build
         run: npm run build
+
+      - name: Jest test
+        run: npm run test:ci
 
   Privacy-Center-Cypress:
     runs-on: ubuntu-latest
@@ -118,7 +118,7 @@ jobs:
         node-version: [16.x]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3

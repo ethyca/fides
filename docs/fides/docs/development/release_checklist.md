@@ -9,12 +9,7 @@ This checklist should be copy/pasted into the final pre-release PR, and checked 
 ### General
 
 - [ ] Quickstart verified working and up-to-date
-- [ ] Add any new tables/columns to the [database diagram](https://github.com/ethyca/fides/blob/5a485387d8af247ec6479e4115088cbbb8394d77/docs/fides/docs/development/update_erd_diagram.md) if they have not already been added
-  - To check for the new tables/columns that have been added in the release, look for new migration files in the `src/fides/api/ctl/migrations` directory and inspect their contents
-  - If found, look at the latest database diagram, and check whether it contains the tables/columns that were added in these migrations
-  - If the diagram is not up to date, follow the steps in the link above to generate a new database diagram with the up-to-date schema, ensuring that all tables and their relationships can be clearly seen
-  - Open up an issue on [fidesdocs](https://github.com/ethyca/fidesdocs/issues) to update the diagram on the new docs site
-- [ ] `nox -s fides_env(test)` works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)
+- [ ] `nox -s "fides_env(test)"` works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)
 - [ ] `nox -s "build(sample)"` works on the release branch, creating the sample images (this is also prereq for `fides deploy up`)
 - [ ] `fides deploy up --no-pull` works using the images built in previous step (verify the admin UI, privacy center, CLI and webserver)
 
@@ -36,12 +31,12 @@ Next, run the following checks against the environment you've spun up using `fid
 ### API
 
 - [ ] Verify that the generated API docs are correct
-- [ ] Verify that the [Postman collection](https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/postman/Fides.postman_collection.json) has been updated
 
 ### CLI
 
 Run these from within `nox -s dev -- shell`
 
+- [ ] Make sure to login your CLI user by running `fides user login -u root_user -p Testpassword1!`
 - [ ] Run a `fides push`
 - [ ] Run a `fides pull`
 - [ ] Run a `fides evaluate`

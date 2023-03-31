@@ -35,10 +35,29 @@ def load_yaml_as_string(filename: str) -> str:
 
 
 def load_config(filename: str) -> Dict:
-    """Loads the saas config from the yaml file"""
+    """Loads the SaaS config from provided filename"""
     yaml_file = load_file([filename])
     with open(yaml_file, "r", encoding="utf-8") as file:
         return yaml.safe_load(file).get("saas_config", [])
+
+
+def load_config_from_string(string: str) -> Dict:
+    """Loads the SaaS config dict from the yaml string"""
+    return yaml.safe_load(string).get("saas_config", [])
+
+
+def load_as_string(filename: str) -> str:
+    file_path = load_file([filename])
+    with open(file_path, "r", encoding="utf-8") as file:
+        return file.read()
+
+
+def replace_config_placeholders(
+    config: str, string_to_replace: str, replacement: str
+) -> Dict:
+    """Loads the SaaS config from the yaml string and replaces any string with the given value"""
+    yaml_str: str = config.replace(string_to_replace, replacement)
+    return load_config_from_string(yaml_str)
 
 
 def load_config_with_replacement(
@@ -48,13 +67,27 @@ def load_config_with_replacement(
     yaml_str: str = load_yaml_as_string(filename).replace(
         string_to_replace, replacement
     )
-    return yaml.safe_load(yaml_str).get("saas_config", [])
+    return load_config_from_string(yaml_str)
 
 
-def load_dataset(filename: str) -> Dict:
+def load_datasets(filename: str) -> Dict:
+    """Loads the datasets in the provided filename"""
     yaml_file = load_file([filename])
     with open(yaml_file, "r", encoding="utf-8") as file:
         return yaml.safe_load(file).get("dataset", [])
+
+
+def load_dataset_from_string(string: str) -> Dict:
+    """Loads the dataset dict from the yaml string"""
+    return yaml.safe_load(string).get("dataset", [])[0]
+
+
+def replace_dataset_placeholders(
+    dataset: str, string_to_replace: str, replacement: str
+) -> Dict:
+    """Loads the dataset from the yaml string and replaces any string with the given value"""
+    yaml_str: str = dataset.replace(string_to_replace, replacement)
+    return load_dataset_from_string(yaml_str)
 
 
 def load_dataset_with_replacement(
@@ -105,13 +138,25 @@ def get_collection_grouped_inputs(
 def get_collection_after(
     collections: List[Collection], name: str
 ) -> Set[CollectionAddress]:
-    """If specified, return the collections that need to run before the current collection for saas configs"""
+    """If specified, return the collections that need to be read before the current collection for saas configs"""
     collection: Collection | None = next(
         (collect for collect in collections if collect.name == name), None
     )
     if not collection:
         return set()
     return collection.after
+
+
+def get_collection_erase_after(
+    collections: List[Collection], name: str
+) -> Set[CollectionAddress]:
+    """If specified, return the collections that need to be erased before the current collection for saas configs"""
+    collection: Collection | None = next(
+        (collect for collect in collections if collect.name == name), None
+    )
+    if not collection:
+        return set()
+    return collection.erase_after
 
 
 def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> GraphDataset:
@@ -135,6 +180,9 @@ def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> Graph
                     config_dataset.collections, collection_name
                 ),
                 after=get_collection_after(config_dataset.collections, collection_name),
+                erase_after=get_collection_erase_after(
+                    config_dataset.collections, collection_name
+                ),
             )
         )
 
