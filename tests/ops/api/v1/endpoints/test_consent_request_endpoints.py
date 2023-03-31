@@ -17,6 +17,7 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.ops.models.application_config import ApplicationConfig
+from fides.api.ops.models.privacy_notice import PrivacyNoticeHistory
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -336,6 +337,10 @@ class TestConsentVerify:
                 "opt_in": True,
                 "has_gpc_flag": False,
                 "conflicts_with_gpc": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
             {
                 "data_use": "location",
@@ -343,6 +348,10 @@ class TestConsentVerify:
                 "opt_in": False,
                 "has_gpc_flag": False,
                 "conflicts_with_gpc": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
         ]
         assert response.json()["consent"] == expected_consent_data
@@ -390,6 +399,10 @@ class TestConsentVerify:
                 "opt_in": True,
                 "has_gpc_flag": False,
                 "conflicts_with_gpc": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
             {
                 "data_use": "location",
@@ -397,6 +410,10 @@ class TestConsentVerify:
                 "opt_in": False,
                 "has_gpc_flag": False,
                 "conflicts_with_gpc": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
         ]
         assert response.json()["consent"] == expected_consent_data
@@ -514,6 +531,10 @@ class TestGetConsentUnverified:
                 "opt_in": True,
                 "has_gpc_flag": False,
                 "conflicts_with_gpc": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
             {
                 "data_use": "location",
@@ -521,6 +542,10 @@ class TestGetConsentUnverified:
                 "opt_in": False,
                 "has_gpc_flag": False,
                 "conflicts_with_gpc": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
         ]
         assert response.json()["consent"] == expected_consent_data
@@ -606,6 +631,7 @@ class TestSaveConsent:
         api_client,
         verification_code,
         db: Session,
+        consent_policy,
     ):
         _, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
@@ -624,17 +650,18 @@ class TestSaveConsent:
                 "code": verification_code,
                 "identity": {"email": "test@email.com"},
                 "consent": [{"data_use": "email", "opt_in": True}],
+                "policy_key": consent_policy.key,  # Optional policy_key supplied,
             },
         )
         assert response.status_code == 200
         assert response.json()["consent"][0]["data_use"] == "email"
         assert response.json()["consent"][0]["opt_in"] is True
-        assert not run_privacy_request_mock.called, "date_use: email is not executable"
+        assert run_privacy_request_mock.called
 
         db.refresh(consent_request)
         assert (
-            not consent_request.privacy_request_id
-        ), "No PrivacyRequest queued because none of the consent options are executable"
+            consent_request.privacy_request_id
+        ), "PrivacyRequest queued even though none of the consent options are executable"
 
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
@@ -809,6 +836,10 @@ class TestSaveConsent:
                 "opt_in": True,
                 "has_gpc_flag": True,
                 "conflicts_with_gpc": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
             {
                 "data_use": "improve",
@@ -816,6 +847,10 @@ class TestSaveConsent:
                 "opt_in": False,
                 "has_gpc_flag": False,
                 "conflicts_with_gpc": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
         ]
         assert response.json()["consent"] == expected_consent_data
@@ -843,6 +878,10 @@ class TestSaveConsent:
                 "data_use": "advertising",
                 "has_gpc_flag": True,
                 "data_use_description": None,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
         ], "Only executable consent preferences stored"
         assert consent_request.preferences == expected_consent_data
@@ -907,12 +946,17 @@ class TestSaveConsent:
         assert not mock_run_privacy_request.called
 
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_set_consent_consent_preferences_without_verification(
         self,
+        mock_privacy_request_delay,
         mock_verify_identity: MagicMock,
         provided_identity_and_consent_request,
         db,
         api_client,
+        consent_policy,
     ):
         provided_identity, consent_request = provided_identity_and_consent_request
 
@@ -938,6 +982,7 @@ class TestSaveConsent:
         data = {
             "identity": {"email": "test@email.com"},
             "consent": consent_data,
+            "policy_key": consent_policy.key,  # Optional policy_key supplied,
         }
         response = api_client.patch(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
@@ -951,6 +996,10 @@ class TestSaveConsent:
                 "opt_in": True,
                 "conflicts_with_gpc": False,
                 "has_gpc_flag": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
             {
                 "data_use": "location",
@@ -958,10 +1007,15 @@ class TestSaveConsent:
                 "opt_in": False,
                 "conflicts_with_gpc": False,
                 "has_gpc_flag": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
         ]
         assert response.json()["consent"] == expected_consent_data
         assert not mock_verify_identity.called
+        assert mock_privacy_request_delay.called
 
 
 class TestGetConsentPreferences:
@@ -1044,6 +1098,10 @@ class TestGetConsentPreferences:
                 "opt_in": True,
                 "conflicts_with_gpc": False,
                 "has_gpc_flag": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
             {
                 "data_use": "location",
@@ -1051,6 +1109,123 @@ class TestGetConsentPreferences:
                 "opt_in": False,
                 "conflicts_with_gpc": False,
                 "has_gpc_flag": False,
+                "privacy_notice_id": None,
+                "privacy_notice_version": None,
+                "privacy_notice_history": None,
+                "user_geography": None,
             },
         ]
         assert response.json()["consent"] == expected_consent_data
+
+
+class TestSetConsentPreferencesWithPrivacyNotices:
+    @pytest.fixture(scope="function")
+    def verification_code(self) -> str:
+        return "abcd"
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_set_consent_consent_preferences_initially(
+        self,
+        mock_run_privacy_request: MagicMock,
+        mock_verify_identity: MagicMock,
+        provided_identity_and_consent_request,
+        db,
+        api_client,
+        verification_code,
+        consent_policy,
+        privacy_notice_us_ca_provide,
+    ):
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+        privacy_notice_history = (
+            db.query(PrivacyNoticeHistory)
+            .filter(
+                PrivacyNoticeHistory.privacy_notice_id
+                == privacy_notice_us_ca_provide.id,
+                PrivacyNoticeHistory.version == privacy_notice_us_ca_provide.version,
+            )
+            .first()
+        )
+
+        consent_data: list[dict[str, Any]] = [
+            {
+                "opt_in": True,
+                "privacy_notice_id": privacy_notice_us_ca_provide.id,
+                "privacy_notice_version": 1,
+                "user_geography": "us_ca",
+            }
+        ]
+
+        data = {
+            "code": verification_code,
+            "identity": {"email": "test@email.com"},
+            "consent": consent_data,
+            "policy_key": consent_policy.key,  # Optional policy_key supplied,
+            "browser_identity": {"ga_client_id": "test_ga_client_id"},
+        }
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=data,
+        )
+
+        assert response.status_code == 200
+
+        expected_consent_preferences = {
+            "data_use": None,
+            "data_use_description": None,
+            "opt_in": True,
+            "has_gpc_flag": None,
+            "conflicts_with_gpc": False,
+            "privacy_notice_id": privacy_notice_us_ca_provide.id,
+            "privacy_notice_version": 1.0,
+            "user_geography": "us_ca",
+            "privacy_notice_history": {
+                "name": privacy_notice_history.name,
+                "description": privacy_notice_history.description,
+                "origin": privacy_notice_history.origin,
+                "regions": [reg.value for reg in privacy_notice_history.regions],
+                "consent_mechanism": privacy_notice_history.consent_mechanism.value,
+                "data_uses": privacy_notice_history.data_uses,
+                "enforcement_level": privacy_notice_history.enforcement_level.value,
+                "disabled": privacy_notice_history.disabled,
+                "has_gpc_flag": privacy_notice_history.has_gpc_flag,
+                "displayed_in_privacy_center": privacy_notice_history.displayed_in_privacy_center,
+                "displayed_in_privacy_modal": privacy_notice_history.displayed_in_privacy_modal,
+                "displayed_in_banner": privacy_notice_history.displayed_in_banner,
+                "id": privacy_notice_history.id,
+                "version": privacy_notice_history.version,
+                "privacy_notice_id": privacy_notice_us_ca_provide.id,
+            },
+        }
+
+        assert response.json()["consent"][0] == expected_consent_preferences
+        assert verification_code in mock_verify_identity.call_args_list[0].args
+
+        db.refresh(consent_request)
+        assert (
+            consent_request.privacy_request_id is not None
+        ), "PrivacyRequest queued to propagate consent preferences cached on ConsentRequest"
+
+        identity = consent_request.privacy_request.get_persisted_identity()
+        assert identity.email == "test@email.com", (
+            "Identity pulled from Consent Provided Identity and used to "
+            "create a Privacy Request provided identity "
+        )
+        assert identity.phone_number is None
+        assert identity.ga_client_id == "test_ga_client_id", (
+            "Browser identity pulled from Consent Provided Identity and persisted "
+            "to a Privacy Request provided identity"
+        )
+        assert consent_request.privacy_request.consent_preferences == [
+            expected_consent_preferences
+        ]
+
+        assert consent_request.preferences[0] == expected_consent_preferences
+
+        assert mock_run_privacy_request.called

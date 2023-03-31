@@ -552,7 +552,10 @@ class TestPostPrivacyNotices:
             "name": "test privacy notice 1",
             "description": "my test privacy notice",
             "origin": "privacy_notice_template_1",
-            "regions": [PrivacyNoticeRegion.eu_be.value, PrivacyNoticeRegion.us_ca.value],
+            "regions": [
+                PrivacyNoticeRegion.eu_be.value,
+                PrivacyNoticeRegion.us_ca.value,
+            ],
             "consent_mechanism": ConsentMechanism.opt_in.value,
             "data_uses": ["advertising"],
             "enforcement_level": EnforcementLevel.system_wide.value,

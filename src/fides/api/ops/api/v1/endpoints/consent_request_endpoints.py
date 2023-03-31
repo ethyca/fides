@@ -35,6 +35,7 @@ from fides.api.ops.common_exceptions import (
     MessageDispatchException,
 )
 from fides.api.ops.models.messaging import get_messaging_method
+from fides.api.ops.models.privacy_notice import PrivacyNoticeHistory
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
@@ -42,14 +43,14 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingMethod
-from fides.api.ops.schemas.privacy_request import BulkPostPrivacyRequests
-from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
+    BulkPostPrivacyRequests,
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentRequestResponse,
     ConsentWithExecutableStatus,
     PrivacyRequestCreate,
+    PrivacyRequestSetConsentPreference,
     VerificationCode,
 )
 from fides.api.ops.schemas.redis_cache import Identity
@@ -246,8 +247,9 @@ def queue_privacy_request_to_propagate_consent(
     """
     Queue a privacy request to carry out propagating consent preferences server-side to third-party systems.
 
-    Only propagate consent preferences which are considered "executable" by the current system. If none of the
-    consent preferences are executable, no Privacy Request is queued.
+    For the old workflow, only propagate consent preferences which are considered "executable" by the current system.
+
+    For the new workflow, propagate all consent preferences and create a PrivacyRequest regardless.
     """
     # Create an identity based on any provided browser_identity
     identity = browser_identity if browser_identity else Identity()
@@ -260,21 +262,14 @@ def queue_privacy_request_to_propagate_consent(
     executable_data_uses = [
         ec.data_use for ec in executable_consents or [] if ec.executable
     ]
-    executable_consent_preferences: List[Dict] = [
-        pref.dict()
-        for pref in consent_preferences.consent or []
-        if pref.data_use in executable_data_uses
-    ]
 
-    if not executable_consent_preferences:
-        logger.info(
-            "Skipping propagating consent preferences to third-party services as "
-            "specified consent preferences: {} are not executable.",
-            [pref.data_use for pref in consent_preferences.consent or []],
-        )
-        return None
+    executable_consent_preferences: List[Dict] = []
+    for pref in consent_preferences.consent or []:
+        if (
+            pref.data_use and pref.data_use in executable_data_uses
+        ) or pref.privacy_notice_id:
+            executable_consent_preferences.append(pref.dict())
 
-    logger.info("Executable consent options: {}", executable_data_uses)
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
         db=db,
         config_proxy=ConfigProxy(db),
@@ -297,6 +292,65 @@ def queue_privacy_request_to_propagate_consent(
     return privacy_request_results
 
 
+def _save_consent_preferences(
+    provided_identity: ProvidedIdentity,
+    db: Session,
+    consent_preference_data: List[PrivacyRequestSetConsentPreference],
+) -> List[Consent]:
+    """Upsert Consent Preferences
+
+    For the old workflow: Updated existing Consent record with same data_use and provided identity. Otherwise, create a new one.
+    For the new workflow: Update an Existing Consent Record associated with the same Privacy Notice History record and provided identity.
+    Otherwise create a new one.
+
+    """
+    upserted_consent_preferences: List[Consent] = []
+
+    for preference in consent_preference_data:
+        current_preference: Optional[Consent] = None
+        privacy_notice_history: Optional[PrivacyNoticeHistory] = None
+
+        if preference.data_use:  # Old workflow, slated to be deprecated
+            current_preference = Consent.filter(
+                db=db,
+                conditions=(Consent.provided_identity_id == provided_identity.id)
+                & (Consent.data_use == preference.data_use),
+            ).first()
+        elif preference.privacy_notice_id and preference.privacy_notice_version:
+            ## New workflow
+            privacy_notice_history = PrivacyNoticeHistory.get_by_notice_and_version(
+                db, preference.privacy_notice_id, preference.privacy_notice_version
+            )
+
+            if not privacy_notice_history:
+                raise HTTPException(
+                    HTTP_404_NOT_FOUND,
+                    detail=f"No PrivacyNoticeHistory record for {preference.privacy_notice_id} version {preference.privacy_notice_version}",
+                )
+            current_preference = Consent.get_consent_for_identity_and_history(
+                db, provided_identity.id, privacy_notice_history.id
+            )
+
+        preference_dict = preference.dict()
+        preference_dict["privacy_notice_history_id"] = (
+            privacy_notice_history.id if privacy_notice_history else None
+        )
+
+        if current_preference:
+            current_preference.update(db, data=preference_dict)
+        else:
+            preference_dict["provided_identity_id"] = provided_identity.id
+            try:
+                current_preference = Consent.create(db, data=preference_dict)
+            except IntegrityError as exc:
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc))
+                )
+        upserted_consent_preferences.append(current_preference)  # type: ignore[arg-type]
+
+    return upserted_consent_preferences
+
+
 @router.patch(
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
@@ -308,44 +362,39 @@ def set_consent_preferences(
     db: Session = Depends(get_db),
     data: ConsentPreferencesWithVerificationCode,
 ) -> ConsentPreferences:
-    """Verifies the verification code and saves the user's consent preferences if successful."""
+    """Verifies the verification code and saves the user's consent preferences if successful.
+
+    Two workflows are accommodated here:
+    1) Old workflow, where consent preferences are saved with regards to data uses
+    2) New workflow where consent preferences are saved with regards to privacy notices
+    """
     consent_request, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
-    consent_request.preferences = [schema.dict() for schema in data.consent]
-    consent_request.save(db=db)
-
     if not provided_identity.hashed_value:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
-    for preference in data.consent:
-        current_preference = Consent.filter(
-            db=db,
-            conditions=(Consent.provided_identity_id == provided_identity.id)
-            & (Consent.data_use == preference.data_use),
-        ).first()
-
-        if current_preference:
-            current_preference.update(db, data=dict(preference))
-        else:
-            preference_dict = dict(preference)
-            preference_dict["provided_identity_id"] = provided_identity.id
-            try:
-                Consent.create(db, data=preference_dict)
-            except IntegrityError as exc:
-                raise HTTPException(
-                    status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc))
-                )
-
-    consent_preferences: ConsentPreferences = _prepare_consent_preferences(
-        db, provided_identity
+    upserted_consent_preferences: List[Consent] = _save_consent_preferences(
+        provided_identity, db, data.consent
     )
 
-    # Note: This just queues the PrivacyRequest for processing
+    # Don't re-retrieve all consent preferences from the database: just the preferences
+    # asserted with this request.
+    consent_preferences: ConsentPreferences = ConsentPreferences(
+        consent=upserted_consent_preferences
+    )
+
+    # Save consent preferences on the Consent Request too
+    consent_request.preferences = [
+        schema.dict() for schema in consent_preferences.consent or []
+    ]
+    consent_request.save(db=db)
+
+    # Queue a privacy request for propagating preferences
     privacy_request_creation_results: Optional[
         BulkPostPrivacyRequests
     ] = queue_privacy_request_to_propagate_consent(
@@ -506,22 +555,12 @@ def _get_consent_request_and_provided_identity(
 def _prepare_consent_preferences(
     db: Session, provided_identity: ProvidedIdentity
 ) -> ConsentPreferences:
-    consent: List[Consent] = Consent.filter(
-        db=db, conditions=Consent.provided_identity_id == provided_identity.id
-    ).all()
+    """Query existing consent preferences for the current provided identity
 
-    if not consent:
-        return ConsentPreferences(consent=None)
-
-    return ConsentPreferences(
-        consent=[
-            ConsentSchema(
-                data_use=x.data_use,
-                data_use_description=x.data_use_description,
-                opt_in=x.opt_in,
-                has_gpc_flag=x.has_gpc_flag,
-                conflicts_with_gpc=x.conflicts_with_gpc,
-            )
-            for x in consent
-        ],
+    Return all preferences associated with old "data_uses", as well as the preferences
+    saved for the latest version of privacy notices.
+    """
+    consent_preferences: List[Consent] = Consent.get_current_consent_preferences(
+        db, provided_identity
     )
+    return ConsentPreferences(consent=consent_preferences or None)

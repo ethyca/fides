@@ -3,10 +3,11 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
-from pydantic import Field, validator
+from pydantic import Field, root_validator, validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.policy import ActionType
+from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
@@ -15,6 +16,7 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.policy import PolicyResponse as PolicySchema
+from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistory
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
@@ -56,11 +58,81 @@ class PrivacyRequestDRPStatusResponse(BaseSchema):
 class Consent(BaseSchema):
     """Schema for consent."""
 
-    data_use: str
-    data_use_description: Optional[str] = None
+    data_use: Optional[str] = None  # Slated to be deprecated
+    data_use_description: Optional[str] = None  # Slated to be deprecated
     opt_in: bool
-    has_gpc_flag: bool = False
+    has_gpc_flag: Optional[bool] = False  # Slated to be deprecated
     conflicts_with_gpc: bool = False
+
+
+class PrivacyRequestSetConsentPreference(Consent):
+    privacy_notice_id: Optional[str] = None
+    privacy_notice_version: Optional[float] = None
+    user_geography: Optional[PrivacyNoticeRegion] = None
+
+    @root_validator
+    @classmethod
+    def privacy_notice_validator(cls, values: Dict) -> Dict:
+        """
+        Backwards compatible validation.  If using the new workflow, both privacy_notice_id and version are required
+        in the request.
+
+        If old workflow is in use, we will look at "data_use" and validation is not relevant here.
+        """
+        privacy_notice_id = values.get("privacy_notice_id", None)
+        privacy_notice_version = values.get("privacy_notice_version", None)
+        data_use = values.get("data_use")  # Slated for deprecation
+
+        if privacy_notice_id or privacy_notice_version:
+            if (privacy_notice_id and not privacy_notice_version) or (
+                privacy_notice_version and not privacy_notice_id
+            ):
+                raise ValueError(
+                    "Both privacy_notice_id and privacy_notice_version must be supplied when setting consent preferences"
+                )
+
+            if data_use:
+                raise ValueError(
+                    "You cannot supply both a privacy_notice_id and a data_use."
+                )
+
+            if data_use:
+                raise ValueError(
+                    "You cannot supply both a privacy_notice_id and a data_use."
+                )
+
+            # Overriding old workflow fields
+            values["data_use_description"] = None
+            values["has_gpc_flag"] = None
+
+        return values
+
+    class Config:
+        use_enum_values = True
+
+
+class PrivacyRequestConsentPreference(PrivacyRequestSetConsentPreference):
+    privacy_notice_history: Optional[PrivacyNoticeHistory] = None
+
+    @root_validator
+    @classmethod
+    def privacy_notice_history_validator(cls, values: Dict) -> Dict:
+        privacy_notice_history = values.get("privacy_notice_history")
+        privacy_notice_id = values.get("privacy_notice_id", None)
+        privacy_notice_version = values.get("privacy_notice_version", None)
+
+        if privacy_notice_version and privacy_notice_id and privacy_notice_history:
+            if privacy_notice_history.version != privacy_notice_version:
+                raise ValueError("Mismatch between privacy notice versions")
+
+            if privacy_notice_history.privacy_notice_id != privacy_notice_id:
+                raise ValueError("Mismatch between privacy notice ids")
+
+        return values
+
+    class Config:
+        use_enum_values = True
+        orm_mode = True
 
 
 class PrivacyRequestCreate(BaseSchema):
@@ -73,7 +145,7 @@ class PrivacyRequestCreate(BaseSchema):
     identity: Identity
     policy_key: FidesKey
     encryption_key: Optional[str] = None
-    consent_preferences: Optional[List[Consent]] = None
+    consent_preferences: Optional[List[PrivacyRequestConsentPreference]] = None
 
     @validator("encryption_key")
     def validate_encryption_key(
@@ -240,7 +312,7 @@ class BulkReviewResponse(BulkPostPrivacyRequests):
 class ConsentPreferences(BaseSchema):
     """Schema for consent preferences."""
 
-    consent: Optional[List[Consent]] = None
+    consent: Optional[List[PrivacyRequestConsentPreference]] = None
 
 
 class ConsentWithExecutableStatus(BaseSchema):
@@ -254,7 +326,7 @@ class ConsentPreferencesWithVerificationCode(BaseSchema):
     """Schema for consent preferences including the verification code."""
 
     code: Optional[str]
-    consent: List[Consent]
+    consent: List[PrivacyRequestSetConsentPreference]
     policy_key: Optional[FidesKey] = None
     executable_options: Optional[List[ConsentWithExecutableStatus]]
     browser_identity: Optional[Identity]

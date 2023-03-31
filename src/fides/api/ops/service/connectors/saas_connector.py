@@ -9,8 +9,9 @@ from fides.api.ops.common_exceptions import FidesopsException, PostProcessingExc
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
+from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
+from fides.api.ops.schemas.privacy_request import PrivacyRequestConsentPreference
 from fides.api.ops.schemas.saas.saas_config import (
     ClientConfig,
     ConsentRequestMap,
@@ -427,7 +428,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
-        consent_preferences: List[Consent],
+        consent_preferences: List[PrivacyRequestConsentPreference],
     ) -> bool:
         """Execute a consent request. Return whether the consent request to the third party succeeded.
         Return True if 200 OK

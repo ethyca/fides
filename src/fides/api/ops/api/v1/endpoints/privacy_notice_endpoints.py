@@ -187,7 +187,7 @@ def prepare_privacy_notice_patches(
 
     # we temporarily store proposed update data in-memory for validation purposes only
     validation_updates = []
-    for (update_data, existing_notice) in updates_and_existing:
+    for update_data, existing_notice in updates_and_existing:
         # add the patched update to our temporary updates for validation
         validation_updates.append(
             existing_notice.dry_update(data=update_data.dict(exclude_unset=True))

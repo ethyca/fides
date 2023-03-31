@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Tuple, Type
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
 
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
@@ -215,7 +215,7 @@ def check_conflicting_data_uses(
             region_uses = uses_by_region[PrivacyNoticeRegion(region)]
             # check each of the incoming notice's data uses
             for data_use in privacy_notice.data_uses:
-                for (existing_use, notice_name) in region_uses:
+                for existing_use, notice_name in region_uses:
                     # we need to check for hierachical overlaps in _both_ directions
                     # i.e. whether the incoming DataUse is a parent _or_ a child of
                     # an existing DataUse
@@ -240,3 +240,14 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
     )
     privacy_notice = relationship(PrivacyNotice, backref="histories")
+
+    @classmethod
+    def get_by_notice_and_version(
+        cls, db: Session, privacy_notice_id: str, version: float
+    ) -> Optional[PrivacyNoticeHistory]:
+        """Convenience method that looks up a version of a privacy notice"""
+        return PrivacyNoticeHistory.filter(
+            db=db,
+            conditions=(PrivacyNoticeHistory.privacy_notice_id == privacy_notice_id)
+            & (PrivacyNoticeHistory.version == version),
+        ).first()

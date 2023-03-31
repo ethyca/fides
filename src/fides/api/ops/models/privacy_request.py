@@ -11,7 +11,7 @@ from celery.result import AsyncResult
 from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Float, ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
@@ -38,6 +38,11 @@ from fides.api.ops.models.policy import (
     PolicyPreWebhook,
     WebhookDirection,
     WebhookTypes,
+)
+from fides.api.ops.models.privacy_notice import (
+    PrivacyNotice,
+    PrivacyNoticeHistory,
+    PrivacyNoticeRegion,
 )
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -824,6 +829,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     consent = relationship(
         "Consent", back_populates="provided_identity", cascade="delete, delete-orphan"
     )
+
     consent_request = relationship(
         "ConsentRequest",
         back_populates="provided_identity",
@@ -853,15 +859,16 @@ class Consent(Base):
         ForeignKey(ProvidedIdentity.id),
         nullable=False,
     )
-    data_use = Column(String, nullable=False)
-    data_use_description = Column(String)
-    opt_in = Column(Boolean, nullable=False)
-    has_gpc_flag = Column(
+    data_use = Column(String, nullable=True)  # Slated for deprecation
+    data_use_description = Column(String, nullable=True)  # Slated for deprecation
+    has_gpc_flag = Column(  # Slated for deprecation
         Boolean,
         server_default="f",
         default=False,
-        nullable=False,
+        nullable=True,
     )
+
+    opt_in = Column(Boolean, nullable=False)
     conflicts_with_gpc = Column(
         Boolean,
         server_default="f",
@@ -870,8 +877,93 @@ class Consent(Base):
     )
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
+    privacy_notice_id = Column(
+        String,
+        ForeignKey(PrivacyNotice.id),
+        nullable=True,
+    )  # Also on the privacy_notice_history, but caching here for faster querying
+    privacy_notice_version = Column(
+        Float, nullable=True
+    )  # Also on the privacy_notice_history, but caching here for faster querying
+
+    privacy_notice_history_id = Column(
+        String,
+        ForeignKey(PrivacyNoticeHistory.id),
+        nullable=True,
+    )
+
+    privacy_notice = relationship(PrivacyNotice)
+    privacy_notice_history = relationship(PrivacyNoticeHistory)
+    user_geography = Column(
+        EnumColumn(PrivacyNoticeRegion, native_enum=False), nullable=True
+    )
 
     UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
+    UniqueConstraint(
+        provided_identity_id,
+        privacy_notice_history_id,
+        name="uix_identity_privacy_notice_history",
+    )
+
+    @classmethod
+    def get_consent_for_identity_and_history(
+        cls, db: Session, provided_identity_id: str, privacy_notice_history_id: str
+    ) -> Optional[Consent]:
+        """Return a Consent record that was saved for a particular Privacy Notice History record and
+        a given identity"""
+        return Consent.filter(
+            db=db,
+            conditions=(Consent.provided_identity_id == provided_identity_id)
+            & (Consent.privacy_notice_history_id == privacy_notice_history_id),
+        ).first()
+
+    @classmethod
+    def get_current_consent_preferences(
+        cls, db: Session, provided_identity: ProvidedIdentity
+    ) -> List[Consent]:
+        """Query existing consent preferences for the current provided identity
+
+        Return all preferences associated with old "data_uses", as well as the preferences
+        saved for the latest version of privacy notices.
+
+        Should I take "disabled" notices into account?
+        """
+
+        old_consent_preferences: List[Consent] = (
+            db.query(Consent)
+            .filter(
+                Consent.provided_identity_id == provided_identity.id,
+                Consent.data_use.isnot(None),
+            )
+            .order_by(Consent.created_at)
+            .all()
+        )
+
+        max_version_query = (
+            db.query(
+                Consent.privacy_notice_id,
+                func.max(Consent.privacy_notice_version).label("max_version"),
+            )
+            .filter(
+                Consent.privacy_notice_id.isnot(None),
+                Consent.privacy_notice_version.isnot(None),
+            )
+            .group_by(Consent.privacy_notice_id)
+            .subquery()
+        )
+
+        new_consent_preferences: List[Consent] = (
+            db.query(Consent)
+            .filter(Consent.provided_identity_id == provided_identity.id)
+            .filter(
+                Consent.privacy_notice_id
+                == max_version_query.columns.privacy_notice_id,
+                Consent.privacy_notice_version == max_version_query.columns.max_version,
+            )
+            .order_by(Consent.created_at)
+            .all()
+        )
+        return old_consent_preferences + new_consent_preferences
 
 
 class ConsentRequest(IdentityVerificationMixin, Base):
