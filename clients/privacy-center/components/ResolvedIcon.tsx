@@ -21,7 +21,7 @@ enum IconProviders {
 const ResolvedIcon: React.FC<ResolvedIconProps> = ({
   iconPath,
   iconBoxSize,
-  description
+  description,
 }) => {
   const prefixCandidate = iconPath.toLowerCase().split(":")[0];
   const hasPrefix =
@@ -39,10 +39,11 @@ const ResolvedIcon: React.FC<ResolvedIconProps> = ({
         iconType = faIcons.FaRegQuestionCircle;
         break;
     }
-    return <Icon as={iconType} boxSize={iconBoxSize} color="complimentary.500" />
+    return (
+      <Icon as={iconType} boxSize={iconBoxSize} color="complimentary.500" />
+    );
   }
-    return <Image alt={description} boxSize={iconBoxSize} src={iconPath} />;
-  }
-
+  return <Image alt={description} boxSize={iconBoxSize} src={iconPath} />;
+};
 
 export default ResolvedIcon;
