@@ -38,6 +38,11 @@ saas_config:
           param_values:
             - name: email
               identity: email
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: next
     - name: orders
       requests:
         read:
@@ -50,3 +55,8 @@ saas_config:
           param_values:
             - name: email
               identity: email
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: next
