@@ -9,6 +9,7 @@ saas_config:
     - name: domain
       default_value: api.goshippo.com
     - name: api_key
+      label: API Key
 
   client_config:
     protocol: https
