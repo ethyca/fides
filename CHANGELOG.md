@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.10.0...main)
 
+### Added
+* Access support for Shippo [#2484](https://github.com/ethyca/fides/pull/2484)
+
 ### Removed
 
 * Remove the `unknown` state for generated datasets displaying on fidesplus [#2957](https://github.com/ethyca/fides/pull/2957)
