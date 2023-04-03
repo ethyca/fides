@@ -13,6 +13,11 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import FidesConfig
+from fides.lib.models.fides_user import FidesUser
+from fides.api.ops.common_exceptions import SystemManagerException
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.roles import VIEWER
 
 HEADERS_ROW_RESPONSE_PAYLOAD = {
     "dataset.name": "Fides Dataset",
@@ -95,6 +100,12 @@ NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD = {
     "system.egress": "",
     "system.users": "",
 }
+
+
+NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER = (
+    NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD.copy()
+)
+NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER.update({"system.users": "test_system_manager_user"})
 
 NO_PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_CUSTOM_FIELD = (
     NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD.copy()
@@ -190,6 +201,13 @@ PRIVACY_DECLARATION_SYSTEM_ROW_TWO_CUSTOM_FIELDS_ONE_MULTIVAL.update(
 EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_NO_PRIVACY_DECLARATION = [
     HEADERS_ROW_RESPONSE_PAYLOAD,
     NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+]
+
+
+
+EXPECTED_NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER =[
+    HEADERS_ROW_RESPONSE_PAYLOAD,
+    NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER
 ]
 
 EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_PRIVACY_DECLARATION = [
@@ -344,6 +362,45 @@ def system_no_privacy_declarations(db):
     system_db_record = System.create_or_update(db=db, data=system.dict())
     yield system_db_record
     system_db_record.delete(db)
+
+
+
+@pytest.fixture
+def system_with_manager(db, system_no_privacy_declarations):
+    """
+    A sample system that has a manager assigned to it.
+    """
+
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_system_manager_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER],
+        user_id=user.id,
+        systems=[system_no_privacy_declarations.id],
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+
+    user.set_as_system_manager(db, system_no_privacy_declarations)
+    yield user
+    try:
+        user.remove_as_system_manager(db, system_no_privacy_declarations)
+    except SystemManagerException:
+        pass
+    user.delete(db)
+
 
 
 @pytest.fixture
@@ -1040,3 +1097,19 @@ def test_datamap_two_custom_fields_one_multival_two_systems(
     assert (
         response.json() == EXPECTED_RESPONSE_TWO_CUSTOM_FIELDS_ONE_MULTIVAL_TWO_SYSTEMS
     )
+
+
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("system_with_manager")
+def test_datamap_with_system_manager(
+    test_config: FidesConfig,
+    test_client: TestClient,
+) -> None:
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == EXPECTED_NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER
