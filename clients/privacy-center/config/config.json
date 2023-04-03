@@ -12,7 +12,7 @@
 			"description": "We will text you a report of the data related to your account.",
 			"identity_inputs": {
 				"name": "required",
-				"phone": "required"
+				"email": "required"
 			}
 		},
 		{
