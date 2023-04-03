@@ -45,6 +45,7 @@ HEADERS_ROW_RESPONSE_PAYLOAD = {
     "system.description": "Description of the System",
     "system.ingress": "Related Systems which receive data to this System",
     "system.egress": "Related Systems which send data to this System",
+    "system.users": "Data Steward",
 }
 
 HEADERS_ROW_SINGLE_CUSTOM_FIELD = HEADERS_ROW_RESPONSE_PAYLOAD.copy()
@@ -92,6 +93,7 @@ NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD = {
     "system.description": "Test Policy",
     "system.ingress": "",
     "system.egress": "",
+    "system.users": "",
 }
 
 NO_PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_CUSTOM_FIELD = (
@@ -152,6 +154,7 @@ PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD = {
     "system.description": "Test Policy 2",
     "system.ingress": "",
     "system.egress": "",
+    "system.users": ""
 }
 
 PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_CUSTOM_FIELD = (
