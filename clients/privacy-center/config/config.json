@@ -22,7 +22,7 @@
 			"description": "We will delete your account and all of its associated data within 45 days. This action cannot be undone: your account, rewards, punchcard points, etc. can never be recovered once deleted.",
 			"identity_inputs": {
 				"name": "required",
-				"phone": "required"
+				"email": "required"
 			}
 		}
 	],
