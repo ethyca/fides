@@ -14,10 +14,7 @@ type RequestSubmittedProps = {
   action: any;
 };
 
-const RequestSubmitted: React.FC<RequestSubmittedProps> = ({
-  onClose,
-  action,
-}) => (
+const RequestSubmitted: React.FC<RequestSubmittedProps> = ({ onClose }) => (
   <>
     <HStack justifyContent="center" data-testid="request-submitted">
       <Image
