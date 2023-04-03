@@ -23,7 +23,6 @@ from fides.core.export_helpers import (
     union_data_categories_in_joined_dataframe,
 )
 from fides.core.utils import echo_green, get_all_level_fields
-from fides.lib.models.fides_user import FidesUser
 
 EMPTY_COLUMN_PLACEHOLDER = "N/A"
 
@@ -285,8 +284,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             )
         )
         if system.get("privacy_declarations"):
-            print(f"\nsystem HAS  PDs\n")
-
             for declaration in system["privacy_declarations"]:
                 if not isinstance(declaration, dict):
                     declaration = declaration.dict()
@@ -351,7 +348,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
 
                 output_list += cartesian_product_of_declaration
         else:
-            print(f"\nsystem has no PDs\n")
             system_row = [
                 system["fides_key"],
                 system["name"],
