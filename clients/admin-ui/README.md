@@ -38,7 +38,7 @@ running the app, for example:
 
 Or you can configure the environment using `env.local` as described by the [Next.js docs](https://nextjs.org/docs/basic-features/environment-variables#loading-environment-variables).
 
-In addition, you can mark a flag as `userCannotModify: true` in `flags.json`. This will prevent the user from seeing that flag as an override-able option in the Beta Features section. However, the values given to the various environments will still be effect. Therefore, you can still control the flag with the same level of granularity via the `flags.json` file, but not via the UI.
+In addition, you can mark a flag as `userCannotModify: true` in `flags.json`. This will prevent the user from seeing that flag as an override-able option in the Beta Features section. However, the values given to the various environments will still be in effect. Therefore, you can still control the flag with the same level of granularity via the `flags.json` file, but not via the UI.
 
 ## Preparing for production
 
