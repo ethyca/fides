@@ -346,7 +346,8 @@ const Consent: NextPage = () => {
             >
               Manage your consent
             </Heading>
-            {config.consent?.description_subtext.map((paragraph, index) => (
+
+            {config.consent?.description_subtext?.map((paragraph, index) => (
               <Text
                 fontSize={["small", "medium"]}
                 fontWeight="medium"
