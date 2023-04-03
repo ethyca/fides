@@ -11,7 +11,6 @@ import {
 
 type RequestSubmittedProps = {
   onClose: () => void;
-  action: any;
 };
 
 const RequestSubmitted: React.FC<RequestSubmittedProps> = ({ onClose }) => (

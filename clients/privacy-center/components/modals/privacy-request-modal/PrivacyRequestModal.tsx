@@ -107,7 +107,7 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
   }
 
   if (currentView === ModalViews.RequestSubmitted) {
-    form = <RequestSubmitted onClose={onClose} action={action} />;
+    form = <RequestSubmitted onClose={onClose} />;
   }
 
   return (
