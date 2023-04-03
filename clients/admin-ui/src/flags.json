@@ -23,5 +23,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "privacyNotices": {
+    "description": "Page to configure consent privacy notices",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
