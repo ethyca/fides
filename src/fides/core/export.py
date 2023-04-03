@@ -149,6 +149,22 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
     formatted_data_subjects, custom_data_subjects = format_data_subjects(
         server_resources["data_subject"]
     )
+
+    privacy_declaration_fields = [
+        "system.privacy_declaration.name",
+        "system.privacy_declaration.data_categories",
+        "system.privacy_declaration.data_use.name",
+        "system.privacy_declaration.data_use.legal_basis",
+        "system.privacy_declaration.data_use.special_category",
+        "system.privacy_declaration.data_use.recipients",
+        "system.privacy_declaration.data_use.legitimate_interest",
+        "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
+        "system.privacy_declaration.data_subjects.name",
+        "system.privacy_declaration.data_subjects.rights_available",
+        "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
+        "system.privacy_declaration.data_qualifier",
+
+    ]
     output_list: List[Tuple[str, ...]] = [
         (
             "system.fides_key",
@@ -160,23 +176,12 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             "system.system_dependencies",
             "system.ingress",
             "system.egress",
-            "system.privacy_declaration.name",
-            "system.privacy_declaration.data_categories",
-            "system.privacy_declaration.data_use.name",
-            "system.privacy_declaration.data_use.legal_basis",
-            "system.privacy_declaration.data_use.special_category",
-            "system.privacy_declaration.data_use.recipients",
-            "system.privacy_declaration.data_use.legitimate_interest",
-            "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
-            "system.privacy_declaration.data_subjects.name",
-            "system.privacy_declaration.data_subjects.rights_available",
-            "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
-            "system.privacy_declaration.data_qualifier",
+            "system.users",
+            *privacy_declaration_fields,
             "system.data_protection_impact_assessment.is_required",
             "system.data_protection_impact_assessment.progress",
             "system.data_protection_impact_assessment.link",
             "dataset.fides_key",
-            "system.users",
         )
     ]
 
@@ -307,6 +312,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                         system_dependencies,
                         system_ingress,
                         system_egress,
+                        system_users,
                         declaration["name"],
                         category,
                         data_use["name"],
@@ -360,8 +366,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system_users
             ]
             len_no_privacy = len(system_row)
-            num_privacy_declaration_fields = 12
-            for i in range(num_privacy_declaration_fields):
+            for i in range(len(privacy_declaration_fields)):
                 system_row.insert(len_no_privacy + i, EMPTY_COLUMN_PLACEHOLDER)
 
             system_row.append(data_protection_impact_assessment["is_required"])
@@ -531,24 +536,12 @@ def build_joined_dataframe(
     Including those here manually for now is required to use the append
     function built in to pandas
     """
-    from pprint import pprint
     # systems
     system_output_list, custom_columns = generate_system_records(server_resource_dict)
-    headers = system_output_list[0]
-    first_row = system_output_list[1]
-    pprint(f"1- headers {len(system_output_list[0])}- row{len(system_output_list[1])}")
-    breakpoint()
     systems_df = pd.DataFrame.from_records(system_output_list)
-    pprint(f"2-{systems_df.to_dict('records')=}")
-
     systems_df.columns = systems_df.iloc[0]
-    pprint(f"3-{systems_df.to_dict('records')=}")
+    systems_df = systems_df[1:]
 
-
-    # pprint(f"4-{systems_df.to_dict('records')=}")
-
-
-    # pprint(f"5-{systems_df.to_dict('records')=}")
 
     # datasets
 
