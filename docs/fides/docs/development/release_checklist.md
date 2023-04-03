@@ -8,33 +8,34 @@ This checklist should be copy/pasted into the final pre-release PR, and checked 
 
 ### General
 
-- [ ] Quickstart verified working and up-to-date
-- [ ] `nox -s "fides_env(test)"` works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)
-- [ ] `nox -s "build(sample)"` works on the release branch, creating the sample images (this is also prereq for `fides deploy up`)
-- [ ] `fides deploy up --no-pull` works using the images built in previous step (verify the admin UI, privacy center, CLI and webserver)
+From the release branch, confirm the following:
+- [ ] Quickstart works: `nox -s quickstart` (verify you can complete the interactive prompts from the command-line)
+- [ ] Test environment works: `nox -s "fides_env(test)"` (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)
+- [ ] Building the sample app images works: `nox -s "build(sample)"` (creates the sample images, which is also prereq for `fides deploy up --no-pull` next)
+- [ ] Running the CLI deploy works: `fides deploy up --no-pull` (see instructions below...)
 
 ```
-mkdir ~/fides-2-1-0-test
-cd ~/fides-2-1-0-test
+mkdir ~/fides-deploy-test
+cd ~/fides-deploy-test
 python3 -m venv venv
 source venv/bin/activate
-pip install git+https://github.com/ethyca/fides.git@<branch>
+pip install git+https://github.com/ethyca/fides.git@<release-branch-name-here>
 fides deploy up --no-pull
 fides status
 fides deploy down
-rm -rf ~/fides-2-1-0-test
+rm -rf ~/fides-deploy-test
 exit
 ```
 
-Next, run the following checks against the environment you've spun up using `fides deploy up --no-pull`:
+Next, run the following checks using the test environment (`nox -s "fides_env(test)"`):
 
 ### API
 
-- [ ] Verify that the generated API docs are correct
+- [ ] Verify that the generated API docs are correct (http://localhost:8080/docs)
 
 ### CLI
 
-Run these from within `nox -s dev -- shell`
+Run these from within the test environment shell:
 
 - [ ] Make sure to login your CLI user by running `fides user login -u root_user -p Testpassword1!`
 - [ ] Run a `fides push`
@@ -43,17 +44,17 @@ Run these from within `nox -s dev -- shell`
 - [ ] Generate a dataset with `fides generate dataset db --credentials-id app_postgres test.yml`
 - [ ] Scan a database with `fides scan dataset db --credentials-id app_postgres`
 
-### Admin UI
-
-- [ ] Every navigation button works
-- [ ] DSR approval succeeds
-- [ ] DSR execution succeeds
-
 ### Privacy Center
 
 - [ ] Every navigation button works
 - [ ] DSR submission succeeds
 - [ ] Consent request submission succeeds
+
+### Admin UI
+
+- [ ] Every navigation button works
+- [ ] DSR approval succeeds
+- [ ] DSR execution succeeds
 
 ### Documentation
 
@@ -67,3 +68,4 @@ Run these from within `nox -s dev -- shell`
 - [ ] Verify the fides-privacy-center release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides-privacy-center>
 - [ ] Verify the fides-sample-app release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides-sample-app>
 - [ ] Smoke test the PyPi & DockerHub releases with a clean `pip install ethyca-fides` and `fides deploy up`
+- [ ] Announce the release!
