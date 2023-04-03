@@ -4,6 +4,7 @@ on:
   pull_request:
     paths-ignore:
       - "**.md"
+      - "clients/**"
   push:
     branches:
       - "main"
@@ -103,7 +104,6 @@ jobs:
         test_selection:
           - "check_fides_annotations"
           - "fides_db_scan"
-          - "generate_docs"
           - "docs_check"
           - "minimal_config_startup"
 
@@ -263,7 +263,7 @@ jobs:
   External-SaaS-Connectors:
     needs: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     permissions:

@@ -278,7 +278,6 @@ def evaluate_dataset_reference(
     """
     evaluation_violation_list = []
     if dataset.data_categories:
-
         dataset_violation_message = "Declaration ({}) of system ({}) failed rule ({}) from policy ({}) for dataset ({})".format(
             privacy_declaration.name,
             system.fides_key,
@@ -300,7 +299,6 @@ def evaluate_dataset_reference(
         evaluation_violation_list += dataset_result_violations
 
     for collection in dataset.collections:
-
         collection_violation_message = "Declaration ({}) of system ({}) failed rule ({}) from policy ({}) for dataset collection ({})".format(
             privacy_declaration.name,
             system.fides_key,
@@ -323,7 +321,6 @@ def evaluate_dataset_reference(
             evaluation_violation_list += dataset_collection_result_violations
 
         for field in get_all_level_fields(collection.fields):
-
             field_violation_message = "Declaration ({}) of system ({}) failed rule ({}) from policy ({}) for dataset field ({})".format(
                 privacy_declaration.name,
                 system.fides_key,
@@ -415,7 +412,6 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
         for rule in policy.rules:
             for system in taxonomy.system:
                 for declaration in system.privacy_declarations:
-
                     evaluation_violation_list += evaluate_privacy_declaration(
                         taxonomy=taxonomy,
                         policy=policy,

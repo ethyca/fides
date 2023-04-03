@@ -59,6 +59,10 @@ MESSAGING_TEST = "/messaging/config/test"
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
 
+# Privacy Notice URLs
+PRIVACY_NOTICE = "/privacy-notice"
+PRIVACY_NOTICE_DETAIL = "/privacy-notice/{privacy_notice_id}"
+
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
@@ -142,6 +146,8 @@ USERS = "/user"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
+SYSTEM_MANAGER = "/user/{user_id}/system-manager"
+SYSTEM_MANAGER_DETAIL = "/user/{user_id}/system-manager/{system_key}"
 
 # User Permission URLs
 USER_PERMISSIONS = "/user/{user_id}/permission"

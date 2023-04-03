@@ -14,7 +14,7 @@ import type { PostgreSQLDocsSchema } from "./PostgreSQLDocsSchema";
 import type { RedshiftDocsSchema } from "./RedshiftDocsSchema";
 import type { SaaSSchema } from "./SaaSSchema";
 import type { SnowflakeDocsSchema } from "./SnowflakeDocsSchema";
-import type { SovrnEmailDocsSchema } from "./SovrnEmailDocsSchema";
+import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
 
 /**
@@ -38,6 +38,6 @@ export type SaasConnectionTemplateValues = {
     | ManualWebhookSchemaforDocs
     | TimescaleDocsSchema
     | FidesDocsSchema
-    | SovrnEmailDocsSchema;
+    | SovrnDocsSchema;
   instance_key: string;
 };

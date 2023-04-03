@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Braintree Dataset
-    description: A sample dataset representing the Braintree connector for Fidesops
+    description: A sample dataset representing the Braintree connector for Fides
     collections:
       - name: customer
         fields:

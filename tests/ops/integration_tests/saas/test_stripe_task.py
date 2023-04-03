@@ -394,7 +394,6 @@ async def test_stripe_access_request_task_with_email(
         min_size=2,
         keys=[
             "billing_details",
-            "card",
             "created",
             "customer",
             "id",
@@ -1080,7 +1079,6 @@ async def test_stripe_erasure_request_task(
         min_size=2,
         keys=[
             "billing_details",
-            "card",
             "created",
             "customer",
             "id",
@@ -1172,7 +1170,7 @@ async def test_stripe_erasure_request_task(
         f"{dataset_name}:card": 1,
         f"{dataset_name}:customer_balance_transaction": 0,
         f"{dataset_name}:payment_intent": 0,
-        f"{dataset_name}:payment_method": 2,
+        f"{dataset_name}:payment_method": 3,
         f"{dataset_name}:credit_note": 0,
         f"{dataset_name}:bank_account": 1,
         f"{dataset_name}:subscription": 1,

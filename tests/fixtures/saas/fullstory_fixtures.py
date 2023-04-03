@@ -186,7 +186,6 @@ def fullstory_postgres_db(postgres_integration_session):
 
 
 class FullstoryTestClient:
-
     headers: object = {}
     base_url: str = ""
 
@@ -198,7 +197,6 @@ class FullstoryTestClient:
         self.base_url = f"https://{fullstory_secrets['domain']}"
 
     def get_user(self, user_id: str) -> requests.Response:
-
         user_response: requests.Response = requests.get(
             url=f"{self.base_url}/users/v1/individual/{user_id}", headers=self.headers
         )

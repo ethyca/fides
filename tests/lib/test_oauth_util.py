@@ -9,19 +9,21 @@ from fastapi.security import SecurityScopes
 from fides.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
     SCOPE_REGISTRY,
     USER_DELETE,
     USER_PERMISSION_READ,
     USER_READ,
 )
 from fides.api.ops.util.oauth_util import (
-    _has_correct_scopes,
     _has_direct_scopes,
     _has_scope_via_role,
     get_root_client,
     has_permissions,
+    has_scope_subset,
     verify_oauth_client,
 )
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -29,6 +31,7 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.exceptions import AuthorizationError
+from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
 from fides.lib.oauth.roles import (
@@ -197,26 +200,37 @@ async def test_verify_oauth_client_wrong_client_scope(db, config, user):
 
 
 class TestVerifyOauthClientRoles:
-    async def test_token_does_not_have_roles(self, db, config, user):
-        """Test no error even if there are not roles on the token"""
+    async def test_token_does_not_have_roles(self, db, config):
+        """Test that roles aren't required to be on the token - scopes can still be assigned directly"""
+        client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[PRIVACY_REQUEST_REVIEW],
+            user_id=None,
+        )
+
         payload = {
-            JWE_PAYLOAD_SCOPES: [USER_DELETE],
-            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_PAYLOAD_SCOPES: [PRIVACY_REQUEST_REVIEW],
+            JWE_PAYLOAD_CLIENT_ID: client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
         token = generate_jwe(
             json.dumps(payload),
             config.security.app_encryption_key,
         )
-        client = await verify_oauth_client(
-            SecurityScopes([USER_DELETE]),
+        verified_client = await verify_oauth_client(
+            SecurityScopes([PRIVACY_REQUEST_REVIEW]),
             token,
             db=db,
         )
-        assert client == user.client
+        assert client == verified_client
 
     async def test_verify_oauth_client_roles(self, db, config, owner_user):
-        """Test token has the correct role and the client also has the matching role"""
+        """Test token has a valid role and the client also has the matching role
+        Scopes aren't directly assigned but the user inherits the USER_READ scope
+        via the OWNER role.
+        """
         payload = {
             JWE_PAYLOAD_ROLES: [OWNER],
             JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
@@ -227,14 +241,14 @@ class TestVerifyOauthClientRoles:
             config.security.app_encryption_key,
         )
         client = await verify_oauth_client(
-            SecurityScopes([USER_READ]),
+            SecurityScopes([PRIVACY_REQUEST_REVIEW]),
             token,
             db=db,
         )
         assert client == owner_user.client
 
     async def test_no_roles_on_client(self, db, config, user):
-        """Test token has the correct role but that role is not on the client"""
+        """Test token has a role with the correct scopes but that role is not on the client"""
         payload = {
             JWE_PAYLOAD_ROLES: [OWNER],
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
@@ -246,25 +260,27 @@ class TestVerifyOauthClientRoles:
         )
         with pytest.raises(AuthorizationError):
             await verify_oauth_client(
-                SecurityScopes([USER_READ]),
+                SecurityScopes([PRIVACY_REQUEST_REVIEW]),
                 token,
                 db=db,
             )
 
     async def test_no_roles_on_client_but_has_scopes_coverage(self, db, config, user):
         """Test roles on token are outdated but token still has scopes coverage"""
+        user.client.scopes = [PRIVACY_REQUEST_REVIEW]
+        user.client.save(db)
         payload = {
             JWE_PAYLOAD_ROLES: [OWNER],
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
-            JWE_PAYLOAD_SCOPES: [USER_READ],
+            JWE_PAYLOAD_SCOPES: [PRIVACY_REQUEST_REVIEW],
         }
         token = generate_jwe(
             json.dumps(payload),
             config.security.app_encryption_key,
         )
         client = await verify_oauth_client(
-            SecurityScopes([USER_READ]),
+            SecurityScopes([PRIVACY_REQUEST_REVIEW]),
             token,
             db=db,
         )
@@ -297,13 +313,13 @@ class TestVerifyOauthClientRoles:
 
 class TestHasCorrectScopes:
     def test_missing_scopes(self):
-        assert not _has_correct_scopes(
+        assert not has_scope_subset(
             user_scopes=[DATASET_CREATE_OR_UPDATE, USER_READ],
             endpoint_scopes=SecurityScopes([PRIVACY_REQUEST_READ]),
         )
 
     def test_has_correct_scopes(self):
-        assert _has_correct_scopes(
+        assert has_scope_subset(
             user_scopes=[DATASET_CREATE_OR_UPDATE, USER_READ, PRIVACY_REQUEST_READ],
             endpoint_scopes=SecurityScopes([PRIVACY_REQUEST_READ]),
         )

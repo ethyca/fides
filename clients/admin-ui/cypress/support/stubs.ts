@@ -36,6 +36,26 @@ export const stubSystemCrud = () => {
   });
 };
 
+export const stubOrganizationCrud = () => {
+  cy.intercept("POST", "/api/v1/organization", {
+    fixture: "organizations/default_organization.json",
+  }).as("postOrganization");
+  cy.intercept("GET", "/api/v1/organization/*", {
+    fixture: "organizations/default_organization.json",
+  }).as("getOrganization");
+  cy.intercept("PUT", "/api/v1/organization*", {
+    fixture: "organizations/default_organization.json",
+  }).as("putOrganization");
+  cy.fixture("organizations/default_organization.json").then((organization) => {
+    cy.intercept("DELETE", "/api/v1/organization/*", {
+      body: {
+        message: "resource deleted",
+        resource: organization,
+      },
+    }).as("deleteOrganization");
+  });
+};
+
 export const stubDatasetCrud = () => {
   // Dataset editing references taxonomy info, like data categories.
   stubTaxonomyEntities();

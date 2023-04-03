@@ -18,22 +18,14 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 
-import { CONFIG_WIZARD_ROUTE, DATAMAP_ROUTE, SYSTEM_ROUTE } from "~/constants";
-import { useFeatures } from "~/features/common/features";
-import { resolveLink } from "~/features/common/nav/zone-config";
-import { useGetAllSystemsQuery } from "~/features/system/system.slice";
-
 import { login, selectToken, useLoginMutation } from "../features/auth";
 
 const useLogin = () => {
-  const { data: systems, isLoading: isSystemsLoading } =
-    useGetAllSystemsQuery();
   const [loginRequest, { isLoading }] = useLoginMutation();
   const token = useSelector(selectToken);
   const toast = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
-  const features = useFeatures();
 
   const initialValues = {
     email: "",
@@ -76,31 +68,8 @@ const useLogin = () => {
     return errors;
   };
 
-  const getRedirectRoute = () => {
-    if (!token || isSystemsLoading) {
-      return undefined;
-    }
-
-    if (features.flags.navV2) {
-      return "/";
-    }
-
-    // TODO: Remove the following code snippet once the navV2 flag is permanently removed.
-    if (systems && systems.length > 0) {
-      const datamapRoute = resolveLink({
-        href: DATAMAP_ROUTE,
-        basePath: "/",
-      });
-
-      return features.plus ? datamapRoute.href : SYSTEM_ROUTE;
-    }
-    return CONFIG_WIZARD_ROUTE;
-  };
-
-  const redirectRoute = getRedirectRoute();
-
-  if (redirectRoute) {
-    router.push(redirectRoute);
+  if (token) {
+    router.push("/");
   }
 
   return {

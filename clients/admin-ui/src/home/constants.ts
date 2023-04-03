@@ -1,11 +1,11 @@
 import {
-  CONFIG_WIZARD_ROUTE,
+  ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
   DATASTORE_CONNECTION_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
   SYSTEM_ROUTE,
 } from "~/constants";
-import { ScopeRegistry } from "~/types/api";
+import { ScopeRegistryEnum } from "~/types/api";
 
 import { ModuleCardConfig } from "./types";
 
@@ -32,18 +32,18 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     title: "VM",
     requiresPlus: true,
     requiresSystems: true,
-    scopes: [ScopeRegistry.DATAMAP_READ],
+    scopes: [ScopeRegistryEnum.DATAMAP_READ],
   },
   {
     color: "orange",
     description:
       "As your organization grows you can continue adding systems to your Fides data map.",
-    href: `${CONFIG_WIZARD_ROUTE}`,
+    href: `${ADD_SYSTEMS_ROUTE}`,
     key: ModuleCardKeys.ADD_SYSTEMS,
     name: "Add systems",
     sortOrder: 1,
     title: "AS",
-    scopes: [ScopeRegistry.CLI_OBJECTS_CREATE],
+    scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
   },
   {
     color: "purple",
@@ -54,7 +54,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     name: "View systems",
     sortOrder: 2,
     title: "VS",
-    scopes: [ScopeRegistry.CLI_OBJECTS_READ],
+    scopes: [ScopeRegistryEnum.SYSTEM_READ],
     requiresSystems: true,
   },
   {
@@ -66,7 +66,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     name: "Configure privacy requests",
     sortOrder: 3,
     title: "PR",
-    scopes: [ScopeRegistry.CONNECTION_CREATE_OR_UPDATE],
+    scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
   },
 
   {
@@ -78,7 +78,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     name: "Review privacy requests",
     sortOrder: 4,
     title: "RP",
-    scopes: [ScopeRegistry.PRIVACY_REQUEST_CREATE],
+    scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW],
     requiresConnections: true,
   },
 ];

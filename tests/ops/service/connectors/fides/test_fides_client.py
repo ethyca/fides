@@ -212,7 +212,6 @@ class TestFidesClientUnit:
         authenticated_fides_client: FidesClient,
         async_api_client: AsyncClient,
     ):
-
         pr = PrivacyRequest.create(
             db=db,
             data={

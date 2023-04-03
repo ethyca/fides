@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Recharge SaaS Config
+  name: Recharge
   type: recharge
   description: A sample schema representing the Recharge connector for Fides
   version: 0.0.1

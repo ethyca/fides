@@ -6,7 +6,7 @@ dataset:
       - name: customer_details
         fields:
           - name: _id
-            data_categories: [system.operations]
+            data_categories: [system.operations, user.unique_id]
             fides_meta:
               primary_key: True
           - name: customer_id

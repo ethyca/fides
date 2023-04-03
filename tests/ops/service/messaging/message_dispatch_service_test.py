@@ -79,7 +79,7 @@ class TestMessageDispatchService:
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            service_type=MessagingServiceType.MAILGUN.value,
+            service_type=MessagingServiceType.mailgun.value,
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -100,19 +100,18 @@ class TestMessageDispatchService:
     def test_email_dispatch_mailgun_config_not_found(
         self, mock_mailgun_dispatcher: Mock, db: Session
     ) -> None:
-
         with pytest.raises(MessageDispatchException) as exc:
             dispatch_message(
                 db=db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.MAILGUN.value,
+                service_type=MessagingServiceType.mailgun.value,
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600
                 ),
             )
         assert (
-            exc.value.args[0] == "No messaging config found for service_type MAILGUN."
+            exc.value.args[0] == "No messaging config found for service_type mailgun."
         )
 
         mock_mailgun_dispatcher.assert_not_called()
@@ -123,13 +122,12 @@ class TestMessageDispatchService:
     def test_email_dispatch_mailgun_config_no_secrets(
         self, mock_mailgun_dispatcher: Mock, db: Session
     ) -> None:
-
         messaging_config = MessagingConfig.create(
             db=db,
             data={
                 "name": "mailgun config",
                 "key": "my_mailgun_messaging_config",
-                "service_type": MessagingServiceType.MAILGUN,
+                "service_type": MessagingServiceType.mailgun,
                 "details": {
                     MessagingServiceDetails.DOMAIN.value: "some.domain",
                 },
@@ -141,7 +139,7 @@ class TestMessageDispatchService:
                 db=db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=Identity(**{"email": "test@email.com"}),
-                service_type=MessagingServiceType.MAILGUN.value,
+                service_type=MessagingServiceType.mailgun.value,
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600
                 ),
@@ -176,7 +174,7 @@ class TestMessageDispatchService:
                     db=db,
                     action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                     to_identity=Identity(**{"email": "test@email.com"}),
-                    service_type=MessagingServiceType.MAILGUN.value,
+                    service_type=MessagingServiceType.mailgun.value,
                     message_body_params=SubjectIdentityVerificationBodyParams(
                         verification_code="2348", verification_code_ttl_seconds=600
                     ),
@@ -196,7 +194,7 @@ class TestMessageDispatchService:
             db=db,
             action_type=MessagingActionType.TEST_MESSAGE,
             to_identity=Identity(email="test@email.com"),
-            service_type=MessagingServiceType.MAILGUN.value,
+            service_type=MessagingServiceType.mailgun.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
         mock_mailgun_dispatcher.assert_called_with(
@@ -218,7 +216,7 @@ class TestMessageDispatchService:
             db=db,
             action_type=MessagingActionType.TEST_MESSAGE,
             to_identity=Identity(email="test@email.com"),
-            service_type=MessagingServiceType.TWILIO_EMAIL.value,
+            service_type=MessagingServiceType.twilio_email.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
         mock_twilio_dispatcher.assert_called_with(
@@ -240,7 +238,7 @@ class TestMessageDispatchService:
             db=db,
             action_type=MessagingActionType.TEST_MESSAGE,
             to_identity=Identity(phone_number="+19198675309"),
-            service_type=MessagingServiceType.TWILIO_TEXT.value,
+            service_type=MessagingServiceType.twilio_text.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
         mock_twilio_dispatcher.assert_called_with(
@@ -250,24 +248,14 @@ class TestMessageDispatchService:
         )
 
     def test_fidesops_email_parse_object(self):
-        body = [
-            CheckpointActionRequired(
-                step=CurrentStep.erasure,
-                collection=CollectionAddress("email_dataset", "test_collection"),
-                action_needed=[
-                    ManualAction(
-                        locators={"email": "test@example.com"},
-                        get=None,
-                        update={"phone": "null_rewrite"},
-                    )
-                ],
-            )
-        ]
-
         FidesopsMessage.parse_obj(
             {
                 "action_type": MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
-                "body_params": [action.dict() for action in body],
+                "body_params": {
+                    "controller": "Test Organization",
+                    "third_party_vendor_name": "System",
+                    "identities": ["test@example.com"],
+                },
             }
         )
 
@@ -287,12 +275,11 @@ class TestMessageDispatchService:
     def test_sms_dispatch_twilio_success(
         self, mock_twilio_dispatcher: Mock, db: Session, messaging_config_twilio_sms
     ) -> None:
-
         dispatch_message(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"phone_number": "+12312341231"}),
-            service_type=MessagingServiceType.TWILIO_TEXT.value,
+            service_type=MessagingServiceType.twilio_text.value,
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -311,7 +298,7 @@ class TestMessageDispatchService:
                 db=db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=Identity(phone_number=None),
-                service_type=MessagingServiceType.TWILIO_TEXT.value,
+                service_type=MessagingServiceType.twilio_text.value,
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600
                 ),
@@ -325,20 +312,19 @@ class TestMessageDispatchService:
     def test_sms_dispatch_twilio_config_not_found(
         self, mock_twilio_dispatcher: Mock, db: Session
     ) -> None:
-
         with pytest.raises(MessageDispatchException) as exc:
             dispatch_message(
                 db=db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=Identity(**{"phone_number": "+12312341231"}),
-                service_type=MessagingServiceType.TWILIO_TEXT.value,
+                service_type=MessagingServiceType.twilio_text.value,
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600
                 ),
             )
         assert (
             exc.value.args[0]
-            == "No messaging config found for service_type TWILIO_TEXT."
+            == "No messaging config found for service_type twilio_text."
         )
 
         mock_twilio_dispatcher.assert_not_called()
@@ -349,13 +335,12 @@ class TestMessageDispatchService:
     def test_sms_dispatch_twilio_config_no_secrets(
         self, mock_mailgun_dispatcher: Mock, db: Session
     ) -> None:
-
         messaging_config = MessagingConfig.create(
             db=db,
             data={
                 "name": "twilio sms config",
                 "key": "my_twilio_sms_config",
-                "service_type": MessagingServiceType.TWILIO_TEXT,
+                "service_type": MessagingServiceType.twilio_text.value,
             },
         )
 
@@ -364,7 +349,7 @@ class TestMessageDispatchService:
                 db=db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=Identity(**{"phone_number": "+12312341231"}),
-                service_type=MessagingServiceType.TWILIO_TEXT.value,
+                service_type=MessagingServiceType.twilio_text.value,
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600
                 ),
@@ -389,7 +374,7 @@ class TestMessageDispatchService:
             data={
                 "name": "twilio sms config",
                 "key": "my_twilio_sms_config",
-                "service_type": MessagingServiceType.TWILIO_TEXT,
+                "service_type": MessagingServiceType.twilio_text.value,
             },
         )
 
@@ -398,7 +383,7 @@ class TestMessageDispatchService:
                 db=db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=None,
-                service_type=MessagingServiceType.TWILIO_TEXT.value,
+                service_type=MessagingServiceType.twilio_text.value,
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600
                 ),
@@ -419,7 +404,7 @@ class TestMessageDispatchService:
             data={
                 "name": "twilio sms config",
                 "key": "my_twilio_sms_config",
-                "service_type": MessagingServiceType.TWILIO_TEXT,
+                "service_type": MessagingServiceType.twilio_text.value,
             },
         )
 
@@ -533,7 +518,7 @@ class TestTwilioSmsDispatcher:
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            service_type=MessagingServiceType.MAILGUN.value,
+            service_type=MessagingServiceType.mailgun.value,
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -559,7 +544,7 @@ class TestTwilioSmsDispatcher:
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"phone_number": "+12312341231"}),
-            service_type=MessagingServiceType.TWILIO_TEXT.value,
+            service_type=MessagingServiceType.twilio_text.value,
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -583,7 +568,7 @@ class TestTwilioSmsDispatcher:
             db=db,
             action_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT,
             to_identity=Identity(**{"email": "sovrn_test@example.com"}),
-            service_type=MessagingServiceType.MAILGUN.value,
+            service_type=MessagingServiceType.mailgun.value,
             message_body_params=ConsentEmailFulfillmentBodyParams(
                 controller="Test Organization",
                 third_party_vendor_name="Sovrn",

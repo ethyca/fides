@@ -73,7 +73,7 @@ const NewPasswordModal = ({ id }: Props) => {
   return (
     <>
       <Button
-        colorScheme="primary"
+        variant="outline"
         size="sm"
         onClick={onOpen}
         data-testid="reset-password-btn"

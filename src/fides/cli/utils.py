@@ -66,7 +66,7 @@ def check_server_health(server_url: str, verbose: bool = True) -> requests.Respo
     except requests.exceptions.ConnectionError:
         if verbose:
             echo_red(
-                f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
+                f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}"
             )
         raise SystemExit(1)
     return health_response

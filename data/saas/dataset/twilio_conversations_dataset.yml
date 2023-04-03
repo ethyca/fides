@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Twilio Conversations Dataset
-    description: A sample dataset representing the Twilio Conversations connector for Fidesops
+    description: A sample dataset representing the Twilio Conversations connector for Fides
     collections:
       - name: user
         fields:

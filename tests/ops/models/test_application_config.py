@@ -382,14 +382,12 @@ class TestConfigProxy:
 
     @pytest.mark.usefixtures("insert_app_config_set_notification_service_type_none")
     def test_config_proxy_none_set(self, config_proxy: ConfigProxy):
-
         # we've explicitly made sure this property is not set via either traditional config
         # variable or via API
         assert config_proxy.notifications.notification_service_type is None
 
     @pytest.mark.usefixtures("insert_app_config_set_notification_service_type_none")
     def test_config_proxy_none_set_whole_section(self, config_proxy: ConfigProxy):
-
         # we've explicitly made sure this whole section is not set via either traditional config
         # variable or via API
 
@@ -406,7 +404,6 @@ class TestConfigProxy:
     def test_config_proxy(
         self, config_proxy: ConfigProxy, insert_example_config_record
     ):
-
         notification_service_type = config_proxy.notifications.notification_service_type
         assert (
             notification_service_type
