@@ -163,7 +163,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         "system.privacy_declaration.data_subjects.rights_available",
         "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
         "system.privacy_declaration.data_qualifier",
-
     ]
     output_list: List[Tuple[str, ...]] = [
         (
@@ -223,7 +222,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         "tags",
         "fidesctl_meta",
         "system_type",
-        "users"
+        "users",
     )
 
     # list to keep track of header order of custom fields
@@ -248,7 +247,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                     system_custom_field_data[key_string] = ", ".join(value)
                 else:
                     system_custom_field_data[key_string] = value
-        system_users = ", ".join([ user.username for user in system.get("users", [])])
+        system_users = ", ".join([user.username for user in system.get("users", [])])
 
         third_country_list = ", ".join(system.get("third_country_transfers") or [])
         system_dependencies = ", ".join(system.get("system_dependencies") or [])
@@ -363,7 +362,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system_dependencies,
                 system_ingress,
                 system_egress,
-                system_users
+                system_users,
             ]
             len_no_privacy = len(system_row)
             for i in range(len(privacy_declaration_fields)):
@@ -541,7 +540,6 @@ def build_joined_dataframe(
     systems_df = pd.DataFrame.from_records(system_output_list)
     systems_df.columns = systems_df.iloc[0]
     systems_df = systems_df[1:]
-
 
     # datasets
 

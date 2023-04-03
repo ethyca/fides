@@ -11,12 +11,12 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     CustomFieldDefinition,
     System,
 )
+from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import FidesConfig
-from fides.lib.models.fides_user import FidesUser
-from fides.api.ops.common_exceptions import SystemManagerException
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.roles import VIEWER
 
 HEADERS_ROW_RESPONSE_PAYLOAD = {
@@ -105,7 +105,9 @@ NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD = {
 NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER = (
     NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD.copy()
 )
-NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER.update({"system.users": "test_system_manager_user"})
+NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER.update(
+    {"system.users": "test_system_manager_user"}
+)
 
 NO_PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_CUSTOM_FIELD = (
     NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD.copy()
@@ -165,7 +167,7 @@ PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD = {
     "system.description": "Test Policy 2",
     "system.ingress": "",
     "system.egress": "",
-    "system.users": ""
+    "system.users": "",
 }
 
 PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_CUSTOM_FIELD = (
@@ -204,10 +206,9 @@ EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_NO_PRIVACY_DECLARATION = [
 ]
 
 
-
-EXPECTED_NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER =[
+EXPECTED_NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER = [
     HEADERS_ROW_RESPONSE_PAYLOAD,
-    NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER
+    NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER,
 ]
 
 EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_PRIVACY_DECLARATION = [
@@ -364,7 +365,6 @@ def system_no_privacy_declarations(db):
     system_db_record.delete(db)
 
 
-
 @pytest.fixture
 def system_with_manager(db, system_no_privacy_declarations):
     """
@@ -400,7 +400,6 @@ def system_with_manager(db, system_no_privacy_declarations):
     except SystemManagerException:
         pass
     user.delete(db)
-
 
 
 @pytest.fixture
@@ -1097,8 +1096,6 @@ def test_datamap_two_custom_fields_one_multival_two_systems(
     assert (
         response.json() == EXPECTED_RESPONSE_TWO_CUSTOM_FIELDS_ONE_MULTIVAL_TWO_SYSTEMS
     )
-
-
 
 
 @pytest.mark.integration
