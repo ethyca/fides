@@ -189,9 +189,7 @@ def format_datamap_values(
     """
 
     columns = {**DATAMAP_COLUMNS_API, **custom_columns}
-    from pprint import pprint
 
-    # pprint(joined_system_dataset_df.to_dict("records"))
     if include_deprecated_columns:
         columns = {**columns, **DEPRECATED_COLUMNS}
 
