@@ -78,7 +78,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             *EXEC,
             "pytest",
             coverage_arg,
-            "tests/ctl/api/test_datamap.py",
+            "tests/ctl/",
             "-m",
             mark,
         )
