@@ -16,7 +16,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "772783a7df7fa92e8111d0c08e207381" # string
+analytics_id = "b3ce88e52ed0e6e78ce554a68ea534d5" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -293,6 +293,11 @@ root_username = "" # string
 # storage will be valid. The default is equal to 5 days.
 subject_request_download_link_ttl_seconds = 432000 # integer
 
+# Enables or disables the ability to import connector templates with
+# custom functions. When enabled, custom functions which will be loaded
+# in a restricted environment to minimize security risks.
+allow_custom_connector_functions = false # boolean
+
 #----------#
 #-- USER --#
 #--------------------------------------------------------------------#
@@ -305,6 +310,12 @@ analytics_opt_out = true # boolean
 # An arbitrary string used to encrypt the user data stored in the
 # database. Encryption is implemented using PGP.
 encryption_key = "test_encryption_key" # string
+
+# The username used to log into the Fides webserver.
+username = "" # string
+
+# The password used to log into the Fides webserver.
+password = "" # string
 
 #------------#
 #-- CELERY --#

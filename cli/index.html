@@ -2264,21 +2264,19 @@ _Scannable resources: [Redshift, RDS, DynamoDb, S3]_
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Use the credentials file to create a new user. Gives full permissions to the new user.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides user create [OPTIONS]
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides user create [OPTIONS] USERNAME PASSWORD
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>  -u, --username TEXT
-  -p, --password TEXT
-  -f, --first-name TEXT
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -f, --first-name TEXT
   -l, --last-name TEXT
   --help                 Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-user-login">fides user login</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate a user access token and write it to a credentials file.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>Authenticate with the webserver and generate a user access token.
+Then store those credentials in a credentials file.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides user login [OPTIONS]
@@ -2286,8 +2284,12 @@ _Scannable resources: [Redshift, RDS, DynamoDb, S3]_
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -u, --username TEXT
-  -p, --password TEXT
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>  -u, --username TEXT  If not provided, will be pulled from the config file or
+                       prompted for.
+  -p, --password TEXT  If not provided, will be pulled from the config file or
+                       prompted for.
   --help               Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-user-permissions">fides user permissions</h4>

@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.9.2"
+    "version": "2.10.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4870,7 +4870,7 @@
           "Users"
         ],
         "summary": "Create User",
-        "description": "Create a user given a username and password.\nIf `password` is sent as a base64 encoded string, it will automatically be decoded\nserver-side before being encrypted and persisted.\nIf `password` is sent as a plaintext string, it will be encrypted and persisted as is.",
+        "description": "Create a user given a username and password.\nIf `password` is sent as a base64 encoded string, it will automatically be decoded\nserver-side before being encrypted and persisted.\nIf `password` is sent as a plaintext string, it will be encrypted and persisted as is.\n\nThe user is given no roles by default.",
         "operationId": "create_user_api_v1_user_post",
         "parameters": [
           {
@@ -4989,7 +4989,7 @@
           "Users"
         ],
         "summary": "Update User",
-        "description": "Update a user given a `user_id`. By default this is limited to users\nupdating their own data.",
+        "description": "Update a user given a `user_id`. If the user is not updating their own data,\nthey need the USER_UPDATE scope",
         "operationId": "update_user_api_v1_user__user_id__put",
         "parameters": [
           {
@@ -5036,9 +5036,7 @@
         },
         "security": [
           {
-            "OAuth2ClientCredentialsBearer": [
-              "user:update"
-            ]
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       },
@@ -6941,7 +6939,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "masking:exec"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/masking/strategy": {
@@ -6967,7 +6972,14 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "masking:read"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/oauth/token": {
@@ -8713,6 +8725,260 @@
         ]
       }
     },
+    "/api/v1/privacy-notice": {
+      "get": {
+        "tags": [
+          "Privacy Notice"
+        ],
+        "summary": "Get Privacy Notice List",
+        "description": "Return a paginated list of PrivacyNotice records in this system.\nIncludes some query params to help filter the list if needed",
+        "operationId": "get_privacy_notice_list_api_v1_privacy_notice_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Show Disabled",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "show_disabled",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            },
+            "name": "region",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Systems Applicable",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "systems_applicable",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_PrivacyNoticeResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-notice:read"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Privacy Notice"
+        ],
+        "summary": "Create Privacy Notices",
+        "description": "Create one or more privacy notices.\n\nTo avoid any confusing or unexpected behavior, the entire operation is void\nif any of the input data does not satisfy validation criteria.",
+        "operationId": "create_privacy_notices_api_v1_privacy_notice_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Privacy Notices",
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PrivacyNoticeCreation"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Create Privacy Notices Api V1 Privacy Notice Post",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrivacyNoticeResponse"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-notice:create"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Privacy Notice"
+        ],
+        "summary": "Update Privacy Notices",
+        "description": "Update one or more privacy notices.\n\nTo avoid any confusing or unexpected behavior, the entire operation is void\nif any of the input data does not satisfy validation criteria, or if any\ninput privacy notice is not found.",
+        "operationId": "update_privacy_notices_api_v1_privacy_notice_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Privacy Notice Updates",
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PrivacyNoticeWithId"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Update Privacy Notices Api V1 Privacy Notice Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrivacyNoticeResponse"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-notice:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-notice/{privacy_notice_id}": {
+      "get": {
+        "tags": [
+          "Privacy Notice"
+        ],
+        "summary": "Get Privacy Notice",
+        "description": "Return a single PrivacyNotice",
+        "operationId": "get_privacy_notice_api_v1_privacy_notice__privacy_notice_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Notice Id",
+              "type": "string"
+            },
+            "name": "privacy_notice_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyNoticeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-notice:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request": {
       "get": {
         "tags": [
@@ -8838,6 +9104,14 @@
               "type": "string"
             },
             "name": "external_id",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ActionType"
+            },
+            "name": "action_type",
             "in": "query"
           },
           {
@@ -11942,7 +12216,7 @@
           "User Permissions"
         ],
         "summary": "Update User Permissions",
-        "description": "Update either a user's role(s) and/or scope(s).\n\nTypically we'll assign roles to a user and they'll inherit the associated scopes,\nbut we're still supporting assigning scopes directly as well.",
+        "description": "Update a user's role(s).  The UI assigns one role at a time, but multiple\nroles are technically supported.\n\nUsers inherit numerous scopes that are associated with their role(s).",
         "operationId": "update_user_permissions_api_v1_user__user_id__permission_put",
         "parameters": [
           {
@@ -11992,6 +12266,9 @@
             "OAuth2ClientCredentialsBearer": [
               "user-permission:update"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       },
@@ -12000,7 +12277,7 @@
           "User Permissions"
         ],
         "summary": "Create User Permissions",
-        "description": "Create user permissions with big picture roles and/or scopes.",
+        "description": "Create user permissions with associated roles.",
         "operationId": "create_user_permissions_api_v1_user__user_id__permission_post",
         "parameters": [
           {
@@ -12050,6 +12327,9 @@
             "OAuth2ClientCredentialsBearer": [
               "user-permission:create"
             ]
+          },
+          {
+            "OAuth2ClientCredentialsBearer": []
           }
         ]
       }
@@ -13238,6 +13518,15 @@
           }
         },
         "description": "Schema for consent."
+      },
+      "ConsentMechanism": {
+        "title": "ConsentMechanism",
+        "enum": [
+          "opt_in",
+          "opt_out",
+          "necessary"
+        ],
+        "description": "An enumeration."
       },
       "ConsentPreferences": {
         "title": "ConsentPreferences",
@@ -14448,6 +14737,14 @@
           }
         },
         "description": "A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"
+      },
+      "EnforcementLevel": {
+        "title": "EnforcementLevel",
+        "enum": [
+          "frontend",
+          "system_wide"
+        ],
+        "description": "Enum is not formalized in the DB because it may be subject to frequent change"
       },
       "Evaluation": {
         "title": "Evaluation",
@@ -16098,6 +16395,40 @@
           }
         }
       },
+      "Page_PrivacyNoticeResponse_": {
+        "title": "Page[PrivacyNoticeResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_RuleResponseWithTargets_": {
         "title": "Page[RuleResponseWithTargets]",
         "required": [
@@ -16663,6 +16994,267 @@
           }
         },
         "description": "The PrivacyDeclaration resource model.\n\nStates a function of a system, and describes how it relates\nto the privacy data types."
+      },
+      "PrivacyNoticeCreation": {
+        "title": "PrivacyNoticeCreation",
+        "required": [
+          "name",
+          "regions",
+          "consent_mechanism",
+          "data_uses",
+          "enforcement_level"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "consent_mechanism": {
+            "$ref": "#/components/schemas/ConsentMechanism"
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enforcement_level": {
+            "$ref": "#/components/schemas/EnforcementLevel"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean"
+          },
+          "displayed_in_privacy_center": {
+            "title": "Displayed In Privacy Center",
+            "type": "boolean"
+          },
+          "displayed_in_privacy_modal": {
+            "title": "Displayed In Privacy Modal",
+            "type": "boolean"
+          },
+          "displayed_in_banner": {
+            "title": "Displayed In Banner",
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An API representation of a PrivacyNotice.\nThis model doesn't include an `id` so that it can be used for creation.\nIt also establishes some fields _required_ for creation"
+      },
+      "PrivacyNoticeRegion": {
+        "title": "PrivacyNoticeRegion",
+        "enum": [
+          "us_ca",
+          "us_co",
+          "us_va",
+          "us_ut",
+          "eu_be",
+          "eu_bg",
+          "eu_cz",
+          "eu_dk",
+          "eu_de",
+          "eu_ee",
+          "eu_ie",
+          "eu_el",
+          "eu_es",
+          "eu_fr",
+          "eu_hr",
+          "eu_it",
+          "eu_cy",
+          "eu_lv",
+          "eu_lt",
+          "eu_lu",
+          "eu_hu",
+          "eu_mt",
+          "eu_nl",
+          "eu_at",
+          "eu_pl",
+          "eu_pt",
+          "eu_ro",
+          "eu_si",
+          "eu_sk",
+          "eu_fi",
+          "eu_se"
+        ],
+        "description": "Enum is not formalized in the DB because it is subject to frequent change"
+      },
+      "PrivacyNoticeResponse": {
+        "title": "PrivacyNoticeResponse",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "consent_mechanism": {
+            "$ref": "#/components/schemas/ConsentMechanism"
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enforcement_level": {
+            "$ref": "#/components/schemas/EnforcementLevel"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean"
+          },
+          "displayed_in_privacy_center": {
+            "title": "Displayed In Privacy Center",
+            "type": "boolean"
+          },
+          "displayed_in_privacy_modal": {
+            "title": "Displayed In Privacy Modal",
+            "type": "boolean"
+          },
+          "displayed_in_banner": {
+            "title": "Displayed In Banner",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "title": "Version",
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An API representation of a PrivacyNotice used for response payloads"
+      },
+      "PrivacyNoticeWithId": {
+        "title": "PrivacyNoticeWithId",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "consent_mechanism": {
+            "$ref": "#/components/schemas/ConsentMechanism"
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enforcement_level": {
+            "$ref": "#/components/schemas/EnforcementLevel"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean"
+          },
+          "displayed_in_privacy_center": {
+            "title": "Displayed In Privacy Center",
+            "type": "boolean"
+          },
+          "displayed_in_privacy_modal": {
+            "title": "Displayed In Privacy Modal",
+            "type": "boolean"
+          },
+          "displayed_in_banner": {
+            "title": "Displayed In Banner",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An API representation of a PrivacyNotice that includes an `id` field.\nUsed to help model API responses and update payloads"
       },
       "PrivacyRequestCreate": {
         "title": "PrivacyRequestCreate",
@@ -17801,6 +18393,8 @@
           "evaluation:update",
           "fides_taxonomy:update",
           "generate:exec",
+          "masking:exec",
+          "masking:read",
           "messaging:create_or_update",
           "messaging:delete",
           "messaging:read",
@@ -17811,6 +18405,9 @@
           "policy:create_or_update",
           "policy:delete",
           "policy:read",
+          "privacy-notice:create",
+          "privacy-notice:update",
+          "privacy-notice:read",
           "privacy-request:create",
           "privacy-request:resume",
           "privacy-request:delete",
@@ -17853,6 +18450,7 @@
           "user:password-reset",
           "user-permission:create",
           "user-permission:update",
+          "user-permission:assign_owners",
           "user-permission:read",
           "validate:exec",
           "webhook:create_or_update",
@@ -18585,42 +19183,32 @@
       },
       "UserPermissionsCreate": {
         "title": "UserPermissionsCreate",
+        "required": [
+          "roles"
+        ],
         "type": "object",
         "properties": {
-          "scopes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ScopeRegistryEnum"
-            },
-            "default": []
-          },
           "roles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleRegistryEnum"
-            },
-            "default": []
+            }
           }
         },
-        "description": "Data required to create a FidesUserPermissions record\n\nUsers will generally be assigned role(s) directly which are associated with many scopes,\nbut we also will continue to support the ability to be assigned specific individual scopes."
+        "description": "Data required to create a FidesUserPermissions record\n\nUsers will be assigned role(s) directly which are associated with a list of scopes. Scopes\ncannot be assigned directly to users."
       },
       "UserPermissionsEdit": {
         "title": "UserPermissionsEdit",
+        "required": [
+          "roles"
+        ],
         "type": "object",
         "properties": {
-          "scopes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ScopeRegistryEnum"
-            },
-            "default": []
-          },
           "roles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleRegistryEnum"
-            },
-            "default": []
+            }
           },
           "id": {
             "title": "Id",
@@ -18632,25 +19220,18 @@
       "UserPermissionsResponse": {
         "title": "UserPermissionsResponse",
         "required": [
-          "scopes",
+          "roles",
           "id",
           "user_id",
           "total_scopes"
         ],
         "type": "object",
         "properties": {
-          "scopes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ScopeRegistryEnum"
-            }
-          },
           "roles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleRegistryEnum"
-            },
-            "default": []
+            }
           },
           "id": {
             "title": "Id",
