@@ -346,17 +346,20 @@ const Consent: NextPage = () => {
             >
               Manage your consent
             </Heading>
-            <Text
-              fontSize={["small", "medium"]}
-              fontWeight="medium"
-              maxWidth="624px"
-              textAlign="center"
-              color="gray.600"
-            >
-              When you use our services, you&apos;re trusting us with your
-              information. We understand this is a big responsibility and work
-              hard to protect your information and put you in control.
-            </Text>
+            {config.consent?.description_subtext.map((paragraph, index) => (
+              <Text
+                fontSize={["small", "medium"]}
+                fontWeight="medium"
+                maxWidth={624}
+                textAlign="center"
+                color="gray.600"
+                data-testid={`description-${index}`}
+                // eslint-disable-next-line react/no-array-index-key
+                key={`description-${index}`}
+              >
+                {paragraph}
+              </Text>
+            ))}
           </Stack>
 
           {consentContext.globalPrivacyControl ? <GpcBanner /> : null}
