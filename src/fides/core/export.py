@@ -531,7 +531,9 @@ def build_joined_dataframe(
     Including those here manually for now is required to use the append
     function built in to pandas
     """
+
     # systems
+
     system_output_list, custom_columns = generate_system_records(server_resource_dict)
     systems_df = pd.DataFrame.from_records(system_output_list)
     systems_df.columns = systems_df.iloc[0]
