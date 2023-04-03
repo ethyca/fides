@@ -218,15 +218,19 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         "tags",
         "fidesctl_meta",
         "system_type",
+        "users"
     )
 
     # list to keep track of header order of custom fields
     system_custom_field_headers = []
+    print("system keys from db",server_resources["system"][0].keys())
     for system in server_resources["system"]:
+
         system_custom_field_data = {}
         if not isinstance(system, dict):
             system = system.__dict__
 
+        # process custom columns
         for key, value in system.items():
             if key not in known_fields:
                 keys = list(output_list[0])
@@ -238,11 +242,12 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                     # and we also maintain our ordered list of custom field headers
                     system_custom_field_headers.append(key_string)
                 if isinstance(value, list):
-                    list_values = [r.username if type(FidesUser) else r for r in value]
-                    system_custom_field_data[key_string] = ", ".join(list_values)
+                    system_custom_field_data[key_string] = ", ".join(value)
                 else:
                     system_custom_field_data[key_string] = value
+        system_users = ", ".join([ user.username for user in system.get("users", [])])
 
+        print(f"{system_users=}")
         third_country_list = ", ".join(system.get("third_country_transfers") or [])
         system_dependencies = ", ".join(system.get("system_dependencies") or [])
         if system.get("ingress"):
@@ -278,7 +283,14 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system.get("data_protection_impact_assessment", {})
             )
         )
+
+
+
+
+
         if system.get("privacy_declarations"):
+            print(f"\nsystem HAS  PDs\n")
+
             for declaration in system["privacy_declarations"]:
                 if not isinstance(declaration, dict):
                     declaration = declaration.dict()
@@ -342,6 +354,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
 
                 output_list += cartesian_product_of_declaration
         else:
+            print(f"\nsystem has no PDs\n")
             system_row = [
                 system["fides_key"],
                 system["name"],
@@ -353,15 +366,17 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system_ingress,
                 system_egress,
             ]
+            # print(f"1-{system_row=}")
             len_no_privacy = len(system_row)
-            num_privacy_declaration_fields = 12
+            num_privacy_declaration_fields = 13
             for i in range(num_privacy_declaration_fields):
                 system_row.insert(len_no_privacy + i, EMPTY_COLUMN_PLACEHOLDER)
+            # print(f"2-{system_row=}")
 
             system_row.append(data_protection_impact_assessment["is_required"])
             system_row.append(data_protection_impact_assessment["progress"])
             system_row.append(data_protection_impact_assessment["link"])
-            system_row.append(EMPTY_COLUMN_PLACEHOLDER)
+            # print(f"3-{system_row=}")
 
             # iterate through our ordered list of custom field headers
             # and find any corresponding custom field data.
@@ -373,10 +388,19 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                         custom_field_header, EMPTY_COLUMN_PLACEHOLDER
                     )
                 )
-
+            # print(f"4-{system_row=}")
+            system_row.append(system_users)
             # also add n/a for the dataset reference
             output_list += [tuple(system_row)]
-
+            # print(f"5-{system_row=}")
+            # from pprint import pprint
+            # pprint(f"6-{output_list=}")
+            # print("")
+            # print("")
+            # print("")
+    from pprint import pprint
+    # pprint(f"7-{output_list=}")
+    # print(f"8-{custom_columns=}\n\n\n")
     return output_list, custom_columns
 
 
@@ -525,13 +549,22 @@ def build_joined_dataframe(
     Including those here manually for now is required to use the append
     function built in to pandas
     """
-
+    from pprint import pprint
     # systems
 
     system_output_list, custom_columns = generate_system_records(server_resource_dict)
+    # pprint(f"1- headers {len(system_output_list[0])}- row{len(system_output_list[1])}")
     systems_df = pd.DataFrame.from_records(system_output_list)
+    # pprint(f"2-{systems_df.to_dict('records')=}")
+
     systems_df.columns = systems_df.iloc[0]
+    # pprint(f"3-{systems_df.to_dict('records')=}")
+
     systems_df = systems_df[1:]
+    # pprint(f"4-{systems_df.to_dict('records')=}")
+
+
+    # pprint(f"5-{systems_df.to_dict('records')=}")
 
     # datasets
 
