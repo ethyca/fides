@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 * Access support for Shippo [#2484](https://github.com/ethyca/fides/pull/2484)
 
+### Changed
+* Updated the check for if a user can assign owner roles to be scope-based instead of role-based [#2964](https://github.com/ethyca/fides/pull/2964)
+
 ## [2.10.0](https://github.com/ethyca/fides/compare/2.9.2...2.10.0)
 
 ### Added
