@@ -20,6 +20,7 @@ export type Config = {
     icon_path: string;
     title: string;
     description: string;
+    description_subtext?: string[];
     identity_inputs?: IdentityInputs;
     policy_key?: string;
     consentOptions: ConfigConsentOption[];
