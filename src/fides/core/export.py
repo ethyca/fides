@@ -223,9 +223,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
 
     # list to keep track of header order of custom fields
     system_custom_field_headers = []
-    print("system keys from db",server_resources["system"][0].keys())
     for system in server_resources["system"]:
-
         system_custom_field_data = {}
         if not isinstance(system, dict):
             system = system.__dict__
@@ -247,7 +245,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                     system_custom_field_data[key_string] = value
         system_users = ", ".join([ user.username for user in system.get("users", [])])
 
-        print(f"{system_users=}")
         third_country_list = ", ".join(system.get("third_country_transfers") or [])
         system_dependencies = ", ".join(system.get("system_dependencies") or [])
         if system.get("ingress"):
@@ -283,11 +280,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system.get("data_protection_impact_assessment", {})
             )
         )
-
-
-
-
-
         if system.get("privacy_declarations"):
             print(f"\nsystem HAS  PDs\n")
 
@@ -367,7 +359,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system_egress,
                 system_users
             ]
-
             len_no_privacy = len(system_row)
             num_privacy_declaration_fields = 12
             for i in range(num_privacy_declaration_fields):
