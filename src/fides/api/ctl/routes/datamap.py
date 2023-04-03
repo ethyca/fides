@@ -189,7 +189,6 @@ def format_datamap_values(
     """
 
     columns = {**DATAMAP_COLUMNS_API, **custom_columns}
-
     if include_deprecated_columns:
         columns = {**columns, **DEPRECATED_COLUMNS}
 
