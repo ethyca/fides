@@ -27,7 +27,7 @@
     "@fidesui/config": "^0.0.3",
     "@rollup/plugin-json": "^5.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
-    "rollup": "^2.67.0",
+    "rollup": "^3.20.2",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-dts": "^4.1.0",
     "rollup-plugin-esbuild": "^4.8.2",
