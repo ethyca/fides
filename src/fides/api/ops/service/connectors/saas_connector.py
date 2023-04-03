@@ -5,6 +5,7 @@ import pydash
 from loguru import logger
 from requests import Response
 
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
@@ -439,44 +440,53 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
         self.set_privacy_request_state(privacy_request, node)
         query_config = self.query_config(node)
+        should_opt_in: Optional[bool] = should_opt_in_to_service(
+            self.configuration.system, consent_preferences
+        )
 
-        for consent_options in consent_preferences:
-            query_config.action = (
-                "opt_in" if consent_options.opt_in else "opt_out"
-            )  # For logging purposes
+        if should_opt_in is None:
+            logger.info(
+                "Skipping consent requests on node {}: No actionable consent preferences defined",
+                node.address.value,
+            )
+            return True
 
-            consent_requests: List[
-                SaaSRequest
-            ] = self._get_consent_requests_by_preference(consent_options.opt_in)
+        matching_consent_requests: List[
+            SaaSRequest
+        ] = self._get_consent_requests_by_preference(should_opt_in)
 
-            if not consent_requests:
-                logger.info(
-                    "Skipping consent requests on node {}: No '{}' requests defined",
-                    node.address.value,
-                    query_config.action,
-                )
-                continue
+        query_config.action = (
+            "opt_in" if should_opt_in else "opt_out"
+        )  # For logging purposes
 
-            for consent_request in consent_requests:
-                self.set_saas_request_state(consent_request)
+        if not matching_consent_requests:
+            logger.info(
+                "Skipping consent requests on node {}: No '{}' requests defined",
+                node.address.value,
+                query_config.action,
+            )
+            return True
 
-                try:
-                    prepared_request: SaaSRequestParams = (
-                        query_config.generate_consent_stmt(
-                            policy, privacy_request, consent_request
-                        )
+        for consent_request in matching_consent_requests:
+            self.set_saas_request_state(consent_request)
+
+            try:
+                prepared_request: SaaSRequestParams = (
+                    query_config.generate_consent_stmt(
+                        policy, privacy_request, consent_request
                     )
-                except ValueError as exc:
-                    if consent_request.skip_missing_param_values:
-                        logger.info(
-                            "Skipping optional consent request on node {}: {}",
-                            node.address.value,
-                            exc,
-                        )
-                        continue
-                    raise exc
-                client: AuthenticatedClient = self.create_client()
-                client.send(prepared_request)
+                )
+            except ValueError as exc:
+                if consent_request.skip_missing_param_values:
+                    logger.info(
+                        "Skipping optional consent request on node {}: {}",
+                        node.address.value,
+                        exc,
+                    )
+                    continue
+                raise exc
+            client: AuthenticatedClient = self.create_client()
+            client.send(prepared_request)
         self.unset_connector_state()
         return True
 
@@ -611,3 +621,65 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             return []
 
         return consent_requests.opt_in if opt_in else consent_requests.opt_out  # type: ignore
+
+
+def should_opt_in_to_service(
+    system: Optional[System], consent_preferences: List[PrivacyRequestConsentPreference]
+) -> Optional[bool]:
+    """
+    Given a system and the user's list of consent preferences, determine whether we should opt the user into the service,
+    opt the user out of the service, or do nothing.
+
+    If using the old workflow, (Preferences saved by data_use), assume there's one "executable" preference. (for backwards compatibility).
+    Don't check system data uses.
+
+    For new workflow:
+    - If there are orphaned connectors, don't check System data uses
+    - If Privacy Notice and System Data Use Match -> Propagate Preference
+    - If Privacy Notice Data Use broader than System Data Use -> Propagate Preference
+    - If System Data Use broader than Privacy Notice Data Use -> Propagate Opt-out only
+    - If conflicts, prefer Opt-out Preference
+    - Enforcement level must be system wide to propagate
+    -
+    """
+
+    def should_opt_in(
+        preferences: List[PrivacyRequestConsentPreference],
+    ) -> Optional[bool]:
+        """Helper method to run on filtered consent preferences that already match on data use and are enforceable
+        system_wide. All preferences must be opt-in to opt-in. If there's a conflict, favor opt-out.
+        """
+        if not preferences:
+            return None
+
+        return all(filtered_pref.opt_in for filtered_pref in preferences)
+
+    if consent_preferences and consent_preferences[0].data_use:
+        # Old backwards compatible workflow. Only "executable" consent preferences were added to the privacy request.
+        # If saved with regards to a data use, fire the request. Don't take systems into account.
+        return consent_preferences[0].opt_in
+
+    system_wide_preferences: List[PrivacyRequestConsentPreference] = [
+        pref
+        for pref in consent_preferences
+        if pref.privacy_notice_history
+        and pref.privacy_notice_history.enforcement_level == "system_wide"
+    ]
+
+    if not system:
+        # If the connector is orphaned, don't take the system data uses into account.
+        return should_opt_in(system_wide_preferences)
+
+    system_data_uses: List[str] = system.get_data_uses
+    filtered_preferences: List[PrivacyRequestConsentPreference] = []
+    for pref in system_wide_preferences:
+        privacy_notice_data_uses: List[str] = pref.privacy_notice_history.data_uses or []  # type: ignore[union-attr]
+        for privacy_notice_data_use in privacy_notice_data_uses:
+            for system_data_use in system_data_uses:
+                if system_data_use.startswith(privacy_notice_data_use) or (
+                    privacy_notice_data_use.startswith(system_data_use)
+                    and not pref.opt_in
+                ):
+                    filtered_preferences.append(pref)
+
+    return should_opt_in(filtered_preferences)

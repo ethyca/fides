@@ -129,6 +129,8 @@ class ConnectionConfig(Base):
         String, ForeignKey(System.id_field_path), nullable=True, index=True
     )
 
+    system = relationship(System)
+
     access_manual_webhook = relationship(  # type: ignore[misc]
         "AccessManualWebhook",
         back_populates="connection_config",

@@ -306,6 +306,18 @@ class System(Base, FidesBase):
                     data_uses.add(data_use)
         return data_uses
 
+    @property
+    def get_data_uses(self) -> List[str]:
+        """
+        Utility method to get all the data uses associated with the specific system.
+        """
+        data_uses = set()
+        for declaration in self.privacy_declarations:
+            data_use = declaration.get("data_use", None)
+            if data_use is not None:
+                data_uses.add(data_use)
+        return list(data_uses)
+
 
 class SystemModel(BaseModel):
     fides_key: str

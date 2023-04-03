@@ -12,11 +12,16 @@ from fides.api.ops.graph.graph import Node
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistory
+from fides.api.ops.schemas.privacy_request import PrivacyRequestConsentPreference
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.service.connectors import get_connector
-from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from fides.api.ops.service.connectors.saas_connector import (
+    SaaSConnector,
+    should_opt_in_to_service,
+)
 
 
 @pytest.mark.unit_saas
@@ -423,3 +428,334 @@ class TestConsentRequests:
 
         assert opt_out_request[0].path == "/allowlists/delete"
         assert opt_out_request[1].path == "/rejects/add"
+
+
+class TestConsentRequestShouldOptIntoService:
+    @pytest.mark.parametrize(
+        "has_system,system_data_uses,consent_preferences,should_opt_in,description",
+        [
+            (
+                False,
+                [],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    )
+                ],
+                True,
+                "Persists opt-in preference, orphaned connector doesn't have data uses",
+            ),
+            (
+                False,
+                [],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    )
+                ],
+                False,
+                "Persists opt-out preference, orphaned connector doesn't have data uses",
+            ),
+            (
+                True,
+                [],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    )
+                ],
+                None,
+                "Should skip; no data uses on system",
+            ),
+            (
+                True,
+                ["improve"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    )
+                ],
+                None,
+                "Should skip; no matching data uses between notices and system",
+            ),
+            (
+                True,
+                ["advertising"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    )
+                ],
+                True,
+                "Opts in due to exact data use match on notice and system",
+            ),
+            (
+                True,
+                ["advertising"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    )
+                ],
+                False,
+                "Opts out due to exact data use match on notice and system",
+            ),
+            (
+                True,
+                ["advertising"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="frontend",
+                        ),
+                    )
+                ],
+                None,
+                "Should skip; enforcement level is frontend only",
+            ),
+            (
+                True,
+                ["advertising.first_party"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    )
+                ],
+                True,
+                "Opts in due to system data use being a descendant of a privacy notice data use",
+            ),
+            (
+                True,
+                ["advertising"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising.first_party"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    )
+                ],
+                None,
+                "Should skip; opt in preference where privacy notice data use is narrower than system",
+            ),
+            (
+                True,
+                ["advertising"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising.first_party"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    )
+                ],
+                False,
+                "Persists opt out preference where privacy notice data use is narrower than system",
+            ),
+            (
+                True,
+                ["advertising", "improve"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    ),
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["improve"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    ),
+                ],
+                False,
+                "Opt out when both opt out and opt in preferences match system data uses",
+            ),
+            (
+                True,
+                ["advertising", "advertising.improve"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    ),
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising.improve"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    ),
+                ],
+                False,
+                "Opt out preferences override opt in ones on conflict",
+            ),
+            (
+                True,
+                ["advertising"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=False, data_use="improve", privacy_notice_history=None
+                    )
+                ],
+                False,
+                "Old workflow where preferences are saved w.r.t. data_use doesn't take systems into account",
+            ),
+            (
+                True,
+                ["advertising"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=False, data_use=None, privacy_notice_history=None
+                    )
+                ],
+                None,
+                "Skipped - no data_use or privacy_notice_history associated",
+            ),
+            (
+                True,
+                ["advertising"],
+                [],
+                None,
+                "Skipped - no consent preferences saved",
+            ),
+            (
+                True,
+                ["advertising", "improve"],
+                [
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    ),
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            data_uses=["improve"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="frontend",
+                        ),
+                    ),
+                ],
+                True,
+                "Opt in because opt out preference that would have taken priority is removed due to frontend only enforcement level",
+            ),
+        ],
+    )
+    def test_should_opt_into_service(
+        self,
+        has_system,
+        system_data_uses,
+        consent_preferences,
+        should_opt_in,
+        description,
+        system,
+    ):
+        system.privacy_declarations = []
+        for i, data_use in enumerate(system_data_uses):
+            system.privacy_declarations.append(
+                {
+                    "name": f"privacy_declaration_{i}",
+                    "data_categories": [],
+                    "data_use": data_use,
+                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                    "data_subjects": [],
+                    "dataset_references": None,
+                    "egress": None,
+                    "ingress": None,
+                }
+            )
+
+        assert (
+            should_opt_in_to_service(
+                system if has_system else None, consent_preferences
+            )
+            is should_opt_in
+        ), description
