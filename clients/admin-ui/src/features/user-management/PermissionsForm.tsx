@@ -141,7 +141,7 @@ const PermissionsForm = () => {
     userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)
   ) {
     return (
-      <Text>
+      <Text data-testid="insufficient-access">
         You do not have sufficient access to change this user&apos;s
         permissions.
       </Text>
@@ -161,7 +161,7 @@ const PermissionsForm = () => {
       {({ values, isSubmitting, dirty }) => (
         <Form>
           <Stack spacing={7}>
-            <Stack spacing={3}>
+            <Stack spacing={3} data-testid="role-options">
               <Flex alignItems="center">
                 <Text fontSize="sm" fontWeight="semibold" mr={1}>
                   User role

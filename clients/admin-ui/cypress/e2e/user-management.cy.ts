@@ -289,6 +289,53 @@ describe("User management", () => {
         expect(body.roles).to.eql(["viewer"]);
       });
     });
+
+    describe("permissions", () => {
+      it("contributors cannot assign permissions to an owner", () => {
+        // assign USER_1_ID to the intercept (otherwise we will get our own, logged in user)
+        cy.fixture("user-management/user.json").then((userData) => {
+          cy.intercept(`/api/v1/user/${USER_1_ID}`, {
+            body: { ...userData, id: USER_1_ID },
+          }).as("getOwner");
+        });
+
+        // the logged in user is a contributor
+        cy.assumeRole(RoleRegistryEnum.CONTRIBUTOR);
+        cy.intercept(`/api/v1/user/${USER_1_ID}/permission`, {
+          fixture: "user-management/permissions.json",
+        }).as("getPermissions");
+        cy.visit(`/user-management/profile/${USER_1_ID}`);
+        cy.getByTestId("tab-Permissions").click();
+
+        // they should get a message about having insufficient access
+        cy.getByTestId("insufficient-access");
+      });
+
+      it("contributors cannot make a user an owner", () => {
+        // assign USER_1_ID to the intercept (otherwise we will get our own, logged in user)
+        cy.fixture("user-management/user.json").then((userData) => {
+          cy.intercept(`/api/v1/user/${USER_1_ID}`, {
+            body: { ...userData, id: USER_1_ID },
+          }).as("getOwner");
+        });
+
+        // the logged in user is a contributor
+        cy.assumeRole(RoleRegistryEnum.CONTRIBUTOR);
+        // the user we are editing has the role of a viewer
+        cy.fixture("user-management/permissions.json").then((permissions) => {
+          cy.intercept(`/api/v1/user/${USER_1_ID}/permission`, {
+            body: { ...permissions, roles: ["viewer"] },
+          });
+        });
+        cy.visit(`/user-management/profile/${USER_1_ID}`);
+        cy.getByTestId("tab-Permissions").click();
+
+        // they should see role options available to click but owner should be disabled
+        cy.getByTestId("role-options");
+        cy.getByTestId("role-option-Owner").should("be.disabled");
+      });
+    });
+
     describe("system managers", () => {
       const systems = [
         "fidesctl_system",
