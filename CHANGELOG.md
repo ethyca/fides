@@ -36,6 +36,7 @@ The types of changes are:
 * Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
 * Tie together save states for user permissions and systems [#2913](https://github.com/ethyca/fides/pull/2913)
 * Removing payment types from Stripe connector params [#2915](https://github.com/ethyca/fides/pull/2915)
+* Add Data Stewards to datamap export [#2962](https://github.com/ethyca/fides/pull/2962)
 
 ### Fixed
 
