@@ -365,18 +365,18 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system_dependencies,
                 system_ingress,
                 system_egress,
+                system_users
             ]
-            # print(f"1-{system_row=}")
+
             len_no_privacy = len(system_row)
-            num_privacy_declaration_fields = 13
+            num_privacy_declaration_fields = 12
             for i in range(num_privacy_declaration_fields):
                 system_row.insert(len_no_privacy + i, EMPTY_COLUMN_PLACEHOLDER)
-            # print(f"2-{system_row=}")
 
             system_row.append(data_protection_impact_assessment["is_required"])
             system_row.append(data_protection_impact_assessment["progress"])
             system_row.append(data_protection_impact_assessment["link"])
-            # print(f"3-{system_row=}")
+            system_row.append(EMPTY_COLUMN_PLACEHOLDER)
 
             # iterate through our ordered list of custom field headers
             # and find any corresponding custom field data.
@@ -388,19 +388,10 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                         custom_field_header, EMPTY_COLUMN_PLACEHOLDER
                     )
                 )
-            # print(f"4-{system_row=}")
-            system_row.append(system_users)
+
             # also add n/a for the dataset reference
             output_list += [tuple(system_row)]
-            # print(f"5-{system_row=}")
-            # from pprint import pprint
-            # pprint(f"6-{output_list=}")
-            # print("")
-            # print("")
-            # print("")
-    from pprint import pprint
-    # pprint(f"7-{output_list=}")
-    # print(f"8-{custom_columns=}\n\n\n")
+
     return output_list, custom_columns
 
 
@@ -551,16 +542,18 @@ def build_joined_dataframe(
     """
     from pprint import pprint
     # systems
-
     system_output_list, custom_columns = generate_system_records(server_resource_dict)
-    # pprint(f"1- headers {len(system_output_list[0])}- row{len(system_output_list[1])}")
+    headers = system_output_list[0]
+    first_row = system_output_list[1]
+    pprint(f"1- headers {len(system_output_list[0])}- row{len(system_output_list[1])}")
+    breakpoint()
     systems_df = pd.DataFrame.from_records(system_output_list)
-    # pprint(f"2-{systems_df.to_dict('records')=}")
+    pprint(f"2-{systems_df.to_dict('records')=}")
 
     systems_df.columns = systems_df.iloc[0]
-    # pprint(f"3-{systems_df.to_dict('records')=}")
+    pprint(f"3-{systems_df.to_dict('records')=}")
 
-    systems_df = systems_df[1:]
+
     # pprint(f"4-{systems_df.to_dict('records')=}")
 
 
