@@ -24,6 +24,7 @@ export const baseApi = createApi({
     "Dataset",
     "Datasets",
     "System",
+    "PrivacyNotices",
   ],
   endpoints: () => ({}),
 });

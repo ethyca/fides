@@ -31,6 +31,7 @@ import {
 } from "user-management/index";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
+import { authApi, reducer as authReducer } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
 import { reducer as featuresReducer } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
@@ -56,10 +57,9 @@ import {
   reducer as organizationReducer,
 } from "~/features/organization";
 import { plusApi } from "~/features/plus/plus.slice";
+import { reducer as privacyNoticesReducer } from "~/features/plus/privacy-notices.slice";
 import { reducer as systemReducer } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
-
-import { authApi, reducer as authReducer } from "../features/auth";
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
@@ -109,6 +109,7 @@ const reducer = {
   datastoreConnections: datastoreConnectionReducer,
   features: featuresReducer,
   organization: organizationReducer,
+  privacyNotices: privacyNoticesReducer,
   subjectRequests: privacyRequestsReducer,
   system: systemReducer,
   taxonomy: taxonomyReducer,
