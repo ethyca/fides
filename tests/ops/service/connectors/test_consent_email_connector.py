@@ -13,7 +13,11 @@ from fides.api.ops.schemas.messaging.messaging import (
     ConsentPreferencesByUser,
     MessagingActionType,
 )
-from fides.api.ops.schemas.privacy_request import Consent
+from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistory
+from fides.api.ops.schemas.privacy_request import (
+    Consent,
+    PrivacyRequestConsentPreference,
+)
 from fides.api.ops.service.connectors.consent_email_connector import (
     GenericConsentEmailConnector,
     filter_user_identities_for_connector,
@@ -177,7 +181,7 @@ class TestConsentEmailConnectorMethods:
     @mock.patch(
         "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
     )
-    def test_send_single_consent_email(
+    def test_send_single_consent_email_preferences_by_data_use(
         self, mock_dispatch, test_fides_org, db, messaging_config
     ):
         consent_preferences = [
@@ -239,7 +243,101 @@ class TestConsentEmailConnectorMethods:
             == "Test notification of users' consent preference changes from Test Org"
         )
 
-    def test_needs_email(
+    @mock.patch(
+        "fides.api.ops.service.connectors.consent_email_connector.dispatch_message"
+    )
+    def test_send_single_consent_email_preferences_by_privacy_notice(
+        self, mock_dispatch, test_fides_org, db, messaging_config
+    ):
+        consent_preferences = [
+            ConsentPreferencesByUser(
+                identities={"email": "customer-1@example.com"},
+                consent_preferences=[
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            name="Advertising",
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    ),
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            name="Improve",
+                            data_uses=["improve"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    ),
+                ],
+            ),
+            ConsentPreferencesByUser(
+                identities={"email": "customer-2@example.com"},
+                consent_preferences=[
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            name="Improve",
+                            data_uses=["improve"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                        ),
+                    ),
+                ],
+            ),
+        ]
+
+        send_single_consent_email(
+            db=db,
+            subject_email="test@example.com",
+            subject_name="To whom it may concern",
+            required_identities=["email"],
+            user_consent_preferences=consent_preferences,
+            test_mode=True,
+        )
+
+        assert mock_dispatch.called
+        call_kwargs = mock_dispatch.call_args.kwargs
+        assert call_kwargs["db"] == db
+        assert (
+            call_kwargs["action_type"]
+            == MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT
+        )
+        assert call_kwargs["to_identity"].email == "test@example.com"
+        assert call_kwargs["to_identity"].phone_number is None
+        assert call_kwargs["to_identity"].ga_client_id is None
+
+        assert call_kwargs["service_type"] == "mailgun"
+        message_body_params = call_kwargs["message_body_params"]
+
+        assert message_body_params.controller == "Test Org"
+        assert message_body_params.third_party_vendor_name == "To whom it may concern"
+        assert message_body_params.required_identities == ["email"]
+        assert message_body_params.requested_changes == consent_preferences
+
+        assert (
+            consent_preferences[0].consent_preferences[0].privacy_notice_history.name
+            == "Advertising"
+        )
+        assert (
+            consent_preferences[0].consent_preferences[1].privacy_notice_history.name
+            == "Improve"
+        )
+
+        assert (
+            call_kwargs["subject_override"]
+            == "Test notification of users' consent preference changes from Test Org"
+        )
+
+    def test_needs_email_with_consent_preferences_saved_by_data_use(
         self,
         db,
         test_sovrn_consent_email_connector,
@@ -254,6 +352,231 @@ class TestConsentEmailConnectorMethods:
                 privacy_request_with_consent_policy,
             )
             is True
+        )
+
+    def test_needs_email_with_consent_preferences_saved_by_privacy_notice(
+        self,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+    ):
+        privacy_request_with_consent_policy.consent_preferences = [
+            PrivacyRequestConsentPreference(
+                opt_in=False,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    name="Advertising",
+                    data_uses=["advertising"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is True
+        )
+
+    def test_needs_email_with_system_data_use_mismatch(
+        self,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+        system,
+    ):
+        test_sovrn_consent_email_connector.configuration.system_id = system.id
+        privacy_request_with_consent_policy.consent_preferences = [
+            PrivacyRequestConsentPreference(
+                opt_in=False,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    name="Advertising",
+                    data_uses=["improve"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is False
+        )
+
+    def test_needs_email_with_system_use_match(
+        self,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+        system,
+    ):
+        test_sovrn_consent_email_connector.configuration.system_id = system.id
+        privacy_request_with_consent_policy.consent_preferences = [
+            PrivacyRequestConsentPreference(
+                opt_in=False,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    name="Advertising",
+                    data_uses=["advertising"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is True
+        )
+
+    def test_needs_email_with_narrower_privacy_notice_opt_in(
+        self,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+        system,
+    ):
+        test_sovrn_consent_email_connector.configuration.system_id = system.id
+        privacy_request_with_consent_policy.consent_preferences = [
+            PrivacyRequestConsentPreference(
+                opt_in=True,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    name="Advertising",
+                    data_uses=["advertising.first_party"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is False
+        )
+
+    def test_needs_email_with_narrower_privacy_notice_opt_out(
+        self,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+        system,
+    ):
+        test_sovrn_consent_email_connector.configuration.system_id = system.id
+        privacy_request_with_consent_policy.consent_preferences = [
+            PrivacyRequestConsentPreference(
+                opt_in=False,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    name="Advertising",
+                    data_uses=["advertising.first_party"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is True
+        )
+
+    def test_needs_email_with_broader_privacy_notice_opt_in(
+        self,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+        system,
+    ):
+        system.privacy_declarations[0]["data_use"] = "advertising.first_party"
+        test_sovrn_consent_email_connector.configuration.system_id = system.id
+        privacy_request_with_consent_policy.consent_preferences = [
+            PrivacyRequestConsentPreference(
+                opt_in=True,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    name="Advertising",
+                    data_uses=["advertising"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is True
+        )
+
+    def test_needs_email_with_broader_privacy_notice_opt_out(
+        self,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+        system,
+    ):
+        system.privacy_declarations[0]["data_use"] = "advertising.first_party"
+
+        test_sovrn_consent_email_connector.configuration.system_id = system.id
+        privacy_request_with_consent_policy.consent_preferences = [
+            PrivacyRequestConsentPreference(
+                opt_in=False,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    name="Advertising",
+                    data_uses=["advertising"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is True
+        )
+
+    def test_needs_email_with_frontend_enforcement_level(
+        self,
+        test_sovrn_consent_email_connector,
+        privacy_request_with_consent_policy,
+        system,
+    ):
+        test_sovrn_consent_email_connector.configuration.system_id = system.id
+        privacy_request_with_consent_policy.consent_preferences = [
+            PrivacyRequestConsentPreference(
+                opt_in=False,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    name="Advertising",
+                    data_uses=["advertising"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="frontend",
+                ),
+            ).dict()
+        ]
+        assert (
+            test_sovrn_consent_email_connector.needs_email(
+                {"ljt_readerID": "test_ljt_reader_id"},
+                privacy_request_with_consent_policy,
+            )
+            is False
         )
 
     def test_needs_email_without_consent_preferences(
@@ -348,6 +671,7 @@ class TestSovrnConnector:
         assert call_kwargs["subject_email"] == "processor_address@example.com"
         assert call_kwargs["subject_name"] == "Sovrn"
         assert call_kwargs["required_identities"] == ["ljt_readerID"]
+
         assert [pref.dict() for pref in call_kwargs["user_consent_preferences"]] == [
             {
                 "identities": {"ljt_readerID": "test_ljt_reader_id"},
@@ -358,6 +682,10 @@ class TestSovrnConnector:
                         "opt_in": False,
                         "has_gpc_flag": False,
                         "conflicts_with_gpc": False,
+                        "privacy_notice_id": None,
+                        "privacy_notice_history": None,
+                        "privacy_notice_version": None,
+                        "user_geography": None,
                     },
                     {
                         "data_use": "Improve the capability",
@@ -365,6 +693,10 @@ class TestSovrnConnector:
                         "opt_in": True,
                         "has_gpc_flag": False,
                         "conflicts_with_gpc": False,
+                        "privacy_notice_id": None,
+                        "privacy_notice_history": None,
+                        "privacy_notice_version": None,
+                        "user_geography": None,
                     },
                 ],
             }

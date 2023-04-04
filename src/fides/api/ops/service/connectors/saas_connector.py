@@ -5,7 +5,6 @@ import pydash
 from loguru import logger
 from requests import Response
 
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import (
     FidesopsException,
     PostProcessingException,
@@ -38,6 +37,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
 )
 from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.consent_util import should_opt_in_to_service
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 
@@ -634,65 +634,3 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             return []
 
         return consent_requests.opt_in if opt_in else consent_requests.opt_out  # type: ignore
-
-
-def should_opt_in_to_service(
-    system: Optional[System], consent_preferences: List[PrivacyRequestConsentPreference]
-) -> Optional[bool]:
-    """
-    Given a system and the user's list of consent preferences, determine whether we should opt the user into the service,
-    opt the user out of the service, or do nothing.
-
-    If using the old workflow, (Preferences saved by data_use), assume there's one "executable" preference. (for backwards compatibility).
-    Don't check system data uses.
-
-    For new workflow:
-    - If there are orphaned connectors, don't check System data uses
-    - If Privacy Notice and System Data Use Match -> Propagate Preference
-    - If Privacy Notice Data Use broader than System Data Use -> Propagate Preference
-    - If System Data Use broader than Privacy Notice Data Use -> Propagate Opt-out only
-    - If conflicts, prefer Opt-out Preference
-    - Enforcement level must be system wide to propagate
-    -
-    """
-
-    def should_opt_in(
-        preferences: List[PrivacyRequestConsentPreference],
-    ) -> Optional[bool]:
-        """Helper method to run on filtered consent preferences that already match on data use and are enforceable
-        system_wide. All preferences must be opt-in to opt-in. If there's a conflict, favor opt-out.
-        """
-        if not preferences:
-            return None
-
-        return all(filtered_pref.opt_in for filtered_pref in preferences)
-
-    if consent_preferences and consent_preferences[0].data_use:
-        # Old backwards compatible workflow. Only "executable" consent preferences were added to the privacy request.
-        # If saved with regards to a data use, fire the request. Don't take systems into account.
-        return consent_preferences[0].opt_in
-
-    system_wide_preferences: List[PrivacyRequestConsentPreference] = [
-        pref
-        for pref in consent_preferences
-        if pref.privacy_notice_history
-        and pref.privacy_notice_history.enforcement_level == "system_wide"
-    ]
-
-    if not system:
-        # If the connector is orphaned, don't take the system data uses into account.
-        return should_opt_in(system_wide_preferences)
-
-    system_data_uses: List[str] = system.get_data_uses
-    filtered_preferences: List[PrivacyRequestConsentPreference] = []
-    for pref in system_wide_preferences:
-        privacy_notice_data_uses: List[str] = pref.privacy_notice_history.data_uses or []  # type: ignore[union-attr]
-        for privacy_notice_data_use in privacy_notice_data_uses:
-            for system_data_use in system_data_uses:
-                if system_data_use.startswith(privacy_notice_data_use) or (
-                    privacy_notice_data_use.startswith(system_data_use)
-                    and not pref.opt_in
-                ):
-                    filtered_preferences.append(pref)
-
-    return should_opt_in(filtered_preferences)

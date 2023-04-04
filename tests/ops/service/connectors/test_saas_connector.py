@@ -18,10 +18,8 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.service.connectors import get_connector
-from fides.api.ops.service.connectors.saas_connector import (
-    SaaSConnector,
-    should_opt_in_to_service,
-)
+from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from fides.api.ops.util.consent_util import should_opt_in_to_service
 
 
 @pytest.mark.unit_saas

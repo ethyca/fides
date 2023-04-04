@@ -34,7 +34,12 @@
                      {%- endfor %}
                      <td>
                         {% for consent_option in requested_change.consent_preferences -%}
-                           {{consent_option.data_use}}: {{"Opt-in" if consent_option.opt_in else "Opt-out"}}{{", " if loop.index < requested_change.consent_preferences|length else ""}}
+                           {% if consent_option.data_use %}
+                              {{consent_option.data_use}}: {{"Opt-in" if consent_option.opt_in else "Opt-out"}}{{", " if loop.index < requested_change.consent_preferences|length else ""}}
+                           {% endif %}
+                           {% if consent_option.privacy_notice_history %}
+                              {{consent_option.privacy_notice_history.name}}: {{"Opt-in" if consent_option.opt_in else "Opt-out"}}{{", " if loop.index < requested_change.consent_preferences|length else ""}}
+                           {% endif %}
                         {%- endfor %}
                      </td>
                   </tr>

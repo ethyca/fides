@@ -25,7 +25,10 @@ from fides.api.ops.schemas.messaging.messaging import (
     ConsentPreferencesByUser,
     MessagingActionType,
 )
-from fides.api.ops.schemas.privacy_request import Consent
+from fides.api.ops.schemas.privacy_request import (
+    Consent,
+    PrivacyRequestConsentPreference,
+)
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_email_connector import (
     BaseEmailConnector,
@@ -33,6 +36,7 @@ from fides.api.ops.service.connectors.base_email_connector import (
     get_org_name,
 )
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.ops.util.consent_util import filter_consent_preferences_for_propagation
 from fides.core.config import get_config
 
 CONFIG = get_config()
@@ -98,13 +102,23 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         self, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
     ) -> bool:
         """Schedules a consent email for consent privacy requests containing consent preferences and valid user identities"""
+        consent_preferences: List[PrivacyRequestConsentPreference] = [
+            PrivacyRequestConsentPreference(**pref)
+            for pref in privacy_request.consent_preferences or []
+        ]
+        filtered_consent_preferences: List[
+            PrivacyRequestConsentPreference
+        ] = filter_consent_preferences_for_propagation(
+            self.configuration.system, consent_preferences
+        )
 
-        if not privacy_request.consent_preferences:
+        if not filtered_consent_preferences:
             return False
 
         consent_rules: List[Rule] = privacy_request.policy.get_rules_for_action(
             action_type=ActionType.consent
         )
+
         return bool(
             consent_rules
             and filter_user_identities_for_connector(self.config, user_identities)
@@ -119,11 +133,20 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             filtered_user_identities: Dict[
                 str, Any
             ] = filter_user_identities_for_connector(self.config, user_identities)
-            if filtered_user_identities and privacy_request.consent_preferences:
+            consent_preferences: List[PrivacyRequestConsentPreference] = [
+                PrivacyRequestConsentPreference(**pref)
+                for pref in privacy_request.consent_preferences or []
+            ]
+            filtered_consent_preferences: List[
+                PrivacyRequestConsentPreference
+            ] = filter_consent_preferences_for_propagation(
+                self.configuration.system, consent_preferences
+            )
+            if filtered_user_identities and filtered_consent_preferences:
                 batched_consent_preferences.append(
                     ConsentPreferencesByUser(
                         identities=filtered_user_identities,
-                        consent_preferences=privacy_request.consent_preferences,
+                        consent_preferences=filtered_consent_preferences,
                     )
                 )
             else:
