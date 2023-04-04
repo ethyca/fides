@@ -4,7 +4,7 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import { SYSTEM_ROUTE } from "~/constants";
+import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 
 describe("System management with Plus features", () => {
   beforeEach(() => {

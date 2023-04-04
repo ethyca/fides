@@ -1,5 +1,5 @@
-import { SYSTEM_ROUTE } from "~/constants";
 import { useFeatures } from "~/features/common/features";
+import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import { resolveLink } from "~/features/common/nav/zone-config";
 
 export const useInterzoneNav = () => {

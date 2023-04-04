@@ -18,9 +18,9 @@ import React from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch } from "~/app/hooks";
-import { USER_MANAGEMENT_ROUTE } from "~/constants";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { User } from "./types";
