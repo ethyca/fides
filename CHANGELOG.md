@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 * Access support for Shippo [#2484](https://github.com/ethyca/fides/pull/2484)
 * Feature flags can be set such that they cannot be modified by the user [#2966](https://github.com/ethyca/fides/pull/2966)
+* Added the datamap UI to make it open source [#2988](https://github.com/ethyca/fides/pull/2988)
 
 ### Changed
 * Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
