@@ -24,6 +24,10 @@ The types of changes are:
 
 ### Changed
 * Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
+* Restored `nav-config` back to the admin-ui [#2990](https://github.com/ethyca/fides/pull/2990)
+
+### Removed
+* Removed interzone navigation logic now that the datamap UI and admin UI are one app [#2990](https://github.com/ethyca/fides/pull/2990)
 
 ## [2.10.0](https://github.com/ethyca/fides/compare/2.9.2...2.10.0)
 
