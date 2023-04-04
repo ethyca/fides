@@ -43,9 +43,9 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingMethod
+from fides.api.ops.schemas.privacy_request import BulkPostPrivacyRequests
+from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
-    Consent as ConsentSchema,
-    BulkPostPrivacyRequests,
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentRequestResponse,

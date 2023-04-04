@@ -500,7 +500,7 @@ class TestMessageDispatchService:
                                     privacy_notice_id="12345",
                                     enforcement_level="system_wide",
                                     consent_mechanism="opt_in",
-                                    regions=["us_ca"]
+                                    regions=["us_ca"],
                                 ),
                             ),
                             PrivacyRequestConsentPreference(
@@ -513,7 +513,7 @@ class TestMessageDispatchService:
                                     privacy_notice_id="67890",
                                     enforcement_level="system_wide",
                                     consent_mechanism="opt_in",
-                                    regions=["us_ca"]
+                                    regions=["us_ca"],
                                 ),
                             ),
                         ],
