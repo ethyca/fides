@@ -142,7 +142,7 @@ jobs:
     needs: Build
     strategy:
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.9.14", "3.10.7"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit"
