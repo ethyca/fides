@@ -12,13 +12,13 @@ interface Props extends Omit<InputProps, "onChange"> {
   search?: string;
   onChange: (value: string) => void;
   withIcon?: boolean;
-  withClear?: boolean;
+  onClear?: () => void;
 }
 const SearchBar = ({
   search,
   onChange,
   withIcon,
-  withClear,
+  onClear,
   ...props
 }: Props) => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
@@ -42,14 +42,12 @@ const SearchBar = ({
         onChange={handleSearchChange}
         {...props}
       />
-      {withClear ? (
+      {onClear ? (
         <InputRightElement width="3.5rem" display="flex" alignItems="center">
           <Button
             fontWeight="light"
             size="sm"
-            onClick={() => {
-              onChange("");
-            }}
+            onClick={onClear}
             // Prevent the button from overlapping with the input's focus rect
             height="95%"
             width="95%"

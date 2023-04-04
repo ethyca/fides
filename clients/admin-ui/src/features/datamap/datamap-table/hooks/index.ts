@@ -1,0 +1,1 @@
+export { useTableInstance } from './useTableInstance';
