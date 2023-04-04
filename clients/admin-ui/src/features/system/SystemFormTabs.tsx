@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
-import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
+import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import PrivacyDeclarationStep from "~/features/system/privacy-declarations/PrivacyDeclarationStep";
 import { System } from "~/types/api";
@@ -71,7 +71,7 @@ const SystemFormTabs = ({
   const [tabIndex, setTabIndex] = useState(0);
   const [queuedIndex, setQueuedIndex] = useState<number | undefined>(undefined);
   const [showSaveMessage, setShowSaveMessage] = useState(false);
-  const { systemOrDatamapRoute } = useInterzoneNav();
+  const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();

@@ -4,7 +4,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
-import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
+import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
@@ -51,7 +51,7 @@ const Header = ({
 };
 
 const NewManualSystem: NextPage = () => {
-  const { systemOrDatamapRoute } = useInterzoneNav();
+  const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const router = useRouter();
   const { step, connectorType } = router.query;
 
