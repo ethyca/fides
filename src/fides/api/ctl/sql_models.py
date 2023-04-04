@@ -289,7 +289,10 @@ class System(Base, FidesBase):
     ingress = Column(JSON)
 
     users = relationship(
-        "FidesUser", secondary="systemmanager", back_populates="systems"
+        "FidesUser",
+        secondary="systemmanager",
+        back_populates="systems",
+        lazy="selectin",
     )
 
     @classmethod
