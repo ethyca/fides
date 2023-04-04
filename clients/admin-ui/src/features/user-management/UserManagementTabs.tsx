@@ -50,7 +50,7 @@ const UserManagementTabs = ({
           </Box>
           <Box
             position="absolute"
-            top="114px"
+            top="96px"
             right={6}
             height="calc(100% + 100px)"
             overflowY="scroll"

@@ -15,13 +15,20 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.9.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.10.0...main)
+
+### Added
+* Access support for Shippo [#2484](https://github.com/ethyca/fides/pull/2484)
+
+## [2.10.0](https://github.com/ethyca/fides/compare/2.9.2...2.10.0)
 
 ### Added
 
 * Allow users to configure their username and password via the config file [#2884](https://github.com/ethyca/fides/pull/2884)
 * Add authentication to the `masking` endpoints as well as accompanying scopes [#2909](https://github.com/ethyca/fides/pull/2909)
 * Add an Organization Management page (beta) [#2908](https://github.com/ethyca/fides/pull/2908)
+* Adds assigned systems to user management table [#2922](https://github.com/ethyca/fides/pull/2922)
+* APIs to support Privacy Notice management (create, read, update) [#2928](https://github.com/ethyca/fides/pull/2928)
 
 ### Changed
 
@@ -39,12 +46,16 @@ The types of changes are:
 * Viewer role can now access a restricted version of the user management page [#2933](https://github.com/ethyca/fides/pull/2933)
 * Change Privacy Center email placeholder text [#2935](https://github.com/ethyca/fides/pull/2935)
 * Restricted setting Approvers as System Managers [#2891](https://github.com/ethyca/fides/pull/2891)
+* Adds confirmation modal when downgrading user to "approver" role via Admin UI [#2924](https://github.com/ethyca/fides/pull/2924)
+* Changed the toast message for new users to include access control info [#2939](https://github.com/ethyca/fides/pull/2939)
 
 ### Fixed
 
 * Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
 * Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
 * Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
+* Align role dscription drawer of Admin UI with top nav: [#2932](https://github.com/ethyca/fides/pull/2932)
+* Fixed error message when a user is assigned to be an approver without any systems [#2953](https://github.com/ethyca/fides/pull/2953)
 
 ### Developer Experience
 
