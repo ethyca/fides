@@ -23,6 +23,7 @@ export const baseApi = createApi({
     "DatastoreConnection",
     "Dataset",
     "Datasets",
+    "System",
   ],
   endpoints: () => ({}),
 });

@@ -56,7 +56,7 @@ import {
   reducer as organizationReducer,
 } from "~/features/organization";
 import { plusApi } from "~/features/plus/plus.slice";
-import { reducer as systemReducer, systemApi } from "~/features/system";
+import { reducer as systemReducer } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 
 import { authApi, reducer as authReducer } from "../features/auth";
@@ -97,7 +97,6 @@ const reducer = {
   [plusApi.reducerPath]: plusApi.reducer,
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
   [scannerApi.reducerPath]: scannerApi.reducer,
-  [systemApi.reducerPath]: systemApi.reducer,
   [taxonomyApi.reducerPath]: taxonomyApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
   auth: authReducer,
@@ -150,7 +149,6 @@ const persistConfig = {
     plusApi.reducerPath,
     privacyRequestApi.reducerPath,
     scannerApi.reducerPath,
-    systemApi.reducerPath,
     taxonomyApi.reducerPath,
     userApi.reducerPath,
     dirtyFormsSlice.name,
@@ -179,7 +177,6 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         plusApi.middleware,
         privacyRequestApi.middleware,
         scannerApi.middleware,
-        systemApi.middleware,
         taxonomyApi.middleware,
         userApi.middleware
       ),

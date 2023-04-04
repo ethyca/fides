@@ -1,9 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
-import { selectToken } from "~/features/auth";
-import { addCommonHeaders } from "~/features/common/CommonHeaders";
+import { baseApi } from "~/features/common/api.slice";
 import { System } from "~/types/api";
 
 interface SystemDeleteResponse {
@@ -17,17 +15,7 @@ interface UpsertResponse {
   updated: number;
 }
 
-export const systemApi = createApi({
-  reducerPath: "systemApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["System"],
+const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllSystems: build.query<System[], void>({
       query: () => ({ url: `system/` }),
@@ -45,7 +33,7 @@ export const systemApi = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: () => ["System"],
+      invalidatesTags: () => ["Datamap", "System"],
     }),
     deleteSystem: build.mutation<SystemDeleteResponse, string>({
       query: (key) => ({
@@ -61,7 +49,7 @@ export const systemApi = createApi({
         method: "POST",
         body: systems,
       }),
-      invalidatesTags: ["System"],
+      invalidatesTags: ["Datamap", "System"],
     }),
     updateSystem: build.mutation<
       System,
@@ -73,7 +61,7 @@ export const systemApi = createApi({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["System"],
+      invalidatesTags: ["Datamap", "System"],
     }),
   }),
 });
