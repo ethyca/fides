@@ -23,8 +23,8 @@ describe("configIsValid", () => {
     {
       name: "multiple executable consent options",
       config: produce(fullJson, (draftConfig) => {
-        draftConfig.consent.consentOptions[0].executable = true;
-        draftConfig.consent.consentOptions[1].executable = true;
+        draftConfig.consent.page.consentOptions[0].executable = true;
+        draftConfig.consent.page.consentOptions[1].executable = true;
       }),
       expected: {
         isValid: false,

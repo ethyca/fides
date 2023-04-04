@@ -41,7 +41,7 @@ const useConsentRequestForm = ({
   successHandler: () => void;
 }) => {
   const identityInputs =
-    config.consent?.identity_inputs ?? defaultIdentityInput;
+    config.consent?.button.identity_inputs ?? defaultIdentityInput;
   const toast = useToast();
   const formik = useFormik({
     initialValues: {

@@ -24,7 +24,7 @@ const generateConsentConfig = () => {
    */
   const privacyCenterConfig = require("../../config/config.json");
   const privacyCenterOptions =
-    privacyCenterConfig.consent?.consentOptions ?? [];
+    privacyCenterConfig.consent?.page.consentOptions ?? [];
 
   if (privacyCenterOptions.length === 0) {
     console.warn(

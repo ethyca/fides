@@ -9,7 +9,7 @@ const configIsValid = (
 ) => {
   // Cannot currently have more than one consent be executable
   if (config.consent) {
-    const executables = config.consent.consentOptions.filter(
+    const executables = config.consent.page.consentOptions.filter(
       (option) => option.executable
     );
     if (executables.length > 1) {

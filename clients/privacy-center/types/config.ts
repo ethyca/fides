@@ -17,13 +17,19 @@ export type Config = {
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: {
-    icon_path: string;
-    title: string;
-    description: string;
-    description_subtext?: string[];
-    identity_inputs?: IdentityInputs;
-    policy_key?: string;
-    consentOptions: ConfigConsentOption[];
+    button: {
+      description: string;
+      icon_path: string;
+      identity_inputs?: IdentityInputs;
+      title: string;
+    };
+    page: {
+      consentOptions: ConfigConsentOption[];
+      description: string;
+      description_subtext?: string[];
+      policy_key?: string;
+      title: string;
+    };
   };
 };
 

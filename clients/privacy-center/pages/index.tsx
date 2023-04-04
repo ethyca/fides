@@ -83,9 +83,9 @@ const Home: NextPage = () => {
     content.push(
       <ConsentCard
         key="consentCard"
-        title={config.consent.title}
-        iconPath={config.consent.icon_path}
-        description={config.consent.description}
+        title={config.consent.button.title}
+        iconPath={config.consent.button.icon_path}
+        description={config.consent.button.description}
         onOpen={onConsentModalOpen}
       />
     );
