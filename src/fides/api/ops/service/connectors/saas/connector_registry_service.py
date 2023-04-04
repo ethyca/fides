@@ -3,7 +3,7 @@ import os
 from abc import ABC, abstractmethod
 from ast import AST, AnnAssign
 from operator import getitem
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
 from zipfile import ZipFile
 
 from AccessControl.ZopeGuards import safe_builtins
@@ -44,10 +44,23 @@ from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 
 
 class ConnectorTemplateLoader(ABC):
+    _instance: Optional["ConnectorTemplateLoader"] = None
+
+    def __new__(cls: Type["ConnectorTemplateLoader"]) -> "ConnectorTemplateLoader":
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._templates = {}  # type: ignore[attr-defined]
+            cls._instance._load_connector_templates()
+        return cls._instance
+
     @classmethod
-    @abstractmethod
     def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:
-        """Returns a map of connection templates"""
+        """Returns a map of connection templates."""
+        return cls()._instance._templates  # type: ignore[attr-defined, union-attr]
+
+    @abstractmethod
+    def _load_connector_templates(self) -> None:
+        """Load connector templates into the _templates dictionary"""
 
 
 class FileConnectorTemplateLoader(ConnectorTemplateLoader):
@@ -55,56 +68,38 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
     Loads SaaS connector templates from the data/saas directory.
     """
 
-    _instance = None
+    def _load_connector_templates(self) -> None:
+        logger.info("Loading connectors templates from the data/saas directory")
+        for file in os.listdir("data/saas/config"):
+            if file.endswith(".yml"):
+                config_file = os.path.join("data/saas/config", file)
+                config_dict = load_config(config_file)
+                connector_type = config_dict["type"]
+                human_readable = config_dict["name"]
 
-    def __new__(cls: Any, *args: Any, **kwargs: Any) -> "FileConnectorTemplateLoader":
-        if cls._instance is None:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-            cls._instance._templates = {}
-        return cls._instance
+                try:
+                    icon = encode_file_contents(f"data/saas/icon/{connector_type}.svg")
+                except FileNotFoundError:
+                    logger.debug(
+                        f"Could not find the expected {connector_type}.svg in the data/saas/icon/ directory, using default icon"
+                    )
+                    icon = encode_file_contents("data/saas/icon/default.svg")
 
-    @classmethod
-    def get_instance(cls) -> "FileConnectorTemplateLoader":
-        if cls._instance is None:
-            logger.info("Loading connectors templates from the data/saas directory")
-            cls._instance = cls()
-            for file in os.listdir("data/saas/config"):
-                if file.endswith(".yml"):
-                    config_file = os.path.join("data/saas/config", file)
-                    config_dict = load_config(config_file)
-                    connector_type = config_dict["type"]
-                    human_readable = config_dict["name"]
-
-                    try:
-                        icon = encode_file_contents(
-                            f"data/saas/icon/{connector_type}.svg"
-                        )
-                    except FileNotFoundError:
-                        logger.debug(
-                            f"Could not find the expected {connector_type}.svg in the data/saas/icon/ directory, using default icon"
-                        )
-                        icon = encode_file_contents("data/saas/icon/default.svg")
-
-                    # store connector template for retrieval
-                    try:
-                        cls.get_instance()._templates[  # type: ignore[attr-defined]
-                            connector_type
-                        ] = ConnectorTemplate(
-                            config=load_yaml_as_string(config_file),
-                            dataset=load_yaml_as_string(
-                                f"data/saas/dataset/{connector_type}_dataset.yml"
-                            ),
-                            icon=icon,
-                            functions=None,
-                            human_readable=human_readable,
-                        )
-                    except Exception:
-                        logger.exception("Unable to load {} connector", connector_type)
-        return cls._instance
-
-    @classmethod
-    def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:
-        return cls.get_instance()._templates  # type: ignore[attr-defined]
+                # store connector template for retrieval
+                try:
+                    FileConnectorTemplateLoader.get_connector_templates()[
+                        connector_type
+                    ] = ConnectorTemplate(
+                        config=load_yaml_as_string(config_file),
+                        dataset=load_yaml_as_string(
+                            f"data/saas/dataset/{connector_type}_dataset.yml"
+                        ),
+                        icon=icon,
+                        functions=None,
+                        human_readable=human_readable,
+                    )
+                except Exception:
+                    logger.exception("Unable to load {} connector", connector_type)
 
 
 class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
@@ -112,32 +107,23 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
     Loads custom connector templates defined in the custom_connector_template database table.
     """
 
-    _instance = None
-
-    def __new__(cls: Any, *args: Any, **kwargs: Any) -> "CustomConnectorTemplateLoader":
-        if cls._instance is None:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-            cls._instance._templates = {}
-        return cls._instance
-
-    @classmethod
-    def get_instance(cls) -> "CustomConnectorTemplateLoader":
-        if cls._instance is None:
-            logger.info("Loading connectors templates from the database.")
-            cls._instance = cls()
-            db = get_api_session()
-            for template in CustomConnectorTemplate.all(db=db):
-                if template.replaceable and cls._replacement_available(template):
-                    logger.info(
-                        f"Replacing {template.key} connector template with newer version."
-                    )
-                    template.delete(db=db)
-                    continue
-                try:
-                    cls._register_template(template)
-                except Exception:
-                    logger.exception("Unable to load {} connector", template.key)
-        return cls._instance
+    def _load_connector_templates(self) -> None:
+        logger.info("Loading connectors templates from the database.")
+        db = get_api_session()
+        for template in CustomConnectorTemplate.all(db=db):
+            if (
+                template.replaceable
+                and CustomConnectorTemplateLoader._replacement_available(template)
+            ):
+                logger.info(
+                    f"Replacing {template.key} connector template with newer version."
+                )
+                template.delete(db=db)
+                continue
+            try:
+                CustomConnectorTemplateLoader._register_template(template)
+            except Exception:
+                logger.exception("Unable to load {} connector", template.key)
 
     @staticmethod
     def _replacement_available(template: CustomConnectorTemplate) -> bool:
@@ -183,7 +169,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             )
 
         # register the template in the loader's template dictionary
-        cls.get_instance()._templates[template.key] = connector_template  # type: ignore
+        CustomConnectorTemplateLoader.get_connector_templates()[
+            template.key
+        ] = connector_template
 
     # pylint: disable=too-many-branches
     @classmethod
@@ -278,7 +266,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         )
 
         # attempt to register the template, raises an exception if validation fails
-        cls._register_template(template)
+        CustomConnectorTemplateLoader._register_template(template)
 
         # save the custom connector to the database if it passed validation
         CustomConnectorTemplate.create_or_update(
@@ -293,10 +281,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                 "replaceable": replaceable,
             },
         )
-
-    @classmethod
-    def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:
-        return cls.get_instance()._templates  # type: ignore[attr-defined]
 
 
 class ConnectorRegistry:

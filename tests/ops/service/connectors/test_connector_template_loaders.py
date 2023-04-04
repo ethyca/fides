@@ -335,6 +335,38 @@ class TestCustomConnectorTemplateLoader:
         ]
 
     @mock.patch(
+        "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_loaders_have_separate_instances(
+        self,
+        mock_all: MagicMock,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+        planet_express_functions,
+    ):
+        CONFIG.security.allow_custom_connector_functions = True
+
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="planet_express",
+                name="Planet Express",
+                config=planet_express_config,
+                dataset=planet_express_dataset,
+                icon=planet_express_icon,
+                functions=planet_express_functions,
+            )
+        ]
+
+        # load custom connector templates from the database
+        file_connector_templates = FileConnectorTemplateLoader.get_connector_templates()
+        custom_connector_templates = (
+            CustomConnectorTemplateLoader.get_connector_templates()
+        )
+
+        assert file_connector_templates != custom_connector_templates
+
+    @mock.patch(
         "fides.api.ops.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_custom_connector_save_template(
