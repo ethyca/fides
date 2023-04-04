@@ -11,6 +11,13 @@ class TestGitNox:
     Tests for git nox commands and/or utilities
     """
 
+    @pytest.fixture(scope="session")
+    def repo(self):
+        repo = Repo()
+        git_session = repo.git()
+        git_session.fetch("--force", "--tags")
+        return repo
+
     @mock.patch("nox.Session.log")
     @pytest.mark.parametrize(
         "current_branch,tags,expected_tag",
@@ -43,6 +50,7 @@ class TestGitNox:
         current_branch,
         tags,
         expected_tag,
+        repo,
     ) -> None:
         """
         Test generate_tag function based on a given `current_branch` and set of existing repo tags
@@ -51,7 +59,7 @@ class TestGitNox:
         """
 
         # get the real tags from the repo because it's hard to instantiate tags from "scratch"
-        repo = Repo()
+
         all_tags = [repo.tags[tag] for tag in tags]
 
         # evaluate whether we generate the expected tag
