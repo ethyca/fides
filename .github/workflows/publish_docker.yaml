@@ -43,3 +43,4 @@ jobs:
       - name: Push Fides Prod Tags
         if: steps.check-tag.outputs.match == 'true'
         run: nox -s "push(prod)"
+    
