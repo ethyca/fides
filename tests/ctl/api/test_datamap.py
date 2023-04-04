@@ -198,6 +198,14 @@ PRIVACY_DECLARATION_SYSTEM_ROW_TWO_CUSTOM_FIELDS_ONE_MULTIVAL.update(
     {"system.owner": "Jane"}
 )
 
+PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_SYSTEM_MANAGER = (
+    PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD.copy()
+)
+PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_SYSTEM_MANAGER.update(
+    {"system.users": "test_system_manager_user"}
+)
+
+
 ### Expected Responses
 
 EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_NO_PRIVACY_DECLARATION = [
@@ -209,6 +217,11 @@ EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_NO_PRIVACY_DECLARATION = [
 EXPECTED_NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER = [
     HEADERS_ROW_RESPONSE_PAYLOAD,
     NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER,
+]
+
+EXPECTED_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER = [
+    HEADERS_ROW_RESPONSE_PAYLOAD,
+    PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_SYSTEM_MANAGER,
 ]
 
 EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_PRIVACY_DECLARATION = [
@@ -365,12 +378,7 @@ def system_no_privacy_declarations(db):
     system_db_record.delete(db)
 
 
-@pytest.fixture
-def system_with_manager(db, system_no_privacy_declarations):
-    """
-    A sample system that has a manager assigned to it.
-    """
-
+def create_manager(db, system) -> FidesUser:
     user = FidesUser.create(
         db=db,
         data={
@@ -384,7 +392,7 @@ def system_with_manager(db, system_no_privacy_declarations):
         scopes=[],
         roles=[VIEWER],
         user_id=user.id,
-        systems=[system_no_privacy_declarations.id],
+        systems=[system.id],
     )
 
     FidesUserPermissions.create(db=db, data={"user_id": user.id})
@@ -393,10 +401,37 @@ def system_with_manager(db, system_no_privacy_declarations):
     db.commit()
     db.refresh(client)
 
-    user.set_as_system_manager(db, system_no_privacy_declarations)
+    user.set_as_system_manager(db, system)
+    return user
+
+
+@pytest.fixture
+def system_with_manager_no_privacy_declarations(db, system_no_privacy_declarations):
+    """
+    A sample system without privacy declarations that has a manager assigned to it.
+    """
+
+    user = create_manager(db, system_no_privacy_declarations)
+
     yield user
     try:
         user.remove_as_system_manager(db, system_no_privacy_declarations)
+    except SystemManagerException:
+        pass
+    user.delete(db)
+
+
+@pytest.fixture
+def system_with_manager_with_privacy_declarations(db, system_privacy_declarations):
+    """
+    A sample system with privacy declarations that has a manager assigned to it.
+    """
+
+    user = create_manager(db, system_privacy_declarations)
+
+    yield user
+    try:
+        user.remove_as_system_manager(db, system_privacy_declarations)
     except SystemManagerException:
         pass
     user.delete(db)
@@ -1099,7 +1134,7 @@ def test_datamap_two_custom_fields_one_multival_two_systems(
 
 
 @pytest.mark.integration
-@pytest.mark.usefixtures("system_with_manager")
+@pytest.mark.usefixtures("system_with_manager_no_privacy_declarations")
 def test_datamap_with_system_manager(
     test_config: FidesConfig,
     test_client: TestClient,
@@ -1110,3 +1145,17 @@ def test_datamap_with_system_manager(
     )
     assert response.status_code == 200
     assert response.json() == EXPECTED_NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("system_with_manager_with_privacy_declarations")
+def test_datamap_with_system_manager_with_privacy_declarations(
+    test_config: FidesConfig,
+    test_client: TestClient,
+) -> None:
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == EXPECTED_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER
