@@ -94,6 +94,7 @@ class GenericErasureEmailConnector(BaseEmailConnector):
     def batch_email_send(self, privacy_requests: Query) -> None:
         skipped_privacy_requests: List[str] = []
         batched_identities: List[str] = []
+        db = Session.object_session(self.configuration)
 
         for privacy_request in privacy_requests:
             user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
@@ -104,6 +105,18 @@ class GenericErasureEmailConnector(BaseEmailConnector):
                 batched_identities.extend(filtered_user_identities.values())
             else:
                 skipped_privacy_requests.append(privacy_request.id)
+                ExecutionLog.create(
+                    db=db,
+                    data={
+                        "connection_key": self.configuration.key,
+                        "dataset_name": self.configuration.name,
+                        "collection_name": self.configuration.name,
+                        "privacy_request_id": privacy_request.id,
+                        "action_type": ActionType.erasure,
+                        "status": ExecutionLogStatus.skipped,
+                        "message": f"Erasure email skipped for '{self.configuration.name}'",
+                    },
+                )
 
         if not batched_identities:
             logger.info(
@@ -117,8 +130,6 @@ class GenericErasureEmailConnector(BaseEmailConnector):
             "Sending batched erasure email for connector {}...",
             self.configuration.name,
         )
-
-        db = Session.object_session(self.configuration)
 
         try:
             send_single_erasure_email(
@@ -140,10 +151,11 @@ class GenericErasureEmailConnector(BaseEmailConnector):
                     data={
                         "connection_key": self.configuration.key,
                         "dataset_name": self.configuration.name,
+                        "collection_name": self.configuration.name,
                         "privacy_request_id": privacy_request.id,
                         "action_type": ActionType.erasure,
                         "status": ExecutionLogStatus.complete,
-                        "message": f"Erasure email instructions dispatched for {self.config.third_party_vendor_name}",
+                        "message": f"Erasure email instructions dispatched for '{self.configuration.name}'",
                     },
                 )
 

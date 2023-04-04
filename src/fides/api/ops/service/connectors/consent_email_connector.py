@@ -125,6 +125,8 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         )
 
     def batch_email_send(self, privacy_requests: Query) -> None:
+        db = Session.object_session(self.configuration)
+
         skipped_privacy_requests: List[str] = []
         batched_consent_preferences: List[ConsentPreferencesByUser] = []
 
@@ -151,6 +153,18 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 )
             else:
                 skipped_privacy_requests.append(privacy_request.id)
+                ExecutionLog.create(
+                    db=db,
+                    data={
+                        "connection_key": self.configuration.key,
+                        "dataset_name": self.configuration.name,
+                        "collection_name": self.configuration.name,
+                        "privacy_request_id": privacy_request.id,
+                        "action_type": ActionType.consent,
+                        "status": ExecutionLogStatus.skipped,
+                        "message": f"Consent email skipped for '{self.configuration.name}'",
+                    },
+                )
 
         if not batched_consent_preferences:
             logger.info(
@@ -164,8 +178,6 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             "Sending batched consent email for connector {}...",
             self.configuration.name,
         )
-
-        db = Session.object_session(self.configuration)
 
         try:
             send_single_consent_email(
@@ -187,20 +199,13 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                     data={
                         "connection_key": self.configuration.key,
                         "dataset_name": self.configuration.name,
+                        "collection_name": self.configuration.name,
                         "privacy_request_id": privacy_request.id,
                         "action_type": ActionType.consent,
                         "status": ExecutionLogStatus.complete,
                         "message": f"Consent email instructions dispatched for '{self.configuration.name}'",
                     },
                 )
-
-        if skipped_privacy_requests:
-            logger.info(
-                "Skipping email send for the following privacy request IDs: "
-                "{} on connector '{}': no matching identities detected.",
-                skipped_privacy_requests,
-                self.configuration.name,
-            )
 
 
 def get_identity_types_for_connector(

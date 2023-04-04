@@ -775,12 +775,12 @@ class TestSaveConsent:
         "subject_identity_verification_required",
     )
     def test_set_mixed_consent_preferences(
-            self,
-            provided_identity_and_consent_request,
-            api_client,
-            verification_code,
-            consent_policy,
-            privacy_notice_us_ca_provide
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        consent_policy,
+        privacy_notice_us_ca_provide,
     ):
         provided_identity, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
@@ -798,7 +798,7 @@ class TestSaveConsent:
                 "privacy_notice_id": privacy_notice_us_ca_provide.id,
                 "privacy_notice_version": 1,
                 "user_geography": "us_ca",
-            }
+            },
         ]
 
         data = {
@@ -818,8 +818,10 @@ class TestSaveConsent:
         )
 
         assert response.status_code == 400
-        assert response.json()["detail"] == "Request has consent preferences saved for both data uses and privacy notices.  Migrate to using privacy notices."
-
+        assert (
+            response.json()["detail"]
+            == "Request has consent preferences saved for both data uses and privacy notices.  Migrate to using privacy notices."
+        )
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",

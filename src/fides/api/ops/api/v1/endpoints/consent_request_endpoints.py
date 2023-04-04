@@ -306,9 +306,12 @@ def _save_consent_preferences(
     """
     upserted_consent_preferences: List[Consent] = []
 
-    if any(pref.data_use for pref in consent_preference_data) and any(pref.privacy_notice_id for pref in consent_preference_data):
+    if any(pref.data_use for pref in consent_preference_data) and any(
+        pref.privacy_notice_id for pref in consent_preference_data
+    ):
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail="Request has consent preferences saved for both data uses and privacy notices.  Migrate to using privacy notices."
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Request has consent preferences saved for both data uses and privacy notices.  Migrate to using privacy notices.",
         )
 
     for preference in consent_preference_data:

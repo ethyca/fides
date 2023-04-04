@@ -21,6 +21,7 @@ from fides.api.ops.models.privacy_request import (
     ActionType,
     CheckpointActionRequired,
     ExecutionLog,
+    ExecutionLogStatus,
     PolicyPreWebhook,
     PrivacyRequest,
     PrivacyRequestStatus,
@@ -2084,10 +2085,18 @@ class TestConsentEmailStep:
         assert not needs_batch_email_send(
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
+        execution_logs = (
+            db.query(ExecutionLog)
+            .filter_by(privacy_request_id=privacy_request_with_consent_policy.id)
+            .filter_by(status=ExecutionLogStatus.skipped)
+            .order_by("created_at")
+        )
+
+        assert execution_logs.count() == 0, "No connectors to add the skipped log to"
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_needs_batch_email_send_no_relevant_identities(
-        self, db, privacy_request_with_consent_policy
+        self, db, privacy_request_with_consent_policy, sovrn_email_connection_config
     ):
         privacy_request_with_consent_policy.consent_preferences = [
             Consent(data_use="advertising", opt_in=False).dict()
@@ -2096,9 +2105,19 @@ class TestConsentEmailStep:
         assert not needs_batch_email_send(
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
+        execution_logs = (
+            db.query(ExecutionLog)
+            .filter_by(privacy_request_id=privacy_request_with_consent_policy.id)
+            .filter_by(dataset_name=sovrn_email_connection_config.name)
+            .order_by("created_at")
+        )
 
-    @pytest.mark.usefixtures("sovrn_email_connection_config")
-    def test_needs_batch_email_send(self, db, privacy_request_with_consent_policy):
+        assert execution_logs.count() == 1
+        assert execution_logs[0].status == ExecutionLogStatus.skipped
+
+    def test_needs_batch_email_send(
+        self, db, privacy_request_with_consent_policy, sovrn_email_connection_config
+    ):
         privacy_request_with_consent_policy.consent_preferences = [
             Consent(data_use="advertising", opt_in=False).dict()
         ]
@@ -2108,3 +2127,13 @@ class TestConsentEmailStep:
             {"email": "customer-1@example.com", "ljt_readerID": "12345"},
             privacy_request_with_consent_policy,
         )
+        execution_logs = (
+            db.query(ExecutionLog)
+            .filter_by(privacy_request_id=privacy_request_with_consent_policy.id)
+            .filter_by(dataset_name=sovrn_email_connection_config.name)
+            .order_by("created_at")
+        )
+
+        assert (
+            execution_logs.count() == 0
+        ), "Logging postponed until we go to do the email send"

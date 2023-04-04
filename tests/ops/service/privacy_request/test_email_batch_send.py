@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.messaging import MessagingConfig
-from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.policy import ActionType, Policy
 from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -19,6 +19,7 @@ from fides.api.ops.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
+from fides.api.ops.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.core.config import get_config
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
@@ -106,17 +107,41 @@ class TestConsentEmailBatchSend:
         "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
     @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
-    @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_send_email_batch_missing_identities(
         self,
         requeue_privacy_requests,
         send_single_consent_email,
+        privacy_request_awaiting_consent_email_send,
+        sovrn_email_connection_config,
+        db,
     ) -> None:
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete
 
         assert not send_single_consent_email.called
         assert requeue_privacy_requests.called
+
+        execution_logs: ExecutionLog = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                ExecutionLog.privacy_request_id
+                == privacy_request_awaiting_consent_email_send.id
+            ),
+        )
+
+        assert execution_logs.count() == 1
+        assert execution_logs[0].status == ExecutionLogStatus.skipped
+        assert execution_logs[0].dataset_name == sovrn_email_connection_config.name
+        assert (
+            execution_logs[0].privacy_request_id
+            == privacy_request_awaiting_consent_email_send.id
+        )
+        assert execution_logs[0].action_type == ActionType.consent
+        assert execution_logs[0].connection_key == sovrn_email_connection_config.key
+        assert (
+            execution_logs[0].message
+            == f"Consent email skipped for '{sovrn_email_connection_config.name}'"
+        )
 
     @mock.patch(
         "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
@@ -166,7 +191,7 @@ class TestConsentEmailBatchSend:
         assert exit_state == EmailExitState.email_send_failed
 
         assert not requeue_privacy_requests.called
-        email_execution_log: ExecutionLog = ExecutionLog.filter(
+        completed_email_execution_log: ExecutionLog = ExecutionLog.filter(
             db=db,
             conditions=(
                 (
@@ -176,7 +201,7 @@ class TestConsentEmailBatchSend:
                 & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
-        assert not email_execution_log
+        assert not completed_email_execution_log
 
     @mock.patch(
         "fides.api.ops.service.connectors.consent_email_connector.send_single_consent_email",
@@ -338,7 +363,7 @@ class TestErasureEmailBatchSend:
     @mock.patch(
         "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
-    @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
+    @pytest.mark.usefixtures("privacy_request_awaiting_erasure_email_send")
     def test_send_email_batch_no_applicable_connectors(
         self,
         requeue_privacy_requests,
@@ -356,18 +381,48 @@ class TestErasureEmailBatchSend:
     @mock.patch(
         "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
     )
-    @pytest.mark.usefixtures("privacy_request_awaiting_consent_email_send")
-    @pytest.mark.usefixtures("attentive_email_connection_config")
     def test_send_email_batch_missing_identities(
         self,
         requeue_privacy_requests,
         send_single_erasure_email,
+        attentive_email_connection_config,
+        privacy_request_awaiting_erasure_email_send,
+        db,
     ) -> None:
+        cache = get_cache()
+        all_keys = get_all_cache_keys_for_privacy_request(
+            privacy_request_id=privacy_request_awaiting_erasure_email_send.id
+        )
+        for key in all_keys:
+            cache.delete(key)
+
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete
 
         assert not send_single_erasure_email.called
         assert requeue_privacy_requests.called
+
+        execution_logs: ExecutionLog = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                ExecutionLog.privacy_request_id
+                == privacy_request_awaiting_erasure_email_send.id
+            ),
+        )
+
+        assert execution_logs.count() == 1
+        assert execution_logs[0].status == ExecutionLogStatus.skipped
+        assert execution_logs[0].dataset_name == attentive_email_connection_config.name
+        assert (
+            execution_logs[0].privacy_request_id
+            == privacy_request_awaiting_erasure_email_send.id
+        )
+        assert execution_logs[0].action_type == ActionType.erasure
+        assert execution_logs[0].connection_key == attentive_email_connection_config.key
+        assert (
+            execution_logs[0].message
+            == f"Erasure email skipped for '{attentive_email_connection_config.name}'"
+        )
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
@@ -452,7 +507,7 @@ class TestErasureEmailBatchSend:
         ).first()
         assert (
             email_execution_log.message
-            == f"Erasure email instructions dispatched for {attentive_email_connection_config.name}"
+            == f"Erasure email instructions dispatched for '{attentive_email_connection_config.name}'"
         )
 
         logs_for_privacy_request_without_identity = ExecutionLog.filter(
@@ -508,7 +563,7 @@ class TestErasureEmailBatchSend:
         ).first()
         assert (
             email_execution_log.message
-            == f"Erasure email instructions dispatched for {attentive_email_connection_config.name}"
+            == f"Erasure email instructions dispatched for '{attentive_email_connection_config.name}'"
         )
 
         second_privacy_request_log = ExecutionLog.filter(
@@ -523,5 +578,5 @@ class TestErasureEmailBatchSend:
         ).first()
         assert (
             second_privacy_request_log.message
-            == f"Erasure email instructions dispatched for {attentive_email_connection_config.name}"
+            == f"Erasure email instructions dispatched for '{attentive_email_connection_config.name}'"
         )
