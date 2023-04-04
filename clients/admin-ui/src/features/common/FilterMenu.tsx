@@ -11,8 +11,8 @@ import {
   MenuItem,
   MenuList,
   Portal,
-} from '@fidesui/react';
-import { useMemo } from 'react';
+} from "@fidesui/react";
+import { useMemo } from "react";
 
 export interface FieldValueToIsSelected {
   [fieldValue: string]: boolean;
@@ -90,7 +90,7 @@ const FilterMenu = ({
                     );
                   }}
                   _focusWithin={{
-                    bg: 'gray.100',
+                    bg: "gray.100",
                   }}
                   colorScheme="complimentary"
                 >

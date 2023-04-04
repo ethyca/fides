@@ -1,1 +1,1 @@
-export * from './datamap.slice';
+export * from "./datamap.slice";

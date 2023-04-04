@@ -1,4 +1,4 @@
-import { PrivacyDeclaration } from '~/types/api';
+import { PrivacyDeclaration } from "~/types/api";
 
 /**
  * This is because privacy declarations do not have an ID on the backend.

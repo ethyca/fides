@@ -1,1 +1,1 @@
-export { useTableInstance } from './useTableInstance';
+export { useTableInstance } from "./useTableInstance";

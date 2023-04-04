@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef } from 'react';
+import { useContext, useEffect, useMemo, useRef } from "react";
 import {
   AggregatorFn,
   useExpanded,
@@ -8,11 +8,11 @@ import {
   useGroupBy,
   useResizeColumns,
   useTable,
-} from 'react-table';
+} from "react-table";
 
-import { useAppDispatch, useAppSelector } from '~/app/hooks';
-import { useGetAllDataSubjectsQuery } from '~/features/data-subjects/data-subject.slice';
-import { useGetAllDataUsesQuery } from '~/features/data-use/data-use.slice';
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useGetAllDataSubjectsQuery } from "~/features/data-subjects/data-subject.slice";
+import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import {
   DatamapRow,
   loadColumns,
@@ -20,16 +20,16 @@ import {
   setIsGettingStarted,
   useGetAllDataCategoriesQuery,
   useGetDatamapQuery,
-} from '~/features/datamap';
+} from "~/features/datamap";
 import {
   SYSTEM_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-} from '~/features/datamap/constants';
-import CustomCell from '~/features/datamap/datamap-table/CustomCell';
-import DatamapTableContext from '~/features/datamap/datamap-table/DatamapTableContext';
+} from "~/features/datamap/constants";
+import CustomCell from "~/features/datamap/datamap-table/CustomCell";
+import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import AccordionMultifieldFilter, {
   accordionMultifieldFilter,
-} from '~/features/datamap/datamap-table/filters/accordion-multifield-filter';
+} from "~/features/datamap/datamap-table/filters/accordion-multifield-filter";
 
 const DEFAULT_COLUMN = {
   minWidth: 30,
@@ -37,7 +37,7 @@ const DEFAULT_COLUMN = {
   maxWidth: 300,
   Cell: CustomCell,
   Filter: AccordionMultifieldFilter,
-  filter: 'multifield',
+  filter: "multifield",
 };
 
 type Column = {
@@ -64,7 +64,7 @@ export const useTableInstance = () => {
    */
   const columnData = useAppSelector(selectColumns);
   const { data: responseData, isLoading } = useGetDatamapQuery({
-    organizationName: 'default_organization',
+    organizationName: "default_organization",
   });
 
   useGetAllDataCategoriesQuery();
@@ -118,7 +118,7 @@ export const useTableInstance = () => {
             }
           });
 
-          return Array.from(uniqueValues.values()).join(', ');
+          return Array.from(uniqueValues.values()).join(", ");
         },
       })) as unknown as Column[],
     [columnData]

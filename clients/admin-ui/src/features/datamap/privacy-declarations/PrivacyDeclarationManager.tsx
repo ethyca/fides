@@ -1,15 +1,15 @@
-import { Box, Button, Stack, Tooltip, useToast } from '@fidesui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { Box, Button, Stack, Tooltip, useToast } from "@fidesui/react";
+import { useEffect, useMemo, useState } from "react";
 
-import { PrivacyDeclarationWithId } from '~/features/datamap/privacy-declarations/types';
-import { PrivacyDeclaration, System } from '~/types/api';
+import { PrivacyDeclarationWithId } from "~/features/datamap/privacy-declarations/types";
+import { PrivacyDeclaration, System } from "~/types/api";
 
-import PrivacyDeclarationAccordion from './PrivacyDeclarationAccordion';
+import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 import {
   DataProps,
   PrivacyDeclarationForm,
   transformPrivacyDeclarationsToHaveId,
-} from './PrivacyDeclarationForm';
+} from "./PrivacyDeclarationForm";
 
 const transformDeclarationForSubmission = (
   formValues: PrivacyDeclarationWithId
@@ -19,7 +19,7 @@ const transformDeclarationForSubmission = (
   return {
     ...values,
     // Fill in an empty string for name because of https://github.com/ethyca/fideslang/issues/98
-    name: values.name ?? '',
+    name: values.name ?? "",
   };
 };
 

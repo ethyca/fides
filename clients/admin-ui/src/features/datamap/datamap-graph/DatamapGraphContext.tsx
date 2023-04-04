@@ -1,10 +1,10 @@
-import cytoscape from 'cytoscape';
+import cytoscape from "cytoscape";
 import React, {
   createContext,
   createRef,
   MutableRefObject,
   ReactNode,
-} from 'react';
+} from "react";
 
 const datamapGraphRef = createRef() as MutableRefObject<
   cytoscape.Core | undefined

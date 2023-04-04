@@ -10,15 +10,15 @@ import {
   Heading,
   SimpleGrid,
   Text,
-} from '@fidesui/react';
-import { useState } from 'react';
-import { ColumnInstance } from 'react-table';
+} from "@fidesui/react";
+import { useState } from "react";
+import { ColumnInstance } from "react-table";
 
-import { useAppSelector } from '~/app/hooks';
-import { DatamapRow, selectDataCategoriesMap } from '~/features/datamap';
-import { DATA_CATEGORY_COLUMN_ID } from '~/features/datamap/constants';
+import { useAppSelector } from "~/app/hooks";
+import { DatamapRow, selectDataCategoriesMap } from "~/features/datamap";
+import { DATA_CATEGORY_COLUMN_ID } from "~/features/datamap/constants";
 
-import { useAccordionMultifieldFilter } from './helpers';
+import { useAccordionMultifieldFilter } from "./helpers";
 
 export type FieldValueToIsSelected = {
   [fieldValue: string]: boolean;
@@ -57,7 +57,7 @@ const AccordionMultiFieldCheckBox = ({
         toggleFilterOption(option, (target as HTMLInputElement).checked);
       }}
       _focusWithin={{
-        bg: 'gray.100',
+        bg: "gray.100",
       }}
       colorScheme="complimentary"
     >

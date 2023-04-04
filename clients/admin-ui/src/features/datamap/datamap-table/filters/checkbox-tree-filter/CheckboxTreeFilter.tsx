@@ -1,4 +1,4 @@
-import { CheckboxTree } from '@fidesui/components';
+import { CheckboxTree } from "@fidesui/components";
 import {
   Box,
   Button,
@@ -9,11 +9,11 @@ import {
   MenuDivider,
   MenuList,
   Portal,
-} from '@fidesui/react';
-import { ColumnInstance } from 'react-table';
+} from "@fidesui/react";
+import { ColumnInstance } from "react-table";
 
-import { DatamapRow } from '../../../datamap.slice';
-import { useCheckboxTreeFilter } from './helpers';
+import { DatamapRow } from "../../../datamap.slice";
+import { useCheckboxTreeFilter } from "./helpers";
 
 interface Props {
   column: ColumnInstance<DatamapRow>;

@@ -1,17 +1,17 @@
-import { ArrowDownLineIcon, ArrowUpLineIcon, Box, Text } from '@fidesui/react';
-import React from 'react';
-import { ColumnInstance, Row } from 'react-table';
+import { ArrowDownLineIcon, ArrowUpLineIcon, Box, Text } from "@fidesui/react";
+import React from "react";
+import { ColumnInstance, Row } from "react-table";
 
-import { useAppSelector } from '~/app/hooks';
-import { selectDataSubjectsMap } from '~/features/data-subjects/data-subject.slice';
-import { selectDataUsesMap } from '~/features/data-use/data-use.slice';
+import { useAppSelector } from "~/app/hooks";
+import { selectDataSubjectsMap } from "~/features/data-subjects/data-subject.slice";
+import { selectDataUsesMap } from "~/features/data-use/data-use.slice";
 
 import {
   DATA_CATEGORY_COLUMN_ID,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-} from '../constants';
-import { DatamapRow, selectDataCategoriesMap } from '../datamap.slice';
+} from "../constants";
+import { DatamapRow, selectDataCategoriesMap } from "../datamap.slice";
 
 interface CustomCellProps {
   // eslint-disable-next-line react/no-unused-prop-types
@@ -51,17 +51,17 @@ type CellData = {
 const useCustomCellLabel = ({
   column,
   value,
-}: Pick<CustomCellProps, 'column' | 'value'>): CellData => {
+}: Pick<CustomCellProps, "column" | "value">): CellData => {
   const categoriesMap = useAppSelector(selectDataCategoriesMap);
   const usesMap = useAppSelector(selectDataUsesMap);
   const subjectsMap = useAppSelector(selectDataSubjectsMap);
 
   if (column.id === DATA_CATEGORY_COLUMN_ID) {
-    const mappedValue = value.split(', ').length
+    const mappedValue = value.split(", ").length
       ? value
-          .split(', ')
+          .split(", ")
           .map((v) => categoriesMap.get(v)?.name ?? v)
-          .join(', ')
+          .join(", ")
       : undefined;
     return {
       label: mappedValue || (categoriesMap.get(value)?.name ?? value),
@@ -77,11 +77,11 @@ const useCustomCellLabel = ({
   }
 
   if (column.id === SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME) {
-    const mappedValue = value.split(', ').length
+    const mappedValue = value.split(", ").length
       ? value
-          .split(', ')
+          .split(", ")
           .map((v) => subjectsMap.get(v)?.fides_key ?? v)
-          .join(', ')
+          .join(", ")
       : undefined;
     return {
       label: value,
@@ -145,10 +145,10 @@ const CustomCell: React.FC<CustomCellProps> = ({ column, value }) => {
         </Box>
         {(mouseOver || isCellExpanded) &&
         cellData.expanded &&
-        cellData.expanded !== '' ? (
+        cellData.expanded !== "" ? (
           <button
             type="button"
-            style={{ position: 'relative', right: '10px' }}
+            style={{ position: "relative", right: "10px" }}
             onClick={(e) => {
               e.stopPropagation();
               handleToggleExpanded();

@@ -1,7 +1,7 @@
-import React from 'react';
-import { TableInstance } from 'react-table';
+import React from "react";
+import { TableInstance } from "react-table";
 
-import { DatamapRow } from '../datamap.slice';
+import { DatamapRow } from "../datamap.slice";
 
 export class DatamapTableContextValue {
   tableInstance: TableInstance<DatamapRow> | null;

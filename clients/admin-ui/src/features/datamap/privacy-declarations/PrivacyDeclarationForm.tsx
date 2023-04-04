@@ -13,34 +13,34 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from '@fidesui/react';
-import { Form, Formik, FormikHelpers, useFormikContext } from 'formik';
-import { useMemo, useState } from 'react';
-import * as Yup from 'yup';
+} from "@fidesui/react";
+import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
+import { useMemo, useState } from "react";
+import * as Yup from "yup";
 
-import { useAppSelector } from '~/app/hooks';
-import ConfirmationModal from '~/features/common/ConfirmationModal';
-import { CustomSelect, CustomTextInput } from '~/features/common/form/inputs';
-import { FormGuard } from '~/features/common/hooks/useIsAnyFormDirty';
+import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
+import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import {
   selectDataSubjects,
   useGetAllDataSubjectsQuery,
-} from '~/features/data-subjects/data-subject.slice';
+} from "~/features/data-subjects/data-subject.slice";
 import {
   selectDataUses,
   useGetAllDataUsesQuery,
-} from '~/features/data-use/data-use.slice';
+} from "~/features/data-use/data-use.slice";
 import {
   selectDataCategories,
   useGetAllDataCategoriesQuery,
-} from '~/features/datamap/datamap.slice';
-import { PrivacyDeclarationWithId } from '~/features/datamap/privacy-declarations/types';
+} from "~/features/datamap/datamap.slice";
+import { PrivacyDeclarationWithId } from "~/features/datamap/privacy-declarations/types";
 import {
   DataCategory,
   DataSubject,
   DataUse,
   PrivacyDeclaration,
-} from '~/types/api';
+} from "~/types/api";
 
 const transformPrivacyDeclarationToHaveId = (
   privacyDeclaration: PrivacyDeclaration
@@ -58,19 +58,19 @@ export const transformPrivacyDeclarationsToHaveId = (
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
-    .min(1, 'Must assign at least one data category')
-    .label('Data categories'),
-  data_use: Yup.string().required().label('Data use'),
+    .min(1, "Must assign at least one data category")
+    .label("Data categories"),
+  data_use: Yup.string().required().label("Data use"),
   data_subjects: Yup.array(Yup.string())
-    .min(1, 'Must assign at least one data subject')
-    .label('Data subjects'),
+    .min(1, "Must assign at least one data subject")
+    .label("Data subjects"),
 });
 
 const defaultInitialValues: PrivacyDeclaration = {
   data_categories: [],
   data_subjects: [],
-  data_use: '',
-  name: '',
+  data_use: "",
+  name: "",
 };
 
 export type PrivacyDeclarationFormValues = typeof defaultInitialValues;
@@ -86,7 +86,7 @@ export const PrivacyDeclarationFormComponents = ({
   allDataCategories,
   allDataSubjects,
   onDelete,
-}: DataProps & Pick<Props, 'onDelete'>) => {
+}: DataProps & Pick<Props, "onDelete">) => {
   const { dirty, isSubmitting, isValid, initialValues } =
     useFormikContext<PrivacyDeclarationFormValues>();
   const deleteModal = useDisclosure();
@@ -96,7 +96,7 @@ export const PrivacyDeclarationFormComponents = ({
     deleteModal.onClose();
   };
 
-  const deleteDisabled = initialValues.data_use === '';
+  const deleteDisabled = initialValues.data_use === "";
   return (
     <Stack spacing={4}>
       <CustomSelect
@@ -203,8 +203,8 @@ export const usePrivacyDeclarationForm = ({
   onSubmit,
   initialValues: passedInInitialValues,
   allDataUses,
-}: Pick<Props, 'onSubmit' | 'initialValues'> &
-  Pick<DataProps, 'allDataUses'>) => {
+}: Pick<Props, "onSubmit" | "initialValues"> &
+  Pick<DataProps, "allDataUses">) => {
   const initialValues = passedInInitialValues ?? defaultInitialValues;
   const [showSaved, setShowSaved] = useState(false);
 

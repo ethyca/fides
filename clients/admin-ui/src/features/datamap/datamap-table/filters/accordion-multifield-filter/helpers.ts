@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
-import { ColumnInstance, Row } from 'react-table';
+import React, { useContext } from "react";
+import { ColumnInstance, Row } from "react-table";
 
-import { DatamapRow } from '~/features/datamap';
-import DatamapTableContext from '~/features/datamap/datamap-table/DatamapTableContext';
-import type { FieldValueToIsSelected } from '~/features/datamap/datamap-table/filters/accordion-multifield-filter/AccordionMultifieldFilter';
+import { DatamapRow } from "~/features/datamap";
+import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
+import type { FieldValueToIsSelected } from "~/features/datamap/datamap-table/filters/accordion-multifield-filter/AccordionMultifieldFilter";
 
 export const accordionMultifieldFilter = <D extends Record<string, unknown>>(
   rows: Row<D>[],
@@ -19,7 +19,7 @@ export const accordionMultifieldFilter = <D extends Record<string, unknown>>(
 };
 
 export const useAccordionMultifieldFilter = <D extends Record<string, unknown>>(
-  props: Omit<ColumnInstance<D>, 'filterValue'> & {
+  props: Omit<ColumnInstance<D>, "filterValue"> & {
     filterValue?: FieldValueToIsSelected;
     rows: DatamapRow[];
   }

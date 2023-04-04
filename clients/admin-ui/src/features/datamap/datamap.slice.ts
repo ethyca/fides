@@ -1,7 +1,7 @@
-import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import type { RootState } from '~/app/store';
-import { baseApi } from '~/features/common/api.slice';
+import type { RootState } from "~/app/store";
+import { baseApi } from "~/features/common/api.slice";
 import {
   COLUMN_NAME_MAP,
   DATA_CATEGORY_COLUMN_ID,
@@ -10,8 +10,8 @@ import {
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_LEGAL_BASIS,
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-} from '~/features/datamap/constants';
-import { DataCategory } from '~/types/api';
+} from "~/features/datamap/constants";
+import { DataCategory } from "~/types/api";
 
 export interface DataCategoryNode {
   value: string;
@@ -45,7 +45,7 @@ export type DatamapTableData = {
   rows: DatamapRow[];
 };
 
-type View = 'map' | 'table';
+type View = "map" | "table";
 
 const DEFAULT_ACTIVE_COLUMNS = [
   SYSTEM_NAME,
@@ -57,13 +57,13 @@ const DEFAULT_ACTIVE_COLUMNS = [
 ];
 
 const DEPRECATED_COLUMNS = [
-  'third_country_combined',
-  'system.third_country_safeguards',
-  'system.data_protection_impact_assessment.is_required',
-  'system.data_protection_impact_assessment.progress',
-  'dataset.fides_key',
-  'system.link_to_processor_contract',
-  'system.privacy_declaration.data_use.legitimate_interest',
+  "third_country_combined",
+  "system.third_country_safeguards",
+  "system.data_protection_impact_assessment.is_required",
+  "system.data_protection_impact_assessment.progress",
+  "dataset.fides_key",
+  "system.link_to_processor_contract",
+  "system.privacy_declaration.data_use.legitimate_interest",
   // 'system.fides_key', it looks like this is needed for the graph. Disable properly later.
 ];
 
@@ -73,12 +73,12 @@ const datamapApi = baseApi.injectEndpoints({
     getDatamap: build.query<DatamapTableData, { organizationName: string }>({
       query: ({ organizationName }) => ({
         url: `datamap/${organizationName}`,
-        method: 'GET',
+        method: "GET",
         params: {
           include_deprecated_columns: true,
         },
       }),
-      providesTags: ['Datamap'],
+      providesTags: ["Datamap"],
       transformResponse: (data: DatamapResponse) => {
         const columnHeaderData = Object.entries(data[0]).filter(
           ([value]) => DEPRECATED_COLUMNS.indexOf(value) === -1
@@ -124,7 +124,7 @@ const dataCategoriesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllDataCategories: build.query<DataCategory[], void>({
       query: () => ({ url: `data_category` }),
-      providesTags: () => ['Data Category'],
+      providesTags: () => ["Data Category"],
     }),
   }),
 });
@@ -151,13 +151,13 @@ export interface SettingsState {
 
 const initialState: SettingsState = {
   columns: undefined,
-  view: 'map',
+  view: "map",
   isGettingStarted: false,
 };
 
 // Settings slice
 export const datamapSlice = createSlice({
-  name: 'datamap',
+  name: "datamap",
   initialState,
   reducers: {
     // Sets the ordering and activation of the columns
@@ -190,7 +190,7 @@ export const selectColumns = createSelector(
 
 export const selectIsMapOpen = createSelector(
   selectSettings,
-  (settings) => settings.view === 'map'
+  (settings) => settings.view === "map"
 );
 
 export const selectIsGettingStarted = createSelector(

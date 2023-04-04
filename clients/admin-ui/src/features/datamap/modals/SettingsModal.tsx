@@ -21,21 +21,21 @@ import {
   TabPanels,
   Tabs,
   Text,
-} from '@fidesui/react';
-import type { Identifier, XYCoord } from 'dnd-core';
-import produce from 'immer';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
-import { useDispatch } from 'react-redux';
+} from "@fidesui/react";
+import type { Identifier, XYCoord } from "dnd-core";
+import produce from "immer";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useDrag, useDrop } from "react-dnd";
+import { useDispatch } from "react-redux";
 
-import { useAppSelector } from '~/app/hooks';
+import { useAppSelector } from "~/app/hooks";
 
-import { ItemTypes, SYSTEM_NAME } from '../constants';
+import { ItemTypes, SYSTEM_NAME } from "../constants";
 import {
   DatamapColumn,
   selectColumns,
   setColumns as setTableColumns,
-} from '../datamap.slice';
+} from "../datamap.slice";
 
 interface DragItem {
   index: number;
@@ -59,7 +59,7 @@ const useDraggableColumnListItem = ({
   setColumnVisible,
 }: Pick<
   DraggableColumnListItemProps,
-  'id' | 'index' | 'moveColumn' | 'setColumnVisible'
+  "id" | "index" | "moveColumn" | "setColumnVisible"
 >) => {
   const ref = useRef<HTMLDivElement>(null);
   const [{ handlerId }, drop] = useDrop<
@@ -168,7 +168,7 @@ const DraggableColumnListItem: React.FC<DraggableColumnListItemProps> = ({
       data-handler-id={handlerId}
       opacity={isDragging ? 0.2 : 1}
     >
-      <Box ref={ref} cursor={isDragging ? 'grabbing' : 'grab'}>
+      <Box ref={ref} cursor={isDragging ? "grabbing" : "grab"}>
         <ListIcon
           as={GripDotsVerticalIcon}
           color="gray.300"
@@ -176,7 +176,7 @@ const DraggableColumnListItem: React.FC<DraggableColumnListItemProps> = ({
           height="20px"
           width="20px"
           _hover={{
-            color: 'gray.700',
+            color: "gray.700",
           }}
         />
       </Box>

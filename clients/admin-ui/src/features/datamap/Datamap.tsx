@@ -1,20 +1,20 @@
-import { Box, Center, Flex, Spinner } from '@fidesui/react';
-import dynamic from 'next/dynamic';
-import { useCallback, useContext, useState } from 'react';
+import { Box, Center, Flex, Spinner } from "@fidesui/react";
+import dynamic from "next/dynamic";
+import { useCallback, useContext, useState } from "react";
 
-import { useAppSelector } from '~/app/hooks';
-import { useIsAnyFormDirty } from '~/features/common/hooks/useIsAnyFormDirty';
-import DatamapDrawer from '~/features/datamap/datamap-drawer/DatamapDrawer';
-import { DatamapGraphContext } from '~/features/datamap/datamap-graph/DatamapGraphContext';
-import { useTableInstance } from '~/features/datamap/datamap-table/hooks/';
-import SettingsBar from '~/features/datamap/SettingsBar';
+import { useAppSelector } from "~/app/hooks";
+import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
+import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
+import { DatamapGraphContext } from "~/features/datamap/datamap-graph/DatamapGraphContext";
+import { useTableInstance } from "~/features/datamap/datamap-table/hooks/";
+import SettingsBar from "~/features/datamap/SettingsBar";
 
-import { selectIsGettingStarted, selectIsMapOpen } from './datamap.slice';
-import DatamapTable from './datamap-table/DatamapTable';
-import GetStarted from './GetStarted';
+import { selectIsGettingStarted, selectIsMapOpen } from "./datamap.slice";
+import DatamapTable from "./datamap-table/DatamapTable";
+import GetStarted from "./GetStarted";
 
 const SpatialDatamap = dynamic(
-  () => import('~/features/datamap/SpatialDatamap'),
+  () => import("~/features/datamap/SpatialDatamap"),
   { ssr: false }
 );
 

@@ -1,3 +1,3 @@
-import { System } from '~/types/api';
+import { System } from "~/types/api";
 
-export type SystemInfoFormValues = Pick<System, 'name' | 'description'>;
+export type SystemInfoFormValues = Pick<System, "name" | "description">;

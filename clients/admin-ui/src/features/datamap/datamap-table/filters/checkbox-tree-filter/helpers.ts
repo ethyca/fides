@@ -1,8 +1,8 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { ColumnInstance, Row } from 'react-table';
+import React from "react";
+import { useSelector } from "react-redux";
+import { ColumnInstance, Row } from "react-table";
 
-import { selectDataCategoriesMap } from '../../../datamap.slice';
+import { selectDataCategoriesMap } from "../../../datamap.slice";
 
 /**
  * This filter uses the hierarchy of fides keys to determine which rows are selected.
@@ -28,9 +28,9 @@ export const checkboxTreeFilter = <D extends Record<string, unknown>>(
 
   return rows.filter((row) => {
     const key: string = row.values[columnId];
-    const keyParts = key.split('.');
+    const keyParts = key.split(".");
     return keyParts.some((_, tailIndex) =>
-      filterValueSet.has(keyParts.slice(0, tailIndex + 1).join('.'))
+      filterValueSet.has(keyParts.slice(0, tailIndex + 1).join("."))
     );
   });
 };
@@ -48,20 +48,20 @@ export const transformCategoriesToNodes = (
   const keyToNode = new Map<string, TreeNode>();
 
   // The empty string is a dummy root of every sub-key.
-  keyToNode.set('', {
-    label: '',
-    value: '',
+  keyToNode.set("", {
+    label: "",
+    value: "",
     children: [],
   });
 
   categoryKeys.forEach((key) => {
-    const keyParts = key.split('.');
+    const keyParts = key.split(".");
 
     // For every sub-key of the category, create an intermediate parent. At the last step of the
     // loop the `childKey` is equal to `key` and the parent is guaranteed to exist.
     keyParts.forEach((tail, tailIndex) => {
-      const parentKey = keyParts.slice(0, tailIndex).join('.');
-      const childKey = keyParts.slice(0, tailIndex + 1).join('.');
+      const parentKey = keyParts.slice(0, tailIndex).join(".");
+      const childKey = keyParts.slice(0, tailIndex + 1).join(".");
 
       if (keyToNode.has(childKey)) {
         // There may be duplicate categories and/or intermediate parents.
@@ -83,7 +83,7 @@ export const transformCategoriesToNodes = (
     });
   });
 
-  return keyToNode.get('')?.children ?? [];
+  return keyToNode.get("")?.children ?? [];
 };
 
 export const useCheckboxTreeFilter = <D extends Record<string, unknown>>({
@@ -91,7 +91,7 @@ export const useCheckboxTreeFilter = <D extends Record<string, unknown>>({
   filterValue,
   preFilteredRows,
   setFilter,
-}: Omit<ColumnInstance<D>, 'filterValue'> & {
+}: Omit<ColumnInstance<D>, "filterValue"> & {
   filterValue?: string[];
 }) => {
   const categoriesMap = useSelector(selectDataCategoriesMap);

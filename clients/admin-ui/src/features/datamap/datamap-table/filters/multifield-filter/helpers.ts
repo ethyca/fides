@@ -1,9 +1,9 @@
-import React from 'react';
-import { ColumnInstance, Row } from 'react-table';
+import React from "react";
+import { ColumnInstance, Row } from "react-table";
 
-import type { FieldValueToIsSelected } from '~/features/common/FilterMenu';
+import type { FieldValueToIsSelected } from "~/features/common/FilterMenu";
 
-import { DatamapRow } from '../../../datamap.slice';
+import { DatamapRow } from "../../../datamap.slice";
 
 /**
  * The this filter function allows every value in a column to be (de)selected.
@@ -38,7 +38,7 @@ export const useMultifieldFilter = <D extends Record<string, unknown>>({
   filterValue,
   preFilteredRows,
   setFilter,
-}: Omit<ColumnInstance<D>, 'filterValue'> & {
+}: Omit<ColumnInstance<D>, "filterValue"> & {
   filterValue?: FieldValueToIsSelected;
   rows: DatamapRow[];
 }) => {

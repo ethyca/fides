@@ -5,18 +5,18 @@ import {
   AccordionItem,
   AccordionPanel,
   Stack,
-} from '@fidesui/react';
-import { Form, Formik } from 'formik';
+} from "@fidesui/react";
+import { Form, Formik } from "formik";
 
-import { FormGuard } from '~/features/common/hooks/useIsAnyFormDirty';
-import { PrivacyDeclarationWithId } from '~/features/datamap/privacy-declarations/types';
+import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import { PrivacyDeclarationWithId } from "~/features/datamap/privacy-declarations/types";
 
 import {
   DataProps,
   PrivacyDeclarationFormComponents,
   usePrivacyDeclarationForm,
   ValidationSchema,
-} from './PrivacyDeclarationForm';
+} from "./PrivacyDeclarationForm";
 
 interface AccordionProps extends DataProps {
   privacyDeclarations: PrivacyDeclarationWithId[];
@@ -34,7 +34,7 @@ const PrivacyDeclarationAccordionItem = ({
   ...dataProps
 }: { privacyDeclaration: PrivacyDeclarationWithId } & Omit<
   AccordionProps,
-  'privacyDeclarations'
+  "privacyDeclarations"
 >) => {
   const handleEdit = (newValues: PrivacyDeclarationWithId) =>
     onEdit(privacyDeclaration, newValues);
@@ -63,13 +63,13 @@ const PrivacyDeclarationAccordionItem = ({
               />
               <AccordionButton
                 py={4}
-                borderBottomWidth={isExpanded ? '0px' : '1px'}
-                backgroundColor={isExpanded ? 'gray.50' : undefined}
+                borderBottomWidth={isExpanded ? "0px" : "1px"}
+                backgroundColor={isExpanded ? "gray.50" : undefined}
                 data-testid={`accordion-header-${privacyDeclaration.data_use}`}
               >
                 {renderHeader({
                   dirty,
-                  boxProps: { flex: '1', textAlign: 'left' },
+                  boxProps: { flex: "1", textAlign: "left" },
                   hideSaved: !isExpanded,
                 })}
                 <AccordionIcon />

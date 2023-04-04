@@ -1,5 +1,5 @@
-import React from 'react';
-import { ColumnInstance, Row } from 'react-table';
+import React from "react";
+import { ColumnInstance, Row } from "react-table";
 
 /**
  * This filter is specifically for System Fides keys. These keys are kept in
@@ -33,7 +33,7 @@ export const useFidesKeyFilter = <D extends Record<string, unknown>>({
   id,
   filterValue,
   preFilteredRows,
-}: Omit<ColumnInstance<D>, 'filterValue' | 'setFilter'> & {
+}: Omit<ColumnInstance<D>, "filterValue" | "setFilter"> & {
   filterValue?: Set<string>;
 }) => {
   const allFidesKeys = React.useMemo(() => {

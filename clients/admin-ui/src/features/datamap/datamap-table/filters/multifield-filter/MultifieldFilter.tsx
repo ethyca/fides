@@ -1,11 +1,11 @@
-import { ColumnInstance } from 'react-table';
+import { ColumnInstance } from "react-table";
 
 import FilterMenu, {
   FieldValueToIsSelected,
-} from '~/features/common/FilterMenu';
-import { DatamapRow } from '~/features/datamap';
+} from "~/features/common/FilterMenu";
+import { DatamapRow } from "~/features/datamap";
 
-import { useMultifieldFilter } from './helpers';
+import { useMultifieldFilter } from "./helpers";
 
 interface Props {
   column: ColumnInstance<DatamapRow> & {

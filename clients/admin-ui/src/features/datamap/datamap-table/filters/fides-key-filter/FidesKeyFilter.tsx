@@ -11,11 +11,11 @@ import {
   MenuItem,
   MenuList,
   Portal,
-} from '@fidesui/react';
-import { ColumnInstance } from 'react-table';
+} from "@fidesui/react";
+import { ColumnInstance } from "react-table";
 
-import { DatamapRow } from '../../../datamap.slice';
-import { useFidesKeyFilter } from './helpers';
+import { DatamapRow } from "../../../datamap.slice";
+import { useFidesKeyFilter } from "./helpers";
 
 interface Props {
   column: ColumnInstance<DatamapRow>;
@@ -70,7 +70,7 @@ const FidesKeyFilter = ({ column }: Props) => {
                     toggle(fidesKey, (target as HTMLInputElement).checked)
                   }
                   _focusWithin={{
-                    bg: 'gray.100',
+                    bg: "gray.100",
                   }}
                   colorScheme="complimentary"
                 >

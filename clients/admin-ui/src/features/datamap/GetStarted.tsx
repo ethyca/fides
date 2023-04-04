@@ -1,12 +1,12 @@
-import { Box, Button, Center, Stack, Text } from '@fidesui/react';
-import { useRouter } from 'next/router';
+import { Box, Button, Center, Stack, Text } from "@fidesui/react";
+import { useRouter } from "next/router";
 
-import { resolveLink } from '../common/nav/zone-config';
+import { resolveLink } from "../common/nav/zone-config";
 
 const GetStarted = () => {
   const router = useRouter();
   const { href } = resolveLink({
-    href: '/add-systems',
+    href: "/add-systems",
     basePath: router.basePath,
   });
   return (
@@ -16,7 +16,7 @@ const GetStarted = () => {
         p={10}
         borderRadius="6px"
         boxShadow="0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)"
-        maxWidth={{ base: '80%', lg: '60%', xl: '50%' }}
+        maxWidth={{ base: "80%", lg: "60%", xl: "50%" }}
         maxHeight="90%"
         textAlign="center"
       >

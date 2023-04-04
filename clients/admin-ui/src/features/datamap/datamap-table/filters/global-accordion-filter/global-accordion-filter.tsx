@@ -1,8 +1,8 @@
-import { Box } from '@fidesui/react';
-import { useState } from 'react';
-import { useAsyncDebounce } from 'react-table';
+import { Box } from "@fidesui/react";
+import { useState } from "react";
+import { useAsyncDebounce } from "react-table";
 
-import SearchBar from '~/features/common/SearchBar';
+import SearchBar from "~/features/common/SearchBar";
 
 type GlobalFilterProps = {
   globalFilter: any;
@@ -29,7 +29,7 @@ const GlobalFilter = ({ globalFilter, setGlobalFilter }: GlobalFilterProps) => {
           onChange(changeValue);
         }}
         onClear={onClear}
-        search={value || ''}
+        search={value || ""}
       />
     </Box>
   );

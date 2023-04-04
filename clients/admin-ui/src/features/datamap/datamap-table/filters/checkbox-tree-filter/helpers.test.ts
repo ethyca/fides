@@ -1,51 +1,51 @@
-import { transformCategoriesToNodes } from './helpers';
+import { transformCategoriesToNodes } from "./helpers";
 
-describe('transformCategoriesToNodes', () => {
-  it('works with a simple example', () => {
+describe("transformCategoriesToNodes", () => {
+  it("works with a simple example", () => {
     expect(
       transformCategoriesToNodes([
-        'grand',
-        'grand.parent',
-        'grand.parent.child',
-        'grand.parent.sibling',
-        'grand.sibling',
-        'orphan.child',
+        "grand",
+        "grand.parent",
+        "grand.parent.child",
+        "grand.parent.sibling",
+        "grand.sibling",
+        "orphan.child",
       ])
     ).toEqual([
       {
-        label: 'grand',
-        value: 'grand',
+        label: "grand",
+        value: "grand",
         children: [
           {
-            label: 'parent',
-            value: 'grand.parent',
+            label: "parent",
+            value: "grand.parent",
             children: [
               {
-                label: 'child',
-                value: 'grand.parent.child',
+                label: "child",
+                value: "grand.parent.child",
                 children: [],
               },
               {
-                label: 'sibling',
-                value: 'grand.parent.sibling',
+                label: "sibling",
+                value: "grand.parent.sibling",
                 children: [],
               },
             ],
           },
           {
-            label: 'sibling',
-            value: 'grand.sibling',
+            label: "sibling",
+            value: "grand.sibling",
             children: [],
           },
         ],
       },
       {
-        label: 'orphan',
-        value: 'orphan',
+        label: "orphan",
+        value: "orphan",
         children: [
           {
-            label: 'child',
-            value: 'orphan.child',
+            label: "child",
+            value: "orphan.child",
             children: [],
           },
         ],
@@ -53,53 +53,53 @@ describe('transformCategoriesToNodes', () => {
     ]);
   });
 
-  it('uses the category names when provided', () => {
+  it("uses the category names when provided", () => {
     expect(
       transformCategoriesToNodes(
-        ['parent', 'parent.child', 'anon.orphan'],
+        ["parent", "parent.child", "anon.orphan"],
         new Map([
           [
-            'parent',
+            "parent",
             {
-              fides_key: 'parent',
-              name: 'Doctor Parent, PhD',
+              fides_key: "parent",
+              name: "Doctor Parent, PhD",
             },
           ],
           [
-            'parent.child',
+            "parent.child",
             {
-              fides_key: 'parent.child',
-              name: 'Please, call me Child.',
+              fides_key: "parent.child",
+              name: "Please, call me Child.",
             },
           ],
           [
-            'anon.orphan',
+            "anon.orphan",
             {
-              fides_key: 'anon.orphan',
-              name: 'My parent has no name',
+              fides_key: "anon.orphan",
+              name: "My parent has no name",
             },
           ],
         ])
       )
     ).toEqual([
       {
-        label: 'Doctor Parent, PhD',
-        value: 'parent',
+        label: "Doctor Parent, PhD",
+        value: "parent",
         children: [
           {
-            label: 'Please, call me Child.',
-            value: 'parent.child',
+            label: "Please, call me Child.",
+            value: "parent.child",
             children: [],
           },
         ],
       },
       {
-        label: 'anon',
-        value: 'anon',
+        label: "anon",
+        value: "anon",
         children: [
           {
-            label: 'My parent has no name',
-            value: 'anon.orphan',
+            label: "My parent has no name",
+            value: "anon.orphan",
             children: [],
           },
         ],
@@ -107,74 +107,74 @@ describe('transformCategoriesToNodes', () => {
     ]);
   });
 
-  it('works with a real-world example', () => {
+  it("works with a real-world example", () => {
     const categoryKeys = [
-      'system.operations',
-      'system',
-      'user.contact.address.state',
-      'user.contact.email',
-      'user.contact',
-      'user.derived.identifiable.device.device_id',
-      'user.device.cookie_id',
-      'user.device.cookie_id',
-      'user.name',
-      'user.unique_id',
+      "system.operations",
+      "system",
+      "user.contact.address.state",
+      "user.contact.email",
+      "user.contact",
+      "user.derived.identifiable.device.device_id",
+      "user.device.cookie_id",
+      "user.device.cookie_id",
+      "user.name",
+      "user.unique_id",
     ];
 
     expect(transformCategoriesToNodes(categoryKeys)).toEqual([
       {
-        label: 'system',
-        value: 'system',
+        label: "system",
+        value: "system",
         children: [
           {
-            label: 'operations',
-            value: 'system.operations',
+            label: "operations",
+            value: "system.operations",
             children: [],
           },
         ],
       },
       {
-        label: 'user',
-        value: 'user',
+        label: "user",
+        value: "user",
         children: [
           {
-            label: 'contact',
-            value: 'user.contact',
+            label: "contact",
+            value: "user.contact",
             children: [
               {
-                label: 'address',
-                value: 'user.contact.address',
+                label: "address",
+                value: "user.contact.address",
                 children: [
                   {
-                    label: 'state',
-                    value: 'user.contact.address.state',
+                    label: "state",
+                    value: "user.contact.address.state",
                     children: [],
                   },
                 ],
               },
               {
-                label: 'email',
-                value: 'user.contact.email',
+                label: "email",
+                value: "user.contact.email",
                 children: [],
               },
             ],
           },
           {
-            label: 'derived',
-            value: 'user.derived',
+            label: "derived",
+            value: "user.derived",
             // 'user.derived.identifiable.device.device_id',
             children: [
               {
-                label: 'identifiable',
-                value: 'user.derived.identifiable',
+                label: "identifiable",
+                value: "user.derived.identifiable",
                 children: [
                   {
-                    label: 'device',
-                    value: 'user.derived.identifiable.device',
+                    label: "device",
+                    value: "user.derived.identifiable.device",
                     children: [
                       {
-                        label: 'device_id',
-                        value: 'user.derived.identifiable.device.device_id',
+                        label: "device_id",
+                        value: "user.derived.identifiable.device.device_id",
                         children: [],
                       },
                     ],
@@ -184,24 +184,24 @@ describe('transformCategoriesToNodes', () => {
             ],
           },
           {
-            label: 'device',
-            value: 'user.device',
+            label: "device",
+            value: "user.device",
             children: [
               {
-                label: 'cookie_id',
-                value: 'user.device.cookie_id',
+                label: "cookie_id",
+                value: "user.device.cookie_id",
                 children: [],
               },
             ],
           },
           {
-            label: 'name',
-            value: 'user.name',
+            label: "name",
+            value: "user.name",
             children: [],
           },
           {
-            label: 'unique_id',
-            value: 'user.unique_id',
+            label: "unique_id",
+            value: "user.unique_id",
             children: [],
           },
         ],

@@ -13,9 +13,9 @@ import {
   RadioGroup,
   Stack,
   Text,
-} from '@fidesui/react';
-import { stringify } from 'csv-stringify/sync';
-import { saveAs } from 'file-saver';
+} from "@fidesui/react";
+import { stringify } from "csv-stringify/sync";
+import { saveAs } from "file-saver";
 import React, {
   useCallback,
   useContext,
@@ -23,23 +23,23 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from 'react';
-import { utils, WorkBook, writeFileXLSX } from 'xlsx';
+} from "react";
+import { utils, WorkBook, writeFileXLSX } from "xlsx";
 
-import { useAppSelector } from '~/app/hooks';
-import QuestionTooltip from '~/features/common/QuestionTooltip';
+import { useAppSelector } from "~/app/hooks";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 
-import { EXPORT_FILTER_MAP, ExportFilterType } from '../constants';
+import { EXPORT_FILTER_MAP, ExportFilterType } from "../constants";
 import {
   DatamapColumn,
   DatamapRow,
   DatamapTableData,
   selectColumns,
   useLazyGetDatamapQuery,
-} from '../datamap.slice';
-import DatamapTableContext from '../datamap-table/DatamapTableContext';
+} from "../datamap.slice";
+import DatamapTableContext from "../datamap-table/DatamapTableContext";
 
-export type ExportFileType = 'xlsx' | 'csv';
+export type ExportFileType = "xlsx" | "csv";
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -57,12 +57,12 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
 
   const applyMergeFilter = async (data: DatamapTableData) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const _ = (await import('lodash')).default;
+    const _ = (await import("lodash")).default;
     const key = EXPORT_FILTER_MAP.find(
       (item) => item.id === selectedFilter
     )?.key;
     if (key) {
-      const DELIMITER = ', ';
+      const DELIMITER = ", ";
       return _.chain(data.rows)
         .groupBy((element) => element[key])
         .map((rows) => {
@@ -72,7 +72,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
               merge,
               r,
               (objValue: string, srcValue: string) => {
-                if (typeof objValue === 'string') {
+                if (typeof objValue === "string") {
                   if (objValue === srcValue || objValue.includes(srcValue)) {
                     return objValue;
                   }
@@ -100,20 +100,20 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
     fileType: ExportFileType
   ) => {
     if (!data || !data.columns || !data.rows) {
-      return '';
+      return "";
     }
 
     const { columns, rows } = data;
 
     // If we are generating a CSV file, do that and return
-    if (fileType === 'csv') {
+    if (fileType === "csv") {
       return stringify([columns, ...rows]);
     }
 
     // Generate XLSX worksheet
     const worksheet = utils.aoa_to_sheet([columns, ...rows]);
     const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, 'Datamap');
+    utils.book_append_sheet(workbook, worksheet, "Datamap");
 
     return workbook;
   };
@@ -126,7 +126,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
   const generateROPAExportData = async () => {
     const { data } = await getDatamap(
       {
-        organizationName: 'default_organization',
+        organizationName: "default_organization",
       },
       true
     );
@@ -179,10 +179,10 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
     const now = new Date().toISOString();
     const fileName = `${
       getFilterItem(selectedFilter)!.fileName
-    }.${fileType}`.replace('[timestamp]', now);
-    if (typeof file === 'string') {
-      if (fileType === 'csv') {
-        const blob = new Blob([file], { type: 'text/csv;charset=utf-8' });
+    }.${fileType}`.replace("[timestamp]", now);
+    if (typeof file === "string") {
+      if (fileType === "csv") {
+        const blob = new Blob([file], { type: "text/csv;charset=utf-8" });
         saveAs(blob, fileName);
       }
     } else {
@@ -252,7 +252,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
                   <Flex
                     alignItems="baseline"
                     cursor={
-                      isColumnVisible(item.key) ? 'pointer' : 'not-allowed'
+                      isColumnVisible(item.key) ? "pointer" : "not-allowed"
                     }
                     gap="12px"
                     key={item.key}
@@ -267,13 +267,13 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
                       spacing="12px"
                       value={item.id}
                       _disabled={{
-                        background: 'none',
+                        background: "none",
                       }}
                     />
                     <Flex direction="column">
                       <Text
                         color={
-                          isColumnVisible(item.key) ? 'gray.700' : 'gray.300'
+                          isColumnVisible(item.key) ? "gray.700" : "gray.300"
                         }
                         fontSize="sm"
                         fontWeight="600"
@@ -304,7 +304,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
               size="sm"
               mr={3}
               flexGrow={1}
-              onClick={() => handleExportClick('xlsx')}
+              onClick={() => handleExportClick("xlsx")}
             >
               Export Excel (.xls)
             </Button>
@@ -312,7 +312,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
               colorScheme="primary"
               size="sm"
               flexGrow={1}
-              onClick={() => handleExportClick('csv')}
+              onClick={() => handleExportClick("csv")}
             >
               Export CSV (.csv)
             </Button>
