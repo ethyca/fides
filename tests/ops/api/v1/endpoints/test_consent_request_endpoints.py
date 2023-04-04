@@ -774,6 +774,56 @@ class TestSaveConsent:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
+    def test_set_mixed_consent_preferences(
+            self,
+            provided_identity_and_consent_request,
+            api_client,
+            verification_code,
+            consent_policy,
+            privacy_notice_us_ca_provide
+    ):
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "advertising",
+                "data_use_description": None,
+                "opt_in": True,
+                "has_gpc_flag": True,
+                "conflicts_with_gpc": False,
+            },
+            {
+                "opt_in": True,
+                "privacy_notice_id": privacy_notice_us_ca_provide.id,
+                "privacy_notice_version": 1,
+                "user_geography": "us_ca",
+            }
+        ]
+
+        data = {
+            "code": verification_code,
+            "identity": {"email": "test@email.com"},
+            "consent": consent_data,
+            "policy_key": consent_policy.key,  # Optional policy_key supplied,
+            "executable_options": [
+                {"data_use": "advertising", "executable": True},
+                {"data_use": "improve", "executable": False},
+            ],
+            "browser_identity": {"ga_client_id": "test_ga_client_id"},
+        }
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=data,
+        )
+
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Request has consent preferences saved for both data uses and privacy notices.  Migrate to using privacy notices."
+
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
