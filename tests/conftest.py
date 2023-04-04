@@ -10,7 +10,7 @@ import pytest
 import requests
 import yaml
 from fastapi.testclient import TestClient
-from fideslang import models
+from fideslang import DEFAULT_TAXONOMY, models
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.engine.base import Engine
@@ -19,11 +19,11 @@ from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
 from fides.api.ctl.database.session import sync_engine
+from fides.api.ctl.sql_models import DataUse
 
 # from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
 
@@ -813,6 +813,32 @@ def owner_user(db):
 
 
 @pytest.fixture
+def approver_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[APPROVER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
 def viewer_user(db):
     user = FidesUser.create(
         db=db,
@@ -893,32 +919,6 @@ def viewer_and_approver_user(db):
     user.delete(db)
 
 
-@pytest.fixture
-def approver_user(db):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fides_approver_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-        },
-    )
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=[],
-        roles=[APPROVER],
-        user_id=user.id,
-    )
-
-    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
-
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    yield user
-    user.delete(db)
-
-
 @pytest.fixture(scope="function")
 def system(db: Session) -> System:
     system = System.create(
@@ -966,3 +966,12 @@ def system_manager_client(db, system):
     db.refresh(client)
     yield client
     client.delete(db)
+
+
+@pytest.fixture(scope="function")
+def load_default_data_uses(db):
+    for data_use in DEFAULT_TAXONOMY.data_use:
+        # weirdly, only in some test scenarios, we already have the default taxonomy
+        # loaded, in which case the create will throw an error. so we first check existence.
+        if DataUse.get_by(db, field="name", value=data_use.name) is None:
+            DataUse.create(db=db, data=data_use.dict())

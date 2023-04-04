@@ -55,7 +55,7 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
         access_token: Optional[str] = secrets.get("access_token")
         expires_at: Optional[int] = secrets.get("expires_at")
 
-        if not access_token or self._close_to_expiration(expires_at, connection_config):
+        if not access_token or self.close_to_expiration(expires_at, connection_config):
             # generate a JWT token and sign it with the private key
             jwt_token = encode(
                 {
@@ -108,7 +108,7 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
         return request
 
     @staticmethod
-    def _close_to_expiration(
+    def close_to_expiration(
         expires_at: Optional[int], connection_config: ConnectionConfig
     ) -> bool:
         """Check if the access_token will expire in the next 10 minutes."""

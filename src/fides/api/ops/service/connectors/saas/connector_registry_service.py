@@ -1,19 +1,25 @@
-from __future__ import annotations
-
 import os
 from abc import ABC, abstractmethod
-from typing import Dict, Iterable, List, Optional
+from ast import AST, AnnAssign
+from operator import getitem
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from AccessControl.ZopeGuards import safe_builtins
 from loguru import logger
 from packaging.version import Version
 from packaging.version import parse as parse_version
+from RestrictedPython import compile_restricted
+from RestrictedPython.transformer import RestrictingNodeTransformer
 from sqlalchemy.orm import Session
 
+from fides.api.ops.api.deps import get_api_session
+from fides.api.ops.common_exceptions import FidesopsException
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.ops.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
@@ -28,6 +34,7 @@ from fides.api.ops.util.saas_util import (
     replace_config_placeholders,
     replace_dataset_placeholders,
 )
+from fides.core.config import CONFIG
 
 
 class ConnectorTemplateLoader(ABC):
@@ -42,6 +49,7 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
     """
 
     def __init__(self) -> None:
+        logger.info("Loading connectors templates from the data/saas directory")
         self.templates: Dict[str, ConnectorTemplate] = {}
         for file in os.listdir("data/saas/config"):
             if file.endswith(".yml"):
@@ -75,6 +83,44 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
         return self.templates
 
 
+class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
+    """
+    Loads custom connector templates defined in the custom_connector_template database table.
+    """
+
+    def __init__(self) -> None:
+        logger.info("Loading connectors templates from the database")
+        self.templates: Dict[str, ConnectorTemplate] = {}
+        for template in CustomConnectorTemplate.all(db=get_api_session()):
+            try:
+                connector_template = ConnectorTemplate(
+                    config=template.config,
+                    dataset=template.dataset,
+                    icon=template.icon,
+                    human_readable=template.name,
+                )
+
+                # register custom functions if available
+                if template.functions:
+                    if CONFIG.security.allow_custom_connector_functions:
+                        register_custom_functions(template.functions)
+                        logger.info(
+                            f"Loaded functions from the custom connector template '{template.key}'"
+                        )
+                    else:
+                        raise FidesopsException(
+                            message="The import of connector templates with custom functions is disabled by the 'security.allow_custom_connector_functions' setting"
+                        )
+
+                # only load the template if there were no issues loading the custom functions
+                self.templates[template.key] = connector_template
+            except Exception:
+                logger.exception("Unable to load {} connector", template.key)
+
+    def get_connector_templates(self) -> Dict[str, ConnectorTemplate]:
+        return self.templates
+
+
 # pylint: disable=protected-access
 class ConnectorRegistry:
     _instance = None
@@ -84,9 +130,10 @@ class ConnectorRegistry:
     def get_instance(cls) -> "ConnectorRegistry":
         if cls._instance is None:
             cls._instance = cls()
-            cls._instance._templates = (
-                FileConnectorTemplateLoader().get_connector_templates()
-            )
+            cls._instance._templates = {
+                **FileConnectorTemplateLoader().get_connector_templates(),
+                **CustomConnectorTemplateLoader().get_connector_templates(),
+            }
         return cls._instance
 
     @classmethod
@@ -100,6 +147,13 @@ class ConnectorRegistry:
         Returns an object containing the various SaaS connector artifacts
         """
         return cls.get_instance()._templates.get(connector_type)
+
+    @classmethod
+    def register_template(
+        cls, connector_type: str, template: ConnectorTemplate
+    ) -> None:
+        """Used to register new connector templates during runtime"""
+        cls.get_instance()._templates[connector_type] = template
 
 
 def create_connection_config_from_template_no_save(
@@ -232,3 +286,74 @@ def update_saas_instance(
     connection_config.update_saas_config(db, SaaSConfig(**config_from_template))
 
     upsert_dataset_config_from_template(db, connection_config, template, template_vals)
+
+
+def register_custom_functions(script: str) -> None:
+    """
+    Registers custom functions by executing the given script in a restricted environment.
+
+    The script is compiled and executed with RestrictedPython, which is designed to reduce
+    the risk of executing untrusted code. It provides a set of safe builtins to prevent
+    malicious or unintended behavior.
+
+    Args:
+        script (str): The Python script containing the custom functions to be registered.
+
+    Raises:
+        SyntaxError: If the script contains a syntax error or uses restricted language features.
+        Exception: If an exception occurs during the execution of the script.
+    """
+
+    restricted_code = compile_restricted(
+        script, "<string>", "exec", policy=CustomRestrictingNodeTransformer
+    )
+    safe_builtins["__import__"] = custom_guarded_import
+    safe_builtins["_getitem_"] = getitem
+    safe_builtins["staticmethod"] = staticmethod
+
+    # pylint: disable=exec-used
+    exec(
+        restricted_code,
+        {
+            "__metaclass__": type,
+            "__name__": "restricted_module",
+            "__builtins__": safe_builtins,
+        },
+    )
+
+
+class CustomRestrictingNodeTransformer(RestrictingNodeTransformer):
+    """
+    Custom node transformer class that extends RestrictedPython's RestrictingNodeTransformer
+    to allow the use of type annotations (AnnAssign) in restricted code.
+    """
+
+    def visit_AnnAssign(self, node: AnnAssign) -> AST:
+        return self.node_contents_visit(node)
+
+
+def custom_guarded_import(
+    name: str,
+    _globals: Optional[dict] = None,
+    _locals: Optional[dict] = None,
+    fromlist: Optional[Tuple[str, ...]] = None,
+    level: int = 0,
+) -> Any:
+    """
+    A custom import function that prevents the import of certain potentially unsafe modules.
+    """
+    if name in [
+        "os",
+        "sys",
+        "subprocess",
+        "shutil",
+        "socket",
+        "importlib",
+        "tempfile",
+        "glob",
+    ]:
+        # raising SyntaxError to be consistent with exceptions thrown from other guarded functions
+        raise SyntaxError(f"Import of '{name}' module is not allowed.")
+    if fromlist is None:
+        fromlist = ()
+    return __import__(name, _globals, _locals, fromlist, level)

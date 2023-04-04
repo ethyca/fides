@@ -58,15 +58,9 @@ export interface Props {
   >;
   initialValues?: FormValues;
   canEditNames?: boolean;
-  canChangePassword?: boolean;
 }
 
-const UserForm = ({
-  onSubmit,
-  initialValues,
-  canEditNames,
-  canChangePassword,
-}: Props) => {
+const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
@@ -85,16 +79,25 @@ const UserForm = ({
       handleError(result.error);
       return;
     }
-    toast(successToastParams(`User ${isNewUser ? "created" : "updated"}`));
+    toast(
+      successToastParams(
+        `${
+          isNewUser
+            ? "User created. By default, new users are set to the Viewer role. To change the role, please go to the Permissions tab."
+            : "User updated."
+        }`
+      )
+    );
     if (result && result.data) {
       dispatch(setActiveUserId(result.data.id));
     }
   };
 
-  const validationSchema =
-    canChangePassword || isNewUser
-      ? ValidationSchema
-      : ValidationSchema.omit(["password"]);
+  // The password field is only available when creating a new user.
+  // Otherwise, it is within the UpdatePasswordModal
+  const validationSchema = isNewUser
+    ? ValidationSchema
+    : ValidationSchema.omit(["password"]);
 
   return (
     <Formik
@@ -182,6 +185,7 @@ const UserForm = ({
                 colorScheme="primary"
                 disabled={!dirty || !isValid}
                 isLoading={isSubmitting}
+                data-testid="save-user-btn"
               >
                 Save
               </Button>

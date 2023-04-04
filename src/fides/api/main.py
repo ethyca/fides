@@ -272,7 +272,7 @@ async def setup_server() -> None:
     try:
         db = get_api_session()
         update_saas_configs(db)
-        logger.info("Finished loading saas templates")
+        logger.info("Finished loading SaaS templates")
     except Exception as e:
         logger.error(
             "Error occurred during SaaS connector template validation: {}",

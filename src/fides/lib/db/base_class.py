@@ -151,7 +151,9 @@ class OrmWrappedFidesBase(FidesBase):
         return db.query(cls).filter(conditions)
 
     @classmethod
-    def create(cls: Type[T], db: Session, *, data: dict[str, Any]) -> T:
+    def create(
+        cls: Type[T], db: Session, *, data: dict[str, Any], check_name: bool = True
+    ) -> T:
         """Create a new row in the database."""
         # Build properly formatted key for applicable classes
         if hasattr(cls, "key"):
@@ -163,7 +165,7 @@ class OrmWrappedFidesBase(FidesBase):
                     ""
                 )
 
-        if hasattr(cls, "name"):
+        if check_name and hasattr(cls, "name"):
             data["name"] = data.get("name")
             if db.query(cls).filter_by(name=data["name"]).first():
                 raise KeyOrNameAlreadyExists(

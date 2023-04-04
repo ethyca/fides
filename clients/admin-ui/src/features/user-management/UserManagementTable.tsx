@@ -72,6 +72,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
             <Th pl={0}>First Name</Th>
             <Th pl={0}>Last Name</Th>
             <Th pl={0}>Permissions</Th>
+            <Th pl={0}>Assigned Systems</Th>
             <Th pl={0}>Created At</Th>
           </Tr>
         </Thead>
