@@ -17,6 +17,7 @@ from fides.api.ops.common_exceptions import (
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
+    SkippingConsentPropagation,
     TraversalError,
 )
 from fides.api.ops.graph.analytics_events import (
@@ -102,7 +103,11 @@ def retry(
                         f"{self.traversal_node.address.value}", 0
                     )  # Cache that the erasure was performed in case we need to restart
                     return 0
-                except (CollectionDisabled, NotSupportedForCollection) as exc:
+                except (
+                    CollectionDisabled,
+                    NotSupportedForCollection,
+                    SkippingConsentPropagation,
+                ) as exc:
                     logger.warning(
                         "Skipping collection {} for privacy_request: {}",
                         self.traversal_node.address,

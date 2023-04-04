@@ -113,6 +113,10 @@ class NotSupportedForCollection(BaseException):
     """The given action is not supported for this type of collection"""
 
 
+class SkippingConsentPropagation(BaseException):
+    """Skipping consent propagation for collection"""
+
+
 class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 

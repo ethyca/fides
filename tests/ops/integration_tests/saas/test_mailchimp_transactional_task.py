@@ -10,6 +10,8 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
 )
+from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistory
+from fides.api.ops.schemas.privacy_request import PrivacyRequestConsentPreference
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
@@ -32,14 +34,16 @@ def test_mailchimp_transactional_connection_test(
 @pytest.mark.integration_mailchimp_transactional
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
-async def test_mailchimp_transactional_consent_request_task(
+async def test_mailchimp_transactional_consent_request_task_backwards_compatible(
     db,
     consent_policy,
     mailchimp_transactional_connection_config,
     mailchimp_transactional_dataset_config,
     mailchimp_transactional_identity_email,
 ) -> None:
-    """Full consent request based on the Mailchimp Transactional (Mandrill) SaaS config"""
+    """Full consent request based on the Mailchimp Transactional (Mandrill) SaaS config where
+    consent saved w.r.t a data use
+    """
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()),
@@ -168,6 +172,7 @@ async def test_no_prepared_request_fired_without_consent_preferences(
     privacy_request = PrivacyRequest(
         id=str(uuid4()),
     )
+    dataset_name = "mailchimp_transactional_instance"
 
     identity = Identity(**{"email": mailchimp_transactional_identity_email})
     privacy_request.cache_identity(identity)
@@ -182,3 +187,243 @@ async def test_no_prepared_request_fired_without_consent_preferences(
     )
 
     assert not mocked_client_send.called
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    mailchimp_transactional_logs = execution_logs.filter_by(
+        collection_name=dataset_name
+    ).order_by("created_at")
+    assert mailchimp_transactional_logs.count() == 2
+
+    assert [log.status for log in mailchimp_transactional_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.skipped,  # Request not actually fired
+    ]
+
+    for log in mailchimp_transactional_logs:
+        assert log.dataset_name == dataset_name
+        assert (
+            log.collection_name == dataset_name
+        ), "Node-level is given the same name as the dataset name"
+        assert log.action_type == ActionType.consent
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_mailchimp_transactional
+@pytest.mark.asyncio
+@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+async def test_mailchimp_transactional_missing_identity_data(
+    mocked_client_send,
+    db,
+    consent_policy,
+    mailchimp_transactional_connection_config,
+    mailchimp_transactional_dataset_config,
+    mailchimp_transactional_identity_email,
+) -> None:
+    """Assert skipped log when missing identity data"""
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()),
+        consent_preferences=[{"data_use": "advertising", "opt_in": False}],
+    )
+
+    identity = Identity(**{"phone_number": "+15558675309"})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = "mailchimp_transactional_instance"
+
+    with pytest.raises(ValueError):
+        await graph_task.run_consent_request(
+            privacy_request,
+            consent_policy,
+            build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
+            [mailchimp_transactional_connection_config],
+            {"phone_number": "+15558675309"},
+            db,
+        )
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+    mailchimp_transactional_logs = execution_logs.filter_by(
+        collection_name=dataset_name
+    ).order_by("created_at")
+    assert mailchimp_transactional_logs.count() == 2
+
+    assert [log.status for log in mailchimp_transactional_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.error,
+    ]
+
+    assert not mocked_client_send.called
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_mailchimp_transactional
+@pytest.mark.asyncio
+@pytest.mark.usefixtures("reset_mailchimp_transactional_data")
+async def test_mailchimp_transactional_consent_request_task(
+    db,
+    consent_policy,
+    mailchimp_transactional_connection_config,
+    mailchimp_transactional_dataset_config,
+    mailchimp_transactional_identity_email,
+    system,
+) -> None:
+    """Full consent request based on the Mailchimp Transactional (Mandrill) SaaS config where
+    preferences saved w.r.t a privacy notice"""
+    mailchimp_transactional_connection_config.system_id = system.id
+    mailchimp_transactional_connection_config.save(db)
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()),
+        consent_preferences=[
+            PrivacyRequestConsentPreference(
+                data_use=None,
+                opt_in=False,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    data_uses=["advertising"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ],
+    )
+
+    identity = Identity(**{"email": mailchimp_transactional_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = "mailchimp_transactional_instance"
+
+    v = await graph_task.run_consent_request(
+        privacy_request,
+        consent_policy,
+        build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
+        [mailchimp_transactional_connection_config],
+        {"email": mailchimp_transactional_identity_email},
+        db,
+    )
+
+    assert v == {
+        f"{dataset_name}:{dataset_name}": True
+    }, "graph has one node, and request completed successfully"
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    mailchimp_transactional_logs = execution_logs.filter_by(
+        collection_name=dataset_name
+    ).order_by("created_at")
+    assert mailchimp_transactional_logs.count() == 2
+
+    assert [log.status for log in mailchimp_transactional_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.complete,
+    ]
+
+    for log in mailchimp_transactional_logs:
+        assert log.dataset_name == dataset_name
+        assert (
+            log.collection_name == dataset_name
+        ), "Node-level is given the same name as the dataset name"
+        assert log.action_type == ActionType.consent
+
+    connector = SaaSConnector(mailchimp_transactional_connection_config)
+    connector.set_saas_request_state(
+        SaaSRequest(path="test_path", method=HTTPMethod.GET)
+    )  # dummy request as connector requires it
+    request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/allowlists/list",
+        body=json.dumps({"email": mailchimp_transactional_identity_email}),
+    )
+    response = connector.create_client().send(request)
+    body = response.json()
+    assert body == [], "Verify email has been removed from allowlist"
+
+    request: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="/rejects/list",
+        body=json.dumps({"email": mailchimp_transactional_identity_email}),
+    )
+    response = connector.create_client().send(request)
+    body = response.json()[0]
+    assert (
+        body["email"] == mailchimp_transactional_identity_email
+    ), "Verify email has been added to denylist"
+    assert body["detail"] == "Added manually via the the API"
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_mailchimp_transactional
+@pytest.mark.asyncio
+@pytest.mark.usefixtures("reset_mailchimp_transactional_data")
+@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+async def test_mailchimp_transactional_consent_request_task_skipped_due_to_data_use_mismatch(
+    mock_client_send,
+    db,
+    consent_policy,
+    mailchimp_transactional_connection_config,
+    mailchimp_transactional_dataset_config,
+    mailchimp_transactional_identity_email,
+    system,
+) -> None:
+    """Mailchimp transactional skips due to data uses not matching."""
+    mailchimp_transactional_connection_config.system_id = system.id
+    mailchimp_transactional_connection_config.save(db)
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()),
+        consent_preferences=[
+            PrivacyRequestConsentPreference(
+                data_use=None,
+                opt_in=False,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    data_uses=["improve"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ],
+    )
+
+    identity = Identity(**{"email": mailchimp_transactional_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = "mailchimp_transactional_instance"
+
+    v = await graph_task.run_consent_request(
+        privacy_request,
+        consent_policy,
+        build_consent_dataset_graph([mailchimp_transactional_dataset_config]),
+        [mailchimp_transactional_connection_config],
+        {"email": mailchimp_transactional_identity_email},
+        db,
+    )
+
+    assert v == {
+        f"{dataset_name}:{dataset_name}": False
+    }, "graph has one node, and request completed successfully"
+
+    assert not mock_client_send.called
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    mailchimp_transactional_logs = execution_logs.filter_by(
+        collection_name=dataset_name
+    ).order_by("created_at")
+    assert mailchimp_transactional_logs.count() == 2
+
+    assert [log.status for log in mailchimp_transactional_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.skipped,  # Request not actually fired
+    ]

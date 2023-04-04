@@ -6,7 +6,11 @@ from loguru import logger
 from requests import Response
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
-from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
+from fides.api.ops.common_exceptions import (
+    FidesopsException,
+    PostProcessingException,
+    SkippingConsentPropagation,
+)
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
@@ -449,7 +453,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 "Skipping consent requests on node {}: No actionable consent preferences defined",
                 node.address.value,
             )
-            return True
+            raise SkippingConsentPropagation(
+                f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences defined"
+            )
 
         matching_consent_requests: List[
             SaaSRequest
@@ -465,8 +471,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 node.address.value,
                 query_config.action,
             )
-            return True
+            raise SkippingConsentPropagation(
+                f"Skipping consent propagation for node {node.address.value} -  No '{query_config.action}' requests defined."
+            )
 
+        fired: bool = False
         for consent_request in matching_consent_requests:
             self.set_saas_request_state(consent_request)
 
@@ -487,7 +496,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 raise exc
             client: AuthenticatedClient = self.create_client()
             client.send(prepared_request)
+            fired = True
         self.unset_connector_state()
+        if not fired:
+            raise SkippingConsentPropagation("Missing param values.")
+
         return True
 
     def close(self) -> None:

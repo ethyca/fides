@@ -9,6 +9,8 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
 )
+from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistory
+from fides.api.ops.schemas.privacy_request import PrivacyRequestConsentPreference
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors import get_connector
@@ -164,5 +166,91 @@ async def test_google_analytics_no_ga_client_id(
 
     assert not mocked_client_send.called
     assert v == {
-        f"{dataset_name}:{dataset_name}": True
+        f"{dataset_name}:{dataset_name}": False
     }, "graph has one node which succeeded (consent request was skipped)"
+
+    execution_logs = (
+        db.query(ExecutionLog)
+        .filter_by(privacy_request_id=privacy_request.id)
+        .filter_by(collection_name=dataset_name)
+        .order_by("created_at")
+    )
+
+    assert execution_logs.count() == 2
+
+    assert [log.status for log in execution_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.skipped,
+    ]
+
+    assert not mocked_client_send.called
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_google_analytics
+@pytest.mark.asyncio
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
+@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+async def test_google_analytics_no_optin_defined(
+    mock_client_send,
+    db,
+    consent_policy,
+    google_analytics_connection_config,
+    google_analytics_dataset_config,
+    google_analytics_client_id,
+    system,
+) -> None:
+    """Test request is skipped if no matching requests defined"""
+
+    google_analytics_connection_config.system_id = system.id
+    google_analytics_connection_config.save(db)
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()),
+        consent_preferences=[
+            PrivacyRequestConsentPreference(
+                data_use=None,
+                opt_in=True,
+                privacy_notice_history=PrivacyNoticeHistory(
+                    data_uses=["advertising"],
+                    version=1.0,
+                    id="abcde",
+                    privacy_notice_id="12345",
+                    enforcement_level="system_wide",
+                ),
+            ).dict()
+        ],
+    )
+
+    identity = Identity(**{"ga_client_id": google_analytics_client_id})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = "google_analytics_instance"
+
+    v = await graph_task.run_consent_request(
+        privacy_request,
+        consent_policy,
+        build_consent_dataset_graph([google_analytics_dataset_config]),
+        [google_analytics_connection_config],
+        {"ga_client_id": google_analytics_client_id},
+        db,
+    )
+
+    assert v == {
+        f"{dataset_name}:{dataset_name}": False
+    }, "graph has one node, and request completed successfully"
+
+    assert not mock_client_send.called
+
+    execution_logs = (
+        db.query(ExecutionLog)
+        .filter_by(privacy_request_id=privacy_request.id)
+        .filter_by(collection_name=dataset_name)
+        .order_by("created_at")
+    )
+    assert execution_logs.count() == 2
+
+    assert [log.status for log in execution_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.skipped,  # Request not actually fired
+    ]
