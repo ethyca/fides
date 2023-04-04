@@ -344,7 +344,7 @@ const Consent: NextPage = () => {
               fontWeight="semibold"
               textAlign="center"
             >
-              Manage your consent
+              {config.consent?.page_title}
             </Heading>
 
             {config.consent?.description_subtext?.map((paragraph, index) => (
