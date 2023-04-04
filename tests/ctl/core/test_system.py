@@ -222,6 +222,15 @@ def test_get_all_server_systems(
     assert actual_result
 
 
+@pytest.mark.integration
+def test_get_system_data_uses(system) -> None:
+    assert system.get_data_uses == ["advertising"]
+
+    system.privacy_declarations = None
+
+    assert system.get_data_uses == []
+
+
 @pytest.mark.external
 def test_scan_system_aws_passes(
     test_config: FidesConfig, create_external_server_systems: Generator

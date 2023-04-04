@@ -139,6 +139,64 @@ class TestConsent:
 
         consent.delete(db)
 
+    def test_get_consent_for_identity_and_history(
+        self, db, privacy_notice, privacy_notice_us_ca_provide
+    ):
+        provided_identity_data = {
+            "privacy_request_id": None,
+            "field_name": "email",
+            "encrypted_value": {"value": "test@email.com"},
+        }
+        provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+        new_consent_1 = Consent.create(
+            db=db,
+            data={
+                "provided_identity_id": provided_identity.id,
+                "data_use": None,
+                "data_use_description": None,
+                "opt_in": True,
+                "has_gpc_flag": None,
+                "conflicts_with_gpc": False,
+                "privacy_notice_id": privacy_notice.id,
+                "privacy_notice_history_id": privacy_notice.histories[0].id,
+                "privacy_notice_version": 1,
+                "user_geography": "us_ca",
+            },
+        )
+
+        new_consent_2 = Consent.create(
+            db=db,
+            data={
+                "provided_identity_id": provided_identity.id,
+                "data_use": None,
+                "data_use_description": None,
+                "opt_in": True,
+                "has_gpc_flag": None,
+                "conflicts_with_gpc": False,
+                "privacy_notice_id": privacy_notice_us_ca_provide.id,
+                "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[
+                    0
+                ].id,
+                "privacy_notice_version": 1,
+                "user_geography": "us_ca",
+            },
+        )
+
+        assert new_consent_2 == Consent.get_consent_for_identity_and_history(
+            db, provided_identity.id, privacy_notice_us_ca_provide.histories[0].id
+        )
+        assert new_consent_1 == Consent.get_consent_for_identity_and_history(
+            db, provided_identity.id, privacy_notice.histories[0].id
+        )
+
+        assert (
+            Consent.get_consent_for_identity_and_history(
+                db, provided_identity.id, "does not exist"
+            )
+            is None
+        )
+
     def test_get_current_consent_preferences(
         self, db, privacy_notice, privacy_notice_us_ca_provide
     ):
@@ -225,9 +283,6 @@ class TestConsent:
                 "user_geography": "us_ca",
             },
         )
-        import pdb
-
-        pdb.set_trace()
         assert Consent.get_current_consent_preferences(db, provided_identity) == [
             old_consent_1,
             new_consent_2,

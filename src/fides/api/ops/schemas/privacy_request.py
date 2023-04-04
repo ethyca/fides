@@ -56,16 +56,19 @@ class PrivacyRequestDRPStatusResponse(BaseSchema):
 
 
 class Consent(BaseSchema):
-    """Schema for consent."""
+    """Schema for consent.
+
+    The old workflow saved consent preferences with respect to a data use while the new workflow saves preferences
+    with respect to a privacy notice and version. While we support both workflows temporarily, "data_use",
+    "data_use_description", and "has_gpc_flag" have been marked Optional.  These sorts of fields are stored on the
+    privacy notice in the new workflow.
+    """
 
     data_use: Optional[str] = None  # Slated to be deprecated
     data_use_description: Optional[str] = None  # Slated to be deprecated
     opt_in: bool
     has_gpc_flag: Optional[bool] = False  # Slated to be deprecated
     conflicts_with_gpc: bool = False
-
-
-class PrivacyRequestSetConsentPreference(Consent):
     privacy_notice_id: Optional[str] = None
     privacy_notice_version: Optional[float] = None
     user_geography: Optional[PrivacyNoticeRegion] = None
@@ -84,16 +87,9 @@ class PrivacyRequestSetConsentPreference(Consent):
         data_use = values.get("data_use")  # Slated for deprecation
 
         if privacy_notice_id or privacy_notice_version:
-            if (privacy_notice_id and not privacy_notice_version) or (
-                privacy_notice_version and not privacy_notice_id
-            ):
+            if not (privacy_notice_id and privacy_notice_version):
                 raise ValueError(
                     "Both privacy_notice_id and privacy_notice_version must be supplied when setting consent preferences"
-                )
-
-            if data_use:
-                raise ValueError(
-                    "You cannot supply both a privacy_notice_id and a data_use."
                 )
 
             if data_use:
@@ -111,12 +107,19 @@ class PrivacyRequestSetConsentPreference(Consent):
         use_enum_values = True
 
 
-class PrivacyRequestConsentPreference(PrivacyRequestSetConsentPreference):
+class PrivacyRequestConsentPreference(Consent):
+    """Adds the PrivacyNoticeHistory to the Consent schema, retrieved from the privacy notice
+    and its version"""
+
     privacy_notice_history: Optional[PrivacyNoticeHistory] = None
 
     @root_validator
     @classmethod
     def privacy_notice_history_validator(cls, values: Dict) -> Dict:
+        """When setting preferences, the privacy notice id and version are passed in, and
+        then we retrieve the history additionally from those two values.  Add extra validation
+        here to make sure these values match.
+        """
         privacy_notice_history = values.get("privacy_notice_history")
         privacy_notice_id = values.get("privacy_notice_id", None)
         privacy_notice_version = values.get("privacy_notice_version", None)
@@ -326,7 +329,7 @@ class ConsentPreferencesWithVerificationCode(BaseSchema):
     """Schema for consent preferences including the verification code."""
 
     code: Optional[str]
-    consent: List[PrivacyRequestSetConsentPreference]
+    consent: List[Consent]
     policy_key: Optional[FidesKey] = None
     executable_options: Optional[List[ConsentWithExecutableStatus]]
     browser_identity: Optional[Identity]

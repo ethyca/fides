@@ -85,7 +85,7 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     version: float
 
 
-class PrivacyNoticeHistory(PrivacyNoticeWithId):
+class PrivacyNoticeHistory(PrivacyNoticeCreation, PrivacyNoticeWithId):
     """
     An API representation of a PrivacyNoticeHistory used for response payloads
     """

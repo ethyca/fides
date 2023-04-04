@@ -1109,7 +1109,7 @@ class TestGetConsentPreferences:
         assert response.status_code == 404
         assert "Identity not found" in response.json()["detail"]
 
-    def test_get_consent_preferences(
+    def test_get_consent_preferences_on_data_use(
         self,
         provided_identity_and_consent_request,
         db,
@@ -1169,6 +1169,72 @@ class TestGetConsentPreferences:
         ]
         assert response.json()["consent"] == expected_consent_data
 
+    def test_get_consent_preferences_for_privacy_notices(
+        self,
+        provided_identity_and_consent_request,
+        db,
+        generate_auth_header,
+        api_client,
+        privacy_notice_us_ca_provide,
+    ):
+        provided_identity, _ = provided_identity_and_consent_request
+
+        consent_data: list[dict[str, Any]] = [
+            {
+                "opt_in": True,
+                "privacy_notice_id": privacy_notice_us_ca_provide.id,
+                "privacy_notice_version": 1,
+                "user_geography": "us_ca",
+                "privacy_notice_history_id": privacy_notice_us_ca_provide.histories[
+                    0
+                ].id,
+            }
+        ]
+
+        privacy_notice_history = privacy_notice_us_ca_provide.histories[0]
+        for data in deepcopy(consent_data):
+            data["provided_identity_id"] = provided_identity.id
+            Consent.create(db, data=data)
+
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}",
+            headers=auth_header,
+            json={"email": provided_identity.encrypted_value["value"]},
+        )
+
+        assert response.status_code == 200
+        expected_consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": None,
+                "data_use_description": None,
+                "opt_in": True,
+                "has_gpc_flag": None,
+                "conflicts_with_gpc": False,
+                "privacy_notice_id": privacy_notice_us_ca_provide.id,
+                "privacy_notice_version": 1.0,
+                "user_geography": "us_ca",
+                "privacy_notice_history": {
+                    "name": privacy_notice_history.name,
+                    "description": privacy_notice_history.description,
+                    "origin": privacy_notice_history.origin,
+                    "regions": [reg.value for reg in privacy_notice_history.regions],
+                    "consent_mechanism": privacy_notice_history.consent_mechanism.value,
+                    "data_uses": privacy_notice_history.data_uses,
+                    "enforcement_level": privacy_notice_history.enforcement_level.value,
+                    "disabled": privacy_notice_history.disabled,
+                    "has_gpc_flag": privacy_notice_history.has_gpc_flag,
+                    "displayed_in_privacy_center": privacy_notice_history.displayed_in_privacy_center,
+                    "displayed_in_privacy_modal": privacy_notice_history.displayed_in_privacy_modal,
+                    "displayed_in_banner": privacy_notice_history.displayed_in_banner,
+                    "id": privacy_notice_history.id,
+                    "version": privacy_notice_history.version,
+                    "privacy_notice_id": privacy_notice_us_ca_provide.id,
+                },
+            }
+        ]
+        assert response.json()["consent"] == expected_consent_data
+
 
 class TestSetConsentPreferencesWithPrivacyNotices:
     @pytest.fixture(scope="function")
@@ -1178,11 +1244,51 @@ class TestSetConsentPreferencesWithPrivacyNotices:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
+    def test_set_consent_preferences_for_privacy_notice_not_found(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+        consent_policy,
+    ):
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        consent_data: list[dict[str, Any]] = [
+            {
+                "opt_in": True,
+                "privacy_notice_id": "bad_privacy_notice_id",
+                "privacy_notice_version": 1,
+                "user_geography": "us_ca",
+            }
+        ]
+
+        data = {
+            "code": verification_code,
+            "identity": {"email": "test@email.com"},
+            "consent": consent_data,
+            "policy_key": consent_policy.key,  # Optional policy_key supplied,
+            "browser_identity": {"ga_client_id": "test_ga_client_id"},
+        }
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=data,
+        )
+
+        assert response.status_code == 404
+        assert (
+            response.json()["detail"]
+            == f"No PrivacyNoticeHistory record for 'bad_privacy_notice_id' version '1.0'"
+        )
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_set_consent_consent_preferences_initially(
+    def test_set_consent_preferences_for_privacy_notice(
         self,
         mock_run_privacy_request: MagicMock,
         mock_verify_identity: MagicMock,
@@ -1277,7 +1383,139 @@ class TestSetConsentPreferencesWithPrivacyNotices:
         assert consent_request.privacy_request.consent_preferences == [
             expected_consent_preferences
         ]
-
         assert consent_request.preferences[0] == expected_consent_preferences
+        assert mock_run_privacy_request.called
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_set_consent_preferences_for_privacy_notice_update_existing(
+        self,
+        mock_run_privacy_request: MagicMock,
+        mock_verify_identity: MagicMock,
+        provided_identity_and_consent_request,
+        db,
+        api_client,
+        verification_code,
+        consent_policy,
+        privacy_notice,
+        privacy_notice_us_ca_provide,
+    ):
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        privacy_notice_history = (
+            db.query(PrivacyNoticeHistory)
+            .filter(
+                PrivacyNoticeHistory.privacy_notice_id
+                == privacy_notice_us_ca_provide.id,
+                PrivacyNoticeHistory.version == privacy_notice_us_ca_provide.version,
+            )
+            .first()
+        )
+
+        original_consent_data: dict[str, Any] = {
+            "opt_in": True,
+            "privacy_notice_id": privacy_notice_us_ca_provide.id,
+            "privacy_notice_version": 1,
+            "user_geography": "us_ca",
+            "privacy_notice_history_id": privacy_notice_history.id,
+            "provided_identity_id": provided_identity.id,
+        }
+
+        current_preference = Consent.create(db, data=original_consent_data)
+        assert current_preference.privacy_notice_history == privacy_notice_history
+        assert current_preference.opt_in is True
+
+        other_consent_preference_data: dict[str, Any] = {
+            "opt_in": True,
+            "privacy_notice_id": privacy_notice.id,
+            "privacy_notice_version": 1,
+            "user_geography": "us_ca",
+            "privacy_notice_history_id": privacy_notice.histories[0].id,
+            "provided_identity_id": provided_identity.id,
+        }
+
+        other_preference = Consent.create(db, data=other_consent_preference_data)
+
+        data = {
+            "code": verification_code,
+            "identity": {"email": "test@email.com"},
+            "consent": [
+                {
+                    "opt_in": False,
+                    "privacy_notice_id": privacy_notice_us_ca_provide.id,
+                    "privacy_notice_version": 1,
+                    "user_geography": "us_ca",
+                }
+            ],
+            "policy_key": consent_policy.key,  # Optional policy_key supplied,
+            "browser_identity": {"ga_client_id": "test_ga_client_id"},
+        }
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=data,
+        )
+
+        assert response.status_code == 200
+
+        expected_consent_preferences = {
+            "data_use": None,
+            "data_use_description": None,
+            "opt_in": False,
+            "has_gpc_flag": None,
+            "conflicts_with_gpc": False,
+            "privacy_notice_id": privacy_notice_us_ca_provide.id,
+            "privacy_notice_version": 1.0,
+            "user_geography": "us_ca",
+            "privacy_notice_history": {
+                "name": privacy_notice_history.name,
+                "description": privacy_notice_history.description,
+                "origin": privacy_notice_history.origin,
+                "regions": [reg.value for reg in privacy_notice_history.regions],
+                "consent_mechanism": privacy_notice_history.consent_mechanism.value,
+                "data_uses": privacy_notice_history.data_uses,
+                "enforcement_level": privacy_notice_history.enforcement_level.value,
+                "disabled": privacy_notice_history.disabled,
+                "has_gpc_flag": privacy_notice_history.has_gpc_flag,
+                "displayed_in_privacy_center": privacy_notice_history.displayed_in_privacy_center,
+                "displayed_in_privacy_modal": privacy_notice_history.displayed_in_privacy_modal,
+                "displayed_in_banner": privacy_notice_history.displayed_in_banner,
+                "id": privacy_notice_history.id,
+                "version": privacy_notice_history.version,
+                "privacy_notice_id": privacy_notice_us_ca_provide.id,
+            },
+        }
+
+        assert response.json()["consent"][0] == expected_consent_preferences
+        assert verification_code in mock_verify_identity.call_args_list[0].args
+
+        db.refresh(consent_request)
+        assert (
+            consent_request.privacy_request_id is not None
+        ), "PrivacyRequest queued to propagate consent preferences cached on ConsentRequest"
+
+        identity = consent_request.privacy_request.get_persisted_identity()
+        assert identity.email == "test@email.com", (
+            "Identity pulled from Consent Provided Identity and used to "
+            "create a Privacy Request provided identity "
+        )
+        assert identity.phone_number is None
+        assert identity.ga_client_id == "test_ga_client_id", (
+            "Browser identity pulled from Consent Provided Identity and persisted "
+            "to a Privacy Request provided identity"
+        )
+        assert consent_request.privacy_request.consent_preferences == [
+            expected_consent_preferences
+        ], "other_preference data is not added here because it wasn't included in the request"
+
+        assert (
+            consent_request.preferences[0] == expected_consent_preferences
+        ), "other_preference data is not added here because it wasn't included in the request"
 
         assert mock_run_privacy_request.called

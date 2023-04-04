@@ -114,7 +114,9 @@ class NotSupportedForCollection(BaseException):
 
 
 class SkippingConsentPropagation(BaseException):
-    """Skipping consent propagation for collection"""
+    """Skipping consent propagation for collection. Used to trigger "skipped" execution logs being created where applicable
+    for consent requests on saas connectors.
+    """
 
 
 class PrivacyRequestPaused(BaseException):

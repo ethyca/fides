@@ -436,7 +436,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         consent_preferences: List[PrivacyRequestConsentPreference],
     ) -> bool:
         """Execute a consent request. Return whether the consent request to the third party succeeded.
-        Return True if 200 OK
+        Should only propagate either the entire set of opt in or opt out requests.
+        Return True if 200 OK. Raises a SkippingConsentPropagation exception if no action is taken
+        against the service.
         """
         logger.info(
             "Starting consent request for node: '{}'",
@@ -478,7 +480,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         fired: bool = False
         for consent_request in matching_consent_requests:
             self.set_saas_request_state(consent_request)
-
             try:
                 prepared_request: SaaSRequestParams = (
                     query_config.generate_consent_stmt(

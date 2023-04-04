@@ -147,3 +147,11 @@ class TestConnectionConfigModel:
     def test_connection_type_human_readable_invalid(self):
         with pytest.raises(ValueError):
             ConnectionType("nonmapped_type").human_readable()
+
+    def test_connection_config_system(self, db, connection_config, system):
+        assert not connection_config.system
+
+        connection_config.system_id = system.id
+        connection_config.save(db)
+
+        assert connection_config.system == system

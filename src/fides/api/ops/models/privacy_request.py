@@ -921,12 +921,10 @@ class Consent(Base):
     def get_current_consent_preferences(
         cls, db: Session, provided_identity: ProvidedIdentity
     ) -> List[Consent]:
-        """Query existing consent preferences for the current provided identity
+        """Returns existing consent preferences given the current provided identity
 
-        Return all preferences associated with old "data_uses", as well as the preferences
+        Return all preferences associated with the old "data_uses" workflow, as well as the preferences
         saved for the latest version of privacy notices.
-
-        Should I take "disabled" notices into account?
         """
 
         old_consent_preferences: List[Consent] = (

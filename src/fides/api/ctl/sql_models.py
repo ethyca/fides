@@ -312,7 +312,7 @@ class System(Base, FidesBase):
         Utility method to get all the data uses associated with the specific system.
         """
         data_uses = set()
-        for declaration in self.privacy_declarations:
+        for declaration in self.privacy_declarations or []:
             data_use = declaration.get("data_use", None)
             if data_use is not None:
                 data_uses.add(data_use)

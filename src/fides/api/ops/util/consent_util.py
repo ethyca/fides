@@ -37,11 +37,11 @@ def filter_consent_preferences_for_propagation(
     backwards_compatible_consent_requests: List[PrivacyRequestConsentPreference] = [
         pref for pref in consent_preferences if pref.data_use
     ]
+    # Old workflow - Consent preferences saved with respect to data use.
     if backwards_compatible_consent_requests:
-        # Old workflow - Consent preferences saved with respect to data use.
         return backwards_compatible_consent_requests
 
-    # New Workflow - Consent preferences saved with respect to privacy notices.
+    # New workflow - Consent preferences saved with respect to privacy notices.
     system_wide_preferences: List[PrivacyRequestConsentPreference] = [
         pref
         for pref in consent_preferences

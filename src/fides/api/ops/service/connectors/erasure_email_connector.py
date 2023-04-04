@@ -159,14 +159,6 @@ class GenericErasureEmailConnector(BaseEmailConnector):
                     },
                 )
 
-        if skipped_privacy_requests:
-            logger.info(
-                "Skipping email send for the following privacy request IDs: "
-                "{} on connector '{}': no matching identities detected.",
-                skipped_privacy_requests,
-                self.configuration.name,
-            )
-
 
 def get_identity_types_for_connector(
     email_secrets: EmailSchema,

@@ -11,6 +11,26 @@ from fides.api.ops.models.privacy_notice import (
 
 
 class TestPrivacyNoticeModel:
+    def test_get_by_notice_and_version(
+        self, db: Session, privacy_notice: PrivacyNotice
+    ):
+        privacy_notice_history = PrivacyNoticeHistory.get_by_notice_and_version(
+            db, privacy_notice.id, 1.0
+        )
+        assert isinstance(privacy_notice_history, PrivacyNoticeHistory)
+        assert privacy_notice_history.privacy_notice == privacy_notice
+        assert privacy_notice_history.version == 1.0
+
+        privacy_notice_history_v5 = PrivacyNoticeHistory.get_by_notice_and_version(
+            db, privacy_notice.id, 5.0
+        )
+        assert privacy_notice_history_v5 is None
+
+        privacy_notice_does_not_exist = PrivacyNoticeHistory.get_by_notice_and_version(
+            db, "test_id", 1
+        )
+        assert privacy_notice_does_not_exist is None
+
     def test_create(self, db: Session, privacy_notice: PrivacyNotice):
         """
         Ensure our create override works as expected to create a history object

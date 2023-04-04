@@ -245,7 +245,7 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     def get_by_notice_and_version(
         cls, db: Session, privacy_notice_id: str, version: float
     ) -> Optional[PrivacyNoticeHistory]:
-        """Convenience method that looks up a version of a privacy notice"""
+        """Convenience method that fetches a historical version of a privacy notice"""
         return PrivacyNoticeHistory.filter(
             db=db,
             conditions=(PrivacyNoticeHistory.privacy_notice_id == privacy_notice_id)

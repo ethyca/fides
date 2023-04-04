@@ -44,13 +44,13 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingMethod
 from fides.api.ops.schemas.privacy_request import (
+    Consent as ConsentSchema,
     BulkPostPrivacyRequests,
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentRequestResponse,
     ConsentWithExecutableStatus,
     PrivacyRequestCreate,
-    PrivacyRequestSetConsentPreference,
     VerificationCode,
 )
 from fides.api.ops.schemas.redis_cache import Identity
@@ -248,8 +248,8 @@ def queue_privacy_request_to_propagate_consent(
     Queue a privacy request to carry out propagating consent preferences server-side to third-party systems.
 
     For the old workflow, only propagate consent preferences which are considered "executable" by the current system.
-
-    For the new workflow, propagate all consent preferences and create a PrivacyRequest regardless.
+    For the new workflow, propagate all consent preferences.
+    Privacy requests are queued regardless of whether there are consent preferences to propagate.
     """
     # Create an identity based on any provided browser_identity
     identity = browser_identity if browser_identity else Identity()
@@ -295,7 +295,7 @@ def queue_privacy_request_to_propagate_consent(
 def _save_consent_preferences(
     provided_identity: ProvidedIdentity,
     db: Session,
-    consent_preference_data: List[PrivacyRequestSetConsentPreference],
+    consent_preference_data: List[ConsentSchema],
 ) -> List[Consent]:
     """Upsert Consent Preferences
 
@@ -318,22 +318,24 @@ def _save_consent_preferences(
         current_preference: Optional[Consent] = None
         privacy_notice_history: Optional[PrivacyNoticeHistory] = None
 
-        if preference.data_use:  # Old workflow, slated to be deprecated
+        # Old workflow; slated to be deleted
+        if preference.data_use:
             current_preference = Consent.filter(
                 db=db,
                 conditions=(Consent.provided_identity_id == provided_identity.id)
                 & (Consent.data_use == preference.data_use),
             ).first()
+        # New workflow; preferences saved with respect to privacy notices
         elif preference.privacy_notice_id and preference.privacy_notice_version:
-            ## New workflow
+            # New workflow
             privacy_notice_history = PrivacyNoticeHistory.get_by_notice_and_version(
                 db, preference.privacy_notice_id, preference.privacy_notice_version
             )
-
             if not privacy_notice_history:
                 raise HTTPException(
                     HTTP_404_NOT_FOUND,
-                    detail=f"No PrivacyNoticeHistory record for {preference.privacy_notice_id} version {preference.privacy_notice_version}",
+                    detail=f"No PrivacyNoticeHistory record for '{preference.privacy_notice_id}' "
+                    f"version '{preference.privacy_notice_version}'",
                 )
             current_preference = Consent.get_consent_for_identity_and_history(
                 db, provided_identity.id, privacy_notice_history.id
