@@ -246,8 +246,8 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                     system_custom_field_data[key_string] = ", ".join(value)
                 else:
                     system_custom_field_data[key_string] = value
-        system_users = ", ".join([user.username for user in system.get("users", [])])
 
+        system_users = ", ".join([user.username for user in system.get("users", [])])
         third_country_list = ", ".join(system.get("third_country_transfers") or [])
         system_dependencies = ", ".join(system.get("system_dependencies") or [])
         if system.get("ingress"):
