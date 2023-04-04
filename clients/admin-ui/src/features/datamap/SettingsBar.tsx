@@ -1,10 +1,8 @@
 import {
   Button,
   ButtonGroup,
-  DownloadIcon,
   FilterLightIcon,
   Flex,
-  GearIcon,
   IconButton,
   Menu,
   MenuButton,
@@ -15,6 +13,7 @@ import React, { useContext } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import { DownloadLightIcon, GearLightIcon } from "~/features/common/Icon";
 import { selectIsMapOpen, setView } from "~/features/datamap/datamap.slice";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
@@ -156,13 +155,13 @@ const SettingsBar: React.FC = () => {
             size="sm"
             marginRight={1}
             onClick={onSettingsModalOpen}
-            icon={<GearIcon />}
+            icon={<GearLightIcon />}
           />
           <Menu>
             <MenuButton
               as={IconButton}
               aria-label="Export data"
-              icon={<DownloadIcon />}
+              icon={<DownloadLightIcon />}
               onClick={onExportClick}
               size="sm"
               variant="ghost"
