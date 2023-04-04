@@ -16,6 +16,10 @@ VERSION_TAG_REGEX = r"{version}{tag_type}([0-9]+)"
 INITIAL_TAG_INCREMENT = 0
 TAG_INCREMENT = 1
 
+# posarg options for `tag`
+ONLY_TAG = "only_tag"
+PUSH = "push"
+
 
 class TagType(Enum):
     """
@@ -37,27 +41,13 @@ def get_all_tags(repo):
     return sorted(repo.tags, key=lambda t: t.commit.committed_datetime, reverse=True)
 
 
-def get_current_tag(
-    existing: bool = False, repo=None, all_tags: List = []
-) -> Optional[str]:
+def get_current_tag() -> Optional[str]:
     """
     Get the current git tag.
-
-    If `existing` is true, this tag must already exist.
-    Otherwise, a tag is generated via `git describe --tags --dirty --always`,
-    which includes "dirty" tags if the working tree has local modifications.
     """
-    if repo is None:
-        from git.repo import Repo
+    from git.repo import Repo
 
-        repo = Repo()
-    if not all_tags:
-        all_tags = get_all_tags(repo)
-    if existing:  # checks for an existing tag on current commit
-        return next(
-            (tag.name for tag in all_tags if tag.commit == repo.head.commit),
-            None,
-        )
+    repo = Repo()
     git_session = repo.git()
     git_session.fetch("--force", "--tags")
     current_tag = git_session.describe("--tags", "--dirty", "--always")
@@ -67,42 +57,35 @@ def get_current_tag(
 @nox.session()
 def tag(session: nox.Session) -> str:
     """
-    Generates and applies a git tag based on the currently checked out branch
-    and existing tags in the repo.
+    Generates, applies and pushes a git tag to the current HEAD commit,
+    based on the currently checked out branch and existing tags in the repo.
 
     Positional Arguments:
-    - dry_run = don't actually apply the tag or push, just show the tag that will be generated
-    - push = push the generated tag
-    - push_current = push the current tag
+    - (default) = don't actually apply the tag or push, just show the tag that will be generated
+    - only_tag = generate and apply the a tag locally to the current commit, but don't push the tag
+    - push = generate, apply and push a tag
     """
     from git.repo import Repo
 
+    posargs_set = set(session.posargs)
     repo = Repo()
     all_tags = get_all_tags(repo)
-    current_tag = get_current_tag(
-        existing=True,
-        repo=repo,
-        all_tags=all_tags,
-    )  # first get an existing tag if we've got one
+
     generated_tag = generate_tag(
         session, repo.active_branch.name, all_tags
     )  # generate a tag based on the current repo state
 
-    if "dry_run" in session.posargs:
+    # if no args are passed, it's a dry run
+    if ONLY_TAG not in posargs_set and PUSH not in posargs_set:
         session.log(f"Dry-run -- would generate tag: {generated_tag}")
         return
-    if "push_current" in session.posargs:
-        session.log(f"Pushing current tag {current_tag} to remote (origin)")
-        repo.remotes.origin.push(current_tag)
-        return
 
-    # generate and apply a tag if we haven't been told not to
     session.log(f"Tagging current HEAD commit with tag: {generated_tag}")
     repo.create_tag(generated_tag)
 
-    # push the generated tag if we've been told to
-    if "push" in session.posargs:
-        session.log(f"Pushing generated tag {generated_tag} to remote (origin)")
+    if PUSH in posargs_set and ONLY_TAG not in posargs_set:
+        # push the tag if we've been told to
+        session.log(f"Pushing tag {generated_tag} to remote (origin)")
         repo.remotes.origin.push(generated_tag)
 
 
