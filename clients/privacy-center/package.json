@@ -43,7 +43,7 @@
     "react-phone-number-input": "^3.2.19",
     "react-redux": "^8.0.5",
     "redux-persist": "^6.0.0",
-    "yup": "^0.32.11"
+    "yup": "^1.0.2"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^12.0.10",
