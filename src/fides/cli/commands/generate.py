@@ -111,6 +111,54 @@ def generate_dataset_bigquery(
     )
 
 
+@generate_dataset.group(name="aws")
+@click.pass_context
+def generate_dataset_aws(ctx: click.Context) -> None:
+    """
+    Generate Fides datasets from specific Amazon Web Services.
+    """
+
+
+@generate_dataset_aws.command(name="dynamodb")
+@click.pass_context
+# @click.argument("dataset_name", type=str)
+@click.argument("output_filename", type=str)
+@credentials_id_option
+@aws_access_key_id_option
+@aws_secret_access_key_option
+@aws_region_option
+@include_null_flag
+@with_analytics
+def generate_dataset_dynamodb(
+    ctx: click.Context,
+    output_filename: str,
+    include_null: bool,
+    # org_key: str,
+    credentials_id: str,
+    access_key_id: str,
+    secret_access_key: str,
+    region: str,
+) -> None:
+    """
+    Generate a dataset object from BigQuery using a SQLAlchemy connection string.
+    """
+
+    config = ctx.obj["CONFIG"]
+    aws_config = handle_aws_credentials_options(
+        fides_config=config,
+        access_key_id=access_key_id,
+        secret_access_key=secret_access_key,
+        region=region,
+        credentials_id=credentials_id,
+    )
+
+    bigquery_datasets = _dataset.generate_dynamo_db_datasets(aws_config)
+
+    _dataset.write_dataset_manifest(
+        file_name=output_filename, include_null=include_null, datasets=bigquery_datasets
+    )
+
+
 @generate.group(name="system")
 @click.pass_context
 def generate_system(ctx: click.Context) -> None:
