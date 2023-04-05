@@ -22,7 +22,6 @@ const FixedLayout = ({
   // Ideally we could have one common layout used by *all* pages, but we couldn't
   // come up with a common method here without introducing other gotchas, so having
   // a slightly different layout was decided as the most maintainable option
-  // (see https://github.com/ethyca/fidesplus/pull/709)
   <Flex data-testid={title} direction="column" height="100vh">
     <Head>
       <title>Fides Admin UI - {title}</title>
