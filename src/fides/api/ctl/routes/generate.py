@@ -25,7 +25,11 @@ from fides.connectors.models import (
     DatabaseConfig,
     OktaConfig,
 )
-from fides.core.dataset import generate_bigquery_datasets, generate_db_datasets
+from fides.core.dataset import (
+    generate_bigquery_datasets,
+    generate_db_datasets,
+    generate_dynamo_db_datasets,
+)
 from fides.core.system import generate_aws_systems, generate_okta_systems
 from fides.core.utils import validate_db_engine
 
@@ -69,6 +73,7 @@ class Generate(BaseModel):
         """
         target_type = (values.get("target"), values.get("type"))
         valid_target_types = [
+            ("aws", "datasets"),
             ("aws", "systems"),
             ("okta", "systems"),
             ("db", "datasets"),
@@ -126,6 +131,7 @@ async def generate(
 
     Currently generates Fides resources for the following:
     * AWS: Systems
+    * AWS: Datasets (DynamoDB)
     * Okta: Systems
     * DB: Datasets
     * BigQuery: Datasets
@@ -141,12 +147,14 @@ async def generate(
     )
     generate_config = generate_request_payload.generate.config
     generate_target = generate_request_payload.generate.target.lower()
+    generate_type = generate_request_payload.generate.type.lower()
 
     try:
         if generate_target == "aws" and isinstance(generate_config, AWSConfig):
             generate_results = generate_aws(
                 aws_config=generate_config,
                 organization=organization,
+                generate_type=generate_type,
             )
 
         elif generate_target == "db" and isinstance(generate_config, DatabaseConfig):
@@ -177,7 +185,7 @@ async def generate(
 
 
 def generate_aws(
-    aws_config: AWSConfig, organization: Organization
+    aws_config: AWSConfig, organization: Organization, generate_type: str
 ) -> List[Dict[str, str]]:
     """
     Returns a list of Systems found in AWS.
@@ -192,11 +200,15 @@ def generate_aws(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(error),
         )
+    if generate_type == "systems":
+        log.info("Generating systems from AWS")
+        aws_resources = generate_aws_systems(
+            organization=organization, aws_config=aws_config
+        )
+    else:
+        aws_resources = [generate_dynamo_db_datasets(aws_config=aws_config)]
 
-    log.info("Generating systems from AWS")
-    aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
-
-    return [i.dict(exclude_none=True) for i in aws_systems]
+    return [i.dict(exclude_none=True) for i in aws_resources]
 
 
 async def generate_okta(
