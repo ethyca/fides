@@ -24,6 +24,7 @@ import { PrivacyDeclaration } from "~/types/api/models/PrivacyDeclaration";
 import { System } from "~/types/api/models/System";
 
 import SystemInfo from "./SystemInfo";
+import { DataFlowForm } from "common/DataFlowForm";
 
 type DatamapDrawerProps = {
   selectedSystemId?: string;
@@ -189,6 +190,7 @@ const DatamapDrawer = ({
                     {...dataProps}
                   />
                 </Box>
+                <DataFlowForm system={system} />
               </>
             ) : null}
           </Box>
