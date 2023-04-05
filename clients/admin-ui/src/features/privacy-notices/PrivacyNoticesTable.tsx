@@ -25,7 +25,9 @@ const PrivacyNoticesTable = () => {
     <Box>
       <List>
         {privacyNotices.map((notice) => (
-          <ListItem key={notice.id}>{notice.name}</ListItem>
+          <ListItem key={notice.id}>
+            {notice.name} - {notice.consent_mechanism}
+          </ListItem>
         ))}
       </List>
     </Box>

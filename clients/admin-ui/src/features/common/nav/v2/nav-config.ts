@@ -1,3 +1,4 @@
+import { FlagNames } from "~/features/common/features";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import * as routes from "./routes";
@@ -7,7 +8,7 @@ export type NavConfigRoute = {
   path: string;
   exact?: boolean;
   requiresPlus?: boolean;
-  requiresFlag?: string;
+  requiresFlag?: FlagNames;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
 };
@@ -47,6 +48,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
         requiresFlag: "privacyRequestsConfiguration",
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
+      },
+      {
+        title: "Privacy notices",
+        path: routes.PRIVACY_NOTICES_ROUTE,
+        requiresFlag: "privacyNotices",
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
     ],
   },
