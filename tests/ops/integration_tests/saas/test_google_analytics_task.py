@@ -217,6 +217,9 @@ async def test_google_analytics_no_optin_defined(
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    name="Advertising",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ],

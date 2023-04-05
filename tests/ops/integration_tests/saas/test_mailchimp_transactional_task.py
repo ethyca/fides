@@ -289,6 +289,9 @@ async def test_mailchimp_transactional_consent_request_task(
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    name="Improve",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ],
@@ -389,6 +392,9 @@ async def test_mailchimp_transactional_consent_request_task_skipped_due_to_data_
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    name="Improve",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ],

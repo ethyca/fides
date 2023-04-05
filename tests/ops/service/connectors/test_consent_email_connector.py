@@ -262,6 +262,8 @@ class TestConsentEmailConnectorMethods:
                             id="abcde",
                             privacy_notice_id="12345",
                             enforcement_level="system_wide",
+                            regions=["us_ca"],
+                            consent_mechanism="opt_in",
                         ),
                     ),
                     PrivacyRequestConsentPreference(
@@ -273,6 +275,8 @@ class TestConsentEmailConnectorMethods:
                             id="abcde",
                             privacy_notice_id="12345",
                             enforcement_level="system_wide",
+                            regions=["us_ca"],
+                            consent_mechanism="opt_in",
                         ),
                     ),
                 ],
@@ -289,6 +293,8 @@ class TestConsentEmailConnectorMethods:
                             id="abcde",
                             privacy_notice_id="12345",
                             enforcement_level="system_wide",
+                            regions=["us_ca"],
+                            consent_mechanism="opt_in",
                         ),
                     ),
                 ],
@@ -369,6 +375,8 @@ class TestConsentEmailConnectorMethods:
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ]
@@ -397,6 +405,8 @@ class TestConsentEmailConnectorMethods:
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ]
@@ -425,6 +435,8 @@ class TestConsentEmailConnectorMethods:
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ]
@@ -453,6 +465,8 @@ class TestConsentEmailConnectorMethods:
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ]
@@ -481,6 +495,8 @@ class TestConsentEmailConnectorMethods:
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ]
@@ -510,6 +526,8 @@ class TestConsentEmailConnectorMethods:
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ]
@@ -540,6 +558,8 @@ class TestConsentEmailConnectorMethods:
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="system_wide",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ]
@@ -568,6 +588,8 @@ class TestConsentEmailConnectorMethods:
                     id="abcde",
                     privacy_notice_id="12345",
                     enforcement_level="frontend",
+                    regions=["us_ca"],
+                    consent_mechanism="opt_in",
                 ),
             ).dict()
         ]
