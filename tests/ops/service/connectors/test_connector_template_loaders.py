@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 from zipfile import ZipFile
 
 import pytest
-from loguru import logger
 
 from fides.api.ops.common_exceptions import NoSuchSaaSRequestOverrideException
 from fides.api.ops.models.custom_connector_template import CustomConnectorTemplate
