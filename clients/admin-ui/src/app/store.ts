@@ -57,7 +57,7 @@ import {
   reducer as organizationReducer,
 } from "~/features/organization";
 import { plusApi } from "~/features/plus/plus.slice";
-import { reducer as privacyNoticesReducer } from "~/features/plus/privacy-notices.slice";
+import { reducer as privacyNoticesReducer } from "~/features/privacy-notices/privacy-notices.slice";
 import { reducer as systemReducer } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 

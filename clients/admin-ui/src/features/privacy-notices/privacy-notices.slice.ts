@@ -14,7 +14,10 @@ export interface State {
   pageSize?: number;
 }
 
-const initialState: State = {};
+const initialState: State = {
+  page: 1,
+  pageSize: 10,
+};
 
 interface PrivacyNoticesParams {
   show_disabled?: boolean;

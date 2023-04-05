@@ -1,10 +1,9 @@
-import { Box } from "@fidesui/react";
-
 import Layout from "~/features/common/Layout";
+import PrivacyNoticesTable from "~/features/privacy-notices/PrivacyNoticesTable";
 
 const PrivacyNoticesPage = () => (
   <Layout title="Privacy notices">
-    <Box>Work in progress, check back later!</Box>
+    <PrivacyNoticesTable />
   </Layout>
 );
 
