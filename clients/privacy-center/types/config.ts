@@ -16,10 +16,10 @@ export type Config = {
   logo_path: string;
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
-  consent?: v1Consent | v2Consent;
+  consent?: V1Consent | V2Consent;
 };
 
-export type v1Consent = {
+export type V1Consent = {
   icon_path: string;
   title: string;
   description: string;
@@ -28,7 +28,7 @@ export type v1Consent = {
   consentOptions: ConfigConsentOption[];
 }
 
-export type v2Consent = {
+export type V2Consent = {
   button: {
     description: string;
     icon_path: string;
