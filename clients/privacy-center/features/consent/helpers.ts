@@ -7,14 +7,17 @@ import {
 import { ConfigConsentOption, V1Consent, V2Consent } from "~/types/config";
 import { FidesKeyToConsent, GpcStatus } from "./types";
 
-
 /**
  * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key
  */
 export function isV1ConsentConfig(
   consentConfig: V1Consent | V2Consent | undefined
 ): consentConfig is V1Consent {
-  return typeof consentConfig === "object" && consentConfig != null && "button" in consentConfig;
+  return (
+    typeof consentConfig === "object" &&
+    consentConfig != null &&
+    !("button" in consentConfig)
+  );
 }
 
 /**
@@ -26,23 +29,21 @@ export const translateV1ConfigToV2 = ({
   v1ConsentConfig,
 }: {
   v1ConsentConfig: V1Consent;
-}): V2Consent => {
-  return {
-    button: {
-      icon_path: v1ConsentConfig.icon_path,
-      description: v1ConsentConfig.description,
-      identity_inputs: v1ConsentConfig.identity_inputs,
-      title: v1ConsentConfig.title
-    },
-    page: {
-      consentOptions: v1ConsentConfig.consentOptions,
-      description: v1ConsentConfig.description,
-      description_subtext: [],
-      policy_key: v1ConsentConfig.policy_key,
-      title: v1ConsentConfig.title
-    }
-  };
-};
+}): V2Consent => ({
+  button: {
+    icon_path: v1ConsentConfig.icon_path,
+    description: v1ConsentConfig.description,
+    identity_inputs: v1ConsentConfig.identity_inputs,
+    title: v1ConsentConfig.title,
+  },
+  page: {
+    consentOptions: v1ConsentConfig.consentOptions,
+    description: v1ConsentConfig.description,
+    description_subtext: [],
+    policy_key: v1ConsentConfig.policy_key,
+    title: v1ConsentConfig.title,
+  },
+});
 
 export const makeCookieKeyConsent = ({
   consentOptions,
