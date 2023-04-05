@@ -138,10 +138,16 @@ def increment_tag(
 
 def generate_tag(session: nox.Session, branch_name: str, all_tags: List) -> str:
     """Generate a tag used for package deployment"""
+    session.log(
+        f"Fetching current tags and branch to generate a new tag, branch = '{branch_name}'"
+    )
 
     if release_branch_match := re.fullmatch(
         RELEASE_BRANCH_REGEX, branch_name
     ):  # release branch
+        session.log(
+            f"Current branch '{branch_name}' matched release branch, determined release '{release_branch_match.group(1)}'. Generating a new {TagType.RC.name.lower()} tag for this release"
+        )
         return increment_tag(
             session, all_tags, release_branch_match.group(1), TagType.RC
         )
@@ -149,6 +155,18 @@ def generate_tag(session: nox.Session, branch_name: str, all_tags: List) -> str:
     next_release = next_release_increment(session, all_tags)
 
     if branch_name == "main":  # main
+        session.log(
+            f"Current branch '{branch_name}' matched main branch. Generating a new {TagType.BETA.name.lower()} tag"
+        )
         return increment_tag(session, all_tags, next_release, TagType.BETA)
 
+    # feature branch, if we've made it here
+    if "release" in branch_name:
+        session.warn(
+            f"WARNING: Current branch '{branch_name}' does not follow release branch format ('release-n.n.n') and will be tagged as a feature branch."
+        )
+        session.warn("WARNING: Did you mean to name your branch differently?")
+    session.log(
+        f"Current branch '{branch_name}' matched feature branch. Generating a new {TagType.ALPHA.name.lower()} tag"
+    )
     return increment_tag(session, all_tags, next_release, TagType.ALPHA)
