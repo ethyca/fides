@@ -4,7 +4,7 @@ import {
   DATASTORE_CONNECTION_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
   SYSTEM_ROUTE,
-} from "~/constants";
+} from "~/features/common/nav/v2/routes";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { ModuleCardConfig } from "./types";

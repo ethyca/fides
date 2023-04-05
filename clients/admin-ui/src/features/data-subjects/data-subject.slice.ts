@@ -78,4 +78,10 @@ export const selectDataSubjects: (state: RootState) => DataSubject[] =
     ({ data }) => data ?? emptyDataSubjects
   );
 
+export const selectDataSubjectsMap = createSelector(
+  selectDataSubjects,
+  (dataSubjects) =>
+    new Map(dataSubjects.map((dataSubject) => [dataSubject.name, dataSubject]))
+);
+
 export const { reducer } = dataSubjectsSlice;
