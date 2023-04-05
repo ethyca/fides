@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "71013d58-9646-47e3-b47a-f354d33ad35a",
+		"_postman_id": "d6dacb74-585a-460c-804d-ba02ec1dc9b4",
 		"name": "Fides",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -4815,6 +4815,34 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Save Preferences for Privacy Notice",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"browser_identity\": {\n  },\n  \"consent\": [\n    {\n      \"privacy_notice_id\": \"{{privacy_notice_id}}\",\n      \"privacy_notice_version\": 1.0,\n      \"opt_in\": {{opt_in}}\n    }\n  ],\n  \"code\": \"{{verification_code}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/preferences",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request",
+								"{{consent_request_id}}",
+								"preferences"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"auth": {
@@ -5135,7 +5163,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n  {\n    \"name\": \"Profiling\",\n    \"regions\": [\n      \"us_ca\",\n      \"us_ut\"\n    ],\n    \"description\": \"Making a decision solely by automated means.\",\n    \"consent_mechanism\": \"opt_in\",\n    \"data_uses\": [\n      \"personalize\"\n    ],\n    \"enforcement_level\": \"system_wide\",\n    \"has_gpc_flag\": false\n  },\n  {\n    \"name\": \"Essential\",\n    \"regions\": [\n      \"eu\"\n    ],\n    \"description\": \"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n    \"consent_mechanism\": \"necessary\",\n    \"data_uses\": [\n      \"provide.service\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  }\n]",
+							"raw": "[\n  {\n    \"name\": \"Profiling\",\n    \"regions\": [\n      \"us_ca\",\n      \"us_ut\"\n    ],\n    \"description\": \"Making a decision solely by automated means.\",\n    \"consent_mechanism\": \"opt_in\",\n    \"data_uses\": [\n      \"personalize\"\n    ],\n    \"enforcement_level\": \"system_wide\",\n    \"has_gpc_flag\": false\n  },\n  {\n    \"name\": \"Essential\",\n    \"regions\": [\n      \"eu_mt\"\n    ],\n    \"description\": \"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n    \"consent_mechanism\": \"necessary\",\n    \"data_uses\": [\n      \"provide.service\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5594,6 +5622,11 @@
 		},
 		{
 			"key": "privacy_notice_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "opt_in",
 			"value": "",
 			"type": "string"
 		}
