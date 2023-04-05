@@ -19,6 +19,19 @@ export type Config = {
   consent?: V1Consent | V2Consent;
 };
 
+export type V2Config = {
+  title: string;
+  description: string;
+  description_subtext?: string[];
+  addendum?: string[];
+  server_url_development?: string;
+  server_url_production?: string;
+  logo_path: string;
+  actions: PrivacyRequestOption[];
+  includeConsent?: boolean;
+  consent?: V2Consent;
+};
+
 export type V1Consent = {
   icon_path: string;
   title: string;
@@ -26,7 +39,7 @@ export type V1Consent = {
   identity_inputs?: IdentityInputs;
   policy_key?: string;
   consentOptions: ConfigConsentOption[];
-}
+};
 
 export type V2Consent = {
   button: {
@@ -42,7 +55,7 @@ export type V2Consent = {
     policy_key?: string;
     title: string;
   };
-}
+};
 
 export type PrivacyRequestOption = {
   policy_key: string;
