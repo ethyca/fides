@@ -4,7 +4,7 @@ import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_ROUTE,
   SYSTEM_ROUTE,
-} from "~/constants";
+} from "~/features/common/nav/v2/routes";
 
 describe("System management page", () => {
   beforeEach(() => {

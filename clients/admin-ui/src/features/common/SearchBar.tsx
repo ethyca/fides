@@ -43,14 +43,15 @@ const SearchBar = ({
         {...props}
       />
       {onClear ? (
-        <InputRightElement width="3.5rem" display="flex" alignItems="center">
+        <InputRightElement>
           <Button
+            borderLeftRadius={0}
+            height="95%"
+            right="14px"
+            flexShrink={0}
             fontWeight="light"
             size="sm"
             onClick={onClear}
-            // Prevent the button from overlapping with the input's focus rect
-            height="95%"
-            width="95%"
           >
             Clear
           </Button>

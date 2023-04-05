@@ -1,4 +1,4 @@
-import { SYSTEM_ROUTE } from "~/constants";
+import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 
 describe("User Authentication", () => {
   describe("when the user not logged in", () => {

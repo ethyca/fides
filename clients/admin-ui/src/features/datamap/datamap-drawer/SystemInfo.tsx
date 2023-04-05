@@ -9,14 +9,12 @@ import {
   useToast,
 } from "@fidesui/react";
 import { Form, Formik, FormikHelpers } from "formik";
-import { useRouter } from "next/router";
 import React from "react";
 import * as Yup from "yup";
 
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
-import { resolveZoneLink } from "~/features/common/nav/zone-config";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { SystemInfoFormValues } from "~/features/datamap/datamap-drawer/types";
 import { useUpsertSystemsMutation } from "~/features/system/system.slice";
@@ -69,12 +67,7 @@ const defaultInitialValues: SystemInfoFormValues = {
 };
 
 const SystemInfo = ({ system }: SystemInfoProps) => {
-  const router = useRouter();
   const systemHref = `/systems/configure/${system.fides_key}`;
-  const { href: resolvedSystemHref } = resolveZoneLink({
-    href: systemHref,
-    router,
-  });
 
   const { handleUpsertSystem, validationSchema } = useSystemInfo(system);
   return (
@@ -90,7 +83,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
           System details
         </Text>
         <Spacer />
-        <SecondaryLink color="complimentary.500" href={resolvedSystemHref}>
+        <SecondaryLink color="complimentary.500" href={systemHref}>
           View more
           <ExternalLinkIcon ml={2} />
         </SecondaryLink>

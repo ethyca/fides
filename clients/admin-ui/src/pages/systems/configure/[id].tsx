@@ -12,8 +12,8 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
-import { SYSTEM_ROUTE } from "~/constants";
 import Layout from "~/features/common/Layout";
+import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   setActiveSystem,
   useGetSystemByFidesKeyQuery,

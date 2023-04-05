@@ -21,9 +21,14 @@ The types of changes are:
 * Access support for Shippo [#2484](https://github.com/ethyca/fides/pull/2484)
 * Feature flags can be set such that they cannot be modified by the user [#2966](https://github.com/ethyca/fides/pull/2966)
 * Added the datamap UI to make it open source [#2988](https://github.com/ethyca/fides/pull/2988)
+* Introduced a `FixedLayout` component (from the datamap UI) for pages that need to be a fixed height and scroll within [#2992](https://github.com/ethyca/fides/pull/2992)
 
 ### Changed
 * Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
+* Restored `nav-config` back to the admin-ui [#2990](https://github.com/ethyca/fides/pull/2990)
+
+### Removed
+* Removed interzone navigation logic now that the datamap UI and admin UI are one app [#2990](https://github.com/ethyca/fides/pull/2990)
 
 ## [2.10.0](https://github.com/ethyca/fides/compare/2.9.2...2.10.0)
 
