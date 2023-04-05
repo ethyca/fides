@@ -77,11 +77,13 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                 connector_type = config_dict["type"]
                 human_readable = config_dict["name"]
 
-    def __new__(cls: Any, *args: Any, **kwargs: Any) -> "FileConnectorTemplateLoader":
-        if cls._instance is None:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-            cls._instance._templates = {}
-        return cls._instance
+                try:
+                    icon = encode_file_contents(f"data/saas/icon/{connector_type}.svg")
+                except FileNotFoundError:
+                    logger.debug(
+                        f"Could not find the expected {connector_type}.svg in the data/saas/icon/ directory, using default icon"
+                    )
+                    icon = encode_file_contents("data/saas/icon/default.svg")
 
                 # store connector template for retrieval
                 try:
@@ -279,176 +281,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                 "replaceable": replaceable,
             },
         )
-
-
-class ConnectorRegistry:
-    @classmethod
-    def _get_combined_templates(cls) -> Dict[str, ConnectorTemplate]:
-        """
-        Returns a combined map of connector templates from all registered loaders.
-        The resulting map is an aggregation of templates from the file loader and the custom loader,
-        with custom loader templates taking precedence in case of conflicts.
-        """
-        return {
-            **FileConnectorTemplateLoader.get_connector_templates(),  # type: ignore
-            **CustomConnectorTemplateLoader.get_connector_templates(),  # type: ignore
-        }
-
-    @staticmethod
-    def _replacement_available(template: CustomConnectorTemplate) -> bool:
-        """
-        Check the connector templates in the FileConnectorTemplateLoader and return if a newer version is available.
-        """
-        replacement_connector = (
-            FileConnectorTemplateLoader.get_connector_templates().get(template.key)
-        )
-        if not replacement_connector:
-            return False
-
-        custom_saas_config = SaaSConfig(**load_config_from_string(template.config))
-        replacement_saas_config = SaaSConfig(
-            **load_config_from_string(replacement_connector.config)
-        )
-        return parse_version(replacement_saas_config.version) > parse_version(
-            custom_saas_config.version
-        )
-
-    @classmethod
-    def _register_template(
-        cls,
-        template: CustomConnectorTemplate,
-    ) -> None:
-        """
-        Registers a custom connector template by converting it to a ConnectorTemplate,
-        registering any custom functions, and adding it to the loader's template dictionary.
-        """
-        connector_template = ConnectorTemplate(
-            config=template.config,
-            dataset=template.dataset,
-            icon=template.icon,
-            functions=template.functions,
-            human_readable=template.name,
-        )
-
-        # register custom functions if available
-        if template.functions:
-            register_custom_functions(template.functions)
-            logger.info(
-                f"Loaded functions from the custom connector template '{template.key}'"
-            )
-
-        # register the template in the loader's template dictionary
-        cls.get_instance()._templates[template.key] = connector_template  # type: ignore
-
-    # pylint: disable=too-many-branches
-    @classmethod
-    def save_template(cls, db: Session, zip_file: ZipFile) -> None:
-        """
-        Extracts and validates the contents of a zip file containing a
-        custom connector template, registers the template, and saves it to the database.
-        """
-
-        config_contents = None
-        dataset_contents = None
-        icon_contents = None
-        function_contents = None
-
-        for info in zip_file.infolist():
-            try:
-                file_contents = zip_file.read(info).decode()
-            except UnicodeDecodeError:
-                # skip any hidden metadata files that can't be decoded with UTF-8
-                logger.debug(f"Unable to decode the file: {info.filename}")
-                continue
-
-            if info.filename.endswith("config.yml"):
-                if not config_contents:
-                    config_contents = file_contents
-                else:
-                    raise ValidationError(
-                        "Multiple files ending with config.yml found, only one is allowed."
-                    )
-            elif info.filename.endswith("dataset.yml"):
-                if not dataset_contents:
-                    dataset_contents = file_contents
-                else:
-                    raise ValidationError(
-                        "Multiple files ending with dataset.yml found, only one is allowed."
-                    )
-            elif info.filename.endswith(".svg"):
-                if not icon_contents:
-                    icon_contents = str_to_b64_str(file_contents)
-                else:
-                    raise ValidationError(
-                        "Multiple svg files found, only one is allowed."
-                    )
-            elif info.filename.endswith(".py"):
-                if not function_contents:
-                    function_contents = file_contents
-                else:
-                    raise ValidationError(
-                        "Multiple Python (.py) files found, only one is allowed."
-                    )
-
-        if not config_contents:
-            raise ValidationError("Zip file does not contain a config.yml file.")
-
-        if not dataset_contents:
-            raise ValidationError("Zip file does not contain a dataset.yml file.")
-
-        # extract connector_type, human_readable, and replaceable values from the SaaS config
-        saas_config = SaaSConfig(**load_config_from_string(config_contents))
-        connector_type = saas_config.type
-        human_readable = saas_config.name
-        replaceable = saas_config.replaceable
-
-        # if the incoming connector is flagged as replaceable we will update the version to match
-        # that of the existing connector template this way the custom connector template can be
-        # removed once a newer version is bundled with Fides
-        if replaceable:
-            existing_connector = (
-                FileConnectorTemplateLoader.get_connector_templates().get(
-                    connector_type
-                )
-            )
-            if existing_connector:
-                existing_config = SaaSConfig(
-                    **load_config_from_string(existing_connector.config)
-                )
-                config_contents = replace_version(
-                    config_contents, existing_config.version
-                )
-
-        template = CustomConnectorTemplate(
-            key=connector_type,
-            name=human_readable,
-            config=config_contents,
-            dataset=dataset_contents,
-            icon=icon_contents,
-            functions=function_contents,
-            replaceable=replaceable,
-        )
-
-        # attempt to register the template, raises an exception if validation fails
-        cls._register_template(template)
-
-        # save the custom connector to the database if it passed validation
-        CustomConnectorTemplate.create_or_update(
-            db=db,
-            data={
-                "key": connector_type,
-                "name": human_readable,
-                "config": config_contents,
-                "dataset": dataset_contents,
-                "icon": icon_contents,
-                "functions": function_contents,
-                "replaceable": replaceable,
-            },
-        )
-
-    @classmethod
-    def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:
-        return cls.get_instance()._templates  # type: ignore[attr-defined]
 
 
 class ConnectorRegistry:

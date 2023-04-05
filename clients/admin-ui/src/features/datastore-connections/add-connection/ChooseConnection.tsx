@@ -24,9 +24,12 @@ import React, {
   useState,
 } from "react";
 import { useDispatch } from "react-redux";
-import { useAppSelector } from "~/app/hooks";
-import ConnectorTemplateUploadModal from "../../connector-templates/ConnectorTemplateUploadModal";
 
+import { useAppSelector } from "~/app/hooks";
+import Restrict from "~/features/common/Restrict";
+import { ScopeRegistryEnum } from "~/types/api";
+
+import ConnectorTemplateUploadModal from "../../connector-templates/ConnectorTemplateUploadModal";
 import Breadcrumb from "./Breadcrumb";
 import ConnectionTypeFilter from "./ConnectionTypeFilter";
 import ConnectionTypeList from "./ConnectionTypeList";
@@ -107,16 +110,18 @@ const ChooseConnection: React.FC = () => {
             type="search"
           />
         </InputGroup>
-        <Button
-          colorScheme="primary"
-          type="submit"
-          width="20%"
-          data-testid="upload-btn"
-          size="sm"
-          onClick={handleUploadButtonClick}
-        >
-          Upload Connector
-        </Button>
+        <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
+          <Button
+            colorScheme="primary"
+            type="submit"
+            width="20%"
+            data-testid="upload-btn"
+            size="sm"
+            onClick={handleUploadButtonClick}
+          >
+            Upload connector
+          </Button>
+        </Restrict>
       </Flex>
       <ConnectorTemplateUploadModal
         isOpen={isModalOpen}

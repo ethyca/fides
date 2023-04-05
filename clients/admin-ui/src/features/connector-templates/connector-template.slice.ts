@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
 import { CONNECTOR_TEMPLATE } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
+
 import { ConnectorTemplateState } from "./types";
 
 const initialState: ConnectorTemplateState = {
