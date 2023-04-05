@@ -30,6 +30,12 @@ The types of changes are:
 ### Removed
 * Removed interzone navigation logic now that the datamap UI and admin UI are one app [#2990](https://github.com/ethyca/fides/pull/2990)
 
+### Changed
+* Updated the check for if a user can assign owner roles to be scope-based instead of role-based [#2964](https://github.com/ethyca/fides/pull/2964)
+
+### Developer Experience
+* Nox commands for git tagging to support feature branch builds [#2979](https://github.com/ethyca/fides/pull/2979)
+
 ## [2.10.0](https://github.com/ethyca/fides/compare/2.9.2...2.10.0)
 
 ### Added
@@ -58,6 +64,8 @@ The types of changes are:
 * Restricted setting Approvers as System Managers [#2891](https://github.com/ethyca/fides/pull/2891)
 * Adds confirmation modal when downgrading user to "approver" role via Admin UI [#2924](https://github.com/ethyca/fides/pull/2924)
 * Changed the toast message for new users to include access control info [#2939](https://github.com/ethyca/fides/pull/2939)
+* Add Data Stewards to datamap export [#2962](https://github.com/ethyca/fides/pull/2962)
+
 
 ### Fixed
 

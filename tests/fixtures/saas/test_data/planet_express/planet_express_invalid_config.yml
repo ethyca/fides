@@ -18,10 +18,6 @@ saas_config:
       configuration:
         password: <api_key>
 
-  test_request:
-    method: GET
-    path: /ping
-
   endpoints:
     - name: user
       requests:

@@ -3,7 +3,7 @@ dataset:
     name: Planet Express Dataset
     description: A sample dataset representing the Planet Express connector for Fides
     collections:
-      - name: user
+      - names: user
         fields:
           - name: id
             data_categories: [user.unique_id]
