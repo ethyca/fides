@@ -11,7 +11,7 @@ def _filter_matching_system_data_uses(
 
     Propagate preference if Privacy Notice Data Use and System Data Use match.
     Propagate preference if Privacy Notice Data Use is broader than System Data Use.
-    Propagate preference if System Data Use is broader than Privacy Notice Data Use *and* the preference is to opt-out.
+    Ignore preference if System Data Use is broader than Privacy Notice Data Use.
     """
     system_data_uses: List[str] = system.get_data_uses
     filtered_preferences: List[PrivacyRequestConsentPreference] = []
@@ -20,10 +20,7 @@ def _filter_matching_system_data_uses(
         privacy_notice_data_uses: List[str] = pref.privacy_notice_history.data_uses or []  # type: ignore[union-attr]
         for privacy_notice_data_use in privacy_notice_data_uses:
             for system_data_use in system_data_uses:
-                if system_data_use.startswith(privacy_notice_data_use) or (
-                    privacy_notice_data_use.startswith(system_data_use)
-                    and not pref.opt_in
-                ):
+                if system_data_use.startswith(privacy_notice_data_use):
                     filtered_preferences.append(pref)
 
     return filtered_preferences

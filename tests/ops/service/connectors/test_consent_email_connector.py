@@ -448,7 +448,7 @@ class TestConsentEmailConnectorMethods:
             is True
         )
 
-    def test_needs_email_with_narrower_privacy_notice_opt_in(
+    def test_no_email_with_narrower_privacy_notice_opt_in(
         self,
         test_sovrn_consent_email_connector,
         privacy_request_with_consent_policy,
@@ -478,7 +478,7 @@ class TestConsentEmailConnectorMethods:
             is False
         )
 
-    def test_needs_email_with_narrower_privacy_notice_opt_out(
+    def test_no_email_with_narrower_privacy_notice_opt_out(
         self,
         test_sovrn_consent_email_connector,
         privacy_request_with_consent_policy,
@@ -505,7 +505,7 @@ class TestConsentEmailConnectorMethods:
                 {"ljt_readerID": "test_ljt_reader_id"},
                 privacy_request_with_consent_policy,
             )
-            is True
+            is False
         )
 
     def test_needs_email_with_broader_privacy_notice_opt_in(

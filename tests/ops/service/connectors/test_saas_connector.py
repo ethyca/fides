@@ -639,8 +639,8 @@ class TestConsentRequestShouldOptIntoService:
                         ),
                     )
                 ],
-                False,
-                "Persists opt out preference where privacy notice data use is narrower than system",
+                None,
+                "Should skip opt out preference where privacy notice data use is narrower than system",
             ),
             (
                 True,
