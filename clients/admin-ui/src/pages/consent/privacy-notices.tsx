@@ -1,4 +1,5 @@
 import { Box } from "@fidesui/react";
+
 import Layout from "~/features/common/Layout";
 import PrivacyNoticesTable from "~/features/privacy-notices/PrivacyNoticesTable";
 
