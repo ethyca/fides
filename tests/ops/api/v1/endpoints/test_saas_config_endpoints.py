@@ -1,7 +1,7 @@
 import json
 from typing import Optional
 from unittest import mock
-from unittest.mock import Mock
+from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy.orm import Session
@@ -445,7 +445,7 @@ class TestAuthorizeConnection:
     )
     def test_get_authorize_url(
         self,
-        authorization_url_mock: Mock,
+        authorization_url_mock: MagicMock,
         api_client: TestClient,
         authorize_url,
         generate_auth_header,
@@ -592,22 +592,6 @@ class TestRegisterConnectorTemplate:
         )
 
     @pytest.fixture
-    def connector_template_invalid_functions(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "dataset.yml": planet_express_dataset,
-                "functions.py": "import os",
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
     def connector_template_no_icon(
         self,
         planet_express_config,
@@ -706,7 +690,13 @@ class TestRegisterConnectorTemplate:
         response = api_client.post(
             register_connector_template_url,
             headers=auth_header,
-            files={"connector_template": complete_connector_template},
+            files={
+                "file": (
+                    "template.zip",
+                    complete_connector_template,
+                    "application/zip",
+                )
+            },
         )
         assert response.status_code == 403
 
@@ -734,7 +724,7 @@ class TestRegisterConnectorTemplate:
                 "connector_template_invalid_config",
                 400,
                 {
-                    "detail": "1 validation error for ConnectorTemplate\nconfig -> test_request\n  field required (type=value_error.missing)"
+                    "detail": "1 validation error for SaaSConfig\ntest_request\n  field required (type=value_error.missing)"
                 },
             ),
             (
@@ -753,7 +743,7 @@ class TestRegisterConnectorTemplate:
                 "connector_template_invalid_dataset",
                 400,
                 {
-                    "detail": "1 validation error for ConnectorTemplate\ndataset -> collections -> 0 -> name\n  field required (type=value_error.missing)"
+                    "detail": "1 validation error for Dataset\ncollections -> 0 -> name\n  field required (type=value_error.missing)"
                 },
             ),
             (
@@ -790,15 +780,14 @@ class TestRegisterConnectorTemplate:
                 400,
                 {"detail": "Multiple svg files found, only one is allowed."},
             ),
-            (
-                "connector_template_invalid_functions",
-                400,
-                {"detail": "Import of 'os' module is not allowed."},
-            ),
         ],
     )
+    @mock.patch(
+        "fides.api.ops.service.connectors.saas.connector_registry_service.register_custom_functions"
+    )  # prevent functions from being registered to avoid test conflicts
     def test_register_connector_template_allow_custom_connector_functions(
         self,
+        mock_register_custom_functions: MagicMock,
         api_client: TestClient,
         register_connector_template_url,
         generate_auth_header,

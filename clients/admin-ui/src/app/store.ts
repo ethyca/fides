@@ -34,6 +34,7 @@ import { STORAGE_ROOT_KEY } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
 import { reducer as featuresReducer } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
+import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
@@ -48,13 +49,14 @@ import {
   dataUseApi,
   reducer as dataUseReducer,
 } from "~/features/data-use/data-use.slice";
+import { datamapSlice } from "~/features/datamap";
 import { reducer as datasetReducer } from "~/features/dataset";
 import {
   organizationApi,
   reducer as organizationReducer,
 } from "~/features/organization";
 import { plusApi } from "~/features/plus/plus.slice";
-import { reducer as systemReducer, systemApi } from "~/features/system";
+import { reducer as systemReducer } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 
 import { authApi, reducer as authReducer } from "../features/auth";
@@ -85,15 +87,16 @@ const reducer = {
   [authApi.reducerPath]: authApi.reducer,
   [baseApi.reducerPath]: baseApi.reducer,
   [connectionTypeApi.reducerPath]: connectionTypeApi.reducer,
+  [datamapSlice.name]: datamapSlice.reducer,
   [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
   [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
   [dataUseApi.reducerPath]: dataUseApi.reducer,
+  [dirtyFormsSlice.name]: dirtyFormsSlice.reducer,
   [healthApi.reducerPath]: healthApi.reducer,
   [organizationApi.reducerPath]: organizationApi.reducer,
   [plusApi.reducerPath]: plusApi.reducer,
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
   [scannerApi.reducerPath]: scannerApi.reducer,
-  [systemApi.reducerPath]: systemApi.reducer,
   [taxonomyApi.reducerPath]: taxonomyApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
   auth: authReducer,
@@ -146,9 +149,9 @@ const persistConfig = {
     plusApi.reducerPath,
     privacyRequestApi.reducerPath,
     scannerApi.reducerPath,
-    systemApi.reducerPath,
     taxonomyApi.reducerPath,
     userApi.reducerPath,
+    dirtyFormsSlice.name,
   ],
 };
 
@@ -174,7 +177,6 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         plusApi.middleware,
         privacyRequestApi.middleware,
         scannerApi.middleware,
-        systemApi.middleware,
         taxonomyApi.middleware,
         userApi.middleware
       ),

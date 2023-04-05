@@ -1,9 +1,9 @@
-import { canAccessRoute } from "@fidesui/components";
 import { useRouter } from "next/router";
 import { ReactNode } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { LOGIN_ROUTE, VERIFY_AUTH_INTERVAL } from "~/constants";
+import { canAccessRoute } from "~/features/common/nav/v2/nav-config";
 import { useGetUserPermissionsQuery } from "~/features/user-management";
 
 import { logout, selectToken, selectUser } from "./auth.slice";

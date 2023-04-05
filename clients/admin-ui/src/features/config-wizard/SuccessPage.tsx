@@ -19,7 +19,7 @@ import {
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
-import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
+import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { System } from "~/types/api";
 
 import { setActiveSystem } from "../system";
@@ -37,7 +37,7 @@ const SuccessPage = ({
   const systemName = systemInReview.name ?? systemInReview.fides_key;
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { systemOrDatamapRoute } = useInterzoneNav();
+  const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
 
   // Systems are reviewed in order, so a lower index means that system has been reviewed
   // and a higher index means they'll reviewed after hitting "next".

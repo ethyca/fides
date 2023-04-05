@@ -1,8 +1,8 @@
 import { ItemOption } from "common/dropdown/types";
 
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
 import { SystemType } from "~/types/api";
 
-import { DATASTORE_CONNECTION_ROUTE } from "../../../constants";
 import { AddConnectionStep, ConnectorParameterOption } from "./types";
 
 export enum ConfigurationSettings {

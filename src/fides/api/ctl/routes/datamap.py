@@ -31,6 +31,7 @@ API_EXTRA_COLUMNS = {
     "system.description": "Description of the System",
     "system.ingress": "Related Systems which receive data to this System",
     "system.egress": "Related Systems which send data to this System",
+    "system.users": "Data Steward",
 }
 
 DEPRECATED_COLUMNS = {
