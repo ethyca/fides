@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.10.1b0.post0.dev5"
+    "version": "2.10.1b0.post0.dev6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -11799,6 +11799,55 @@
         ]
       }
     },
+    "/api/v1/connector_template/register": {
+      "post": {
+        "tags": [
+          "SaaS Configs"
+        ],
+        "summary": "Register Custom Connector Template",
+        "description": "Registers a custom connector template from a zip file uploaded by the user.\nThe endpoint performs the following steps:\n\n1. Validates the uploaded file is a proper zip file.\n2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.\n\nIf the uploaded file is not a valid zip file or there are any validation errors\nwhen creating the ConnectorTemplates an HTTP 400 status code with error details is returned.",
+        "operationId": "register_custom_connector_template_api_v1_connector_template_register_post",
+        "requestBody": {
+          "content": {
+            "application/zip": {
+              "schema": {
+                "title": "File",
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:register"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/user/{user_id}/reset-password": {
       "post": {
         "tags": [
@@ -18050,6 +18099,11 @@
             "title": "Version",
             "type": "string"
           },
+          "replaceable": {
+            "title": "Replaceable",
+            "type": "boolean",
+            "default": false
+          },
           "connector_params": {
             "title": "Connector Params",
             "type": "array",
@@ -18112,7 +18166,7 @@
             "type": "string"
           }
         },
-        "description": "Used to store base info for a saas config"
+        "description": "Used to store base info for a SaaS config"
       },
       "SaaSConfigValidationDetails": {
         "title": "SaaSConfigValidationDetails",
@@ -18356,6 +18410,7 @@
           "connection:read",
           "connection:authorize",
           "connection_type:read",
+          "connector_template:register",
           "consent:read",
           "ctl_dataset:create",
           "ctl_dataset:read",
