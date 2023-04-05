@@ -358,7 +358,7 @@ def generate_bigquery_datasets(bigquery_config: BigQueryConfig) -> List[Dataset]
     return unique_bigquery_datasets
 
 
-def generate_dynamo_db_datasets(aws_config: AWSConfig) -> Dataset:
+def generate_dynamo_db_datasets(aws_config: Optional[AWSConfig]) -> Dataset:
     """
     Given an AWS config, extract all DynamoDB tables/fields and generate corresponding datasets.
     """
