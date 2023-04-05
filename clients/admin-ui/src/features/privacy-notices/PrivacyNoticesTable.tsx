@@ -1,6 +1,8 @@
 import {
+  Box,
   Table,
   TableContainer,
+  Tag,
   Tbody,
   Td,
   Text,
@@ -13,6 +15,7 @@ import { CellProps, Column, useTable } from "react-table";
 import { useAppSelector } from "~/app/hooks";
 import { PrivacyNoticeResponse } from "~/types/api";
 
+import { MECHANISM_MAP } from "./constants";
 import {
   selectAllPrivacyNotices,
   selectPage,
@@ -23,11 +26,29 @@ import {
 const DateCell = ({ value }: CellProps<PrivacyNoticeResponse, string>) =>
   new Date(value).toDateString();
 
+const MechanismCell = ({ value }: CellProps<PrivacyNoticeResponse, string>) => (
+  <Tag size="sm" backgroundColor="primary.400" color="white">
+    {MECHANISM_MAP.get(value) ?? value}
+  </Tag>
+);
+
+const MultiTagCell = ({
+  value,
+}: CellProps<PrivacyNoticeResponse, string[]>) => (
+  <Box>
+    {value.map((v) => (
+      <Tag key={v} size="sm" backgroundColor="primary.400" color="white">
+        {v}
+      </Tag>
+    ))}
+  </Box>
+);
+
 const COLUMNS: Column<PrivacyNoticeResponse>[] = [
   { Header: "Title", accessor: "name" },
   { Header: "Description", accessor: "description" },
-  { Header: "Mechanism", accessor: "consent_mechanism" },
-  { Header: "Locations", accessor: "regions" },
+  { Header: "Mechanism", accessor: "consent_mechanism", Cell: MechanismCell },
+  { Header: "Locations", accessor: "regions", Cell: MultiTagCell },
   { Header: "Created", accessor: "created_at", Cell: DateCell },
   { Header: "Last update", accessor: "updated_at", Cell: DateCell },
   { Header: "Enable", accessor: "disabled" },
