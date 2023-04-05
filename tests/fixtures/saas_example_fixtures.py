@@ -636,9 +636,23 @@ def planet_express_config() -> str:
 
 
 @pytest.fixture
+def planet_express_invalid_config() -> str:
+    return load_yaml_as_string(
+        "tests/fixtures/saas/test_data/planet_express/planet_express_invalid_config.yml"
+    )
+
+
+@pytest.fixture
 def planet_express_dataset() -> str:
     return load_yaml_as_string(
         "tests/fixtures/saas/test_data/planet_express/planet_express_dataset.yml"
+    )
+
+
+@pytest.fixture
+def planet_express_invalid_dataset() -> str:
+    return load_yaml_as_string(
+        "tests/fixtures/saas/test_data/planet_express/planet_express_invalid_dataset.yml"
     )
 
 

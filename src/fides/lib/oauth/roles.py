@@ -8,6 +8,7 @@ from fides.api.ops.api.v1.scope_registry import (
     CONFIG_UPDATE,
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
+    CONNECTOR_TEMPLATE_REGISTER,
     CONSENT_READ,
     CTL_DATASET_READ,
     CTL_POLICY_READ,
@@ -117,6 +118,7 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ
 ]
 
 not_contributor_scopes = [
+    CONNECTOR_TEMPLATE_REGISTER,
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     MESSAGING_CREATE_OR_UPDATE,

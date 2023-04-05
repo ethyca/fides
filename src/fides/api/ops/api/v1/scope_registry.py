@@ -16,6 +16,7 @@ CLIENT = "client"
 CONFIG = "config"
 CONNECTION = "connection"
 CONNECTION_TYPE = "connection_type"
+CONNECTOR_TEMPLATE = "connector_template"
 CONSENT = "consent"
 CREATE = "create"
 CREATE_OR_UPDATE = "create_or_update"
@@ -44,6 +45,7 @@ PRIVACY_NOTICE = "privacy-notice"
 PRIVACY_REQUEST = "privacy-request"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
+REGISTER = "register"
 REGISTRY = "registry"
 RESET = "reset"
 RESUME = "resume"
@@ -184,6 +186,7 @@ SAAS_CONFIG_DELETE = f"{SAAS_CONFIG}:{DELETE}"
 SAAS_CONFIG_READ = f"{SAAS_CONFIG}:{READ}"
 
 SAAS_CONNECTION_INSTANTIATE = f"{CONNECTION}:{INSTANTIATE}"
+CONNECTOR_TEMPLATE_REGISTER = f"{CONNECTOR_TEMPLATE}:{REGISTER}"
 
 SCOPE_READ = f"{SCOPE}:{READ}"
 
@@ -238,6 +241,7 @@ SCOPE_DOCS = {
     CONNECTION_READ: "View connections",
     CONNECTION_AUTHORIZE: "OAuth2 Authorization",
     CONNECTION_TYPE_READ: "View types of connections",
+    CONNECTOR_TEMPLATE_REGISTER: "Register a connector template",
     CONSENT_READ: "Read consent preferences",
     CTL_DATASET_CREATE: "Create a ctl dataset",
     CTL_DATASET_READ: "Read ctl datasets",
@@ -307,9 +311,9 @@ SCOPE_DOCS = {
     RULE_CREATE_OR_UPDATE: "Create or update rules",
     RULE_DELETE: "Remove rules",
     RULE_READ: "View rules",
-    SAAS_CONFIG_CREATE_OR_UPDATE: "Create or update SAAS configurations",
-    SAAS_CONFIG_DELETE: "Remove SAAS configurations",
-    SAAS_CONFIG_READ: "View SAAS configurations",
+    SAAS_CONFIG_CREATE_OR_UPDATE: "Create or update SaaS configurations",
+    SAAS_CONFIG_DELETE: "Remove SaaS configurations",
+    SAAS_CONFIG_READ: "View SaaS configurations",
     SAAS_CONNECTION_INSTANTIATE: "",
     SCOPE_READ: "View authorization scopes",
     STORAGE_CREATE_OR_UPDATE: "Create or update storage",
