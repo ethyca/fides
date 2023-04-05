@@ -12,6 +12,10 @@ import {
   V2Consent,
 } from "~/types/config";
 
+/**
+ * Transform the config to the latest version so that components can
+ * reference config variables uniformly.
+ */
 const transformConfig = (config: Config): V2Config => {
   if (isV1ConsentConfig(config.consent)) {
     const v1ConsentConfig: V1Consent = config.consent;
@@ -24,12 +28,6 @@ const transformConfig = (config: Config): V2Config => {
   return { ...config, consent: config.consent };
 };
 
-// if (isV1ConsentConfig(importedConfig.consent)) {
-//   const v1ConsentConfig: V1Consent = importedConfig.consent;
-//   const translatedConsent: V2Consent = translateV1ConfigToV2({ v1ConsentConfig });
-//   const temp: V2Config = { ...importedConfig, consent: translatedConsent };
-//   importedConfig = temp;
-// }
 export const config: V2Config = transformConfig(configJson);
 
 // Compute the host URL for the server, while being backwards compatible with
