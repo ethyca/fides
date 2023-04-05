@@ -148,6 +148,7 @@ jobs:
           - "ops-unit"
           - "ops-integration"
           - "lib"
+          - "nox"
 
     runs-on: ubuntu-latest
     timeout-minutes: 20
