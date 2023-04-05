@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Center,
   Flex,
   Input,
@@ -15,10 +16,16 @@ import {
   setSearch,
   useGetAllConnectionTypesQuery,
 } from "connection-type/connection-type.slice";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useDispatch } from "react-redux";
-
 import { useAppSelector } from "~/app/hooks";
+import ConnectorTemplateUploadModal from "../../connector-templates/ConnectorTemplateUploadModal";
 
 import Breadcrumb from "./Breadcrumb";
 import ConnectionTypeFilter from "./ConnectionTypeFilter";
@@ -32,6 +39,7 @@ const ChooseConnection: React.FC = () => {
   const filters = useAppSelector(selectConnectionTypeFilters);
   const { data, isFetching, isLoading, isSuccess } =
     useGetAllConnectionTypesQuery(filters);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSearchChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +63,10 @@ const ChooseConnection: React.FC = () => {
       ),
     [data]
   );
+
+  const handleUploadButtonClick = () => {
+    setIsModalOpen(true);
+  };
 
   useEffect(() => {
     mounted.current = true;
@@ -95,7 +107,21 @@ const ChooseConnection: React.FC = () => {
             type="search"
           />
         </InputGroup>
+        <Button
+          colorScheme="primary"
+          type="submit"
+          width="20%"
+          data-testid="upload-btn"
+          size="sm"
+          onClick={handleUploadButtonClick}
+        >
+          Upload Connector
+        </Button>
       </Flex>
+      <ConnectorTemplateUploadModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
       {(isFetching || isLoading) && (
         <Center>
           <Spinner />

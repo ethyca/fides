@@ -137,6 +137,7 @@ export const LOGIN_ROUTE = "/login";
 export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const CONNECTION_ROUTE = "/connection";
 export const CONNECTION_TYPE_ROUTE = "/connection_type";
+export const CONNECTOR_TEMPLATE = "/connector_template";
 
 // UI ROUTES
 export const ADD_SYSTEMS_ROUTE = "/add-systems";

@@ -3,19 +3,19 @@ import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import {
   selectConnectionTypeState,
-  setConnection,
+  setConnection
 } from "connection-type/connection-type.slice";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import { SaasType } from "datastore-connections/constants";
 import {
   useCreateSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
-  useUpdateDatastoreConnectionSecretsMutation,
+  useUpdateDatastoreConnectionSecretsMutation
 } from "datastore-connections/datastore-connection.slice";
 import {
-  CreateSassConnectionConfigRequest,
+  CreateSaasConnectionConfigRequest,
   DatastoreConnectionRequest,
-  DatastoreConnectionSecretsRequest,
+  DatastoreConnectionSecretsRequest
 } from "datastore-connections/types";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -105,7 +105,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         }
       } else {
         // Create new Sass connector
-        const params: CreateSassConnectionConfigRequest = {
+        const params: CreateSaasConnectionConfigRequest = {
           description: values.description,
           name: values.name,
           instance_key: formatKey(values.instance_key as string),
