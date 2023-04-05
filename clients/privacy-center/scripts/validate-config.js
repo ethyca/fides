@@ -27,6 +27,7 @@ const configIsValid = (
  */
 const validateConfig = () => {
   const privacyCenterConfig = require("../config/config.json");
+  console.log(privacyCenterConfig);
   const { isValid, message } = configIsValid(privacyCenterConfig);
   if (!isValid) {
     // Throw a red warning

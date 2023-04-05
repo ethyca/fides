@@ -16,22 +16,33 @@ export type Config = {
   logo_path: string;
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
-  consent?: {
-    button: {
-      description: string;
-      icon_path: string;
-      identity_inputs?: IdentityInputs;
-      title: string;
-    };
-    page: {
-      consentOptions: ConfigConsentOption[];
-      description: string;
-      description_subtext?: string[];
-      policy_key?: string;
-      title: string;
-    };
-  };
+  consent?: v1Consent | v2Consent;
 };
+
+export type v1Consent = {
+  icon_path: string;
+  title: string;
+  description: string;
+  identity_inputs?: IdentityInputs;
+  policy_key?: string;
+  consentOptions: ConfigConsentOption[];
+}
+
+export type v2Consent = {
+  button: {
+    description: string;
+    icon_path: string;
+    identity_inputs?: IdentityInputs;
+    title: string;
+  };
+  page: {
+    consentOptions: ConfigConsentOption[];
+    description: string;
+    description_subtext?: string[];
+    policy_key?: string;
+    title: string;
+  };
+}
 
 export type PrivacyRequestOption = {
   policy_key: string;
