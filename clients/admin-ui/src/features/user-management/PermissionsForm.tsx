@@ -9,7 +9,7 @@ import {
   useToast,
 } from "@fidesui/react";
 import ConfirmationModal from "common/ConfirmationModal";
-import { useHasRole } from "common/Restrict";
+import { useHasPermission } from "common/Restrict";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
-import { RoleRegistryEnum, System } from "~/types/api";
+import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
 import RoleOption from "./RoleOption";
 import {
@@ -87,9 +87,7 @@ const PermissionsForm = () => {
 
     const userPermissionsResult = await updateUserPermissionMutationTrigger({
       user_id: activeUserId,
-      // Scopes are not editable in the UI, but make sure we retain whatever scopes
-      // the user might've already had
-      payload: { scopes: userPermissions?.scopes, roles: values.roles },
+      payload: { roles: values.roles },
     });
 
     if (isErrorResult(userPermissionsResult)) {
@@ -126,7 +124,9 @@ const PermissionsForm = () => {
   };
 
   // This prevents logged-in users with contributor role from being able to assign owner roles
-  const isOwner = useHasRole([RoleRegistryEnum.OWNER]);
+  const canAssignOwner = useHasPermission([
+    ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
+  ]);
 
   if (!activeUserId) {
     return null;
@@ -136,9 +136,12 @@ const PermissionsForm = () => {
     return <Spinner />;
   }
 
-  if (!isOwner && userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)) {
+  if (
+    !canAssignOwner &&
+    userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)
+  ) {
     return (
-      <Text>
+      <Text data-testid="insufficient-access">
         You do not have sufficient access to change this user&apos;s
         permissions.
       </Text>
@@ -158,7 +161,7 @@ const PermissionsForm = () => {
       {({ values, isSubmitting, dirty }) => (
         <Form>
           <Stack spacing={7}>
-            <Stack spacing={3}>
+            <Stack spacing={3} data-testid="role-options">
               <Flex alignItems="center">
                 <Text fontSize="sm" fontWeight="semibold" mr={1}>
                   User role
@@ -172,7 +175,9 @@ const PermissionsForm = () => {
                     key={role.roleKey}
                     isSelected={isSelected}
                     isDisabled={
-                      role.roleKey === RoleRegistryEnum.OWNER ? !isOwner : false
+                      role.roleKey === RoleRegistryEnum.OWNER
+                        ? !canAssignOwner
+                        : false
                     }
                     assignedSystems={assignedSystems}
                     onAssignedSystemChange={setAssignedSystems}
