@@ -82,6 +82,27 @@ def google_analytics_connection_config(
     connection_config.delete(db)
 
 
+@pytest.fixture(scope="function")
+def google_analytics_connection_config_without_secrets(
+    db: session, google_analytics_config, google_analytics_secrets
+) -> Generator:
+    """This connector can't be used to make requests"""
+    fides_key = google_analytics_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": {},
+            "saas_config": google_analytics_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
 @pytest.fixture
 def google_analytics_dataset_config(
     db: Session,

@@ -1,4 +1,5 @@
 import json
+import random
 from typing import List
 from unittest import mock
 from unittest.mock import Mock
@@ -8,6 +9,7 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
+from fides.api.ops.common_exceptions import SkippingConsentPropagation
 from fides.api.ops.graph.graph import Node
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
@@ -20,6 +22,7 @@ from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
 from fides.api.ops.util.consent_util import should_opt_in_to_service
+from tests.ops.graph.graph_test_util import generate_node
 
 
 @pytest.mark.unit_saas
@@ -805,3 +808,208 @@ class TestConsentRequestShouldOptIntoService:
             )
             is should_opt_in
         ), description
+
+
+class TestSaasConnectorRunConsentRequest:
+    def test_no_preferences_to_propagate(
+        self,
+        consent_policy,
+        privacy_request_with_consent_policy,
+        mailchimp_transactional_connection_config_no_secrets,
+    ):
+        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        with pytest.raises(SkippingConsentPropagation) as exc:
+            connector.run_consent_request(
+                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                policy=consent_policy,
+                privacy_request=privacy_request_with_consent_policy,
+                identity_data={"ljt_readerID": "abcde"},
+                consent_preferences=[],
+            )
+        assert "no actionable consent preferences to propagate" in str(exc)
+
+    def test_data_use_mismatch(
+        self,
+        system,
+        consent_policy,
+        privacy_request_with_consent_policy,
+        mailchimp_transactional_connection_config_no_secrets,
+    ):
+        """System has an advertising data use and this privacy notice has an improve data use"""
+        mailchimp_transactional_connection_config_no_secrets.system_id = system.id
+
+        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        with pytest.raises(SkippingConsentPropagation) as exc:
+            connector.run_consent_request(
+                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                policy=consent_policy,
+                privacy_request=privacy_request_with_consent_policy,
+                identity_data={"ljt_readerID": "abcde"},
+                consent_preferences=[
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            name="Improve",
+                            data_uses=["improve"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                            regions=["us_ca"],
+                            consent_mechanism="opt_in",
+                        ),
+                    )
+                ],
+            )
+
+        assert "no actionable consent preferences to propagate" in str(exc)
+
+    def test_enforcement_level_not_system_wide(
+        self,
+        system,
+        consent_policy,
+        privacy_request_with_consent_policy,
+        mailchimp_transactional_connection_config_no_secrets,
+    ):
+        """Can only propagate preferences that have a system wide enforcement level"""
+        mailchimp_transactional_connection_config_no_secrets.system_id = system.id
+
+        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        with pytest.raises(SkippingConsentPropagation) as exc:
+            connector.run_consent_request(
+                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                policy=consent_policy,
+                privacy_request=privacy_request_with_consent_policy,
+                identity_data={"ljt_readerID": "abcde"},
+                consent_preferences=[
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            name="Advertising",
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="frontend",
+                            regions=["us_ca"],
+                            consent_mechanism="opt_in",
+                        ),
+                    )
+                ],
+            )
+
+        assert "no actionable consent preferences to propagate" in str(exc)
+
+    def test_missing_identity_data_failure(
+        self,
+        system,
+        consent_policy,
+        mailchimp_transactional_connection_config_no_secrets,
+    ):
+        """We need a matching identity for the connector in order to send the request
+        Mailchimp Transactional set up to fail if no email supplied
+        """
+        mailchimp_transactional_connection_config_no_secrets.system_id = system.id
+
+        privacy_request = PrivacyRequest(
+            id=f"test_consent_request_task_{random.randint(0, 1000)}"
+        )
+
+        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        with pytest.raises(ValueError):
+            connector.run_consent_request(
+                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                policy=consent_policy,
+                privacy_request=privacy_request,
+                identity_data={"ljt_readerID": "abcde"},
+                consent_preferences=[
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            name="Advertising",
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                            regions=["us_ca"],
+                            consent_mechanism="opt_in",
+                        ),
+                    )
+                ],
+            )
+
+    def test_missing_identity_data_skipped(
+        self, system, consent_policy, google_analytics_connection_config_without_secrets
+    ):
+        """We need a matching identity for the connector in order to send the google_analytics_connection_config_without_secrets
+        Google Analytics set up to skip instead of fail if we don't have the ga client id.
+        There's no guarantee that a ga cookie is in the browser
+        """
+        google_analytics_connection_config_without_secrets.system_id = system.id
+
+        privacy_request = PrivacyRequest(
+            id=f"test_consent_request_task_{random.randint(0, 1000)}"
+        )
+
+        connector = get_connector(google_analytics_connection_config_without_secrets)
+        with pytest.raises(SkippingConsentPropagation) as exc:
+            connector.run_consent_request(
+                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                policy=consent_policy,
+                privacy_request=privacy_request,
+                identity_data={"ljt_readerID": "abcde"},
+                consent_preferences=[
+                    PrivacyRequestConsentPreference(
+                        opt_in=False,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            name="Advertising",
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                            regions=["us_ca"],
+                            consent_mechanism="opt_in",
+                        ),
+                    )
+                ],
+            )
+
+        assert "Missing needed values to propagate request" in str(exc)
+
+    def test_no_requests_of_that_type_defined(
+        self, system, consent_policy, google_analytics_connection_config_without_secrets
+    ):
+        """User is expressing an opt in preference here but GA only has an opt out preference defined"""
+        google_analytics_connection_config_without_secrets.system_id = system.id
+
+        privacy_request = PrivacyRequest(
+            id=f"test_consent_request_task_{random.randint(0, 1000)}"
+        )
+
+        connector = get_connector(google_analytics_connection_config_without_secrets)
+        with pytest.raises(SkippingConsentPropagation) as exc:
+            connector.run_consent_request(
+                node=TraversalNode(generate_node("a", "b", "c", "c2")),
+                policy=consent_policy,
+                privacy_request=privacy_request,
+                identity_data={"ljt_readerID": "abcde"},
+                consent_preferences=[
+                    PrivacyRequestConsentPreference(
+                        opt_in=True,
+                        privacy_notice_history=PrivacyNoticeHistory(
+                            name="Advertising",
+                            data_uses=["advertising"],
+                            version=1.0,
+                            id="abcde",
+                            privacy_notice_id="12345",
+                            enforcement_level="system_wide",
+                            regions=["us_ca"],
+                            consent_mechanism="opt_in",
+                        ),
+                    )
+                ],
+            )
+
+        assert "No 'opt_in' requests defined" in str(exc)

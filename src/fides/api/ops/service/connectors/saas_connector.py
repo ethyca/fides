@@ -452,11 +452,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if should_opt_in is None:
             logger.info(
-                "Skipping consent requests on node {}: No actionable consent preferences defined",
+                "Skipping consent requests on node {}: No actionable consent preferences to propagate",
                 node.address.value,
             )
             raise SkippingConsentPropagation(
-                f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences defined"
+                f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
             )
 
         matching_consent_requests: List[
@@ -500,7 +500,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             fired = True
         self.unset_connector_state()
         if not fired:
-            raise SkippingConsentPropagation("Missing param values.")
+            raise SkippingConsentPropagation(
+                "Missing needed values to propagate request."
+            )
 
         return True
 
