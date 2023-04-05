@@ -1,9 +1,16 @@
 /* eslint-disable import/prefer-default-export */
-
-import { Config, IdentityInputs } from "~/types/config";
 import configJson from "~/config/config.json";
+import { isV1ConsentConfig, translateV1ConfigToV2 } from "~/features/consent/helpers";
+import { Config, IdentityInputs, V1Consent, V2Config, V2Consent } from "~/types/config";
 
-export const config: Config = configJson;
+let importedConfig: Config = configJson;
+if (isV1ConsentConfig(importedConfig.consent)) {
+  let v1ConsentConfig: V1Consent = importedConfig.consent;
+  const translatedConsent: V2Consent = translateV1ConfigToV2({ v1ConsentConfig });
+  const temp: V2Config = { ...importedConfig, consent: translatedConsent };
+  importedConfig = temp;
+}
+export const config: V2Config = importedConfig;
 
 // Compute the host URL for the server, while being backwards compatible with
 // the previous "fidesops_host_***" configuration
