@@ -68,14 +68,15 @@ const DatasetsTable = () => {
               <Td pl={1}>{dataset.name}</Td>
               <Td pl={1}>{dataset.fides_key}</Td>
               <Td pl={1}>{dataset.description}</Td>
-              {features.plus && classifyDataset?.status ? (
-                <Td pl={1} data-testid={`dataset-status-${dataset.fides_key}`}>
+
+              <Td pl={1} data-testid={`dataset-status-${dataset.fides_key}`}>
+                {features.plus && classifyDataset?.status ? (
                   <ClassificationStatusBadge
                     resource={GenerateTypes.DATASETS}
                     status={classifyDataset?.status}
                   />
-                </Td>
-              ) : null}
+                ) : null}
+              </Td>
             </Tr>
           );
         })}
