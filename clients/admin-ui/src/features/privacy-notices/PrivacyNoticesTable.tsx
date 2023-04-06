@@ -1,5 +1,6 @@
 import {
   Box,
+  Switch,
   Table,
   TableContainer,
   Tag,
@@ -36,22 +37,44 @@ const MultiTagCell = ({
   value,
 }: CellProps<PrivacyNoticeResponse, string[]>) => (
   <Box>
-    {value.map((v) => (
-      <Tag key={v} size="sm" backgroundColor="primary.400" color="white">
+    {value.map((v, idx) => (
+      <Tag
+        key={v}
+        size="sm"
+        backgroundColor="primary.400"
+        color="white"
+        mr={idx === value.length - 1 ? 0 : 3}
+      >
         {v}
       </Tag>
     ))}
   </Box>
 );
 
+const ToggleCell = ({ value }: CellProps<PrivacyNoticeResponse, boolean>) => (
+  <Switch colorScheme="secondary" isChecked={value} />
+);
+
 const COLUMNS: Column<PrivacyNoticeResponse>[] = [
-  { Header: "Title", accessor: "name" },
-  { Header: "Description", accessor: "description" },
+  {
+    Header: "Title",
+    accessor: "name",
+    Cell: ({ value }) => (
+      <Text fontWeight="semibold" color="gray.600">
+        {value}
+      </Text>
+    ),
+  },
+  {
+    Header: "Description",
+    accessor: "description",
+    Cell: ({ value }) => <Text whiteSpace="normal">{value}</Text>,
+  },
   { Header: "Mechanism", accessor: "consent_mechanism", Cell: MechanismCell },
   { Header: "Locations", accessor: "regions", Cell: MultiTagCell },
   { Header: "Created", accessor: "created_at", Cell: DateCell },
   { Header: "Last update", accessor: "updated_at", Cell: DateCell },
-  { Header: "Enable", accessor: "disabled" },
+  { Header: "Enable", accessor: "disabled", Cell: ToggleCell },
 ];
 
 const PrivacyNoticesTable = () => {
@@ -95,6 +118,7 @@ const PrivacyNoticesTable = () => {
                       {...headerProps}
                       textTransform="none"
                       fontSize="sm"
+                      p={5}
                     >
                       {column.render("Header")}
                     </Th>
@@ -113,7 +137,12 @@ const PrivacyNoticesTable = () => {
                 {row.cells.map((cell) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();
                   return (
-                    <Td key={cellKey} {...cellProps}>
+                    <Td
+                      key={cellKey}
+                      {...cellProps}
+                      p={5}
+                      verticalAlign="baseline"
+                    >
                       {cell.render("Cell")}
                     </Td>
                   );
