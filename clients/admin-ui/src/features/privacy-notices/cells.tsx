@@ -32,22 +32,29 @@ export const MechanismCell = ({
 
 export const MultiTagCell = ({
   value,
-}: CellProps<PrivacyNoticeResponse, string[]>) => (
-  <Box>
-    {value.map((v, idx) => (
-      <Tag
-        key={v}
-        size="sm"
-        backgroundColor="primary.400"
-        color="white"
-        mr={idx === value.length - 1 ? 0 : 3}
-        textTransform="uppercase"
-      >
-        {v}
-      </Tag>
-    ))}
-  </Box>
-);
+}: CellProps<PrivacyNoticeResponse, string[]>) => {
+  // If we are over a certain number, render an "..." instead of all of the tags
+  const maxNum = 8;
+  const tags =
+    value.length > maxNum ? [...value.slice(0, maxNum), "..."] : value;
+  return (
+    <Box whiteSpace="normal">
+      {tags.map((v, idx) => (
+        <Tag
+          key={v}
+          size="sm"
+          backgroundColor="primary.400"
+          color="white"
+          mr={idx === value.length - 1 ? 0 : 3}
+          textTransform="uppercase"
+          mb={2}
+        >
+          {v}
+        </Tag>
+      ))}
+    </Box>
+  );
+};
 
 export const ToggleCell = ({
   value,
