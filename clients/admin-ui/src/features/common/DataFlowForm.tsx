@@ -4,20 +4,21 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Button,
   Flex,
+  IconButton,
+  Spacer,
   Tag,
   Text,
-  Button,
-  Spacer,
-  Divider,
-  Box,
 } from "@fidesui/react";
-import { System } from "~/types/api/models/System";
-import { DataFlow } from "~/types/api";
-import React from "react";
 import { GearLightIcon } from "common/Icon";
+import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import QuestionTooltip from "common/QuestionTooltip";
+import React from "react";
+
 import { useGetAllSystemsQuery } from "~/features/system";
+import { DataFlow } from "~/types/api";
+import { System } from "~/types/api/models/System";
 
 type DataFlowItemProps = {
   dataFlow: DataFlow;
@@ -30,7 +31,26 @@ const DataFlowItem = ({ dataFlow }: DataFlowItemProps) => {
     }),
   });
 
-  return <Box>{system ? system.name : dataFlow.fides_key}</Box>;
+  return (
+    <Flex
+      alignItems="center"
+      height="40px"
+      padding={1}
+      borderTop="solid 1px"
+      borderTopColor="gray.200"
+    >
+      <Text fontSize="xs" lineHeight={4} fontWeight="medium">
+        {system ? system.name : dataFlow.fides_key}
+      </Text>
+      <Spacer />
+      <IconButton
+        size="xs"
+        variant="outline"
+        aria-label="Remove system"
+        icon={<TrashCanSolidIcon />}
+      />
+    </Flex>
+  );
 };
 
 type DataFlowAccordionItemProps = {
@@ -42,19 +62,20 @@ const DataFlowAccordionItem = ({
   systems,
   isIngress,
 }: DataFlowAccordionItemProps) => {
-  const flowType = isIngress ? "Sources" : "Destinations";
+  const flowType = isIngress ? "Source" : "Destination";
+  const pluralFlowType = `${flowType}s`;
 
   return (
     <AccordionItem>
-      <AccordionButton height="44px">
+      <AccordionButton height="44px" padding={2}>
         <Flex
           alignItems="center"
           justifyContent="start"
           flex={1}
           textAlign="left"
         >
-          <Text size="sm" lineHeight={5} fontWeight="semibold" mr={4}>
-            {flowType}
+          <Text fontSize="sm" lineHeight={5} fontWeight="semibold" mr={4}>
+            {pluralFlowType}
           </Text>
           <QuestionTooltip label="helpful tip" />
 
@@ -77,12 +98,17 @@ const DataFlowAccordionItem = ({
           data-testid="add-btn"
           marginBottom={4}
         >
-          Configure {flowType} <GearLightIcon marginLeft={2} />
+          Configure {pluralFlowType} <GearLightIcon marginLeft={2} />
         </Button>
-        <Text size="xs" lineHeight={4} fontWeight="medium" marginBottom={3}>
+        <Text
+          fontSize="xs"
+          lineHeight={4}
+          fontWeight="medium"
+          marginBottom={3}
+          casing="uppercase"
+        >
           {flowType} Systems
         </Text>
-        <Divider />
         {systems.map((dataFlow) => (
           <DataFlowItem key={dataFlow.fides_key} dataFlow={dataFlow} />
         ))}
