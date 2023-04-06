@@ -1,5 +1,8 @@
 import {
+  ArrowDownIcon,
+  ArrowUpIcon,
   Box,
+  Button,
   Switch,
   Table,
   TableContainer,
@@ -7,11 +10,13 @@ import {
   Tbody,
   Td,
   Text,
+  Tfoot,
   Th,
   Thead,
   Tr,
 } from "@fidesui/react";
-import { CellProps, Column, useTable } from "react-table";
+import { ReactNode } from "react";
+import { CellProps, Column, useSortBy, useTable } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import { PrivacyNoticeResponse } from "~/types/api";
@@ -44,6 +49,7 @@ const MultiTagCell = ({
         backgroundColor="primary.400"
         color="white"
         mr={idx === value.length - 1 ? 0 : 3}
+        textTransform="uppercase"
       >
         {v}
       </Tag>
@@ -52,7 +58,7 @@ const MultiTagCell = ({
 );
 
 const ToggleCell = ({ value }: CellProps<PrivacyNoticeResponse, boolean>) => (
-  <Switch colorScheme="secondary" isChecked={value} />
+  <Switch colorScheme="complimentary" isChecked={!value} />
 );
 
 const COLUMNS: Column<PrivacyNoticeResponse>[] = [
@@ -85,7 +91,10 @@ const PrivacyNoticesTable = () => {
 
   const privacyNotices = useAppSelector(selectAllPrivacyNotices);
 
-  const tableInstance = useTable({ columns: COLUMNS, data: privacyNotices });
+  const tableInstance = useTable(
+    { columns: COLUMNS, data: privacyNotices },
+    useSortBy
+  );
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
@@ -111,7 +120,16 @@ const PrivacyNoticesTable = () => {
               <Tr key={headerRowKey} {...headerGroupProps}>
                 {headerGroup.headers.map((column) => {
                   const { key: columnKey, ...headerProps } =
-                    column.getHeaderProps();
+                    column.getHeaderProps(column.getSortByToggleProps());
+                  let sortIcon: ReactNode = null;
+                  if (column.isSorted) {
+                    sortIcon = column.isSortedDesc ? (
+                      <ArrowDownIcon color="gray.500" />
+                    ) : (
+                      <ArrowUpIcon color="gray.500" />
+                    );
+                  }
+
                   return (
                     <Th
                       key={columnKey}
@@ -121,6 +139,7 @@ const PrivacyNoticesTable = () => {
                       p={5}
                     >
                       {column.render("Header")}
+                      {sortIcon}
                     </Th>
                   );
                 })}
@@ -133,7 +152,12 @@ const PrivacyNoticesTable = () => {
             prepareRow(row);
             const { key: rowKey, ...rowProps } = row.getRowProps();
             return (
-              <Tr key={rowKey} {...rowProps}>
+              <Tr
+                key={rowKey}
+                {...rowProps}
+                _hover={{ backgroundColor: "gray.50", cursor: "pointer" }}
+                backgroundColor={row.values.disabled ? "gray.50" : undefined}
+              >
                 {row.cells.map((cell) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();
                   return (
@@ -151,6 +175,15 @@ const PrivacyNoticesTable = () => {
             );
           })}
         </Tbody>
+        <Tfoot backgroundColor="gray.50">
+          <Tr>
+            <Td colSpan={COLUMNS.length} px={4} py={3.5}>
+              <Button size="xs" colorScheme="primary">
+                Add a privacy notice +
+              </Button>
+            </Td>
+          </Tr>
+        </Tfoot>
       </Table>
     </TableContainer>
   );
