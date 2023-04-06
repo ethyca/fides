@@ -1445,6 +1445,24 @@ def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice us_co provide.service.operations",
+            "description": "a sample privacy notice configuration",
+            "origin": "privacy_notice_template_2",
+            "regions": [PrivacyNoticeRegion.us_co],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["provide.service.operations"],
+            "enforcement_level": EnforcementLevel.system_wide,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
 def ctl_dataset(db: Session, example_datasets):
     ds = Dataset(
         fides_key="postgres_example_subscriptions_dataset",

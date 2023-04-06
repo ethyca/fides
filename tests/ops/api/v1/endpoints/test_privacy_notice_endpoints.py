@@ -185,7 +185,7 @@ class TestGetPrivacyNotices:
         "privacy_notice_us_co_third_party_sharing",
         "system",
     )
-    def test_get_privacy_notices_systems_applicable_false(
+    def test_get_privacy_notices_systems_applicable(
         self,
         api_client: TestClient,
         generate_auth_header,
@@ -197,7 +197,7 @@ class TestGetPrivacyNotices:
 
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
 
-        # first test the "base case", where systems_applicable should default to true
+        # first test the "base case", where systems_applicable should default to false
         resp = api_client.get(
             url,
             headers=auth_header,
@@ -254,6 +254,103 @@ class TestGetPrivacyNotices:
             assert "displayed_in_privacy_modal" in notice_detail
             assert "displayed_in_banner" in notice_detail
             assert "enforcement_level" in notice_detail
+
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+        "privacy_notice_us_co_provide_service_operations",
+        "system_provide_service_operations_support_optimization",
+    )
+    def test_get_privacy_notices_systems_applicable_hierarchical_overlaps(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db,
+    ):
+        """
+        If a notice has a broader data use than a system, it should be considered applicable to the system
+        """
+
+        # we should have 2 privacy notices in the db
+        assert len(PrivacyNotice.all(db)) == 2
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
+
+        # first test the "base case", where systems_applicable should default to false
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "items" in data
+        # assert all 2 notices are in response since we're not filtering
+        assert data["total"] == 2
+        assert len(data["items"]) == 2
+
+        # now test that setting the param to true works - it should filter out one notice
+        # but the other notice applies to the system, even if the system has a child data use associated with it
+        resp = api_client.get(
+            url + "?systems_applicable=true",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert "items" in data
+
+        # assert only 1 notice is in response since we're filtering for systems_applicable=true
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+
+    @pytest.mark.usefixtures(
+        "privacy_notice",
+        "privacy_notice_us_co_provide_service_operations",
+        "system_provide_service",
+    )
+    def test_get_privacy_notices_systems_applicable_hierarchical_overlaps_system_broader(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db,
+    ):
+        """
+        If the system has a broader data use than the notice, then the notice should NOT be considered applicable
+        to the system.
+        """
+        # we should have 2 privacy notices in the db
+        assert len(PrivacyNotice.all(db)) == 2
+
+        auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
+
+        # first test the "base case", where systems_applicable should default to false
+        resp = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "items" in data
+        # assert all 2 notices are in response since we're not filtering
+        assert data["total"] == 2
+        assert len(data["items"]) == 2
+
+        # now test that setting the param to true works - it should filter out BOTH notices
+        # even though one notice has a "hierarchical overlap" with the system. the system
+        # has a "broader" data use though, so the notice is NOT applicable
+        resp = api_client.get(
+            url + "?systems_applicable=true",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert "items" in data
+
+        # assert no notice is in response since we're filtering for systems_applicable=true
+        assert data["total"] == 0
+        assert len(data["items"]) == 0
 
     @pytest.mark.usefixtures(
         "privacy_notice_us_co_third_party_sharing",
@@ -822,6 +919,132 @@ class TestGetPrivacyNoticesByDataUse:
                 ],
                 {"advertising": []},
             ),
+            (
+                # to test hierarchical overlaps
+                ["system", "system_provide_service_operations_support_optimization"],
+                [
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-1",
+                        name=f"{PRIVACY_NOTICE_NAME}-1",
+                        regions=[
+                            PrivacyNoticeRegion.us_ca,
+                            PrivacyNoticeRegion.us_co,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["advertising", "third_party_sharing"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-2",
+                        name=f"{PRIVACY_NOTICE_NAME}-2",
+                        regions=[
+                            PrivacyNoticeRegion.us_ca,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["provide"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-3",
+                        name=f"{PRIVACY_NOTICE_NAME}-3",
+                        regions=[
+                            PrivacyNoticeRegion.us_co,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["provide.service.operations"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                    PrivacyNotice(
+                        id=f"{PRIVACY_NOTICE_NAME}-4",
+                        name=f"{PRIVACY_NOTICE_NAME}-4",
+                        regions=[
+                            PrivacyNoticeRegion.us_va,
+                        ],
+                        consent_mechanism=ConsentMechanism.opt_in,
+                        data_uses=["provide.service.operations.support.optimization"],
+                        enforcement_level=EnforcementLevel.system_wide,
+                        created_at=NOW,
+                        updated_at=NOW,
+                        version=1.0,
+                    ),
+                ],
+                {
+                    "advertising": [
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-1",
+                            name=f"{PRIVACY_NOTICE_NAME}-1",
+                            regions=[
+                                PrivacyNoticeRegion.us_ca,
+                                PrivacyNoticeRegion.us_co,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["advertising", "third_party_sharing"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        )
+                    ],
+                    "provide": [
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-2",
+                            name=f"{PRIVACY_NOTICE_NAME}-2",
+                            regions=[
+                                PrivacyNoticeRegion.us_ca,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["provide"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        )
+                    ],
+                    "provide.service": [],
+                    "provide.service.operations": [
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-3",
+                            name=f"{PRIVACY_NOTICE_NAME}-3",
+                            regions=[
+                                PrivacyNoticeRegion.us_co,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["provide.service.operations"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        )
+                    ],
+                    "provide.service.operations.support": [],
+                    "provide.service.operations.support.optimization": [
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-4",
+                            name=f"{PRIVACY_NOTICE_NAME}-4",
+                            regions=[
+                                PrivacyNoticeRegion.us_va,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=[
+                                "provide.service.operations.support.optimization"
+                            ],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        )
+                    ],
+                },
+            ),
         ],
     )
     def test_get_privacy_notice_by_data_use(
@@ -853,7 +1076,7 @@ class TestGetPrivacyNoticesByDataUse:
 
         # validate our response looks as expected
         # to avoid ordering issues, check expected/returned response request by request
-        for (data_use, notices) in resp.json().items():
+        for data_use, notices in resp.json().items():
             assert data_use in expected_response
             expected_notices: List = expected_response[data_use]
             for notice_response in notices:

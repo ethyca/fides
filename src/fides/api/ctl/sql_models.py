@@ -296,17 +296,29 @@ class System(Base, FidesBase):
     )
 
     @classmethod
-    def get_system_data_uses(cls: Type[System], db: Session) -> Set[str]:
+    def get_system_data_uses(
+        cls: Type[System], db: Session, include_parents: bool = True
+    ) -> Set[str]:
         """
         Utility method to get any data use that is associated with at least one System
+
+        The `include_parents` arg determines whether the method traverses "up" the data use hierarchy
+        to also return all _parent_ data uses of the specific data uses associated with a given system.
+        This can be useful if/when we consider these parent data uses as applicable to a system.
         """
         data_uses = set()
         for row in db.query(System.privacy_declarations).all():
             declarations: List[dict[str, Any]] = row[0]
             for declaration in declarations:
-                data_use = declaration.get("data_use", None)
-                if data_use is not None:
+                data_use: str = declaration.get("data_use", None)
+                while data_use:
                     data_uses.add(data_use)
+                    if include_parents:
+                        data_use = data_use.rpartition(".")[
+                            0
+                        ]  # traverse up the hierarchy
+                    else:
+                        data_use = None
         return data_uses
 
 

@@ -985,6 +985,72 @@ def system_third_party_sharing(db: Session) -> System:
     return system_third_party_sharing
 
 
+@pytest.fixture(scope="function")
+def system_provide_service(db: Session) -> System:
+    system_provide_service = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "data_responsibility_title": "Processor",
+            "privacy_declarations": [
+                {
+                    "name": "The source service, system, or product being provided to the user",
+                    "data_categories": ["user.device.cookie_id"],
+                    "data_use": "provide.service",
+                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                    "data_subjects": ["customer"],
+                    "dataset_references": None,
+                    "egress": None,
+                    "ingress": None,
+                }
+            ],
+            "data_protection_impact_assessment": {
+                "is_required": False,
+                "progress": None,
+                "link": None,
+            },
+        },
+    )
+    return system_provide_service
+
+
+@pytest.fixture(scope="function")
+def system_provide_service_operations_support_optimization(db: Session) -> System:
+    system_provide_service_operations_support_optimization = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "data_responsibility_title": "Processor",
+            "privacy_declarations": [
+                {
+                    "name": "Optimize and improve support operations in order to provide the service",
+                    "data_categories": ["user.device.cookie_id"],
+                    "data_use": "provide.service.operations.support.optimization",
+                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                    "data_subjects": ["customer"],
+                    "dataset_references": None,
+                    "egress": None,
+                    "ingress": None,
+                }
+            ],
+            "data_protection_impact_assessment": {
+                "is_required": False,
+                "progress": None,
+                "link": None,
+            },
+        },
+    )
+    return system_provide_service_operations_support_optimization
+
+
 @pytest.fixture
 def system_manager_client(db, system):
     """Return a client assigned to a system for authentication purposes."""

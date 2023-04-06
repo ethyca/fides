@@ -48,7 +48,7 @@ def generate_notice_query(
     if region is not None:
         notice_query = notice_query.filter(PrivacyNotice.regions.contains([region]))
     if systems_applicable:
-        data_uses = System.get_system_data_uses(db)
+        data_uses = System.get_system_data_uses(db, include_parents=True)
         notice_query = notice_query.filter(PrivacyNotice.data_uses.overlap(data_uses))  # type: ignore
     return notice_query
 
@@ -104,7 +104,7 @@ def get_privacy_notice_by_data_use(*, db: Session = Depends(deps.get_db)) -> Dat
 
     # get all data uses associated with a system, and seed our response map
     # with those data uses as keys
-    system_data_uses = System.get_system_data_uses(db)
+    system_data_uses = System.get_system_data_uses(db, include_parents=True)
     notices_by_data_use: DataUseMap = {data_use: [] for data_use in system_data_uses}
 
     # get all notices that are not disabled and share a data use with a system
@@ -113,7 +113,7 @@ def get_privacy_notice_by_data_use(*, db: Session = Depends(deps.get_db)) -> Dat
     )
     # for each notice, check each of its data uses, and add it to the
     # corresponding map entry, if it exists. do not create map entries
-    # if they don't exits already - the data use is not associated with a system
+    # if they don't exist already - the data use is not associated with a system
     for notice in notice_query.all():
         for data_use in notice.data_uses:
             if data_use in notices_by_data_use:
@@ -245,7 +245,7 @@ def prepare_privacy_notice_patches(
 
     # we temporarily store proposed update data in-memory for validation purposes only
     validation_updates = []
-    for (update_data, existing_notice) in updates_and_existing:
+    for update_data, existing_notice in updates_and_existing:
         # add the patched update to our temporary updates for validation
         validation_updates.append(
             existing_notice.dry_update(data=update_data.dict(exclude_unset=True))
