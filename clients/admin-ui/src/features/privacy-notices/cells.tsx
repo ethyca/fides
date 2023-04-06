@@ -65,6 +65,14 @@ export const ToggleCell = ({
     colorScheme="complimentary"
     isChecked={value}
     onChange={() => {
+      /**
+       * It's difficult to use a custom column in react-table 7 since we'd have to modify
+       * the declaration file. However, that modifies the type globally, so our datamap table
+       * would also have issues. Ignoring the type for now, but should potentially revisit
+       * if we update to react-table 8
+       * https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/59837
+       */
+      // @ts-ignore
       column.onToggle(row.original.id);
     }}
   />
