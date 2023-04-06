@@ -64,4 +64,19 @@ describe("Routes", () => {
       });
     });
   });
+
+  describe("plus", () => {
+    it("non-plus cannot access plus routes", () => {
+      stubPlus(false);
+      cy.visit("/datamap");
+      cy.getByTestId("home-content");
+      cy.getByTestId("cytoscape-graph").should("not.exist");
+    });
+
+    it("plus can access plus routes", () => {
+      stubPlus(true);
+      cy.visit("/datamap");
+      cy.getByTestId("cytoscape-graph");
+    });
+  });
 });
