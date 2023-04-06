@@ -1,12 +1,9 @@
 import {
   ArrowDownIcon,
   ArrowUpIcon,
-  Box,
   Button,
-  Switch,
   Table,
   TableContainer,
-  Tag,
   Tbody,
   Td,
   Text,
@@ -15,13 +12,20 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import { ReactNode } from "react";
-import { CellProps, Column, useSortBy, useTable } from "react-table";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Column, useSortBy, useTable } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import { PrivacyNoticeResponse } from "~/types/api";
 
-import { MECHANISM_MAP } from "./constants";
+import {
+  DateCell,
+  MechanismCell,
+  MultiTagCell,
+  TitleCell,
+  ToggleCell,
+  WrappedCell,
+} from "./cells";
 import {
   selectAllPrivacyNotices,
   selectPage,
@@ -29,59 +33,13 @@ import {
   useGetAllPrivacyNoticesQuery,
 } from "./privacy-notices.slice";
 
-const DateCell = ({ value }: CellProps<PrivacyNoticeResponse, string>) =>
-  new Date(value).toDateString();
-
-const MechanismCell = ({ value }: CellProps<PrivacyNoticeResponse, string>) => (
-  <Tag size="sm" backgroundColor="primary.400" color="white">
-    {MECHANISM_MAP.get(value) ?? value}
-  </Tag>
-);
-
-const MultiTagCell = ({
-  value,
-}: CellProps<PrivacyNoticeResponse, string[]>) => (
-  <Box>
-    {value.map((v, idx) => (
-      <Tag
-        key={v}
-        size="sm"
-        backgroundColor="primary.400"
-        color="white"
-        mr={idx === value.length - 1 ? 0 : 3}
-        textTransform="uppercase"
-      >
-        {v}
-      </Tag>
-    ))}
-  </Box>
-);
-
-const ToggleCell = ({ value }: CellProps<PrivacyNoticeResponse, boolean>) => (
-  <Switch colorScheme="complimentary" isChecked={!value} />
-);
-
-const COLUMNS: Column<PrivacyNoticeResponse>[] = [
-  {
-    Header: "Title",
-    accessor: "name",
-    Cell: ({ value }) => (
-      <Text fontWeight="semibold" color="gray.600">
-        {value}
-      </Text>
-    ),
-  },
-  {
-    Header: "Description",
-    accessor: "description",
-    Cell: ({ value }) => <Text whiteSpace="normal">{value}</Text>,
-  },
-  { Header: "Mechanism", accessor: "consent_mechanism", Cell: MechanismCell },
-  { Header: "Locations", accessor: "regions", Cell: MultiTagCell },
-  { Header: "Created", accessor: "created_at", Cell: DateCell },
-  { Header: "Last update", accessor: "updated_at", Cell: DateCell },
-  { Header: "Enable", accessor: "disabled", Cell: ToggleCell },
-];
+/**
+ * We add an 'enabled' flag so that the UI can toggle the 'enabled' state
+ * without directly modifying the PrivacyNoticeResponse data
+ */
+interface PrivacyNoticeTableData extends PrivacyNoticeResponse {
+  enabled: boolean;
+}
 
 const PrivacyNoticesTable = () => {
   // Subscribe to get all privacy notices
@@ -91,10 +49,76 @@ const PrivacyNoticesTable = () => {
 
   const privacyNotices = useAppSelector(selectAllPrivacyNotices);
 
-  const tableInstance = useTable(
-    { columns: COLUMNS, data: privacyNotices },
-    useSortBy
+  // Sync up our enabled state with the initial privacy notice enabled state
+  const [enabledNoticeIds, setEnabledNoticeIds] = useState<string[]>([]);
+  useEffect(() => {
+    setEnabledNoticeIds(
+      privacyNotices.filter((pn) => !pn.disabled).map((pn) => pn.id)
+    );
+  }, [privacyNotices]);
+
+  const handleToggle = useCallback(
+    (privacyNoticeId: PrivacyNoticeTableData["id"]) => {
+      const isEnabled = !!enabledNoticeIds.find(
+        (enabledId) => enabledId === privacyNoticeId
+      );
+
+      if (isEnabled) {
+        setEnabledNoticeIds(
+          enabledNoticeIds.filter(
+            (enabledNoticeId) => enabledNoticeId !== privacyNoticeId
+          )
+        );
+      } else {
+        setEnabledNoticeIds([...enabledNoticeIds, privacyNoticeId]);
+      }
+    },
+    [enabledNoticeIds]
   );
+
+  const columns: Column<PrivacyNoticeTableData>[] = useMemo(
+    () => [
+      {
+        Header: "Title",
+        accessor: "name",
+        Cell: TitleCell,
+      },
+      {
+        Header: "Description",
+        accessor: "description",
+        Cell: WrappedCell,
+      },
+      {
+        Header: "Mechanism",
+        accessor: "consent_mechanism",
+        Cell: MechanismCell,
+      },
+      { Header: "Locations", accessor: "regions", Cell: MultiTagCell },
+      { Header: "Created", accessor: "created_at", Cell: DateCell },
+      { Header: "Last update", accessor: "updated_at", Cell: DateCell },
+      {
+        Header: "Enable",
+        accessor: "enabled",
+        onToggle: handleToggle,
+        Cell: ToggleCell,
+      },
+    ],
+    [handleToggle]
+  );
+
+  // Create the data object as the PrivacyNoticeResponse + a UI only "enabled" field
+  // which the UI can control the state of
+  const data: PrivacyNoticeTableData[] = useMemo(
+    () =>
+      privacyNotices.map((pn) => {
+        const isEnabled =
+          enabledNoticeIds.filter((noticeId) => noticeId === pn.id).length > 0;
+        return { ...pn, enabled: isEnabled };
+      }),
+    [privacyNotices, enabledNoticeIds]
+  );
+
+  const tableInstance = useTable({ columns, data }, useSortBy);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
@@ -177,7 +201,7 @@ const PrivacyNoticesTable = () => {
         </Tbody>
         <Tfoot backgroundColor="gray.50">
           <Tr>
-            <Td colSpan={COLUMNS.length} px={4} py={3.5}>
+            <Td colSpan={columns.length} px={4} py={3.5}>
               <Button size="xs" colorScheme="primary">
                 Add a privacy notice +
               </Button>
