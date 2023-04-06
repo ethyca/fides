@@ -4,9 +4,9 @@ import { ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { LOGIN_ROUTE, VERIFY_AUTH_INTERVAL } from "~/constants";
 import { useNav } from "~/features/common/nav/v2/hooks";
+import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetUserPermissionsQuery } from "~/features/user-management";
 
-import { useGetHealthQuery } from "../plus/plus.slice";
 import { logout, selectToken, selectUser } from "./auth.slice";
 
 const useProtectedRoute = (redirectUrl: string) => {
