@@ -164,6 +164,7 @@ const PrivacyNoticesTable = () => {
                       textTransform="none"
                       fontSize="sm"
                       p={4}
+                      data-testid={`column-${column.Header}`}
                     >
                       <Text
                         _hover={{ backgroundColor: "gray.100" }}
@@ -194,6 +195,7 @@ const PrivacyNoticesTable = () => {
                 {...rowProps}
                 _hover={{ backgroundColor: "gray.50", cursor: "pointer" }}
                 backgroundColor={row.values.disabled ? "gray.50" : undefined}
+                data-testid={`row-${row.original.name}`}
               >
                 {row.cells.map((cell) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();
