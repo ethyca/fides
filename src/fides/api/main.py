@@ -22,15 +22,7 @@ import fides
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.database.seed import create_or_update_parent_user
-from fides.api.ctl.routes import (
-    admin,
-    crud,
-    datamap,
-    generate,
-    health,
-    system,
-    validate,
-)
+from fides.api.ctl.routes import admin, crud, generate, health, system, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
@@ -82,7 +74,6 @@ VERSION = fides.__version__
 
 ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     admin.router,
-    datamap.router,
     generate.router,
     health.router,
     validate.router,
