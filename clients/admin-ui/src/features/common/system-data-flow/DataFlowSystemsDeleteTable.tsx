@@ -11,27 +11,38 @@ import {
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import React from "react";
 
-import { System } from "~/types/api";
+import { DataFlow, System } from "~/types/api";
+import { useGetAllSystemsQuery } from "~/features/system";
+import { useFormikContext } from "formik";
 
 type Props = {
-  dataFlowSystems: System[];
-  onDataFlowSystemChange: (systems: System[]) => void;
+  dataFlows: DataFlow[];
+  onDataFlowSystemChange: (systems: DataFlow[]) => void;
 };
 
 export const DataFlowSystemsDeleteTable = ({
-  dataFlowSystems,
+  dataFlows,
   onDataFlowSystemChange,
 }: Props) => {
-  if (dataFlowSystems.length === 0) {
-    return null;
-  }
+  const { setFieldValue } = useFormikContext();
+  const { data: systems } = useGetAllSystemsQuery(undefined, {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    selectFromResult: ({ data }) => {
+      const dataFlowKeys = dataFlows.map((f) => f.fides_key);
+      return {
+        data: data
+          ? data.filter((s) => dataFlowKeys.indexOf(s.fides_key) > -1)
+          : [],
+      };
+    },
+  });
 
-  const onDelete = (system: System) => {
-    onDataFlowSystemChange(
-      dataFlowSystems.filter(
-        (dataFlowSystem) => dataFlowSystem.fides_key !== system.fides_key
-      )
+  const onDelete = (dataFlow: System) => {
+    const updatedDataFlows = dataFlows.filter(
+      (dataFlowSystem) => dataFlowSystem.fides_key !== dataFlow.fides_key
     );
+    setFieldValue("dataFlowSystems", updatedDataFlows);
+    onDataFlowSystemChange(updatedDataFlows);
   };
 
   return (
@@ -43,7 +54,7 @@ export const DataFlowSystemsDeleteTable = ({
         </Tr>
       </Thead>
       <Tbody>
-        {dataFlowSystems.map((system) => (
+        {systems.map((system) => (
           <Tr
             key={system.fides_key}
             _hover={{ bg: "gray.50" }}

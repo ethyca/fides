@@ -1,4 +1,4 @@
-import { DataFlow, System } from "~/types/api";
+import { DataFlow, RoleRegistryEnum, System } from "~/types/api";
 import {
   AccordionButton,
   AccordionIcon,
@@ -11,43 +11,68 @@ import {
   Tag,
   Text,
   useDisclosure,
+  useToast,
 } from "@fidesui/react";
-import { useGetAllSystemsQuery } from "~/features/system";
+import {
+  useGetAllSystemsQuery,
+  useUpdateSystemMutation,
+} from "~/features/system";
 import QuestionTooltip from "common/QuestionTooltip";
 import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { Formik, Form } from "formik";
 
 import { GearLightIcon } from "common/Icon";
-import { useUpdateUserManagedSystemsMutation } from "~/features/user-management";
+import { successToastParams } from "common/toast";
+
+const defaultInitialValues = {
+  dataFlowSystems: [] as DataFlow[],
+};
+
+export type FormValues = typeof defaultInitialValues;
 
 type DataFlowAccordionItemProps = {
   isIngress?: boolean;
-  dataFlows: DataFlow[];
+  system: System;
 };
 
 export const DataFlowAccordionForm = ({
-  dataFlows,
+  system,
   isIngress,
 }: DataFlowAccordionItemProps) => {
+  const toast = useToast();
+  const initialDataFlows = isIngress ? system.ingress! : system.egress!;
   const flowType = isIngress ? "Source" : "Destination";
   const pluralFlowType = `${flowType}s`;
   const dataFlowSystemsModal = useDisclosure();
+  const [updateSystemMutationTrigger] = useUpdateSystemMutation();
+  // const { data: initialSystems } = useGetAllSystemsQuery(undefined, {
+  //   // eslint-disable-next-line @typescript-eslint/no-shadow
+  //   selectFromResult: ({ data }) => {
+  //     const dataFlowKeys = dataFlows.map((f) => f.fides_key);
+  //     return {
+  //       data: data
+  //         ? data.filter((s) => dataFlowKeys.indexOf(s.fides_key) > -1)
+  //         : [],
+  //     };
+  //   },
+  // });
 
-  const { data: initialSystems } = useGetAllSystemsQuery(undefined, {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    selectFromResult: ({ data }) => {
-      const dataFlowKeys = dataFlows.map((f) => f.fides_key);
-      return {
-        data: data
-          ? data.filter((s) => dataFlowKeys.indexOf(s.fides_key) > -1)
-          : [],
-      };
-    },
-  });
+  const [assignedDataFlow, setAssignedDataFlows] =
+    useState<DataFlow[]>(initialDataFlows);
 
-  const [assignedSystems, setAssignedSystems] =
-    useState<System[]>(initialSystems);
+  const handleSubmit = async ({ dataFlowSystems }: FormValues) => {
+    // const updatedDataFlowKeys = dataFlowSystems.map((s)=> s.fides_key)
+    // const updatedDataFlows = assignedDataFlow.filter((df)=> updatedDataFlowKeys.indexOf(df.fides_key)> -1)
+    const updatedSystem = {
+      ...system,
+      ingress: isIngress ? dataFlowSystems : system.ingress,
+      egress: !isIngress ? dataFlowSystems : system.egress,
+    };
+    await updateSystemMutationTrigger(updatedSystem);
+    toast(successToastParams(`${pluralFlowType} updated`));
+  };
 
   return (
     <AccordionItem>
@@ -69,7 +94,7 @@ export const DataFlowAccordionForm = ({
             borderRadius="6px"
             color="white"
           >
-            {dataFlows.length}
+            {assignedDataFlow.length}
           </Tag>
           <Spacer />
           <AccordionIcon />
@@ -83,32 +108,46 @@ export const DataFlowAccordionForm = ({
           spacing={4}
           data-testid="selected"
         >
-          <>
-            <Button
-              colorScheme="primary"
-              size="xs"
-              width="fit-content"
-              onClick={dataFlowSystemsModal.onOpen}
-              data-testid="assign-systems-btn"
-              rightIcon={<GearLightIcon />}
-            >
-              {`Configure ${pluralFlowType}`}
-            </Button>
-            <DataFlowSystemsDeleteTable
-              dataFlowSystems={assignedSystems}
-              onDataFlowSystemChange={setAssignedSystems}
-            />
-            {/* By conditionally rendering the modal, we force it to reset its state
+          <Formik initialValues={defaultInitialValues} onSubmit={handleSubmit}>
+            {({ values, isSubmitting, dirty }) => (
+              <Form>
+                <Button
+                  colorScheme="primary"
+                  size="xs"
+                  width="fit-content"
+                  onClick={dataFlowSystemsModal.onOpen}
+                  data-testid="assign-systems-btn"
+                  rightIcon={<GearLightIcon />}
+                >
+                  {`Configure ${pluralFlowType}`}
+                </Button>
+                <DataFlowSystemsDeleteTable
+                  dataFlows={assignedDataFlow}
+                  onDataFlowSystemChange={setAssignedDataFlows}
+                />
+                <Button
+                  colorScheme="primary"
+                  type="submit"
+                  isLoading={isSubmitting}
+                  disabled={!dirty && assignedDataFlow === initialDataFlows}
+                  data-testid="save-btn"
+                >
+                  Save
+                </Button>
+                {isSubmitting ? "SUbMITTING" : null}
+                {/* By conditionally rendering the modal, we force it to reset its state
                 whenever it opens */}
-            {dataFlowSystemsModal.isOpen ? (
-              <DataFlowSystemsModal
-                isOpen={dataFlowSystemsModal.isOpen}
-                onClose={dataFlowSystemsModal.onClose}
-                dataFlowSystems={assignedSystems}
-                onDataFlowSystemChange={setAssignedSystems}
-              />
-            ) : null}
-          </>
+                {dataFlowSystemsModal.isOpen ? (
+                  <DataFlowSystemsModal
+                    isOpen={dataFlowSystemsModal.isOpen}
+                    onClose={dataFlowSystemsModal.onClose}
+                    dataFlowSystems={assignedDataFlow}
+                    onDataFlowSystemChange={setAssignedDataFlows}
+                  />
+                ) : null}
+              </Form>
+            )}
+          </Formik>
         </Stack>
       </AccordionPanel>
     </AccordionItem>

@@ -11,12 +11,13 @@ import {
 } from "@fidesui/react";
 import React from "react";
 
-import { System } from "~/types/api";
+import { DataFlow, System } from "~/types/api";
+import { useFormikContext } from "formik";
 
 type Props = {
   allSystems: System[];
-  dataFlowSystems: System[];
-  onChange: (systems: System[]) => void;
+  dataFlowSystems: DataFlow[];
+  onChange: (dataFlows: DataFlow[]) => void;
 };
 
 const DataFlowSystemsTable = ({
@@ -24,18 +25,25 @@ const DataFlowSystemsTable = ({
   dataFlowSystems,
   onChange,
 }: Props) => {
+  const { setFieldValue } = useFormikContext();
   const handleToggle = (system: System) => {
     const isAssigned = !!dataFlowSystems.find(
       (assigned) => assigned.fides_key === system.fides_key
     );
     if (isAssigned) {
-      onChange(
-        dataFlowSystems.filter(
-          (assignedSystem) => assignedSystem.fides_key !== system.fides_key
-        )
+      const updatedDataFlows = dataFlowSystems.filter(
+        (assignedSystem) => assignedSystem.fides_key !== system.fides_key
       );
+      setFieldValue("dataFlowSystems", updatedDataFlows);
+      onChange(updatedDataFlows);
     } else {
-      onChange([...dataFlowSystems, system]);
+      const updatedDataFlows = [
+        ...dataFlowSystems,
+        { fides_key: system.fides_key, type: "system" },
+      ];
+
+      setFieldValue("dataFlowSystems", updatedDataFlows);
+      onChange(updatedDataFlows);
     }
   };
 

@@ -12,8 +12,8 @@ type DataFlowFormProps = {
 export const DataFlowAccordion = ({ system }: DataFlowFormProps) => {
   return (
     <Accordion allowToggle>
-      <DataFlowAccordionForm dataFlows={system.ingress!} isIngress />
-      <DataFlowAccordionForm dataFlows={system.egress!} />
+      <DataFlowAccordionForm system={system} isIngress />
+      <DataFlowAccordionForm system={system} />
     </Accordion>
   );
 };

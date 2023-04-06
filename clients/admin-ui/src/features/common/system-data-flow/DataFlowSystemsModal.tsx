@@ -22,13 +22,14 @@ import { ChangeEvent, useMemo, useState } from "react";
 import SearchBar from "common/SearchBar";
 import { useGetAllSystemsQuery } from "~/features/system";
 import { SEARCH_FILTER } from "~/features/system/SystemsManagement";
-import { System } from "~/types/api";
+import { DataFlow } from "~/types/api";
 
 import DataFlowSystemsTable from "./DataFlowSystemsTable";
+import { useFormikContext } from "formik";
 
 type Props = {
-  dataFlowSystems: System[];
-  onDataFlowSystemChange: (systems: System[]) => void;
+  dataFlowSystems: DataFlow[];
+  onDataFlowSystemChange: (systems: DataFlow[]) => void;
 };
 
 const DataFlowSystemsModal = ({
@@ -37,13 +38,14 @@ const DataFlowSystemsModal = ({
   dataFlowSystems,
   onDataFlowSystemChange,
 }: Pick<ModalProps, "isOpen" | "onClose"> & Props) => {
+  const { setFieldValue } = useFormikContext();
   const { data: allSystems } = useGetAllSystemsQuery();
   const [searchFilter, setSearchFilter] = useState("");
-  const [selectedSystems, setSelectedSystems] =
-    useState<System[]>(dataFlowSystems);
+  const [selectedDataFlows, setSelectedDataFlows] =
+    useState<DataFlow[]>(dataFlowSystems);
 
   const handleConfirm = async () => {
-    onDataFlowSystemChange(selectedSystems);
+    onDataFlowSystemChange(selectedDataFlows);
     onClose();
   };
 
@@ -60,19 +62,23 @@ const DataFlowSystemsModal = ({
   const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
     if (checked && allSystems) {
-      setSelectedSystems(filteredSystems);
+      const updatedDataFlows = filteredSystems.map((fs) => ({
+        fides_key: fs.fides_key,
+        type: "system",
+      }));
+
+      setFieldValue("dataFlowSystems", updatedDataFlows);
+      setSelectedDataFlows(updatedDataFlows);
     } else {
-      const notFilteredSystems = allSystems
-        ? allSystems.filter((system) => !filteredSystems.includes(system))
-        : [];
-      setSelectedSystems(notFilteredSystems);
+      setSelectedDataFlows([]);
     }
   };
 
   const allSystemsAssigned = useMemo(() => {
-    const assignedSet = new Set(selectedSystems.map((s) => s.fides_key));
+    console.log("recalcing all systems assigned");
+    const assignedSet = new Set(selectedDataFlows.map((s) => s.fides_key));
     return filteredSystems.every((item) => assignedSet.has(item.fides_key));
-  }, [filteredSystems, selectedSystems]);
+  }, [filteredSystems, selectedDataFlows]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
@@ -86,7 +92,7 @@ const DataFlowSystemsModal = ({
         >
           <Text>Assign systems</Text>
           <Badge bg="green.500" color="white" px={1}>
-            Assigned to {selectedSystems.length} systems
+            Assigned to {selectedDataFlows.length} systems
           </Badge>
         </ModalHeader>
         <ModalBody data-testid="assign-systems-modal-body">
@@ -126,8 +132,8 @@ const DataFlowSystemsModal = ({
               />
               <DataFlowSystemsTable
                 allSystems={filteredSystems}
-                dataFlowSystems={selectedSystems}
-                onChange={setSelectedSystems}
+                dataFlowSystems={selectedDataFlows}
+                onChange={setSelectedDataFlows}
               />
             </Stack>
           )}
