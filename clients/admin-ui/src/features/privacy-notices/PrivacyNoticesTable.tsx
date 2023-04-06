@@ -12,12 +12,14 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
+import { useRouter } from "next/router";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Column, useSortBy, useTable } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import { PrivacyNoticeResponse } from "~/types/api";
 
+import { PRIVACY_NOTICES_ROUTE } from "../common/nav/v2/routes";
 import {
   DateCell,
   MechanismCell,
@@ -42,6 +44,7 @@ interface PrivacyNoticeTableData extends PrivacyNoticeResponse {
 }
 
 const PrivacyNoticesTable = () => {
+  const router = useRouter();
   // Subscribe to get all privacy notices
   const page = useAppSelector(selectPage);
   const pageSize = useAppSelector(selectPageSize);
@@ -160,10 +163,17 @@ const PrivacyNoticesTable = () => {
                       {...headerProps}
                       textTransform="none"
                       fontSize="sm"
-                      p={5}
+                      p={4}
                     >
-                      {column.render("Header")}
-                      {sortIcon}
+                      <Text
+                        _hover={{ backgroundColor: "gray.100" }}
+                        p={1}
+                        borderRadius="4px"
+                        pr={sortIcon ? 0 : 3.5}
+                      >
+                        {column.render("Header")}
+                        {sortIcon}
+                      </Text>
                     </Th>
                   );
                 })}
@@ -175,6 +185,9 @@ const PrivacyNoticesTable = () => {
           {rows.map((row) => {
             prepareRow(row);
             const { key: rowKey, ...rowProps } = row.getRowProps();
+            const onClick = () => {
+              router.push(`${PRIVACY_NOTICES_ROUTE}/${row.original.id}`);
+            };
             return (
               <Tr
                 key={rowKey}
@@ -190,6 +203,9 @@ const PrivacyNoticesTable = () => {
                       {...cellProps}
                       p={5}
                       verticalAlign="baseline"
+                      onClick={
+                        cell.column.Header !== "Enable" ? onClick : undefined
+                      }
                     >
                       {cell.render("Cell")}
                     </Td>
