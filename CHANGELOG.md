@@ -23,6 +23,7 @@ The types of changes are:
 * Added the datamap UI to make it open source [#2988](https://github.com/ethyca/fides/pull/2988)
 * Introduced a `FixedLayout` component (from the datamap UI) for pages that need to be a fixed height and scroll within [#2992](https://github.com/ethyca/fides/pull/2992)
 * Added preliminary privacy notice page [#2995](https://github.com/ethyca/fides/pull/2995)
+* Query params on connection type endpoint to filter by supported action type [#2996](https://github.com/ethyca/fides/pull/2996)
 
 ### Changed
 * Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
