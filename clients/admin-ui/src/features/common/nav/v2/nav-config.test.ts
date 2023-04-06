@@ -2,12 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 
 import { ScopeRegistryEnum } from "~/types/api";
 
-import {
-  canAccessRoute,
-  configureNavGroups,
-  findActiveNav,
-  NAV_CONFIG,
-} from "./nav-config";
+import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
 import * as routes from "./routes";
 
 const ALL_SCOPES = [
@@ -254,46 +249,6 @@ describe("findActiveNav", () => {
 
       expect(activeNav?.title).toEqual(expected.title);
       expect(activeNav?.path).toEqual(expected.path);
-    });
-  });
-
-  describe("canAccessRoute", () => {
-    const accessTestCases = [
-      {
-        path: "/",
-        expected: true,
-        userScopes: [],
-      },
-      {
-        path: routes.ADD_SYSTEMS_ROUTE,
-        expected: false,
-        userScopes: [],
-      },
-      {
-        path: routes.ADD_SYSTEMS_ROUTE,
-        expected: true,
-        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
-      },
-      {
-        path: routes.PRIVACY_REQUESTS_ROUTE,
-        expected: false,
-        userScopes: [ScopeRegistryEnum.SYSTEM_CREATE],
-      },
-      {
-        path: routes.PRIVACY_REQUESTS_ROUTE,
-        expected: true,
-        userScopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
-      },
-      {
-        path: `${routes.PRIVACY_REQUESTS_ROUTE}?queryParam`,
-        expected: true,
-        userScopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
-      },
-    ];
-    accessTestCases.forEach(({ path, expected, userScopes }) => {
-      it(`${path} is scope restricted`, () => {
-        expect(canAccessRoute({ path, userScopes })).toBe(expected);
-      });
     });
   });
 });
