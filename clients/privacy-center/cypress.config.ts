@@ -5,6 +5,9 @@ export default defineConfig({
   e2e: {
     baseUrl: "http://localhost:3000",
   },
+  env: {
+    NODE_ENV: "test"
+  },
 
   defaultCommandTimeout: 5000,
 

@@ -15,7 +15,7 @@
     "test:ci": "tsc --noEmit && jest",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "cy:start": "export NODE_ENV=test && npm run build && npm run start",
+    "cy:start": "NEXT_PUBLIC_APP_ENV=test next build && NEXT_PUBLIC_APP_ENV=test next start",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
