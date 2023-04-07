@@ -64,6 +64,7 @@ export const ToggleCell = ({
   <Switch
     colorScheme="complimentary"
     isChecked={value}
+    data-testid={`toggle-${column.Header}`}
     onChange={() => {
       /**
        * It's difficult to use a custom column in react-table 7 since we'd have to modify

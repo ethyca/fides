@@ -31,6 +31,25 @@ describe("Privacy notices", () => {
         cy.getByTestId("privacy-notices-page");
       });
     });
+
+    it("viewers and approvers cannot click into a notice to edit", () => {
+      [RoleRegistryEnum.VIEWER, RoleRegistryEnum.APPROVER].forEach((role) => {
+        cy.assumeRole(role);
+        cy.visit(PRIVACY_NOTICES_ROUTE);
+        cy.getByTestId("row-Essential").click();
+        // we should still be on the same page
+        cy.getByTestId("privacy-notice-detail-page").should("not.exist");
+        cy.getByTestId("privacy-notices-page");
+      });
+    });
+
+    it("viewers and approvers cannot toggle the enable toggle", () => {
+      [RoleRegistryEnum.VIEWER, RoleRegistryEnum.APPROVER].forEach((role) => {
+        cy.assumeRole(role);
+        cy.visit(PRIVACY_NOTICES_ROUTE);
+        cy.getByTestId("toggle-Enable").should("be.disabled");
+      });
+    });
   });
 
   describe("table", () => {
