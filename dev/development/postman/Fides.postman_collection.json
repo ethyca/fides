@@ -5168,7 +5168,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n  {\n    \"name\": \"Profiling\",\n    \"regions\": [\n      \"us_ca\",\n      \"us_ut\"\n    ],\n    \"description\": \"Making a decision solely by automated means.\",\n    \"consent_mechanism\": \"opt_in\",\n    \"data_uses\": [\n      \"personalize\"\n    ],\n    \"enforcement_level\": \"system_wide\",\n    \"has_gpc_flag\": false\n  },\n  {\n    \"name\": \"Essential\",\n    \"regions\": [\n      \"eu\"\n    ],\n    \"description\": \"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n    \"consent_mechanism\": \"necessary\",\n    \"data_uses\": [\n      \"provide.service\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  }\n]",
+							"raw": "[\n  {\n    \"name\": \"Profiling\",\n    \"regions\": [\n      \"us_ca\",\n      \"us_ut\"\n    ],\n    \"description\": \"Making a decision solely by automated means.\",\n    \"consent_mechanism\": \"opt_in\",\n    \"data_uses\": [\n      \"personalize\"\n    ],\n    \"enforcement_level\": \"system_wide\",\n    \"has_gpc_flag\": false\n  },\n  {\n    \"name\": \"Essential\",\n    \"regions\": [\n      \"eu_de\"\n    ],\n    \"description\": \"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n    \"consent_mechanism\": \"necessary\",\n    \"data_uses\": [\n      \"provide.service\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  },\n  {\n    \"name\": \"Advertising\",\n    \"regions\": [\n    \"us_ca\"\n    ],\n    \"description\": \"Sample advertising notice\",\n    \"consent_mechanism\": \"necessary\",\n    \"data_uses\": [\n    \"advertising\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5267,6 +5267,45 @@
 									"key": "show_disabled",
 									"value": "true"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Privacy Notices By Data Use",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice-by-data-use",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice-by-data-use"
 							]
 						}
 					},

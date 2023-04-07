@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.10.1b0.post0.dev23"
+    "version": "2.10.1b0.post0.dev24"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8758,7 +8758,7 @@
           "Privacy Notice"
         ],
         "summary": "Get Privacy Notice List",
-        "description": "Return a paginated list of PrivacyNotice records in this system.\nIncludes some query params to help filter the list if needed",
+        "description": "Return a paginated list of `PrivacyNotice` records in this system.\nIncludes some query params to help filter the list if needed",
         "operationId": "get_privacy_notice_list_api_v1_privacy_notice_get",
         "parameters": [
           {
@@ -8951,6 +8951,42 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "privacy-notice:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-notice-by-data-use": {
+      "get": {
+        "tags": [
+          "Privacy Notice"
+        ],
+        "summary": "Get Privacy Notice By Data Use",
+        "description": "Endpoint to retrieve a map of `DataUse`s with their corresponding `PrivacyNotice`s\n\nOnly `DataUse`s that are associated with a `System` are included in the map.\n\n`DataUse`s that do not have any `PrivacyNotice` associated with them are included\nin the map, with empty lists.",
+        "operationId": "get_privacy_notice_by_data_use_api_v1_privacy_notice_by_data_use_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Privacy Notice By Data Use Api V1 Privacy Notice By Data Use Get",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/PrivacyNoticeResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-notice:read"
             ]
           }
         ]
@@ -17122,19 +17158,23 @@
           },
           "has_gpc_flag": {
             "title": "Has Gpc Flag",
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
           },
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
           "displayed_in_privacy_modal": {
             "title": "Displayed In Privacy Modal",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
           "displayed_in_banner": {
             "title": "Displayed In Banner",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           }
         },
         "additionalProperties": false,
@@ -17227,19 +17267,23 @@
           },
           "has_gpc_flag": {
             "title": "Has Gpc Flag",
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
           },
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
           "displayed_in_privacy_modal": {
             "title": "Displayed In Privacy Modal",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
           "displayed_in_banner": {
             "title": "Displayed In Banner",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
           "id": {
             "title": "Id",
@@ -17310,19 +17354,23 @@
           },
           "has_gpc_flag": {
             "title": "Has Gpc Flag",
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
           },
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
           "displayed_in_privacy_modal": {
             "title": "Displayed In Privacy Modal",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
           "displayed_in_banner": {
             "title": "Displayed In Banner",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
           "id": {
             "title": "Id",
