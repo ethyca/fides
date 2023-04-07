@@ -7,11 +7,19 @@ import { DataFlowAccordionForm } from "./DataFlowAccordionForm";
 
 type DataFlowFormProps = {
   system: System;
+  isSystemTab?: boolean;
 };
 
-export const DataFlowAccordion = ({ system }: DataFlowFormProps) => (
-  <Accordion allowToggle>
-    <DataFlowAccordionForm system={system} isIngress />
-    <DataFlowAccordionForm system={system} />
+export const DataFlowAccordion = ({
+  system,
+  isSystemTab,
+}: DataFlowFormProps) => (
+  <Accordion allowToggle data-testid="data-flow-accordion">
+    <DataFlowAccordionForm
+      system={system}
+      isIngress
+      isSystemTab={isSystemTab}
+    />
+    <DataFlowAccordionForm system={system} isSystemTab={isSystemTab} />
   </Accordion>
 );

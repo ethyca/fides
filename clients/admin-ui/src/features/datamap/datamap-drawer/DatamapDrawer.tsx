@@ -190,6 +190,17 @@ const DatamapDrawer = ({
                     {...dataProps}
                   />
                 </Box>
+                <Text
+                  size="md"
+                  color="gray.600"
+                  lineHeight={6}
+                  fontWeight="semibold"
+                  mt="10px"
+                  mb={2}
+                  paddingBottom={2}
+                >
+                  Data flow
+                </Text>
                 <DataFlowAccordion system={system} />
               </>
             ) : null}

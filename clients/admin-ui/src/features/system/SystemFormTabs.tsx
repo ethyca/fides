@@ -186,16 +186,20 @@ const SystemFormTabs = ({
     {
       label: "Data flow",
       content: activeSystem ? (
-        <Box px={6} width={{ base: "100%", lg: "70%" }}>
-          <Text fontSize="md" lineHeight={6} fontWeight="bold">Data flow</Text>
-          <Text fontSize="sm" lineHeight={5} fontWeight="medium">
-            Data flow describes the flow of data between systems in your Data
-            Map. Below, you can configure Source and Destination systems and the
-            corresponding links will be drawn in the Data Map graph. Source
-            systems are systems that send data to this system while Destination
-            systems receive data from this system.
-          </Text>
-          <DataFlowAccordion system={activeSystem} />
+        <Box width={{ base: "100%", lg: "70%" }}>
+          <Box px={6} paddingBottom={2}>
+            <Text fontSize="md" lineHeight={6} fontWeight="bold">
+              Data flow
+            </Text>
+            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
+              Data flow describes the flow of data between systems in your Data
+              Map. Below, you can configure Source and Destination systems and
+              the corresponding links will be drawn in the Data Map graph.
+              Source systems are systems that send data to this system while
+              Destination systems receive data from this system.
+            </Text>
+          </Box>
+          <DataFlowAccordion system={activeSystem} isSystemTab />
         </Box>
       ) : null,
       isDisabled: !activeSystem,

@@ -3,7 +3,7 @@
   "plugins": ["no-only-tests"],
   "parserOptions": {
     "project": "./tsconfig.json",
-    "tsconfigRootDir": "cypress"
+    "tsconfigRootDir": "./"
   },
   "rules": {
     "no-only-tests/no-only-tests": "error"

@@ -37,11 +37,13 @@ export type FormValues = typeof defaultInitialValues;
 type DataFlowAccordionItemProps = {
   isIngress?: boolean;
   system: System;
+  isSystemTab?: boolean;
 };
 
 export const DataFlowAccordionForm = ({
   system,
   isIngress,
+  isSystemTab,
 }: DataFlowAccordionItemProps) => {
   const toast = useToast();
   const flowType = isIngress ? "Source" : "Destination";
@@ -76,8 +78,16 @@ export const DataFlowAccordionForm = ({
   };
 
   return (
-    <AccordionItem>
-      <AccordionButton height="44px" padding={2}>
+    <AccordionItem
+    // _first={{
+    //   borderTop: "unset",
+    // }}
+    >
+      <AccordionButton
+        height="68px"
+        paddingLeft={isSystemTab ? 6 : 2}
+        data-testid={`data-flow-button-${flowType}`}
+      >
         <Flex
           alignItems="center"
           justifyContent="start"
@@ -101,7 +111,11 @@ export const DataFlowAccordionForm = ({
           <AccordionIcon />
         </Flex>
       </AccordionButton>
-      <AccordionPanel backgroundColor="gray.50" padding={6}>
+      <AccordionPanel
+        backgroundColor="gray.50"
+        padding={6}
+        data-testid={`data-flow-panel-${flowType}`}
+      >
         <Stack
           borderRadius="md"
           backgroundColor="gray.50"
@@ -123,6 +137,7 @@ export const DataFlowAccordionForm = ({
                   onClick={dataFlowSystemsModal.onOpen}
                   data-testid="assign-systems-btn"
                   rightIcon={<GearLightIcon />}
+                  marginBottom={4}
                 >
                   {`Configure ${pluralFlowType}`}
                 </Button>
