@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.10.1b0.post0.dev16"
+    "version": "2.10.1b0.post0.dev21"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5279,7 +5279,7 @@
           "Connection Types"
         ],
         "summary": "Get All Connection Types",
-        "description": "Returns a list of connection options in Fidesops - includes only database and saas options here.",
+        "description": "Returns a list of connection options in Fides - includes only database and saas options here.\n\nQuery params for types of requests supported - `consent`, `access` and `erasure` - act as filters.\nIf set to `true`, only connections that support the specified type of request will be returned.\nIf no filters are specified, then no filtering is performed.\nWhen applied together, the filters act as a union: result sets are additive.",
         "operationId": "get_all_connection_types_api_v1_connection_type_get",
         "parameters": [
           {
@@ -5297,6 +5297,33 @@
               "$ref": "#/components/schemas/SystemType"
             },
             "name": "system_type",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Consent",
+              "type": "boolean"
+            },
+            "name": "consent",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Access",
+              "type": "boolean"
+            },
+            "name": "access",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Erasure",
+              "type": "boolean"
+            },
+            "name": "erasure",
             "in": "query"
           },
           {
