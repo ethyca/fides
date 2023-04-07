@@ -13,7 +13,7 @@ import {
   Tr,
 } from "@fidesui/react";
 import { useRouter } from "next/router";
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { ReactNode, useMemo } from "react";
 import { Column, useSortBy, useTable } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
@@ -23,10 +23,10 @@ import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
 
 import {
   DateCell,
+  EnablePrivacyNoticeCell,
   MechanismCell,
   MultiTagCell,
   TitleCell,
-  ToggleCell,
   WrappedCell,
 } from "./cells";
 import {
@@ -35,14 +35,6 @@ import {
   selectPageSize,
   useGetAllPrivacyNoticesQuery,
 } from "./privacy-notices.slice";
-
-/**
- * We add an 'enabled' flag so that the UI can toggle the 'enabled' state
- * without directly modifying the PrivacyNoticeResponse data
- */
-interface PrivacyNoticeTableData extends PrivacyNoticeResponse {
-  enabled: boolean;
-}
 
 const PrivacyNoticesTable = () => {
   const router = useRouter();
@@ -53,39 +45,12 @@ const PrivacyNoticesTable = () => {
 
   const privacyNotices = useAppSelector(selectAllPrivacyNotices);
 
-  // Sync up our enabled state with the initial privacy notice enabled state
-  const [enabledNoticeIds, setEnabledNoticeIds] = useState<string[]>([]);
-  useEffect(() => {
-    setEnabledNoticeIds(
-      privacyNotices.filter((pn) => !pn.disabled).map((pn) => pn.id)
-    );
-  }, [privacyNotices]);
-
   // Permissions
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_NOTICE_UPDATE,
   ]);
 
-  const handleToggle = useCallback(
-    (privacyNoticeId: PrivacyNoticeTableData["id"]) => {
-      const isEnabled = !!enabledNoticeIds.find(
-        (enabledId) => enabledId === privacyNoticeId
-      );
-
-      if (isEnabled) {
-        setEnabledNoticeIds(
-          enabledNoticeIds.filter(
-            (enabledNoticeId) => enabledNoticeId !== privacyNoticeId
-          )
-        );
-      } else {
-        setEnabledNoticeIds([...enabledNoticeIds, privacyNoticeId]);
-      }
-    },
-    [enabledNoticeIds]
-  );
-
-  const columns: Column<PrivacyNoticeTableData>[] = useMemo(
+  const columns: Column<PrivacyNoticeResponse>[] = useMemo(
     () => [
       {
         Header: "Title",
@@ -107,28 +72,15 @@ const PrivacyNoticesTable = () => {
       { Header: "Last update", accessor: "updated_at", Cell: DateCell },
       {
         Header: "Enable",
-        accessor: "enabled",
-        onToggle: handleToggle,
+        accessor: "disabled",
         disabled: !userCanUpdate,
-        Cell: ToggleCell,
+        Cell: EnablePrivacyNoticeCell,
       },
     ],
-    [handleToggle, userCanUpdate]
+    [userCanUpdate]
   );
 
-  // Create the data object as the PrivacyNoticeResponse + a UI only "enabled" field
-  // which the UI can control the state of
-  const data: PrivacyNoticeTableData[] = useMemo(
-    () =>
-      privacyNotices.map((pn) => {
-        const isEnabled =
-          enabledNoticeIds.filter((noticeId) => noticeId === pn.id).length > 0;
-        return { ...pn, enabled: isEnabled };
-      }),
-    [privacyNotices, enabledNoticeIds]
-  );
-
-  const tableInstance = useTable({ columns, data }, useSortBy);
+  const tableInstance = useTable({ columns, data: privacyNotices }, useSortBy);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
