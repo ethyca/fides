@@ -55,7 +55,10 @@ export const DataFlowAccordionForm = ({
   const systems = useMemo(() => data || [], [data]);
 
   const initialDataFlows = useMemo(() => {
-    const dataFlows = isIngress ? system.ingress! : system.egress!;
+    let dataFlows = isIngress ? system.ingress : system.egress;
+    if (!dataFlows) {
+      dataFlows = [];
+    }
     const systemFidesKeys = systems ? systems.map((s) => s.fides_key) : [];
 
     return dataFlows.filter((df) => systemFidesKeys.includes(df.fides_key));
