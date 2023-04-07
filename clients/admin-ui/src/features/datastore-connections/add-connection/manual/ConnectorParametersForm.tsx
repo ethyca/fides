@@ -3,10 +3,10 @@ import { VStack } from "@fidesui/react";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
 
 import CustomInput from "../forms/CustomInput";
 import { BaseConnectorParametersFields } from "../types";

@@ -59,6 +59,10 @@ MESSAGING_TEST = "/messaging/config/test"
 POLICY_LIST = "/dsr/policy"
 POLICY_DETAIL = "/dsr/policy/{policy_key}"
 
+# Privacy Notice URLs
+PRIVACY_NOTICE = "/privacy-notice"
+PRIVACY_NOTICE_DETAIL = "/privacy-notice/{privacy_notice_id}"
+
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
@@ -134,6 +138,7 @@ YAML_DATASETS = YAML + DATASETS
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
+REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
 
 SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 

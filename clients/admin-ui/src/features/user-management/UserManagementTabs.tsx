@@ -3,7 +3,9 @@ import RoleDescriptionDrawer from "user-management/RoleDescriptionDrawer";
 
 import { useAppSelector } from "~/app/hooks";
 import DataTabs, { type TabData } from "~/features/common/DataTabs";
+import { ScopeRegistryEnum } from "~/types/api";
 
+import { useHasPermission } from "../common/Restrict";
 import PermissionsForm from "./PermissionsForm";
 import {
   selectActiveUserId,
@@ -20,6 +22,13 @@ const UserManagementTabs = ({
 
   // Subscribe to active user
   useGetUserByIdQuery(activeUserId as string, { skip: !activeUserId });
+
+  const canUpdateUserPermissions = useHasPermission([
+    ScopeRegistryEnum.USER_PERMISSION_UPDATE,
+  ]);
+
+  // If it is a new user, or if the user does not have permission
+  const permissionsTabDisabled = !activeUserId || !canUpdateUserPermissions;
 
   const tabs: TabData[] = [
     {
@@ -41,7 +50,7 @@ const UserManagementTabs = ({
           </Box>
           <Box
             position="absolute"
-            top="114px"
+            top="96px"
             right={6}
             height="calc(100% + 100px)"
             overflowY="scroll"
@@ -53,7 +62,7 @@ const UserManagementTabs = ({
           </Box>
         </Flex>
       ),
-      isDisabled: !activeUserId,
+      isDisabled: permissionsTabDisabled,
     },
   ];
 

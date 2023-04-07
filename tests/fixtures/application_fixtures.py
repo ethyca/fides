@@ -10,7 +10,7 @@ import yaml
 from faker import Faker
 from fideslang.models import Dataset
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import ObjectDeletedError
+from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
 from fides.api.ctl.sql_models import Dataset as CtlDataset
@@ -31,6 +31,12 @@ from fides.api.ops.models.policy import (
     PolicyPreWebhook,
     Rule,
     RuleTarget,
+)
+from fides.api.ops.models.privacy_notice import (
+    ConsentMechanism,
+    EnforcementLevel,
+    PrivacyNotice,
+    PrivacyNoticeRegion,
 )
 from fides.api.ops.models.privacy_request import (
     ConsentRequest,
@@ -1382,6 +1388,63 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
+def privacy_notice(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice",
+            "description": "a sample privacy notice configuration",
+            "origin": "privacy_notice_template_1",
+            "regions": [
+                PrivacyNoticeRegion.us_ca,
+                PrivacyNoticeRegion.us_co,
+            ],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_us_ca_provide(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice us_ca provide",
+            # no description or origin on this privacy notice to help
+            # cover edge cases due to column nullability
+            "regions": [PrivacyNoticeRegion.us_ca],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["provide"],
+            "enforcement_level": EnforcementLevel.system_wide,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice us_co third_party_sharing",
+            "description": "a sample privacy notice configuration",
+            "origin": "privacy_notice_template_2",
+            "regions": [PrivacyNoticeRegion.us_co],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
 def ctl_dataset(db: Session, example_datasets):
     ds = Dataset(
         fides_key="postgres_example_subscriptions_dataset",
@@ -1661,7 +1724,7 @@ def system_manager(db: Session, system) -> System:
         systems=[system.id],
     )
 
-    FidesUserPermissions.create(db=db, data={"user_id": user.id})
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
 
     db.add(client)
     db.commit()
@@ -1671,7 +1734,7 @@ def system_manager(db: Session, system) -> System:
     yield user
     try:
         user.remove_as_system_manager(db, system)
-    except SystemManagerException:
+    except (SystemManagerException, StaleDataError):
         pass
     user.delete(db)
 

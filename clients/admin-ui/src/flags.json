@@ -1,9 +1,10 @@
 {
   "privacyRequestsConfiguration": {
     "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage.",
-    "development": true,
-    "test": true,
-    "production": false
+    "development": false,
+    "test": false,
+    "production": false,
+    "userCannotModify": true
   },
   "datasetClassificationUpdates": {
     "description": "Enable per-collection dataset classification instead of bulk updates.",
@@ -22,5 +23,12 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "privacyNotices": {
+    "description": "Page to configure consent privacy notices",
+    "development": true,
+    "test": true,
+    "production": false,
+    "userCannotModify": true
   }
 }

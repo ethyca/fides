@@ -15,13 +15,38 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.9.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.10.0...main)
+
+### Added
+* Access support for Shippo [#2484](https://github.com/ethyca/fides/pull/2484)
+* Feature flags can be set such that they cannot be modified by the user [#2966](https://github.com/ethyca/fides/pull/2966)
+* Added the datamap UI to make it open source [#2988](https://github.com/ethyca/fides/pull/2988)
+* Introduced a `FixedLayout` component (from the datamap UI) for pages that need to be a fixed height and scroll within [#2992](https://github.com/ethyca/fides/pull/2992)
+* Added preliminary privacy notice page [#2995](https://github.com/ethyca/fides/pull/2995)
+
+### Changed
+* Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
+* Restored `nav-config` back to the admin-ui [#2990](https://github.com/ethyca/fides/pull/2990)
+
+### Removed
+* Removed interzone navigation logic now that the datamap UI and admin UI are one app [#2990](https://github.com/ethyca/fides/pull/2990)
+
+### Changed
+* Updated the check for if a user can assign owner roles to be scope-based instead of role-based [#2964](https://github.com/ethyca/fides/pull/2964)
+* Replaced menu in user management table with delete icon [#2958](https://github.com/ethyca/fides/pull/2958)
+
+### Developer Experience
+* Nox commands for git tagging to support feature branch builds [#2979](https://github.com/ethyca/fides/pull/2979)
+
+## [2.10.0](https://github.com/ethyca/fides/compare/2.9.2...2.10.0)
 
 ### Added
 
 * Allow users to configure their username and password via the config file [#2884](https://github.com/ethyca/fides/pull/2884)
 * Add authentication to the `masking` endpoints as well as accompanying scopes [#2909](https://github.com/ethyca/fides/pull/2909)
 * Add an Organization Management page (beta) [#2908](https://github.com/ethyca/fides/pull/2908)
+* Adds assigned systems to user management table [#2922](https://github.com/ethyca/fides/pull/2922)
+* APIs to support Privacy Notice management (create, read, update) [#2928](https://github.com/ethyca/fides/pull/2928)
 
 ### Changed
 
@@ -36,7 +61,12 @@ The types of changes are:
 * Give new users a "viewer" role by default [#2900](https://github.com/ethyca/fides/pull/2900)
 * Tie together save states for user permissions and systems [#2913](https://github.com/ethyca/fides/pull/2913)
 * Removing payment types from Stripe connector params [#2915](https://github.com/ethyca/fides/pull/2915)
+* Viewer role can now access a restricted version of the user management page [#2933](https://github.com/ethyca/fides/pull/2933)
 * Change Privacy Center email placeholder text [#2935](https://github.com/ethyca/fides/pull/2935)
+* Restricted setting Approvers as System Managers [#2891](https://github.com/ethyca/fides/pull/2891)
+* Adds confirmation modal when downgrading user to "approver" role via Admin UI [#2924](https://github.com/ethyca/fides/pull/2924)
+* Changed the toast message for new users to include access control info [#2939](https://github.com/ethyca/fides/pull/2939)
+* Add Data Stewards to datamap export [#2962](https://github.com/ethyca/fides/pull/2962)
 * Bumped supported Python versions to 3.10.10, 3.9.16, and 3.8.14 [#2936](https://github.com/ethyca/fides/pull/2936)
 
 ### Fixed
@@ -44,6 +74,8 @@ The types of changes are:
 * Restricted Contributors from being able to create Owners [#2888](https://github.com/ethyca/fides/pull/2888)
 * Allow for dynamic aspect ratio for logo on Privacy Center 404 [#2895](https://github.com/ethyca/fides/pull/2895)
 * Allow for dynamic aspect ratio for logo on consent page [#2895](https://github.com/ethyca/fides/pull/2895)
+* Align role dscription drawer of Admin UI with top nav: [#2932](https://github.com/ethyca/fides/pull/2932)
+* Fixed error message when a user is assigned to be an approver without any systems [#2953](https://github.com/ethyca/fides/pull/2953)
 
 ### Developer Experience
 

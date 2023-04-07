@@ -237,7 +237,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         return delta.days
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> PrivacyRequest:
+    def create(
+        cls, db: Session, *, data: Dict[str, Any], check_name: bool = True
+    ) -> PrivacyRequest:
         """
         Check whether this object has been passed a `requested_at` value. Default to
         the current datetime if not.
@@ -260,7 +262,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     days=policy.execution_timeframe
                 )
 
-        return super().create(db=db, data=data)
+        return super().create(db=db, data=data, check_name=check_name)
 
     def delete(self, db: Session) -> None:
         """

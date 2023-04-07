@@ -4,9 +4,12 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
-import { ADD_SYSTEMS_MANUAL_ROUTE, ADD_SYSTEMS_ROUTE } from "~/constants";
-import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
+import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import Layout from "~/features/common/Layout";
+import {
+  ADD_SYSTEMS_MANUAL_ROUTE,
+  ADD_SYSTEMS_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import SystemCatalog from "~/features/system/SystemCatalog";
 import SystemFormTabs from "~/features/system/SystemFormTabs";
@@ -48,7 +51,7 @@ const Header = ({
 };
 
 const NewManualSystem: NextPage = () => {
-  const { systemOrDatamapRoute } = useInterzoneNav();
+  const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const router = useRouter();
   const { step, connectorType } = router.query;
 

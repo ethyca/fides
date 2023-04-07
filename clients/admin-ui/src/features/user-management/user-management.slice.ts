@@ -163,7 +163,17 @@ export const userApi = createApi({
         method: "PUT",
         body: payload,
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: (result, error, arg) => {
+        // The backend will change managed systems if the role becomes "Approver"
+        // so make sure we refetch for the managed systems in this case
+        if (arg.payload.roles?.includes(RoleRegistryEnum.APPROVER)) {
+          return [
+            "User",
+            { type: "Managed Systems" as const, id: arg.user_id },
+          ];
+        }
+        return ["User"];
+      },
     }),
     deleteUser: build.mutation<{ success: boolean; id: string }, string>({
       query: (id) => ({

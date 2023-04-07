@@ -82,3 +82,8 @@ export const selectDataUses: (state: RootState) => DataUse[] = createSelector(
   dataUseApi.endpoints.getAllDataUses.select(),
   ({ data }) => data ?? emptyDataUses
 );
+
+export const selectDataUsesMap = createSelector(
+  selectDataUses,
+  (dataUses) => new Map(dataUses.map((dataUse) => [dataUse.name, dataUse]))
+);

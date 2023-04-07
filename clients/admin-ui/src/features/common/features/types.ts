@@ -13,6 +13,10 @@ export type FlagEnvs<Value> = {
   test: Value;
   production: Value;
   description?: string;
+  /**
+   * If true, this flag will not show up in the UI as a toggle
+   */
+  userCannotModify?: boolean;
 };
 
 /**

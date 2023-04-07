@@ -202,3 +202,15 @@ export const stubPrivacyRequests = () => {
     }
   ).as("denyPrivacyRequest");
 };
+
+export const stubDatamap = () => {
+  cy.intercept("GET", "/api/v1/datamap/*", {
+    fixture: "datamap/datamap.json",
+  }).as("getDatamap");
+  cy.intercept("GET", "/api/v1/data_category", {
+    fixture: "taxonomy/data_categories.json",
+  }).as("getDataCategory");
+  cy.intercept("GET", "/api/v1/system", { fixture: "systems/systems.json" }).as(
+    "getSystems"
+  );
+};
