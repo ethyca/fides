@@ -4240,6 +4240,39 @@
 					"response": []
 				},
 				{
+					"name": "Get available connectors - consent",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection_type?consent=true",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection_type"
+							],
+							"query": [
+								{
+									"key": "consent",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get connection secrets schema",
 					"request": {
 						"auth": {
