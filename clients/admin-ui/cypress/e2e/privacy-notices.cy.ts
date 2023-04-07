@@ -3,6 +3,9 @@ import { stubPlus } from "cypress/support/stubs";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
+const DATA_SALES_NOTICE_ID = "pri_afd25287-cce4-487a-a6b4-b7647b068990";
+const ESSENTIAL_NOTICE_ID = "pri_e76cbe20-6ffa-46b4-9a91-b1ae3412dd49";
+
 describe("Privacy notices", () => {
   beforeEach(() => {
     cy.login();
@@ -106,7 +109,49 @@ describe("Privacy notices", () => {
     it("can click a row to go to the notice page", () => {
       cy.getByTestId("row-Essential").click();
       cy.getByTestId("privacy-notice-detail-page");
-      cy.url().should("contain", "pri_e76cbe20-6ffa-46b4-9a91-b1ae3412dd49");
+      cy.url().should("contain", ESSENTIAL_NOTICE_ID);
+    });
+
+    describe("enabling and disabling", () => {
+      beforeEach(() => {
+        cy.intercept("PATCH", "/api/v1/privacy-notice*", {
+          fixture: "privacy-notices/list.json",
+        }).as("patchNotices");
+      });
+
+      it("can enable a notice", () => {
+        cy.getByTestId("row-Data Sales").within(() => {
+          cy.getByTestId("toggle-Enable").within(() => {
+            cy.get("span").should("not.have.attr", "data-checked");
+          });
+          cy.getByTestId("toggle-Enable").click();
+        });
+
+        cy.wait("@patchNotices").then((interception) => {
+          const { body } = interception.request;
+          expect(body).to.eql([{ id: DATA_SALES_NOTICE_ID, disabled: false }]);
+        });
+        // redux should requery after invalidation
+        cy.wait("@getNotices");
+      });
+
+      it("can disable a notice with a warning", () => {
+        cy.getByTestId("row-Essential").within(() => {
+          cy.getByTestId("toggle-Enable").within(() => {
+            cy.get("span").should("have.attr", "data-checked");
+          });
+          cy.getByTestId("toggle-Enable").click();
+        });
+
+        cy.getByTestId("confirmation-modal");
+        cy.getByTestId("continue-btn").click();
+        cy.wait("@patchNotices").then((interception) => {
+          const { body } = interception.request;
+          expect(body).to.eql([{ id: ESSENTIAL_NOTICE_ID, disabled: true }]);
+        });
+        // redux should requery after invalidation
+        cy.wait("@getNotices");
+      });
     });
   });
 });
