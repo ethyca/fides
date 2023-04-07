@@ -27,6 +27,7 @@ The types of changes are:
 ### Changed
 * Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
 * Restored `nav-config` back to the admin-ui [#2990](https://github.com/ethyca/fides/pull/2990)
+* Bumped supported Python versions to 3.10.11, 3.9.16, and 3.8.14 [#2936](https://github.com/ethyca/fides/pull/2936)
 
 ### Removed
 * Removed interzone navigation logic now that the datamap UI and admin UI are one app [#2990](https://github.com/ethyca/fides/pull/2990)
@@ -67,7 +68,6 @@ The types of changes are:
 * Adds confirmation modal when downgrading user to "approver" role via Admin UI [#2924](https://github.com/ethyca/fides/pull/2924)
 * Changed the toast message for new users to include access control info [#2939](https://github.com/ethyca/fides/pull/2939)
 * Add Data Stewards to datamap export [#2962](https://github.com/ethyca/fides/pull/2962)
-* Bumped supported Python versions to 3.10.11, 3.9.16, and 3.8.14 [#2936](https://github.com/ethyca/fides/pull/2936)
 
 ### Fixed
 
