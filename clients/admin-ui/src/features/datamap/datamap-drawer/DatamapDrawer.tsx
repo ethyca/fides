@@ -10,6 +10,7 @@ import {
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
+import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import React, { useMemo } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -23,7 +24,6 @@ import {
 import { PrivacyDeclaration } from "~/types/api/models/PrivacyDeclaration";
 import { System } from "~/types/api/models/System";
 
-import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import SystemInfo from "./SystemInfo";
 
 type DatamapDrawerProps = {

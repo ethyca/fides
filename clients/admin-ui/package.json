@@ -9,7 +9,7 @@
     "chrome:debug": "BROWSER='google chrome' BROWSER_ARGS='--remote-debugging-port=9222' npm run dev",
     "copy-export": "mkdir -p ../../src/fides/ui-build/static/admin/ && rsync -a --delete out/ ../../src/fides/ui-build/static/admin/",
     "cy:open": "cypress open",
-    "cy:run": "cypress run",
+    "cy:run": "cypress run --spec",
     "cy:start": "NODE_ENV=test next build && NODE_ENV=test next start",
     "dev": "next dev",
     "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true next dev",

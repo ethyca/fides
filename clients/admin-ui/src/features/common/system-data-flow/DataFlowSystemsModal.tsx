@@ -17,13 +17,13 @@ import {
   Switch,
   Text,
 } from "@fidesui/react";
+import SearchBar from "common/SearchBar";
+import { useFormikContext } from "formik";
 import { ChangeEvent, useMemo, useState } from "react";
 
-import SearchBar from "common/SearchBar";
 import { SEARCH_FILTER } from "~/features/system/SystemsManagement";
 import { DataFlow, System } from "~/types/api";
 
-import { useFormikContext } from "formik";
 import DataFlowSystemsTable from "./DataFlowSystemsTable";
 
 type Props = {
@@ -75,7 +75,6 @@ const DataFlowSystemsModal = ({
   };
 
   const allSystemsAssigned = useMemo(() => {
-    console.log("recalcing all systems assigned");
     const assignedSet = new Set(selectedDataFlows.map((s) => s.fides_key));
     return filteredSystems.every((item) => assignedSet.has(item.fides_key));
   }, [filteredSystems, selectedDataFlows]);

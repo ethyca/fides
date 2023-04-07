@@ -1,4 +1,5 @@
 import { Box, Button, Text, useToast } from "@fidesui/react";
+import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
@@ -13,7 +14,6 @@ import { System } from "~/types/api";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemInformationForm from "./SystemInformationForm";
 import UnmountWarning from "./UnmountWarning";
-import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead

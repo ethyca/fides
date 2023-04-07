@@ -4,15 +4,15 @@ import {
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
-  Text,
 } from "@fidesui/react";
+import { useFormikContext } from "formik";
 import React from "react";
 
 import { DataFlow, System } from "~/types/api";
-import { useFormikContext } from "formik";
 
 type Props = {
   allSystems: System[];

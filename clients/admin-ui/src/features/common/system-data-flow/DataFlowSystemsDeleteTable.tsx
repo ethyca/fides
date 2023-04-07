@@ -3,27 +3,24 @@ import {
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
-  Text,
 } from "@fidesui/react";
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
+import { useFormikContext } from "formik";
 import React from "react";
 
 import { DataFlow, System } from "~/types/api";
-import { useGetAllSystemsQuery } from "~/features/system";
-import { useFormikContext } from "formik";
 
 type Props = {
-  currentSystem: System;
   systems: System[];
   dataFlows: DataFlow[];
   onDataFlowSystemChange: (systems: DataFlow[]) => void;
 };
 
 export const DataFlowSystemsDeleteTable = ({
-  currentSystem,
   systems,
   dataFlows,
   onDataFlowSystemChange,

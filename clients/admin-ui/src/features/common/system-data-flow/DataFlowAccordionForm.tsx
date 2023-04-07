@@ -1,4 +1,3 @@
-import { DataFlow, RoleRegistryEnum, System } from "~/types/api";
 import {
   AccordionButton,
   AccordionIcon,
@@ -14,19 +13,20 @@ import {
   useDisclosure,
   useToast,
 } from "@fidesui/react";
+import { FormGuard } from "common/hooks/useIsAnyFormDirty";
+import { GearLightIcon } from "common/Icon";
+import QuestionTooltip from "common/QuestionTooltip";
+import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
+import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
+import { successToastParams } from "common/toast";
+import { Form, Formik } from "formik";
+import React, { useEffect, useMemo, useState } from "react";
+
 import {
   useGetAllSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system";
-import QuestionTooltip from "common/QuestionTooltip";
-import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
-import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
-import React, { useState, useMemo, useEffect } from "react";
-import { Formik, Form } from "formik";
-
-import { GearLightIcon } from "common/Icon";
-import { successToastParams } from "common/toast";
-import { FormGuard } from "common/hooks/useIsAnyFormDirty";
+import { DataFlow, System } from "~/types/api";
 
 const defaultInitialValues = {
   dataFlowSystems: [] as DataFlow[],
@@ -52,7 +52,7 @@ export const DataFlowAccordionForm = ({
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
 
   const { data } = useGetAllSystemsQuery();
-  const systems = data || [];
+  const systems = useMemo(() => data || [], [data]);
 
   const initialDataFlows = useMemo(() => {
     const dataFlows = isIngress ? system.ingress! : system.egress!;
@@ -78,11 +78,7 @@ export const DataFlowAccordionForm = ({
   };
 
   return (
-    <AccordionItem
-    // _first={{
-    //   borderTop: "unset",
-    // }}
-    >
+    <AccordionItem>
       <AccordionButton
         height="68px"
         paddingLeft={isSystemTab ? 6 : 2}
@@ -142,7 +138,6 @@ export const DataFlowAccordionForm = ({
                   {`Configure ${pluralFlowType}`}
                 </Button>
                 <DataFlowSystemsDeleteTable
-                  currentSystem={system}
                   systems={systems}
                   dataFlows={assignedDataFlow}
                   onDataFlowSystemChange={setAssignedDataFlows}
