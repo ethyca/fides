@@ -1,11 +1,9 @@
 {
-  "name": "fidesops-privacy-center",
+  "name": "privacy-center",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run build:fides-consent",
     "build": "next build",
-    "build:fides-consent": "npm run --workspace=fides-consent build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "lint-staged --diff=main",
@@ -22,9 +20,6 @@
     "build-privacy-portal": "npm run build",
     "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2"
   },
-  "workspaces": [
-    "packages/fides-consent"
-  ],
   "dependencies": {
     "@chakra-ui/react": "^1.8.9",
     "@emotion/react": "^11.10.6",
