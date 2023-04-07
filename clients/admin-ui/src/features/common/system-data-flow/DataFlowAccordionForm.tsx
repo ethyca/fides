@@ -20,7 +20,7 @@ import {
 import QuestionTooltip from "common/QuestionTooltip";
 import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Formik, Form } from "formik";
 
 import { GearLightIcon } from "common/Icon";
@@ -47,23 +47,22 @@ export const DataFlowAccordionForm = ({
   const dataFlowSystemsModal = useDisclosure();
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
 
-  const { data: systems } = useGetAllSystemsQuery(undefined, {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    selectFromResult: ({ data }) => ({
-      data: data ? data.filter((s) => s.fides_key !== system.fides_key) : [],
-    }),
-  });
+  const { data } = useGetAllSystemsQuery();
+  const systems = data || [];
 
   const initialDataFlows = useMemo(() => {
     const dataFlows = isIngress ? system.ingress! : system.egress!;
-    const systemFidesKeys = systems.map((s) => s.fides_key);
+    const systemFidesKeys = systems ? systems.map((s) => s.fides_key) : [];
 
     return dataFlows.filter((df) => systemFidesKeys.includes(df.fides_key));
-  }, [isIngress, system.egress, system.ingress, systems]);
+  }, [isIngress, system, systems]);
 
   const [assignedDataFlow, setAssignedDataFlows] =
     useState<DataFlow[]>(initialDataFlows);
 
+  useEffect(() => {
+    setAssignedDataFlows(initialDataFlows);
+  }, [initialDataFlows]);
   const handleSubmit = async ({ dataFlowSystems }: FormValues) => {
     const updatedSystem = {
       ...system,

@@ -9,11 +9,9 @@ type DataFlowFormProps = {
   system: System;
 };
 
-export const DataFlowAccordion = ({ system }: DataFlowFormProps) => {
-  return (
-    <Accordion allowToggle>
-      <DataFlowAccordionForm system={system} isIngress />
-      <DataFlowAccordionForm system={system} />
-    </Accordion>
-  );
-};
+export const DataFlowAccordion = ({ system }: DataFlowFormProps) => (
+  <Accordion allowToggle>
+    <DataFlowAccordionForm system={system} isIngress />
+    <DataFlowAccordionForm system={system} />
+  </Accordion>
+);

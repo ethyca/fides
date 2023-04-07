@@ -23,8 +23,8 @@ import {
 import { PrivacyDeclaration } from "~/types/api/models/PrivacyDeclaration";
 import { System } from "~/types/api/models/System";
 
-import SystemInfo from "./SystemInfo";
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
+import SystemInfo from "./SystemInfo";
 
 type DatamapDrawerProps = {
   selectedSystemId?: string;
