@@ -42,9 +42,9 @@ def get_all_connection_types(
     erasure: Optional[bool] = None,
 ) -> AbstractPage[ConnectionSystemTypeMap]:
     """
-    Returns a list of connection options in Fidesops - includes only database and saas options here.
+    Returns a list of connection options in Fides - includes only database and saas options here.
 
-    Query params for types of requests suppported - `consent`, `access` and `erasure` - act as filters.
+    Query params for types of requests supported - `consent`, `access` and `erasure` - act as filters.
     If set to `true`, only connections that support the specified type of request will be returned.
     If no filters are specified, then no filtering is performed.
     When applied together, the filters act as a union: result sets are additive.
