@@ -45,6 +45,10 @@ The types of changes are:
 
 - Nox commands for git tagging to support feature branch builds [#2979](https://github.com/ethyca/fides/pull/2979)
 
+### Removed
+
+* Remove the `unknown` state for generated datasets displaying on fidesplus [#2957](https://github.com/ethyca/fides/pull/2957)
+
 ## [2.10.0](https://github.com/ethyca/fides/compare/2.9.2...2.10.0)
 
 ### Added
