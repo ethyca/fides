@@ -1,9 +1,12 @@
+import { stubPlus } from "cypress/support/stubs";
+
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Privacy notices", () => {
   beforeEach(() => {
     cy.login();
+    stubPlus(true);
   });
 
   describe("permissions", () => {
