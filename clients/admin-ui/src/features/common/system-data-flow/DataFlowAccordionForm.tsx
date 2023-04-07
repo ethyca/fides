@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionPanel,
   Button,
+  ButtonGroup,
   Flex,
   Spacer,
   Stack,
@@ -108,7 +109,7 @@ export const DataFlowAccordionForm = ({
           data-testid="selected"
         >
           <Formik initialValues={defaultInitialValues} onSubmit={handleSubmit}>
-            {({ values, isSubmitting, dirty }) => (
+            {({ values, isSubmitting, dirty, resetForm }) => (
               <Form>
                 <Button
                   colorScheme="primary"
@@ -126,16 +127,32 @@ export const DataFlowAccordionForm = ({
                   dataFlows={assignedDataFlow}
                   onDataFlowSystemChange={setAssignedDataFlows}
                 />
-                <Button
-                  colorScheme="primary"
-                  type="submit"
-                  isLoading={isSubmitting}
-                  disabled={!dirty && assignedDataFlow === initialDataFlows}
-                  data-testid="save-btn"
-                >
-                  Save
-                </Button>
-                {isSubmitting ? "SUbMITTING" : null}
+
+                <ButtonGroup marginTop={6}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!dirty && assignedDataFlow === initialDataFlows}
+                    onClick={() => {
+                      setAssignedDataFlows(initialDataFlows);
+                      resetForm({
+                        values: { dataFlowSystems: initialDataFlows },
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    colorScheme="primary"
+                    type="submit"
+                    isLoading={isSubmitting}
+                    disabled={!dirty && assignedDataFlow === initialDataFlows}
+                    data-testid="save-btn"
+                  >
+                    Save
+                  </Button>
+                </ButtonGroup>
                 {/* By conditionally rendering the modal, we force it to reset its state
                 whenever it opens */}
                 {dataFlowSystemsModal.isOpen ? (
