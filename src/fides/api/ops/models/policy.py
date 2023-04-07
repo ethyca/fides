@@ -50,6 +50,10 @@ class ActionType(str, EnumType):
     update = "update"
 
 
+# action types we actively support in policies/requests
+SUPPORTED_ACTION_TYPES = {ActionType.access, ActionType.consent, ActionType.erasure}
+
+
 class DrpAction(EnumType):
     """
     Enum to hold valid DRP actions. For more details, see:

@@ -282,38 +282,3 @@ export const findActiveNav = ({
     path: activePath,
   };
 };
-
-/**
- * Similar to findActiveNav, but using NavConfig instead of a NavGroup
- * This may not be needed once we remove the progressive nav, since then we can
- * just check what navs are available (they would all be restricted by scope)
- */
-export const canAccessRoute = ({
-  path,
-  userScopes,
-}: {
-  path: string;
-  userScopes: ScopeRegistryEnum[];
-}) => {
-  let childMatch: NavConfigRoute | undefined;
-  const groupMatch = NAV_CONFIG.find((group) => {
-    childMatch = group.routes.find((child) =>
-      child.exact ? path === child.path : path.startsWith(child.path)
-    );
-    return childMatch;
-  });
-
-  if (!(groupMatch && childMatch)) {
-    return false;
-  }
-
-  // Special case of empty scopes
-  if (childMatch.scopes.length === 0) {
-    return true;
-  }
-
-  const scopeOverlaps = childMatch.scopes.filter((scope) =>
-    userScopes.includes(scope)
-  );
-  return scopeOverlaps.length > 0;
-};

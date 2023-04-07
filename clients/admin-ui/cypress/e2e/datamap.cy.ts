@@ -1,9 +1,10 @@
-import { stubDatamap } from "cypress/support/stubs";
+import { stubDatamap, stubPlus } from "cypress/support/stubs";
 
 describe("Datamap table and spatial view", () => {
   beforeEach(() => {
     cy.login();
     stubDatamap();
+    stubPlus(true);
   });
 
   it("Can render only render one view at a time", () => {
