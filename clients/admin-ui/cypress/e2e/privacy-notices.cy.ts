@@ -37,6 +37,7 @@ describe("Privacy notices", () => {
         (role) => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_NOTICES_ROUTE);
+          cy.wait("@getNotices");
           cy.getByTestId("row-Essential").click();
           // we should still be on the same page
           cy.getByTestId("privacy-notice-detail-page").should("not.exist");
@@ -50,11 +51,24 @@ describe("Privacy notices", () => {
         (role) => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_NOTICES_ROUTE);
+          cy.wait("@getNotices");
           cy.getByTestId("toggle-Enable")
             .first()
             .within(() => {
               cy.get("span").should("have.attr", "data-disabled");
             });
+        }
+      );
+    });
+
+    it("viewers and approvers cannot add notices", () => {
+      [RoleRegistryEnum.VIEWER, RoleRegistryEnum.VIEWER_AND_APPROVER].forEach(
+        (role) => {
+          cy.assumeRole(role);
+          cy.visit(PRIVACY_NOTICES_ROUTE);
+          cy.wait("@getNotices");
+          cy.getByTestId("privacy-notices-page");
+          cy.getByTestId("add-privacy-notice-btn").should("not.exist");
         }
       );
     });

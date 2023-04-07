@@ -18,7 +18,7 @@ import { Column, useSortBy, useTable } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
-import { useHasPermission } from "~/features/common/Restrict";
+import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
 
 import {
@@ -232,9 +232,15 @@ const PrivacyNoticesTable = () => {
         <Tfoot backgroundColor="gray.50">
           <Tr>
             <Td colSpan={columns.length} px={4} py={3.5}>
-              <Button size="xs" colorScheme="primary">
-                Add a privacy notice +
-              </Button>
+              <Restrict scopes={[ScopeRegistryEnum.PRIVACY_NOTICE_CREATE]}>
+                <Button
+                  size="xs"
+                  colorScheme="primary"
+                  data-testid="add-privacy-notice-btn"
+                >
+                  Add a privacy notice +
+                </Button>
+              </Restrict>
             </Td>
           </Tr>
         </Tfoot>
