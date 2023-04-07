@@ -27,6 +27,9 @@ require_manual_request_approval = true
 server_host = "fides"
 server_port = 8080
 
+[credentials]
+app_postgres = {connection_string="postgresql+psycopg2://postgres:postgres@fides-db:5432/fides"}
+
 [user]
 analytics_opt_out = false
 username = "root_user"
