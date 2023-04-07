@@ -1,6 +1,10 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  ADD_SYSTEMS_ROUTE,
+  DATAMAP_ROUTE,
+  PRIVACY_NOTICES_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Routes", () => {
@@ -62,6 +66,23 @@ describe("Routes", () => {
         cy.visit("/privacy-requests");
         cy.getByTestId("privacy-requests");
       });
+    });
+  });
+
+  describe("plus", () => {
+    it("non-plus cannot access plus routes", () => {
+      stubPlus(false);
+      cy.visit(DATAMAP_ROUTE);
+      cy.getByTestId("home-content");
+      cy.getByTestId("cytoscape-graph").should("not.exist");
+      cy.visit(PRIVACY_NOTICES_ROUTE);
+      cy.getByTestId("home-content");
+    });
+
+    it("plus can access plus routes", () => {
+      stubPlus(true);
+      cy.visit(DATAMAP_ROUTE);
+      cy.getByTestId("cytoscape-graph");
     });
   });
 });

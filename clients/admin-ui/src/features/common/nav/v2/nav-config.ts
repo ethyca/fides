@@ -1,3 +1,4 @@
+import { FlagNames } from "~/features/common/features";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import * as routes from "./routes";
@@ -7,7 +8,7 @@ export type NavConfigRoute = {
   path: string;
   exact?: boolean;
   requiresPlus?: boolean;
-  requiresFlag?: string;
+  requiresFlag?: FlagNames;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
 };
@@ -47,6 +48,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
         requiresFlag: "privacyRequestsConfiguration",
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
+      },
+      {
+        title: "Privacy notices",
+        path: routes.PRIVACY_NOTICES_ROUTE,
+        requiresFlag: "privacyNotices",
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
     ],
   },
@@ -273,39 +281,4 @@ export const findActiveNav = ({
     ...groupMatch,
     path: activePath,
   };
-};
-
-/**
- * Similar to findActiveNav, but using NavConfig instead of a NavGroup
- * This may not be needed once we remove the progressive nav, since then we can
- * just check what navs are available (they would all be restricted by scope)
- */
-export const canAccessRoute = ({
-  path,
-  userScopes,
-}: {
-  path: string;
-  userScopes: ScopeRegistryEnum[];
-}) => {
-  let childMatch: NavConfigRoute | undefined;
-  const groupMatch = NAV_CONFIG.find((group) => {
-    childMatch = group.routes.find((child) =>
-      child.exact ? path === child.path : path.startsWith(child.path)
-    );
-    return childMatch;
-  });
-
-  if (!(groupMatch && childMatch)) {
-    return false;
-  }
-
-  // Special case of empty scopes
-  if (childMatch.scopes.length === 0) {
-    return true;
-  }
-
-  const scopeOverlaps = childMatch.scopes.filter((scope) =>
-    userScopes.includes(scope)
-  );
-  return scopeOverlaps.length > 0;
 };
