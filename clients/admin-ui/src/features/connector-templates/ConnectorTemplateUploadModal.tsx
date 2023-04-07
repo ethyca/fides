@@ -15,8 +15,9 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery"
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 
-import { getErrorMessage } from "../common/helpers";
-import { errorToastParams, successToastParams } from "../common/toast";
+import { getErrorMessage } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+
 import { useRegisterConnectorTemplateMutation } from "./connector-template.slice";
 
 type RequestModalProps = {

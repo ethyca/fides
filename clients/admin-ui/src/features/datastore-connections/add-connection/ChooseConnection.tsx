@@ -27,9 +27,9 @@ import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
 import Restrict from "~/features/common/Restrict";
+import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ScopeRegistryEnum } from "~/types/api";
 
-import ConnectorTemplateUploadModal from "../../connector-templates/ConnectorTemplateUploadModal";
 import Breadcrumb from "./Breadcrumb";
 import ConnectionTypeFilter from "./ConnectionTypeFilter";
 import ConnectionTypeList from "./ConnectionTypeList";
@@ -114,7 +114,7 @@ const ChooseConnection: React.FC = () => {
           <Button
             colorScheme="primary"
             type="submit"
-            width="20%"
+            minWidth="auto"
             data-testid="upload-btn"
             size="sm"
             onClick={handleUploadButtonClick}
