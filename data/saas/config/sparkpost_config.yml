@@ -1,0 +1,70 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Sparkpost SaaS Config
+  type: sparkpost
+  description: A sample schema representing the Sparkpost connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <api_key>
+        password: '123'
+
+  test_request:
+    method: GET
+    path: /api/v1/recipient-lists
+
+  endpoints:
+    - name: receipient
+      requests:
+        read:
+          method: GET
+          path: /api/v1/recipient-lists/<all_receipients_id>?show_recipients=true
+          data_path: results.recipients
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: address.email
+                value:
+                  identity: email
+                exact: false
+                case_sensitive: false
+          param_values:
+            - name: all_receipients_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: all_receipients.id
+                  direction: from
+            - name: placeholder
+              identity: email
+
+        delete:
+          method: POST
+          path: /api/v1/data-privacy/rtbf-request
+          body: |
+            {
+              "recipients": [
+                "<email>"
+              ],
+              "include_subaccounts": false
+            }
+          param_values:
+            - name: email
+              identity: email
+    - name: all_receipients
+      requests:
+        read:
+          method: GET
+          path: /api/v1/recipient-lists
+          data_path: results
+          param_values:
+              - name: placeholder
+                identity: email
