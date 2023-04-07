@@ -49,7 +49,7 @@ export const MultiTagCell = ({
           textTransform="uppercase"
           mb={2}
         >
-          {v}
+          {v.replace(/_/g, "-")}
         </Tag>
       ))}
     </Box>
