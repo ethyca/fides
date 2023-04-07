@@ -57,11 +57,6 @@ describe("User management", () => {
         cy.visit("/user-management");
         cy.wait("@getAllUsers");
 
-        // try via the menu button
-        cy.getByTestId(`row-${USER_1_ID}`).within(() => {
-          cy.getByTestId("menu-btn").should("not.exist");
-        });
-
         // try via clicking the row
         cy.getByTestId(`row-${USER_1_ID}`).click();
         cy.url().should("not.contain", "profile");
@@ -211,10 +206,7 @@ describe("User management", () => {
     it("can delete a user via the menu", () => {
       cy.visit("/user-management");
       cy.getByTestId(`row-${USER_1_ID}`).within(() => {
-        cy.getByTestId("menu-btn").click();
-      });
-      cy.getByTestId(`menu-${USER_1_ID}`).within(() => {
-        cy.getByTestId("delete-btn").click();
+        cy.getByTestId("delete-user-btn").click();
       });
       cy.getByTestId("delete-user-modal");
       cy.getByTestId("submit-btn").should("be.disabled");
