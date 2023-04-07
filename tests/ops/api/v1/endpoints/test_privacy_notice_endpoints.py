@@ -994,38 +994,6 @@ class TestGetPrivacyNoticesByDataUse:
                             version=1.0,
                         )
                     ],
-                    "provide": [
-                        PrivacyNoticeResponse(
-                            id=f"{PRIVACY_NOTICE_NAME}-2",
-                            name=f"{PRIVACY_NOTICE_NAME}-2",
-                            regions=[
-                                PrivacyNoticeRegion.us_ca,
-                            ],
-                            consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["provide"],
-                            enforcement_level=EnforcementLevel.system_wide,
-                            created_at=NOW,
-                            updated_at=NOW,
-                            version=1.0,
-                        )
-                    ],
-                    "provide.service": [],
-                    "provide.service.operations": [
-                        PrivacyNoticeResponse(
-                            id=f"{PRIVACY_NOTICE_NAME}-3",
-                            name=f"{PRIVACY_NOTICE_NAME}-3",
-                            regions=[
-                                PrivacyNoticeRegion.us_co,
-                            ],
-                            consent_mechanism=ConsentMechanism.opt_in,
-                            data_uses=["provide.service.operations"],
-                            enforcement_level=EnforcementLevel.system_wide,
-                            created_at=NOW,
-                            updated_at=NOW,
-                            version=1.0,
-                        )
-                    ],
-                    "provide.service.operations.support": [],
                     "provide.service.operations.support.optimization": [
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-4",
@@ -1041,7 +1009,33 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
-                        )
+                        ),
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-3",
+                            name=f"{PRIVACY_NOTICE_NAME}-3",
+                            regions=[
+                                PrivacyNoticeRegion.us_co,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["provide.service.operations"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        ),
+                        PrivacyNoticeResponse(
+                            id=f"{PRIVACY_NOTICE_NAME}-2",
+                            name=f"{PRIVACY_NOTICE_NAME}-2",
+                            regions=[
+                                PrivacyNoticeRegion.us_ca,
+                            ],
+                            consent_mechanism=ConsentMechanism.opt_in,
+                            data_uses=["provide"],
+                            enforcement_level=EnforcementLevel.system_wide,
+                            created_at=NOW,
+                            updated_at=NOW,
+                            version=1.0,
+                        ),
                     ],
                 },
             ),

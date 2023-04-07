@@ -102,12 +102,21 @@ def get_privacy_notice_by_data_use(*, db: Session = Depends(deps.get_db)) -> Dat
     in the map, with empty lists.
     """
 
-    # get all data uses associated with a system, and seed our response map
-    # with those data uses as keys
-    system_data_uses = System.get_system_data_uses(db, include_parents=True)
+    # get all the data uses associated with a system, and seed our response map
+    # with those data uses as keys. no parents returned here since our response map
+    # will only have keys corresponding to the the specific data uses associated with systems
+    system_data_uses = System.get_system_data_uses(db, include_parents=False)
     notices_by_data_use: DataUseMap = {data_use: [] for data_use in system_data_uses}
+    # create a lookup table of parent data uses tied to specific data uses for easy lookups later
+    data_uses_by_parents: dict[str, str] = {
+        parent: data_use
+        for data_use in system_data_uses
+        for parent in DataUse.get_parent_uses(data_use)
+    }
 
-    # get all notices that are not disabled and share a data use with a system
+    # get all notices that are not disabled and share a data use with a system.
+    # this includes notices that overlap with parents of data uses associated with systems
+    # since those notices do apply to those systems at execution time
     notice_query = generate_notice_query(
         db=db, show_disabled=False, systems_applicable=True
     )
@@ -116,8 +125,11 @@ def get_privacy_notice_by_data_use(*, db: Session = Depends(deps.get_db)) -> Dat
     # if they don't exist already - the data use is not associated with a system
     for notice in notice_query.all():
         for data_use in notice.data_uses:
-            if data_use in notices_by_data_use:
-                notices_by_data_use[data_use].append(notice)
+            # lookup in our table of parent data uses to get the specific data use
+            # that's tied to a system
+            system_data_use = data_uses_by_parents.get(data_use, None)
+            if system_data_use in notices_by_data_use:
+                notices_by_data_use[system_data_use].append(notice)
 
     return notices_by_data_use
 
