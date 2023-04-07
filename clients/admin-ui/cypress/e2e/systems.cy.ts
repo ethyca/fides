@@ -22,7 +22,7 @@ describe("System management page", () => {
     cy.getByTestId("system-management");
   });
 
-  describe.skip("Can view data", () => {
+  describe("Can view data", () => {
     beforeEach(() => {
       cy.visit(SYSTEM_ROUTE);
     });
@@ -53,7 +53,7 @@ describe("System management page", () => {
     });
   });
 
-  describe.skip("Can create a new system", () => {
+  describe("Can create a new system", () => {
     beforeEach(() => {
       stubSystemCrud();
     });
@@ -208,7 +208,7 @@ describe("System management page", () => {
     });
   });
 
-  describe.skip("Can delete a system", () => {
+  describe("Can delete a system", () => {
     beforeEach(() => {
       stubSystemCrud();
     });
@@ -251,7 +251,7 @@ describe("System management page", () => {
     });
   });
 
-  describe.skip("Can edit a system", () => {
+  describe("Can edit a system", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
@@ -432,7 +432,7 @@ describe("System management page", () => {
     });
   });
 
-  describe.skip("Data uses", () => {
+  describe("Data uses", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
