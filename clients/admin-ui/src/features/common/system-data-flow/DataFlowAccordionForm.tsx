@@ -26,6 +26,7 @@ import { Formik, Form } from "formik";
 
 import { GearLightIcon } from "common/Icon";
 import { successToastParams } from "common/toast";
+import { FormGuard } from "common/hooks/useIsAnyFormDirty";
 
 const defaultInitialValues = {
   dataFlowSystems: [] as DataFlow[],
@@ -109,8 +110,12 @@ export const DataFlowAccordionForm = ({
           data-testid="selected"
         >
           <Formik initialValues={defaultInitialValues} onSubmit={handleSubmit}>
-            {({ values, isSubmitting, dirty, resetForm }) => (
+            {({ isSubmitting, dirty, resetForm }) => (
               <Form>
+                <FormGuard
+                  id={`${system.fides_key}:${flowType}`}
+                  name={`${flowType} Data Flow`}
+                />
                 <Button
                   colorScheme="primary"
                   size="xs"
