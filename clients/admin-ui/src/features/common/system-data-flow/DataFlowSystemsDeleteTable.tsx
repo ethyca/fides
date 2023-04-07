@@ -16,26 +16,21 @@ import { useGetAllSystemsQuery } from "~/features/system";
 import { useFormikContext } from "formik";
 
 type Props = {
+  currentSystem: System;
+  systems: System[];
   dataFlows: DataFlow[];
   onDataFlowSystemChange: (systems: DataFlow[]) => void;
 };
 
 export const DataFlowSystemsDeleteTable = ({
+  currentSystem,
+  systems,
   dataFlows,
   onDataFlowSystemChange,
 }: Props) => {
   const { setFieldValue } = useFormikContext();
-  const { data: systems } = useGetAllSystemsQuery(undefined, {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    selectFromResult: ({ data }) => {
-      const dataFlowKeys = dataFlows.map((f) => f.fides_key);
-      return {
-        data: data
-          ? data.filter((s) => dataFlowKeys.indexOf(s.fides_key) > -1)
-          : [],
-      };
-    },
-  });
+
+  const dataFlowKeys = dataFlows.map((f) => f.fides_key);
 
   const onDelete = (dataFlow: System) => {
     const updatedDataFlows = dataFlows.filter(
@@ -54,30 +49,32 @@ export const DataFlowSystemsDeleteTable = ({
         </Tr>
       </Thead>
       <Tbody>
-        {systems.map((system) => (
-          <Tr
-            key={system.fides_key}
-            _hover={{ bg: "gray.50" }}
-            data-testid={`row-${system.fides_key}`}
-          >
-            <Td>
-              <Text fontSize="xs" lineHeight={4} fontWeight="medium">
-                {system.name}
-              </Text>
-            </Td>
-            <Td textAlign="end">
-              <IconButton
-                background="gray.50"
-                aria-label="Unassign data flow from system"
-                icon={<TrashCanSolidIcon />}
-                variant="outline"
-                size="sm"
-                onClick={() => onDelete(system)}
-                data-testid="unassign-btn"
-              />
-            </Td>
-          </Tr>
-        ))}
+        {systems
+          .filter((system) => dataFlowKeys.includes(system.fides_key))
+          .map((system) => (
+            <Tr
+              key={system.fides_key}
+              _hover={{ bg: "gray.50" }}
+              data-testid={`row-${system.fides_key}`}
+            >
+              <Td>
+                <Text fontSize="xs" lineHeight={4} fontWeight="medium">
+                  {system.name}
+                </Text>
+              </Td>
+              <Td textAlign="end">
+                <IconButton
+                  background="gray.50"
+                  aria-label="Unassign data flow from system"
+                  icon={<TrashCanSolidIcon />}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDelete(system)}
+                  data-testid="unassign-btn"
+                />
+              </Td>
+            </Tr>
+          ))}
       </Tbody>
     </Table>
   );

@@ -20,26 +20,26 @@ import {
 import { ChangeEvent, useMemo, useState } from "react";
 
 import SearchBar from "common/SearchBar";
-import { useGetAllSystemsQuery } from "~/features/system";
 import { SEARCH_FILTER } from "~/features/system/SystemsManagement";
-import { DataFlow } from "~/types/api";
+import { DataFlow, System } from "~/types/api";
 
-import DataFlowSystemsTable from "./DataFlowSystemsTable";
 import { useFormikContext } from "formik";
+import DataFlowSystemsTable from "./DataFlowSystemsTable";
 
 type Props = {
+  systems: System[];
   dataFlowSystems: DataFlow[];
   onDataFlowSystemChange: (systems: DataFlow[]) => void;
 };
 
 const DataFlowSystemsModal = ({
+  systems,
   isOpen,
   onClose,
   dataFlowSystems,
   onDataFlowSystemChange,
 }: Pick<ModalProps, "isOpen" | "onClose"> & Props) => {
   const { setFieldValue } = useFormikContext();
-  const { data: allSystems } = useGetAllSystemsQuery();
   const [searchFilter, setSearchFilter] = useState("");
   const [selectedDataFlows, setSelectedDataFlows] =
     useState<DataFlow[]>(dataFlowSystems);
@@ -49,19 +49,19 @@ const DataFlowSystemsModal = ({
     onClose();
   };
 
-  const emptySystems = !allSystems || allSystems.length === 0;
+  const emptySystems = systems.length === 0;
 
   const filteredSystems = useMemo(() => {
-    if (!allSystems) {
+    if (!systems) {
       return [];
     }
 
-    return allSystems.filter((s) => SEARCH_FILTER(s, searchFilter));
-  }, [allSystems, searchFilter]);
+    return systems.filter((s) => SEARCH_FILTER(s, searchFilter));
+  }, [systems, searchFilter]);
 
   const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
-    if (checked && allSystems) {
+    if (checked && systems) {
       const updatedDataFlows = filteredSystems.map((fs) => ({
         fides_key: fs.fides_key,
         type: "system",

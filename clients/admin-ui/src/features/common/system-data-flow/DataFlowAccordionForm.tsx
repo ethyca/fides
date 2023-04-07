@@ -20,7 +20,7 @@ import {
 import QuestionTooltip from "common/QuestionTooltip";
 import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Formik, Form } from "formik";
 
 import { GearLightIcon } from "common/Icon";
@@ -42,29 +42,29 @@ export const DataFlowAccordionForm = ({
   isIngress,
 }: DataFlowAccordionItemProps) => {
   const toast = useToast();
-  const initialDataFlows = isIngress ? system.ingress! : system.egress!;
   const flowType = isIngress ? "Source" : "Destination";
   const pluralFlowType = `${flowType}s`;
   const dataFlowSystemsModal = useDisclosure();
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
-  // const { data: initialSystems } = useGetAllSystemsQuery(undefined, {
-  //   // eslint-disable-next-line @typescript-eslint/no-shadow
-  //   selectFromResult: ({ data }) => {
-  //     const dataFlowKeys = dataFlows.map((f) => f.fides_key);
-  //     return {
-  //       data: data
-  //         ? data.filter((s) => dataFlowKeys.indexOf(s.fides_key) > -1)
-  //         : [],
-  //     };
-  //   },
-  // });
+
+  const { data: systems } = useGetAllSystemsQuery(undefined, {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    selectFromResult: ({ data }) => ({
+      data: data ? data.filter((s) => s.fides_key !== system.fides_key) : [],
+    }),
+  });
+
+  const initialDataFlows = useMemo(() => {
+    const dataFlows = isIngress ? system.ingress! : system.egress!;
+    const systemFidesKeys = systems.map((s) => s.fides_key);
+
+    return dataFlows.filter((df) => systemFidesKeys.includes(df.fides_key));
+  }, [isIngress, system.egress, system.ingress, systems]);
 
   const [assignedDataFlow, setAssignedDataFlows] =
     useState<DataFlow[]>(initialDataFlows);
 
   const handleSubmit = async ({ dataFlowSystems }: FormValues) => {
-    // const updatedDataFlowKeys = dataFlowSystems.map((s)=> s.fides_key)
-    // const updatedDataFlows = assignedDataFlow.filter((df)=> updatedDataFlowKeys.indexOf(df.fides_key)> -1)
     const updatedSystem = {
       ...system,
       ingress: isIngress ? dataFlowSystems : system.ingress,
@@ -122,6 +122,8 @@ export const DataFlowAccordionForm = ({
                   {`Configure ${pluralFlowType}`}
                 </Button>
                 <DataFlowSystemsDeleteTable
+                  currentSystem={system}
+                  systems={systems}
                   dataFlows={assignedDataFlow}
                   onDataFlowSystemChange={setAssignedDataFlows}
                 />
@@ -139,6 +141,7 @@ export const DataFlowAccordionForm = ({
                 whenever it opens */}
                 {dataFlowSystemsModal.isOpen ? (
                   <DataFlowSystemsModal
+                    systems={systems}
                     isOpen={dataFlowSystemsModal.isOpen}
                     onClose={dataFlowSystemsModal.onClose}
                     dataFlowSystems={assignedDataFlow}
