@@ -177,6 +177,7 @@ export const DataFlowAccordionForm = ({
                     onClose={dataFlowSystemsModal.onClose}
                     dataFlowSystems={assignedDataFlow}
                     onDataFlowSystemChange={setAssignedDataFlows}
+                    flowType={flowType}
                   />
                 ) : null}
               </Form>

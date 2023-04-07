@@ -30,6 +30,7 @@ type Props = {
   systems: System[];
   dataFlowSystems: DataFlow[];
   onDataFlowSystemChange: (systems: DataFlow[]) => void;
+  flowType: string;
 };
 
 const DataFlowSystemsModal = ({
@@ -38,6 +39,7 @@ const DataFlowSystemsModal = ({
   onClose,
   dataFlowSystems,
   onDataFlowSystemChange,
+  flowType,
 }: Pick<ModalProps, "isOpen" | "onClose"> & Props) => {
   const { setFieldValue } = useFormikContext();
   const [searchFilter, setSearchFilter] = useState("");
@@ -89,7 +91,9 @@ const DataFlowSystemsModal = ({
           justifyContent="space-between"
           alignItems="center"
         >
-          <Text>Assign systems</Text>
+          <Text fontSize="2xl" lineHeight={8} fontWeight="semibold">
+            Configure {flowType.toLocaleLowerCase()} systems
+          </Text>
           <Badge bg="green.500" color="white" px={1}>
             Assigned to {selectedDataFlows.length} systems
           </Badge>
@@ -101,7 +105,7 @@ const DataFlowSystemsModal = ({
             <Stack spacing={4}>
               <Flex justifyContent="space-between">
                 <Text fontSize="sm" flexGrow={1} fontWeight="medium">
-                  Assign systems in your organization to this user
+                  Add or remove destination systems from your data map
                 </Text>
                 <Box>
                   <FormControl display="flex" alignItems="center">
