@@ -17,9 +17,10 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Column, useSortBy, useTable } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
-import { PrivacyNoticeResponse } from "~/types/api";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { useHasPermission } from "~/features/common/Restrict";
+import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
 
-import { PRIVACY_NOTICES_ROUTE } from "../common/nav/v2/routes";
 import {
   DateCell,
   MechanismCell,
@@ -59,6 +60,11 @@ const PrivacyNoticesTable = () => {
       privacyNotices.filter((pn) => !pn.disabled).map((pn) => pn.id)
     );
   }, [privacyNotices]);
+
+  // Permissions
+  const userCanUpdate = useHasPermission([
+    ScopeRegistryEnum.PRIVACY_NOTICE_UPDATE,
+  ]);
 
   const handleToggle = useCallback(
     (privacyNoticeId: PrivacyNoticeTableData["id"]) => {
@@ -187,13 +193,19 @@ const PrivacyNoticesTable = () => {
             prepareRow(row);
             const { key: rowKey, ...rowProps } = row.getRowProps();
             const onClick = () => {
-              router.push(`${PRIVACY_NOTICES_ROUTE}/${row.original.id}`);
+              if (userCanUpdate) {
+                router.push(`${PRIVACY_NOTICES_ROUTE}/${row.original.id}`);
+              }
             };
             return (
               <Tr
                 key={rowKey}
                 {...rowProps}
-                _hover={{ backgroundColor: "gray.50", cursor: "pointer" }}
+                _hover={
+                  userCanUpdate
+                    ? { backgroundColor: "gray.50", cursor: "pointer" }
+                    : undefined
+                }
                 data-testid={`row-${row.original.name}`}
               >
                 {row.cells.map((cell) => {

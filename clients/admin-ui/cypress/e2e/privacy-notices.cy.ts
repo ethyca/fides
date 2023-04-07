@@ -6,7 +6,7 @@ import { RoleRegistryEnum } from "~/types/api";
 describe("Privacy notices", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/privacy-notice/*", {
+    cy.intercept("GET", "/api/v1/privacy-notice*", {
       fixture: "privacy-notices/list.json",
     }).as("getNotices");
     stubPlus(true);
@@ -33,28 +33,33 @@ describe("Privacy notices", () => {
     });
 
     it("viewers and approvers cannot click into a notice to edit", () => {
-      [RoleRegistryEnum.VIEWER, RoleRegistryEnum.APPROVER].forEach((role) => {
-        cy.assumeRole(role);
-        cy.visit(PRIVACY_NOTICES_ROUTE);
-        cy.getByTestId("row-Essential").click();
-        // we should still be on the same page
-        cy.getByTestId("privacy-notice-detail-page").should("not.exist");
-        cy.getByTestId("privacy-notices-page");
-      });
+      [RoleRegistryEnum.VIEWER, RoleRegistryEnum.VIEWER_AND_APPROVER].forEach(
+        (role) => {
+          cy.assumeRole(role);
+          cy.visit(PRIVACY_NOTICES_ROUTE);
+          cy.getByTestId("row-Essential").click();
+          // we should still be on the same page
+          cy.getByTestId("privacy-notice-detail-page").should("not.exist");
+          cy.getByTestId("privacy-notices-page");
+        }
+      );
     });
 
     it("viewers and approvers cannot toggle the enable toggle", () => {
-      [RoleRegistryEnum.VIEWER, RoleRegistryEnum.APPROVER].forEach((role) => {
-        cy.assumeRole(role);
-        cy.visit(PRIVACY_NOTICES_ROUTE);
-        cy.getByTestId("toggle-Enable").should("be.disabled");
-      });
+      [RoleRegistryEnum.VIEWER, RoleRegistryEnum.VIEWER_AND_APPROVER].forEach(
+        (role) => {
+          cy.assumeRole(role);
+          cy.visit(PRIVACY_NOTICES_ROUTE);
+          cy.getByTestId("toggle-Enable").should("be.disabled");
+        }
+      );
     });
   });
 
   describe("table", () => {
     beforeEach(() => {
       cy.visit(PRIVACY_NOTICES_ROUTE);
+      cy.wait("@getNotices");
     });
 
     it("should render a row for each privacy notice", () => {
