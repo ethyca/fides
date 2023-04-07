@@ -194,7 +194,6 @@ const PrivacyNoticesTable = () => {
                 key={rowKey}
                 {...rowProps}
                 _hover={{ backgroundColor: "gray.50", cursor: "pointer" }}
-                backgroundColor={row.values.disabled ? "gray.50" : undefined}
                 data-testid={`row-${row.original.name}`}
               >
                 {row.cells.map((cell) => {
