@@ -109,10 +109,11 @@ const PrivacyNoticesTable = () => {
         Header: "Enable",
         accessor: "enabled",
         onToggle: handleToggle,
+        disabled: !userCanUpdate,
         Cell: ToggleCell,
       },
     ],
-    [handleToggle]
+    [handleToggle, userCanUpdate]
   );
 
   // Create the data object as the PrivacyNoticeResponse + a UI only "enabled" field

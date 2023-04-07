@@ -50,7 +50,11 @@ describe("Privacy notices", () => {
         (role) => {
           cy.assumeRole(role);
           cy.visit(PRIVACY_NOTICES_ROUTE);
-          cy.getByTestId("toggle-Enable").should("be.disabled");
+          cy.getByTestId("toggle-Enable")
+            .first()
+            .within(() => {
+              cy.get("span").should("have.attr", "data-disabled");
+            });
         }
       );
     });
