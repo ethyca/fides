@@ -37,6 +37,7 @@ The types of changes are:
 * Tie together save states for user permissions and systems [#2913](https://github.com/ethyca/fides/pull/2913)
 * Removing payment types from Stripe connector params [#2915](https://github.com/ethyca/fides/pull/2915)
 * Change Privacy Center email placeholder text [#2935](https://github.com/ethyca/fides/pull/2935)
+* Bumped supported Python versions to 3.10.10, 3.9.16, and 3.8.14 [#2936](https://github.com/ethyca/fides/pull/2936)
 
 ### Fixed
 
