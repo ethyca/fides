@@ -126,10 +126,10 @@ def cypress_tests(session: Session) -> None:
 @nox_session()
 def e2e_test(session: Session) -> None:
     """
-    Spins up the test_env session and runs Cypress E2E tests against it.
+    Spins up the fides_env session and runs Cypress E2E tests against it.
     """
     session.log("Running end-to-end tests...")
-    session.notify("fides_env(test)", posargs=["test"])
+    session.notify("fides_env(test)", posargs=["keep_alive"])
     session.notify("cypress_tests")
     session.notify("teardown")
 

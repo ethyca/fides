@@ -188,7 +188,7 @@ def test_database_url_test_mode_disabled() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDES__CONFIG_PATH": "src/fides/data/test_env/fides.test_env.toml",
+        "FIDES__CONFIG_PATH": "src/fides/data/sample_project/fides.toml",
     },
     clear=True,
 )
