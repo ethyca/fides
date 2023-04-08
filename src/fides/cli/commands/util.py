@@ -1,6 +1,8 @@
 """Contains all of the Utility-type CLI commands for fides."""
 from datetime import datetime, timezone
+from os import environ
 from subprocess import CalledProcessError
+from typing import Optional
 
 import rich_click as click
 
@@ -123,8 +125,22 @@ def deploy(ctx: click.Context) -> None:
     is_flag=True,
     help="Disable the initialization of the Fides CLI, to run in headless mode.",
 )
+@click.option(
+    "--env-file",
+    type=click.Path(exists=True),
+    help="Provide an ENV file to the Fides container to customize settings.",
+)
+@click.option(
+    "--image",
+    type=str,
+    help="Use a custom image instead of the default (ethyca/fides).",
+)
 def up(
-    ctx: click.Context, no_pull: bool = False, no_init: bool = False
+    ctx: click.Context,
+    no_pull: bool = False,
+    no_init: bool = False,
+    env_file: Optional[click.Path] = None,
+    image: str = None,
 ) -> None:  # pragma: no cover
     """
     Starts a sample project via docker compose.
@@ -138,11 +154,19 @@ def up(
     if not no_pull:
         pull_specific_docker_image()
 
+    if env_file:
+        print(f"> Loaded ENV variables from: {env_file}")
+        environ["FIDES_DEPLOY_ENV_FILE"] = str(env_file)
+
+    if image:
+        print(f"> Using custom image: {image}")
+        environ["FIDES_DEPLOY_IMAGE"] = image
+
     try:
         check_fides_uploads_dir()
         print("> Starting application...")
         start_application()
-        print("> Seeding data...")
+        print("> Setting up sample data...")
         seed_example_data()
         click.clear()
 

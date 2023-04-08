@@ -22,7 +22,6 @@ IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
 IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
 IMAGE_DEV = f"{IMAGE}:dev"
-IMAGE_SAMPLE = f"{IMAGE}:sample"
 IMAGE_LATEST = f"{IMAGE}:latest"
 
 # Image names for the secondary apps

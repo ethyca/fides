@@ -1,6 +1,7 @@
 services:
   fides:
-    image: ethyca/fides:sample
+    container_name: fides
+    image: ${FIDES_DEPLOY_IMAGE:-ethyca/fides}:local
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
@@ -15,6 +16,8 @@ services:
         condition: service_healthy
       mongodb-test:
         condition: service_started
+    env_file:
+      - ${FIDES_DEPLOY_ENV_FILE:-sample.env}
     environment:
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
       # These need to be defined here instead of the config file
@@ -25,12 +28,12 @@ services:
     # Mount a local volume so the user can see their privacy requests
     volumes:
       - type: bind
-        source: ${FIDES_UPLOADS_DIR}
+        source: ${FIDES_DEPLOY_UPLOADS_DIR}
         target: /fides/fides_uploads
         read_only: False
 
   sample-app:
-    image: ethyca/fides-sample-app:sample
+    image: ethyca/fides-sample-app:local
     environment:
       - PORT=3000
       - DATABASE_HOST=postgres-test
@@ -44,7 +47,7 @@ services:
       - postgres-test
 
   fides-pc:
-    image: ethyca/fides-privacy-center:sample
+    image: ethyca/fides-privacy-center:local
     ports:
       - "3001:3000"
     volumes:

@@ -4,7 +4,7 @@ from functools import partial
 from os import environ, getcwd, makedirs
 from os.path import dirname, exists, join
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, run
-from typing import List
+from typing import List, Optional
 
 from click import echo
 
@@ -12,7 +12,7 @@ import fides
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.utils import echo_green, echo_red
 
-FIDES_UPLOADS_DIR = getcwd() + "/fides_uploads/"
+FIDES_DEPLOY_UPLOADS_DIR = getcwd() + "/fides_uploads/"
 REQUIRED_DOCKER_VERSION = "20.10.17"
 SAMPLE_PROJECT_DIR = join(
     dirname(__file__),
@@ -148,21 +148,21 @@ def check_fides_uploads_dir() -> None:
     This fixes an error that was happening in CI checks related to
     binding a file that doesn't exist.
     """
-    if not exists(FIDES_UPLOADS_DIR):
-        makedirs(FIDES_UPLOADS_DIR)
+    if not exists(FIDES_DEPLOY_UPLOADS_DIR):
+        makedirs(FIDES_DEPLOY_UPLOADS_DIR)
 
 
 def teardown_application() -> None:
     """Teardown all of the application containers for fides."""
 
     # This needs to get set, or else it throws an error
-    environ["FIDES_UPLOADS_DIR"] = FIDES_UPLOADS_DIR
+    environ["FIDES_DEPLOY_UPLOADS_DIR"] = FIDES_DEPLOY_UPLOADS_DIR
     run_shell(DOCKER_COMPOSE_COMMAND + "down --remove-orphans --volumes")
 
 
 def start_application() -> None:
     """Spin up the application via a docker compose file."""
-    environ["FIDES_UPLOADS_DIR"] = FIDES_UPLOADS_DIR
+    environ["FIDES_DEPLOY_UPLOADS_DIR"] = FIDES_DEPLOY_UPLOADS_DIR
     run_shell(
         DOCKER_COMPOSE_COMMAND + "up --wait",
     )
@@ -208,13 +208,13 @@ def pull_specific_docker_image() -> None:
         run_shell(f"docker pull {current_privacy_center_image}")
         run_shell(f"docker pull {current_sample_app_image}")
         run_shell(
-            f"docker tag {current_fides_image} {fides_image_stub.format('sample')}"
+            f"docker tag {current_fides_image} {fides_image_stub.format('local')}"
         )
         run_shell(
-            f"docker tag {current_privacy_center_image} {privacy_center_image_stub.format('sample')}"
+            f"docker tag {current_privacy_center_image} {privacy_center_image_stub.format('local')}"
         )
         run_shell(
-            f"docker tag {current_sample_app_image} {sample_app_image_stub.format('sample')}"
+            f"docker tag {current_sample_app_image} {sample_app_image_stub.format('local')}"
         )
     except CalledProcessError:
         print("Unable to fetch matching version, defaulting to 'dev' versions...")
@@ -229,13 +229,13 @@ def pull_specific_docker_image() -> None:
             run_shell(f"docker pull {dev_privacy_center_image}")
             run_shell(f"docker pull {dev_sample_app_image}")
             run_shell(
-                f"docker tag {dev_fides_image} {fides_image_stub.format('sample')}"
+                f"docker tag {dev_fides_image} {fides_image_stub.format('local')}"
             )
             run_shell(
-                f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('sample')}"
+                f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('local')}"
             )
             run_shell(
-                f"docker tag {dev_sample_app_image} {sample_app_image_stub.format('sample')}"
+                f"docker tag {dev_sample_app_image} {sample_app_image_stub.format('local')}"
             )
         except CalledProcessError:
             echo_red("Failed to pull 'dev' versions of docker containers! Aborting...")
@@ -277,4 +277,4 @@ def print_deploy_success() -> None:
 
     # Open the landing page and DSR directory
     webbrowser.open("http://localhost:3000/landing")
-    webbrowser.open(f"file:///{FIDES_UPLOADS_DIR}")
+    webbrowser.open(f"file:///{FIDES_DEPLOY_UPLOADS_DIR}")

@@ -1,4 +1,5 @@
 """Contains the nox sessions for running development environments."""
+from pathlib import Path
 from typing import Literal
 
 from nox import Session, param, parametrize
@@ -7,6 +8,7 @@ from nox.command import CommandFailed
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
+    CONTAINER_NAME,
     EXEC,
     EXEC_IT,
     LOGIN,
@@ -149,19 +151,12 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         test = Spins up a full fides application with a production-style docker container. This includes the UI being pre-built as static files.
 
     Posargs:
-        test = instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
         keep_alive = does not automatically call teardown after the session
     """
 
+    keep_alive = "keep_alive" in session.posargs
     if fides_image == "dev":
-        raise SystemExit("fides_env(dev) unsupported right now, sorry!")
-
-    # is_test = "test" in session.posargs
-    # keep_alive = "keep_alive" in session.posargs
-    # exec_command = EXEC if any([is_test, keep_alive]) else EXEC_IT
-    # shell_command = "fides" if any([is_test, keep_alive]) else "/bin/bash"
-    # if not keep_alive:
-    #     session.notify("teardown", posargs=["volumes"])
+        raise SystemExit("'fides_env(dev)' unsupported right now, sorry!")
 
     session.log("Tearing down existing containers & volumes...")
     try:
@@ -170,13 +165,37 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         session.error("Failed to cleanly teardown. Please try again!")
 
     session.log("Building images...")
-    # TODO: remove the "sample" tag, use "local"
-    build(session, "sample")
+    build(session, "test")
 
+    session.log("Installing ethyca-fides locally...")
     session.run("pip", "install", ".")
-    session.run("pip", "list")
     session.run("fides", "--version")
-    session.run("fides", "deploy", "up", "--no-pull", "--no-init")
+
+    project_root_path = Path(__file__, "../../").resolve()
+    env_file_path = Path(project_root_path, ".env").resolve()
+    session.log("Deploying test environment with 'fides deploy up'...")
+    session.log(
+        f"NOTE: Customize your Fides environment via ENV variables here: {env_file_path}"
+    )
+    session.run(
+        "fides",
+        "deploy",
+        "up",
+        "--no-pull",
+        "--no-init",
+        "--env-file",
+        str(env_file_path),
+    )
+    if not keep_alive:
+        session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
+
+        # TODO: reword this clumsy comment
+        # Use the standard EXEC_IT command, but replace CONTAINER_IMAGE (e.g. fides-fides-1) with
+        # the container image name that will be used by the sample project
+        container_image = "sample_project-fides-1"
+        shell_command = [container_image if e == CONTAINER_NAME else e for e in EXEC_IT]
+        session.run(*shell_command, "/bin/bash", external=True, success_codes=[0, 1])
+        session.run("fides", "deploy", "down")
 
 
 @nox_session()
