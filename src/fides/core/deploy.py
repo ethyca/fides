@@ -4,7 +4,7 @@ from functools import partial
 from os import environ, getcwd, makedirs
 from os.path import dirname, exists, join
 from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, run
-from typing import List, Optional
+from typing import List
 
 from click import echo
 

@@ -2,10 +2,6 @@
 from pathlib import Path
 from typing import Literal
 
-from nox import Session, param, parametrize
-from nox import session as nox_session
-from nox.command import CommandFailed
-
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
     CONTAINER_NAME,
@@ -18,6 +14,9 @@ from constants_nox import (
     START_TEST_ENV,
 )
 from docker_nox import build
+from nox import Session, param, parametrize
+from nox import session as nox_session
+from nox.command import CommandFailed
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 from utils_nox import COMPOSE_DOWN_VOLUMES
 

@@ -3,7 +3,6 @@ import platform
 from typing import List
 
 import nox
-
 from constants_nox import (
     IMAGE,
     IMAGE_DEV,
