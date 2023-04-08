@@ -16,7 +16,7 @@ For Ethyca-internal engineers, you can also grab a fully populated `.env` file f
 
 ## Spinning up the Environment
 
-Running `nox -s test_env` will spin up a comprehensive testing environment that does the following:
+Running `nox -s fides_env(test)` will spin up a comprehensive testing environment that does the following:
 
 1. Builds the Webserver, Admin UI and Privacy Center.
 1. Downloads all required images.

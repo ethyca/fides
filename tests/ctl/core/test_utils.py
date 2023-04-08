@@ -4,6 +4,7 @@ from pathlib import PosixPath
 from typing import Generator
 
 import pytest
+import requests
 from fideslang.models import DatasetCollection, DatasetField
 
 from fides.core import utils
@@ -55,8 +56,8 @@ def test_nested_fields_unpacked(
     """
     collection = test_nested_collection_fields
     collected_field_names = []
-    for field in utils.get_all_level_fields(collection.fields):
-        collected_field_names.append(field.name)
+    for field in utils.get_all_level_fields(collection.dict()["fields"]):
+        collected_field_names.append(field["name"])
     assert len(collected_field_names) == 5
 
 
@@ -122,3 +123,22 @@ def test_repeatable_unique_key() -> None:
         "test_dataset", "test_host", "test_name"
     )
     assert unique_fides_key == expected_unique_fides_key
+
+
+@pytest.mark.integration
+class TestCheckResponseAuth:
+    def test_check_response_auth_sys_exit(self) -> None:
+        """
+        Verify that a SystemExit is raised when expected.
+
+        Note that this must be an endpoint that requires
+        authentication as it is looking for 401/403!
+        """
+        response = requests.get("/api/v1/cryptography/encryption/key")
+        with pytest.raises(SystemExit):
+            utils.check_response_auth(response)
+
+    def test_check_response_auth_ok(self) -> None:
+        """Verify that a response object is returned if no auth errors."""
+        response = requests.get("/health")
+        assert utils.check_response_auth(response)

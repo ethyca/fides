@@ -11,13 +11,16 @@ import {
   ModalOverlay,
   Stack,
   useDisclosure,
+  useToast,
 } from "@fidesui/react";
 import React, { useState } from "react";
 
+import { successToastParams } from "../common/toast";
 import { useUpdateUserPasswordMutation } from "./user-management.slice";
 
 const useUpdatePasswordModal = (id: string) => {
   const modal = useDisclosure();
+  const toast = useToast();
   const [oldPasswordValue, setOldPasswordValue] = useState("");
   const [newPasswordValue, setNewPasswordValue] = useState("");
   const [changePassword, { isLoading }] = useUpdateUserPasswordMutation();
@@ -44,7 +47,10 @@ const useUpdatePasswordModal = (id: string) => {
         new_password: newPasswordValue,
       })
         .unwrap()
-        .then(() => modal.onClose());
+        .then(() => {
+          toast(successToastParams("Password updated"));
+          modal.onClose();
+        });
     }
   };
 
@@ -79,15 +85,12 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
   return (
     <>
       <Button
-        bg="primary.800"
-        _hover={{ bg: "primary.400" }}
-        _active={{ bg: "primary.500" }}
-        colorScheme="primary"
-        maxWidth="40%"
+        variant="outline"
         size="sm"
         onClick={onOpen}
+        data-testid="update-password-btn"
       >
-        Update Password
+        Update password
       </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
@@ -104,6 +107,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
                   placeholder="Old Password"
                   type="password"
                   value={oldPasswordValue}
+                  data-testid="input-oldPassword"
                 />
               </FormControl>
               <FormControl>
@@ -114,6 +118,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
                   placeholder="New Password"
                   type="password"
                   value={newPasswordValue}
+                  data-testid="input-newPassword"
                 />
               </FormControl>
             </Stack>
@@ -141,6 +146,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
               type="submit"
               variant="solid"
               width="50%"
+              data-testid="submit-btn"
             >
               Change Password
             </Button>

@@ -1,5 +1,6 @@
 export type PrivacyRequestStatus =
   | "approved"
+  | "awaiting_email_send"
   | "complete"
   | "denied"
   | "error"
@@ -13,6 +14,8 @@ export type PrivacyRequestStatus =
 export enum ActionType {
   ACCESS = "access",
   ERASURE = "erasure",
+  CONSENT = "consent",
+  UPDATE = "update",
 }
 
 export interface DenyPrivacyRequest {
@@ -107,3 +110,66 @@ export type RetryRequests = {
   checkAll: boolean;
   errorRequests: string[];
 };
+
+export interface MessagingConfigResponse {
+  storage: {
+    active_default_storage_type: string;
+  };
+}
+
+export interface StorageConfigResponse {
+  notifications: {
+    notification_service_type: string;
+    send_request_completion_notification: boolean;
+    send_request_receipt_notification: boolean;
+    send_request_review_notification: boolean;
+  };
+  execution: {
+    subject_identity_verification_required: true;
+  };
+}
+
+export interface ConfigStorageDetailsRequest {
+  type: string;
+  auth_method?: string;
+  bucket?: string;
+  details?: {
+    auth_method?: string;
+    bucket?: string;
+  };
+  key?: string;
+  format?: string;
+}
+
+export interface ConfigStorageSecretsDetailsRequest {
+  type?: string;
+  details?: {
+    aws_access_key_id: string;
+    aws_secret_access_key: string;
+  };
+}
+
+export interface ConfigMessagingRequest {
+  type: string;
+}
+
+export interface ConfigMessagingDetailsRequest {
+  service_type: string;
+  details?: {
+    is_eu_domain?: string;
+    domain?: string;
+    twilio_email_from?: string;
+  };
+}
+
+export interface ConfigMessagingSecretsRequest {
+  service_type?: string;
+  details?: {
+    twilio_api_key?: string;
+    mailgun_api_key?: string;
+    twilio_account_sid?: string;
+    twilio_auth_token?: string;
+    twilio_messaging_service_sid?: string;
+    twilio_sender_phone_number?: string;
+  };
+}

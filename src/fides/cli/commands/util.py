@@ -2,21 +2,21 @@
 from datetime import datetime, timezone
 from subprocess import CalledProcessError
 
-import click
+import rich_click as click
 
 import fides
 from fides.cli.utils import (
     FIDES_ASCII_ART,
-    check_and_update_analytics_config,
     check_server,
     print_divider,
     send_init_analytics,
     with_analytics,
 )
-from fides.core.config.helpers import create_config_file
+from fides.core.config.create import create_and_update_config_file
 from fides.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,
+    check_virtualenv,
     print_deploy_success,
     pull_specific_docker_image,
     seed_example_data,
@@ -28,13 +28,14 @@ from fides.core.utils import echo_green
 
 @click.command()
 @click.pass_context
-@click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
-def init(ctx: click.Context, fides_directory_location: str) -> None:
+@click.argument("fides_dir", default=".", type=click.Path(exists=True))
+@click.option(
+    "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
+)
+def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
     """
-    Initializes a fides instance, creating the default directory (`.fides/`) and
-    the configuration file (`fides.toml`) if necessary.
-
-    Additionally, requests the ability to respectfully collect anonymous usage data.
+    Initializes a Fides instance by creating the default directory and
+    configuration file if not present.
     """
 
     executed_at = datetime.now(timezone.utc)
@@ -43,14 +44,11 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
 
-    # create the config file as needed
-    config_path = create_config_file(
-        config=config, fides_directory_location=fides_directory_location
+    config, config_path = create_and_update_config_file(
+        config, fides_dir, opt_in=opt_in
     )
-    print_divider()
 
-    # request explicit consent for analytics collection
-    check_and_update_analytics_config(config=config, config_path=config_path)
+    print_divider()
 
     send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
     echo_green("fides initialization complete.")
@@ -61,7 +59,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 @with_analytics
 def status(ctx: click.Context) -> None:
     """
-    Sends a request to the fides API healthcheck endpoint and prints the response.
+    Check Fides server availability.
     """
     config = ctx.obj["CONFIG"]
     cli_version = fides.__version__
@@ -78,7 +76,9 @@ def status(ctx: click.Context) -> None:
 @click.option("--port", "-p", type=int, default=8080)
 def webserver(ctx: click.Context, port: int = 8080) -> None:
     """
-    Starts the fides API server using Uvicorn.
+    Start the Fides webserver.
+
+    _Requires Redis and Postgres to be configured and running_
     """
     # This has to be here to avoid a circular dependency
     from fides.api.main import start_webserver
@@ -91,10 +91,10 @@ def webserver(ctx: click.Context, port: int = 8080) -> None:
 @with_analytics
 def worker(ctx: click.Context) -> None:
     """
-    Starts a celery worker.
+    Start a Celery worker for the Fides webserver.
     """
     # This has to be here to avoid a circular dependency
-    from fides.api.ops.tasks import start_worker
+    from fides.api.ops.worker import start_worker
 
     start_worker()
 
@@ -123,11 +123,14 @@ def deploy(ctx: click.Context) -> None:
     is_flag=True,
     help="Disable the initialization of the Fides CLI, to run in headless mode.",
 )
-def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None:
+def up(
+    ctx: click.Context, no_pull: bool = False, no_init: bool = False
+) -> None:  # pragma: no cover
     """
-    Starts the sample project via docker compose.
+    Starts a sample project via docker compose.
     """
 
+    check_virtualenv()
     check_docker_version()
     config = ctx.obj["CONFIG"]
     echo_green("Docker version is compatible, starting deploy...")
@@ -137,15 +140,16 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
 
     try:
         check_fides_uploads_dir()
+        print("> Starting application...")
         start_application()
+        print("> Seeding data...")
         seed_example_data()
         click.clear()
 
         # Deployment is ready! Perform the same steps as `fides init` to setup CLI
         if not no_init:
             echo_green("Deployment successful! Initializing fides...")
-            config_path = create_config_file(config=config)
-            check_and_update_analytics_config(config=config, config_path=config_path)
+            create_and_update_config_file(config=config)
         else:
             echo_green(
                 "Deployment successful! Skipping CLI initialization (run 'fides init' to initialize)"

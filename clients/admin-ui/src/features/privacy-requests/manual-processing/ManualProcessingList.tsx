@@ -29,8 +29,9 @@ import {
   PrivacyRequestEntity,
 } from "privacy-requests/types";
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
 import { INDEX_ROUTE } from "src/constants";
+
+import { useAppDispatch } from "~/app/hooks";
 
 import ManualProcessingDetail from "./ManualProcessingDetail";
 import { ManualInputData } from "./types";
@@ -42,7 +43,7 @@ type ManualProcessingListProps = {
 const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
   subjectRequest,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
@@ -229,7 +230,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
                     <Td colSpan={3} pl="0">
                       <Center>
                         <Text>
-                          You don&lsquo;t have any Manual Webhook connections
+                          You don&lsquo;t have any Manual Process connections
                           set up yet.
                         </Text>
                       </Center>

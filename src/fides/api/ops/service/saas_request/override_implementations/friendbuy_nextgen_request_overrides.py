@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List
 
 from fides.api.ops.models.policy import Policy
@@ -11,10 +10,6 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.core.config import get_config
-
-CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @register("friendbuy_nextgen_user_delete", [SaaSRequestType.DELETE])

@@ -1,7 +1,7 @@
 import { Flex, Heading, Spacer } from "@fidesui/react";
 import dynamic from "next/dynamic";
 import * as React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
 import RequestFilters from "./RequestFilters";
@@ -14,6 +14,7 @@ const ActionButtons = dynamic(
 
 const PrivacyRequestsContainer: React.FC = () => {
   const { processing } = useDSRErrorAlert();
+  const [revealPII, setRevealPII] = useState(false);
 
   useEffect(() => {
     processing();
@@ -21,15 +22,15 @@ const PrivacyRequestsContainer: React.FC = () => {
 
   return (
     <>
-      <Flex>
+      <Flex data-testid="privacy-requests">
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
           Privacy Requests
         </Heading>
         <Spacer />
         <ActionButtons />
       </Flex>
-      <RequestFilters />
-      <RequestTable />
+      <RequestFilters revealPII={revealPII} setRevealPII={setRevealPII} />
+      <RequestTable revealPII={revealPII} />
     </>
   );
 };

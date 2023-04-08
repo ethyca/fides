@@ -27,6 +27,7 @@ services:
       FIDES__DEV_MODE: "True"
       FIDES__REDIS__ENABLED: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      FIDES__SECURITY__ALLOW_CUSTOM_CONNECTOR_FUNCTIONS: "True"
       VAULT_ADDR: ${VAULT_ADDR-}
       VAULT_NAMESPACE: ${VAULT_NAMESPACE-}
       VAULT_TOKEN: ${VAULT_TOKEN-}
@@ -127,13 +128,23 @@ services:
 
   redis:
     image: "redis:6.2.5-alpine"
-    command: redis-server --requirepass testpassword
-    environment:
-      - REDIS_PASSWORD=testpassword
+    # AUTH option #1: no authentication at all
+    # command: redis-server
+    # AUTH option #2: require password
+    command: redis-server --requirepass redispassword
+    # AUTH option #3: Redis ACL defined in redis.conf
+    # command: redis-server /usr/local/etc/redis/redis.conf
     expose:
       - 6379
     ports:
       - "0.0.0.0:6379:6379"
+    volumes:
+      # Mount a redis.conf file for configuration
+      # NOTE: Only used by "AUTH option #3" above!
+      - type: bind
+        source: ./docker/redis
+        target: /usr/local/etc/redis
+        read_only: False
 
 volumes:
   postgres: null

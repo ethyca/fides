@@ -11,10 +11,8 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from tests.ops.graph.graph_test_util import assert_rows_match
-
-CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
@@ -396,7 +394,6 @@ async def test_stripe_access_request_task_with_email(
         min_size=2,
         keys=[
             "billing_details",
-            "card",
             "created",
             "customer",
             "id",
@@ -1082,7 +1079,6 @@ async def test_stripe_erasure_request_task(
         min_size=2,
         keys=[
             "billing_details",
-            "card",
             "created",
             "customer",
             "id",
@@ -1174,7 +1170,7 @@ async def test_stripe_erasure_request_task(
         f"{dataset_name}:card": 1,
         f"{dataset_name}:customer_balance_transaction": 0,
         f"{dataset_name}:payment_intent": 0,
-        f"{dataset_name}:payment_method": 2,
+        f"{dataset_name}:payment_method": 3,
         f"{dataset_name}:credit_note": 0,
         f"{dataset_name}:bank_account": 1,
         f"{dataset_name}:subscription": 1,

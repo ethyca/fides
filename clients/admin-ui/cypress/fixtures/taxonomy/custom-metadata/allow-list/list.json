@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Pokemon",
+    "description": "There's like a thousand of these now",
+    "allowed_values": [
+      "Bulbasaur",
+      "Charmander",
+      "Squirtle",
+      "Eevee",
+      "Snorlax"
+    ],
+    "id": "id-allow-list-pokemon"
+  },
+  {
+    "name": "Prime numbers",
+    "description": "Seems to be a pattern",
+    "allowed_values": ["2", "3", "5", "7"],
+    "id": "id-allow-list-prime-numbers"
+  }
+]

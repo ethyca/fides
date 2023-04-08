@@ -13,3 +13,14 @@ export const SubjectRequestStatusMap = new Map<string, string>([
   ["Unverified", "identity_unverified"],
   ["Requires input", "requires_input"],
 ]);
+
+export const messagingProviders = {
+  mailgun: "mailgun",
+  twilio_email: "twilio_email",
+  twilio_text: "twilio_text",
+};
+
+export const storageTypes = {
+  local: "local",
+  s3: "s3",
+};

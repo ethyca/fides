@@ -36,20 +36,17 @@ describe("Datasets with Fides Classify", () => {
       cy.getByTestId("input-classify").find("input").should("not.be.checked");
     });
 
-    // TODO: Update Cypress test to reflect the nav bar 2.0
-    it.skip("Can render the 'Status' column and classification status badges in the dataset table when plus features are enabled", () => {
-      cy.visit("/");
-      cy.getByTestId("nav-link-Datasets").click();
+    it("Can render the 'Status' column and classification status badges in the dataset table when plus features are enabled", () => {
+      cy.visit("/dataset");
       cy.wait("@getDatasets");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");
-      cy.url().should("contain", "/dataset");
 
       cy.getByTestId("dataset-table__status-table-header").should(
         "have.text",
         "Status"
       );
-      cy.getByTestId("classification-status-badge").should("exist");
+      cy.getByTestId("classification-status-badge").should("not.exist");
     });
 
     it("Classifies the dataset after generating it", () => {
@@ -89,7 +86,6 @@ describe("Datasets with Fides Classify", () => {
 
       cy.url().should("match", /dataset$/);
 
-
       // The combination of Next routing and a toast message makes Cypress get weird
       // when re-running this test case. Introducing a delay fixes it.
       // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -104,7 +100,6 @@ describe("Datasets with Fides Classify", () => {
       cy.wait("@getDatasets");
       cy.wait("@getClassifyList");
       cy.getByTestId("dataset-table");
-      cy.getByTestId("dataset-status-demo_users_dataset").contains("Unknown");
       cy.getByTestId("dataset-status-demo_users_dataset_2").contains(
         "Processing"
       );
@@ -114,6 +109,7 @@ describe("Datasets with Fides Classify", () => {
       cy.getByTestId("dataset-status-demo_users_dataset_4").contains(
         "Classified"
       );
+      cy.getByTestId("classification-status-badge").should("exist");
     });
   });
 
@@ -142,8 +138,7 @@ describe("Datasets with Fides Classify", () => {
     }) => {
       cy.getByTestId(`field-row-${name}`).within(() => {
         taxonomyEntities.forEach((te) => {
-          // Right now this displays the whole taxonomy path, but this might be abbreviated later.
-          cy.get(`[data-testid^=taxonomy-entity-]`).contains(te);
+          cy.getByTestIdPrefix("taxonomy-entity").contains(te);
         });
       });
     };

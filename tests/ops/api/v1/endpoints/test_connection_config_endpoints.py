@@ -17,23 +17,16 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
-from fides.api.ops.models.policy import CurrentStep
-from fides.api.ops.models.privacy_request import (
-    CheckpointActionRequired,
-    ManualAction,
-    PrivacyRequestStatus,
-)
-from fides.api.ops.schemas.messaging.messaging import MessagingActionType
-from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.models.privacy_request import PrivacyRequestStatus
 from fides.lib.models.client import ClientDetail
-from tests.ops.fixtures.application_fixtures import integration_secrets
+from fides.lib.oauth.roles import APPROVER, OWNER, VIEWER
+from tests.fixtures.application_fixtures import integration_secrets
 
 page_size = Params().size
 
@@ -81,6 +74,35 @@ class TestPatchConnections:
         auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
+
+    def test_patch_connections_viewer_role(
+        self, api_client: TestClient, generate_role_header, url, payload
+    ) -> None:
+        auth_header = generate_role_header(roles=[VIEWER])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_patch_connections_approver_role(
+        self, api_client: TestClient, generate_role_header, url, payload
+    ) -> None:
+        auth_header = generate_role_header(roles=[APPROVER])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_patch_connection_owner_role(
+        self, url, api_client, db: Session, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        payload = [
+            {
+                "name": "My Post-Execution Webhook",
+                "key": "webhook_key",
+                "connection_type": "https",
+                "access": "read",
+            }
+        ]
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
 
     def test_patch_http_connection(
         self, url, api_client, db: Session, generate_auth_header
@@ -420,12 +442,6 @@ class TestPatchConnections:
                 "description": "Backup snowflake db",
             },
             {
-                "key": "email_connector",
-                "name": "Third Party Email Connector",
-                "connection_type": "email",
-                "access": "write",
-            },
-            {
                 "key": "manual_webhook_type",
                 "name": "Third Party Manual Webhook",
                 "connection_type": "manual_webhook",
@@ -440,7 +456,7 @@ class TestPatchConnections:
         assert 200 == response.status_code
         response_body = response.json()
         assert len(response_body) == 2
-        assert len(response_body["succeeded"]) == 10
+        assert len(response_body["succeeded"]) == 9
         assert len(response_body["failed"]) == 0
 
         postgres_connection = response_body["succeeded"][0]
@@ -516,16 +532,7 @@ class TestPatchConnections:
         assert snowflake_resource.description == "Backup snowflake db"
         assert "secrets" not in snowflake_connection
 
-        email_connection = response_body["succeeded"][8]
-        assert email_connection["access"] == "write"
-        assert email_connection["updated_at"] is not None
-        email_resource = (
-            db.query(ConnectionConfig).filter_by(key="email_connector").first()
-        )
-        assert email_resource.access.value == "write"
-        assert "secrets" not in email_connection
-
-        manual_webhook_connection = response_body["succeeded"][9]
+        manual_webhook_connection = response_body["succeeded"][8]
         assert manual_webhook_connection["access"] == "read"
         assert manual_webhook_connection["updated_at"] is not None
         manual_webhook_resource = (
@@ -543,7 +550,6 @@ class TestPatchConnections:
         mysql_resource.delete(db)
         mssql_resource.delete(db)
         bigquery_resource.delete(db)
-        email_resource.delete(db)
         manual_webhook_resource.delete(db)
 
     @mock.patch("fides.lib.db.base_class.OrmWrappedFidesBase.create_or_update")
@@ -819,7 +825,6 @@ class TestGetConnections:
         integration_manual_config,
         url,
     ):
-
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         items = resp.json()["items"]
@@ -1335,6 +1340,77 @@ class TestPutConnectionConfigSecrets:
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
 
+    def test_put_sovrn_connection_config_secrets(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        sovrn_email_connection_config,
+    ) -> None:
+        """Note: this test does not attempt to send an email, via use of verify query param."""
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{sovrn_email_connection_config.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "processor_address@example.com",
+            "recipient_email_address": "sovrn@example.com",
+            "advanced_settings": {
+                "identity_types": {
+                    "email": False,
+                    "phone_number": False,
+                    "cookie_ids": ["ljt_readerID"],
+                }
+            },
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {sovrn_email_connection_config.key}."
+        )
+        db.refresh(sovrn_email_connection_config)
+
+        assert sovrn_email_connection_config.secrets == {
+            "test_email_address": "processor_address@example.com",
+            "recipient_email_address": "sovrn@example.com",
+            "advanced_settings": {
+                "identity_types": {
+                    "email": False,
+                    "phone_number": False,
+                    "cookie_ids": ["ljt_readerID"],
+                },
+            },
+            "third_party_vendor_name": "Sovrn",
+        }
+        assert sovrn_email_connection_config.last_test_timestamp is None
+        assert sovrn_email_connection_config.last_test_succeeded is None
+
+    def test_put_sovrn_connection_config_secrets_missing(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        sovrn_email_connection_config,
+    ) -> None:
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{sovrn_email_connection_config.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "processor_address@example.com",
+            "recipient_email_address": "sovrn@example.com",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert resp.json()["detail"][0]["loc"] == ["advanced_settings"]
+        assert resp.json()["detail"][0]["msg"] == "field required"
+
     def test_put_connection_config_redshift_secrets(
         self,
         api_client: TestClient,
@@ -1599,64 +1675,3 @@ class TestPutConnectionConfigSecrets:
             body["detail"]
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
-
-    @mock.patch("fides.api.ops.service.connectors.email_connector.dispatch_message")
-    def test_put_email_connection_config_secrets(
-        self,
-        mock_dispatch_message,
-        api_client: TestClient,
-        db: Session,
-        generate_auth_header,
-        email_connection_config,
-        url,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {
-            "url": None,
-            "to_email": "test1@example.com",
-            "test_email": "test@example.com",
-        }
-        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{email_connection_config.key}/secret"
-
-        resp = api_client.put(
-            url,
-            headers=auth_header,
-            json=payload,
-        )
-
-        assert resp.status_code == 200
-        body = json.loads(resp.text)
-        assert (
-            body["msg"]
-            == f"Secrets updated for ConnectionConfig with key: {email_connection_config.key}."
-        )
-        assert body["test_status"] == "succeeded"
-        db.refresh(email_connection_config)
-        assert email_connection_config.secrets == {
-            "to_email": "test1@example.com",
-            "url": None,
-            "test_email": "test@example.com",
-        }
-        assert email_connection_config.last_test_timestamp is not None
-        assert email_connection_config.last_test_succeeded is not None
-
-        assert mock_dispatch_message.called
-        kwargs = mock_dispatch_message.call_args.kwargs
-        assert (
-            kwargs["action_type"]
-            == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
-        )
-        assert kwargs["to_identity"] == Identity(email="test@example.com")
-        assert kwargs["message_body_params"] == [
-            CheckpointActionRequired(
-                step=CurrentStep.erasure,
-                collection=CollectionAddress("test_dataset", "test_collection"),
-                action_needed=[
-                    ManualAction(
-                        locators={"id": ["example_id"]},
-                        get=None,
-                        update={"test_field": "null_rewrite"},
-                    )
-                ],
-            )
-        ]

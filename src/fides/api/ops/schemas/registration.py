@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import Extra
+from pydantic import EmailStr, Extra
 
 from fides.api.ops.schemas.base_class import BaseSchema
 
@@ -25,5 +25,5 @@ class Registration(GetRegistrationStatusResponse):
 
     analytics_id: str
     opt_in: bool
-    user_email: Optional[str]
+    user_email: Optional[EmailStr]
     user_organization: Optional[str]

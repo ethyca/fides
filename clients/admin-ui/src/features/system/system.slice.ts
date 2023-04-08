@@ -1,7 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
+import { baseApi } from "~/features/common/api.slice";
 import { System } from "~/types/api";
 
 interface SystemDeleteResponse {
@@ -15,12 +15,7 @@ interface UpsertResponse {
   updated: number;
 }
 
-export const systemApi = createApi({
-  reducerPath: "systemApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
-  }),
-  tagTypes: ["System"],
+const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllSystems: build.query<System[], void>({
       query: () => ({ url: `system/` }),
@@ -38,7 +33,7 @@ export const systemApi = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: () => ["System"],
+      invalidatesTags: () => ["Datamap", "System"],
     }),
     deleteSystem: build.mutation<SystemDeleteResponse, string>({
       query: (key) => ({
@@ -54,7 +49,7 @@ export const systemApi = createApi({
         method: "POST",
         body: systems,
       }),
-      invalidatesTags: ["System"],
+      invalidatesTags: ["Datamap", "System"],
     }),
     updateSystem: build.mutation<
       System,
@@ -66,32 +61,7 @@ export const systemApi = createApi({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["System"],
-      // For optimistic updates
-      async onQueryStarted(
-        { fides_key, ...patch },
-        { dispatch, queryFulfilled }
-      ) {
-        const patchResult = dispatch(
-          systemApi.util.updateQueryData(
-            "getSystemByFidesKey",
-            fides_key,
-            (draft) => {
-              Object.assign(draft, patch);
-            }
-          )
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-          /**
-           * Alternatively, on failure you can invalidate the corresponding cache tags
-           * to trigger a re-fetch:
-           * dispatch(api.util.invalidateTags(['System']))
-           */
-        }
-      },
+      invalidatesTags: ["Datamap", "System"],
     }),
   }),
 });

@@ -623,7 +623,6 @@ class TestPutDatasetConfigs:
         request_body,
         dataset_config,
     ):
-
         old_ctl_dataset_id = dataset_config.ctl_dataset.id
         assert dataset_config.ctl_dataset == ctl_dataset
         updated = dataset_config.updated_at

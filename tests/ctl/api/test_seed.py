@@ -1,23 +1,14 @@
 from typing import Generator
 
 import pytest
-from fideslang import DEFAULT_TAXONOMY, DataCategory
+from fideslang import DEFAULT_TAXONOMY, DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database import seed
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
-from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.storage.storage import (
-    FileNaming,
-    ResponseFormat,
-    StorageDetails,
-    StorageType,
-)
 from fides.core import api as _api
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG, FidesConfig
 from fides.lib.models.fides_user import FidesUser
-
-CONFIG = get_config()
 
 
 @pytest.fixture(scope="function", name="data_category")
@@ -32,7 +23,7 @@ def fixture_data_category(test_config: FidesConfig) -> Generator:
         url=test_config.cli.server_url,
         resource_type="data_category",
         resource_id=fides_key,
-        headers=test_config.user.request_headers,
+        headers=CONFIG.user.auth_header,
     )
 
 
@@ -207,7 +198,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             data_category.fides_key,
-            headers=test_config.user.request_headers,
+            headers=CONFIG.user.auth_header,
         )
         assert result.status_code == 404
 
@@ -221,7 +212,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             data_category.fides_key,
-            headers=test_config.user.request_headers,
+            headers=CONFIG.user.auth_header,
         )
         assert result.status_code == 200
 
@@ -239,7 +230,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             json_resource=default_category.json(),
-            headers=test_config.user.request_headers,
+            headers=CONFIG.user.auth_header,
         )
         assert result.status_code == 200
 
@@ -248,7 +239,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             default_category.fides_key,
-            headers=test_config.user.request_headers,
+            headers=CONFIG.user.auth_header,
         )
         assert result.json()["description"] == new_description
 
@@ -266,7 +257,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             json_resource=data_category.json(),
-            headers=test_config.user.request_headers,
+            headers=CONFIG.user.auth_header,
         )
 
         await seed.load_default_resources(async_session)
@@ -275,7 +266,7 @@ class TestLoadDefaultTaxonomy:
             test_config.cli.server_url,
             "data_category",
             data_category.fides_key,
-            headers=test_config.user.request_headers,
+            headers=CONFIG.user.auth_header,
         )
         assert result.status_code == 200
 
@@ -369,11 +360,6 @@ async def test_load_default_dsr_policies(
     assert access_rule.name == "Default Access Rule"
     assert access_rule.action_type == ActionType.access.value
 
-    storage_destination: StorageConfig = access_rule.storage_destination
-    assert storage_destination.key == seed.DEFAULT_STORAGE_KEY
-    assert storage_destination.format == ResponseFormat.json
-    assert storage_destination.type == StorageType.local
-
     assert len(access_rule.targets) >= 1
 
     erasure_policy: Policy = Policy.get_by(
@@ -399,34 +385,6 @@ async def test_load_default_dsr_policies(
         },
     )
 
-    # update the default storage config
-    local_storage_config = StorageConfig.create_or_update(
-        db=db,
-        data={
-            "name": "-- changed storage name --",
-            "key": seed.DEFAULT_STORAGE_KEY,
-            "type": StorageType.local,
-            "details": {
-                StorageDetails.NAMING.value: FileNaming.request_id.value,
-            },
-            "format": ResponseFormat.json,
-        },
-    )
-
-    # create another storage config
-    s3_storage = StorageConfig.create_or_update(
-        db=db,
-        data={
-            "name": "an s3 storage config",
-            "key": "s3_storage_config",
-            "type": StorageType.s3,
-            "details": {
-                StorageDetails.NAMING.value: FileNaming.request_id.value,
-            },
-            "format": ResponseFormat.json,
-        },
-    )
-
     Rule.create_or_update(
         db=db,
         data={
@@ -434,7 +392,6 @@ async def test_load_default_dsr_policies(
             "name": "-- changed access rule name --",
             "key": seed.DEFAULT_ACCESS_POLICY_RULE,
             "policy_id": access_policy.id,
-            "storage_destination_id": s3_storage.id,
         },
     )
 
@@ -463,15 +420,19 @@ async def test_load_default_dsr_policies(
     assert access_rule.key == seed.DEFAULT_ACCESS_POLICY_RULE
     assert access_rule.name == "-- changed access rule name --"
     assert access_rule.action_type == ActionType.access.value
-    assert access_rule.storage_destination_id == s3_storage.id
-
-    storage_destination: StorageConfig = access_rule.storage_destination
-    db.refresh(storage_destination)
-    assert storage_destination.key == "s3_storage_config"
-    assert storage_destination.format == ResponseFormat.json
-    assert storage_destination.type == StorageType.s3
 
     assert len(access_rule.targets) == num_rule_targets - 1
 
-    db.refresh(local_storage_config)
-    assert local_storage_config.name == "-- changed storage name --"
+
+async def test_load_orginizations(loguru_caplog, async_session, monkeypatch):
+    updated_default_taxonomy = DEFAULT_TAXONOMY.copy()
+    current_orgs = len(updated_default_taxonomy.organization)
+    updated_default_taxonomy.organization.append(
+        Organization(fides_key="new_organization")
+    )
+
+    monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
+    await seed.load_default_organization(async_session)
+
+    assert "INSERTED 1" in loguru_caplog.text
+    assert f"SKIPPED {current_orgs}" in loguru_caplog.text

@@ -104,6 +104,9 @@ class SaaSRequest(BaseModel):
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[bool] = False
     rate_limit_config: Optional[RateLimitConfig]
+    skip_missing_param_values: Optional[
+        bool
+    ] = False  # Skip instead of raising an exception if placeholders can't be populated in body
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -211,12 +214,34 @@ class SaaSRequestMap(BaseModel):
     delete: Optional[SaaSRequest]
 
 
+class ConsentRequestMap(BaseModel):
+    """A map of actions to Consent requests"""
+
+    opt_in: Union[SaaSRequest, List[SaaSRequest]] = []
+    opt_out: Union[SaaSRequest, List[SaaSRequest]] = []
+
+    @validator("opt_in", "opt_out")
+    def validate_list_field(
+        cls,
+        field_value: Union[SaaSRequest, List[SaaSRequest]],
+    ) -> List[SaaSRequest]:
+        """Convert all opt_in/opt_out request formats to a list of requests.
+
+        We allow either a single request or a list of requests to be defined, but this makes
+        sure that everything is a list once that data has been read in.
+        """
+        if isinstance(field_value, SaaSRequest):
+            return [field_value]
+        return field_value
+
+
 class Endpoint(BaseModel):
     """A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"""
 
     name: str
     requests: SaaSRequestMap
     after: List[FidesCollectionKey] = []
+    erase_after: List[FidesCollectionKey] = []
 
     @validator("requests")
     def validate_grouped_inputs(
@@ -291,7 +316,7 @@ class ExternalDatasetReference(BaseModel):
 
 class SaaSConfigBase(BaseModel):
     """
-    Used to store base info for a saas config
+    Used to store base info for a SaaS config
     """
 
     fides_key: FidesKey
@@ -330,6 +355,7 @@ class SaaSConfig(SaaSConfigBase):
 
     description: str
     version: str
+    replaceable: bool = False
     connector_params: List[ConnectorParam]
     external_references: Optional[List[ExternalDatasetReference]]
     client_config: ClientConfig
@@ -337,6 +363,7 @@ class SaaSConfig(SaaSConfigBase):
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
     rate_limit_config: Optional[RateLimitConfig]
+    consent_requests: Optional[ConsentRequestMap]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
@@ -384,6 +411,10 @@ class SaaSConfig(SaaSConfigBase):
                         grouped_inputs=grouped_inputs,
                         after={
                             CollectionAddress(*s.split(".")) for s in endpoint.after
+                        },
+                        erase_after={
+                            CollectionAddress(*s.split("."))
+                            for s in endpoint.erase_after
                         },
                     )
                 )

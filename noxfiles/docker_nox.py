@@ -14,17 +14,7 @@ from constants_nox import (
     PRIVACY_CENTER_IMAGE,
     SAMPLE_APP_IMAGE,
 )
-
-
-def get_current_tag() -> str:
-    """Get the current git tag."""
-    from git.repo import Repo
-
-    repo = Repo()
-    git_session = repo.git()
-    git_session.fetch("--force", "--tags")
-    current_tag = git_session.describe("--tags", "--dirty", "--always")
-    return current_tag
+from git_nox import get_current_tag
 
 
 def get_current_image() -> str:
@@ -67,13 +57,12 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     Build various Docker images.
 
     Params:
-
-    admin-ui = Build the Next.js Admin UI application.
-    dev = Build the fides webserver/CLI, tagged as `local`.
-    privacy-center = Build the Next.js Privacy Center application.
-    prod = Build the fides webserver/CLI and tag it as the current application version.
-    sample = Builds all components required for the sample application.
-    test = Build the fides webserver/CLI the same as `prod`, but tag is as `local`.
+        admin-ui = Build the Next.js Admin UI application.
+        dev = Build the fides webserver/CLI, tagged as `local`.
+        privacy-center = Build the Next.js Privacy Center application.
+        prod = Build the fides webserver/CLI and tag it as the current application version.
+        sample = Builds all components required for the sample application.
+        test = Build the fides webserver/CLI the same as `prod`, but tag is as `local`.
     """
     build_platform = get_platform(session.posargs)
 
@@ -212,8 +201,8 @@ def push(session: nox.Session, tag: str) -> None:
         #   - ethyca/fides-privacy-center:latest
         #   - ethyca/fides-sample-app:2.0.0
         #   - ethyca/fides-sample-app:latest
-        privacy_center_latest = f"{PRIVACY_CENTER_IMAGE}:dev"
-        sample_app_latest = f"{SAMPLE_APP_IMAGE}:dev"
+        privacy_center_latest = f"{PRIVACY_CENTER_IMAGE}:latest"
+        sample_app_latest = f"{SAMPLE_APP_IMAGE}:latest"
         session.run(
             "docker", "tag", privacy_center_prod, privacy_center_latest, external=True
         )

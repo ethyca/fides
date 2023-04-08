@@ -1,16 +1,17 @@
+from datetime import datetime
+
 import pytest
 from httpx import HTTPStatusError
 
 from fides.api.ctl.database.seed import create_or_update_parent_user
 from fides.api.ops.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
-from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.service.privacy_request.request_service import (
+    build_required_privacy_request_kwargs,
     poll_server_for_completion,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
-
-CONFIG = get_config()
 
 
 @pytest.fixture
@@ -110,3 +111,40 @@ async def test_poll_server_for_completion_non_200(async_api_client, db, policy):
             client=async_api_client,
             poll_interval_seconds=1,
         )
+
+
+class TestBuildPrivacyRequestRequiredKwargs:
+    def test_build_required_privacy_request_kwargs_authenticated(self):
+        resp = build_required_privacy_request_kwargs(
+            requested_at=datetime.now(),
+            policy_id="test_id",
+            verification_required=True,
+            authenticated=True,
+        )
+        assert resp["requested_at"] is not None
+        assert resp["policy_id"] == "test_id"
+        assert resp["status"] == PrivacyRequestStatus.pending
+
+    def test_build_required_privacy_request_kwargs_not_authenticated(self):
+        resp = build_required_privacy_request_kwargs(
+            requested_at=datetime.now(),
+            policy_id="test_id",
+            verification_required=True,
+            authenticated=False,
+        )
+        assert resp["requested_at"] is not None
+        assert resp["policy_id"] == "test_id"
+        assert resp["status"] == PrivacyRequestStatus.identity_unverified
+
+    def test_build_required_privacy_request_kwargs_identity_verification_not_required(
+        self,
+    ):
+        resp = build_required_privacy_request_kwargs(
+            requested_at=datetime.now(),
+            policy_id="test_id",
+            verification_required=False,
+            authenticated=False,
+        )
+        assert resp["requested_at"] is not None
+        assert resp["policy_id"] == "test_id"
+        assert resp["status"] == PrivacyRequestStatus.pending

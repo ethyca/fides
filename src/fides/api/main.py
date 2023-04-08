@@ -3,7 +3,7 @@ Contains the code that sets up the API.
 """
 from datetime import datetime, timezone
 from logging import DEBUG, WARNING
-from typing import Callable, Optional
+from typing import Callable, List, Optional, Pattern, Union
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -18,6 +18,7 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
 
+import fides
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.database.seed import create_or_update_parent_user
@@ -33,9 +34,8 @@ from fides.api.ctl.routes import (
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
-    get_local_file_map,
-    get_package_file_map,
     get_path_to_admin_ui_file,
+    get_ui_file_map,
     match_route,
     path_is_in_ui_directory,
 )
@@ -53,34 +53,33 @@ from fides.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    load_registry,
-    registry_file,
     update_saas_configs,
 )
 
 # pylint: disable=wildcard-import, unused-wildcard-import
+from fides.api.ops.service.privacy_request.email_batch_service import (
+    initiate_scheduled_batch_email_send,
+)
 from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
-from fides.core.config import FidesConfig, get_config
+from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_prod
+from fides.api.ops.util.system_manager_oauth_util import (
+    get_system_fides_key,
+    get_system_schema,
+    verify_oauth_client_for_system_from_fides_key_cli,
+    verify_oauth_client_for_system_from_request_body_cli,
+)
+from fides.core.config import CONFIG
 from fides.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
-CONFIG: FidesConfig = get_config()
+VERSION = fides.__version__
 
-app = FastAPI(title="fides")
-app.state.limiter = Limiter(
-    default_limits=[CONFIG.security.request_rate_limit],
-    headers_enabled=True,
-    key_prefix=CONFIG.security.rate_limit_prefix,
-    key_func=get_remote_address,
-    retry_after="http-date",
-)
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-app.add_middleware(SlowAPIMiddleware)
 ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     admin.router,
     datamap.router,
@@ -88,8 +87,68 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     health.router,
     validate.router,
     view.router,
-    system.router,
+    system.system_connections_router,
+    system.system_router,
 ]
+
+
+def create_fides_app(
+    cors_origins: Union[str, List[str]] = CONFIG.security.cors_origins,
+    cors_origin_regex: Optional[Pattern] = CONFIG.security.cors_origin_regex,
+    routers: List = ROUTERS,
+    app_version: str = VERSION,
+    api_prefix: str = API_PREFIX,
+    request_rate_limit: str = CONFIG.security.request_rate_limit,
+    rate_limit_prefix: str = CONFIG.security.rate_limit_prefix,
+    security_env: str = CONFIG.security.env,
+) -> FastAPI:
+    """Return a properly configured application."""
+
+    fastapi_app = FastAPI(title="fides", version=app_version)
+    fastapi_app.state.limiter = Limiter(
+        default_limits=[request_rate_limit],
+        headers_enabled=True,
+        key_prefix=rate_limit_prefix,
+        key_func=get_remote_address,
+        retry_after="http-date",
+    )
+    fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    for handler in ExceptionHandlers.get_handlers():
+        fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)
+    fastapi_app.add_middleware(SlowAPIMiddleware)
+
+    if cors_origins or cors_origin_regex:
+        fastapi_app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[str(origin) for origin in cors_origins],
+            allow_origin_regex=cors_origin_regex,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+    for router in routers:
+        fastapi_app.include_router(router)
+    fastapi_app.include_router(user_router, tags=["Users"], prefix=f"{api_prefix}")
+    fastapi_app.include_router(api_router)
+
+    if security_env == "dev":
+        # This removes auth requirements for specific endpoints
+        fastapi_app.dependency_overrides[verify_oauth_client_prod] = get_root_client
+        fastapi_app.dependency_overrides[
+            verify_oauth_client_for_system_from_request_body_cli
+        ] = get_system_schema
+        fastapi_app.dependency_overrides[
+            verify_oauth_client_for_system_from_fides_key_cli
+        ] = get_system_fides_key
+    elif security_env == "prod":
+        # This is the most secure, so all security deps are maintained
+        pass
+
+    return fastapi_app
+
+
+app = create_fides_app()
 
 
 @app.middleware("http")
@@ -165,44 +224,19 @@ async def prepare_and_log_request(
     )
 
 
-# Set all CORS enabled origins
-
-if CONFIG.security.cors_origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in CONFIG.security.cors_origins],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-
-def configure_routes() -> None:
-    "Include all of the routers not defined in this module."
-    for router in ROUTERS:
-        app.include_router(router)
-
-    app.include_router(user_router, tags=["Users"], prefix=f"{API_PREFIX}")
-    app.include_router(api_router)
-
-
 # Configure the routes here so we can generate the openapi json file
-configure_routes()
-
-for handler in ExceptionHandlers.get_handlers():
-    app.add_exception_handler(FunctionalityNotConfigured, handler)
 
 
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
-
-    logger.warning(
+    logger.info(f"Starting Fides - v{VERSION}")
+    logger.info(
         "Startup configuration: reloading = {}, dev_mode = {}",
         CONFIG.hot_reloading,
         CONFIG.dev_mode,
     )
-    logger.warning("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
+    logger.info("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
 
     if CONFIG.logging.level == DEBUG:
         logger.warning(
@@ -222,12 +256,23 @@ async def setup_server() -> None:
         logger.error("Error creating parent user: {}", str(e))
         raise FidesError(f"Error creating parent user: {str(e)}")
 
+    logger.info("Loading config settings into database...")
+    try:
+        db = get_api_session()
+        ApplicationConfig.update_config_set(db, CONFIG)
+    except Exception as e:
+        logger.error("Error occurred writing config settings to database: {}", str(e))
+        raise FidesError(
+            f"Error occurred writing config settings to database: {str(e)}"
+        )
+    finally:
+        db.close()
+
     logger.info("Validating SaaS connector templates...")
     try:
-        registry = load_registry(registry_file)
         db = get_api_session()
-        update_saas_configs(registry, db)
-        logger.info("Finished loading saas templates")
+        update_saas_configs(db)
+        logger.info("Finished loading SaaS templates")
     except Exception as e:
         logger.error(
             "Error occurred during SaaS connector template validation: {}",
@@ -249,6 +294,8 @@ async def setup_server() -> None:
 
     if not scheduler.running:
         scheduler.start()
+
+    initiate_scheduled_batch_email_send()
 
     logger.debug("Sending startup analytics events...")
     await send_analytics_event(
@@ -277,7 +324,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
     logger.bind(
         method=request.method,
         status_code=response.status_code,
-        handler_time=f"{handler_time.microseconds * 0.001}ms",
+        handler_time=f"{round(handler_time.microseconds * 0.001,3)}ms",
         path=request.url.path,
     ).info("Request received")
     return response
@@ -301,14 +348,10 @@ def read_other_paths(request: Request) -> Response:
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
 
-    # First search in the local (dev) build for for a matching route.
-    ui_file = match_route(get_local_file_map(), path)
+    # search for matching route in package (i.e. /dataset)
+    ui_file = match_route(get_ui_file_map(), path)
 
-    # Next, search for a matching route in the packaged files.
-    if not ui_file:
-        ui_file = match_route(get_package_file_map(), path)
-
-    # Finally, try to find the exact path as a packaged file.
+    # if not, check if the requested file is an asset (i.e. /_next/static/...)
     if not ui_file:
         ui_file = get_path_to_admin_ui_file(path)
 

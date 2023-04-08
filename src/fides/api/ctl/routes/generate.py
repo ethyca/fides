@@ -4,7 +4,7 @@ Contains all of the endpoints required to manage generating resources.
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Security, status
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
 from pydantic import BaseModel, root_validator
@@ -15,6 +15,8 @@ from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.api.ops.api.v1 import scope_registry
+from fides.api.ops.util.oauth_util import verify_oauth_client_prod
 from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,
@@ -100,6 +102,9 @@ router = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 @router.post(
     "/",
     status_code=status.HTTP_200_OK,
+    dependencies=[
+        Security(verify_oauth_client_prod, scopes=[scope_registry.GENERATE_EXEC])
+    ],
     response_model=GenerateResponse,
     responses={
         status.HTTP_400_BAD_REQUEST: {

@@ -7,14 +7,17 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
 from dask import delayed  # type: ignore[attr-defined]
+from dask.core import getcycle
 from dask.threaded import get
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (
     CollectionDisabled,
+    NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
+    TraversalError,
 )
 from fides.api.ops.graph.analytics_events import (
     fideslog_graph_rerun,
@@ -33,7 +36,11 @@ from fides.api.ops.graph.graph_differences import format_graph_for_caching
 from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.ops.models.policy import ActionType, Policy
-from fides.api.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fides.api.ops.models.privacy_request import (
+    Consent,
+    ExecutionLogStatus,
+    PrivacyRequest,
+)
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.ops.task.filter_element_match import filter_element_match
@@ -43,12 +50,12 @@ from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import NodeInput, Row, append, partition
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 dask.config.set(scheduler="threads")
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
-CONFIG = get_config()
+
 EMPTY_REQUEST = PrivacyRequest()
 
 
@@ -98,9 +105,9 @@ def retry(
                         f"{self.traversal_node.address.value}", 0
                     )  # Cache that the erasure was performed in case we need to restart
                     return 0
-                except CollectionDisabled as exc:
+                except (CollectionDisabled, NotSupportedForCollection) as exc:
                     logger.warning(
-                        "Skipping disabled collection {} for privacy_request: {}",
+                        "Skipping collection {} for privacy_request: {}",
                         self.traversal_node.address,
                         self.resources.request.id,
                     )
@@ -232,7 +239,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         seed_index = self.input_keys.index(ROOT_COLLECTION_ADDRESS)
         seed_data = data[seed_index]
 
-        for (foreign_field_path, local_field_path) in dependent_field_mappings[
+        for foreign_field_path, local_field_path in dependent_field_mappings[
             ROOT_COLLECTION_ADDRESS
         ]:
             dependent_values = consolidate_query_matches(
@@ -506,7 +513,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
-    def erasure_request(self, retrieved_data: List[Row], *inputs: List[Row]) -> int:
+    def erasure_request(
+        self,
+        retrieved_data: List[Row],
+        inputs: List[List[Row]],
+        *erasure_prereqs: int,
+    ) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
@@ -521,6 +533,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ActionType.erasure,
                 ExecutionLogStatus.complete,
             )
+            # Cache that the erasure was performed in case we need to restart
+            self.resources.cache_erasure(self.key.value, 0)
             return 0
 
         if not self.can_write_data():
@@ -535,6 +549,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 ActionType.erasure,
                 ExecutionLogStatus.error,
             )
+            self.resources.cache_erasure(self.key.value, 0)
             return 0
 
         formatted_input_data: NodeInput = self.pre_process_input_data(
@@ -552,6 +567,38 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.resources.cache_erasure(
             f"{self.key}", output
         )  # Cache that the erasure was performed in case we need to restart
+        return output
+
+    @retry(action_type=ActionType.consent, default_return=False)
+    def consent_request(self, identity: Dict[str, Any]) -> bool:
+        """Run consent request request"""
+
+        if not self.can_write_data():
+            logger.warning(
+                "No consent on {} as its ConnectionConfig does not have write access.",
+                self.traversal_node.node.address,
+            )
+            self.update_status(
+                f"No values were erased since this connection {self.connector.configuration.key} has not been "
+                f"given write access",
+                None,
+                ActionType.erasure,
+                ExecutionLogStatus.error,
+            )
+            return False
+
+        consent_preferences: List[Consent] = [
+            Consent(**pref) for pref in self.resources.request.consent_preferences or []
+        ]
+
+        output: bool = self.connector.run_consent_request(
+            self.traversal_node,
+            self.resources.policy,
+            self.resources.request,
+            identity,
+            consent_preferences,
+        )
+        self.log_end(ActionType.consent)
         return output
 
 
@@ -670,9 +717,7 @@ def get_cached_data_for_erasures(
 
 
 def update_erasure_mapping_from_cache(
-    dsk: Dict[CollectionAddress, Tuple[Any, ...]],
-    resources: TaskResources,
-    start_fn: Callable,
+    dsk: Dict[CollectionAddress, Union[Tuple[Any, ...], int]], resources: TaskResources
 ) -> None:
     """On pause or restart from failure, update the dsk graph to skip running erasures on collections
     we've already visited. Instead, just return the previous count of rows affected.
@@ -682,9 +727,9 @@ def update_erasure_mapping_from_cache(
     cached_erasures: Dict[str, int] = resources.get_all_cached_erasures()
 
     for collection_name in cached_erasures:
-        dsk[CollectionAddress.from_string(collection_name)] = (
-            start_fn(cached_erasures[collection_name]),
-        )
+        dsk[CollectionAddress.from_string(collection_name)] = cached_erasures[
+            collection_name
+        ]
 
 
 async def run_erasure(  # pylint: disable = too-many-arguments
@@ -709,16 +754,19 @@ async def run_erasure(  # pylint: disable = too-many-arguments
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
+        # We store the end nodes from the traversal for analytics purposes
+        # but we generate a separate erasure_end_nodes list for the actual erasure traversal
         env: Dict[CollectionAddress, Any] = {}
-        end_nodes = traversal.traverse(env, collect_tasks_fn)
+        access_end_nodes = traversal.traverse(env, collect_tasks_fn)
+        erasure_end_nodes = list(graph.nodes.keys())
 
-        def termination_fn(*dependent_values: int) -> Tuple[int, ...]:
-            """The dependent_values here is an int output from each task feeding in, where
-            each task reports the output of 'task.rtf(access_request_data)', which is the number of
-            records updated.
-
-            The termination function just returns this tuple of ints."""
-            return dependent_values
+        def termination_fn(*dependent_values: int) -> Dict[str, int]:
+            """
+            The erasure order can be affected in a way that not every node is directly linked
+            to the termination node. This means that we can't just aggregate the inputs directly,
+            we must read the erasure results from the cache.
+            """
+            return resources.get_all_cached_erasures()
 
         access_request_data[ROOT_COLLECTION_ADDRESS.value] = [identity]
 
@@ -728,34 +776,108 @@ async def run_erasure(  # pylint: disable = too-many-arguments
                 access_request_data.get(
                     str(k), []
                 ),  # Pass in the results of the access request for this collection
-                *[
+                [
                     access_request_data.get(
                         str(upstream_key), []
                     )  # Additionally pass in the original input data we used for the access request. It's helpful in
                     # cases like the EmailConnector where the access request doesn't actually retrieve data.
                     for upstream_key in t.input_keys
                 ],
+                *_evaluate_erasure_dependencies(t, erasure_end_nodes),
             )
             for k, t in env.items()
         }
-        # terminator function waits for all keys
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
-        update_erasure_mapping_from_cache(dsk, resources, start_function)
+
+        # root node returns 0 to be consistent with the output of the other erasure tasks
+        dsk[ROOT_COLLECTION_ADDRESS] = 0
+        # terminator function reads and returns the cached erasure results for the entire erasure traversal
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *erasure_end_nodes)
+        update_erasure_mapping_from_cache(dsk, resources)
         await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
-                privacy_request, env, end_nodes, resources, ActionType.erasure
+                privacy_request, env, access_end_nodes, resources, ActionType.erasure
             )
         )
+
+        # using an existing function from dask.core to detect cycles in the generated graph
+        collection_cycle = getcycle(dsk, None)
+        if collection_cycle:
+            raise TraversalError(
+                f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}"
+            )
+
+        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        return v.compute()
+
+
+def _evaluate_erasure_dependencies(
+    t: GraphTask, end_nodes: List[CollectionAddress]
+) -> Set[CollectionAddress]:
+    """
+    Return a set of collection addresses corresponding to collections that need
+    to be erased before the given task. Remove the dependent collection addresses
+    from `end_nodes` so they can be executed in the correct order. If a task does
+    not have any dependencies it is linked directly to the root node
+    """
+    erase_after = t.traversal_node.node.collection.erase_after
+    for collection in erase_after:
+        if collection in end_nodes:
+            # end_node list is modified in place
+            end_nodes.remove(collection)
+    # this task will execute after the collections in `erase_after` or
+    # execute at the beginning by linking it to the root node
+    return erase_after if len(erase_after) else {ROOT_COLLECTION_ADDRESS}
+
+
+async def run_consent_request(  # pylint: disable = too-many-arguments
+    privacy_request: PrivacyRequest,
+    policy: Policy,
+    graph: DatasetGraph,
+    connection_configs: List[ConnectionConfig],
+    identity: Dict[str, Any],
+    session: Session,
+) -> Dict[str, bool]:
+    """Run a consent request
+
+    The graph built is very simple: there are no relationships between the nodes, every node has
+    identity data input and every node outputs whether the consent request succeeded.
+
+    The DatasetGraph passed in is expected to have one Node per Dataset.  That Node is expected to carry out requests
+    for the Dataset as a whole.
+    """
+
+    with TaskResources(
+        privacy_request, policy, connection_configs, session
+    ) as resources:
+        graph_keys: List[CollectionAddress] = list(graph.nodes.keys())
+        dsk: Dict[CollectionAddress, Any] = {}
+
+        for col_address, node in graph.nodes.items():
+            traversal_node = TraversalNode(node)
+            task = GraphTask(traversal_node, resources)
+            dsk[col_address] = (task.consent_request, identity)
+
+        def termination_fn(*dependent_values: bool) -> Tuple[bool, ...]:
+            """The dependent_values here is an bool output from each task feeding in, where
+            each task reports the output of 'task.consent_request(identity_data)', which is whether the
+            consent request succeeded
+
+            The termination function just returns this tuple of booleans."""
+            return dependent_values
+
+        # terminator function waits for all keys
+        dsk[TERMINATOR_ADDRESS] = (termination_fn, *graph_keys)
+
         v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
-        update_cts: Tuple[int, ...] = v.compute()
+        update_successes: Tuple[bool, ...] = v.compute()
         # we combine the output of the termination function with the input keys to provide
-        # a map of {collection_name: records_updated}:
-        erasure_update_map: Dict[str, int] = dict(
-            zip([str(x) for x in env], update_cts)
+        # a map of {collection_name: whether consent request succeeded}:
+        consent_update_map: Dict[str, bool] = dict(
+            zip([coll.value for coll in graph_keys], update_successes)
         )
 
-        return erasure_update_map
+        return consent_update_map
 
 
 def build_affected_field_logs(

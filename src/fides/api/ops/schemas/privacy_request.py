@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 from fideslang.validation import FidesKey
 from pydantic import Field, validator
 
+from fides.api.custom_types import SafeStr
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -18,11 +19,9 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.models.audit_log import AuditLogAction
 from fides.lib.oauth.schemas.user import PrivacyRequestReviewer
-
-CONFIG = get_config()
 
 
 class PrivacyRequestDRPStatus(EnumType):
@@ -54,6 +53,16 @@ class PrivacyRequestDRPStatusResponse(BaseSchema):
         use_enum_values = True
 
 
+class Consent(BaseSchema):
+    """Schema for consent."""
+
+    data_use: str
+    data_use_description: Optional[str] = None
+    opt_in: bool
+    has_gpc_flag: bool = False
+    conflicts_with_gpc: bool = False
+
+
 class PrivacyRequestCreate(BaseSchema):
     """Data required to create a PrivacyRequest"""
 
@@ -64,6 +73,7 @@ class PrivacyRequestCreate(BaseSchema):
     identity: Identity
     policy_key: FidesKey
     encryption_key: Optional[str] = None
+    consent_preferences: Optional[List[Consent]] = None
 
     @validator("encryption_key")
     def validate_encryption_key(
@@ -213,7 +223,7 @@ class ReviewPrivacyRequestIds(BaseSchema):
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):
     """Pass in a list of privacy request ids and rejection reason"""
 
-    reason: Optional[str]
+    reason: Optional[SafeStr]
 
 
 class BulkPostPrivacyRequests(BulkResponse):
@@ -227,18 +237,17 @@ class BulkReviewResponse(BulkPostPrivacyRequests):
     """Schema with mixed success/failure responses for Bulk Approve/Deny of PrivacyRequest responses."""
 
 
-class Consent(BaseSchema):
-    """Schema for consent."""
-
-    data_use: str
-    data_use_description: Optional[str] = None
-    opt_in: bool
-
-
 class ConsentPreferences(BaseSchema):
-    """Schema for consent prefernces."""
+    """Schema for consent preferences."""
 
     consent: Optional[List[Consent]] = None
+
+
+class ConsentWithExecutableStatus(BaseSchema):
+    """Schema for executable consents"""
+
+    data_use: str
+    executable: bool
 
 
 class ConsentPreferencesWithVerificationCode(BaseSchema):
@@ -246,6 +255,9 @@ class ConsentPreferencesWithVerificationCode(BaseSchema):
 
     code: Optional[str]
     consent: List[Consent]
+    policy_key: Optional[FidesKey] = None
+    executable_options: Optional[List[ConsentWithExecutableStatus]]
+    browser_identity: Optional[Identity]
 
 
 class ConsentRequestResponse(BaseSchema):

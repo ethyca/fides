@@ -1,5 +1,5 @@
 """Contains the export group of CLI commands for fides."""
-import click
+import rich_click as click
 
 from fides.cli.options import (
     dry_flag,
@@ -16,7 +16,7 @@ from fides.core import parse as _parse
 @click.pass_context
 def export(ctx: click.Context) -> None:
     """
-    Export fides resource types
+    Export Fides data maps.
     """
 
 
@@ -31,14 +31,14 @@ def export_system(
     dry: bool,
 ) -> None:
     """
-    Export a system in a data map format.
+    Export systems in a data map format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     _export.export_system(
         url=config.cli.server_url,
         system_list=taxonomy.system,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         manifests_dir=manifests_dir,
         dry=dry,
     )
@@ -55,14 +55,14 @@ def export_dataset(
     dry: bool,
 ) -> None:
     """
-    Export a dataset in a data map format.
+    Export datasets in a data map format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     _export.export_dataset(
         url=config.cli.server_url,
         dataset_list=taxonomy.dataset,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         manifests_dir=manifests_dir,
         dry=dry,
     )
@@ -79,14 +79,14 @@ def export_organization(
     dry: bool,
 ) -> None:
     """
-    Export an organization in a data map format.
+    Export organizations in a data map format.
     """
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     _export.export_organization(
         url=config.cli.server_url,
         organization_list=taxonomy.organization,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         manifests_dir=manifests_dir,
         dry=dry,
     )
@@ -111,22 +111,14 @@ def export_datamap(
     csv: bool,
 ) -> None:
     """
-    Export a formatted data map to excel using the fides template.
+    Export a data map using the standard Fides template.
 
     The data map is comprised of an Organization, Systems, and Datasets.
-
-    The default organization is used, however a custom one can be
-    passed if required.
-
-    A custom manifest directory can be provided for the output location.
-
-    The csv flag can be used to output data as csv, while the dry
-    flag can be used to return data to the console instead.
     """
     config = ctx.obj["CONFIG"]
     _export.export_datamap(
         url=config.cli.server_url,
-        headers=config.user.request_headers,
+        headers=config.user.auth_header,
         organization_fides_key=org_key,
         output_directory=output_dir,
         dry=dry,
