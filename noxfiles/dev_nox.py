@@ -5,20 +5,17 @@ from typing import Literal
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
     CONTAINER_NAME,
-    EXEC,
     EXEC_IT,
-    LOGIN,
     RUN_CYPRESS_TESTS,
     START_APP,
     START_APP_REMOTE_DEBUG,
-    START_TEST_ENV,
 )
 from docker_nox import build
 from nox import Session, param, parametrize
 from nox import session as nox_session
 from nox.command import CommandFailed
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
-from utils_nox import COMPOSE_DOWN_VOLUMES
+from utils_nox import teardown
 
 
 @nox_session()
@@ -159,7 +156,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
 
     session.log("Tearing down existing containers & volumes...")
     try:
-        session.run(*COMPOSE_DOWN_VOLUMES, external=True)
+        teardown(session)
     except CommandFailed:
         session.error("Failed to cleanly teardown. Please try again!")
 

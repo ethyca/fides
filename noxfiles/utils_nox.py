@@ -2,7 +2,7 @@
 from pathlib import Path
 
 import nox
-from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, TEST_ENV_COMPOSE_FILE
+from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, SAMPLE_PROJECT_COMPOSE_FILE
 from run_infrastructure import run_infrastructure
 
 COMPOSE_DOWN = (
@@ -11,9 +11,9 @@ COMPOSE_DOWN = (
     "-f",
     COMPOSE_FILE,
     "-f",
-    INTEGRATION_COMPOSE_FILE,
+    SAMPLE_PROJECT_COMPOSE_FILE,
     "-f",
-    TEST_ENV_COMPOSE_FILE,
+    INTEGRATION_COMPOSE_FILE,
     "-f",
     "docker/docker-compose.integration-mariadb.yml",
     "-f",
@@ -29,6 +29,17 @@ COMPOSE_DOWN = (
 )
 COMPOSE_DOWN_VOLUMES = COMPOSE_DOWN + ("--volumes",)
 
+# NOTE: The SAMPLE_PROJECT_COMPOSE_FILE expects to be run from it's normal
+# working directory, so when we reference it from the root directory we'll get
+# an error like: "sample.env: no such file or directory"
+#
+# To workaround this, we need to set the ENV variable below to point to *any*
+# valid file to keep 'docker compose' happy. Sorry for the fragility of this -
+# see comment in src/fides/data/sample_project/docker-compose.yml for details!
+COMPOSE_DOWN_ENV = {
+    "FIDES_DEPLOY_ENV_FILE": ".env",
+}
+
 
 @nox.session()
 def seed_test_data(session: nox.Session) -> None:
@@ -43,7 +54,7 @@ def clean(session: nox.Session) -> None:
     and prune images related to this project.
     """
     clean_command = (*COMPOSE_DOWN, "--volumes", "--rmi", "all")
-    session.run(*clean_command, external=True)
+    session.run(*clean_command, external=True, env=COMPOSE_DOWN_ENV)
     session.run("docker", "system", "prune", "--force", "--all", external=True)
     print("Clean Complete!")
 
@@ -52,9 +63,9 @@ def clean(session: nox.Session) -> None:
 def teardown(session: nox.Session) -> None:
     """Tear down the docker dev environment."""
     if "volumes" in session.posargs:
-        session.run(*COMPOSE_DOWN_VOLUMES, external=True)
+        session.run(*COMPOSE_DOWN_VOLUMES, external=True, env=COMPOSE_DOWN_ENV)
     else:
-        session.run(*COMPOSE_DOWN, external=True)
+        session.run(*COMPOSE_DOWN, external=True, env=COMPOSE_DOWN_ENV)
     print("Teardown complete")
 
 

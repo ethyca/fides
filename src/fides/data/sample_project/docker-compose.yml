@@ -16,6 +16,17 @@ services:
         condition: service_healthy
       mongodb-test:
         condition: service_started
+    # WARNING: This env_file option is specified so that we can provide an
+    # alternate ENV file via 'fides deploy up --env-file <some path>' as a
+    # convenient way for users to provide their own ENV files to the 'fides'
+    # at runtime. However, since Docker Compose doesn't support optional
+    # env_file specifications, we also need to provide a default 'sample.env'
+    # as a placeholder.
+    # (see https://github.com/compose-spec/compose-spec/issues/240)
+    #
+    # This seems fine, but it also leads to some gotchas when calling
+    # 'docker compose' from different working directories, like we do in the
+    # 'fides' nox build commands. Beware!
     env_file:
       - ${FIDES_DEPLOY_ENV_FILE:-sample.env}
     environment:
@@ -28,7 +39,7 @@ services:
     # Mount a local volume so the user can see their privacy requests
     volumes:
       - type: bind
-        source: ${FIDES_DEPLOY_UPLOADS_DIR}
+        source: ${FIDES_DEPLOY_UPLOADS_DIR:-./fides_uploads}
         target: /fides/fides_uploads
         read_only: False
 

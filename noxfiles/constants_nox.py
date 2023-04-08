@@ -5,8 +5,8 @@ from os import getcwd, getenv
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
 INTEGRATION_POSTGRES_COMPOSE_FILE = "docker/docker-compose.integration-postgres.yml"
-TEST_ENV_COMPOSE_FILE = "docker-compose.test-env.yml"
 REMOTE_DEBUG_COMPOSE_FILE = "docker-compose.remote-debug.yml"
+SAMPLE_PROJECT_COMPOSE_FILE = "src/fides/data/sample_project/docker-compose.yml"
 WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 
 # Image Names & Tags
@@ -92,17 +92,6 @@ START_APP_EXTERNAL = (
     COMPOSE_FILE,
     "-f",
     INTEGRATION_COMPOSE_FILE,
-    "up",
-    "--wait",
-    COMPOSE_SERVICE_NAME,
-)
-START_TEST_ENV = (
-    "docker",
-    "compose",
-    "-f",
-    COMPOSE_FILE,
-    "-f",
-    TEST_ENV_COMPOSE_FILE,
     "up",
     "--wait",
     COMPOSE_SERVICE_NAME,
