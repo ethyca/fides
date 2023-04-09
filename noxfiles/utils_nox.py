@@ -2,7 +2,11 @@
 from pathlib import Path
 
 import nox
-from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, SAMPLE_PROJECT_COMPOSE_FILE
+from constants_nox import (
+    COMPOSE_FILE,
+    INTEGRATION_COMPOSE_FILE,
+    SAMPLE_PROJECT_COMPOSE_FILE,
+)
 from run_infrastructure import run_infrastructure
 
 COMPOSE_DOWN = (
