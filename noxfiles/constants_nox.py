@@ -12,7 +12,7 @@ WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 # Image Names & Tags
 REGISTRY = "ethyca"
 IMAGE_NAME = "fides"
-CONTAINER_NAME = "fides-fides-1"
+CONTAINER_NAME = "fides"
 COMPOSE_SERVICE_NAME = "fides"
 
 # Image Names & Tags

@@ -184,13 +184,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     )
     if not keep_alive:
         session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
-
-        # TODO: reword this clumsy comment
-        # Use the standard EXEC_IT command, but replace CONTAINER_IMAGE (e.g. fides-fides-1) with
-        # the container image name that will be used by the sample project
-        container_image = "sample_project-fides-1"
-        shell_command = [container_image if e == CONTAINER_NAME else e for e in EXEC_IT]
-        session.run(*shell_command, "/bin/bash", external=True, success_codes=[0, 1])
+        session.run(*EXEC_IT, "/bin/bash", external=True, success_codes=[0, 1])
         session.run("fides", "deploy", "down")
 
 
