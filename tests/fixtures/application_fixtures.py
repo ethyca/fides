@@ -1410,6 +1410,20 @@ def privacy_notice(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def privacy_preference_history(db: Session, privacy_notice) -> Generator:
+    pref_1 = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "preference": "opt_out",
+            "privacy_notice_history_id": privacy_notice,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_notice_us_ca_provide(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
@@ -1425,6 +1439,22 @@ def privacy_notice_us_ca_provide(db: Session) -> Generator:
     )
 
     yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_preference_history_us_ca_provide(
+    db: Session, privacy_notice_us_ca_provide
+) -> Generator:
+    pref_1 = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "preference": "opt_in",
+            "privacy_notice_history_id": privacy_notice_us_ca_provide.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1461,6 +1491,40 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
     )
 
     yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator:
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice us_co provide.service.operations",
+            "description": "a sample privacy notice configuration",
+            "origin": "privacy_notice_template_2",
+            "regions": [PrivacyNoticeRegion.eu_fr],
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["provide.service"],
+            "enforcement_level": EnforcementLevel.frontend,
+        },
+    )
+
+    yield privacy_notice
+
+
+@pytest.fixture(scope="function")
+def privacy_preference_history_eu_fr_provide_service_frontend_only(
+    db: Session, privacy_notice_eu_fr_provide_service_frontend_only
+) -> Generator:
+    pref_1 = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "preference": "opt_in",
+            "privacy_notice_history_id": privacy_notice_eu_fr_provide_service_frontend_only.privacy_notice_history_id,
+        },
+        check_name=False,
+    )
+    yield pref_1
+    pref_1.delete(db)
 
 
 @pytest.fixture(scope="function")
