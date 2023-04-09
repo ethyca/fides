@@ -6,13 +6,13 @@ port = "5432"
 db = "fides"
 
 [redis]
-enabled = true
 host = "redis"
-password = "redispass"
+password = "redispassword"
 port = 6379
 db_index = 0
 
 [security]
+env = "prod"
 cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
 
 [execution]
@@ -24,3 +24,6 @@ server_port = 8080
 
 [user]
 analytics_opt_out = false
+
+[logging]
+level = "DEBUG"
