@@ -151,8 +151,6 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     """
 
     keep_alive = "keep_alive" in session.posargs
-    if fides_image == "dev":
-        raise SystemExit("'fides_env(dev)' unsupported right now, sorry!")
 
     session.log("Tearing down existing containers & volumes...")
     try:
@@ -160,27 +158,37 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     except CommandFailed:
         session.error("Failed to cleanly teardown. Please try again!")
 
-    session.log("Building images...")
+    session.log("Building production images with 'build(test)'...")
     build(session, "test")
 
     session.log("Installing ethyca-fides locally...")
     session.run("pip", "install", ".")
     session.run("fides", "--version")
 
-    project_root_path = Path(__file__, "../../").resolve()
-    env_file_path = Path(project_root_path, ".env").resolve()
+    # Configure the args for 'fides deploy up' for testing
+    env_file_path = Path(__file__, "../../.env").resolve()
+    fides_deploy_args = [
+        "--no-pull",
+        "--no-init",
+        "--env-file",
+        str(env_file_path),
+    ]
+    if fides_image == "dev":
+        session.log("Enabling hot-reloading by running uvicorn directly...")
+        fides_deploy_args.extend([
+            "--command",
+            "uvicorn --reload --reload-dir src fides.api.main:app",
+        ])
+
     session.log("Deploying test environment with 'fides deploy up'...")
     session.log(
-        f"NOTE: Customize your Fides environment via ENV variables here: {env_file_path}"
+        f"NOTE: Customize your local Fides configuration via ENV file here: {env_file_path}"
     )
     session.run(
         "fides",
         "deploy",
         "up",
-        "--no-pull",
-        "--no-init",
-        "--env-file",
-        str(env_file_path),
+        *fides_deploy_args,
     )
     if not keep_alive:
         session.log("Opening Fides CLI shell... (press CTRL+D to exit)")

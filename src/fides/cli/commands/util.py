@@ -128,19 +128,25 @@ def deploy(ctx: click.Context) -> None:
 @click.option(
     "--env-file",
     type=click.Path(exists=True),
-    help="Provide an ENV file to the Fides container to customize settings.",
+    help="Use a custom ENV file for the Fides container to override settings.",
 )
 @click.option(
     "--image",
     type=str,
-    help="Use a custom image instead of the default (ethyca/fides).",
+    help="Use a custom image for the Fides container instead of the default ('ethyca/fides').",
+)
+@click.option(
+    "--command",
+    type=str,
+    help="Use a custom command for the Fides container instead of the default ('fides webserver').",
 )
 def up(
     ctx: click.Context,
     no_pull: bool = False,
     no_init: bool = False,
     env_file: Optional[click.Path] = None,
-    image: str = None,
+    image: Optional[str] = None,
+    command: Optional[str] = None,
 ) -> None:  # pragma: no cover
     """
     Starts a sample project via docker compose.
@@ -155,12 +161,16 @@ def up(
         pull_specific_docker_image()
 
     if env_file:
-        print(f"> Loaded ENV variables from: {env_file}")
+        print(f"> Using custom ENV file from: {env_file}")
         environ["FIDES_DEPLOY_ENV_FILE"] = str(env_file)
 
     if image:
         print(f"> Using custom image: {image}")
         environ["FIDES_DEPLOY_IMAGE"] = image
+
+    if command:
+        print(f"> Using custom command: {command}")
+        environ["FIDES_DEPLOY_COMMAND"] = command
 
     try:
         check_fides_uploads_dir()
