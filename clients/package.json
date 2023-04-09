@@ -1,5 +1,5 @@
 {
-  "workspaces": ["admin-ui/", "privacy-center/"],
+  "workspaces": ["admin-ui/", "privacy-center/", "fides-consent/"],
   "scripts": {
     "build-admin-ui": "turbo run build --filter=admin-ui",
     "build-pc": "turbo run build --filter=privacy-center",

@@ -18,7 +18,8 @@
     "url": "https://github.com/ethyca/fides.git",
     "directory": "clients/privacy-center/packages/fides-consent"
   },
-  "module": "./dist/fides-consent.mjs",
+  "main": "dist/fides-consent.mjs",
+  "module": "dist/fides-consent.mjs",
   "types": "./dist/fides-consent.d.ts",
   "dependencies": {
     "typescript-cookie": "^1.0.4"
