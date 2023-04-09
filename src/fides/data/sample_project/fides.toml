@@ -14,6 +14,11 @@ db_index = 0
 [security]
 env = "prod"
 cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
+app_encryption_key = "examplevalidprojectencryptionkey"
+oauth_root_client_id = "fidesadmin"
+oauth_root_client_secret = "fidesadminsecret"
+root_username = "root_user"
+root_password = "Testpassword1!"
 
 [execution]
 require_manual_request_approval = true
@@ -24,6 +29,8 @@ server_port = 8080
 
 [user]
 analytics_opt_out = false
+username = "root_user"
+password = "Testpassword1!"
 
 [logging]
 level = "DEBUG"

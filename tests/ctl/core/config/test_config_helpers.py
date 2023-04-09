@@ -35,28 +35,3 @@ class TestConfigHelpers:
 
         assert helpers.get_config_from_file(file, "bad", "missing") is None
 
-    @patch("fides.core.config.helpers.get_config_from_file")
-    def test_check_required_webserver_config_values(self, mock_get_config, capfd):
-        mock_get_config.return_value = None
-
-        with pytest.raises(SystemExit):
-            helpers.check_required_webserver_config_values()
-            out, _ = capfd.readouterr()
-
-            assert "app_encryption_key" in out
-            assert "oauth_root_client_id" in out
-            assert "oauth_root_client_secret" in out
-
-    @patch("fides.core.config.helpers.get_config_from_file")
-    def test_check_required_webserver_config_values_file_not_found(
-        self, mock_get_config, capfd
-    ):
-        mock_get_config.side_effect = FileNotFoundError
-
-        with pytest.raises(SystemExit):
-            helpers.check_required_webserver_config_values()
-            out, _ = capfd.readouterr()
-
-            assert "app_encryption_key" in out
-            assert "oauth_root_client_id" in out
-            assert "oauth_root_client_secret" in out

@@ -31,11 +31,6 @@ services:
       - ${FIDES_DEPLOY_ENV_FILE:-sample.env}
     environment:
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
-      # These need to be defined here instead of the config file
-      # due to the `check_required_webserver_config_values` function
-      FIDES__SECURITY__APP_ENCRYPTION_KEY: "examplevalidprojectencryptionkey"
-      FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: "fidesadmin"
-      FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: "fidesadminsecret"
     # Mount a local volume so the user can see their privacy requests
     volumes:
       - type: bind

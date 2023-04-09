@@ -74,8 +74,7 @@ from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.core.config import CONFIG
-from fides.core.config.helpers import check_required_webserver_config_values
+from fides.core.config import CONFIG, check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
 VERSION = fides.__version__
@@ -388,7 +387,7 @@ def read_other_paths(request: Request) -> Response:
 
 def start_webserver(port: int = 8080) -> None:
     """Run the webserver."""
-    check_required_webserver_config_values()
+    check_required_webserver_config_values(config=CONFIG)
     server = Server(Config(app, host="0.0.0.0", port=port, log_level=WARNING))
 
     logger.info(

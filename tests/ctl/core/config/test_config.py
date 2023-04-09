@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from fides.core.config import get_config
+from fides.core.config import get_config, check_required_webserver_config_values
 from fides.core.config.database_settings import DatabaseSettings
 from fides.core.config.security_settings import SecuritySettings
 
@@ -52,16 +52,21 @@ def test_get_config(test_config_path: str) -> None:
     )
 
 
-# Unit
 @patch.dict(
     os.environ,
-    {},
+    {
+        "FIDES__CONFIG_PATH": "tests/ctl/test_default_config.toml",
+    },
     clear=True,
 )
 @pytest.mark.unit
-def test_get_config_fails_missing_required(test_config_path: str) -> None:
-    """Check that the correct error gets raised if a required value is missing."""
-    config = get_config(test_config_path)
+def test_get_config_default() -> None:
+    """Check that get_config loads default values when given an empty TOML."""
+    config = get_config()
+    assert config.database.api_engine_pool_size == 50
+    assert config.security.env == "dev"
+    assert config.security.app_encryption_key == ""
+    assert config.logging.level == "INFO"
 
 
 @patch.dict(
@@ -347,3 +352,42 @@ class TestBuildingDatabaseValues:
         )
         assert incorrect_value not in database_settings.async_database_uri
         assert correct_value in database_settings.async_database_uri
+
+
+@pytest.mark.unit
+def test_check_required_webserver_config_values_success(test_config_path: str) -> None:
+    config = get_config(test_config_path)
+    assert check_required_webserver_config_values(config=config) is None
+
+
+@patch.dict(
+    os.environ,
+    {
+        "FIDES__CONFIG_PATH": "tests/ctl/test_default_config.toml",
+    },
+    clear=True,
+)
+@pytest.mark.unit
+def test_check_required_webserver_config_values_error(capfd) -> None:
+    config = get_config()
+    assert config.security.app_encryption_key is ""
+
+    with pytest.raises(SystemExit):
+        check_required_webserver_config_values(config=config)
+
+    out, _ = capfd.readouterr()
+    assert "app_encryption_key" in out
+    assert "oauth_root_client_id" in out
+    assert "oauth_root_client_secret" in out
+
+
+@patch.dict(
+    os.environ,
+    {
+        "FIDES__CONFIG_PATH": "src/fides/data/sample_project/fides.toml",
+    },
+    clear=True,
+)
+def test_check_required_webserver_config_values_success_from_path() -> None:
+    config = get_config()
+    assert check_required_webserver_config_values(config=config) is None
