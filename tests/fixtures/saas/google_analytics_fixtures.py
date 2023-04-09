@@ -113,7 +113,7 @@ def google_analytics_connection_config_without_secrets(
     db: session, google_analytics_config, google_analytics_secrets
 ) -> Generator:
     """This test connector can't be used to make live requests"""
-    fides_key = google_analytics_config["fides_key"]
+    fides_key = "new_google_analytics_instance_no_secrets"
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -127,3 +127,29 @@ def google_analytics_connection_config_without_secrets(
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture
+def google_analytics_dataset_config_no_secrets(
+    db: Session,
+    google_analytics_connection_config_without_secrets: ConnectionConfig,
+    google_analytics_dataset: Dict[str, Any],
+) -> Generator:
+    fides_key = google_analytics_dataset["fides_key"]
+    google_analytics_connection_config_without_secrets.name = fides_key
+    google_analytics_connection_config_without_secrets.key = fides_key
+    google_analytics_connection_config_without_secrets.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, google_analytics_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": google_analytics_connection_config_without_secrets.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)

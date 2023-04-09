@@ -223,3 +223,37 @@ class TestShouldOptIntoService:
         assert (
             should_opt_in_to_service(None, privacy_request_with_consent_policy) is False
         )
+
+    def test_old_workflow_preferences_saved_with_respect_to_data_use(
+        self,
+        db,
+        system,
+        privacy_request_with_consent_policy,
+    ):
+        """
+        Test old workflow where executable preferences were cached on PrivacyRequest.consent_preferences
+        """
+        privacy_request_with_consent_policy.consent_preferences = [
+            {"data_use": "advertising", "opt_in": False}
+        ]
+        assert (
+            should_opt_in_to_service(system, privacy_request_with_consent_policy)
+            is False
+        )
+
+        privacy_request_with_consent_policy.consent_preferences = [
+            {"data_use": "advertising", "opt_in": True}
+        ]
+        assert (
+            should_opt_in_to_service(system, privacy_request_with_consent_policy)
+            is True
+        )
+
+        privacy_request_with_consent_policy.consent_preferences = [
+            {"data_use": "advertising", "opt_in": True},
+            {"data_use": "improve", "opt_in": False},
+        ]
+        assert (
+            should_opt_in_to_service(system, privacy_request_with_consent_policy)
+            is False
+        )
