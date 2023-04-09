@@ -337,6 +337,18 @@ class System(Base, FidesBase):
                         data_uses.add(data_use)
         return data_uses
 
+    def get_data_uses(self, include_parents: bool = True) -> Set[str]:
+        """Get the data uses for the current system"""
+        data_uses = set()
+        declarations: List[dict[str, Any]] = self.privacy_declarations or []
+        for declaration in declarations:
+            if data_use := declaration.get("data_use", None):
+                if include_parents:
+                    data_uses.update(DataUse.get_parent_uses(data_use))
+                else:
+                    data_uses.add(data_use)
+        return data_uses
+
 
 class SystemModel(BaseModel):
     fides_key: str

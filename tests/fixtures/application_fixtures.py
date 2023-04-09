@@ -38,6 +38,7 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNotice,
     PrivacyNoticeRegion,
 )
+from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.ops.models.privacy_request import (
     ConsentRequest,
     PrivacyRequest,
@@ -1795,3 +1796,29 @@ def executable_consent_request(
     provided_identity.save(db)
     yield privacy_request
     privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_preference_history(
+    db, provided_identity_and_consent_request, privacy_notice
+):
+    provided_identity, consent_request = provided_identity_and_consent_request
+    privacy_notice_history = privacy_notice.histories[0]
+
+    preference_history_record = PrivacyPreferenceHistory.create(
+        db=db,
+        data={
+            "email": "test@email.com",
+            "preference": "opt_out",
+            "privacy_notice_history_id": privacy_notice_history.id,
+            "provided_identity_id": provided_identity.id,
+            "request_origin": "privacy_center",
+            "secondary_user_ids": {"ga_client_id": "test"},
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
+            "user_geography": "us_ca",
+            "url_recorded": "example.com/privacy_center",
+        },
+        check_name=False,
+    )
+    yield preference_history_record
+    preference_history_record.delete(db)

@@ -41,6 +41,12 @@ class InsufficientDataException(FidesopsException):
     """Exception class when there is not sufficient data to proceed"""
 
 
+class SkippingConsentPropagation(BaseException):
+    """Skipping consent propagation for collection. Used to trigger "skipped" execution logs being created where applicable
+    for Privacy Preference requests on saas connectors.
+    """
+
+
 class RedisConnectionError(Exception):
     """The Configured Redis instance is uncontactable."""
 
@@ -91,6 +97,10 @@ class DrpActionValidationError(Exception):
 
 class StorageConfigNotFoundException(BaseException):
     """Custom Exception - StorageConfig Not Found"""
+
+
+class PrivacyNoticeHistoryNotFound(BaseException):
+    """PrivacyNoticeHistory Not Found"""
 
 
 class IdentityNotFoundException(BaseException):

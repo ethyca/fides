@@ -32,6 +32,18 @@ def delete_server_systems(test_config: FidesConfig, systems: List[System]) -> No
         )
 
 
+def test_get_system_data_uses(system) -> None:
+    assert system.get_data_uses() == {"advertising"}
+
+    system.privacy_declarations[0]["data_use"] = "advertising.first_party"
+
+    assert system.get_data_uses() == {"advertising", "advertising.first_party"}
+    assert system.get_data_uses(include_parents=False) == {"advertising.first_party"}
+
+    system.privacy_declarations = None
+    assert system.get_data_uses() == set()
+
+
 @pytest.fixture(scope="function")
 def create_test_server_systems(
     test_config: FidesConfig, redshift_systems: List[System]

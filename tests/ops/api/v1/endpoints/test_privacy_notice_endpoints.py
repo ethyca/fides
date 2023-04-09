@@ -178,6 +178,8 @@ class TestGetPrivacyNotices:
             assert "displayed_in_privacy_modal" in notice_detail
             assert "displayed_in_banner" in notice_detail
             assert "enforcement_level" in notice_detail
+            assert "privacy_notice_history_id" in notice_detail
+            assert notice_detail["privacy_notice_history_id"] is not None
 
     @pytest.mark.usefixtures(
         "privacy_notice",
@@ -254,6 +256,8 @@ class TestGetPrivacyNotices:
             assert "displayed_in_privacy_modal" in notice_detail
             assert "displayed_in_banner" in notice_detail
             assert "enforcement_level" in notice_detail
+            assert "privacy_notice_history_id" in notice_detail
+            assert notice_detail["privacy_notice_history_id"] is not None
 
     @pytest.mark.usefixtures(
         "privacy_notice",
@@ -703,6 +707,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         )
                     ],
                 },
@@ -753,6 +758,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -766,6 +772,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         ),
                     ],
                 },
@@ -816,6 +823,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -829,6 +837,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         ),
                     ],
                     "third_party_sharing": [
@@ -845,6 +854,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         ),
                     ],
                 },
@@ -895,6 +905,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         ),
                     ],
                     "third_party_sharing": [],
@@ -992,6 +1003,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         )
                     ],
                     "provide.service.operations.support.optimization": [
@@ -1009,6 +1021,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-3",
@@ -1022,6 +1035,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         ),
                         PrivacyNoticeResponse(
                             id=f"{PRIVACY_NOTICE_NAME}-2",
@@ -1035,6 +1049,7 @@ class TestGetPrivacyNoticesByDataUse:
                             created_at=NOW,
                             updated_at=NOW,
                             version=1.0,
+                            privacy_notice_history_id="placeholder_id",
                         ),
                     ],
                 },
@@ -1052,13 +1067,16 @@ class TestGetPrivacyNoticesByDataUse:
         db: Session,
         request,
     ):
-        # load the provided system fixutres
+        # load the provided system fixtures
         for system_fixture in system_fixtures:
             request.getfixturevalue(system_fixture)
 
         # add the provided privacy notices to the db, i.e. seed our data
         for privacy_notice in privacy_notices:
-            privacy_notice.save(db)
+            privacy_notice_dict = privacy_notice.__dict__
+            privacy_notice_dict.pop("_sa_instance_state", None)
+            # Need to create this way so we get this historical record too
+            PrivacyNotice.create(db=db, data=privacy_notice_dict, check_name=False)
 
         # execute the request to get the data use map
         auth_header = generate_auth_header(scopes=[scopes.PRIVACY_NOTICE_READ])
@@ -1075,6 +1093,9 @@ class TestGetPrivacyNoticesByDataUse:
             expected_notices: List = expected_response[data_use]
             for notice_response in notices:
                 notice_response = PrivacyNoticeResponse(**notice_response)
+                # We defined the expected responses before the privacy notice history id existed, so just
+                # make this match here - this isn't the focus of this test.
+                notice_response.privacy_notice_history_id = "placeholder_id"
                 assert notice_response in expected_notices
                 expected_notices.remove(notice_response)  # remove matched request
             assert (

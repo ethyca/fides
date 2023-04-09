@@ -83,3 +83,17 @@ class PrivacyNoticeResponse(PrivacyNoticeWithId):
     created_at: datetime
     updated_at: datetime
     version: float
+    privacy_notice_history_id: str
+
+
+class PrivacyNoticeHistorySchema(PrivacyNoticeCreation, PrivacyNoticeWithId):
+    """
+    An API representation of a PrivacyNoticeHistory used for response payloads
+    """
+
+    version: float
+    privacy_notice_id: str
+
+    class Config:
+        use_enum_values = True
+        orm_mode = True
