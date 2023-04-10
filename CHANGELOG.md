@@ -27,6 +27,7 @@ The types of changes are:
 - Table for privacy notices [#3001](https://github.com/ethyca/fides/pull/3001)
 - Query params on connection type endpoint to filter by supported action type [#2996](https://github.com/ethyca/fides/pull/2996)
 - Scope restrictions for privacy notice table in the UI [#3007](https://github.com/ethyca/fides/pull/3007)
+- Toggle for enabling/disabling privacy notices in the UI [#3010](https://github.com/ethyca/fides/pull/3010)
 
 ### Changed
 
