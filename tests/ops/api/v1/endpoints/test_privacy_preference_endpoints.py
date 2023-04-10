@@ -453,6 +453,69 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         first_privacy_preference_history_created.delete(db)
         second_privacy_preference_history_created.delete(db)
 
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required", "automatically_approved"
+    )
+    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_set_privacy_preferences_bad_policy_key(
+        self,
+        mock_run_privacy_request: MagicMock,
+        mock_verify_identity: MagicMock,
+        provided_identity_and_consent_request,
+        db,
+        api_client,
+        verification_code,
+        request_body,
+        privacy_notice,
+    ):
+        """Even though privacy request creation fails, privacy preferences are still saved"""
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        request_body["policy_key"] = "bad_policy_key"
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=request_body,
+        )
+
+        assert response.status_code == 400
+        assert (
+            response.json()["detail"] == "Policy with key bad_policy_key does not exist"
+        )
+
+        privacy_preference_history_created = (
+            db.query(PrivacyPreferenceHistory)
+            .filter(
+                PrivacyPreferenceHistory.privacy_notice_history_id
+                == privacy_notice.privacy_notice_history_id
+            )
+            .first()
+        )
+        assert (
+            privacy_preference_history_created.preference
+            == UserConsentPreference.opt_out
+        )
+
+        assert verification_code in mock_verify_identity.call_args_list[0].args
+        assert privacy_preference_history_created.privacy_request_id is None
+        db.refresh(consent_request)
+        assert consent_request.privacy_request_id is None
+        assert not mock_run_privacy_request.called
+
+        current_privacy_preference_one = (
+            privacy_preference_history_created.current_privacy_preference
+        )
+
+        assert (
+            current_privacy_preference_one.preference == UserConsentPreference.opt_out
+        ), "Historical preferences upserted to latest consent preferences"
+
+        privacy_preference_history_created.delete(db)
+
     @pytest.mark.usefixtures("automatically_approved")
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(

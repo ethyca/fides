@@ -85,16 +85,15 @@ def consent_request_verify_for_privacy_preferences(
     return paginate(query, params)
 
 
-def verify_no_duplicated_privacy_notices(
+def verify_privacy_notice_and_historical_records(
     db: Session, data: PrivacyPreferencesCreateWithCode
 ) -> None:
     """
-    Runs a check that largely makes sure no preferences are specified for the same privacy notice when
-    saving privacy preferences.
+    Runs a check that makes sure all privacy notice histories exist and also makes sure we don't have preferences specified
+    for the same privacy notice when saving privacy preferences.
 
     For example, we want to avoid having two preferences saved for the same version of a *historical privacy notice*,
-    or two preferences saved for different versions of the same *privacy notice*.  This would also fail if the
-    historical privacy notice didn't exist.
+    or two preferences saved for different versions of the same *privacy notice*.
     """
     privacy_notice_count: int = (
         db.query(PrivacyNotice)
@@ -140,7 +139,7 @@ def save_privacy_preferences(
 
     This workflow is for users saving preferences for privacy notices with a verified identity.
     """
-    verify_no_duplicated_privacy_notices(db=db, data=data)
+    verify_privacy_notice_and_historical_records(db=db, data=data)
     consent_request, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
         consent_request_id=consent_request_id,
@@ -155,39 +154,33 @@ def save_privacy_preferences(
     created_historical_preferences: List[PrivacyPreferenceHistory] = []
     upserted_current_preferences: List[CurrentPrivacyPreference] = []
     for privacy_preference in data.preferences:
-        try:
-            historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
-                db=db,
-                data={
-                    "email": provided_identity.encrypted_value["value"]
-                    if provided_identity.field_name == ProvidedIdentityType.email
-                    and provided_identity.encrypted_value
-                    else None,
-                    "phone_number": provided_identity.encrypted_value["value"]
-                    if provided_identity.field_name == ProvidedIdentityType.phone_number
-                    and provided_identity.encrypted_value
-                    else None,
-                    "preference": privacy_preference.preference,
-                    "privacy_notice_history_id": privacy_preference.privacy_notice_history_id,
-                    "provided_identity_id": provided_identity.id,
-                    "request_origin": data.request_origin,
-                    "secondary_user_ids": {
-                        label: value for label, value in data.browser_identity if value
-                    },
-                    "user_agent": data.user_agent,
-                    "user_geography": data.user_geography,
-                    "url_recorded": data.url_recorded,
+        historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "email": provided_identity.encrypted_value["value"]
+                if provided_identity.field_name == ProvidedIdentityType.email
+                and provided_identity.encrypted_value
+                else None,
+                "phone_number": provided_identity.encrypted_value["value"]
+                if provided_identity.field_name == ProvidedIdentityType.phone_number
+                and provided_identity.encrypted_value
+                else None,
+                "preference": privacy_preference.preference,
+                "privacy_notice_history_id": privacy_preference.privacy_notice_history_id,
+                "provided_identity_id": provided_identity.id,
+                "request_origin": data.request_origin,
+                "secondary_user_ids": {
+                    label: value for label, value in data.browser_identity if value
                 },
-                check_name=False,
-            )
-            upserted_current_preference: CurrentPrivacyPreference = (
-                historical_preference.current_privacy_preference
-            )
-        except PrivacyNoticeHistoryNotFound:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail=f"No Privacy Notice History record with id '{privacy_preference.privacy_notice_history_id}'",
-            )
+                "user_agent": data.user_agent,
+                "user_geography": data.user_geography,
+                "url_recorded": data.url_recorded,
+            },
+            check_name=False,
+        )
+        upserted_current_preference: CurrentPrivacyPreference = (
+            historical_preference.current_privacy_preference
+        )
 
         created_historical_preferences.append(historical_preference)
         upserted_current_preferences.append(upserted_current_preference)
