@@ -1,28 +1,28 @@
 from typing import Any, Dict
 
-from pydantic import root_validator
+from pydantic import EmailStr, root_validator
 
-from fides.api.ops.schemas.base_class import NoValidationSchema
-from fides.api.ops.schemas.connection_configuration.connection_secrets_email_consent import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
-    ExtendedConsentEmailSchema,
+    ExtendedEmailSchema,
     ExtendedIdentityTypes,
 )
+from fides.lib.schemas.base_class import NoValidationSchema
 
 SOVRN_REQUIRED_IDENTITY: str = "ljt_readerID"
 
 
-class SovrnEmailSchema(ExtendedConsentEmailSchema):
-    """Schema to validate the secrets needed for the SovrnEmailConnector
+class SovrnSchema(ExtendedEmailSchema):
+    """Schema to validate the secrets needed for the SovrnConnector
 
-    Overrides the ExtendedConsentEmailSchema to set the third_party_vendor_name
+    Overrides the ExtendedEmailSchema to set the third_party_vendor_name
     and recipient_email_address.
 
     Also hardcodes the cookie_id for now.
     """
 
     third_party_vendor_name: str = "Sovrn"
-    recipient_email_address: str  # In production, use: privacy@sovrn.com
+    recipient_email_address: EmailStr = EmailStr("privacy@sovrn.com")
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -38,5 +38,5 @@ class SovrnEmailSchema(ExtendedConsentEmailSchema):
         return values
 
 
-class SovrnEmailDocsSchema(SovrnEmailSchema, NoValidationSchema):
+class SovrnDocsSchema(SovrnSchema, NoValidationSchema):
     """SovrnDocsSchema Secrets Schema for API Docs"""

@@ -13,6 +13,7 @@ import {
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import ConfigurationNotificationBanner from "../privacy-requests/configuration/ConfigurationNotificationBanner";
+import NotificationBanner from "./NotificationBanner";
 
 const Layout = ({
   children,
@@ -39,26 +40,28 @@ const Layout = ({
     skip,
   });
 
-  const showNotificationBanner =
+  const showConfigurationBanner =
     features.flags.privacyRequestsConfiguration &&
     (!activeMessagingProvider || !activeStorage) &&
     isValidNotificationRoute;
 
   return (
-    <Flex data-testid={title} direction="column" height="100vh">
+    <Flex data-testid={title} direction="column">
       <Head>
         <title>Fides Admin UI - {title}</title>
         <meta name="description" content="Privacy Engineering Platform" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Header />
+      {/* TODO: remove this in a future release (see https://github.com/ethyca/fides/issues/2844) */}
+      <NotificationBanner />
       <NavTopBar />
-      <Flex as="main" px={9} py={10} gap="40px" height="100%">
+      <Flex as="main" flexGrow={1} padding={10} gap={10}>
         <Box flex={0} flexShrink={0}>
           <NavSideBar />
         </Box>
         <Flex direction="column" flex={1} minWidth={0}>
-          {showNotificationBanner ? <ConfigurationNotificationBanner /> : null}
+          {showConfigurationBanner ? <ConfigurationNotificationBanner /> : null}
           {children}
         </Flex>
       </Flex>

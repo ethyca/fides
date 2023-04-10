@@ -10,7 +10,7 @@ import pytest
 import requests
 import yaml
 from fastapi.testclient import TestClient
-from fideslang import models
+from fideslang import DEFAULT_TAXONOMY, models
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.engine.base import Engine
@@ -19,11 +19,11 @@ from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
 from fides.api.ctl.database.session import sync_engine
+from fides.api.ctl.sql_models import DataUse
 
 # from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
 
@@ -40,9 +40,6 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.jwt import generate_jwe
 from fides.lib.oauth.roles import (
     APPROVER,
@@ -135,7 +132,6 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 def config():
-
     CONFIG.test_mode = True
     yield CONFIG
 
@@ -211,18 +207,21 @@ def user(db):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=SCOPE_REGISTRY,
+        roles=[APPROVER],
+        scopes=[],
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()
     db.refresh(client)
     yield user
+    try:
+        client.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture
@@ -804,9 +803,33 @@ def owner_user(db):
         user_id=user.id,
     )
 
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [OWNER]}
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [OWNER]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def approver_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
     )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[APPROVER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()
@@ -827,13 +850,66 @@ def viewer_user(db):
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=[],
         roles=[VIEWER],
         user_id=user.id,
     )
 
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def contributor_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_contributor_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[CONTRIBUTOR],
+        user_id=user.id,
+    )
+
     FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [], "roles": [VIEWER]}
+        db=db, data={"user_id": user.id, "roles": [CONTRIBUTOR]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def viewer_and_approver_user(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fides_viewer_and_approver_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER_AND_APPROVER],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "roles": [VIEWER_AND_APPROVER]}
     )
 
     db.add(client)
@@ -845,7 +921,6 @@ def viewer_user(db):
 
 @pytest.fixture(scope="function")
 def system(db: Session) -> System:
-
     system = System.create(
         db=db,
         data={
@@ -877,13 +952,111 @@ def system(db: Session) -> System:
     return system
 
 
+@pytest.fixture(scope="function")
+def system_third_party_sharing(db: Session) -> System:
+    system_third_party_sharing = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "data_responsibility_title": "Processor",
+            "privacy_declarations": [
+                {
+                    "name": "Collect data for third party sharing",
+                    "data_categories": ["user.device.cookie_id"],
+                    "data_use": "third_party_sharing",
+                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                    "data_subjects": ["customer"],
+                    "dataset_references": None,
+                    "egress": None,
+                    "ingress": None,
+                }
+            ],
+            "data_protection_impact_assessment": {
+                "is_required": False,
+                "progress": None,
+                "link": None,
+            },
+        },
+    )
+    return system_third_party_sharing
+
+
+@pytest.fixture(scope="function")
+def system_provide_service(db: Session) -> System:
+    system_provide_service = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "data_responsibility_title": "Processor",
+            "privacy_declarations": [
+                {
+                    "name": "The source service, system, or product being provided to the user",
+                    "data_categories": ["user.device.cookie_id"],
+                    "data_use": "provide.service",
+                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                    "data_subjects": ["customer"],
+                    "dataset_references": None,
+                    "egress": None,
+                    "ingress": None,
+                }
+            ],
+            "data_protection_impact_assessment": {
+                "is_required": False,
+                "progress": None,
+                "link": None,
+            },
+        },
+    )
+    return system_provide_service
+
+
+@pytest.fixture(scope="function")
+def system_provide_service_operations_support_optimization(db: Session) -> System:
+    system_provide_service_operations_support_optimization = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "data_responsibility_title": "Processor",
+            "privacy_declarations": [
+                {
+                    "name": "Optimize and improve support operations in order to provide the service",
+                    "data_categories": ["user.device.cookie_id"],
+                    "data_use": "provide.service.operations.support.optimization",
+                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+                    "data_subjects": ["customer"],
+                    "dataset_references": None,
+                    "egress": None,
+                    "ingress": None,
+                }
+            ],
+            "data_protection_impact_assessment": {
+                "is_required": False,
+                "progress": None,
+                "link": None,
+            },
+        },
+    )
+    return system_provide_service_operations_support_optimization
+
+
 @pytest.fixture
 def system_manager_client(db, system):
     """Return a client assigned to a system for authentication purposes."""
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
-        scopes=[],
         roles=[],
         systems=[system.id],
     )
@@ -892,3 +1065,12 @@ def system_manager_client(db, system):
     db.refresh(client)
     yield client
     client.delete(db)
+
+
+@pytest.fixture(scope="function")
+def load_default_data_uses(db):
+    for data_use in DEFAULT_TAXONOMY.data_use:
+        # weirdly, only in some test scenarios, we already have the default taxonomy
+        # loaded, in which case the create will throw an error. so we first check existence.
+        if DataUse.get_by(db, field="name", value=data_use.name) is None:
+            DataUse.create(db=db, data=data_use.dict())

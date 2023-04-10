@@ -66,7 +66,9 @@ def build_refined_target_paths(
 
 def refine_target_path(
     row: Row, target_path: List[str], only: Optional[List[Any]] = None
-) -> DetailedPath:  # Can also return a list of DetailedPaths if there are multiple matches.
+) -> (
+    DetailedPath
+):  # Can also return a list of DetailedPaths if there are multiple matches.
     """
     Recursively modify the target_path to be more detailed path(s) to the referenced data. Instead of just strings,
     the path will expand to include indices where applicable.
@@ -95,7 +97,9 @@ def refine_target_path(
     try:
         current_level = target_path[0]
         current_elem = row[current_level]
-    except KeyError:  # FieldPath not found in record, this is expected to happen when data doesn't exist in collection
+    except (
+        KeyError
+    ):  # FieldPath not found in record, this is expected to happen when data doesn't exist in collection
         return []
     except (
         IndexError,

@@ -36,6 +36,12 @@ class UserSettings(FidesSettings):
         default="test_encryption_key",
         description="An arbitrary string used to encrypt the user data stored in the database. Encryption is implemented using PGP.",
     )
+    username: str = Field(
+        default="", description="The username used to log into the Fides webserver."
+    )
+    password: str = Field(
+        default="", description="The password used to log into the Fides webserver."
+    )
 
     class Config:
         env_prefix = ENV_PREFIX

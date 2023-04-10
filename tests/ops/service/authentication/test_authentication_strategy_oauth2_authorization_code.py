@@ -250,7 +250,6 @@ class TestAuthorizationUrl:
         oauth2_authorization_code_connection_config,
         oauth2_authorization_code_configuration,
     ):
-
         # erase some secrets
         oauth2_authorization_code_connection_config.secrets["client_id"] = None
         oauth2_authorization_code_connection_config.secrets["client_secret"] = ""

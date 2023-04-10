@@ -76,8 +76,7 @@ EXECUTION_CHECKPOINTS = [
     CurrentStep.access,
     CurrentStep.erasure,
     CurrentStep.consent,
-    CurrentStep.erasure_email_post_send,
-    CurrentStep.consent_email_post_send,
+    CurrentStep.email_post_send,
     CurrentStep.post_webhooks,
 ]
 
@@ -127,7 +126,7 @@ class PrivacyRequestStatus(str, EnumType):
     in_processing = "in_processing"
     complete = "complete"
     paused = "paused"
-    awaiting_consent_email_send = "awaiting_consent_email_send"
+    awaiting_email_send = "awaiting_email_send"
     canceled = "canceled"
     error = "error"
 
@@ -254,7 +253,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
     due_date = Column(DateTime(timezone=True), nullable=True)
-    awaiting_consent_email_send_at = Column(DateTime(timezone=True), nullable=True)
+    awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
@@ -265,7 +264,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         return delta.days
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> PrivacyRequest:
+    def create(
+        cls, db: Session, *, data: Dict[str, Any], check_name: bool = True
+    ) -> PrivacyRequest:
         """
         Check whether this object has been passed a `requested_at` value. Default to
         the current datetime if not.
@@ -288,7 +289,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                     days=policy.execution_timeframe
                 )
 
-        return super().create(db=db, data=data)
+        return super().create(db=db, data=data, check_name=check_name)
 
     def delete(self, db: Session) -> None:
         """
@@ -735,11 +736,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             },
         )
 
-    def pause_processing_for_consent_email_send(self, db: Session) -> None:
-        """Put the privacy request in a state of awaiting_consent_email_send"""
-        if self.awaiting_consent_email_send_at is None:
-            self.awaiting_consent_email_send_at = datetime.utcnow()
-        self.status = PrivacyRequestStatus.awaiting_consent_email_send
+    def pause_processing_for_email_send(self, db: Session) -> None:
+        """Put the privacy request in a state of awaiting_email_send"""
+        if self.awaiting_email_send_at is None:
+            self.awaiting_email_send_at = datetime.utcnow()
+        self.status = PrivacyRequestStatus.awaiting_email_send
         self.save(db=db)
 
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
@@ -881,14 +882,24 @@ class Consent(Base):
     """The DB ORM model for Consent."""
 
     provided_identity_id = Column(
-        String, ForeignKey(ProvidedIdentity.id), nullable=False
+        String,
+        ForeignKey(ProvidedIdentity.id),
+        nullable=False,
     )
     data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
-    has_gpc_flag = Column(Boolean, server_default="f", default=False, nullable=False)
+    has_gpc_flag = Column(
+        Boolean,
+        server_default="f",
+        default=False,
+        nullable=False,
+    )
     conflicts_with_gpc = Column(
-        Boolean, server_default="f", default=False, nullable=False
+        Boolean,
+        server_default="f",
+        default=False,
+        nullable=False,
     )
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
@@ -902,10 +913,19 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     provided_identity_id = Column(
         String, ForeignKey(ProvidedIdentity.id), nullable=False
     )
-
     provided_identity = relationship(
         ProvidedIdentity,
         back_populates="consent_request",
+    )
+
+    preferences = Column(
+        MutableList.as_mutable(JSONB),
+        nullable=True,
+    )
+
+    identity_verified_at = Column(
+        DateTime(timezone=True),
+        nullable=True,
     )
 
     privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
@@ -918,12 +938,18 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
-    def verify_identity(self, provided_code: str) -> None:
+    def verify_identity(
+        self,
+        db: Session,
+        provided_code: str,
+    ) -> None:
         """
         A method to call the internal identity verification method provided by the
         `IdentityVerificationMixin`.
         """
         self._verify_identity(provided_code=provided_code)
+        self.identity_verified_at = datetime.utcnow()
+        self.save(db)
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.

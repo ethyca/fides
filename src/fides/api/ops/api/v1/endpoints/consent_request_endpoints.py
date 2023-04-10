@@ -127,7 +127,9 @@ def consent_request_verify(
 ) -> ConsentPreferences:
     """Verifies the verification code and returns the current consent preferences if successful."""
     _, provided_identity = _get_consent_request_and_provided_identity(
-        db=db, consent_request_id=consent_request_id, verification_code=data.code
+        db=db,
+        consent_request_id=consent_request_id,
+        verification_code=data.code,
     )
 
     if not provided_identity.hashed_value:
@@ -186,7 +188,9 @@ def get_consent_preferences_no_id(
         )
 
     _, provided_identity = _get_consent_request_and_provided_identity(
-        db=db, consent_request_id=consent_request_id, verification_code=None
+        db=db,
+        consent_request_id=consent_request_id,
+        verification_code=None,
     )
 
     if not provided_identity.hashed_value:
@@ -204,22 +208,23 @@ def get_consent_preferences_no_id(
     response_model=ConsentPreferences,
 )
 def get_consent_preferences(
-    *, db: Session = Depends(get_db), data: Identity
+    *,
+    db: Session = Depends(get_db),
+    data: Identity,
 ) -> ConsentPreferences:
     """Gets the consent preferences for the specified user."""
-    if data.email:
-        lookup = data.email
-    elif data.phone_number:
-        lookup = data.phone_number
-    else:
+    if not data.email and not data.phone_number:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="No identity information provided"
         )
 
+    # From the above check we know at least one exists
+    lookup = data.email if data.email else data.phone_number
+
     identity = ProvidedIdentity.filter(
         db,
         conditions=(
-            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(lookup))
+            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(str(lookup)))
             & (ProvidedIdentity.privacy_request_id.is_(None))
         ),
     ).first()
@@ -309,6 +314,8 @@ def set_consent_preferences(
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
+    consent_request.preferences = [schema.dict() for schema in data.consent]
+    consent_request.save(db=db)
 
     if not provided_identity.hashed_value:
         raise HTTPException(
@@ -462,12 +469,16 @@ def _get_consent_request_and_provided_identity(
 
     if not consent_request:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Consent request not found"
+            status_code=HTTP_404_NOT_FOUND,
+            detail="Consent request not found",
         )
 
     if ConfigProxy(db).execution.subject_identity_verification_required:
         try:
-            consent_request.verify_identity(verification_code)
+            consent_request.verify_identity(
+                db,
+                verification_code,
+            )
         except IdentityVerificationException as exc:
             raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
         except PermissionError as exc:
@@ -477,7 +488,8 @@ def _get_consent_request_and_provided_identity(
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 
     provided_identity: ProvidedIdentity | None = ProvidedIdentity.get_by_key_or_id(
-        db, data={"id": consent_request.provided_identity_id}
+        db,
+        data={"id": consent_request.provided_identity_id},
     )
 
     # It shouldn't be possible to hit this because the cascade delete of the identity

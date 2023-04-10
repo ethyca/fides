@@ -56,20 +56,18 @@ from fides.api.ops.common_exceptions import (
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    load_registry,
-    registry_file,
     update_saas_configs,
 )
 
 # pylint: disable=wildcard-import, unused-wildcard-import
-from fides.api.ops.service.privacy_request.consent_email_batch_service import (
-    initiate_scheduled_batch_consent_email_send,
+from fides.api.ops.service.privacy_request.email_batch_service import (
+    initiate_scheduled_batch_email_send,
 )
 from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import _log_exception
-from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_cli
+from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_prod
 from fides.api.ops.util.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -135,9 +133,8 @@ def create_fides_app(
     fastapi_app.include_router(api_router)
 
     if security_env == "dev":
-        # This removes auth requirements for CLI-related endpoints
-        # and is the default
-        fastapi_app.dependency_overrides[verify_oauth_client_cli] = get_root_client
+        # This removes auth requirements for specific endpoints
+        fastapi_app.dependency_overrides[verify_oauth_client_prod] = get_root_client
         fastapi_app.dependency_overrides[
             verify_oauth_client_for_system_from_request_body_cli
         ] = get_system_schema
@@ -273,10 +270,9 @@ async def setup_server() -> None:
 
     logger.info("Validating SaaS connector templates...")
     try:
-        registry = load_registry(registry_file)
         db = get_api_session()
-        update_saas_configs(registry, db)
-        logger.info("Finished loading saas templates")
+        update_saas_configs(db)
+        logger.info("Finished loading SaaS templates")
     except Exception as e:
         logger.error(
             "Error occurred during SaaS connector template validation: {}",
@@ -299,7 +295,7 @@ async def setup_server() -> None:
     if not scheduler.running:
         scheduler.start()
 
-    initiate_scheduled_batch_consent_email_send()
+    initiate_scheduled_batch_email_send()
 
     logger.debug("Sending startup analytics events...")
     await send_analytics_event(

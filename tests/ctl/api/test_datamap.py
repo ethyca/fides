@@ -11,8 +11,13 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     CustomFieldDefinition,
     System,
 )
+from fides.api.ops.common_exceptions import SystemManagerException
 from fides.api.ops.util.data_category import DataCategory
 from fides.core.config import FidesConfig
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.roles import VIEWER
 
 HEADERS_ROW_RESPONSE_PAYLOAD = {
     "dataset.name": "Fides Dataset",
@@ -45,6 +50,7 @@ HEADERS_ROW_RESPONSE_PAYLOAD = {
     "system.description": "Description of the System",
     "system.ingress": "Related Systems which receive data to this System",
     "system.egress": "Related Systems which send data to this System",
+    "system.users": "Data Steward",
 }
 
 HEADERS_ROW_SINGLE_CUSTOM_FIELD = HEADERS_ROW_RESPONSE_PAYLOAD.copy()
@@ -92,7 +98,16 @@ NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD = {
     "system.description": "Test Policy",
     "system.ingress": "",
     "system.egress": "",
+    "system.users": "",
 }
+
+
+NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER = (
+    NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD.copy()
+)
+NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER.update(
+    {"system.users": "test_system_manager_user"}
+)
 
 NO_PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_CUSTOM_FIELD = (
     NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD.copy()
@@ -152,6 +167,7 @@ PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD = {
     "system.description": "Test Policy 2",
     "system.ingress": "",
     "system.egress": "",
+    "system.users": "",
 }
 
 PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_CUSTOM_FIELD = (
@@ -182,11 +198,30 @@ PRIVACY_DECLARATION_SYSTEM_ROW_TWO_CUSTOM_FIELDS_ONE_MULTIVAL.update(
     {"system.owner": "Jane"}
 )
 
+PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_SYSTEM_MANAGER = (
+    PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD.copy()
+)
+PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_SYSTEM_MANAGER.update(
+    {"system.users": "test_system_manager_user"}
+)
+
+
 ### Expected Responses
 
 EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_NO_PRIVACY_DECLARATION = [
     HEADERS_ROW_RESPONSE_PAYLOAD,
     NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+]
+
+
+EXPECTED_NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER = [
+    HEADERS_ROW_RESPONSE_PAYLOAD,
+    NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER,
+]
+
+EXPECTED_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER = [
+    HEADERS_ROW_RESPONSE_PAYLOAD,
+    PRIVACY_DECLARATION_SYSTEM_ROW_SINGLE_SYSTEM_MANAGER,
 ]
 
 EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_PRIVACY_DECLARATION = [
@@ -274,6 +309,54 @@ EXPECTED_RESPONSE_TWO_CUSTOM_FIELDS_ONE_MULTIVAL_TWO_SYSTEMS = [
     PRIVACY_DECLARATION_SYSTEM_ROW_TWO_CUSTOM_FIELDS_ONE_MULTIVAL,
 ]
 
+EXPECTED_RESPONSE_TWO_SYSTEMS_TWO_CUSTOM_FIELDS_ONLY_PRIVACY_DECLARATIONS = [
+    {
+        **HEADERS_ROW_RESPONSE_PAYLOAD,
+        "system.country": "country",
+        "system.owner": "owner",
+    },
+    {
+        **NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.country": "usa",
+        "system.owner": "N/A",
+    },
+    {
+        **PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.country": "canada",
+        "system.owner": "Jane",
+    },
+]
+
+EXPECTED_RESPONSE_TWO_SYSTEMS_TWO_CUSTOM_FIELDS_ONLY_NO_PRIVACY_DECLARATIONS = [
+    {
+        **HEADERS_ROW_RESPONSE_PAYLOAD,
+        "system.country": "country",
+        "system.owner": "owner",
+    },
+    {
+        **NO_PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.country": "usa",
+        "system.owner": "John",
+    },
+    {
+        **PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.country": "N/A",
+        "system.owner": "Jane",
+    },
+]
+
+
+PRIVACY_DECLARATION_WITH_NAME_SYSTEM_ROW_RESPONSE_PAYLOAD = [
+    {
+        **HEADERS_ROW_RESPONSE_PAYLOAD,
+        "system.privacy_declaration.name": "Privacy Declaration Name",
+    },
+    {
+        **PRIVACY_DECLARATION_SYSTEM_ROW_RESPONSE_PAYLOAD,
+        "system.privacy_declaration.name": "declaration-name-2",
+    },
+]
+
 
 @pytest.fixture
 def system_no_privacy_declarations(db):
@@ -293,6 +376,65 @@ def system_no_privacy_declarations(db):
     system_db_record = System.create_or_update(db=db, data=system.dict())
     yield system_db_record
     system_db_record.delete(db)
+
+
+def create_manager(db, system) -> FidesUser:
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_system_manager_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[],
+        roles=[VIEWER],
+        user_id=user.id,
+        systems=[system.id],
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+
+    user.set_as_system_manager(db, system)
+    return user
+
+
+@pytest.fixture
+def system_with_manager_no_privacy_declarations(db, system_no_privacy_declarations):
+    """
+    A sample system without privacy declarations that has a manager assigned to it.
+    """
+
+    user = create_manager(db, system_no_privacy_declarations)
+
+    yield user
+    try:
+        user.remove_as_system_manager(db, system_no_privacy_declarations)
+    except SystemManagerException:
+        pass
+    user.delete(db)
+
+
+@pytest.fixture
+def system_with_manager_with_privacy_declarations(db, system_privacy_declarations):
+    """
+    A sample system with privacy declarations that has a manager assigned to it.
+    """
+
+    user = create_manager(db, system_privacy_declarations)
+
+    yield user
+    try:
+        user.remove_as_system_manager(db, system_privacy_declarations)
+    except SystemManagerException:
+        pass
+    user.delete(db)
 
 
 @pytest.fixture
@@ -542,6 +684,38 @@ def test_datamap_with_privacy_declaration(
     assert response.status_code == expected_status_code
     if expected_response_payload is not None:
         assert response.json() == expected_response_payload
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("system_privacy_declarations")
+def test_datamap_with_privacy_declaration_with_name(
+    test_config: FidesConfig,
+    test_client: TestClient,
+) -> None:
+    response = test_client.get(
+        test_config.cli.server_url
+        + API_PREFIX
+        + "/datamap/default_organization?include_deprecated_columns=true",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == PRIVACY_DECLARATION_WITH_NAME_SYSTEM_ROW_RESPONSE_PAYLOAD
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("system_privacy_declarations")
+def test_datamap_with_privacy_declaration_without_name(
+    test_config: FidesConfig,
+    test_client: TestClient,
+) -> None:
+    response = test_client.get(
+        test_config.cli.server_url
+        + API_PREFIX
+        + "/datamap/default_organization?include_deprecated_columns=false",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == EXPECTED_RESPONSE_NO_CUSTOM_FIELDS_PRIVACY_DECLARATION
 
 
 @pytest.mark.integration
@@ -859,6 +1033,83 @@ def test_datamap_two_custom_fields_two_systems(
 
 @pytest.mark.integration
 @pytest.mark.usefixtures(
+    "country_field_instance_no_privacy_declarations",
+    "owner_field_instance_no_privacy_declarations",
+    "owner_field_instance_privacy_declarations",
+    "country_field_instance_privacy_declarations",
+)
+def test_datamap_two_custom_fields_two_systems_added_different_order(
+    test_config,
+    test_client,
+):
+    """
+    Tests expected response with two systems - one with privacy declarations, one without -
+    and two custom fields populated on both systems. The two custom fields are populated
+    in different orders on each system, respectively. This helps surface any bugs in the code
+    that assume the same ordering of custom fields for each system (row) in the result set.
+    """
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/" + "default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == EXPECTED_RESPONSE_TWO_CUSTOM_FIELDS_TWO_SYSTEMS
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures(
+    "country_field_instance_no_privacy_declarations",
+    "owner_field_instance_privacy_declarations",
+    "country_field_instance_privacy_declarations",
+)
+def test_datamap_two_systems_two_custom_fields_only_privacy_declarations(
+    test_config,
+    test_client,
+):
+    """
+    Tests expected response with two systems - one with privacy declarations, one without -
+    and two custom fields populated on the system with privacy declarations,
+    and only one custom field populated on the system without privacy declarations.
+    """
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/" + "default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert (
+        response.json()
+        == EXPECTED_RESPONSE_TWO_SYSTEMS_TWO_CUSTOM_FIELDS_ONLY_PRIVACY_DECLARATIONS
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures(
+    "country_field_instance_no_privacy_declarations",
+    "owner_field_instance_no_privacy_declarations",
+    "owner_field_instance_privacy_declarations",
+)
+def test_datamap_two_systems_two_custom_fields_only_no_privacy_declarations(
+    test_config,
+    test_client,
+):
+    """
+    Tests expected response with two systems - one with privacy declarations, one without -
+    and two custom fields populated on the system with no privacy declarations,
+    and only one custom field populated on the system with privacy declarations.
+    """
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/" + "default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert (
+        response.json()
+        == EXPECTED_RESPONSE_TWO_SYSTEMS_TWO_CUSTOM_FIELDS_ONLY_NO_PRIVACY_DECLARATIONS
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures(
     "country_multival_field_instance_no_privacy_declarations",
     "owner_field_instance_no_privacy_declarations",
     "country_multival_field_instance_privacy_declarations",
@@ -880,3 +1131,31 @@ def test_datamap_two_custom_fields_one_multival_two_systems(
     assert (
         response.json() == EXPECTED_RESPONSE_TWO_CUSTOM_FIELDS_ONE_MULTIVAL_TWO_SYSTEMS
     )
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("system_with_manager_no_privacy_declarations")
+def test_datamap_with_system_manager(
+    test_config: FidesConfig,
+    test_client: TestClient,
+) -> None:
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == EXPECTED_NO_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("system_with_manager_with_privacy_declarations")
+def test_datamap_with_system_manager_with_privacy_declarations(
+    test_config: FidesConfig,
+    test_client: TestClient,
+) -> None:
+    response = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/datamap/default_organization",
+        headers=test_config.user.auth_header,
+    )
+    assert response.status_code == 200
+    assert response.json() == EXPECTED_PRIVACY_DECLARATION_SYSTEM_ROW_SYSTEM_MANAGER

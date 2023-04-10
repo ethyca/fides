@@ -21,6 +21,22 @@ from utils_nox import COMPOSE_DOWN_VOLUMES
 
 
 @nox_session()
+def shell(session: Session) -> None:
+    """
+    Open a shell in an already-running Fides webserver container.
+
+    If the container is not running, the command will fail.
+    """
+    shell_command = (*EXEC_IT, "/bin/bash")
+    try:
+        session.run(*shell_command, external=True)
+    except CommandFailed:
+        session.error(
+            "Could not connect to the webserver container. Please confirm it is running and try again."
+        )
+
+
+@nox_session()
 def dev(session: Session) -> None:
     """
     Spin up the Fides webserver in development mode alongside it's Postgres

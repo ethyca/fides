@@ -32,6 +32,7 @@ disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = [
+  "AccessControl.*",
   "alembic.*",
   "apscheduler.*",
   "boto3.*",
@@ -52,6 +53,7 @@ module = [
   "plotly.*",
   "pydash.*",
   "pymongo.*",
+  "RestrictedPython.*",
   "sendgrid.*",
   "snowflake.*",
   "sqlalchemy.ext.*",

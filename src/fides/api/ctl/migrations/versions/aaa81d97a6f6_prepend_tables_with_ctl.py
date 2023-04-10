@@ -93,7 +93,6 @@ def upgrade():
 
 
 def downgrade():
-
     op.rename_table("ctl_data_categories", "data_categories")
     op.execute("ALTER INDEX ctl_data_categories_pkey RENAME TO data_categories_pkey")
     op.execute(

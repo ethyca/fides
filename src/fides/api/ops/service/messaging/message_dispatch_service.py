@@ -19,7 +19,6 @@ from fides.api.ops.models.messaging import (  # type: ignore[attr-defined]
     get_messaging_method,
 )
 from fides.api.ops.models.privacy_request import (
-    CheckpointActionRequired,
     PrivacyRequestError,
     PrivacyRequestNotifications,
 )
@@ -27,6 +26,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     ConsentEmailFulfillmentBodyParams,
     EmailForActionType,
+    ErasureRequestBodyParams,
     ErrorNotificationBodyParams,
     FidesopsMessage,
     MessagingActionType,
@@ -122,7 +122,7 @@ def dispatch_message(
             SubjectIdentityVerificationBodyParams,
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
-            List[CheckpointActionRequired],
+            ErasureRequestBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
@@ -159,7 +159,7 @@ def dispatch_message(
         )
     else:  # pragma: no cover
         # This is here as a fail safe, but it should be impossible to reach because
-        # is controlled by a datbase enum field.
+        # is controlled by a database enum field.
         logger.error("Notification service type is not valid: {}", service_type)
         raise MessageDispatchException(
             f"Notification service type is not valid: {service_type}"
@@ -277,9 +277,13 @@ def _build_email(  # pylint: disable=too-many-return-statements
     if action_type == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT:
         base_template = get_email_template(action_type)
         return EmailForActionType(
-            subject="Data erasure request",
+            subject=f"Notification of user erasure requests from {body_params.controller}",
             body=base_template.render(
-                {"dataset_collection_action_required": body_params}
+                {
+                    "controller": body_params.controller,
+                    "third_party_vendor_name": body_params.third_party_vendor_name,
+                    "identities": body_params.identities,
+                }
             ),
         )
     if action_type == MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT:
@@ -381,7 +385,7 @@ def _mailchimp_transactional_dispatcher(
             "message": {
                 "from_email": from_email,
                 "subject": message.subject,
-                "text": message.body,
+                "html": message.body,
                 # On Mailchimp Transactional's free plan `to` must be an email of the same
                 # domain as `from_email`
                 "to": [{"email": to.strip(), "type": "to"}],
@@ -408,6 +412,7 @@ def _mailchimp_transactional_dispatcher(
             "soft-bounce": "A temporary error occured with the target inbox. For example, this inbox could be full. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
             "hard-bounce": "A permanent error occured with the target inbox. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
             "recipient-domain-mismatch": f"You are not authorised to send email to this domain from {from_email}.",
+            "unsigned": f"The sending domain for {from_email} has not been fully configured for Mailchimp Transactional. See https://mailchimp.com/developer/transactional/docs/authentication-delivery/#authentication/ for more info.",
         }
         explanation = explanations.get(reason, "")
         raise MessageDispatchException(

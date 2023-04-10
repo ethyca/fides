@@ -16,7 +16,6 @@ from fides.api.ops.service.pagination.pagination_strategy import PaginationStrat
 
 
 class OffsetPaginationStrategy(PaginationStrategy):
-
     name = "offset"
     configuration_model = OffsetPaginationConfiguration
 

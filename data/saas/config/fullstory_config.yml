@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Fullstory SaaS Config
+  name: Fullstory
   type: fullstory
   description: A sample schema representing the Fullstory connector for Fides
   version: 0.0.1

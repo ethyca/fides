@@ -14,17 +14,7 @@ from constants_nox import (
     PRIVACY_CENTER_IMAGE,
     SAMPLE_APP_IMAGE,
 )
-
-
-def get_current_tag() -> str:
-    """Get the current git tag."""
-    from git.repo import Repo
-
-    repo = Repo()
-    git_session = repo.git()
-    git_session.fetch("--force", "--tags")
-    current_tag = git_session.describe("--tags", "--dirty", "--always")
-    return current_tag
+from git_nox import get_current_tag
 
 
 def get_current_image() -> str:

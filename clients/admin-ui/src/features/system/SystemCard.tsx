@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
+import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import { System } from "~/types/api";
 
 import { getErrorMessage, isErrorResult } from "../common/helpers";
@@ -38,7 +39,7 @@ const SystemCard = ({ system }: SystemCardProps) => {
 
   const handleEdit = () => {
     dispatch(setActiveSystem(system));
-    router.push("/system/configure");
+    router.push(`${SYSTEM_ROUTE}/configure/${system.fides_key}`);
   };
 
   const handleDelete = async () => {

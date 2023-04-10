@@ -100,7 +100,6 @@ class TestMessageDispatchService:
     def test_email_dispatch_mailgun_config_not_found(
         self, mock_mailgun_dispatcher: Mock, db: Session
     ) -> None:
-
         with pytest.raises(MessageDispatchException) as exc:
             dispatch_message(
                 db=db,
@@ -123,7 +122,6 @@ class TestMessageDispatchService:
     def test_email_dispatch_mailgun_config_no_secrets(
         self, mock_mailgun_dispatcher: Mock, db: Session
     ) -> None:
-
         messaging_config = MessagingConfig.create(
             db=db,
             data={
@@ -250,24 +248,14 @@ class TestMessageDispatchService:
         )
 
     def test_fidesops_email_parse_object(self):
-        body = [
-            CheckpointActionRequired(
-                step=CurrentStep.erasure,
-                collection=CollectionAddress("email_dataset", "test_collection"),
-                action_needed=[
-                    ManualAction(
-                        locators={"email": "test@example.com"},
-                        get=None,
-                        update={"phone": "null_rewrite"},
-                    )
-                ],
-            )
-        ]
-
         FidesopsMessage.parse_obj(
             {
                 "action_type": MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
-                "body_params": [action.dict() for action in body],
+                "body_params": {
+                    "controller": "Test Organization",
+                    "third_party_vendor_name": "System",
+                    "identities": ["test@example.com"],
+                },
             }
         )
 
@@ -287,7 +275,6 @@ class TestMessageDispatchService:
     def test_sms_dispatch_twilio_success(
         self, mock_twilio_dispatcher: Mock, db: Session, messaging_config_twilio_sms
     ) -> None:
-
         dispatch_message(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
@@ -325,7 +312,6 @@ class TestMessageDispatchService:
     def test_sms_dispatch_twilio_config_not_found(
         self, mock_twilio_dispatcher: Mock, db: Session
     ) -> None:
-
         with pytest.raises(MessageDispatchException) as exc:
             dispatch_message(
                 db=db,
@@ -349,7 +335,6 @@ class TestMessageDispatchService:
     def test_sms_dispatch_twilio_config_no_secrets(
         self, mock_mailgun_dispatcher: Mock, db: Session
     ) -> None:
-
         messaging_config = MessagingConfig.create(
             db=db,
             data={

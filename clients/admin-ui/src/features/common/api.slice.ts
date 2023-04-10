@@ -17,6 +17,14 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["DatastoreConnection", "Dataset", "Datasets"],
+  tagTypes: [
+    "Data Category",
+    "Datamap",
+    "DatastoreConnection",
+    "Dataset",
+    "Datasets",
+    "System",
+    "PrivacyNotices",
+  ],
   endpoints: () => ({}),
 });

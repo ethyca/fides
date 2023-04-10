@@ -1,3 +1,5 @@
+import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+
 describe("User Authentication", () => {
   describe("when the user not logged in", () => {
     it("redirects them to the login page", () => {
@@ -7,7 +9,7 @@ describe("User Authentication", () => {
       cy.visit("/user-management");
       cy.location("pathname").should("eq", "/login");
 
-      cy.visit("/system");
+      cy.visit(SYSTEM_ROUTE);
       cy.location("pathname").should("eq", "/login");
 
       cy.getByTestId("Login");
@@ -44,12 +46,12 @@ describe("User Authentication", () => {
       cy.visit("/user-management");
       cy.getByTestId("User Management");
 
-      cy.visit("/system");
+      cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("Systems");
     });
 
     it("lets them log out", () => {
-      cy.visit("/system");
+      cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("Systems");
 
       cy.intercept("POST", "/api/v1/logout", {

@@ -1,7 +1,10 @@
+from io import BytesIO
 from typing import Optional
+from zipfile import BadZipFile, ZipFile
 
-from fastapi import Depends, HTTPException
+from fastapi import Body, Depends, HTTPException
 from fastapi.params import Security
+from fastapi.responses import JSONResponse
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -17,6 +20,7 @@ from starlette.status import (
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
+    CONNECTOR_TEMPLATE_REGISTER,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
@@ -25,6 +29,7 @@ from fides.api.ops.api.v1.scope_registry import (
 from fides.api.ops.api.v1.urn_registry import (
     AUTHORIZE,
     CONNECTION_TYPES,
+    REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
@@ -37,6 +42,7 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
     SaasConnectionTemplateValues,
 )
+from fides.api.ops.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
@@ -50,10 +56,8 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_authori
 )
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
-    ConnectorTemplate,
+    CustomConnectorTemplateLoader,
     create_connection_config_from_template_no_save,
-    load_registry,
-    registry_file,
     upsert_dataset_config_from_template,
 )
 from fides.api.ops.util.api_router import APIRouter
@@ -62,6 +66,7 @@ from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
+
 
 # Helper method to inject the parent ConnectionConfig into these child routes
 def _get_saas_connection_config(
@@ -200,7 +205,8 @@ def delete_saas_config(
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
 ) -> None:
     """Removes the SaaS config for the given connection config.
-    The corresponding dataset and secrets must be deleted before deleting the SaaS config"""
+    The corresponding dataset and secrets must be deleted before deleting the SaaS config
+    """
 
     logger.info("Finding SaaS config for connection '{}'", connection_config.key)
     saas_config = connection_config.saas_config
@@ -283,10 +289,9 @@ def instantiate_connection_from_template(
     fields are provided, persists the associated connection config and dataset to the database.
     """
 
-    registry: ConnectorRegistry = load_registry(registry_file)
-    connector_template: Optional[ConnectorTemplate] = registry.get_connector_template(
-        saas_connector_type
-    )
+    connector_template: Optional[
+        ConnectorTemplate
+    ] = ConnectorRegistry.get_connector_template(saas_connector_type)
     if not connector_template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -337,4 +342,37 @@ def instantiate_connection_from_template(
 
     return SaasConnectionTemplateResponse(
         connection=connection_config, dataset=dataset_config.ctl_dataset
+    )
+
+
+@router.post(
+    REGISTER_CONNECTOR_TEMPLATE,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_REGISTER])],
+)
+def register_custom_connector_template(
+    file: bytes = Body(..., media_type="application/zip"),
+    db: Session = Depends(deps.get_db),
+) -> JSONResponse:
+    """
+    Registers a custom connector template from a zip file uploaded by the user.
+    The endpoint performs the following steps:
+
+    1. Validates the uploaded file is a proper zip file.
+    2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.
+
+    If the uploaded file is not a valid zip file or there are any validation errors
+    when creating the ConnectorTemplates an HTTP 400 status code with error details is returned.
+    """
+
+    try:
+        with ZipFile(BytesIO(file), "r") as zip_file:
+            CustomConnectorTemplateLoader.save_template(db=db, zip_file=zip_file)
+    except BadZipFile:
+        raise HTTPException(status_code=400, detail="Invalid zip file")
+    except Exception as exc:
+        logger.exception("Error loading connector template from zip file.")
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    return JSONResponse(
+        content={"message": "Connector template successfully registered."}
     )

@@ -2,22 +2,23 @@ import { describe, expect, it } from "@jest/globals";
 
 import { ScopeRegistryEnum } from "~/types/api";
 
-import {
-  canAccessRoute,
-  configureNavGroups,
-  findActiveNav,
-  NAV_CONFIG,
-} from "./nav-config";
+import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
+import * as routes from "./routes";
 
 const ALL_SCOPES = [
   ScopeRegistryEnum.PRIVACY_REQUEST_READ,
   ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
   ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
   ScopeRegistryEnum.DATAMAP_READ,
-  ScopeRegistryEnum.CLI_OBJECTS_READ,
-  ScopeRegistryEnum.CLI_OBJECTS_CREATE,
-  ScopeRegistryEnum.CLI_OBJECTS_UPDATE,
+  ScopeRegistryEnum.SYSTEM_CREATE,
+  ScopeRegistryEnum.SYSTEM_READ,
+  ScopeRegistryEnum.SYSTEM_UPDATE,
+  ScopeRegistryEnum.CTL_DATASET_CREATE,
+  ScopeRegistryEnum.USER_UPDATE,
   ScopeRegistryEnum.USER_READ,
+  ScopeRegistryEnum.DATA_CATEGORY_CREATE,
+  ScopeRegistryEnum.ORGANIZATION_READ,
+  ScopeRegistryEnum.ORGANIZATION_UPDATE,
 ];
 
 describe("configureNavGroups", () => {
@@ -35,27 +36,30 @@ describe("configureNavGroups", () => {
     expect(navGroups[1]).toMatchObject({
       title: "Privacy requests",
       children: [
-        { title: "Request manager", path: "/privacy-requests" },
-        { title: "Connection manager", path: "/datastore-connection" },
+        { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
+        {
+          title: "Connection manager",
+          path: routes.DATASTORE_CONNECTION_ROUTE,
+        },
       ],
     });
 
-    // NOTE: the data map should _not_ include the Plus routes (/datamap, /classify-systems, etc.)
+    // NOTE: the data map should _not_ include the Plus routes (/plus/datamap, /classify-systems, etc.)
     expect(navGroups[2]).toMatchObject({
       title: "Data map",
       children: [
-        { title: "View systems", path: "/system" },
-        { title: "Add systems", path: "/add-systems" },
-        { title: "Manage datasets", path: "/dataset" },
+        { title: "View systems", path: routes.SYSTEM_ROUTE },
+        { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
+        { title: "Manage datasets", path: routes.DATASET_ROUTE },
       ],
     });
 
     expect(navGroups[3]).toMatchObject({
       title: "Management",
       children: [
-        { title: "Taxonomy", path: "/taxonomy" },
-        { title: "Users", path: "/user-management" },
-        { title: "About Fides", path: "/management/about" },
+        { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
+        { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
+        { title: "About Fides", path: routes.ABOUT_ROUTE },
       ],
     });
   });
@@ -72,25 +76,24 @@ describe("configureNavGroups", () => {
       children: [{ title: "Home", path: "/" }],
     });
 
-    // The data map _should_ include the actual "/datamap".
+    // The data map _should_ include the actual "/plus/datamap".
     expect(navGroups[2]).toMatchObject({
       title: "Data map",
       children: [
-        { title: "View map", path: "/datamap" },
-        { title: "View systems", path: "/system" },
-        { title: "Add systems", path: "/add-systems" },
-        { title: "Manage datasets", path: "/dataset" },
-        { title: "Classify systems", path: "/classify-systems" },
+        { title: "View map", path: routes.DATAMAP_ROUTE },
+        { title: "View systems", path: routes.SYSTEM_ROUTE },
+        { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
+        { title: "Manage datasets", path: routes.DATASET_ROUTE },
+        { title: "Classify systems", path: routes.CLASSIFY_SYSTEMS_ROUTE },
       ],
     });
   });
 
-  // TODO: tests temporarily disabled due to https://github.com/ethyca/fides/issues/2769
-  describe.skip("configure by scopes", () => {
+  describe("configure by scopes", () => {
     it("does not render paths the user does not have scopes for", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
-        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_READ],
+        userScopes: [ScopeRegistryEnum.SYSTEM_READ],
       });
 
       expect(navGroups[0]).toMatchObject({
@@ -100,7 +103,7 @@ describe("configureNavGroups", () => {
 
       expect(navGroups[1]).toMatchObject({
         title: "Data map",
-        children: [{ title: "View systems", path: "/system" }],
+        children: [{ title: "View systems", path: routes.SYSTEM_ROUTE }],
       });
     });
 
@@ -115,11 +118,6 @@ describe("configureNavGroups", () => {
         title: "Home",
         children: [{ title: "Home", path: "/" }],
       });
-
-      expect(navGroups[1]).toMatchObject({
-        title: "Management",
-        children: [{ title: "About Fides", path: "/management/about" }],
-      });
     });
 
     it("conditionally shows request manager using scopes", () => {
@@ -129,11 +127,13 @@ describe("configureNavGroups", () => {
       });
       expect(navGroups[1]).toMatchObject({
         title: "Privacy requests",
-        children: [{ title: "Request manager", path: "/privacy-requests" }],
+        children: [
+          { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
+        ],
       });
     });
 
-    it("does not show /datamap if plus is not enabled but user has the scope", () => {
+    it("does not show /plus/datamap if plus is not enabled but user has the scope", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: ALL_SCOPES,
@@ -144,13 +144,52 @@ describe("configureNavGroups", () => {
         children: [{ title: "Home", path: "/" }],
       });
 
-      // The data map should _not_ include the actual "/datamap".
+      // The data map should _not_ include the actual "/plus/datamap".
       expect(navGroups[2]).toMatchObject({
         title: "Data map",
         children: [
-          { title: "View systems", path: "/system" },
-          { title: "Add systems", path: "/add-systems" },
-          { title: "Manage datasets", path: "/dataset" },
+          { title: "View systems", path: routes.SYSTEM_ROUTE },
+          { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
+          { title: "Manage datasets", path: routes.DATASET_ROUTE },
+        ],
+      });
+    });
+  });
+
+  describe("configure by feature flags", () => {
+    it("excludes feature flagged routes when disabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        flags: undefined,
+      });
+
+      expect(navGroups[3]).toMatchObject({
+        title: "Management",
+        children: [
+          { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
+          { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
+          { title: "About Fides", path: routes.ABOUT_ROUTE },
+        ],
+      });
+    });
+
+    it("includes feature flagged routes when enabled", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        flags: {
+          organizationManagement: true,
+        },
+      });
+
+      expect(navGroups[3]).toMatchObject({
+        title: "Management",
+        children: [
+          { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
+          { title: "Organization", path: routes.ORGANIZATION_MANAGEMENT_ROUTE },
+          { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
+          { title: "About Fides", path: routes.ABOUT_ROUTE },
         ],
       });
     });
@@ -174,32 +213,32 @@ describe("findActiveNav", () => {
       },
     },
     {
-      path: "/system",
+      path: routes.SYSTEM_ROUTE,
       expected: {
         title: "Data map",
-        path: "/system",
+        path: routes.SYSTEM_ROUTE,
       },
     },
     {
-      path: "/datamap",
+      path: routes.DATAMAP_ROUTE,
       expected: {
         title: "Data map",
-        path: "/datamap",
+        path: routes.DATAMAP_ROUTE,
       },
     },
     {
-      path: "/add-systems",
+      path: routes.ADD_SYSTEMS_ROUTE,
       expected: {
         title: "Data map",
-        path: "/add-systems",
+        path: routes.ADD_SYSTEMS_ROUTE,
       },
     },
     // Inexact match is the default.
     {
-      path: "/datastore-connection/new",
+      path: `${routes.DATASTORE_CONNECTION_ROUTE}/new`,
       expected: {
         title: "Privacy requests",
-        path: "/datastore-connection",
+        path: routes.DATASTORE_CONNECTION_ROUTE,
       },
     },
   ] as const;
@@ -210,47 +249,6 @@ describe("findActiveNav", () => {
 
       expect(activeNav?.title).toEqual(expected.title);
       expect(activeNav?.path).toEqual(expected.path);
-    });
-  });
-
-  // TODO: tests temporarily disabled due to https://github.com/ethyca/fides/issues/2769
-  describe.skip("canAccessRoute", () => {
-    const accessTestCases = [
-      {
-        path: "/",
-        expected: true,
-        userScopes: [],
-      },
-      {
-        path: "/add-systems",
-        expected: false,
-        userScopes: [],
-      },
-      {
-        path: "/add-systems",
-        expected: true,
-        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
-      },
-      {
-        path: "/privacy-requests",
-        expected: false,
-        userScopes: [ScopeRegistryEnum.CLI_OBJECTS_CREATE],
-      },
-      {
-        path: "/privacy-requests",
-        expected: true,
-        userScopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
-      },
-      {
-        path: "/privacy-requests?queryParam",
-        expected: true,
-        userScopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
-      },
-    ];
-    accessTestCases.forEach(({ path, expected, userScopes }) => {
-      it(`${path} is scope restricted`, () => {
-        expect(canAccessRoute({ path, userScopes })).toBe(expected);
-      });
     });
   });
 });

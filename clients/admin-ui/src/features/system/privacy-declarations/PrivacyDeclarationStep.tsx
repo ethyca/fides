@@ -4,7 +4,6 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery"
 import NextLink from "next/link";
 
 import { useAppDispatch } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { setActiveSystem, useUpdateSystemMutation } from "~/features/system";
@@ -22,7 +21,6 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   const dispatch = useAppDispatch();
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const { isLoading, ...dataProps } = usePrivacyDeclarationData();
-  const { flags } = useFeatures();
 
   const handleSave = async (
     updatedDeclarations: PrivacyDeclaration[],
@@ -49,9 +47,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
       }
       toast.closeAll();
       toast(
-        successToastParams(
-          isDelete ? "Data use case deleted" : "Data use case saved"
-        )
+        successToastParams(isDelete ? "Data use deleted" : "Data use saved")
       );
       dispatch(setActiveSystem(result.data));
       return true;
@@ -97,7 +93,6 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
           system={system}
           onCollision={collisionWarning}
           onSave={handleSave}
-          includeDeprecatedFields={flags.privacyDeclarationDeprecatedFields}
           {...dataProps}
         />
       )}

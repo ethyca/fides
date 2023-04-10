@@ -10,6 +10,7 @@ from fides.api.ops.api.v1 import scope_registry as scopes
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.schemas.storage.storage import StorageType
+from fides.lib.oauth.roles import CONTRIBUTOR, OWNER, VIEWER
 
 
 class TestPatchApplicationConfig:
@@ -45,6 +46,27 @@ class TestPatchApplicationConfig:
         auth_header = generate_auth_header([scopes.CONFIG_READ])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
+
+    def test_patch_application_config_viewer_role(
+        self, api_client: TestClient, payload, url, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[VIEWER])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_patch_application_config_contributor_role(
+        self, api_client: TestClient, payload, url, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[CONTRIBUTOR])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_patch_application_config_admin_role(
+        self, api_client: TestClient, payload, url, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
 
     def test_patch_application_config_with_invalid_key(
         self,
@@ -231,7 +253,6 @@ class TestPatchApplicationConfig:
         payload,
         db: Session,
     ):
-
         payload = {"notifications": {"send_request_completion_notification": False}}
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.patch(
@@ -257,7 +278,6 @@ class TestPatchApplicationConfig:
         payload,
         db: Session,
     ):
-
         payload = {
             "notifications": {"notification_service_type": "invalid_service_type"}
         }

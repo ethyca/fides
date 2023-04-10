@@ -70,10 +70,12 @@ const DatasetsTable = () => {
               <Td pl={1}>{dataset.description}</Td>
               {features.plus ? (
                 <Td pl={1} data-testid={`dataset-status-${dataset.fides_key}`}>
-                  <ClassificationStatusBadge
-                    resource={GenerateTypes.DATASETS}
-                    status={classifyDataset?.status}
-                  />
+                  {classifyDataset?.status ? (
+                    <ClassificationStatusBadge
+                      resource={GenerateTypes.DATASETS}
+                      status={classifyDataset?.status}
+                    />
+                  ) : null}
                 </Td>
               ) : null}
             </Tr>

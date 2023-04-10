@@ -3,12 +3,19 @@ import time
 import unittest.mock as mock
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, Generator, List
 
 import pytest
 from requests import Session
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset
 from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.limiter.rate_limiter import (
@@ -18,6 +25,77 @@ from fides.api.ops.service.connectors.limiter.rate_limiter import (
     RateLimiterTimeoutException,
 )
 from fides.api.ops.task import graph_task
+from fides.api.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
+from fides.lib.db import session
+
+
+@pytest.fixture
+def zendesk_config() -> Dict[str, Any]:
+    return load_config_with_replacement(
+        "data/saas/config/zendesk_config.yml",
+        "<instance_fides_key>",
+        "zendesk_instance",
+    )
+
+
+@pytest.fixture
+def zendesk_dataset() -> Dict[str, Any]:
+    return load_dataset_with_replacement(
+        "data/saas/dataset/zendesk_dataset.yml",
+        "<instance_fides_key>",
+        "zendesk_instance",
+    )[0]
+
+
+@pytest.fixture(scope="function")
+def zendesk_connection_config(
+    db: session,
+    zendesk_config,
+    zendesk_secrets,
+) -> Generator:
+    fides_key = zendesk_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": zendesk_secrets,
+            "saas_config": zendesk_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture
+def zendesk_dataset_config(
+    db: Session,
+    zendesk_connection_config: ConnectionConfig,
+    zendesk_dataset: Dict[str, Any],
+) -> Generator:
+    fides_key = zendesk_dataset["fides_key"]
+    zendesk_connection_config.name = fides_key
+    zendesk_connection_config.key = fides_key
+    zendesk_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, zendesk_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": zendesk_connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 def simulate_calls_with_limiter(

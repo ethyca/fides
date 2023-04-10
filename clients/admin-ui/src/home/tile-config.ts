@@ -6,8 +6,6 @@ export const configureTiles = ({
   config,
   userScopes,
   hasPlus = false,
-  hasSystems = false,
-  hasConnections = false,
 }: {
   config: ModuleCardConfig[];
   userScopes: ScopeRegistryEnum[];
@@ -19,14 +17,6 @@ export const configureTiles = ({
 
   if (!hasPlus) {
     filteredConfig = filteredConfig.filter((c) => !c.requiresPlus);
-  }
-
-  if (!hasSystems) {
-    filteredConfig = filteredConfig.filter((c) => !c.requiresSystems);
-  }
-
-  if (!hasConnections) {
-    filteredConfig = filteredConfig.filter((c) => !c.requiresConnections);
   }
 
   const filteredByScope: ModuleCardConfig[] = [];

@@ -1,3 +1,4 @@
+from typing import List, Set
 from unittest import mock
 
 import pytest
@@ -20,13 +21,11 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.policy import ActionType
 from fides.api.ops.schemas.connection_configuration.connection_config import SystemType
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
-    load_registry,
-    registry_file,
 )
-from fides.api.ops.util.saas_util import encode_file_contents
 from fides.lib.models.client import ClientDetail
 
 
@@ -34,10 +33,6 @@ class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
         return V1_URL_PREFIX + CONNECTION_TYPES
-
-    @pytest.fixture(scope="session")
-    def saas_template_registry(self):
-        return load_registry(registry_file)
 
     def test_get_connection_types_not_authenticated(self, api_client, url):
         resp = api_client.get(url, headers={})
@@ -55,7 +50,6 @@ class TestGetConnections:
         api_client: TestClient,
         generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(url, headers=auth_header)
@@ -63,8 +57,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(saas_template_registry.connector_types()) - 5
-        )  # there are 5 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
+        )  # there are 4 connection types that are not returned by the endpoint
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -72,15 +66,13 @@ class TestGetConnections:
             "human_readable": "PostgreSQL",
             "encoded_icon": None,
         } in data
-        first_saas_type = saas_template_registry.connector_types().pop()
-        first_saas_template = saas_template_registry.get_connector_template(
-            first_saas_type
-        )
+        first_saas_type = ConnectorRegistry.connector_types().pop()
+        first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
         assert {
             "identifier": first_saas_type,
             "type": SystemType.saas.value,
             "human_readable": first_saas_template.human_readable,
-            "encoded_icon": encode_file_contents(first_saas_template.icon),
+            "encoded_icon": first_saas_template.icon,
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -93,7 +85,6 @@ class TestGetConnections:
         api_client,
         generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
@@ -101,9 +92,9 @@ class TestGetConnections:
         expected_saas_templates = [
             (
                 connector_type,
-                saas_template_registry.get_connector_template(connector_type),
+                ConnectorRegistry.get_connector_template(connector_type),
             )
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
@@ -111,7 +102,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "encoded_icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": saas_template[1].icon,
             }
             for saas_template in expected_saas_templates
         ]
@@ -127,9 +118,9 @@ class TestGetConnections:
         expected_saas_templates = [
             (
                 connector_type,
-                saas_template_registry.get_connector_template(connector_type),
+                ConnectorRegistry.get_connector_template(connector_type),
             )
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
@@ -137,7 +128,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "encoded_icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": saas_template[1].icon,
             }
             for saas_template in expected_saas_templates
         ]
@@ -165,11 +156,7 @@ class TestGetConnections:
             assert expected_data in data
 
     def test_search_connection_types_case_insensitive(
-        self,
-        api_client,
-        generate_auth_header,
-        url,
-        saas_template_registry: ConnectorRegistry,
+        self, api_client, generate_auth_header, url
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
@@ -177,9 +164,9 @@ class TestGetConnections:
         expected_saas_types = [
             (
                 connector_type,
-                saas_template_registry.get_connector_template(connector_type),
+                ConnectorRegistry.get_connector_template(connector_type),
             )
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
@@ -187,7 +174,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "encoded_icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": saas_template[1].icon,
             }
             for saas_template in expected_saas_types
         ]
@@ -212,9 +199,9 @@ class TestGetConnections:
         expected_saas_types = [
             (
                 connector_type,
-                saas_template_registry.get_connector_template(connector_type),
+                ConnectorRegistry.get_connector_template(connector_type),
             )
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
@@ -222,7 +209,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "encoded_icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": saas_template[1].icon,
             }
             for saas_template in expected_saas_types
         ]
@@ -248,13 +235,7 @@ class TestGetConnections:
         for expected_data in expected_saas_data:
             assert expected_data in data
 
-    def test_search_system_type(
-        self,
-        api_client,
-        generate_auth_header,
-        url,
-        saas_template_registry: ConnectorRegistry,
-    ):
+    def test_search_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
         resp = api_client.get(url + "?system_type=nothing", headers=auth_header)
@@ -263,7 +244,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == len(saas_template_registry.connector_types())
+        assert len(data) == len(ConnectorRegistry.connector_types())
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         assert resp.status_code == 200
@@ -275,7 +256,6 @@ class TestGetConnections:
         api_client,
         generate_auth_header,
         url,
-        saas_template_registry: ConnectorRegistry,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
@@ -287,7 +267,7 @@ class TestGetConnections:
         data = resp.json()["items"]
         expected_saas_types = [
             connector_type
-            for connector_type in saas_template_registry.connector_types()
+            for connector_type in ConnectorRegistry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         assert len(data) == len(expected_saas_types)
@@ -321,15 +301,304 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=email", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 1
+        assert len(data) == 2
         assert data == [
+            {
+                "identifier": "attentive",
+                "type": "email",
+                "human_readable": "Attentive",
+                "encoded_icon": None,
+            },
             {
                 "identifier": "sovrn",
                 "type": "email",
                 "human_readable": "Sovrn",
                 "encoded_icon": None,
-            }
+            },
         ]
+
+
+DOORDASH = "doordash"
+GOOGLE_ANALYTICS = "google_analytics"
+MAILCHIMP_TRANSACTIONAL = "mailchimp_transactional"
+SEGMENT = "segment"
+STRIPE = "stripe"
+ZENDESK = "zendesk"
+
+
+class TestGetConnectionsActionTypeParams:
+    """
+    Class specifically for testing the "action type" query params for the get connection types endpoint.
+
+    This testing approach (and the fixtures) mimic what's done within `test_connection_type.py` to evaluate
+    the `action_type` filtering logic.
+
+    That test specifically tests the underlying utility that is leveraged by this endpoint.
+    """
+
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + CONNECTION_TYPES
+
+    @pytest.fixture(scope="function")
+    def url_with_params(self) -> str:
+        return (
+            V1_URL_PREFIX
+            + CONNECTION_TYPES
+            + "?"
+            + "consent={consent}"
+            + "&access={access}"
+            + "&erasure={erasure}"
+        )
+
+    @pytest.fixture
+    def connection_type_objects(self):
+        google_analytics_template = ConnectorRegistry.get_connector_template(
+            GOOGLE_ANALYTICS
+        )
+        mailchimp_transactional_template = ConnectorRegistry.get_connector_template(
+            MAILCHIMP_TRANSACTIONAL
+        )
+        stripe_template = ConnectorRegistry.get_connector_template("stripe")
+        zendesk_template = ConnectorRegistry.get_connector_template("zendesk")
+        doordash_template = ConnectorRegistry.get_connector_template(DOORDASH)
+        segment_template = ConnectorRegistry.get_connector_template(SEGMENT)
+
+        return {
+            ConnectionType.postgres.value: {
+                "identifier": ConnectionType.postgres.value,
+                "type": SystemType.database.value,
+                "human_readable": "PostgreSQL",
+                "encoded_icon": None,
+            },
+            ConnectionType.manual_webhook.value: {
+                "identifier": ConnectionType.manual_webhook.value,
+                "type": SystemType.manual.value,
+                "human_readable": "Manual Process",
+                "encoded_icon": None,
+            },
+            GOOGLE_ANALYTICS: {
+                "identifier": GOOGLE_ANALYTICS,
+                "type": SystemType.saas.value,
+                "human_readable": google_analytics_template.human_readable,
+                "encoded_icon": google_analytics_template.icon,
+            },
+            MAILCHIMP_TRANSACTIONAL: {
+                "identifier": MAILCHIMP_TRANSACTIONAL,
+                "type": SystemType.saas.value,
+                "human_readable": mailchimp_transactional_template.human_readable,
+                "encoded_icon": mailchimp_transactional_template.icon,
+            },
+            SEGMENT: {
+                "identifier": SEGMENT,
+                "type": SystemType.saas.value,
+                "human_readable": segment_template.human_readable,
+                "encoded_icon": segment_template.icon,
+            },
+            STRIPE: {
+                "identifier": STRIPE,
+                "type": SystemType.saas.value,
+                "human_readable": stripe_template.human_readable,
+                "encoded_icon": stripe_template.icon,
+            },
+            ZENDESK: {
+                "identifier": ZENDESK,
+                "type": SystemType.saas.value,
+                "human_readable": zendesk_template.human_readable,
+                "encoded_icon": zendesk_template.icon,
+            },
+            DOORDASH: {
+                "identifier": DOORDASH,
+                "type": SystemType.saas.value,
+                "human_readable": doordash_template.human_readable,
+                "encoded_icon": doordash_template.icon,
+            },
+            ConnectionType.sovrn.value: {
+                "identifier": ConnectionType.sovrn.value,
+                "type": SystemType.email.value,
+                "human_readable": "Sovrn",
+                "encoded_icon": None,
+            },
+            ConnectionType.attentive.value: {
+                "identifier": ConnectionType.attentive.value,
+                "type": SystemType.email.value,
+                "human_readable": "Attentive",
+                "encoded_icon": None,
+            },
+        }
+
+    @pytest.mark.parametrize(
+        "action_types, assert_in_data, assert_not_in_data",
+        [
+            (
+                [],  # no filters should give us all connectors
+                [
+                    ConnectionType.postgres.value,
+                    ConnectionType.manual_webhook.value,
+                    DOORDASH,
+                    STRIPE,
+                    ZENDESK,
+                    SEGMENT,
+                    ConnectionType.attentive.value,
+                    GOOGLE_ANALYTICS,
+                    MAILCHIMP_TRANSACTIONAL,
+                    ConnectionType.sovrn.value,
+                ],
+                [],
+            ),
+            (
+                [ActionType.consent],
+                [GOOGLE_ANALYTICS, MAILCHIMP_TRANSACTIONAL, ConnectionType.sovrn.value],
+                [
+                    ConnectionType.postgres.value,
+                    ConnectionType.manual_webhook.value,
+                    DOORDASH,
+                    STRIPE,
+                    ZENDESK,
+                    SEGMENT,
+                    ConnectionType.attentive.value,
+                ],
+            ),
+            (
+                [ActionType.access],
+                [
+                    ConnectionType.postgres.value,
+                    ConnectionType.manual_webhook.value,
+                    DOORDASH,
+                    SEGMENT,
+                    STRIPE,
+                    ZENDESK,
+                ],
+                [
+                    GOOGLE_ANALYTICS,
+                    MAILCHIMP_TRANSACTIONAL,
+                    ConnectionType.sovrn.value,
+                    ConnectionType.attentive.value,
+                ],
+            ),
+            (
+                [ActionType.erasure],
+                [
+                    ConnectionType.postgres.value,
+                    SEGMENT,  # segment has DPR so it is an erasure
+                    STRIPE,
+                    ZENDESK,
+                    ConnectionType.attentive.value,
+                ],
+                [
+                    GOOGLE_ANALYTICS,
+                    MAILCHIMP_TRANSACTIONAL,
+                    ConnectionType.manual_webhook.value,  # manual webhook is not erasure
+                    DOORDASH,  # doordash does not have erasures
+                    ConnectionType.sovrn.value,
+                ],
+            ),
+            (
+                [ActionType.consent, ActionType.access],
+                [
+                    GOOGLE_ANALYTICS,
+                    MAILCHIMP_TRANSACTIONAL,
+                    ConnectionType.sovrn.value,
+                    ConnectionType.postgres.value,
+                    ConnectionType.manual_webhook.value,
+                    DOORDASH,
+                    SEGMENT,
+                    STRIPE,
+                    ZENDESK,
+                ],
+                [
+                    ConnectionType.attentive.value,
+                ],
+            ),
+            (
+                [ActionType.consent, ActionType.erasure],
+                [
+                    GOOGLE_ANALYTICS,
+                    MAILCHIMP_TRANSACTIONAL,
+                    ConnectionType.sovrn.value,
+                    ConnectionType.postgres.value,
+                    SEGMENT,  # segment has DPR so it is an erasure
+                    STRIPE,
+                    ZENDESK,
+                    ConnectionType.attentive.value,
+                ],
+                [
+                    ConnectionType.manual_webhook.value,  # manual webhook is not erasure
+                    DOORDASH,  # doordash does not have erasures
+                ],
+            ),
+            (
+                [ActionType.access, ActionType.erasure],
+                [
+                    ConnectionType.postgres.value,
+                    ConnectionType.manual_webhook.value,
+                    DOORDASH,
+                    SEGMENT,
+                    STRIPE,
+                    ZENDESK,
+                    ConnectionType.attentive.value,
+                ],
+                [
+                    GOOGLE_ANALYTICS,
+                    MAILCHIMP_TRANSACTIONAL,
+                    ConnectionType.sovrn.value,
+                ],
+            ),
+        ],
+    )
+    def test_get_connection_types_action_type_filter(
+        self,
+        action_types,
+        assert_in_data,
+        assert_not_in_data,
+        connection_type_objects,
+        generate_auth_header,
+        api_client,
+        url,
+        url_with_params,
+    ):
+        the_url = url
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        if action_types:
+            the_url = url_with_params.format(
+                consent=ActionType.consent in action_types,
+                access=ActionType.access in action_types,
+                erasure=ActionType.erasure in action_types,
+            )
+        resp = api_client.get(the_url, headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+
+        for connection_type in assert_in_data:
+            obj = connection_type_objects[connection_type]
+            assert obj in data
+
+        for connection_type in assert_not_in_data:
+            obj = connection_type_objects[connection_type]
+            assert obj not in data
+
+        # now run another request, this time omitting non-specified filter params
+        # rather than setting them to false explicitly. we should get identical results.
+        if action_types:
+            the_url = url + "?"
+            if ActionType.consent in action_types:
+                the_url += "consent=true&"
+            if ActionType.access in action_types:
+                the_url += "access=true&"
+            if ActionType.erasure in action_types:
+                the_url += "erasure=true&"
+
+        resp = api_client.get(the_url, headers=auth_header)
+        data = resp.json()["items"]
+        assert resp.status_code == 200
+
+        for connection_type in assert_in_data:
+            obj = connection_type_objects[connection_type]
+            assert obj in data
+
+        for connection_type in assert_not_in_data:
+            obj = connection_type_objects[connection_type]
+            assert obj not in data
 
 
 class TestGetConnectionSecretSchema:

@@ -68,7 +68,6 @@ def test_generate_route_file_map(route_file_map: Dict[re.Pattern, Path]) -> None
 def test_match_route(
     tmp_static: Path, route_file_map: Dict[re.Pattern, Path], route: str, expected: str
 ) -> None:
-
     # Test example routes.
     assert match_route(route_file_map, route) == tmp_static / expected
 
