@@ -91,7 +91,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    def test_set_consent_preferences_invalid_code(
+    def test_set_privacy_preferences_invalid_code(
         self,
         provided_identity_and_consent_request,
         api_client,
@@ -185,7 +185,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    def test_set_consent_preferences_invalid_code_respects_attempt_count(
+    def test_set_privacy_preferences_invalid_code_respects_attempt_count(
         self,
         provided_identity_and_consent_request,
         api_client,
@@ -226,7 +226,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
-    def test_set_consent_preferences_no_email_provided(
+    def test_set_privacy_preferences_no_email_provided(
         self,
         mock_verify_identity: MagicMock,
         db,
@@ -260,7 +260,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    def test_set_consent_preferences_no_privacy_preferences_present(
+    def test_set_privacy_preferences_no_privacy_preferences_present(
         self,
         provided_identity_and_consent_request,
         api_client,
@@ -281,7 +281,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
-    def test_set_consent_preferences_invalid_privacy_notice_history_id(
+    def test_set_privacy_preferences_invalid_privacy_notice_history_id(
         self,
         provided_identity_and_consent_request,
         api_client,
@@ -458,7 +458,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_set_consent_consent_preferences_without_verification_required(
+    def test_set_privacy_preferences_without_verification_required(
         self,
         run_privacy_request_mock,
         mock_verify_identity: MagicMock,
