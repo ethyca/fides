@@ -5,7 +5,7 @@ asyncpg==0.25.0
 boto3==1.26.1
 celery[pytest]==5.2.7
 colorama>=0.4.3
-cryptography==38.0.3
+cryptography==40.0.1
 dask==2022.9.2
 deepdiff==5.8.1
 fastapi[all]==0.89.1
