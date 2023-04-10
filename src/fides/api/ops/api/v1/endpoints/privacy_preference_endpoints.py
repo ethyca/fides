@@ -22,7 +22,6 @@ from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
     V1_URL_PREFIX,
 )
-from fides.api.ops.common_exceptions import PrivacyNoticeHistoryNotFound
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
 from fides.api.ops.models.privacy_preference import (
     CurrentPrivacyPreference,
