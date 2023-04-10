@@ -133,7 +133,7 @@ def check_virtualenv() -> bool:
 def seed_example_data() -> None:
     run_shell(
         DOCKER_COMPOSE_COMMAND
-        + "run --no-deps --rm fides fides user login && fides push src/fides/data/sample_project/sample_resources/"
+        + "run --no-deps --rm fides bash -c 'fides user login && fides push src/fides/data/sample_project/sample_resources/'"
     )
     run_shell(
         DOCKER_COMPOSE_COMMAND
