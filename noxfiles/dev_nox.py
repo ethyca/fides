@@ -1,4 +1,5 @@
 """Contains the nox sessions for running development environments."""
+import time
 from pathlib import Path
 from typing import Literal
 
@@ -148,21 +149,27 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     Posargs:
         keep_alive = does not automatically call teardown after the session
     """
-
     keep_alive = "keep_alive" in session.posargs
+
+    # Record timestamps along the way, so we can generate a build-time report
+    timestamps = []
+    timestamps.append({"time": time.monotonic(), "label": "Start"})
 
     session.log("Tearing down existing containers & volumes...")
     try:
         teardown(session)
     except CommandFailed:
         session.error("Failed to cleanly teardown. Please try again!")
+    timestamps.append({"time": time.monotonic(), "label": "Docker Teardown"})
 
     session.log("Building production images with 'build(test)'...")
     build(session, "test")
+    timestamps.append({"time": time.monotonic(), "label": "Docker Build"})
 
     session.log("Installing ethyca-fides locally...")
     session.run("pip", "install", ".")
     session.run("fides", "--version")
+    timestamps.append({"time": time.monotonic(), "label": "pip install"})
 
     # Configure the args for 'fides deploy up' for testing
     env_file_path = Path(__file__, "../../.env").resolve()
@@ -177,7 +184,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         fides_deploy_args.extend(
             [
                 "--command",
-                "uvicorn --reload --reload-dir src fides.api.main:app",
+                "uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src fides.api.main:app"
             ]
         )
 
@@ -191,6 +198,24 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         "up",
         *fides_deploy_args,
     )
+    timestamps.append({"time": time.monotonic(), "label": "fides deploy"})
+
+    # Log a quick build-time report to help troubleshoot slow builds
+    session.log("[fides_env]: Ready! Build time report:")
+    session.log(f"{'Step':5} | {'Label':20} | Time")
+    session.log("------+----------------------+------")
+    for index, value in enumerate(timestamps):
+        if index == 0:
+            continue
+        session.log(
+            f"{index:5} | {value['label']:20} | {value['time'] - timestamps[index-1]['time']:.2f}s"
+        )
+    session.log(
+        f"      | {'Total':20} | {timestamps[-1]['time'] - timestamps[0]['time']:.2f}s"
+    )
+    session.log("------+----------------------+------\n")
+
+    # Start a shell session unless 'keep_alive' is provided as a posarg
     if not keep_alive:
         session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
         session.run(*EXEC_IT, "/bin/bash", external=True, success_codes=[0, 1])
