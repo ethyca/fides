@@ -140,4 +140,3 @@ def handle_deprecated_env_variables(settings: Dict[str, Any]) -> Dict[str, Any]:
             settings["database"][setting] = val
 
     return settings
-

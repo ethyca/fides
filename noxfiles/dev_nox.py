@@ -175,10 +175,12 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     ]
     if fides_image == "dev":
         session.log("Enabling hot-reloading by running uvicorn directly...")
-        fides_deploy_args.extend([
-            "--command",
-            "uvicorn --reload --reload-dir src fides.api.main:app",
-        ])
+        fides_deploy_args.extend(
+            [
+                "--command",
+                "uvicorn --reload --reload-dir src fides.api.main:app",
+            ]
+        )
 
     session.log("Deploying test environment with 'fides deploy up'...")
     session.log(

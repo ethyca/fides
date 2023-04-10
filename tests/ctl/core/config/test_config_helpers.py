@@ -34,4 +34,3 @@ class TestConfigHelpers:
             toml.dump({section: {option: "value"}}, f)
 
         assert helpers.get_config_from_file(file, "bad", "missing") is None
-
