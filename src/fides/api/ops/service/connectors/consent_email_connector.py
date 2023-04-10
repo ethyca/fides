@@ -9,7 +9,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.ops.models.policy import ActionType, Rule
+from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_notice import ConsentMechanism, EnforcementLevel
 from fides.api.ops.models.privacy_preference import (
     PrivacyPreferenceHistory,
@@ -33,7 +33,6 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.ops.schemas.privacy_preference import (
     MinimalPrivacyPreferenceHistorySchema,
-    PrivacyPreferenceHistorySchema,
 )
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity

@@ -113,7 +113,7 @@ def universal_analytics_dataset_config(
 
 @pytest.fixture(scope="function")
 def universal_analytics_connection_config_without_secrets(
-    db: session, universal_analytics_config, universal_analytics_secrets
+    db: session, universal_analytics_config
 ) -> Generator:
     """Universal analytics config without secrets - can't be used to make live requests"""
     fides_key = universal_analytics_config["fides_key"]

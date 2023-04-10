@@ -110,7 +110,7 @@ def google_analytics_dataset_config(
 
 @pytest.fixture(scope="function")
 def google_analytics_connection_config_without_secrets(
-    db: session, google_analytics_config, google_analytics_secrets
+    db: session, google_analytics_config
 ) -> Generator:
     """This test connector can't be used to make live requests"""
     fides_key = "new_google_analytics_instance_no_secrets"
@@ -125,6 +125,7 @@ def google_analytics_connection_config_without_secrets(
             "saas_config": google_analytics_config,
         },
     )
+
     yield connection_config
     connection_config.delete(db)
 
