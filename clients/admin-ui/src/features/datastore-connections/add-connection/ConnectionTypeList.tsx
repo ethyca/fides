@@ -42,7 +42,7 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
             lineHeight="20px"
             h="80px"
           >
-            <ConnectionTypeLogo data={i.identifier} />
+            <ConnectionTypeLogo data={i} />
             <Text ml="12px">{i.human_readable}</Text>
           </Flex>
         </Box>

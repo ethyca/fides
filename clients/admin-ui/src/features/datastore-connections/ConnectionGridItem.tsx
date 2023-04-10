@@ -2,7 +2,9 @@ import { Box, Button, Flex, Spacer, Text } from "@fidesui/react";
 import { formatDate } from "common/utils";
 import React from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import ConnectedCircle from "~/features/common/ConnectedCircle";
+import { selectConnectionTypeState } from "~/features/connection-type";
 
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
@@ -45,6 +47,15 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
   connectionData,
 }) => {
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
+  const { connectionOptions } = useAppSelector(selectConnectionTypeState);
+
+  const connectionType =
+    connectionOptions.find(
+      (ct) =>
+        ct.identifier === connectionData.connection_type ||
+        (connectionData.saas_config &&
+          ct.identifier === connectionData.saas_config.type)
+    ) || "ethyca";
 
   return (
     <Box
@@ -54,7 +65,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
       data-testid={`connection-grid-item-${connectionData.name}`}
     >
       <Flex justifyContent="center" alignItems="center">
-        <ConnectionTypeLogo data={connectionData} />
+        <ConnectionTypeLogo data={connectionType} />
         <Text
           color="gray.900"
           fontSize="md"

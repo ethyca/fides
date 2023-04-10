@@ -14,9 +14,14 @@ import {
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { useDispatch } from "react-redux";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import {
+  setConnectionOptions,
+  useGetAllConnectionTypesQuery,
+} from "~/features/connection-type";
 
 import { useRegisterConnectorTemplateMutation } from "./connector-template.slice";
 
@@ -31,6 +36,7 @@ const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
   onClose,
   testId = "connector-template-modal",
 }) => {
+  const dispatch = useDispatch();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const toast = useToast();
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -49,12 +55,24 @@ const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
 
   const [registerConnectorTemplate, { isLoading }] =
     useRegisterConnectorTemplateMutation();
+  const { refetch: refetchConnectionTypes } = useGetAllConnectionTypesQuery(
+    {
+      search: "",
+    },
+    {
+      skip: false,
+    }
+  );
 
   const handleSubmit = async () => {
     if (uploadedFile) {
       try {
         await registerConnectorTemplate(uploadedFile).unwrap();
         toast(successToastParams("Connector template uploaded successfully."));
+
+        // refresh the connection types
+        const { data } = await refetchConnectionTypes();
+        dispatch(setConnectionOptions(data?.items ?? []));
         onClose();
       } catch (error) {
         toast(errorToastParams(getErrorMessage(error as FetchBaseQueryError)));
