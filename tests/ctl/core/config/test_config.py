@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from fides.core.config import get_config, check_required_webserver_config_values
+from fides.core.config import check_required_webserver_config_values, get_config
 from fides.core.config.database_settings import DatabaseSettings
 from fides.core.config.security_settings import SecuritySettings
 

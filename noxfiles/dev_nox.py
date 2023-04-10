@@ -4,7 +4,6 @@ from typing import Literal
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
-    CONTAINER_NAME,
     EXEC_IT,
     RUN_CYPRESS_TESTS,
     START_APP,

@@ -1,6 +1,6 @@
 """This module contains logic related to loading/manipulation/writing the config."""
 import os
-from os import environ, getenv
+from os import environ
 from pathlib import Path
 from re import compile as regex
 from typing import Any, Dict, List, Union
@@ -8,8 +8,6 @@ from typing import Any, Dict, List, Union
 from click import echo
 from loguru import logger
 from toml import dump, load
-
-from fides.core.utils import echo_red
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
