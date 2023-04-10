@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import List
 
 from fastapi import Depends, HTTPException
+from fastapi_pagination import Page, Params, paginate
+from fastapi_pagination.bases import AbstractPage
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -46,14 +48,15 @@ router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
 @router.post(
     CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
     status_code=HTTP_200_OK,
-    response_model=List[CurrentPrivacyPreferenceSchema],
+    response_model=Page[CurrentPrivacyPreferenceSchema],
 )
 def consent_request_verify_for_privacy_preferences(
     *,
     consent_request_id: str,
+    params: Params = Depends(),
     db: Session = Depends(get_db),
     data: VerificationCode,
-) -> List[CurrentPrivacyPreference]:
+) -> AbstractPage[CurrentPrivacyPreference]:
     """Verifies the verification code and returns the CurrentPrivacyPreferences if successful.
     These are just the latest preferences saved for each PrivacyNotice.
     """
@@ -68,14 +71,18 @@ def consent_request_verify_for_privacy_preferences(
             status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing"
         )
 
-    return (
+    logger.info("Getting current privacy preferences for verified provided identity")
+
+    query = (
         db.query(CurrentPrivacyPreference)
         .join(
             ProvidedIdentity,
             provided_identity.id == CurrentPrivacyPreference.provided_identity_id,
         )
+        .order_by(CurrentPrivacyPreference.privacy_notice_id)
         .all()
     )
+    return paginate(query, params)
 
 
 def verify_no_duplicated_privacy_notices(

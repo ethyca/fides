@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "5d1a5ee9-f432-4da2-a9c9-d68c17e776ac",
 		"name": "Fides",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 	},
 	"item": [
 		{
@@ -5405,7 +5405,7 @@
 			"name": "PrivacyPreferences",
 			"item": [
 				{
-					"name": "Create Verification Code for Consent Request and return CurrentPrivacyPreferences",
+					"name": "Create Verification Code for Consent Request",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -5425,6 +5425,34 @@
 							],
 							"path": [
 								"consent-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Code and Return Current Privacy Preferences",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{verification_code}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/verify-for-privacy-preferences",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request",
+								"{{consent_request_id}}",
+								"verify-for-privacy-preferences"
 							]
 						}
 					},

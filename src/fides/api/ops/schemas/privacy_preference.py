@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 
 from fideslang.validation import FidesKey
+from pydantic import conlist
 
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
@@ -25,7 +26,7 @@ class PrivacyPreferencesCreateWithCode(BaseSchema):
 
     browser_identity: Identity
     code: Optional[SafeStr]
-    preferences: List[ConsentOptionCreate]
+    preferences: conlist(ConsentOptionCreate, max_items=50)  # type: ignore
     policy_key: Optional[FidesKey]  # Will use default consent policy if not supplied
     request_origin: Optional[RequestOrigin]
     url_recorded: Optional[SafeStr]

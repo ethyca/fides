@@ -136,7 +136,7 @@ class TestSavePrivacyPreferencesPrivacyCenter:
         )
         assert response.status_code == 200
         # Assert no existing privacy preferences exist for this identity
-        assert response.json() == []
+        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
 
         response = api_client.patch(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
@@ -170,8 +170,8 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             json={"code": verification_code},
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
-        response_json = response.json()[0]
+        assert len(response.json()["items"]) == 1
+        response_json = response.json()["items"][0]
         assert response_json["id"] is not None
         assert response_json["preference"] == "opt_out"
         assert (
@@ -505,8 +505,8 @@ class TestSavePrivacyPreferencesPrivacyCenter:
             json={"code": verification_code},
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
-        response_json = response.json()[0]
+        assert len(response.json()["items"]) == 1
+        response_json = response.json()["items"][0]
         assert response_json["id"] is not None
         assert response_json["preference"] == "opt_out"
         assert (
@@ -623,7 +623,7 @@ class TestPrivacyPreferenceVerify:
         )
         assert response.status_code == 200
         assert verification_code in mock_verify_identity.call_args_list[0].args
-        assert response.json() == []
+        assert response.json() == {"items": [], "total": 0, "page": 1, "size": 50}
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
@@ -644,13 +644,13 @@ class TestPrivacyPreferenceVerify:
             json={"code": verification_code},
         )
         assert response.status_code == 200
-        assert len(response.json()) == 1
+        assert len(response.json()["items"]) == 1
 
         # Getting current preferences returns the latest CurrentPrivacyPreferences, not the PrivacyPreferenceHistory records
         current_preference_record = (
             privacy_preference_history.current_privacy_preference
         )
-        data = response.json()[0]
+        data = response.json()["items"][0]
         assert data["id"] == current_preference_record.id
         assert (
             data["preference"]
