@@ -216,18 +216,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 )
             else:
                 skipped_privacy_requests.append(privacy_request.id)
-                ExecutionLog.create(
-                    db=db,
-                    data={
-                        "connection_key": self.configuration.key,
-                        "dataset_name": self.configuration.name,
-                        "collection_name": self.configuration.name,
-                        "privacy_request_id": privacy_request.id,
-                        "action_type": ActionType.consent,
-                        "status": ExecutionLogStatus.skipped,
-                        "message": f"Consent email skipped for '{self.configuration.name}'",
-                    },
-                )
+                self.add_skipped_log(db, privacy_request)
 
         if not batched_consent_preferences:
             logger.info(
