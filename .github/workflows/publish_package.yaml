@@ -27,13 +27,13 @@ jobs:
 
       - name: Install node modules
         run: |
-          cd clients/admin-ui
+          cd clients
           npm install
 
       - name: Build and export frontend files
         run: |
           cd clients/admin-ui
-          npm run prod-export
+          turbo run prod-export
 
       - name: Install Twine and wheel
         run: pip install twine wheel

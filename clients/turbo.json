@@ -6,8 +6,51 @@
       "outputs": [".next/*", "!.next/cache/*"]
     },
     "dev": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "outputs": [".next/*", "!.next/cache/*"]
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "outputs": [".next/*", "!.next/cache/*"]
+    },
+    "lint": {
+      "dependsOn": []
+    },
+    "lint:fix": {
+      "dependsOn": []
+    },
+    "format": {
+      "dependsOn": []
+    },
+    "format:ci": {
+      "dependsOn": []
+    },
+    "test": {
+      "dependsOn": ["build"]
+    },
+    "test:ci": {
+      "dependsOn": ["build"]
+    },
+    "cy:open": {
+      "dependsOn": ["build"]
+    },
+    "cy:run": {
+      "dependsOn": ["build"]
+    },
+    "cy:start": {
+      "dependsOn": ["build"]
+    },
+    "analyze": {
+      "dependsOn": ["build"]
+    },
+    "analyze:browser": {
+      "dependsOn": ["build"]
+    },
+    "analyze:server": {
+      "dependsOn": ["build"]
+    },
+    "openapi:generate": {
+      "dependsOn": []
     }
   }
 }

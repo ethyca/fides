@@ -12,15 +12,6 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   webpack(config) {
-    Object.assign(config.resolve.alias, {
-      // react: path.resolve(__dirname, "node_modules", "react"),
-      // "react-dom": path.resolve(__dirname, "node_modules", "react-dom"),
-      // "@emotion/react": path.resolve(
-      //   __dirname,
-      //   "node_modules",
-      //   "@emotion/react"
-      // ),
-    });
     return config;
   },
 };

@@ -39,7 +39,7 @@ services:
 
   fides-ui:
     image: ethyca/fides:local-ui
-    command: npm run dev
+    command: turbo run dev
     expose:
       - 3000
     ports:

@@ -13,11 +13,11 @@
     "test:ci": "tsc --noEmit && jest",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "cy:start": "export NODE_ENV=test && npm run build && npm run start",
+    "cy:start": "export NODE_ENV=test && npm run start",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
-    "build-privacy-portal": "npm run build",
+    "build-privacy-portal": "",
     "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2"
   },
   "dependencies": {
