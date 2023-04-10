@@ -24,12 +24,7 @@ const generateConsentConfig = () => {
    */
   const privacyCenterConfig = require("../../config/config.json");
   const isV1ConsentConfig = typeof privacyCenterConfig.consent?.button === "undefined";
-  let privacyCenterOptions = [];
-  if (isV1ConsentConfig) {
-    privacyCenterOptions = privacyCenterConfig.consent?.consentOptions ?? [];
-  } else {
-    privacyCenterOptions = privacyCenterConfig.consent?.page.consentOptions ?? [];
-  }
+  const privacyCenterOptions = isV1ConsentConfig ? privacyCenterConfig.consent?.consentOptions : privacyCenterConfig.consent?.page.consentOptions;
 
   if (privacyCenterOptions.length === 0) {
     console.warn(
