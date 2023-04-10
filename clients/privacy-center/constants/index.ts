@@ -22,8 +22,7 @@ const transformConfig = (config: Config): V2Config => {
     const translatedConsent: V2Consent = translateV1ConfigToV2({
       v1ConsentConfig,
     });
-    const temp: V2Config = { ...config, consent: translatedConsent };
-    return temp;
+    return { ...config, consent: translatedConsent };
   }
   return { ...config, consent: config.consent };
 };
