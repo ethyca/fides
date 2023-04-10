@@ -9,13 +9,8 @@ const configIsValid = (
 ) => {
   // Cannot currently have more than one consent be executable
   if (config.consent) {
-    let options = [];
     const isV1Consent = typeof config.consent?.page === "undefined";
-    if (isV1Consent) {
-      options = config.consent?.consentOptions
-    } else {
-      options = config.consent?.page.consentOptions
-    }
+    const options = isV1Consent ? config.consent?.consentOptions : config.consent?.page.consentOptions;
     const executables = options.filter(
       (option) => option.executable
     );
