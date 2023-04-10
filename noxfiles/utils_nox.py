@@ -33,6 +33,12 @@ COMPOSE_DOWN = (
 )
 COMPOSE_DOWN_VOLUMES = COMPOSE_DOWN + ("--volumes",)
 
+# TODO: this doesn't actually work to teardown active containers. To see this:
+# 1) Run `nox -s "fides_env(test) -- keep_alive`
+# 2) Run `nox -s teardown`
+# 3) Note that the docker compose project is still up & running.
+# ...so, either get this to work as expected, or add a new session to teardown fides_env
+
 # NOTE: The SAMPLE_PROJECT_COMPOSE_FILE expects to be run from it's normal
 # working directory, so when we reference it from the root directory we'll get
 # an error like: "sample.env: no such file or directory"
