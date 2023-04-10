@@ -94,9 +94,11 @@ RUN pip install -e . --no-deps
 ## Frontend Base ##
 ###################
 FROM node:16-slim as frontend
-
 # Build the admin-ui frontend
-WORKDIR /fides/clients/admin-ui
+WORKDIR /fides/clients
+COPY clients/package.json ./
+COPY clients/package-lock.json ./
+COPY clients/fides-consent/package.json clients/fides-consent/package-lock.json ./
 COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
 RUN npm install
 COPY clients/admin-ui/ .
@@ -105,7 +107,7 @@ COPY clients/admin-ui/ .
 ## Built frontend ##
 ####################
 FROM frontend as built_frontend
-RUN npm run export
+RUN turbo run export
 
 #############################
 ## Production Application ##
