@@ -215,7 +215,7 @@ def check_conflicting_data_uses(
             region_uses = uses_by_region[PrivacyNoticeRegion(region)]
             # check each of the incoming notice's data uses
             for data_use in privacy_notice.data_uses:
-                for (existing_use, notice_name) in region_uses:
+                for existing_use, notice_name in region_uses:
                     # we need to check for hierachical overlaps in _both_ directions
                     # i.e. whether the incoming DataUse is a parent _or_ a child of
                     # an existing DataUse

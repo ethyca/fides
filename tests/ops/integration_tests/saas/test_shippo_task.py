@@ -18,6 +18,7 @@ CONFIG = get_config()
 def test_shippo_connection_test(shippo_connection_config) -> None:
     get_connector(shippo_connection_config).test_connection()
 
+
 @pytest.mark.integration_saas
 @pytest.mark.integration_shippo
 @pytest.mark.asyncio
@@ -75,7 +76,7 @@ async def test_shippo_access_request_task(
             "email",
             "is_residential",
             "metadata",
-            "test"
+            "test",
         ],
     )
 
@@ -103,15 +104,14 @@ async def test_shippo_access_request_task(
             "shipping_cost_currency",
             "line_items",
             "notes",
-            "test"
+            "test",
         ],
     )
 
     # verify we only returned data for our identity email
-    
+
     for address in v[f"{dataset_name}:addresses"]:
         assert address["email"] == shippo_identity_email
 
     for order in v[f"{dataset_name}:orders"]:
         assert order["object_owner"] == shippo_identity_email
-

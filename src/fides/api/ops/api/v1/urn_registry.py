@@ -62,6 +62,7 @@ POLICY_DETAIL = "/dsr/policy/{policy_key}"
 # Privacy Notice URLs
 PRIVACY_NOTICE = "/privacy-notice"
 PRIVACY_NOTICE_DETAIL = "/privacy-notice/{privacy_notice_id}"
+PRIVACY_NOTICE_BY_DATA_USE = "/privacy-notice-by-data-use"
 
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
