@@ -90,6 +90,8 @@ class TestPrivacyPreferenceHistory:
         assert preference_history_record.url_recorded == "example.com/privacy_center"
 
         # Assert PrivacyRequest.privacy_preferences relationship
+        assert privacy_request.privacy_preferences == []
+
         preference_history_record.privacy_request_id = privacy_request.id
         preference_history_record.save(db)
         assert preference_history_record.privacy_request == privacy_request

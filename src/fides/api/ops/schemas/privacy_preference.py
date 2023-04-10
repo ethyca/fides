@@ -33,6 +33,13 @@ class PrivacyPreferencesCreateWithCode(BaseSchema):
     user_geography: Optional[PrivacyNoticeRegion]
 
 
+class MinimalPrivacyPreferenceHistorySchema(BaseSchema):
+    """Minimal privacy preference history schema for building consent emails"""
+
+    preference: UserConsentPreference
+    privacy_notice_history: PrivacyNoticeHistorySchema
+
+
 class PrivacyPreferenceHistorySchema(BaseSchema):
     """Schema to represent the snapshot of a saved privacy preference
     This schema is largely for consent reporting.
@@ -43,7 +50,7 @@ class PrivacyPreferenceHistorySchema(BaseSchema):
     preference: UserConsentPreference
     privacy_notice_history: PrivacyNoticeHistorySchema
     privacy_request: Optional[PrivacyRequestResponse]
-    relevant_systems: List[FidesKey]
+    relevant_systems: Optional[List[FidesKey]]
     request_origin: Optional[RequestOrigin]
     url_recorded: Optional[str]
     user_agent: Optional[str]

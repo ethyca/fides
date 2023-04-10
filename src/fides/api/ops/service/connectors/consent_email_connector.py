@@ -10,6 +10,11 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.policy import ActionType, Rule
+from fides.api.ops.models.privacy_notice import ConsentMechanism, EnforcementLevel
+from fides.api.ops.models.privacy_preference import (
+    PrivacyPreferenceHistory,
+    UserConsentPreference,
+)
 from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -25,6 +30,11 @@ from fides.api.ops.schemas.messaging.messaging import (
     ConsentPreferencesByUser,
     MessagingActionType,
 )
+from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
+from fides.api.ops.schemas.privacy_preference import (
+    MinimalPrivacyPreferenceHistorySchema,
+    PrivacyPreferenceHistorySchema,
+)
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_email_connector import (
@@ -33,6 +43,7 @@ from fides.api.ops.service.connectors.base_email_connector import (
     get_org_name,
 )
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.ops.util.consent_util import filter_privacy_preferences_for_propagation
 from fides.core.config import get_config
 
 CONFIG = get_config()
@@ -84,6 +95,34 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                             Consent(data_use="advertising", opt_in=False),
                             Consent(data_use="improve", opt_in=True),
                         ],
+                        privacy_preferences=[
+                            MinimalPrivacyPreferenceHistorySchema(
+                                preference=UserConsentPreference.opt_in,
+                                privacy_notice_history=PrivacyNoticeHistorySchema(
+                                    name="Targeted Advertising",
+                                    regions=["us_ca"],
+                                    id="test_1",
+                                    privacy_notice_id="12345",
+                                    consent_mechanism=ConsentMechanism.opt_in,
+                                    data_uses=["advertising.first_party.personalized"],
+                                    enforcement_level=EnforcementLevel.system_wide,
+                                    version=1.0,
+                                ),
+                            ),
+                            MinimalPrivacyPreferenceHistorySchema(
+                                preference=UserConsentPreference.opt_out,
+                                privacy_notice_history=PrivacyNoticeHistorySchema(
+                                    name="Analytics",
+                                    regions=["us_ca"],
+                                    id="test_2",
+                                    privacy_notice_id="67890",
+                                    consent_mechanism=ConsentMechanism.opt_out,
+                                    data_uses=["improve.system"],
+                                    enforcement_level=EnforcementLevel.system_wide,
+                                    version=1.0,
+                                ),
+                            ),
+                        ],
                     )
                 ],
                 test_mode=True,
@@ -97,20 +136,48 @@ class GenericConsentEmailConnector(BaseEmailConnector):
     def needs_email(
         self, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
     ) -> bool:
-        """Schedules a consent email for consent privacy requests containing consent preferences and valid user identities"""
-
-        if not privacy_request.consent_preferences:
+        """Schedules a consent email for consent privacy requests containing consent preferences (old workflow) / privacy preferences
+        (new workflow) and valid user identities
+        """
+        if not privacy_request.policy.get_rules_for_action(
+            action_type=ActionType.consent
+        ):
             return False
 
-        consent_rules: List[Rule] = privacy_request.policy.get_rules_for_action(
-            action_type=ActionType.consent
+        old_workflow_consent_preferences: Optional[
+            Any
+        ] = privacy_request.consent_preferences
+        new_workflow_consent_preferences: List[
+            PrivacyPreferenceHistory
+        ] = filter_privacy_preferences_for_propagation(
+            self.configuration.system, privacy_request.privacy_preferences
         )
-        return bool(
-            consent_rules
-            and filter_user_identities_for_connector(self.config, user_identities)
+        if not (old_workflow_consent_preferences or new_workflow_consent_preferences):
+            return False
+
+        if not filter_user_identities_for_connector(self.config, user_identities):
+            return False
+
+        return True
+
+    def add_skipped_log(self, db: Session, privacy_request: PrivacyRequest) -> None:
+        """Add skipped log for the connector to the privacy request"""
+        ExecutionLog.create(
+            db=db,
+            data={
+                "connection_key": self.configuration.key,
+                "dataset_name": self.configuration.name,
+                "collection_name": self.configuration.name,
+                "privacy_request_id": privacy_request.id,
+                "action_type": ActionType.consent,
+                "status": ExecutionLogStatus.skipped,
+                "message": f"Consent email skipped for '{self.configuration.name}'",
+            },
         )
 
     def batch_email_send(self, privacy_requests: Query) -> None:
+        db = Session.object_session(self.configuration)
+
         skipped_privacy_requests: List[str] = []
         batched_consent_preferences: List[ConsentPreferencesByUser] = []
 
@@ -119,15 +186,49 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             filtered_user_identities: Dict[
                 str, Any
             ] = filter_user_identities_for_connector(self.config, user_identities)
-            if filtered_user_identities and privacy_request.consent_preferences:
+
+            # Backwards-compatible consent preferences for old workflow
+            consent_preference_schemas: List[Consent] = [
+                Consent(**pref) for pref in privacy_request.consent_preferences or []
+            ]
+
+            # Privacy preferences for new workflow
+            filtered_privacy_preference_records: List[
+                PrivacyPreferenceHistory
+            ] = filter_privacy_preferences_for_propagation(
+                self.configuration.system, privacy_request.privacy_preferences
+            )
+            filtered_privacy_request_schemas: List[
+                MinimalPrivacyPreferenceHistorySchema
+            ] = [
+                MinimalPrivacyPreferenceHistorySchema.from_orm(privacy_pref)
+                for privacy_pref in filtered_privacy_preference_records
+            ]
+
+            if filtered_user_identities and (
+                consent_preference_schemas or filtered_privacy_preference_records
+            ):
                 batched_consent_preferences.append(
                     ConsentPreferencesByUser(
                         identities=filtered_user_identities,
-                        consent_preferences=privacy_request.consent_preferences,
+                        consent_preferences=consent_preference_schemas,
+                        privacy_preferences=filtered_privacy_request_schemas,
                     )
                 )
             else:
                 skipped_privacy_requests.append(privacy_request.id)
+                ExecutionLog.create(
+                    db=db,
+                    data={
+                        "connection_key": self.configuration.key,
+                        "dataset_name": self.configuration.name,
+                        "collection_name": self.configuration.name,
+                        "privacy_request_id": privacy_request.id,
+                        "action_type": ActionType.consent,
+                        "status": ExecutionLogStatus.skipped,
+                        "message": f"Consent email skipped for '{self.configuration.name}'",
+                    },
+                )
 
         if not batched_consent_preferences:
             logger.info(
@@ -165,19 +266,12 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                         "connection_key": self.configuration.key,
                         "dataset_name": self.configuration.name,
                         "privacy_request_id": privacy_request.id,
+                        "collection_name": self.configuration.name,
                         "action_type": ActionType.consent,
                         "status": ExecutionLogStatus.complete,
                         "message": f"Consent email instructions dispatched for '{self.configuration.name}'",
                     },
                 )
-
-        if skipped_privacy_requests:
-            logger.info(
-                "Skipping email send for the following privacy request IDs: "
-                "{} on connector '{}': no matching identities detected.",
-                skipped_privacy_requests,
-                self.configuration.name,
-            )
 
 
 def get_identity_types_for_connector(
