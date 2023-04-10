@@ -135,11 +135,6 @@ def deploy(ctx: click.Context) -> None:
     type=str,
     help="Use a custom image for the Fides container instead of the default ('ethyca/fides').",
 )
-@click.option(
-    "--command",
-    type=str,
-    help="Use a custom command for the Fides container instead of the default ('fides webserver').",
-)
 def up(
     ctx: click.Context,
     no_pull: bool = False,
