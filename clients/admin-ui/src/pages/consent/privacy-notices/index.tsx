@@ -29,7 +29,7 @@ const PrivacyNoticesPage = () => (
         </Breadcrumb>
       </Box>
     </Box>
-    <Text fontSize="sm" mb={8}>
+    <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "50%" }}>
       Manage the privacy notices and mechanisms that are displayed to your users
       based on their location, what information you collect about them, and how
       you use that data.
