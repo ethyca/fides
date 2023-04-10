@@ -150,6 +150,12 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         keep_alive = does not automatically call teardown after the session
     """
     keep_alive = "keep_alive" in session.posargs
+    if fides_image == "dev":
+        session.error(
+            "fides_env(dev) is currently unsupported, sorry! Use 'nox -s dev' to run the server in dev mode. "
+            "Currently unclear how to (cleanly) mount the source code into the running container..."
+        )
+        raise SystemExit()
 
     # Record timestamps along the way, so we can generate a build-time report
     timestamps = []
@@ -179,14 +185,6 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         "--env-file",
         str(env_file_path),
     ]
-    if fides_image == "dev":
-        session.log("Enabling hot-reloading by running uvicorn directly...")
-        fides_deploy_args.extend(
-            [
-                "--command",
-                "uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src fides.api.main:app"
-            ]
-        )
 
     session.log("Deploying test environment with 'fides deploy up'...")
     session.log(

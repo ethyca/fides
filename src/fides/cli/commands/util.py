@@ -146,7 +146,6 @@ def up(
     no_init: bool = False,
     env_file: Optional[click.Path] = None,
     image: Optional[str] = None,
-    command: Optional[str] = None,
 ) -> None:  # pragma: no cover
     """
     Starts a sample project via docker compose.
@@ -167,10 +166,6 @@ def up(
     if image:
         print(f"> Using custom image: {image}")
         environ["FIDES_DEPLOY_IMAGE"] = image
-
-    if command:
-        print(f"> Using custom command: {command}")
-        environ["FIDES_DEPLOY_COMMAND"] = command
 
     try:
         check_fides_uploads_dir()

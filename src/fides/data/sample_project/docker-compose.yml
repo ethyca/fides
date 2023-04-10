@@ -2,7 +2,6 @@ services:
   fides:
     container_name: fides
     image: ${FIDES_DEPLOY_IMAGE:-ethyca/fides:local}
-    command: ${FIDES_DEPLOY_COMMAND:-fides webserver}
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
