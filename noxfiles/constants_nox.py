@@ -48,7 +48,7 @@ ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 LOGIN = (
     "docker",
     "exec",
-    "fides-fides-1",
+    CONTAINER_NAME,
     "fides",
     "user",
     "login",
