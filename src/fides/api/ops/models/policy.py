@@ -161,6 +161,12 @@ class Policy(Base):
         consent_rules = self.get_rules_for_action(ActionType.consent)
         return consent_rules[0] if consent_rules else None
 
+    def get_action_type(self) -> Optional[ActionType]:
+        try:
+            return self.rules[0].action_type
+        except IndexError:
+            return None
+
 
 def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
     """Returns the DataCategory model from the DEFAULT_TAXONOMY corresponding to fides_key."""
