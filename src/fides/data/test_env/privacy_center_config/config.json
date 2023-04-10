@@ -11,7 +11,9 @@
       "title": "Access your data",
       "description": "We will provide you a report of all your personal data.",
       "identity_inputs": {
-        "email": "required"
+        "name": "optional",
+        "email": "optional",
+        "phone": "optional"
       }
     },
     {
@@ -20,7 +22,9 @@
       "title": "Erase your data",
       "description": "We will erase all of your personal data. This action cannot be undone.",
       "identity_inputs": {
-        "email": "required"
+        "name": "optional",
+        "email": "optional",
+        "phone": "optional"
       }
     }
   ],
@@ -30,7 +34,8 @@
     "title": "Manage your consent",
     "description": "Manage your consent preferences, including the option to select 'Do Not Sell My Personal Information'.",
     "identity_inputs": {
-      "email": "required"
+      "email": "optional",
+      "phone": "optional"
     },
     "cookieName": "fides_consent",
     "policy_key": "default_consent_policy",

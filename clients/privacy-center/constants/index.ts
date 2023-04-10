@@ -2,9 +2,8 @@
 
 import { Config, IdentityInputs } from "~/types/config";
 import configJson from "~/config/config.json";
-import testConfigJson from "~/config/test-config.json";
 
-export const config: Config = process.env.NEXT_PUBLIC_APP_ENV === "test" ? testConfigJson : configJson;
+export const config: Config = configJson;
 
 // Compute the host URL for the server, while being backwards compatible with
 // the previous "fidesops_host_***" configuration
