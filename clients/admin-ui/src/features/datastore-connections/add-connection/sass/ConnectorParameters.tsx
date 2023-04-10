@@ -13,7 +13,7 @@ import {
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import {
-  CreateSassConnectionConfigRequest,
+  CreateSaasConnectionConfigRequest,
   DatastoreConnectionRequest,
   DatastoreConnectionSecretsRequest,
 } from "datastore-connections/types";
@@ -105,7 +105,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         }
       } else {
         // Create new Sass connector
-        const params: CreateSassConnectionConfigRequest = {
+        const params: CreateSaasConnectionConfigRequest = {
           description: values.description,
           name: values.name,
           instance_key: formatKey(values.instance_key as string),

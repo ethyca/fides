@@ -208,7 +208,7 @@ export type SaasConfig = {
   type: SaasType;
 };
 
-export type CreateSassConnectionConfigRequest = {
+export type CreateSaasConnectionConfigRequest = {
   name: string;
   description: string;
   instance_key: string;
@@ -218,7 +218,7 @@ export type CreateSassConnectionConfigRequest = {
   };
 };
 
-export type CreateSassConnectionConfigResponse = {
+export type CreateSaasConnectionConfigResponse = {
   connection: DatastoreConnection;
   dataset: {
     fides_key: string;

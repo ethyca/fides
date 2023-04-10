@@ -27,6 +27,7 @@ The types of changes are:
 - Table for privacy notices [#3001](https://github.com/ethyca/fides/pull/3001)
 - Query params on connection type endpoint to filter by supported action type [#2996](https://github.com/ethyca/fides/pull/2996)
 - Add endpoint to retrieve privacy notices grouped by their associated data uses [#2956](https://github.com/ethyca/fides/pull/2956)
+- Support for uploading custom connector templates via the UI [#2997](https://github.com/ethyca/fides/pull/2997)
 
 ### Changed
 
