@@ -33,7 +33,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Build the sample image
-        run: nox -s "build(sample)"
+        run: nox -s "build(test)"
 
       - name: Install fides
         run: pip install .
