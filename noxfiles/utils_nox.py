@@ -15,8 +15,6 @@ COMPOSE_DOWN = (
     "-f",
     COMPOSE_FILE,
     "-f",
-    SAMPLE_PROJECT_COMPOSE_FILE,
-    "-f",
     INTEGRATION_COMPOSE_FILE,
     "-f",
     "docker/docker-compose.integration-mariadb.yml",
@@ -33,22 +31,16 @@ COMPOSE_DOWN = (
 )
 COMPOSE_DOWN_VOLUMES = COMPOSE_DOWN + ("--volumes",)
 
-# TODO: this doesn't actually work to teardown active containers. To see this:
-# 1) Run `nox -s "fides_env(test) -- keep_alive`
-# 2) Run `nox -s teardown`
-# 3) Note that the docker compose project is still up & running.
-# ...so, either get this to work as expected, or add a new session to teardown fides_env
-
-# NOTE: The SAMPLE_PROJECT_COMPOSE_FILE expects to be run from it's normal
-# working directory, so when we reference it from the root directory we'll get
-# an error like: "sample.env: no such file or directory"
-#
-# To workaround this, we need to set the ENV variable below to point to *any*
-# valid file to keep 'docker compose' happy. Sorry for the fragility of this -
-# see comment in src/fides/data/sample_project/docker-compose.yml for details!
-COMPOSE_DOWN_ENV = {
-    "FIDES_DEPLOY_ENV_FILE": ".env",
-}
+# fides_env uses an isolated compose project, so it needs to be torndown separately
+COMPOSE_DOWN_FIDES_ENV = (
+    "docker",
+    "compose",
+    "-f",
+    SAMPLE_PROJECT_COMPOSE_FILE,
+    "down",
+    "--remove-orphans"
+)
+COMPOSE_DOWN_FIDES_ENV_VOLUMES = COMPOSE_DOWN_FIDES_ENV + ("--volumes",)
 
 
 @nox.session()
@@ -64,7 +56,7 @@ def clean(session: nox.Session) -> None:
     and prune images related to this project.
     """
     clean_command = (*COMPOSE_DOWN, "--volumes", "--rmi", "all")
-    session.run(*clean_command, external=True, env=COMPOSE_DOWN_ENV)
+    session.run(*clean_command, external=True)
     session.run("docker", "system", "prune", "--force", "--all", external=True)
     print("Clean Complete!")
 
@@ -73,9 +65,11 @@ def clean(session: nox.Session) -> None:
 def teardown(session: nox.Session) -> None:
     """Tear down the docker dev environment."""
     if "volumes" in session.posargs:
-        session.run(*COMPOSE_DOWN_VOLUMES, external=True, env=COMPOSE_DOWN_ENV)
+        session.run(*COMPOSE_DOWN_VOLUMES, external=True)
+        session.run(*COMPOSE_DOWN_FIDES_ENV_VOLUMES, external=True)
     else:
-        session.run(*COMPOSE_DOWN, external=True, env=COMPOSE_DOWN_ENV)
+        session.run(*COMPOSE_DOWN, external=True)
+        session.run(*COMPOSE_DOWN_FIDES_ENV, external=True)
     print("Teardown complete")
 
 
