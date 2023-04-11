@@ -18,8 +18,8 @@ import { GearLightIcon } from "common/Icon";
 import QuestionTooltip from "common/QuestionTooltip";
 import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
-import { successToastParams } from "common/toast";
-import { Form, Formik } from "formik";
+import { errorToastParams,successToastParams } from "common/toast";
+import { Form, Formik, FormikBag } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -51,7 +51,29 @@ export const DataFlowAccordionForm = ({
   const flowType = isIngress ? "Source" : "Destination";
   const pluralFlowType = `${flowType}s`;
   const dataFlowSystemsModal = useDisclosure();
-  const [updateSystemMutationTrigger] = useUpdateSystemMutation();
+  const [updateSystemMutationTrigger, mutationResult] =
+    useUpdateSystemMutation();
+
+  useEffect(() => {
+    if (mutationResult.isLoading || mutationResult.isUninitialized) {
+      return;
+    }
+
+    if (mutationResult.isError) {
+      toast(errorToastParams("Failed to update data flows"));
+    }
+    if (mutationResult.isSuccess) {
+      toast(successToastParams(`${pluralFlowType} updated`));
+    }
+  }, [
+    mutationResult.error,
+    mutationResult.isError,
+    mutationResult.isLoading,
+    mutationResult.isSuccess,
+    mutationResult.isUninitialized,
+    pluralFlowType,
+    toast,
+  ]);
 
   useGetAllSystemsQuery();
   const systems = useAppSelector(selectAllSystems);
@@ -72,14 +94,18 @@ export const DataFlowAccordionForm = ({
   useEffect(() => {
     setAssignedDataFlows(initialDataFlows);
   }, [initialDataFlows]);
-  const handleSubmit = async ({ dataFlowSystems }: FormValues) => {
+
+  const handleSubmit = async (
+    { dataFlowSystems }: FormValues,
+    { resetForm }: FormikBag<any, any>
+  ) => {
     const updatedSystem = {
       ...system,
       ingress: isIngress ? dataFlowSystems : system.ingress,
       egress: !isIngress ? dataFlowSystems : system.egress,
     };
     await updateSystemMutationTrigger(updatedSystem);
-    toast(successToastParams(`${pluralFlowType} updated`));
+    resetForm(dataFlowSystems);
   };
 
   return (
