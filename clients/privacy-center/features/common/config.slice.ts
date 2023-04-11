@@ -8,7 +8,9 @@ import { ConfigConsentOption } from "~/types/config";
 
 type State = {
   consent?: {
-    consentOptions?: ConfigConsentOption[];
+    page: {
+      consentOptions?: ConfigConsentOption[];
+    }
   };
 };
 const initialState: State = {};
@@ -22,9 +24,11 @@ export const configSlice = createSlice({
       { payload }: PayloadAction<ConfigConsentOption[]>
     ) {
       if (!draftState.consent) {
-        draftState.consent = {};
+        draftState.consent = {
+          page: {}
+        };
       }
-      draftState.consent.consentOptions = payload;
+      draftState.consent.page.consentOptions = payload;
     },
 
     /**
@@ -39,7 +43,7 @@ export const configSlice = createSlice({
         (payload.consent ?? []).map((consent) => [consent.data_use, consent])
       );
 
-      draftState.consent?.consentOptions?.forEach((draftOption) => {
+      draftState.consent?.page.consentOptions?.forEach((draftOption) => {
         const apiConsent = consentPreferencesMap.get(
           draftOption.fidesDataUseKey
         );
@@ -74,5 +78,5 @@ export const selectConfig = createSelector(selectConfigState, (configState) =>
 
 export const selectConfigConsentOptions = createSelector(
   selectConfig,
-  (config) => config.consent?.consentOptions ?? []
+  (config) => config.consent?.page.consentOptions ?? []
 );
