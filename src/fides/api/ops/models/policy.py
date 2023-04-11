@@ -163,7 +163,7 @@ class Policy(Base):
 
     def get_action_type(self) -> Optional[ActionType]:
         try:
-            return self.rules[0].action_type
+            return self.rules[0].action_type  # type: ignore[attr-defined]
         except IndexError:
             return None
 
