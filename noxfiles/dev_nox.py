@@ -15,7 +15,7 @@ from nox import Session, param, parametrize
 from nox import session as nox_session
 from nox.command import CommandFailed
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
-from utils_nox import teardown
+from utils_nox import install_requirements, teardown
 
 
 @nox_session()
@@ -175,7 +175,8 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     timestamps.append({"time": time.monotonic(), "label": "Docker Build"})
 
     session.log("Installing ethyca-fides locally...")
-    session.run("pip", "install", ".")
+    install_requirements(session)
+    session.install("-e", ".")
     session.run("fides", "--version")
     timestamps.append({"time": time.monotonic(), "label": "pip install"})
 
