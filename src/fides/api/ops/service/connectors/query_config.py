@@ -756,3 +756,56 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         if mongo_query is not None:
             return self.query_to_str(mongo_query, data)
         return None
+
+
+DynamoDBStatement = Dict[str, Dict[str, Any]]
+"""A DynamoDB query is formed using the boto3 library. The required parameters are:
+  * a table/collection name (string)
+  * the key name to pass when accessing the table, along with type and value (dict)
+  * optionally, the sort key or secondary index (i.e. timestamp)
+  * optionally, the specified attributes can be provided. If None, all attributes
+  returned for item.
+
+    # TODO finish these docs
+
+  We can either represent these items as a model and then handle each of the values
+  accordingly in the connector or use this query config to return a dictionary that
+  can be appropriately unpacked when executing using the client.
+
+  The get_item query has been left out of the query_config for now.
+
+  Add an example for put_item
+  """
+
+
+class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
+    def generate_query(
+        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+    ) -> None:
+        """Not used for this connector at this time"""
+        return None
+
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Optional[DynamoDBStatement]:
+        """
+        Generate a Dictionary that contains necessary items to
+        run a PUT operation against DynamoDB
+        """
+
+        update_clauses = self.update_value_map(row, policy, request)
+
+        update_items = row
+        for key, value in update_items.items():
+            if key in update_clauses:
+                update_items[key][next(iter(value))] = update_clauses[key]
+
+        return update_items
+
+    def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> None:
+        """Not used for this connector"""
+        return None
+
+    def dry_run_query(self) -> None:
+        """Not used for this connector"""
+        return None
