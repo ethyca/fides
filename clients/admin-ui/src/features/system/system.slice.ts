@@ -129,7 +129,7 @@ export const selectActiveClassifySystemFidesKey = createSelector(
 
 export const selectAllSystems = createSelector(
   systemApi.endpoints.getAllSystems.select(),
-  ({ data }) => data
+  ({ data }) => data || []
 );
 
 export const selectActiveClassifySystem = createSelector(

@@ -22,10 +22,12 @@ import { successToastParams } from "common/toast";
 import { Form, Formik } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import {
   useGetAllSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system";
+import { selectAllSystems } from "~/features/system/system.slice";
 import { DataFlow, System } from "~/types/api";
 
 const defaultInitialValues = {
@@ -51,8 +53,8 @@ export const DataFlowAccordionForm = ({
   const dataFlowSystemsModal = useDisclosure();
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
 
-  const { data } = useGetAllSystemsQuery();
-  const systems = useMemo(() => data || [], [data]);
+  useGetAllSystemsQuery();
+  const systems = useAppSelector(selectAllSystems);
 
   const initialDataFlows = useMemo(() => {
     let dataFlows = isIngress ? system.ingress : system.egress;
