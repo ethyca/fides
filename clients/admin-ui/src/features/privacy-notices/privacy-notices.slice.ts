@@ -50,11 +50,22 @@ const privacyNoticesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["PrivacyNotices"],
     }),
+    getPrivacyNoticeById: build.query<PrivacyNoticeResponse, string>({
+      query: (id) => ({
+        url: `privacy-notice/${id}`,
+      }),
+      providesTags: (result, error, arg) => [
+        { type: "PrivacyNotices", id: arg },
+      ],
+    }),
   }),
 });
 
-export const { useGetAllPrivacyNoticesQuery, usePatchPrivacyNoticesMutation } =
-  privacyNoticesApi;
+export const {
+  useGetAllPrivacyNoticesQuery,
+  usePatchPrivacyNoticesMutation,
+  useGetPrivacyNoticeByIdQuery,
+} = privacyNoticesApi;
 
 export const privacyNoticesSlice = createSlice({
   name: "privacyNotices",
