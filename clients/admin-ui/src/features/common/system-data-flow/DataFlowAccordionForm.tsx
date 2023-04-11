@@ -121,7 +121,7 @@ export const DataFlowAccordionForm = ({
           flex={1}
           textAlign="left"
         >
-          <Text fontSize="sm" lineHeight={5} fontWeight="semibold" mr={4}>
+          <Text fontSize="sm" lineHeight={5} fontWeight="semibold" mr={2}>
             {pluralFlowType}
           </Text>
           {/* Commented out until we get copy for the tooltips */}
