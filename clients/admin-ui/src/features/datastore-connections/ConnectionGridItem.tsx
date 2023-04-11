@@ -1,6 +1,6 @@
 import { Box, Button, Flex, Spacer, Text } from "@fidesui/react";
 import { formatDate } from "common/utils";
-import React from "react";
+import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import ConnectedCircle from "~/features/common/ConnectedCircle";
@@ -49,13 +49,14 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
 
-  const connectionType =
-    connectionOptions.find(
-      (ct) =>
-        ct.identifier === connectionData.connection_type ||
-        (connectionData.saas_config &&
-          ct.identifier === connectionData.saas_config.type)
-    ) || "ethyca";
+  const connectionType = useMemo(() => (
+      connectionOptions.find(
+        (ct) =>
+          ct.identifier === connectionData.connection_type ||
+          (connectionData.saas_config &&
+            ct.identifier === connectionData.saas_config.type)
+      ) || "ethyca"
+    ), [connectionData, connectionOptions]);
 
   return (
     <Box
