@@ -1,25 +1,10 @@
-import { ExportFilterItem } from "./types";
-
 /**
  * Enums
  */
-export enum ExportFilterType {
-  DEFAULT,
-}
 
 export const CELL_SIZE = 20;
 
 export const DATA_CATEGORY_COLUMN_ID = "unioned_data_categories";
-
-export const EXPORT_FILTER_MAP: ExportFilterItem[] = [
-  {
-    id: ExportFilterType.DEFAULT,
-    name: `Default`,
-    description: `Export a file which retains the format of the table within the Fides application. This can be used if you need to filter on a single value like data category.`,
-    key: ``,
-    fileName: `report_[timestamp]`,
-  },
-];
 
 export const GRAY_BACKGROUND = "#F7F7F7";
 
