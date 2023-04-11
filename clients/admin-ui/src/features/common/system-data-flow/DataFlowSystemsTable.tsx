@@ -18,12 +18,14 @@ type Props = {
   allSystems: System[];
   dataFlowSystems: DataFlow[];
   onChange: (dataFlows: DataFlow[]) => void;
+  flowType: string;
 };
 
 const DataFlowSystemsTable = ({
   allSystems,
   dataFlowSystems,
   onChange,
+  flowType,
 }: Props) => {
   const { setFieldValue } = useFormikContext();
   const handleToggle = (system: System) => {
@@ -58,7 +60,7 @@ const DataFlowSystemsTable = ({
         <Thead position="sticky" top={0} background="white" zIndex={1}>
           <Tr>
             <Th>System</Th>
-            <Th textAlign="right">Set as Source</Th>
+            <Th textAlign="right">Set as {flowType}</Th>
           </Tr>
         </Thead>
         <Tbody>

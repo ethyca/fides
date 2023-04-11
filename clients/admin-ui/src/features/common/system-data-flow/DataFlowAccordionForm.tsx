@@ -15,7 +15,7 @@ import {
 } from "@fidesui/react";
 import { FormGuard } from "common/hooks/useIsAnyFormDirty";
 import { GearLightIcon } from "common/Icon";
-import QuestionTooltip from "common/QuestionTooltip";
+// import QuestionTooltip from "common/QuestionTooltip";
 import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
 import { errorToastParams, successToastParams } from "common/toast";
@@ -204,6 +204,7 @@ export const DataFlowAccordionForm = ({
                 whenever it opens */}
                 {dataFlowSystemsModal.isOpen ? (
                   <DataFlowSystemsModal
+                    currentSystem={system}
                     systems={systems}
                     isOpen={dataFlowSystemsModal.isOpen}
                     onClose={dataFlowSystemsModal.onClose}

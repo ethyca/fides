@@ -71,9 +71,6 @@ const SystemFormTabs = ({
 }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [queuedIndex, setQueuedIndex] = useState<number | undefined>(undefined);
-  const [previousIndex, setPreviousIndex] = useState<number | undefined>(
-    undefined
-  );
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const router = useRouter();

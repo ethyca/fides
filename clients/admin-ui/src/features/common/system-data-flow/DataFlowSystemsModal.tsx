@@ -27,6 +27,7 @@ import { DataFlow, System } from "~/types/api";
 import DataFlowSystemsTable from "./DataFlowSystemsTable";
 
 type Props = {
+  currentSystem: System;
   systems: System[];
   dataFlowSystems: DataFlow[];
   onDataFlowSystemChange: (systems: DataFlow[]) => void;
@@ -34,6 +35,7 @@ type Props = {
 };
 
 const DataFlowSystemsModal = ({
+  currentSystem,
   systems,
   isOpen,
   onClose,
@@ -58,8 +60,10 @@ const DataFlowSystemsModal = ({
       return [];
     }
 
-    return systems.filter((s) => SEARCH_FILTER(s, searchFilter));
-  }, [systems, searchFilter]);
+    return systems
+      .filter((system) => system.fides_key !== currentSystem.fides_key)
+      .filter((s) => SEARCH_FILTER(s, searchFilter));
+  }, [systems, currentSystem.fides_key, searchFilter]);
 
   const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
@@ -134,6 +138,7 @@ const DataFlowSystemsModal = ({
                 withIcon
               />
               <DataFlowSystemsTable
+                flowType={flowType}
                 allSystems={filteredSystems}
                 dataFlowSystems={selectedDataFlows}
                 onChange={setSelectedDataFlows}

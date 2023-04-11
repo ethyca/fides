@@ -39,7 +39,7 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
   );
   const data = useMemo(() => {
     let nodes: SystemNode[] = [];
-    const links: Set<Link> = new Set([]);
+    const links: Set<string> = new Set([]);
     if (datamapBySystem) {
       nodes = Object.values(datamapBySystem);
       nodes
@@ -58,9 +58,13 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
             })),
         ])
         .flatMap((link) => link)
-        .forEach((link) => links.add(link));
+        .forEach((link) => links.add(JSON.stringify(link)));
     }
-    return { nodes, links: Array.from(links) };
+
+    return {
+      nodes,
+      links: Array.from(links).map((l) => JSON.parse(l)) as Link[],
+    };
   }, [datamapBySystem]);
 
   return {
