@@ -49,14 +49,16 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
 
-  const connectionType = useMemo(() => (
+  const connectionType = useMemo(
+    () =>
       connectionOptions.find(
         (ct) =>
           ct.identifier === connectionData.connection_type ||
           (connectionData.saas_config &&
             ct.identifier === connectionData.saas_config.type)
-      ) || "ethyca"
-    ), [connectionData, connectionOptions]);
+      ) || "ethyca",
+    [connectionData, connectionOptions]
+  );
 
   return (
     <Box
