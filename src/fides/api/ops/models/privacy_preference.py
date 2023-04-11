@@ -34,17 +34,13 @@ class UserConsentPreference(Enum):
 
 class RequestOrigin(Enum):
     privacy_center = "privacy_center"
-    privacy_modal = "privacy_modal"
+    overlay = "overlay"
+    api = "api"
 
 
 class PrivacyPreferenceHistory(Base):
     """The DB ORM model for storing PrivacyPreferenceHistory, used for saving
     every time consent preferences are saved for reporting purposes.
-
-    add fides_user_provided_identity nullable FK
-    add fides_user_device_id encrypted field
-    add ip address
-    add consent preference method?
     """
 
     affected_system_status = Column(
@@ -175,10 +171,7 @@ class CurrentPrivacyPreference(Base):
     """
 
     preference = Column(EnumColumn(UserConsentPreference), nullable=False, index=True)
-    provided_identity_id = Column(
-        String,
-        ForeignKey(ProvidedIdentity.id),
-    )
+    provided_identity_id = Column(String, ForeignKey(ProvidedIdentity.id), index=True)
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id), nullable=False, index=True
     )
@@ -189,11 +182,12 @@ class CurrentPrivacyPreference(Base):
         String, ForeignKey(PrivacyPreferenceHistory.id), nullable=False, index=True
     )
 
+    UniqueConstraint(
+        provided_identity_id, privacy_notice_id, name="identity_privacy_notice"
+    )
+
+    # Relationships
     privacy_notice_history = relationship(PrivacyNoticeHistory)
     privacy_preference_history = relationship(
         PrivacyPreferenceHistory, cascade="delete, delete-orphan", single_parent=True
-    )
-
-    UniqueConstraint(
-        provided_identity_id, privacy_notice_id, name="identity_privacy_notice"
     )

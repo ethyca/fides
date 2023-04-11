@@ -68,6 +68,7 @@ class EnforcementLevel(Enum):
 
     frontend = "frontend"
     system_wide = "system_wide"
+    not_applicable = "not_applicable"
 
 
 class PrivacyNoticeBase:
@@ -76,8 +77,9 @@ class PrivacyNoticeBase:
     """
 
     name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    origin = Column(String, nullable=True)  # pointer back to an origin template ID
+    description = Column(String)  # User-facing description
+    internal_description = Column(String)  # Visible to internal users only
+    origin = Column(String)  # pointer back to an origin template ID
     regions = Column(
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
         index=True,
@@ -92,8 +94,8 @@ class PrivacyNoticeBase:
     disabled = Column(Boolean, nullable=False, default=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
     displayed_in_privacy_center = Column(Boolean, nullable=False, default=True)
-    displayed_in_banner = Column(Boolean, nullable=False, default=True)
-    displayed_in_privacy_modal = Column(Boolean, nullable=False, default=True)
+    displayed_in_overlay = Column(Boolean, nullable=False, default=True)
+    displayed_in_api = Column(Boolean, nullable=False, default=True)
 
     def applies_to_system(self, system: System) -> bool:
         """Privacy Notice applies to System if a data use matches or the Privacy Notice
@@ -176,8 +178,8 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                 "disabled": self.disabled,
                 "has_gpc_flag": self.has_gpc_flag,
                 "displayed_in_privacy_center": self.displayed_in_privacy_center,
-                "displayed_in_banner": self.displayed_in_banner,
-                "displayed_in_privacy_modal": self.displayed_in_privacy_modal,
+                "displayed_in_overlay": self.displayed_in_overlay,
+                "displayed_in_api": self.displayed_in_api,
                 "privacy_notice_id": self.id,
             }
             PrivacyNoticeHistory.create(db, data=history_data, check_name=False)

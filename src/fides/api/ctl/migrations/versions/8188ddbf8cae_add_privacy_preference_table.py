@@ -1,8 +1,8 @@
-"""Add privacy preference history
+"""Add privacy preference table
 
-Revision ID: ea84810271d7
+Revision ID: 8188ddbf8cae
 Revises: ff782b0dc07e
-Create Date: 2023-04-11 01:52:41.475314
+Create Date: 2023-04-11 17:03:07.605408
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "ea84810271d7"
+revision = "8188ddbf8cae"
 down_revision = "ff782b0dc07e"
 branch_labels = None
 depends_on = None
@@ -209,9 +209,80 @@ def upgrade():
         ["privacy_preference_history_id"],
         unique=False,
     )
+    op.create_index(
+        op.f("ix_currentprivacypreference_provided_identity_id"),
+        "currentprivacypreference",
+        ["provided_identity_id"],
+        unique=False,
+    )
+    op.add_column(
+        "privacynotice", sa.Column("internal_description", sa.String(), nullable=True)
+    )
+    op.add_column(
+        "privacynotice", sa.Column("displayed_in_overlay", sa.Boolean(), nullable=False)
+    )
+    op.add_column(
+        "privacynotice", sa.Column("displayed_in_api", sa.Boolean(), nullable=False)
+    )
+    op.drop_column("privacynotice", "displayed_in_privacy_modal")
+    op.drop_column("privacynotice", "displayed_in_banner")
+    op.add_column(
+        "privacynoticehistory",
+        sa.Column("internal_description", sa.String(), nullable=True),
+    )
+    op.add_column(
+        "privacynoticehistory",
+        sa.Column("displayed_in_overlay", sa.Boolean(), nullable=False),
+    )
+    op.add_column(
+        "privacynoticehistory",
+        sa.Column("displayed_in_api", sa.Boolean(), nullable=False),
+    )
+    op.drop_column("privacynoticehistory", "displayed_in_privacy_modal")
+    op.drop_column("privacynoticehistory", "displayed_in_banner")
 
 
 def downgrade():
+    op.add_column(
+        "privacynoticehistory",
+        sa.Column(
+            "displayed_in_banner", sa.BOOLEAN(), autoincrement=False, nullable=False
+        ),
+    )
+    op.add_column(
+        "privacynoticehistory",
+        sa.Column(
+            "displayed_in_privacy_modal",
+            sa.BOOLEAN(),
+            autoincrement=False,
+            nullable=False,
+        ),
+    )
+    op.drop_column("privacynoticehistory", "displayed_in_api")
+    op.drop_column("privacynoticehistory", "displayed_in_overlay")
+    op.drop_column("privacynoticehistory", "internal_description")
+    op.add_column(
+        "privacynotice",
+        sa.Column(
+            "displayed_in_banner", sa.BOOLEAN(), autoincrement=False, nullable=False
+        ),
+    )
+    op.add_column(
+        "privacynotice",
+        sa.Column(
+            "displayed_in_privacy_modal",
+            sa.BOOLEAN(),
+            autoincrement=False,
+            nullable=False,
+        ),
+    )
+    op.drop_column("privacynotice", "displayed_in_api")
+    op.drop_column("privacynotice", "displayed_in_overlay")
+    op.drop_column("privacynotice", "internal_description")
+    op.drop_index(
+        op.f("ix_currentprivacypreference_provided_identity_id"),
+        table_name="currentprivacypreference",
+    )
     op.drop_index(
         op.f("ix_currentprivacypreference_privacy_preference_history_id"),
         table_name="currentprivacypreference",

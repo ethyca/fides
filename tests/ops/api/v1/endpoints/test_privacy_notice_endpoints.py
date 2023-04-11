@@ -175,8 +175,8 @@ class TestGetPrivacyNotices:
             assert "disabled" in notice_detail
             assert "has_gpc_flag" in notice_detail
             assert "displayed_in_privacy_center" in notice_detail
-            assert "displayed_in_privacy_modal" in notice_detail
-            assert "displayed_in_banner" in notice_detail
+            assert "displayed_in_api" in notice_detail
+            assert "displayed_in_overlay" in notice_detail
             assert "enforcement_level" in notice_detail
             assert "privacy_notice_history_id" in notice_detail
             assert notice_detail["privacy_notice_history_id"] is not None
@@ -253,8 +253,8 @@ class TestGetPrivacyNotices:
             assert "disabled" in notice_detail
             assert "has_gpc_flag" in notice_detail
             assert "displayed_in_privacy_center" in notice_detail
-            assert "displayed_in_privacy_modal" in notice_detail
-            assert "displayed_in_banner" in notice_detail
+            assert "displayed_in_api" in notice_detail
+            assert "displayed_in_overlay" in notice_detail
             assert "enforcement_level" in notice_detail
             assert "privacy_notice_history_id" in notice_detail
             assert notice_detail["privacy_notice_history_id"] is not None
@@ -644,7 +644,7 @@ class TestGetPrivacyNoticeDetail:
         )
         assert data["version"] == privacy_notice.version
         assert data["disabled"] == privacy_notice.disabled
-        assert data["displayed_in_banner"] == privacy_notice.displayed_in_banner
+        assert data["displayed_in_overlay"] == privacy_notice.displayed_in_overlay
 
 
 class TestGetPrivacyNoticesByDataUse:

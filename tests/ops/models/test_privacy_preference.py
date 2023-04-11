@@ -41,7 +41,9 @@ class TestPrivacyPreferenceHistory:
                 check_name=False,
             )
 
-    def test_create_privacy_notice(self, db, privacy_notice, system, privacy_request):
+    def test_create_privacy_preference(
+        self, db, privacy_notice, system, privacy_request
+    ):
         provided_identity_data = {
             "privacy_request_id": None,
             "field_name": "email",

@@ -24,6 +24,7 @@ class PrivacyNotice(BaseSchema):
 
     name: Optional[SafeStr]
     description: Optional[SafeStr]
+    internal_description: Optional[SafeStr]
     origin: Optional[SafeStr]
     regions: Optional[conlist(PrivacyNoticeRegion, min_items=1)]  # type: ignore
     consent_mechanism: Optional[ConsentMechanism]
@@ -32,8 +33,8 @@ class PrivacyNotice(BaseSchema):
     disabled: Optional[bool] = False
     has_gpc_flag: Optional[bool] = False
     displayed_in_privacy_center: Optional[bool] = True
-    displayed_in_privacy_modal: Optional[bool] = True
-    displayed_in_banner: Optional[bool] = True
+    displayed_in_overlay: Optional[bool] = True
+    displayed_in_api: Optional[bool] = True
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
