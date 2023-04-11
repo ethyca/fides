@@ -16,23 +16,6 @@ class TestSparkpostConnector:
             access_policy=policy, identities={"email": sparkpost_identity_email}
         )
 
-    # async def test_strict_erasure_request(
-    #     self,
-    #     sparkpost_runner: ConnectorRunner,
-    #     policy: Policy,
-    #     erasure_policy_string_rewrite: Policy,
-    #     sparkpost_erasure_identity_email: str,
-    #     sparkpost_erasure_data,
-    # ):
-    #     (
-    #         access_results,
-    #         erasure_results,
-    #     ) = await sparkpost_runner.strict_erasure_request(
-    #         access_policy=policy,
-    #         erasure_policy=erasure_policy_string_rewrite,
-    #         identities={"email": sparkpost_erasure_identity_email},
-    #     )
-
     async def test_non_strict_erasure_request(
         self,
         sparkpost_runner: ConnectorRunner,
