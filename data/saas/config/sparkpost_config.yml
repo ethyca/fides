@@ -1,12 +1,13 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Sparkpost SaaS Config
+  name: Sparkpost
   type: sparkpost
   description: A sample schema representing the Sparkpost connector for Fides
   version: 0.1.0
 
   connector_params:
     - name: domain
+      default_value: api.sparkpost.com
     - name: api_key
 
   client_config:

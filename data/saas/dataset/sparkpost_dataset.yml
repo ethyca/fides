@@ -1,6 +1,6 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: sparkpost
+    name: Sparkpost Dataset
     description: A sample dataset representing the Sparkpost connector for Fides
     collections:
       - name: receipient
@@ -10,12 +10,12 @@ dataset:
               data_type: object
             fields:
               - name: email
-                data_categories: [system.operations]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   primary_key: True
                   data_type: string
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
           - name: return_path
@@ -35,7 +35,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: place
-                data_categories: [system.operations]
+                data_categories: [user.location]
                 fidesops_meta:
                   data_type: string
           - name: substitution_data
@@ -47,7 +47,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: job
-                data_categories: [system.operations]
+                data_categories: [user.job_title]
                 fidesops_meta:
                   data_type: string
       - name: all_receipients

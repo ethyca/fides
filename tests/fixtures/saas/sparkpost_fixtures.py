@@ -48,7 +48,7 @@ def sparkpost_erasure_external_references() -> Dict[str, Any]:
 class SparkpostClient:
     def __init__(self, secrets: Dict[str, Any]):
         self.base_url = f"https://{secrets['domain']}"
-        self.auth = secrets["api_key"],'123'
+        self.auth = secrets["api_key"],''
 
     def create_user(self, email,uid):
         return requests.post(

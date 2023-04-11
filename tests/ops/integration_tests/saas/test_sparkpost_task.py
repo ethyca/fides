@@ -56,4 +56,4 @@ class TestSparkpostConnector:
             "sparkpost_instance:all_receipients": 0,
         }
 
-        # Since receipient delete api request take maximum 30 days to delete the receipient data.
+        # Since receipient delete api request take maximum 30 days to delete the receipient data.so,here we didn't check if receipient is deleted or not.
