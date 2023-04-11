@@ -124,7 +124,8 @@ export const DataFlowAccordionForm = ({
           <Text fontSize="sm" lineHeight={5} fontWeight="semibold" mr={4}>
             {pluralFlowType}
           </Text>
-          <QuestionTooltip label="helpful tip" />
+          {/* Commented out until we get copy for the tooltips */}
+          {/* <QuestionTooltip label="helpful tip" /> */}
 
           <Tag
             ml={2}
