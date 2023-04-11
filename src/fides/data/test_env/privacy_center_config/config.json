@@ -12,9 +12,7 @@
       "title": "Access your data",
       "description": "We will provide you a report of all your personal data.",
       "identity_inputs": {
-        "name": "optional",
-        "email": "required",
-        "phone": "optional"
+        "email": "required"
       }
     },
     {
@@ -23,9 +21,7 @@
       "title": "Erase your data",
       "description": "We will erase all of your personal data. This action cannot be undone.",
       "identity_inputs": {
-        "name": "optional",
-        "email": "required",
-        "phone": "optional"
+        "email": "required"
       }
     }
   ],
@@ -38,8 +34,7 @@
       "When you use our services, you're trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control."
     ],
     "identity_inputs": {
-      "email": "required",
-      "phone": "optional"
+      "email": "required"
     },
     "cookieName": "fides_consent",
     "policy_key": "default_consent_policy",

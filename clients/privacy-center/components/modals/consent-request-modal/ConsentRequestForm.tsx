@@ -108,8 +108,32 @@ const useConsentRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
-      email: emailValidation(identityInputs?.email),
-      phone: phoneValidation(identityInputs?.phone),
+      email: emailValidation(identityInputs?.email).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (value, context) => {
+          if (
+            identityInputs?.email === "optional" &&
+            identityInputs?.phone === "optional"
+          ) {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
+        }
+      ),
+      phone: phoneValidation(identityInputs?.phone).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (value, context) => {
+          if (
+            identityInputs?.email === "optional" &&
+            identityInputs?.phone === "optional"
+          ) {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
+        }
+      ),
     }),
   });
 
@@ -186,6 +210,9 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                   onBlur={handleBlur}
                   value={values.email}
                   isInvalid={touched.email && Boolean(errors.email)}
+                  isDisabled={Boolean(
+                    typeof values.phone !== "undefined" && values.phone
+                  )}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
@@ -195,6 +222,9 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
                 isRequired={identityInputs.phone === "required"}
+                isDisabled={Boolean(
+                  typeof values.email !== "undefined" && values.email
+                )}
               >
                 <FormLabel>Phone</FormLabel>
                 <PhoneInput
