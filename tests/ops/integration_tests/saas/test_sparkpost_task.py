@@ -68,6 +68,4 @@ class TestSparkpostConnector:
             "sparkpost_instance:recipient": 1,
         }
 
-        # response = sparkpost_client.get_user(sparkpost_erasure_identity_email)
-        # # Since user is deleted, it won't be available so response is 404
-        # assert response.status_code == 404
+        # deletion check is not done here because deletion request takes minimum 30 days to delete the recipient data.
