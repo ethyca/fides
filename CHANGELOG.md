@@ -30,6 +30,7 @@ The types of changes are:
 - Toggle for enabling/disabling privacy notices in the UI [#3010](https://github.com/ethyca/fides/pull/3010)
 - Add endpoint to retrieve privacy notices grouped by their associated data uses [#2956](https://github.com/ethyca/fides/pull/2956)
 - Support for uploading custom connector templates via the UI [#2997](https://github.com/ethyca/fides/pull/2997)
+- Add a backwards-compatible workflow for saving and propagating consent preferences with respect to Privacy Notices [#3016](https://github.com/ethyca/fides/pull/3016)
 
 ### Changed
 
