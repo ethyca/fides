@@ -176,7 +176,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
 
     session.log("Installing ethyca-fides locally...")
     install_requirements(session)
-    session.install("-e", ".")
+    session.install("-e", ".", "--no-deps")
     session.run("fides", "--version")
     timestamps.append({"time": time.monotonic(), "label": "pip install"})
 
