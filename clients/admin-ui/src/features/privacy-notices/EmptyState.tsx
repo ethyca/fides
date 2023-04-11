@@ -25,8 +25,7 @@ const EmptyState = () => (
         relies on how you use data in your organization to provide intelligent
         recommendations and pre-built templates for privacy notices you may need
         to display to your users. To get started with privacy notices, first add
-        your data uses to systems on your data map. To learn more about data
-        uses and consent, read the Consent Guide now.
+        your data uses to systems on your data map.
       </Text>
     </Box>
     <Button size="sm" variant="outline" fontWeight="semibold" minWidth="auto">
