@@ -61,7 +61,7 @@ const systemApi = baseApi.injectEndpoints({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: ["Datamap", "System"],
+      invalidatesTags: ["Datamap", "System", "PrivacyNotices"],
     }),
   }),
 });

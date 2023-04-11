@@ -26,12 +26,17 @@ The types of changes are:
 - Added preliminary privacy notice page [#2995](https://github.com/ethyca/fides/pull/2995)
 - Table for privacy notices [#3001](https://github.com/ethyca/fides/pull/3001)
 - Query params on connection type endpoint to filter by supported action type [#2996](https://github.com/ethyca/fides/pull/2996)
+- Scope restrictions for privacy notice table in the UI [#3007](https://github.com/ethyca/fides/pull/3007)
+- Toggle for enabling/disabling privacy notices in the UI [#3010](https://github.com/ethyca/fides/pull/3010)
 - Add endpoint to retrieve privacy notices grouped by their associated data uses [#2956](https://github.com/ethyca/fides/pull/2956)
+- Support for uploading custom connector templates via the UI [#2997](https://github.com/ethyca/fides/pull/2997)
 
 ### Changed
 
 - Set `privacyDeclarationDeprecatedFields` flags to false and set `userCannotModify` to true [2987](https://github.com/ethyca/fides/pull/2987)
 - Restored `nav-config` back to the admin-ui [#2990](https://github.com/ethyca/fides/pull/2990)
+- Modify privacy center default config to only request email identities, and add validation preventing requesting both email & phone identities [#2539](https://github.com/ethyca/fides/pull/2539)
+- SaaS connector icons are now dynamically loaded from the connector templates [#3018](https://github.com/ethyca/fides/pull/3018)
 
 ### Removed
 

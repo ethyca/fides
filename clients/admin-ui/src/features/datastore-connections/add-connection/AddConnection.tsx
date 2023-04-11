@@ -80,7 +80,7 @@ const AddConnection: React.FC = () => {
         <Box alignItems="center" display="flex">
           {connectionOption && (
             <>
-              <ConnectionTypeLogo data={connectionOption.identifier} />
+              <ConnectionTypeLogo data={connectionOption} />
               <Text ml="8px">{getLabel(step)}</Text>
             </>
           )}
