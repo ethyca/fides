@@ -3,6 +3,7 @@ import { produce } from "immer";
 import { configIsValid } from "~/scripts/validate-config";
 import minimalJson from "~/config/examples/minimal.json";
 import fullJson from "~/config/examples/full.json";
+import v2ConsentJson from "~/config/examples/v2Consent.json";
 
 describe("configIsValid", () => {
   const testCases = [
@@ -25,6 +26,26 @@ describe("configIsValid", () => {
       config: produce(fullJson, (draftConfig) => {
         draftConfig.consent.consentOptions[0].executable = true;
         draftConfig.consent.consentOptions[1].executable = true;
+      }),
+      expected: {
+        isValid: false,
+        message: "Cannot have more than one consent option be executable",
+      },
+    },
+    {
+      name: "v2 consent config",
+      config: produce(v2ConsentJson, (draftConfig) => {
+        draftConfig.consent.page.consentOptions[0].executable = true;
+      }),
+      expected: {
+        isValid: true,
+      },
+    },
+    {
+      name: "multiple executable v2 consent options",
+      config: produce(v2ConsentJson, (draftConfig) => {
+        draftConfig.consent.page.consentOptions[0].executable = true;
+        draftConfig.consent.page.consentOptions[1].executable = true;
       }),
       expected: {
         isValid: false,
