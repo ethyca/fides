@@ -1,0 +1,5 @@
+[sparkpost]
+config = "data/saas/config/sparkpost_config.yml"
+dataset = "data/saas/dataset/sparkpost_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Sparkpost"

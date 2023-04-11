@@ -1,0 +1,74 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Sparkpost
+  type: sparkpost
+  description: A sample schema representing the Sparkpost connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: api.sparkpost.com
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <api_key>
+        password: ''
+
+  test_request:
+    method: GET
+    path: /api/v1/recipient-lists
+    data_path: results
+
+  endpoints:
+    - name: all_recipients
+      requests:
+        read:
+          method: GET
+          path: /api/v1/recipient-lists
+          data_path: results
+          param_values:
+            - name: placeholder
+              identity: email
+    - name: recipient
+      requests:
+        read:
+          method: GET
+          path: /api/v1/recipient-lists/<all_recipients_id>?show_recipients=true
+          data_path: results.recipients
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: address.email
+                value:
+                  identity: email
+                exact: false
+                case_sensitive: false
+          param_values:
+            - name: placeholder
+              identity: email
+            - name: all_recipients_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: all_recipients.id
+                  direction: from
+        delete:
+          method: POST
+          path: /api/v1/data-privacy/rtbf-request
+          body: |
+            {
+              "recipients": [
+                "<recipient_address_email>"
+              ],
+              "include_subaccounts": false
+            }
+          param_values:
+            - name: recipient_address_email
+              references:
+                - dataset: <instance_fides_key>
+                  field: recipient.address.email
+                  direction: from
