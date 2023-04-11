@@ -102,7 +102,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
     if (!data || !data.columns || !data.rows) {
       return "";
     }
-
+    console.log(tableInstance?.rows);
     const { columns, rows } = data;
 
     // If we are generating a CSV file, do that and return
@@ -123,24 +123,19 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
     [tableColumns]
   );
 
-  const generateROPAExportData = async () => {
-    const { data } = await getDatamap(
-      {
-        organizationName: "default_organization",
-      },
-      true
-    );
-    if (!data) {
-      return null;
-    }
-    const columns = visibleColumns.map((column) => column.text);
-    const mergeFilter = applyMergeFilter(data);
-    const rows = (await mergeFilter).map((row) =>
-      visibleColumns.reduce(
-        (fields, column: DatamapColumn) => [...fields, `${row[column.value]}`],
-        [] as string[]
-      )
-    );
+  const generateROPAExportData = () => {
+
+
+    const columns =
+      tableInstance!.columns
+        .filter((column) => column.isVisible)
+        .map((column) => column.Header) as string[]
+
+
+    const rows = tableInstance!.rows
+      .map((row) => row.subRows)
+      .flatMap((row) => row)
+      .map((row) => row.cells.map((cell) => cell.value)) as string[][];
     return { columns, rows };
   };
 
@@ -163,12 +158,9 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
     [visibleColumns]
   );
 
+  // TODO: remove this probably??
   const hasDisabledFilter = useMemo(
-    () =>
-      [
-        ExportFilterType.GROUP_BY_PURPOSE_OF_PROCESSING,
-        ExportFilterType.GROUP_BY_SYSTEM,
-      ].some((value) => !isColumnVisible(getFilterItem(value)!.key)),
+    () => [].some((value) => !isColumnVisible(getFilterItem(value)!.key)),
     [getFilterItem, isColumnVisible]
   );
 
@@ -195,7 +187,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
     if (!tableInstance) {
       return;
     }
-    const data = await generateROPAExportData();
+    const data =  generateROPAExportData();
     const file = generateExportFile(data, fileType);
     triggerExportFileDownload(file, fileType);
   };

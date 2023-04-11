@@ -5,8 +5,6 @@ import { ExportFilterItem } from "./types";
  */
 export enum ExportFilterType {
   DEFAULT,
-  GROUP_BY_PURPOSE_OF_PROCESSING,
-  GROUP_BY_SYSTEM,
 }
 
 export const CELL_SIZE = 20;
@@ -14,20 +12,6 @@ export const CELL_SIZE = 20;
 export const DATA_CATEGORY_COLUMN_ID = "unioned_data_categories";
 
 export const EXPORT_FILTER_MAP: ExportFilterItem[] = [
-  {
-    id: ExportFilterType.GROUP_BY_SYSTEM,
-    name: `Group by system`,
-    description: `Export a file grouped by system. All other data within a system will be collapsed in each row.`,
-    key: `system.name`,
-    fileName: `report_systems_[timestamp]`,
-  },
-  {
-    id: ExportFilterType.GROUP_BY_PURPOSE_OF_PROCESSING,
-    name: `Group by purpose of processing`,
-    description: `Export a file grouped by purpose of processing. All other data within a purpose of processing will be collapsed in each row.`,
-    key: `system.privacy_declaration.data_use.name`,
-    fileName: `report_purposes_processing_[timestamp]`,
-  },
   {
     id: ExportFilterType.DEFAULT,
     name: `Default`,
