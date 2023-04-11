@@ -39,10 +39,7 @@ const Header = ({
 
   return (
     <Box display="flex" mb={2} alignItems="center" data-testid="header">
-      <ConnectionTypeLogo
-        data={connector ? connector.identifier : "ethyca"}
-        mr={2}
-      />
+      <ConnectionTypeLogo data={connector ?? "ethyca"} mr={2} />
       <Heading fontSize="2xl" fontWeight="semibold">
         Describe your {connector ? connector.human_readable : "new"} system
       </Heading>
