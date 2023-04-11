@@ -188,7 +188,12 @@ const SystemFormTabs = ({
       content: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
-            <Text fontSize="md" lineHeight={6} fontWeight="bold">
+            <Text
+              fontSize="md"
+              lineHeight={6}
+              fontWeight="bold"
+              marginBottom={3}
+            >
               Data flow
             </Text>
             <Text fontSize="sm" lineHeight={5} fontWeight="medium">
