@@ -9,6 +9,17 @@ REMOTE_DEBUG_COMPOSE_FILE = "docker-compose.remote-debug.yml"
 SAMPLE_PROJECT_COMPOSE_FILE = "./src/fides/data/sample_project/docker-compose.yml"
 WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 
+COMPOSE_FILE_LIST = {
+    COMPOSE_FILE,
+    SAMPLE_PROJECT_COMPOSE_FILE,
+    INTEGRATION_COMPOSE_FILE,
+    "docker/docker-compose.integration-mariadb.yml",
+    "docker/docker-compose.integration-mongodb.yml",
+    "docker/docker-compose.integration-mysql.yml",
+    "docker/docker-compose.integration-postgres.yml",
+    "docker/docker-compose.integration-mssql.yml",
+}
+
 # Image Names & Tags
 REGISTRY = "ethyca"
 IMAGE_NAME = "fides"

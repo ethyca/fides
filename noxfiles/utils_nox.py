@@ -2,32 +2,8 @@
 from pathlib import Path
 
 import nox
-from constants_nox import (
-    COMPOSE_FILE,
-    INTEGRATION_COMPOSE_FILE,
-    SAMPLE_PROJECT_COMPOSE_FILE,
-)
+from constants_nox import COMPOSE_FILE_LIST
 from run_infrastructure import run_infrastructure
-
-COMPOSE_FILE_LIST = {
-    COMPOSE_FILE,
-    SAMPLE_PROJECT_COMPOSE_FILE,
-    INTEGRATION_COMPOSE_FILE,
-    "docker/docker-compose.integration-mariadb.yml",
-    "docker/docker-compose.integration-mongodb.yml",
-    "docker/docker-compose.integration-mysql.yml",
-    "docker/docker-compose.integration-postgres.yml",
-    "docker/docker-compose.integration-mssql.yml",
-}
-
-# NOTE: The SAMPLE_PROJECT_COMPOSE_FILE expects to be run from it's normal
-# working directory, so when we reference it from the root directory we'll get
-# an error like: "sample.env: no such file or directory"
-#
-# To workaround this, we need to set the ENV variable below to point to *any*
-# valid file to keep 'docker compose' happy. Sorry for the fragility of this -
-# see comment in src/fides/data/sample_project/docker-compose.yml for details!
-
 
 @nox.session()
 def seed_test_data(session: nox.Session) -> None:
