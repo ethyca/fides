@@ -18,8 +18,8 @@ import { GearLightIcon } from "common/Icon";
 import QuestionTooltip from "common/QuestionTooltip";
 import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
-import { errorToastParams,successToastParams } from "common/toast";
-import { Form, Formik, FormikBag } from "formik";
+import { errorToastParams, successToastParams } from "common/toast";
+import { Form, Formik, FormikBag, FormikHelpers, FormikProps } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -97,7 +97,7 @@ export const DataFlowAccordionForm = ({
 
   const handleSubmit = async (
     { dataFlowSystems }: FormValues,
-    { resetForm }: FormikBag<any, any>
+    { resetForm }: FormikHelpers<FormValues>
   ) => {
     const updatedSystem = {
       ...system,
@@ -105,7 +105,7 @@ export const DataFlowAccordionForm = ({
       egress: !isIngress ? dataFlowSystems : system.egress,
     };
     await updateSystemMutationTrigger(updatedSystem);
-    resetForm(dataFlowSystems);
+    resetForm({ values: { dataFlowSystems } });
   };
 
   return (
