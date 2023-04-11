@@ -19,7 +19,7 @@ import QuestionTooltip from "common/QuestionTooltip";
 import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
 import { errorToastParams, successToastParams } from "common/toast";
-import { Form, Formik, FormikBag, FormikHelpers, FormikProps } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -166,7 +166,7 @@ export const DataFlowAccordionForm = ({
                   rightIcon={<GearLightIcon />}
                   marginBottom={4}
                 >
-                  {`Configure ${pluralFlowType}`}
+                  {`Configure ${pluralFlowType.toLocaleLowerCase()}`}
                 </Button>
                 <DataFlowSystemsDeleteTable
                   systems={systems}
