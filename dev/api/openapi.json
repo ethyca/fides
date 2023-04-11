@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.10.1b2.post0.dev5"
+    "version": "2.10.1b2.post0.dev6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5910,7 +5910,7 @@
           "Consent"
         ],
         "summary": "Consent Request Verify",
-        "description": "Verifies the verification code and returns the current consent preferences if successful.",
+        "description": "Verifies the verification code and returns the current consent preferences if successful.\n\nNote that this returns just Consent records - which is the old workflow that saves Consent with respect to a data use.",
         "operationId": "consent_request_verify_api_v1_consent_request__consent_request_id__verify_post",
         "parameters": [
           {
@@ -6025,7 +6025,7 @@
           "Consent"
         ],
         "summary": "Set Consent Preferences",
-        "description": "Verifies the verification code and saves the user's consent preferences if successful.",
+        "description": "Verifies the verification code and saves the user's consent preferences if successful.\n\nNote that this allows you to save Consent records under our old workflow that saves Consent with respect to a data use.\n\n# TODO Slated for deprecation",
         "operationId": "set_consent_preferences_api_v1_consent_request__consent_request_id__preferences_patch",
         "parameters": [
           {
@@ -9040,6 +9040,139 @@
             ]
           }
         ]
+      }
+    },
+    "/api/v1/consent-request/{consent_request_id}/verify-for-privacy-preferences": {
+      "post": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Consent Request Verify For Privacy Preferences",
+        "description": "Verifies the verification code and returns the CurrentPrivacyPreferences if successful.\nThese are just the latest preferences saved for each PrivacyNotice.",
+        "operationId": "consent_request_verify_for_privacy_preferences_api_v1_consent_request__consent_request_id__verify_for_privacy_preferences_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Consent Request Id",
+              "type": "string"
+            },
+            "name": "consent_request_id",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_CurrentPrivacyPreferenceSchema_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consent-request/{consent_request_id}/privacy-preferences": {
+      "patch": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Save Privacy Preferences",
+        "description": "Verifies the verification code and saves the user's privacy preferences if successful.\n\nCreates a historical record for each privacy preference for record keeping and then upserts the current preference\nfor each privacy notice.  Creates a Privacy Request linked to the historical preferences to\npropagate these preferences where applicable.\n\nThis workflow is for users saving preferences for privacy notices with a verified identity.",
+        "operationId": "save_privacy_preferences_api_v1_consent_request__consent_request_id__privacy_preferences_patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Consent Request Id",
+              "type": "string"
+            },
+            "name": "consent_request_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivacyPreferencesCreateWithCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Save Privacy Preferences Api V1 Consent Request  Consent Request Id  Privacy Preferences Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/privacy-request": {
@@ -13640,6 +13773,24 @@
         ],
         "description": "An enumeration."
       },
+      "ConsentOptionCreate": {
+        "title": "ConsentOptionCreate",
+        "required": [
+          "privacy_notice_history_id",
+          "preference"
+        ],
+        "type": "object",
+        "properties": {
+          "privacy_notice_history_id": {
+            "title": "Privacy Notice History Id",
+            "type": "string"
+          },
+          "preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          }
+        },
+        "description": "Schema for saving the user's preference for a given notice"
+      },
       "ConsentPreferences": {
         "title": "ConsentPreferences",
         "type": "object",
@@ -13930,6 +14081,33 @@
         },
         "additionalProperties": false,
         "description": "Schema for creating a connection configuration including secrets."
+      },
+      "CurrentPrivacyPreferenceSchema": {
+        "title": "CurrentPrivacyPreferenceSchema",
+        "required": [
+          "id",
+          "preference",
+          "privacy_notice_history",
+          "privacy_preference_history_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "privacy_notice_history": {
+            "$ref": "#/components/schemas/PrivacyNoticeHistorySchema"
+          },
+          "privacy_preference_history_id": {
+            "title": "Privacy Preference History Id",
+            "type": "string"
+          }
+        },
+        "description": "Schema to represent the latest saved preference for a given privacy notice\nNote that we return the privacy notice *history* record here though which has the\ncontents of the notice the user consented to at the time."
       },
       "CurrentStep": {
         "title": "CurrentStep",
@@ -14854,7 +15032,8 @@
         "title": "EnforcementLevel",
         "enum": [
           "frontend",
-          "system_wide"
+          "system_wide",
+          "not_applicable"
         ],
         "description": "Enum is not formalized in the DB because it may be subject to frequent change"
       },
@@ -16303,6 +16482,40 @@
           }
         }
       },
+      "Page_CurrentPrivacyPreferenceSchema_": {
+        "title": "Page[CurrentPrivacyPreferenceSchema]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_DatasetConfigSchema_": {
         "title": "Page[DatasetConfigSchema]",
         "required": [
@@ -17126,6 +17339,10 @@
             "title": "Description",
             "type": "string"
           },
+          "internal_description": {
+            "title": "Internal Description",
+            "type": "string"
+          },
           "origin": {
             "title": "Origin",
             "type": "string"
@@ -17166,19 +17383,111 @@
             "type": "boolean",
             "default": true
           },
-          "displayed_in_privacy_modal": {
-            "title": "Displayed In Privacy Modal",
+          "displayed_in_overlay": {
+            "title": "Displayed In Overlay",
             "type": "boolean",
             "default": true
           },
-          "displayed_in_banner": {
-            "title": "Displayed In Banner",
+          "displayed_in_api": {
+            "title": "Displayed In Api",
             "type": "boolean",
             "default": true
           }
         },
         "additionalProperties": false,
         "description": "An API representation of a PrivacyNotice.\nThis model doesn't include an `id` so that it can be used for creation.\nIt also establishes some fields _required_ for creation"
+      },
+      "PrivacyNoticeHistorySchema": {
+        "title": "PrivacyNoticeHistorySchema",
+        "required": [
+          "name",
+          "regions",
+          "consent_mechanism",
+          "data_uses",
+          "enforcement_level",
+          "id",
+          "version",
+          "privacy_notice_id"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "internal_description": {
+            "title": "Internal Description",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "consent_mechanism": {
+            "$ref": "#/components/schemas/ConsentMechanism"
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enforcement_level": {
+            "$ref": "#/components/schemas/EnforcementLevel"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean",
+            "default": false
+          },
+          "displayed_in_privacy_center": {
+            "title": "Displayed In Privacy Center",
+            "type": "boolean",
+            "default": true
+          },
+          "displayed_in_overlay": {
+            "title": "Displayed In Overlay",
+            "type": "boolean",
+            "default": true
+          },
+          "displayed_in_api": {
+            "title": "Displayed In Api",
+            "type": "boolean",
+            "default": true
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "number"
+          },
+          "privacy_notice_id": {
+            "title": "Privacy Notice Id",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An API representation of a PrivacyNoticeHistory used for response payloads"
       },
       "PrivacyNoticeRegion": {
         "title": "PrivacyNoticeRegion",
@@ -17223,7 +17532,8 @@
           "id",
           "created_at",
           "updated_at",
-          "version"
+          "version",
+          "privacy_notice_history_id"
         ],
         "type": "object",
         "properties": {
@@ -17233,6 +17543,10 @@
           },
           "description": {
             "title": "Description",
+            "type": "string"
+          },
+          "internal_description": {
+            "title": "Internal Description",
             "type": "string"
           },
           "origin": {
@@ -17275,13 +17589,13 @@
             "type": "boolean",
             "default": true
           },
-          "displayed_in_privacy_modal": {
-            "title": "Displayed In Privacy Modal",
+          "displayed_in_overlay": {
+            "title": "Displayed In Overlay",
             "type": "boolean",
             "default": true
           },
-          "displayed_in_banner": {
-            "title": "Displayed In Banner",
+          "displayed_in_api": {
+            "title": "Displayed In Api",
             "type": "boolean",
             "default": true
           },
@@ -17302,6 +17616,10 @@
           "version": {
             "title": "Version",
             "type": "number"
+          },
+          "privacy_notice_history_id": {
+            "title": "Privacy Notice History Id",
+            "type": "string"
           }
         },
         "additionalProperties": false,
@@ -17320,6 +17638,10 @@
           },
           "description": {
             "title": "Description",
+            "type": "string"
+          },
+          "internal_description": {
+            "title": "Internal Description",
             "type": "string"
           },
           "origin": {
@@ -17362,13 +17684,13 @@
             "type": "boolean",
             "default": true
           },
-          "displayed_in_privacy_modal": {
-            "title": "Displayed In Privacy Modal",
+          "displayed_in_overlay": {
+            "title": "Displayed In Overlay",
             "type": "boolean",
             "default": true
           },
-          "displayed_in_banner": {
-            "title": "Displayed In Banner",
+          "displayed_in_api": {
+            "title": "Displayed In Api",
             "type": "boolean",
             "default": true
           },
@@ -17379,6 +17701,51 @@
         },
         "additionalProperties": false,
         "description": "An API representation of a PrivacyNotice that includes an `id` field.\nUsed to help model API responses and update payloads"
+      },
+      "PrivacyPreferencesCreateWithCode": {
+        "title": "PrivacyPreferencesCreateWithCode",
+        "required": [
+          "browser_identity",
+          "preferences"
+        ],
+        "type": "object",
+        "properties": {
+          "browser_identity": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "preferences": {
+            "title": "Preferences",
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsentOptionCreate"
+            }
+          },
+          "policy_key": {
+            "title": "Policy Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
+          "request_origin": {
+            "$ref": "#/components/schemas/RequestOrigin"
+          },
+          "url_recorded": {
+            "title": "Url Recorded",
+            "type": "string"
+          },
+          "user_agent": {
+            "title": "User Agent",
+            "type": "string"
+          },
+          "user_geography": {
+            "$ref": "#/components/schemas/PrivacyNoticeRegion"
+          }
+        },
+        "description": "Schema for saving privacy preferences and accompanying user data\nincluding the verification code."
       },
       "PrivacyRequestCreate": {
         "title": "PrivacyRequestCreate",
@@ -17939,6 +18306,15 @@
           }
         },
         "description": "The Registry resource model.\n\nSystems can be assigned to this resource, but it doesn't inherently\npoint to any other resources."
+      },
+      "RequestOrigin": {
+        "title": "RequestOrigin",
+        "enum": [
+          "privacy_center",
+          "overlay",
+          "api"
+        ],
+        "description": "An enumeration."
       },
       "ResourceFilter": {
         "title": "ResourceFilter",
@@ -19200,6 +19576,15 @@
         },
         "additionalProperties": false,
         "description": "TimescaleDB Secrets Schema for API Docs"
+      },
+      "UserConsentPreference": {
+        "title": "UserConsentPreference",
+        "enum": [
+          "opt_in",
+          "opt_out",
+          "acknowledge"
+        ],
+        "description": "An enumeration."
       },
       "UserCreate": {
         "title": "UserCreate",
