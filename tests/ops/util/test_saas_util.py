@@ -343,7 +343,13 @@ def test_unflatten_dict():
     assert unflatten_dict({"A.B": "1", "A.C": "2"}) == {"A": {"B": "1", "C": "2"}}
 
     # mixed levels
-    assert unflatten_dict({"A": "1", "B.C": "2", "B.D": "3",}) == {
+    assert unflatten_dict(
+        {
+            "A": "1",
+            "B.C": "2",
+            "B.D": "3",
+        }
+    ) == {
         "A": "1",
         "B": {"C": "2", "D": "3"},
     }

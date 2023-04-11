@@ -11,9 +11,7 @@
       "title": "Access your data",
       "description": "We will provide you a report of all your personal data.",
       "identity_inputs": {
-        "name": "optional",
-        "email": "required",
-        "phone": "optional"
+        "email": "required"
       }
     },
     {
@@ -22,9 +20,7 @@
       "title": "Erase your data",
       "description": "We will erase all of your personal data. This action cannot be undone.",
       "identity_inputs": {
-        "name": "optional",
-        "email": "required",
-        "phone": "optional"
+        "email": "required"
       }
     }
   ],
