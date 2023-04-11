@@ -143,8 +143,11 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     Spins up a full fides environment seeded with data.
 
     Params:
-        dev = Spins up a full fides application with a dev-style docker container. This includes hot-reloading and no pre-baked UI.
-        test = Spins up a full fides application with a production-style docker container. This includes the UI being pre-built as static files.
+        dev = Spins up a full fides application with a dev-style docker container.
+              This includes hot-reloading and no pre-baked UI.
+
+        test = Spins up a full fides application with a production-style docker
+               container. This includes the UI being pre-built as static files.
 
     Posargs:
         keep_alive = does not automatically call teardown after the session
@@ -152,10 +155,9 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     keep_alive = "keep_alive" in session.posargs
     if fides_image == "dev":
         session.error(
-            "fides_env(dev) is currently unsupported, sorry! Use 'nox -s dev' to run the server in dev mode. "
+            "'fides_env(dev)' is not currently implemented! Use 'nox -s dev' to run the server in dev mode. "
             "Currently unclear how to (cleanly) mount the source code into the running container..."
         )
-        raise SystemExit()
 
     # Record timestamps along the way, so we can generate a build-time report
     timestamps = []
