@@ -18,7 +18,6 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.ops.schemas.privacy_preference import (
     MinimalPrivacyPreferenceHistorySchema,
-    PrivacyPreferenceHistorySchema,
 )
 from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.service.connectors.consent_email_connector import (

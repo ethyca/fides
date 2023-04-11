@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Optional, Tuple
 
 from fastapi import Depends, HTTPException
 from fastapi_pagination import Page, Params, paginate
@@ -74,10 +74,7 @@ def consent_request_verify_for_privacy_preferences(
 
     query = (
         db.query(CurrentPrivacyPreference)
-        .join(
-            ProvidedIdentity,
-            provided_identity.id == CurrentPrivacyPreference.provided_identity_id,
-        )
+        .filter(CurrentPrivacyPreference.provided_identity_id == provided_identity.id)
         .order_by(CurrentPrivacyPreference.privacy_notice_id)
         .all()
     )
@@ -88,8 +85,9 @@ def verify_privacy_notice_and_historical_records(
     db: Session, data: PrivacyPreferencesCreateWithCode
 ) -> None:
     """
-    Runs a check that makes sure all privacy notice histories exist and also makes sure we don't have preferences specified
-    for the same privacy notice when saving privacy preferences.
+    Used when saving privacy preferences: runs a check that makes sure all the privacy notice histories referenced by
+    the provided `preferences` exist in the database, and also makes sure the provided `preferences` do not specify
+    the same privacy notice.
 
     For example, we want to avoid having two preferences saved for the same version of a *historical privacy notice*,
     or two preferences saved for different versions of the same *privacy notice*.
@@ -117,6 +115,19 @@ def verify_privacy_notice_and_historical_records(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Invalid privacy notice histories in request",
         )
+
+
+def extract_identity_from_provided_identity(
+    identity: ProvidedIdentity, identity_type: ProvidedIdentityType
+) -> Tuple[Optional[str], Optional[str]]:
+    """Pull the identity data off of the ProvidedIdentity given that it's the correct type"""
+    value: Optional[str] = None
+    hashed_value: Optional[str] = None
+    if identity.encrypted_value and identity.field_name == identity_type:
+        value = identity.encrypted_value["value"]
+        hashed_value = identity.hashed_value
+
+    return value, hashed_value
 
 
 @router.patch(
@@ -152,18 +163,22 @@ def save_privacy_preferences(
     logger.info("Saving privacy preferences")
     created_historical_preferences: List[PrivacyPreferenceHistory] = []
     upserted_current_preferences: List[CurrentPrivacyPreference] = []
+
+    email, hashed_email = extract_identity_from_provided_identity(
+        provided_identity, ProvidedIdentityType.email
+    )
+    phone_number, hashed_phone_number = extract_identity_from_provided_identity(
+        provided_identity, ProvidedIdentityType.phone_number
+    )
+
     for privacy_preference in data.preferences:
         historical_preference: PrivacyPreferenceHistory = PrivacyPreferenceHistory.create(
             db=db,
             data={
-                "email": provided_identity.encrypted_value["value"]
-                if provided_identity.field_name == ProvidedIdentityType.email
-                and provided_identity.encrypted_value
-                else None,
-                "phone_number": provided_identity.encrypted_value["value"]
-                if provided_identity.field_name == ProvidedIdentityType.phone_number
-                and provided_identity.encrypted_value
-                else None,
+                "email": email,
+                "hashed_email": hashed_email,
+                "hashed_phone_number": hashed_phone_number,
+                "phone_number": phone_number,
                 "preference": privacy_preference.preference,
                 "privacy_notice_history_id": privacy_preference.privacy_notice_history_id,
                 "provided_identity_id": provided_identity.id,

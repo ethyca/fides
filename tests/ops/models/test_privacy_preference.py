@@ -1,6 +1,9 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from fides.api.ops.api.v1.endpoints.privacy_preference_endpoints import (
+    extract_identity_from_provided_identity,
+)
 from fides.api.ops.common_exceptions import PrivacyNoticeHistoryNotFound
 from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.ops.models.privacy_preference import (
@@ -48,15 +51,20 @@ class TestPrivacyPreferenceHistory:
 
         privacy_notice_history = privacy_notice.histories[0]
 
+        email, hashed_email = extract_identity_from_provided_identity(
+            provided_identity, ProvidedIdentityType.email
+        )
+        phone_number, hashed_phone_number = extract_identity_from_provided_identity(
+            provided_identity, ProvidedIdentityType.phone_number
+        )
+
         preference_history_record = PrivacyPreferenceHistory.create(
             db=db,
             data={
-                "email": provided_identity.encrypted_value["value"]
-                if provided_identity.field_name == ProvidedIdentityType.email
-                else None,
-                "phone_number": provided_identity.encrypted_value["value"]
-                if provided_identity.field_name == ProvidedIdentityType.phone_number
-                else None,
+                "email": email,
+                "hashed_email": hashed_email,
+                "hashed_phone_number": hashed_phone_number,
+                "phone_number": phone_number,
                 "preference": "opt_out",
                 "privacy_notice_history_id": privacy_notice_history.id,
                 "provided_identity_id": provided_identity.id,
@@ -70,7 +78,13 @@ class TestPrivacyPreferenceHistory:
         )
         assert preference_history_record.affected_system_status == {}
         assert preference_history_record.email == "test@email.com"
+        assert preference_history_record.hashed_email == provided_identity.hashed_value
+
         assert preference_history_record.phone_number is None
+        assert (
+            preference_history_record.hashed_phone_number
+            == provided_identity.hashed_value
+        )
         assert preference_history_record.preference == UserConsentPreference.opt_out
         assert (
             preference_history_record.privacy_notice_history == privacy_notice_history

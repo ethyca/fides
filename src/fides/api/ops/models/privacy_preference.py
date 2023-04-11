@@ -57,8 +57,9 @@ class PrivacyPreferenceHistory(Base):
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
-        nullable=True,
     )
+    hashed_email = Column(String, index=True)  # For filtering
+    hashed_phone_number = Column(String, index=True)  # For filtering
     phone_number = Column(
         StringEncryptedType(
             type_in=String(),
@@ -66,20 +67,15 @@ class PrivacyPreferenceHistory(Base):
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
-        nullable=True,
     )
     preference = Column(EnumColumn(UserConsentPreference), nullable=False, index=True)
     privacy_notice_history_id = Column(
         String, ForeignKey(PrivacyNoticeHistory.id), nullable=False, index=True
     )
     privacy_request_id = Column(
-        String, ForeignKey(PrivacyRequest.id), nullable=True, index=True
+        String, ForeignKey(PrivacyRequest.id, ondelete="SET NULL"), index=True
     )
-    provided_identity_id = Column(
-        String,
-        ForeignKey(ProvidedIdentity.id),
-        nullable=True,
-    )
+    provided_identity_id = Column(String, ForeignKey(ProvidedIdentity.id), index=True)
     relevant_systems = Column(
         MutableList.as_mutable(ARRAY(String))
     )  # Systems whose data use match.  This doesn't necessarily mean we propagate. Some may be intentionally skipped later.
@@ -93,7 +89,6 @@ class PrivacyPreferenceHistory(Base):
                 "pkcs5",
             )
         ),
-        nullable=True,
     )  # Cache secondary user ids (cookies, etc) if known for reporting purposes.
 
     url_recorded = Column(String)
@@ -104,7 +99,6 @@ class PrivacyPreferenceHistory(Base):
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
-        nullable=True,
     )
 
     user_geography = Column(EnumColumn(PrivacyNoticeRegion), index=True)
@@ -184,7 +178,6 @@ class CurrentPrivacyPreference(Base):
     provided_identity_id = Column(
         String,
         ForeignKey(ProvidedIdentity.id),
-        nullable=True,
     )
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id), nullable=False, index=True

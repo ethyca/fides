@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Optional
 
 from fideslang.validation import FidesKey
 from pydantic import conlist
@@ -6,9 +6,7 @@ from pydantic import conlist
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.privacy_notice import PrivacyNoticeRegion
 from fides.api.ops.models.privacy_preference import RequestOrigin, UserConsentPreference
-from fides.api.ops.models.privacy_request import ExecutionLogStatus
 from fides.api.ops.schemas.privacy_notice import PrivacyNoticeHistorySchema
-from fides.api.ops.schemas.privacy_request import PrivacyRequestResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.lib.schemas.base_class import BaseSchema
 
@@ -39,23 +37,6 @@ class MinimalPrivacyPreferenceHistorySchema(BaseSchema):
 
     preference: UserConsentPreference
     privacy_notice_history: PrivacyNoticeHistorySchema
-
-
-class PrivacyPreferenceHistorySchema(BaseSchema):
-    """Schema to represent the snapshot of a saved privacy preference
-    This schema is largely for consent reporting.
-    """
-
-    id: str
-    affected_system_status: Optional[Dict[str, ExecutionLogStatus]]
-    preference: UserConsentPreference
-    privacy_notice_history: PrivacyNoticeHistorySchema
-    privacy_request: Optional[PrivacyRequestResponse]
-    relevant_systems: Optional[List[FidesKey]]
-    request_origin: Optional[RequestOrigin]
-    url_recorded: Optional[str]
-    user_agent: Optional[str]
-    user_geography: Optional[PrivacyNoticeRegion]
 
 
 class CurrentPrivacyPreferenceSchema(BaseSchema):

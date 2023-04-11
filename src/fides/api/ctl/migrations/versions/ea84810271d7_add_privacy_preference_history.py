@@ -1,8 +1,8 @@
-"""add privacy preference history
+"""Add privacy preference history
 
-Revision ID: d810a4538605
+Revision ID: ea84810271d7
 Revises: ff782b0dc07e
-Create Date: 2023-04-09 13:30:40.856500
+Create Date: 2023-04-11 01:52:41.475314
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "d810a4538605"
+revision = "ea84810271d7"
 down_revision = "ff782b0dc07e"
 branch_labels = None
 depends_on = None
@@ -44,6 +44,8 @@ def upgrade():
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
             nullable=True,
         ),
+        sa.Column("hashed_email", sa.String(), nullable=True),
+        sa.Column("hashed_phone_number", sa.String(), nullable=True),
         sa.Column(
             "phone_number",
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
@@ -76,14 +78,25 @@ def upgrade():
             ["privacynoticehistory.id"],
         ),
         sa.ForeignKeyConstraint(
-            ["privacy_request_id"],
-            ["privacyrequest.id"],
+            ["privacy_request_id"], ["privacyrequest.id"], ondelete="SET NULL"
         ),
         sa.ForeignKeyConstraint(
             ["provided_identity_id"],
             ["providedidentity.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_privacypreferencehistory_hashed_email"),
+        "privacypreferencehistory",
+        ["hashed_email"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_privacypreferencehistory_hashed_phone_number"),
+        "privacypreferencehistory",
+        ["hashed_phone_number"],
+        unique=False,
     )
     op.create_index(
         op.f("ix_privacypreferencehistory_id"),
@@ -107,6 +120,12 @@ def upgrade():
         op.f("ix_privacypreferencehistory_privacy_request_id"),
         "privacypreferencehistory",
         ["privacy_request_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_privacypreferencehistory_provided_identity_id"),
+        "privacypreferencehistory",
+        ["provided_identity_id"],
         unique=False,
     )
     op.create_index(
@@ -218,6 +237,10 @@ def downgrade():
         table_name="privacypreferencehistory",
     )
     op.drop_index(
+        op.f("ix_privacypreferencehistory_provided_identity_id"),
+        table_name="privacypreferencehistory",
+    )
+    op.drop_index(
         op.f("ix_privacypreferencehistory_privacy_request_id"),
         table_name="privacypreferencehistory",
     )
@@ -231,6 +254,14 @@ def downgrade():
     )
     op.drop_index(
         op.f("ix_privacypreferencehistory_id"), table_name="privacypreferencehistory"
+    )
+    op.drop_index(
+        op.f("ix_privacypreferencehistory_hashed_phone_number"),
+        table_name="privacypreferencehistory",
+    )
+    op.drop_index(
+        op.f("ix_privacypreferencehistory_hashed_email"),
+        table_name="privacypreferencehistory",
     )
     op.drop_table("privacypreferencehistory")
     op.execute("drop type userconsentpreference")

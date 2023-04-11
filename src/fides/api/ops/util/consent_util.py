@@ -9,25 +9,6 @@ from fides.api.ops.models.privacy_preference import (
 from fides.api.ops.models.privacy_request import PrivacyRequest
 
 
-def _filter_matching_system_data_uses(
-    system: System, preferences: List[PrivacyPreferenceHistory]
-) -> List[PrivacyPreferenceHistory]:
-    """Filter user's privacy preferences to only ones that match data uses on the system.
-
-    Propagate preference if Privacy Notice Data Use and System Data Use match or the Privacy Notice
-    Data Use is a parent of a System Data Use.
-    """
-    filtered_preferences: List[PrivacyPreferenceHistory] = []
-    for pref in preferences:
-        privacy_notice_data_uses: List[str] = pref.privacy_notice_history.data_uses or []  # type: ignore[union-attr]
-        for privacy_notice_data_use in privacy_notice_data_uses:
-            for system_data_use in system.get_data_uses(include_parents=True):
-                if system_data_use == privacy_notice_data_use:
-                    filtered_preferences.append(pref)
-
-    return filtered_preferences
-
-
 def filter_privacy_preferences_for_propagation(
     system: Optional[System], privacy_preferences: List[PrivacyPreferenceHistory]
 ) -> List[PrivacyPreferenceHistory]:
@@ -43,7 +24,12 @@ def filter_privacy_preferences_for_propagation(
 
     if not system:
         return propagatable_preferences
-    return _filter_matching_system_data_uses(system, propagatable_preferences)
+
+    filtered_on_use: List[PrivacyPreferenceHistory] = []
+    for pref in propagatable_preferences:
+        if pref.privacy_notice_history.applies_to_system(system):
+            filtered_on_use.append(pref)
+    return filtered_on_use
 
 
 def should_opt_in_to_service(

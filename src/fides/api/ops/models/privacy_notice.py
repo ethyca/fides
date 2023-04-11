@@ -95,17 +95,15 @@ class PrivacyNoticeBase:
     displayed_in_banner = Column(Boolean, nullable=False, default=True)
     displayed_in_privacy_modal = Column(Boolean, nullable=False, default=True)
 
-    @hybridproperty
-    def privacy_notice_history_id(self) -> Optional[str]:
-        """Convenience property that returns the historical privacy notice history id for the current version.
-
-        Note that there are possibly many historical records for the given notice, this just returns the current
-        corresponding historical record.
+    def applies_to_system(self, system: System) -> bool:
+        """Privacy Notice applies to System if a data use matches or the Privacy Notice
+        Data Use is a parent of a System Data Use
         """
-        history: PrivacyNoticeHistory = self.histories.filter_by(  # type: ignore # pylint: disable=no-member
-            version=self.version
-        ).first()
-        return history.id if history else None
+        for system_data_use in system.get_data_uses(include_parents=True):
+            for privacy_notice_data_use in self.data_uses or []:
+                if system_data_use == privacy_notice_data_use:
+                    return True
+        return False
 
 
 class PrivacyNotice(PrivacyNoticeBase, Base):
@@ -117,6 +115,18 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     histories = relationship(
         "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
     )
+
+    @hybridproperty
+    def privacy_notice_history_id(self) -> Optional[str]:
+        """Convenience property that returns the historical privacy notice history id for the current version.
+
+        Note that there are possibly many historical records for the given notice, this just returns the current
+        corresponding historical record.
+        """
+        history: PrivacyNoticeHistory = self.histories.filter_by(  # type: ignore # pylint: disable=no-member
+            version=self.version
+        ).first()
+        return history.id if history else None
 
     @classmethod
     def create(
@@ -268,9 +278,7 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
         relevant_systems: List[FidesKey] = []
         if self.enforcement_level == EnforcementLevel.system_wide:
             for system in db.query(System):
-                for system_data_use in system.get_data_uses(include_parents=True):
-                    for privacy_notice_data_use in self.data_uses:
-                        if system_data_use == privacy_notice_data_use:
-                            relevant_systems.append(system.fides_key)
-                            continue
+                if self.applies_to_system(system):
+                    relevant_systems.append(system.fides_key)
+                    continue
         return relevant_systems

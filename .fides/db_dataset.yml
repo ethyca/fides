@@ -1876,6 +1876,12 @@ dataset:
       - name: id
         data_categories:
         - system.operations
+      - name: hashed_email
+        data_categories:
+        - system.operations
+      - name: hashed_phone_number
+        data_categories:
+        - system.operations
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       - name: phone_number
         data_categories:
