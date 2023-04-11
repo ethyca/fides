@@ -1,3 +1,5 @@
+import * as Yup from "yup";
+
 import {
   ConsentMechanism,
   EnforcementLevel,
@@ -24,4 +26,14 @@ export const transformPrivacyNoticeResponseToCreation = (
   data_uses: notice.data_uses ?? defaultInitialValues.data_uses,
   enforcement_level:
     notice.enforcement_level ?? defaultInitialValues.enforcement_level,
+});
+
+export const ValidationSchema = Yup.object().shape({
+  name: Yup.string().required().label("Title"),
+  data_uses: Yup.array(Yup.string())
+    .min(1, "Must assign at least one data use")
+    .label("Data uses"),
+  regions: Yup.array(Yup.string())
+    .min(1, "Must assign at least one location")
+    .label("Locations"),
 });
