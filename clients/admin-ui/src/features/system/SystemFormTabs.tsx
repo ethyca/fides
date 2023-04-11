@@ -71,6 +71,9 @@ const SystemFormTabs = ({
 }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [queuedIndex, setQueuedIndex] = useState<number | undefined>(undefined);
+  const [previousIndex, setPreviousIndex] = useState<number | undefined>(
+    undefined
+  );
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
   const router = useRouter();
@@ -121,7 +124,11 @@ const SystemFormTabs = ({
   const checkTabChange = (index: number) => {
     // While privacy declarations aren't updated yet, only apply the "unsaved changes" modal logic
     // to the system information tab
-    if (index === 0) {
+    if (
+      index === 0 ||
+      (index === 1 && tabIndex === 2) ||
+      (index === 2 && tabIndex === 1)
+    ) {
       setTabIndex(index);
     } else {
       setQueuedIndex(index);
