@@ -3,8 +3,6 @@ import { Heading, VStack } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
 
-import { resolveZoneLink } from "~/features/common/nav/zone-config";
-
 import { useNav } from "./hooks";
 import { NavSideBarLink } from "./NavLink";
 
@@ -22,11 +20,10 @@ export const NavSideBar = () => {
       <Heading size="md">{nav.active.title}</Heading>
       <NavList>
         {nav.active.children.map(({ title, path }) => {
-          // We still need to handle cross-zone links.
-          const { href, isActive } = resolveZoneLink({ href: path, router });
+          const isActive = router.pathname.startsWith(path);
 
           return (
-            <NavSideBarLink key={title} href={href} isActive={isActive}>
+            <NavSideBarLink key={title} href={path} isActive={isActive}>
               {title}
             </NavSideBarLink>
           );

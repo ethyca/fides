@@ -8,6 +8,7 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
+    PrivacyRequestStatus,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
@@ -31,7 +32,7 @@ def test_universal_analytics_connection_test(
 @pytest.mark.integration_universal_analytics
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
-async def test_universal_analytics_consent_request_task(
+async def test_universal_analytics_consent_request_task_old_workflow(
     db,
     consent_policy,
     universal_analytics_connection_config,
@@ -90,7 +91,7 @@ async def test_universal_analytics_consent_request_task(
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
-async def test_universal_analytics_consent_prepared_requests(
+async def test_universal_analytics_consent_prepared_requests_old_workflow(
     mocked_client_send,
     db,
     consent_policy,
@@ -134,7 +135,7 @@ async def test_universal_analytics_consent_prepared_requests(
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
-async def test_universal_analytics_no_ga_client_id(
+async def test_universal_analytics_no_ga_client_id_old_workflow(
     mocked_client_send,
     db,
     consent_policy,
@@ -164,5 +165,188 @@ async def test_universal_analytics_no_ga_client_id(
 
     assert not mocked_client_send.called
     assert v == {
-        f"{dataset_name}:{dataset_name}": True
+        f"{dataset_name}:{dataset_name}": False
     }, "graph has one node which succeeded (consent request was skipped)"
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    google_analytics_logs = execution_logs.filter_by(
+        collection_name=dataset_name
+    ).order_by("created_at")
+    assert google_analytics_logs.count() == 2
+
+    assert [log.status for log in google_analytics_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.skipped,
+    ]
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_universal_analytics
+@pytest.mark.asyncio
+@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+async def test_universal_analytics_no_ga_client_id_new_workflow(
+    mocked_client_send,
+    db,
+    consent_policy,
+    universal_analytics_connection_config_without_secrets,
+    universal_analytics_dataset_config_without_secrets,
+    privacy_preference_history,
+) -> None:
+    """Test universal analytics connector skips instead of fails if identity missing."""
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()), status=PrivacyRequestStatus.pending
+    )
+    privacy_request.save(db)
+    privacy_preference_history.privacy_request_id = privacy_request.id
+    privacy_preference_history.save(db=db)
+
+    dataset_name = "universal_analytics_instance"
+
+    v = await graph_task.run_consent_request(
+        privacy_request,
+        consent_policy,
+        build_consent_dataset_graph(
+            [universal_analytics_dataset_config_without_secrets]
+        ),
+        [universal_analytics_connection_config_without_secrets],
+        {},
+        db,
+    )
+    assert not mocked_client_send.called
+    assert v == {
+        f"{dataset_name}:{dataset_name}": False
+    }, "graph has one node which skipped (consent request was skipped)"
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    google_analytics_logs = execution_logs.filter_by(
+        collection_name=dataset_name
+    ).order_by("created_at")
+    assert google_analytics_logs.count() == 2
+
+    assert [log.status for log in google_analytics_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.skipped,
+    ]
+
+    for log in google_analytics_logs:
+        assert log.dataset_name == dataset_name
+        assert (
+            log.collection_name == dataset_name
+        ), "Node-level is given the same name as the dataset name"
+        assert log.action_type == ActionType.consent
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_universal_analytics
+@pytest.mark.asyncio
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
+async def test_universal_analytics_consent_request_task_new_workflow(
+    db,
+    consent_policy,
+    universal_analytics_connection_config,
+    universal_analytics_dataset_config,
+    universal_analytics_client_id,
+    privacy_preference_history,
+) -> None:
+    """Full consent request based on the Google Analytics SaaS config
+    for the new workflow where we save consent with respect to privacy preferences
+    """
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()), status=PrivacyRequestStatus.pending
+    )
+    privacy_request.save(db)
+    privacy_preference_history.privacy_request_id = privacy_request.id
+    privacy_preference_history.save(db=db)
+
+    identity = Identity(**{"ga_client_id": universal_analytics_client_id})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = "universal_analytics_instance"
+
+    v = await graph_task.run_consent_request(
+        privacy_request,
+        consent_policy,
+        build_consent_dataset_graph([universal_analytics_dataset_config]),
+        [universal_analytics_connection_config],
+        {"ga_client_id": universal_analytics_client_id},
+        db,
+    )
+
+    assert v == {
+        f"{dataset_name}:{dataset_name}": True
+    }, "graph has one node, and request completed successfully"
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    universal_analytics_logs = execution_logs.filter_by(
+        collection_name=dataset_name
+    ).order_by("created_at")
+    assert universal_analytics_logs.count() == 2
+
+    assert [log.status for log in universal_analytics_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.complete,
+    ]
+
+    for log in universal_analytics_logs:
+        assert log.dataset_name == dataset_name
+        assert (
+            log.collection_name == dataset_name
+        ), "Node-level is given the same name as the dataset name"
+        assert log.action_type == ActionType.consent
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_universal_analytics
+@pytest.mark.asyncio
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
+@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+async def test_universal_analytics_consent_prepared_requests_new_workflow(
+    mocked_client_send,
+    db,
+    consent_policy,
+    universal_analytics_connection_config,
+    universal_analytics_dataset_config,
+    universal_analytics_client_id,
+    privacy_preference_history,
+) -> None:
+    """Assert attributes of the PreparedRequest created by the client for running the consent request"""
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()), status=PrivacyRequestStatus.pending
+    )
+    privacy_request.save(db)
+    privacy_preference_history.privacy_request_id = privacy_request.id
+    privacy_preference_history.save(db=db)
+
+    identity = Identity(**{"ga_client_id": universal_analytics_client_id})
+    privacy_request.cache_identity(identity)
+
+    await graph_task.run_consent_request(
+        privacy_request,
+        consent_policy,
+        build_consent_dataset_graph([universal_analytics_dataset_config]),
+        [universal_analytics_connection_config],
+        {"ga_client_id": universal_analytics_client_id},
+        db,
+    )
+
+    assert mocked_client_send.called
+    saas_request_params: SaaSRequestParams = mocked_client_send.call_args[0][0]
+    assert (
+        saas_request_params.path
+        == "/analytics/v3/userDeletion/userDeletionRequests:upsert"
+    )
+    body = mocked_client_send.call_args[0][0].body
+
+    assert universal_analytics_client_id in body
+    assert universal_analytics_connection_config.secrets["web_property_id"] in body

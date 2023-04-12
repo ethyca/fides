@@ -1,7 +1,8 @@
 import { Image, ImageProps } from "@fidesui/react";
 import React from "react";
 
-import { ConnectionType } from "~/types/api";
+import { ConnectionSystemTypeMap, ConnectionType } from "~/types/api";
+import { isConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
 
 import {
   CONNECTION_TYPE_LOGO_MAP,
@@ -11,7 +12,7 @@ import {
 import { DatastoreConnection, isDatastoreConnection } from "./types";
 
 type ConnectionTypeLogoProps = {
-  data: string | DatastoreConnection;
+  data: string | DatastoreConnection | ConnectionSystemTypeMap;
 };
 
 const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
@@ -19,6 +20,10 @@ const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
   ...props
 }) => {
   const getImageSrc = (): string => {
+    if (isConnectionSystemTypeMap(data) && data.encoded_icon) {
+      return `data:image/svg+xml;base64,${data.encoded_icon}`;
+    }
+
     let item;
     if (isDatastoreConnection(data)) {
       item = [...CONNECTION_TYPE_LOGO_MAP].find(
@@ -28,14 +33,24 @@ const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
           (data.connection_type.toString() === ConnectionType.SAAS &&
             data.saas_config?.type?.toString() === k.toString())
       );
-    } else {
+    } else if (isConnectionSystemTypeMap(data)) {
+      const { identifier } = data;
       item = [...CONNECTION_TYPE_LOGO_MAP].find(
-        ([k]) => k.toLowerCase() === data.toLowerCase()
+        ([k]) => k.toLowerCase() === identifier.toLowerCase()
       );
     }
     return item
       ? CONNECTOR_LOGOS_PATH + item[1]
       : FALLBACK_CONNECTOR_LOGOS_PATH;
+  };
+  const getAltValue = (): string => {
+    if (isDatastoreConnection(data)) {
+      return data.name;
+    }
+    if (isConnectionSystemTypeMap(data)) {
+      return data.human_readable;
+    }
+    return data;
   };
   return (
     <Image
@@ -43,7 +58,7 @@ const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
       objectFit="cover"
       src={getImageSrc()}
       fallbackSrc={FALLBACK_CONNECTOR_LOGOS_PATH}
-      alt={isDatastoreConnection(data) ? data.name : data}
+      alt={getAltValue()}
       {...props}
     />
   );

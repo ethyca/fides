@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Boolean, Column, String
 from sqlalchemy.ext.declarative import declared_attr
 
 from fides.lib.db.base_class import Base
@@ -17,3 +17,8 @@ class CustomConnectorTemplate(Base):
     dataset = Column(String, index=False, unique=False, nullable=False)
     icon = Column(String, index=False, unique=False, nullable=True)
     functions = Column(String, index=False, unique=False, nullable=True)
+    # indicates that this custom connector template should be replaced
+    # if a newer version is available from other sources
+    replaceable = Column(
+        Boolean, index=False, unique=False, nullable=False, default=False
+    )

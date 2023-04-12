@@ -136,6 +136,8 @@ class ConnectionConfig(Base):
         uselist=False,
     )
 
+    system = relationship(System)
+
     @classmethod
     def create_without_saving(
         cls: Type[ConnectionConfig], db: Session, *, data: dict[str, Any]

@@ -4,7 +4,7 @@ import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_ROUTE,
   SYSTEM_ROUTE,
-} from "~/constants";
+} from "~/features/common/nav/v2/routes";
 
 describe("System management page", () => {
   beforeEach(() => {
@@ -563,6 +563,38 @@ describe("System management page", () => {
         });
         cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
+    });
+  });
+
+  describe("Data flow", () => {
+    beforeEach(() => {
+      stubSystemCrud();
+      stubTaxonomyEntities();
+      cy.fixture("systems/systems.json").then((systems) => {
+        cy.intercept("GET", "/api/v1/system/*", {
+          body: systems[1],
+        }).as("getFidesctlSystem");
+      });
+
+      cy.visit(SYSTEM_ROUTE);
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("edit-btn").click();
+      });
+      cy.getByTestId("tab-Data flow").click();
+    });
+
+    it("Can navigate to the data flow tab", () => {
+      cy.getByTestId("data-flow-accordion").should("exist");
+    });
+
+    it("Can open both accordion items", () => {
+      cy.getByTestId("data-flow-accordion").within(()=>{
+        cy.getByTestId("data-flow-button-Source").click();
+        cy.getByTestId("data-flow-panel-Source").should("exist");
+        cy.getByTestId("data-flow-button-Destination").click();
+        cy.getByTestId("data-flow-panel-Destination").should("exist");
+      })
     });
   });
 });

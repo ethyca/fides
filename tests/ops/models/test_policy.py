@@ -59,6 +59,16 @@ def test_policy_wont_override_slug(
     policy.delete(db=db)
 
 
+def test_get_action_type(
+    policy: Policy,
+    empty_policy: Policy,
+    erasure_policy: Policy,
+) -> None:
+    assert policy.get_action_type() == ActionType.access
+    assert erasure_policy.get_action_type() == ActionType.erasure
+    assert empty_policy.get_action_type() is None
+
+
 def test_save_policy_doesnt_update_slug(db: Session, policy: Policy) -> None:
     existing_slug = policy.key
     new_name = "here is another test name"

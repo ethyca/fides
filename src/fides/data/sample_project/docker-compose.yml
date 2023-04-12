@@ -1,6 +1,7 @@
 services:
   fides:
-    image: ethyca/fides:sample
+    container_name: fides
+    image: ${FIDES_DEPLOY_IMAGE:-ethyca/fides:local}
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
@@ -15,22 +16,31 @@ services:
         condition: service_healthy
       mongodb-test:
         condition: service_started
+    # WARNING: This env_file option is specified so that we can provide an
+    # alternate ENV file via 'fides deploy up --env-file <some path>' as a
+    # convenient way for users to provide their own ENV files to the 'fides'
+    # at runtime. However, since Docker Compose doesn't support optional
+    # env_file specifications, we also need to provide a default 'sample.env'
+    # as a placeholder.
+    # (see https://github.com/compose-spec/compose-spec/issues/240)
+    #
+    # This seems fine, but it also leads to some gotchas when calling
+    # 'docker compose' from different working directories, like we do in the
+    # 'fides' nox build commands. Beware!
+    env_file:
+      - ${FIDES_DEPLOY_ENV_FILE:-sample.env}
     environment:
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
-      # These need to be defined here instead of the config file
-      # due to the `check_required_webserver_config_values` function
-      FIDES__SECURITY__APP_ENCRYPTION_KEY: "examplevalidprojectencryptionkey"
-      FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: "fidesadmin"
-      FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: "fidesadminsecret"
     # Mount a local volume so the user can see their privacy requests
     volumes:
       - type: bind
-        source: ${FIDES_UPLOADS_DIR}
+        source: ${FIDES_DEPLOY_UPLOADS_DIR:-./fides_uploads}
         target: /fides/fides_uploads
         read_only: False
 
   sample-app:
-    image: ethyca/fides-sample-app:sample
+    container_name: sample-app
+    image: ethyca/fides-sample-app:local
     environment:
       - PORT=3000
       - DATABASE_HOST=postgres-test
@@ -44,7 +54,8 @@ services:
       - postgres-test
 
   fides-pc:
-    image: ethyca/fides-privacy-center:sample
+    container_name: fides-privacy-center
+    image: ethyca/fides-privacy-center:local
     ports:
       - "3001:3000"
     volumes:
@@ -58,6 +69,7 @@ services:
         read_only: False
 
   fides-db:
+    container_name: fides-db
     image: postgres:12
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
@@ -74,14 +86,14 @@ services:
       - postgres:/var/lib/postgresql/data
 
   redis:
+    container_name: fides-redis
     image: redis:6.2.5-alpine
-    command: redis-server --requirepass redispass
-    environment:
-      - REDIS_PASSWORD=redispass
+    command: redis-server --requirepass redispassword
     ports:
       - "7379:6379"
 
   postgres-test:
+    container_name: fides-postgres-example-db
     image: postgres:12
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
@@ -98,6 +110,7 @@ services:
       - ./postgres_sample.sql:/docker-entrypoint-initdb.d/postgres_sample.sql:ro
 
   mongodb-test:
+    container_name: fides-redis-example-db
     image: mongo:5.0.3
     environment:
       - MONGO_INITDB_DATABASE=mongo_test

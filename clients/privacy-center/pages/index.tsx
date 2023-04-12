@@ -83,9 +83,9 @@ const Home: NextPage = () => {
     content.push(
       <ConsentCard
         key="consentCard"
-        title={config.consent.title}
-        iconPath={config.consent.icon_path}
-        description={config.consent.description}
+        title={config.consent.button.title}
+        iconPath={config.consent.button.icon_path}
+        description={config.consent.button.description}
         onOpen={onConsentModalOpen}
       />
     );
@@ -130,6 +130,7 @@ const Home: NextPage = () => {
             >
               {config.title}
             </Heading>
+
             <Text
               fontSize={["small", "medium"]}
               fontWeight="medium"
@@ -140,10 +141,39 @@ const Home: NextPage = () => {
             >
               {config.description}
             </Text>
+
+            {config.description_subtext?.map((paragraph, index) => (
+              <Text
+                fontSize={["small", "medium"]}
+                fontWeight="medium"
+                maxWidth={624}
+                textAlign="center"
+                color="gray.600"
+                data-testid={`description-${index}`}
+                // eslint-disable-next-line react/no-array-index-key
+                key={`description-${index}`}
+              >
+                {paragraph}
+              </Text>
+            ))}
           </Stack>
           <Flex m={-2} flexDirection={["column", "column", "row"]}>
             {content}
           </Flex>
+
+          {config.addendum?.map((paragraph, index) => (
+            <Text
+              fontSize={["small", "medium"]}
+              fontWeight="medium"
+              maxWidth={624}
+              color="gray.600"
+              data-testid={`addendum-${index}`}
+              // eslint-disable-next-line react/no-array-index-key
+              key={`addendum-${index}`}
+            >
+              {paragraph}
+            </Text>
+          ))}
         </Stack>
         <PrivacyRequestModal
           isOpen={isPrivacyModalOpen}

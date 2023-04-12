@@ -12,6 +12,7 @@ from fides.api.ops.graph.config import (
 from fides.api.ops.util.saas_util import (
     assign_placeholders,
     merge_datasets,
+    replace_version,
     unflatten_dict,
 )
 
@@ -372,3 +373,31 @@ def test_unflatten_dict():
     # unflatten_dict shouldn't be called with a None separator
     with pytest.raises(IndexError):
         unflatten_dict({"": "1"}, separator=None)
+
+
+def test_replace_version():
+    # base case
+    assert (
+        replace_version("saas_config:\n  version: 0.0.1\n  key: example", "0.0.2")
+        == "saas_config:\n  version: 0.0.2\n  key: example"
+    )
+
+    # ignore extra spaces
+    assert (
+        replace_version("saas_config:\n  version:  0.0.1\n  key: example", "0.0.2")
+        == "saas_config:\n  version: 0.0.2\n  key: example"
+    )
+
+    # version not found
+    replace_version(
+        "saas_config:\n  key: example", "1.0.0"
+    ) == "saas_config:\n  key: example"
+
+    # occurrences of *version: in the rest of the config
+    assert (
+        replace_version(
+            "saas_config:\n  version: 0.0.1\n  key: example\n  other_version: 0.0.2",
+            "0.0.3",
+        )
+        == "saas_config:\n  version: 0.0.3\n  key: example\n  other_version: 0.0.2"
+    )

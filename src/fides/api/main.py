@@ -22,15 +22,7 @@ import fides
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.database.seed import create_or_update_parent_user
-from fides.api.ctl.routes import (
-    admin,
-    crud,
-    datamap,
-    generate,
-    health,
-    system,
-    validate,
-)
+from fides.api.ctl.routes import admin, crud, generate, health, system, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
@@ -74,15 +66,13 @@ from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.core.config import CONFIG
-from fides.core.config.helpers import check_required_webserver_config_values
+from fides.core.config import CONFIG, check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
 VERSION = fides.__version__
 
 ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     admin.router,
-    datamap.router,
     generate.router,
     health.router,
     validate.router,
@@ -388,7 +378,7 @@ def read_other_paths(request: Request) -> Response:
 
 def start_webserver(port: int = 8080) -> None:
     """Run the webserver."""
-    check_required_webserver_config_values()
+    check_required_webserver_config_values(config=CONFIG)
     server = Server(Config(app, host="0.0.0.0", port=port, log_level=WARNING))
 
     logger.info(

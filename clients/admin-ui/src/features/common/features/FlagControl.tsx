@@ -29,6 +29,11 @@ export const FlagControl = ({
     );
   }
 
+  // Do not render a toggle if the flag is marked as not able to be modified by the user
+  if (FLAG_CONFIG[flag].userCannotModify) {
+    return null;
+  }
+
   return (
     <FormControl display="contents">
       <Box justifySelf="center">

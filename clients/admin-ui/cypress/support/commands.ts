@@ -36,13 +36,17 @@ Cypress.Commands.add("login", () => {
 Cypress.Commands.add("assumeRole", (role) => {
   cy.fixture("scopes/roles-to-scopes.json").then((mapping) => {
     const scopes: ScopeRegistryEnum[] = mapping[role];
-    cy.intercept("/api/v1/user/*/permission", {
-      body: {
-        id: 123,
-        user_id: 123,
-        total_scopes: scopes,
-      },
-    }).as("getUserPermission");
+    cy.fixture("login.json").then((body) => {
+      const { id: userId } = body.user_data;
+      cy.intercept(`/api/v1/user/${userId}/permission`, {
+        body: {
+          id: userId,
+          user_id: userId,
+          roles: [role],
+          total_scopes: scopes,
+        },
+      }).as("getUserPermission");
+    });
   });
 });
 
