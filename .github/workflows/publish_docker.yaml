@@ -39,6 +39,8 @@ jobs:
         run: |
           if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               echo ::set-output name=match::true
+          else
+              echo ::set-output name=match::false
           fi
       - name: Push Fides Prod Tags
         if: steps.check-tag.outputs.match == 'true'
