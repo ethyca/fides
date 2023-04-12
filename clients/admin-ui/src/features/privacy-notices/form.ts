@@ -17,16 +17,19 @@ export const defaultInitialValues: PrivacyNoticeCreation = {
 
 export const transformPrivacyNoticeResponseToCreation = (
   notice: PrivacyNoticeResponse
-): PrivacyNoticeCreation => ({
-  ...notice,
-  name: notice.name ?? defaultInitialValues.name,
-  regions: notice.regions ?? defaultInitialValues.regions,
-  consent_mechanism:
-    notice.consent_mechanism ?? defaultInitialValues.consent_mechanism,
-  data_uses: notice.data_uses ?? defaultInitialValues.data_uses,
-  enforcement_level:
-    notice.enforcement_level ?? defaultInitialValues.enforcement_level,
-});
+): PrivacyNoticeCreation => {
+  const { created_at: createdAt, updated_at: updatedAt, ...rest } = notice;
+  return {
+    ...rest,
+    name: notice.name ?? defaultInitialValues.name,
+    regions: notice.regions ?? defaultInitialValues.regions,
+    consent_mechanism:
+      notice.consent_mechanism ?? defaultInitialValues.consent_mechanism,
+    data_uses: notice.data_uses ?? defaultInitialValues.data_uses,
+    enforcement_level:
+      notice.enforcement_level ?? defaultInitialValues.enforcement_level,
+  };
+};
 
 export const ValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("Title"),

@@ -1,4 +1,12 @@
-import { Box, Button, ButtonGroup, HStack, Stack, Text } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  HStack,
+  Stack,
+  Text,
+  useToast,
+} from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 
@@ -10,7 +18,11 @@ import {
   CustomTextArea,
   CustomTextInput,
 } from "~/features/common/form/inputs";
-import { enumToOptions } from "~/features/common/helpers";
+import {
+  enumToOptions,
+  getErrorMessage,
+  isErrorResult,
+} from "~/features/common/helpers";
 import {
   selectDataUseOptions,
   useGetAllDataUsesQuery,
@@ -23,12 +35,14 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
+import { errorToastParams, successToastParams } from "../common/toast";
 import { MECHANISM_MAP } from "./constants";
 import {
   defaultInitialValues,
   transformPrivacyNoticeResponseToCreation,
   ValidationSchema,
 } from "./form";
+import { usePatchPrivacyNoticesMutation } from "./privacy-notices.slice";
 
 const CONSENT_MECHANISM_OPTIONS = enumToOptions(ConsentMechanism).map(
   (opt) => ({
@@ -47,15 +61,24 @@ const PrivacyNoticeForm = ({
   privacyNotice?: PrivacyNoticeResponse;
 }) => {
   const router = useRouter();
+  const toast = useToast();
   const initialValues = passedInPrivacyNotice
     ? transformPrivacyNoticeResponseToCreation(passedInPrivacyNotice)
     : defaultInitialValues;
 
+  // Query for data uses
   useGetAllDataUsesQuery();
   const dataUseOptions = useAppSelector(selectDataUseOptions);
 
-  const handleSubmit = (values: PrivacyNoticeCreation) => {
-    console.log({ values });
+  const [patchNoticesMutationTrigger] = usePatchPrivacyNoticesMutation();
+
+  const handleSubmit = async (values: PrivacyNoticeCreation) => {
+    const result = await patchNoticesMutationTrigger([values]);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      toast(successToastParams("Privacy notice updated"));
+    }
   };
 
   return (
