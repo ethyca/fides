@@ -32,6 +32,7 @@ The types of changes are:
 - Support for uploading custom connector templates via the UI [#2997](https://github.com/ethyca/fides/pull/2997)
 - Add a backwards-compatible workflow for saving and propagating consent preferences with respect to Privacy Notices [#3016](https://github.com/ethyca/fides/pull/3016)
 - Added Data flow modal [#3008](https://github.com/ethyca/fides/pull/3008)
+- Update datamap table export [#3038](https://github.com/ethyca/fides/pull/3038)
 
 ### Changed
 
