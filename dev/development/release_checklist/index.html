@@ -1004,30 +1004,8 @@ You're not viewing the latest version.
 <h3 id="general">General</h3>
 <p>From the release branch, confirm the following:
 - [ ] Quickstart works: <code>nox -s quickstart</code> (verify you can complete the interactive prompts from the command-line)
-- [ ] Test environment works: <code>nox -s "fides_env(test)"</code> (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)
-- [ ] Building the sample app images works: <code>nox -s "build(sample)"</code> (creates the sample images, which is also prereq for <code>fides deploy up --no-pull</code> next)
-- [ ] Running the CLI deploy works: <code>fides deploy up --no-pull</code> (see instructions below...)</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>mkdir ~/fides-deploy-test
-cd ~/fides-deploy-test
-python3 -m venv venv
-source venv/bin/activate
-pip install git+https://github.com/ethyca/fides.git@&lt;release-branch-name-here&gt;
-fides deploy up --no-pull
-fides status
-fides deploy down
-rm -rf ~/fides-deploy-test
-exit
-</code></pre></div></td></tr></table></div>
-<p>Next, run the following checks using the test environment (<code>nox -s "fides_env(test)"</code>):</p>
+- [ ] Test environment works: <code>nox -s "fides_env(test)"</code> (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)</p>
+<p>Next, run the following checks via the test environment:</p>
 <h3 id="api">API</h3>
 <ul>
 <li>[ ] Verify that the generated API docs are correct (http://localhost:8080/docs)</li>

@@ -966,7 +966,7 @@ or
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>nox -s dev -- remote_debug postgres timescale
 </code></pre></div></td></tr></table></div></p>
 <p>With those commands, the <code>fides</code> Docker Compose service that's running the Fides server locally is able to accept incoming remote debugging connections.</p>
-<p>Note that, at this point, the <code>remote_debug</code> flag is not enabled for other <code>nox</code> sessions, e.g. <code>test_env</code>, <code>pytest_ops</code>, etc.</p>
+<p>Note that, at this point, the <code>remote_debug</code> flag is not enabled for other <code>nox</code> sessions, e.g. <code>fides_env</code>, <code>pytest_ops</code>, etc.</p>
 <h3 id="attach-a-remote-debugger-to-the-fides-server">Attach a Remote Debugger to the Fides Server</h3>
 <p>Now that the running Fides server can accept incoming remote debugging connections, you can attach a remote debugger from a local VSCode workspace to actively debug the server application. A launch configuration is included in the <code>fides</code> repo to facilitate this step.</p>
 <ul>
