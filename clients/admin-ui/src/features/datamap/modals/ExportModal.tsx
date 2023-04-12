@@ -25,9 +25,13 @@ interface ExportModalProps {
   onClose: () => void;
 }
 
-const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
+const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
   const initialRef = useRef(null);
   const { tableInstance } = useContext(DatamapTableContext);
+
+  if (!tableInstance) {
+    return;
+  }
 
   const generateExportFile = (
     data: {
@@ -55,11 +59,11 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
   };
 
   const generateROPAExportData = () => {
-    const columns = tableInstance!.columns
+    const columns = tableInstance.columns
       .filter((column) => column.isVisible)
       .map((column) => column.Header) as string[];
 
-    const rows = tableInstance!.rows
+    const rows = tableInstance.rows
       .map((row) => row.subRows)
       .flatMap((row) => row)
       .map((row) => row.cells.map((cell) => cell.value)) as string[][];
@@ -71,10 +75,8 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
     fileType: ExportFileType
   ) => {
     const now = new Date().toISOString();
-    const fileName = `report_[timestamp].${fileType}`.replace(
-      "[timestamp]",
-      now
-    );
+    const fileName = `report_${now}.${fileType}`;
+
     if (typeof file === "string") {
       if (fileType === "csv") {
         const blob = new Blob([file], { type: "text/csv;charset=utf-8" });
@@ -95,6 +97,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
     triggerExportFileDownload(file, fileType);
   };
 
+  // eslint-disable-next-line consistent-return
   return (
     <Modal
       initialFocusRef={initialRef}
