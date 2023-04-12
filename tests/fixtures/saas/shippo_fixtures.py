@@ -26,15 +26,13 @@ secrets = get_secrets("shippo")
 def shippo_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "shippo.domain") or secrets["domain"],
-        "api_key": pydash.get(saas_config, "shippo.api_key") or secrets["api_key"]
+        "api_key": pydash.get(saas_config, "shippo.api_key") or secrets["api_key"],
     }
 
 
 @pytest.fixture(scope="session")
 def shippo_identity_email(saas_config):
-    return (
-        pydash.get(saas_config, "shippo.identity_email") or secrets["identity_email"]
-    )
+    return pydash.get(saas_config, "shippo.identity_email") or secrets["identity_email"]
 
 
 @pytest.fixture(scope="function")
@@ -61,9 +59,7 @@ def shippo_dataset() -> Dict[str, Any]:
 
 
 @pytest.fixture(scope="function")
-def shippo_connection_config(
-    db: Session, shippo_config, shippo_secrets
-) -> Generator:
+def shippo_connection_config(db: Session, shippo_config, shippo_secrets) -> Generator:
     fides_key = shippo_config["fides_key"]
     connection_config = ConnectionConfig.create(
         db=db,
@@ -110,7 +106,6 @@ def shippo_dataset_config(
 def shippo_create_erasure_data(
     shippo_connection_config: ConnectionConfig, shippo_erasure_identity_email: str
 ) -> None:
-
     shippo_secrets = shippo_connection_config.secrets
     base_url = f"https://{shippo_secrets['domain']}"
     headers = {
@@ -119,59 +114,59 @@ def shippo_create_erasure_data(
 
     # address
     body = {
-            "name": "Ethyca Test Erasure",
-            "company": "Ethyca Test company",
-            "street1": "test street",
-            "city": "test city",
-            "state": "test state",
-            "zip": "test zip",
-            "country": "test country",
-            "email": shippo_erasure_identity_email,
+        "name": "Ethyca Test Erasure",
+        "company": "Ethyca Test company",
+        "street1": "test street",
+        "city": "test city",
+        "state": "test state",
+        "zip": "test zip",
+        "country": "test country",
+        "email": shippo_erasure_identity_email,
     }
 
-    address_response = requests.post(url=f"{base_url}/addresses", headers=headers, json=body)
+    address_response = requests.post(
+        url=f"{base_url}/addresses", headers=headers, json=body
+    )
     address = address_response.json()
     address_id = address["object_id"]
 
     # orders
     order_data = {
-            "to_address": {
-                "city": "test city",
-                "company": "test company",
-                "country": "test country",
-                "email": shippo_erasure_identity_email,
-                "name": "Ethyca test erasure",
-                "state": "test state",
-                "street1": "test street",
-                "zip": "test zip"
-            },
-            "line_items": [
-                {
-                    "quantity": 1,
-                    "sku": "HM-123",
-                    "title": "Hippo Magazines",
-                    "total_price": "12.10",
-                    "currency": "USD",
-                    "weight": "0.40",
-                    "weight_unit": "lb"
-                }
-            ],
-            "placed_at": "2023-01-31T01:28:12Z",
-            "order_number": "#1068",
-            "order_status": "PAID",
-            "shipping_cost": "12.83",
-            "shipping_cost_currency": "USD",
-            "shipping_method": "USPS First Class Package",
-            "subtotal_price": "12.10",
-            "total_price": "24.93",
-            "total_tax": "0.00",
-            "currency": "USD",
-            "weight": "0.40",
-            "weight_unit": "lb"
-        }
-    response = requests.post(
-        url=f"{base_url}/orders", headers=headers, json=order_data
-    )
+        "to_address": {
+            "city": "test city",
+            "company": "test company",
+            "country": "test country",
+            "email": shippo_erasure_identity_email,
+            "name": "Ethyca test erasure",
+            "state": "test state",
+            "street1": "test street",
+            "zip": "test zip",
+        },
+        "line_items": [
+            {
+                "quantity": 1,
+                "sku": "HM-123",
+                "title": "Hippo Magazines",
+                "total_price": "12.10",
+                "currency": "USD",
+                "weight": "0.40",
+                "weight_unit": "lb",
+            }
+        ],
+        "placed_at": "2023-01-31T01:28:12Z",
+        "order_number": "#1068",
+        "order_status": "PAID",
+        "shipping_cost": "12.83",
+        "shipping_cost_currency": "USD",
+        "shipping_method": "USPS First Class Package",
+        "subtotal_price": "12.10",
+        "total_price": "24.93",
+        "total_tax": "0.00",
+        "currency": "USD",
+        "weight": "0.40",
+        "weight_unit": "lb",
+    }
+    response = requests.post(url=f"{base_url}/orders", headers=headers, json=order_data)
     order = response.json()
     order_id = order["object_id"]
     yield address, order

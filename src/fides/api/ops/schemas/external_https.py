@@ -1,31 +1,8 @@
-from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel
 
-from fides.api.ops.models.policy import WebhookDirection
 from fides.api.ops.schemas.redis_cache import Identity
-
-
-class CallbackType(Enum):
-    """We currently have two types of Policy Webhooks: pre and post"""
-
-    pre = "pre"
-    post = "post"
-
-
-class SecondPartyRequestFormat(BaseModel):
-    """The request body we will use when calling a user's HTTP endpoint from fides.api"""
-
-    privacy_request_id: str
-    direction: WebhookDirection
-    callback_type: CallbackType
-    identity: Identity
-
-    class Config:
-        """Using enum values"""
-
-        use_enum_values = True
 
 
 class SecondPartyResponseFormat(BaseModel):

@@ -18,7 +18,7 @@ nox -s dev -- remote_debug postgres timescale
 
 With those commands, the `fides` Docker Compose service that's running the Fides server locally is able to accept incoming remote debugging connections.
 
-Note that, at this point, the `remote_debug` flag is not enabled for other `nox` sessions, e.g. `test_env`, `pytest_ops`, etc.
+Note that, at this point, the `remote_debug` flag is not enabled for other `nox` sessions, e.g. `fides_env`, `pytest_ops`, etc.
 
 ### Attach a Remote Debugger to the Fides Server 
 

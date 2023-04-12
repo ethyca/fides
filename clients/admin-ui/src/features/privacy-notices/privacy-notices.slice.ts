@@ -39,10 +39,22 @@ const privacyNoticesApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["PrivacyNotices"],
     }),
+    patchPrivacyNotices: build.mutation<
+      PrivacyNoticeResponse[],
+      Partial<PrivacyNoticeResponse>[]
+    >({
+      query: (payload) => ({
+        method: "PATCH",
+        url: `privacy-notice/`,
+        body: payload,
+      }),
+      invalidatesTags: () => ["PrivacyNotices"],
+    }),
   }),
 });
 
-export const { useGetAllPrivacyNoticesQuery } = privacyNoticesApi;
+export const { useGetAllPrivacyNoticesQuery, usePatchPrivacyNoticesMutation } =
+  privacyNoticesApi;
 
 export const privacyNoticesSlice = createSlice({
   name: "privacyNotices",

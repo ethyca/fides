@@ -204,7 +204,7 @@ export const stubPrivacyRequests = () => {
 };
 
 export const stubDatamap = () => {
-  cy.intercept("GET", "/api/v1/datamap/*", {
+  cy.intercept("GET", "/api/v1/plus/datamap/*", {
     fixture: "datamap/datamap.json",
   }).as("getDatamap");
   cy.intercept("GET", "/api/v1/data_category", {
