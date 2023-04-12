@@ -72,7 +72,7 @@ const datamapApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getDatamap: build.query<DatamapTableData, { organizationName: string }>({
       query: ({ organizationName }) => ({
-        url: `datamap/${organizationName}`,
+        url: `plus/datamap/${organizationName}`,
         method: "GET",
         params: {
           include_deprecated_columns: true,

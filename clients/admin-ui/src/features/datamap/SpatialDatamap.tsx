@@ -24,8 +24,11 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
             draft[key] = {
               name: obj.values["system.name"],
               description: obj.values["system.description"],
-              dependencies: obj.values["system.system_dependencies"]
-                ? obj.values["system.system_dependencies"].split(",")
+              ingress: obj.values["system.ingress"]
+                ? obj.values["system.ingress"].split(", ")
+                : [],
+              egress: obj.values["system.egress"]
+                ? obj.values["system.egress"].split(", ")
                 : [],
               id: obj.values["system.fides_key"],
             };
@@ -34,26 +37,34 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
         }, {} as Record<string, SystemNode>),
     [rows]
   );
-
   const data = useMemo(() => {
     let nodes: SystemNode[] = [];
-    let links: Link[] = [];
+    const links: Set<string> = new Set([]);
     if (datamapBySystem) {
       nodes = Object.values(datamapBySystem);
-      links = nodes.reduce(
-        (acc: Link[], system: SystemNode) => [
-          ...acc,
-          ...(system.dependencies
-            ?.filter((dependency) => datamapBySystem[dependency])
-            .map((dependency: string) => ({
+      nodes
+        .map<Link[]>((system) => [
+          ...system.ingress
+            .filter((ingress_system) => datamapBySystem[ingress_system])
+            .map((ingress_system) => ({
+              source: ingress_system,
+              target: system.id,
+            })),
+          ...system.egress
+            .filter((egress_system) => datamapBySystem[egress_system])
+            .map((egress_system) => ({
               source: system.id,
-              target: dependency,
-            })) ?? ([] as Link[])),
-        ],
-        []
-      );
+              target: egress_system,
+            })),
+        ])
+        .flatMap((link) => link)
+        .forEach((link) => links.add(JSON.stringify(link)));
     }
-    return { nodes, links };
+
+    return {
+      nodes,
+      links: Array.from(links).map((l) => JSON.parse(l)) as Link[],
+    };
   }, [datamapBySystem]);
 
   return {
