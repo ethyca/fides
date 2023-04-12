@@ -3,14 +3,12 @@ import platform
 from typing import List
 
 import nox
-
 from constants_nox import (
     IMAGE,
     IMAGE_DEV,
     IMAGE_LATEST,
     IMAGE_LOCAL,
     IMAGE_LOCAL_UI,
-    IMAGE_SAMPLE,
     PRIVACY_CENTER_IMAGE,
     SAMPLE_APP_IMAGE,
 )
@@ -48,7 +46,6 @@ def get_platform(posargs: List[str]) -> str:
         nox.param("dev", id="dev"),
         nox.param("privacy_center", id="privacy-center"),
         nox.param("prod", id="prod"),
-        nox.param("sample", id="sample"),
         nox.param("test", id="test"),
     ],
 )
@@ -61,8 +58,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         dev = Build the fides webserver/CLI, tagged as `local`.
         privacy-center = Build the Next.js Privacy Center application.
         prod = Build the fides webserver/CLI and tag it as the current application version.
-        sample = Builds all components required for the sample application.
-        test = Build the fides webserver/CLI the same as `prod`, but tag is as `local`.
+        test = Build the fides webserver/CLI the same as `prod`, but tag it as `local`.
     """
     build_platform = get_platform(session.posargs)
 
@@ -79,20 +75,19 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     # This allows the dev deployment to run without requirements
     build_matrix = {
         "prod": {"tag": get_current_image, "target": "prod"},
-        "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
-        "sample": {"tag": lambda: IMAGE_SAMPLE, "target": "prod"},
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
+        "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
 
     # When building for release, there are additional images that need
     # to get built. These images are outside of the primary `ethyca/fides`
     # image so some additional logic is required.
-    if image in ("sample", "prod"):
+    if image in ("test", "prod"):
         if image == "prod":
             tag_name = get_current_tag()
-        if image == "sample":
-            tag_name = "sample"
+        if image == "test":
+            tag_name = "local"
         privacy_center_image_tag = f"{PRIVACY_CENTER_IMAGE}:{tag_name}"
         sample_app_image_tag = f"{SAMPLE_APP_IMAGE}:{tag_name}"
 
