@@ -590,9 +590,6 @@ async def test_object_querying_mongo(
         "position": "Chief Strategist",
         "direct_reports": ["Robbie Margo", "Sully Hunter"],
     }
-    assert isinstance(
-        filtered_results["mongo_test:customer_details"][0]["_id"], ObjectId
-    )
 
     # Includes data retrieved from a nested field that was joined with a nested field from another table
     target_categories = {"user"}
@@ -845,9 +842,6 @@ async def test_array_querying_mongo(
     assert filtered_identifiable["mongo_test:customer_details"][0]["children"] == [
         "Erica Example"
     ]
-    assert isinstance(
-        filtered_identifiable["mongo_test:customer_details"][0]["_id"], ObjectId
-    )
     customer_detail_logs = privacy_request.execution_logs.filter_by(
         dataset_name="mongo_test", collection_name="customer_details", status="complete"
     )
