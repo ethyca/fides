@@ -46,6 +46,7 @@ The types of changes are:
 ### Removed
 
 - Removed interzone navigation logic now that the datamap UI and admin UI are one app [#2990](https://github.com/ethyca/fides/pull/2990)
+- Removed the warning about access control migration [#3055](https://github.com/ethyca/fides/pull/3055)
 
 ### Changed
 
