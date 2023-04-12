@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from celery.result import AsyncResult
 from loguru import logger
+from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
@@ -42,7 +43,6 @@ from fides.api.ops.models.policy import (
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.ops.schemas.external_https import (
-    SecondPartyRequestFormat,
     SecondPartyResponseFormat,
     WebhookJWE,
 )
@@ -129,6 +129,33 @@ class PrivacyRequestStatus(str, EnumType):
     awaiting_email_send = "awaiting_email_send"
     canceled = "canceled"
     error = "error"
+
+
+class CallbackType(EnumType):
+    """We currently have two types of Policy Webhooks: pre and post"""
+
+    pre = "pre"
+    post = "post"
+
+
+class SecondPartyRequestFormat(BaseModel):
+    """
+    The request body we will use when calling a user's HTTP endpoint from fides.api
+    This class is defined here to avoid circular import issues between this file and
+    models.policy
+    """
+
+    privacy_request_id: str
+    privacy_request_status: PrivacyRequestStatus
+    direction: WebhookDirection
+    callback_type: CallbackType
+    identity: Identity
+    policy_action: Optional[ActionType]
+
+    class Config:
+        """Using enum values"""
+
+        use_enum_values = True
 
 
 def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
@@ -624,7 +651,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
-    def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
+    def trigger_policy_webhook(
+        self,
+        webhook: WebhookTypes,
+        policy_action: Optional[ActionType] = None,
+    ) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
         should cause privacy request execution to stop.
 
@@ -637,9 +668,11 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(
             privacy_request_id=self.id,
+            privacy_request_status=self.status,
             direction=webhook.direction.value,  # type: ignore
             callback_type=webhook.prefix,
             identity=self.get_cached_identity_data(),
+            policy_action=policy_action,
         )
 
         headers = {}

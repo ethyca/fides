@@ -575,6 +575,17 @@ def analytics_opt_out():
 
 
 @pytest.fixture
+def automatically_approved(db):
+    """Do not require manual request approval"""
+    original_value = CONFIG.execution.require_manual_request_approval
+    CONFIG.execution.require_manual_request_approval = False
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.execution.require_manual_request_approval = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
+@pytest.fixture
 def require_manual_request_approval(db):
     """Require manual request approval"""
     original_value = CONFIG.execution.require_manual_request_approval

@@ -29,6 +29,7 @@ import {
   TitleCell,
   WrappedCell,
 } from "./cells";
+import EmptyState from "./EmptyState";
 import {
   selectAllPrivacyNotices,
   selectPage,
@@ -86,7 +87,7 @@ const PrivacyNoticesTable = () => {
     tableInstance;
 
   if (privacyNotices.length === 0) {
-    return <Text>No privacy notices found.</Text>;
+    return <EmptyState />;
   }
 
   return (

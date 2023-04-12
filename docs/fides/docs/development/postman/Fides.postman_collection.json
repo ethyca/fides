@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "71013d58-9646-47e3-b47a-f354d33ad35a",
+		"_postman_id": "5d1a5ee9-f432-4da2-a9c9-d68c17e776ac",
 		"name": "Fides",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3648,6 +3648,39 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Authorize Oauth Connector",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/connection/{{oauth_connector_key}}/authorize",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"connection",
+								"{{oauth_connector_key}}",
+								"authorize"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -4520,11 +4553,26 @@
 				{
 					"name": "Test Message",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": {{test_email}}\n}"
+							"raw": "{\n    \"email\": \"{{test_email}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{host}}/messaging/config/test",
@@ -5168,7 +5216,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n  {\n    \"name\": \"Profiling\",\n    \"regions\": [\n      \"us_ca\",\n      \"us_ut\"\n    ],\n    \"description\": \"Making a decision solely by automated means.\",\n    \"consent_mechanism\": \"opt_in\",\n    \"data_uses\": [\n      \"personalize\"\n    ],\n    \"enforcement_level\": \"system_wide\",\n    \"has_gpc_flag\": false\n  },\n  {\n    \"name\": \"Essential\",\n    \"regions\": [\n      \"eu_de\"\n    ],\n    \"description\": \"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n    \"consent_mechanism\": \"necessary\",\n    \"data_uses\": [\n      \"provide.service\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  },\n  {\n    \"name\": \"Advertising\",\n    \"regions\": [\n    \"us_ca\"\n    ],\n    \"description\": \"Sample advertising notice\",\n    \"consent_mechanism\": \"necessary\",\n    \"data_uses\": [\n    \"advertising\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  }\n]",
+							"raw": "[\n  {\n    \"name\": \"Profiling\",\n    \"regions\": [\n      \"us_ca\",\n      \"us_ut\"\n    ],\n    \"description\": \"Making a decision solely by automated means.\",\n    \"consent_mechanism\": \"opt_in\",\n    \"data_uses\": [\n      \"personalize\"\n    ],\n    \"enforcement_level\": \"system_wide\",\n    \"has_gpc_flag\": false\n  },\n  {\n    \"name\": \"Essential\",\n    \"regions\": [\n      \"eu_de\"\n    ],\n    \"description\": \"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n    \"consent_mechanism\": \"notice_only\",\n    \"data_uses\": [\n      \"provide.service\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  },\n  {\n    \"name\": \"Advertising\",\n    \"regions\": [\n    \"us_ca\"\n    ],\n    \"description\": \"Sample advertising notice\",\n    \"consent_mechanism\": \"notice_only\",\n    \"data_uses\": [\n    \"advertising\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5346,6 +5394,93 @@
 							"path": [
 								"privacy-notice",
 								"{{privacy_notice_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PrivacyPreferences",
+			"item": [
+				{
+					"name": "Create Verification Code for Consent Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone_number\": \"{{phone_number}}\",\n  \"email\": \"{{email}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Code and Return Current Privacy Preferences",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{verification_code}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/verify-for-privacy-preferences",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request",
+								"{{consent_request_id}}",
+								"verify-for-privacy-preferences"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Code and Save Privacy Preferences",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\"\n   },\n   \"code\": \"{{verification_code}}\",\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"request_origin\": \"privacy_center\",\n   \"url_recorded\": \"example.com/privacy_center\",\n   \"user_agent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24\",\n   \"user_geography\": \"us_ca\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/privacy-preferences",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request",
+								"{{consent_request_id}}",
+								"privacy-preferences"
 							]
 						}
 					},
@@ -5666,6 +5801,21 @@
 		},
 		{
 			"key": "privacy_notice_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "privacy_notice_history_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_email",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "oauth_connector_key",
 			"value": "",
 			"type": "string"
 		}

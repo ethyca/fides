@@ -17,7 +17,8 @@ export type SpatialData = {
 };
 
 export type SystemNode = {
-  dependencies: string[];
+  ingress: string[];
+  egress: string[];
   description: string;
   id: string;
   name: string;

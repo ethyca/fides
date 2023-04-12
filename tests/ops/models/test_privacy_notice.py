@@ -596,3 +596,58 @@ class TestPrivacyNoticeModel:
                 new_privacy_notices=new_privacy_notices,
                 existing_privacy_notices=existing_privacy_notices,
             )
+
+    def test_calculate_relevant_systems(
+        self,
+        db,
+        system,
+        privacy_notice,
+        privacy_notice_us_ca_provide,
+        privacy_notice_us_co_provide_service_operations,
+        privacy_notice_eu_fr_provide_service_frontend_only,
+    ):
+        """
+        privacy_notice fixture: advertising/third party sharing
+        privacy_notice_us_ca_provide fixture: provide
+        privacy_notice_us_co_provide_service_operations: provide.service.operations
+        privacy_notice_eu_fr_provide_service_frontend_only:  provide.service but fe only
+        """
+
+        # Only system's data use is advertising
+        assert privacy_notice.histories[0].calculate_relevant_systems(db) == [
+            system.fides_key
+        ], "Exact match on advertising"
+        assert (
+            privacy_notice_us_ca_provide.histories[0].calculate_relevant_systems(db)
+            == []
+        )
+        assert (
+            privacy_notice_us_co_provide_service_operations.histories[
+                0
+            ].calculate_relevant_systems(db)
+            == []
+        )
+        assert (
+            privacy_notice_eu_fr_provide_service_frontend_only.histories[
+                0
+            ].calculate_relevant_systems(db)
+            == []
+        )
+
+        system.privacy_declarations[0]["data_use"] = "provide.service"
+        assert privacy_notice.histories[0].calculate_relevant_systems(db) == []
+        assert privacy_notice_us_ca_provide.histories[0].calculate_relevant_systems(
+            db
+        ) == [system.fides_key], "Privacy notice data use is a parent of the system"
+        assert (
+            privacy_notice_us_co_provide_service_operations.histories[
+                0
+            ].calculate_relevant_systems(db)
+            == []
+        ), "Privacy notice data use is a child of the system: N/A"
+        assert (
+            privacy_notice_eu_fr_provide_service_frontend_only.histories[
+                0
+            ].calculate_relevant_systems(db)
+            == []
+        ), "This is an exact match but this privacy notice is frontend only"

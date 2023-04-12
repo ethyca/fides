@@ -27,7 +27,6 @@ DATA_CATEGORY = "data_category"
 DATA_QUALIFIER = "data_qualifier"
 DATA_SUBJECT = "data_subject"
 DATA_USE = "data_use"
-DATAMAP = "datamap"
 DATASET = "dataset"
 DELETE = "delete"
 ENCRYPTION = "encryption"
@@ -121,8 +120,6 @@ DATA_USE_CREATE = f"{DATA_USE}:{CREATE}"
 DATA_USE_READ = f"{DATA_USE}:{READ}"
 DATA_USE_UPDATE = f"{DATA_USE}:{UPDATE}"
 DATA_USE_DELETE = f"{DATA_USE}:{DELETE}"
-
-DATAMAP_READ = f"{DATAMAP}:{READ}"
 
 DATASET_CREATE_OR_UPDATE = f"{DATASET}:{CREATE_OR_UPDATE}"
 DATASET_DELETE = f"{DATASET}:{DELETE}"
@@ -268,7 +265,6 @@ SCOPE_DOCS = {
     DATA_USE_READ: "Read data uses",
     DATA_USE_DELETE: "Delete data uses",
     DATA_USE_UPDATE: "Update data uses",
-    DATAMAP_READ: "Read systems on the datamap",
     DATASET_CREATE_OR_UPDATE: "Create or modify datasets",
     DATASET_DELETE: "Delete datasets",
     DATASET_READ: "View datasets",

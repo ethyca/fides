@@ -10,6 +10,7 @@ import {
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
+import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import React, { useMemo } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -189,6 +190,18 @@ const DatamapDrawer = ({
                     {...dataProps}
                   />
                 </Box>
+                <Text
+                  size="md"
+                  color="gray.600"
+                  lineHeight={6}
+                  fontWeight="semibold"
+                  mt="10px"
+                  mb={2}
+                  paddingBottom={2}
+                >
+                  Data flow
+                </Text>
+                <DataFlowAccordion system={system} />
               </>
             ) : null}
           </Box>

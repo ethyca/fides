@@ -11,23 +11,8 @@ This checklist should be copy/pasted into the final pre-release PR, and checked 
 From the release branch, confirm the following:
 - [ ] Quickstart works: `nox -s quickstart` (verify you can complete the interactive prompts from the command-line)
 - [ ] Test environment works: `nox -s "fides_env(test)"` (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)
-- [ ] Building the sample app images works: `nox -s "build(sample)"` (creates the sample images, which is also prereq for `fides deploy up --no-pull` next)
-- [ ] Running the CLI deploy works: `fides deploy up --no-pull` (see instructions below...)
 
-```
-mkdir ~/fides-deploy-test
-cd ~/fides-deploy-test
-python3 -m venv venv
-source venv/bin/activate
-pip install git+https://github.com/ethyca/fides.git@<release-branch-name-here>
-fides deploy up --no-pull
-fides status
-fides deploy down
-rm -rf ~/fides-deploy-test
-exit
-```
-
-Next, run the following checks using the test environment (`nox -s "fides_env(test)"`):
+Next, run the following checks via the test environment:
 
 ### API
 
