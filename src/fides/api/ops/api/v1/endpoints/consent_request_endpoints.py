@@ -125,9 +125,14 @@ def consent_request_verify(
     db: Session = Depends(get_db),
     data: VerificationCode,
 ) -> ConsentPreferences:
-    """Verifies the verification code and returns the current consent preferences if successful."""
+    """Verifies the verification code and returns the current consent preferences if successful.
+
+    Note that this returns just Consent records - which is the old workflow that saves Consent with respect to a data use.
+    """
     _, provided_identity = _get_consent_request_and_provided_identity(
-        db=db, consent_request_id=consent_request_id, verification_code=data.code
+        db=db,
+        consent_request_id=consent_request_id,
+        verification_code=data.code,
     )
 
     if not provided_identity.hashed_value:
@@ -186,7 +191,9 @@ def get_consent_preferences_no_id(
         )
 
     _, provided_identity = _get_consent_request_and_provided_identity(
-        db=db, consent_request_id=consent_request_id, verification_code=None
+        db=db,
+        consent_request_id=consent_request_id,
+        verification_code=None,
     )
 
     if not provided_identity.hashed_value:
@@ -204,22 +211,23 @@ def get_consent_preferences_no_id(
     response_model=ConsentPreferences,
 )
 def get_consent_preferences(
-    *, db: Session = Depends(get_db), data: Identity
+    *,
+    db: Session = Depends(get_db),
+    data: Identity,
 ) -> ConsentPreferences:
     """Gets the consent preferences for the specified user."""
-    if data.email:
-        lookup = data.email
-    elif data.phone_number:
-        lookup = data.phone_number
-    else:
+    if not data.email and not data.phone_number:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="No identity information provided"
         )
 
+    # From the above check we know at least one exists
+    lookup = data.email if data.email else data.phone_number
+
     identity = ProvidedIdentity.filter(
         db,
         conditions=(
-            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(lookup))
+            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(str(lookup)))
             & (ProvidedIdentity.privacy_request_id.is_(None))
         ),
     ).first()
@@ -230,7 +238,7 @@ def get_consent_preferences(
     return _prepare_consent_preferences(db, identity)
 
 
-def queue_privacy_request_to_propagate_consent(
+def queue_privacy_request_to_propagate_consent_old_workflow(
     db: Session,
     provided_identity: ProvidedIdentity,
     policy: Union[FidesKey, str],
@@ -243,6 +251,8 @@ def queue_privacy_request_to_propagate_consent(
 
     Only propagate consent preferences which are considered "executable" by the current system. If none of the
     consent preferences are executable, no Privacy Request is queued.
+
+    # TODO Slated for deprecation
     """
     # Create an identity based on any provided browser_identity
     identity = browser_identity if browser_identity else Identity()
@@ -255,19 +265,13 @@ def queue_privacy_request_to_propagate_consent(
     executable_data_uses = [
         ec.data_use for ec in executable_consents or [] if ec.executable
     ]
+
+    # Restrict consent preferences to just those that are executable
     executable_consent_preferences: List[Dict] = [
         pref.dict()
         for pref in consent_preferences.consent or []
         if pref.data_use in executable_data_uses
     ]
-
-    if not executable_consent_preferences:
-        logger.info(
-            "Skipping propagating consent preferences to third-party services as "
-            "specified consent preferences: {} are not executable.",
-            [pref.data_use for pref in consent_preferences.consent or []],
-        )
-        return None
 
     logger.info("Executable consent options: {}", executable_data_uses)
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
@@ -303,12 +307,19 @@ def set_consent_preferences(
     db: Session = Depends(get_db),
     data: ConsentPreferencesWithVerificationCode,
 ) -> ConsentPreferences:
-    """Verifies the verification code and saves the user's consent preferences if successful."""
+    """Verifies the verification code and saves the user's consent preferences if successful.
+
+    Note that this allows you to save Consent records under our old workflow that saves Consent with respect to a data use.
+
+    # TODO Slated for deprecation
+    """
     consent_request, provided_identity = _get_consent_request_and_provided_identity(
         db=db,
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
+    consent_request.preferences = [schema.dict() for schema in data.consent]
+    consent_request.save(db=db)
 
     if not provided_identity.hashed_value:
         raise HTTPException(
@@ -341,7 +352,7 @@ def set_consent_preferences(
     # Note: This just queues the PrivacyRequest for processing
     privacy_request_creation_results: Optional[
         BulkPostPrivacyRequests
-    ] = queue_privacy_request_to_propagate_consent(
+    ] = queue_privacy_request_to_propagate_consent_old_workflow(
         db,
         provided_identity,
         data.policy_key or DEFAULT_CONSENT_POLICY,
@@ -462,12 +473,16 @@ def _get_consent_request_and_provided_identity(
 
     if not consent_request:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Consent request not found"
+            status_code=HTTP_404_NOT_FOUND,
+            detail="Consent request not found",
         )
 
     if ConfigProxy(db).execution.subject_identity_verification_required:
         try:
-            consent_request.verify_identity(verification_code)
+            consent_request.verify_identity(
+                db,
+                verification_code,
+            )
         except IdentityVerificationException as exc:
             raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
         except PermissionError as exc:
@@ -477,7 +492,8 @@ def _get_consent_request_and_provided_identity(
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 
     provided_identity: ProvidedIdentity | None = ProvidedIdentity.get_by_key_or_id(
-        db, data={"id": consent_request.provided_identity_id}
+        db,
+        data={"id": consent_request.provided_identity_id},
     )
 
     # It shouldn't be possible to hit this because the cascade delete of the identity

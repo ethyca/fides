@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import yaml
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
-from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.common_exceptions import FidesopsException, ValidationError
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -35,10 +35,34 @@ def load_yaml_as_string(filename: str) -> str:
 
 
 def load_config(filename: str) -> Dict:
-    """Loads the saas config from the yaml file"""
+    """Loads the SaaS config from provided filename"""
     yaml_file = load_file([filename])
     with open(yaml_file, "r", encoding="utf-8") as file:
         return yaml.safe_load(file).get("saas_config", [])
+
+
+def load_config_from_string(string: str) -> Dict:
+    """Loads the SaaS config dict from the yaml string"""
+    try:
+        return yaml.safe_load(string)["saas_config"]
+    except:
+        raise ValidationError(
+            "Config contents do not contain a 'saas_config' key at the root level."
+        )
+
+
+def load_as_string(filename: str) -> str:
+    file_path = load_file([filename])
+    with open(file_path, "r", encoding="utf-8") as file:
+        return file.read()
+
+
+def replace_config_placeholders(
+    config: str, string_to_replace: str, replacement: str
+) -> Dict:
+    """Loads the SaaS config from the yaml string and replaces any string with the given value"""
+    yaml_str: str = config.replace(string_to_replace, replacement)
+    return load_config_from_string(yaml_str)
 
 
 def load_config_with_replacement(
@@ -48,13 +72,32 @@ def load_config_with_replacement(
     yaml_str: str = load_yaml_as_string(filename).replace(
         string_to_replace, replacement
     )
-    return yaml.safe_load(yaml_str).get("saas_config", [])
+    return load_config_from_string(yaml_str)
 
 
-def load_dataset(filename: str) -> Dict:
+def load_datasets(filename: str) -> Dict:
+    """Loads the datasets in the provided filename"""
     yaml_file = load_file([filename])
     with open(yaml_file, "r", encoding="utf-8") as file:
         return yaml.safe_load(file).get("dataset", [])
+
+
+def load_dataset_from_string(string: str) -> Dict:
+    """Loads the dataset dict from the yaml string"""
+    try:
+        return yaml.safe_load(string)["dataset"][0]
+    except:
+        raise ValidationError(
+            "Dataset contents do not contain a 'dataset' key at the root level."
+        )
+
+
+def replace_dataset_placeholders(
+    dataset: str, string_to_replace: str, replacement: str
+) -> Dict:
+    """Loads the dataset from the yaml string and replaces any string with the given value"""
+    yaml_str: str = dataset.replace(string_to_replace, replacement)
+    return load_dataset_from_string(yaml_str)
 
 
 def load_dataset_with_replacement(
@@ -342,3 +385,14 @@ def to_pascal_case(s: str) -> str:
     s = s.title()
     s = s.replace("_", "")
     return s
+
+
+def replace_version(saas_config: str, new_version: str) -> str:
+    """
+    Replace the version number in the given saas_config string with the provided new_version.
+    """
+    version_pattern = r"version:\s*[\d\.]+"
+    updated_config = re.sub(
+        version_pattern, f"version: {new_version}", saas_config, count=1
+    )
+    return updated_config

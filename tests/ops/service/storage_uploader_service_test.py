@@ -9,6 +9,7 @@ from zipfile import ZipFile
 
 import pandas as pd
 import pytest
+from bson import ObjectId
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import StorageUploadError
@@ -81,6 +82,67 @@ def test_uploader_s3_success_secrets_auth(
     )
 
     storage_config.delete(db)
+
+
+def test_write_to_in_memory_buffer_handles_bson():
+    OBJECT_ID_STR = "5b4a61b1326bd9777aa61c19"
+    data = {
+        "collection:users": [
+            {
+                "paymentCustomerIds": {"stripe": "cus_abc"},
+                "birthday": datetime(1997, 1, 8, 0, 0),
+                "geolocation": {
+                    "type": "Point",
+                    "coordinates": [-122.272782, 37.871666],
+                },
+                "firstName": "Test",
+                "number": "+12345678910",
+                "name": "Test User",
+                "email": "user@example.com",
+            }
+        ],
+        "mongo_collection:purchases": [
+            {
+                "user": {"_id": ObjectId(OBJECT_ID_STR)},
+                "geolocation": {
+                    "type": "Point",
+                    "coordinates": [-122.41210448012356, 37.773223876953125],
+                },
+                "customerName": None,
+            },
+            {
+                "user": {"_id": ObjectId(OBJECT_ID_STR)},
+                "geolocation": {
+                    "type": "Point",
+                    "coordinates": [-122.4157451701343, 37.773162841796875],
+                },
+                "customerName": None,
+            },
+        ],
+        "firebase_auth:user": [
+            {
+                "provider_data": [
+                    {"email": "user@example.com", "display_name": "Test User"}
+                ],
+                "display_name": "Test User",
+                "phone_number": "+12345678910",
+                "email": "user@example.com",
+            }
+        ],
+    }
+    # This will throw a `ValueError: Circular reference detected` if no ObjectId
+    # handler is available to the JSON encoder.
+    bytesio = write_to_in_memory_buffer(
+        resp_format="json",
+        data=data,
+        request_id="pri-test-request",
+    )
+    assert bytesio is not None
+    data = json.loads(bytesio.read())
+    assert data["collection:users"][0]["birthday"] == "1997-01-08T00:00:00"
+    assert data["mongo_collection:purchases"][0]["user"]["_id"] == {
+        "$oid": OBJECT_ID_STR
+    }
 
 
 @mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")

@@ -67,8 +67,7 @@ theme:
 markdown_extensions:
   - attr_list
   - pymdownx.superfences
-  - pymdownx.snippets:
-      base_path: 'docs/'
+  - pymdownx.snippets
   - pymdownx.inlinehilite
   - pymdownx.tabbed
   - admonition

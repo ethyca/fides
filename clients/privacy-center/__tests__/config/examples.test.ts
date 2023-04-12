@@ -2,6 +2,7 @@ import { Config } from "~/types/config";
 import minimalJson from "~/config/examples/minimal.json";
 import basicJson from "~/config/examples/basic.json";
 import fullJson from "~/config/examples/full.json";
+import v2ConsentJson from "~/config/examples/v2Consent.json";
 
 describe("The Config type", () => {
   /**
@@ -19,9 +20,11 @@ describe("The Config type", () => {
     const minimalTyped: Config = minimalJson;
     const basicTyped: Config = basicJson;
     const fullTyped: Config = fullJson;
+    const v2ConsentObject: Config = v2ConsentJson;
 
     expect(minimalTyped).toBeDefined();
     expect(basicTyped).toBeDefined();
     expect(fullTyped).toBeDefined();
+    expect(v2ConsentObject).toBeDefined();
   });
 });

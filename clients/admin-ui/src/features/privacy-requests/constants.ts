@@ -15,9 +15,9 @@ export const SubjectRequestStatusMap = new Map<string, string>([
 ]);
 
 export const messagingProviders = {
-  mailgun: "MAILGUN",
-  twilio_email: "TWILIO_EMAIL",
-  twilio_text: "TWILIO_TEXT",
+  mailgun: "mailgun",
+  twilio_email: "twilio_email",
+  twilio_text: "twilio_text",
 };
 
 export const storageTypes = {

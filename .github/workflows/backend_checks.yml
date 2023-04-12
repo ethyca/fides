@@ -4,13 +4,14 @@ on:
   pull_request:
     paths-ignore:
       - "**.md"
+      - "clients/**"
   push:
     branches:
       - "main"
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.7"
+  DEFAULT_PYTHON_VERSION: "3.10.11"
 
 jobs:
   ###############
@@ -39,7 +40,7 @@ jobs:
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -103,7 +104,6 @@ jobs:
         test_selection:
           - "check_fides_annotations"
           - "fides_db_scan"
-          - "generate_docs"
           - "docs_check"
           - "minimal_config_startup"
 
@@ -142,15 +142,16 @@ jobs:
     needs: Build
     strategy:
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit"
           - "ops-integration"
           - "lib"
+          - "nox"
 
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     continue-on-error: true
     steps:
       - name: Download container
@@ -193,7 +194,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -230,7 +231,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -263,7 +264,7 @@ jobs:
   External-SaaS-Connectors:
     needs: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     permissions:
@@ -272,7 +273,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.16", "3.9.16", "3.10.11"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v3

@@ -12,7 +12,7 @@ class NotificationSettings(FidesSettings):
 
     notification_service_type: Optional[str] = Field(
         default=None,
-        description="Sets the notification service type used to send notifications. Accepts mailgun, twilio_sms, or twilio_email.",
+        description="Sets the notification service type used to send notifications. Accepts mailchimp_transactional, mailgun, twilio_sms, or twilio_email.",
     )
     send_request_completion_notification: bool = Field(
         default=False,
@@ -32,8 +32,13 @@ class NotificationSettings(FidesSettings):
     def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
         if value:
-            valid_values = ["MAILGUN", "TWILIO_TEXT", "TWILIO_EMAIL"]
-            value = value.upper()  # force uppercase for safety
+            valid_values = [
+                "mailgun",
+                "twilio_text",
+                "twilio_email",
+                "mailchimp_transactional",
+            ]
+            value = value.lower()  # force lowercase for safety
 
             if value not in valid_values:
                 raise ValueError(

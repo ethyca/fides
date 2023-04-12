@@ -1,203 +1,297 @@
 from unittest import mock
+from unittest.mock import ANY, Mock
 
 import pytest as pytest
-from fideslang.models import Dataset
 
-from fides.api.ops.graph.config import CollectionAddress
-from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
-from fides.api.ops.models.policy import CurrentStep
-from fides.api.ops.models.privacy_request import (
-    CheckpointActionRequired,
-    ExecutionLog,
-    ExecutionLogStatus,
-    ManualAction,
-)
+from fides.api.ops.email_templates import get_email_template
+from fides.api.ops.models.connectionconfig import AccessLevel
+from fides.api.ops.models.privacy_request import PrivacyRequestStatus
 from fides.api.ops.schemas.messaging.messaging import (
+    EmailForActionType,
     MessagingActionType,
-    MessagingServiceType,
 )
-from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.connectors.email_connector import (
-    email_connector_erasure_send,
+from fides.api.ops.service.privacy_request.email_batch_service import (
+    EmailExitState,
+    send_email_batch,
 )
-from fides.api.ops.task import graph_task
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
+from tests.ops.service.privacy_request.test_request_runner_service import (
+    get_privacy_request_results,
+)
 
 
-@pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch("fides.api.ops.service.connectors.email_connector.dispatch_message")
 @pytest.mark.asyncio
-async def test_email_connector_cache_and_delayed_send(
-    mock_email_dispatch,
+@mock.patch(
+    "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch(
+    "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+)
+async def test_erasure_email(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
     db,
     erasure_policy,
-    integration_postgres_config,
-    email_connection_config,
-    privacy_request,
-    example_datasets,
-    email_dataset_config,
+    attentive_email_connection_config,
+    run_privacy_request_task,
+    test_fides_org,
     messaging_config,
 ) -> None:
-    """Run an erasure privacy request with a postgres dataset and an email dataset.
-    The email dataset has three separate collections.
-
-    Call the email send and verify what would have been emailed
     """
-    privacy_request.policy = erasure_policy
-    rule = erasure_policy.rules[0]
-    target = rule.targets[0]
-    target.data_category = "user.childrens"
+    Run an erasure privacy request with only an email (Attentive) connector.
+    Verify the privacy request is set to "awaiting email send" and that one email
+    is sent when the send_email_batch job is executed manually
+    """
 
-    cached_data_for_erasures = {
-        "postgres_example_test_dataset:customer": [
-            {
-                "id": 1,
-                "name": "John Customer",
-                "email": "customer-1@example.com",
-                "address_id": 1,
-            }
-        ],
-        "postgres_example_test_dataset:report": [],
-        "postgres_example_test_dataset:address": [],
-        "postgres_example_test_dataset:employee": [],
-        "postgres_example_test_dataset:login": [],
-        "postgres_example_test_dataset:orders": [],
-        "postgres_example_test_dataset:order_item": [],
-        "postgres_example_test_dataset:payment_card": [],
-        "postgres_example_test_dataset:product": [],
-        "postgres_example_test_dataset:service_request": [],
-        "postgres_example_test_dataset:visit": [],
-        "email_dataset:daycare_customer": [],
-        "email_dataset:children": [],
-        "email_dataset:payment": [],
-    }
-
-    dataset_postgres = Dataset(**example_datasets[0])
-    dataset_email = Dataset(**example_datasets[9])
-    postgres_graph = convert_dataset_to_graph(
-        dataset_postgres, integration_postgres_config.key
-    )
-    email_graph = convert_dataset_to_graph(dataset_email, email_connection_config.key)
-    dataset_graph = DatasetGraph(*[postgres_graph, email_graph])
-
-    v = await graph_task.run_erasure(
-        privacy_request,
-        erasure_policy,
-        dataset_graph,
-        [integration_postgres_config, email_connection_config],
-        {"email": "customer-1@example.com"},
-        cached_data_for_erasures,
+    pr = get_privacy_request_results(
         db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
     )
 
-    assert v == {
-        "email_dataset:payment": 0,
-        "postgres_example_test_dataset:customer": 0,
-        "postgres_example_test_dataset:report": 0,
-        "postgres_example_test_dataset:employee": 0,
-        "postgres_example_test_dataset:service_request": 0,
-        "postgres_example_test_dataset:visit": 0,
-        "postgres_example_test_dataset:orders": 0,
-        "postgres_example_test_dataset:login": 0,
-        "postgres_example_test_dataset:address": 0,
-        "postgres_example_test_dataset:payment_card": 0,
-        "email_dataset:daycare_customer": 0,
-        "postgres_example_test_dataset:order_item": 0,
-        "email_dataset:children": 0,
-        "postgres_example_test_dataset:product": 0,
-    }, "No data masked by Fidesops for the email collections"
+    db.refresh(pr)
 
-    raw_email_template_values = (
-        privacy_request.get_email_connector_template_contents_by_dataset(
-            CurrentStep.erasure, "email_dataset"
-        )
+    # the privacy request will be in an "awaiting email send" state until the "send email batch" job executes
+    assert pr.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr.awaiting_email_send_at is not None
+
+    # execute send email batch job without waiting for it to be scheduled
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.complete
+
+    # verify the email was sent
+    erasure_email_template = get_email_template(
+        MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-
-    expected = [
-        CheckpointActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "daycare_customer"),
-            action_needed=[
-                ManualAction(
-                    locators={
-                        "customer_id": [1]
-                    },  # We have some data from postgres they can use to locate the customer_id
-                    get=None,
-                    update={"scholarship": "null_rewrite"},
-                )
-            ],
+    mock_mailgun_dispatcher.assert_called_once_with(
+        ANY,
+        EmailForActionType(
+            subject="Notification of user erasure requests from Test Org",
+            body=erasure_email_template.render(
+                {
+                    "controller": "Test Org",
+                    "third_party_vendor_name": "Attentive",
+                    "identities": ["customer-1@example.com"],
+                }
+            ),
         ),
-        CheckpointActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "payment"),
-            action_needed=[
-                ManualAction(
-                    locators={"payer_email": ["customer-1@example.com"]},
-                    get=None,
-                    update=None,  # Nothing to mask on this collection
-                )
-            ],
-        ),
-        CheckpointActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "children"),
-            action_needed=[
-                ManualAction(
-                    locators={
-                        "parent_id": ["email_dataset:daycare_customer:id"]
-                    },  # The only locator is on a separate collection on their end. We don't have data for it.
-                    get=None,
-                    update={
-                        "birthday": "null_rewrite",
-                        "first_name": "null_rewrite",
-                        "last_name": "null_rewrite",
-                        "report_card.grades": "null_rewrite",
-                        "report_card.behavior_issues": "null_rewrite",
-                        "report_card.disciplinary_action": "null_rewrite",
-                        "report_card.test_scores": "null_rewrite",
-                    },
-                )
-            ],
-        ),
-    ]
-    for action in raw_email_template_values:
-        assert (
-            action in expected
-        )  # "Only two collections need masking, but all are included in case they include relevant data locators."
+        "attentive@example.com",
+    )
 
-    children_logs = db.query(ExecutionLog).filter(
-        ExecutionLog.privacy_request_id == privacy_request.id,
-        ExecutionLog.dataset_name == email_dataset_config.fides_key,
-        ExecutionLog.collection_name == "children",
-    )
-    assert {"starting", "email prepared"} == {
-        log.message for log in children_logs
-    }, "Execution Log given unique message"
-    assert {ExecutionLogStatus.in_processing, ExecutionLogStatus.complete} == {
-        log.status for log in children_logs
-    }
+    # verify the privacy request was queued for further processing
+    mock_requeue_privacy_requests.assert_called()
 
-    email_connector_erasure_send(db, privacy_request)
-    assert mock_email_dispatch.called
-    call_args = mock_email_dispatch.call_args[1]
-    assert (
-        call_args["action_type"]
-        == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
-    )
-    assert call_args["to_identity"] == Identity(email="test@example.com")
-    assert call_args["service_type"] == MessagingServiceType.MAILGUN.value
-    assert call_args["message_body_params"] == raw_email_template_values
 
-    created_email_audit_log = (
-        db.query(AuditLog)
-        .filter(AuditLog.privacy_request_id == privacy_request.id)
-        .all()[0]
+@pytest.mark.integration
+@pytest.mark.asyncio
+@mock.patch(
+    "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch(
+    "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+)
+async def test_erasure_email_no_messaging_config(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    db,
+    erasure_policy,
+    attentive_email_connection_config,
+    run_privacy_request_task,
+    test_fides_org,
+) -> None:
+    """
+    Run an erasure privacy request with only an email (Attentive) connector.
+    Verify the privacy request is set to "awaiting email send" and that the
+    email fails to send because of the missing messaging config.
+    """
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
     )
-    assert (
-        created_email_audit_log.message
-        == "Erasure email instructions dispatched for 'email_dataset'"
+
+    db.refresh(pr)
+
+    # the privacy request will be in an "awaiting email send" state until the "send email batch" job executes
+    assert pr.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr.awaiting_email_send_at is not None
+
+    # execute send email batch job without waiting for it to be scheduled
+    exit_state = send_email_batch.delay().get()
+    # job will fail because there is no messaging config
+    assert exit_state == EmailExitState.email_send_failed
+
+    mock_mailgun_dispatcher.assert_not_called()
+    mock_requeue_privacy_requests.assert_not_called()
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_erasure_email_no_write_permissions(
+    db,
+    erasure_policy,
+    attentive_email_connection_config,
+    run_privacy_request_task,
+    test_fides_org,
+) -> None:
+    """
+    Run an erasure privacy request with only an email (Attentive) connector.
+    Verify we don't send an email for a connector with read-only access.
+    """
+
+    attentive_email_connection_config.update(
+        db=db,
+        data={"access": AccessLevel.read},
     )
-    assert created_email_audit_log.user_id == "system"
-    assert created_email_audit_log.action == AuditLogAction.email_sent
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr)
+
+    # the privacy request will be in an "complete" state since we didn't need to wait for a batch email to go out
+    assert pr.status == PrivacyRequestStatus.complete
+    # no email scheduled
+    assert pr.awaiting_email_send_at is None
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_erasure_email_no_updates_needed(
+    db,
+    policy,
+    attentive_email_connection_config,
+    run_privacy_request_task,
+    test_fides_org,
+) -> None:
+    """
+    Run an erasure privacy request with only an email (Attentive) connector.
+    Verify the privacy request is set to "complete" because this is
+    an access request and no erasures are needed.
+    """
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr)
+
+    # the privacy request will be in an "complete" state since we didn't need to wait for a batch email to go out
+    assert pr.status == PrivacyRequestStatus.complete
+    # no email scheduled
+    assert pr.awaiting_email_send_at is None
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+@mock.patch(
+    "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch(
+    "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+)
+async def test_erasure_email_disabled_connector(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    db,
+    erasure_policy,
+    attentive_email_connection_config,
+    run_privacy_request_task,
+    test_fides_org,
+    messaging_config,
+) -> None:
+    """
+    Run an erasure privacy request with only an email (Attentive) connector.
+    Verify the privacy request is set to "awaiting email send" and that one email
+    is sent when the send_email_batch job is executed manually
+    """
+
+    attentive_email_connection_config.update(
+        db=db,
+        data={"disabled": True},
+    )
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr)
+
+    # the privacy request will be in an "complete" state because the erasure email connector was disabled
+    assert pr.status == PrivacyRequestStatus.complete
+    assert pr.awaiting_email_send_at is None
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+@mock.patch(
+    "fides.api.ops.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch(
+    "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+)
+async def test_erasure_email_unsupported_identity(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    db,
+    erasure_policy,
+    attentive_email_connection_config,
+    run_privacy_request_task,
+    test_fides_org,
+    messaging_config,
+) -> None:
+    """
+    Run an erasure privacy request with only an email (Attentive) connector.
+    Verify the privacy request is set to "complete" because the provided identities are not supported.
+    """
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"phone_number": "+15551234567"},
+        },
+    )
+
+    db.refresh(pr)
+
+    # the privacy request will be in an "complete" state because
+    # the phone number identity is not supported by this connector
+    assert pr.status == PrivacyRequestStatus.complete
+    assert pr.awaiting_email_send_at is None

@@ -290,7 +290,6 @@ class Traversal:
         running_node_queue: MatchingQueue[TraversalNode] = MatchingQueue(self.root_node)
         remaining_edges: Set[Edge] = self.edges.copy()
         while not running_node_queue.is_empty():
-
             # this is to support the "run traversal_node A AFTER traversal_node B functionality:"
             n = running_node_queue.pop_first_match(
                 lambda x: x.can_run_given(remaining_node_keys)

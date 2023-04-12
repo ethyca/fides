@@ -1,11 +1,13 @@
 {
   "privacyRequestsConfiguration": {
-    "development": true,
+    "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage.",
+    "development": false,
     "test": false,
     "production": false,
-    "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage."
+    "userCannotModify": true
   },
   "datasetClassificationUpdates": {
+    "description": "Enable per-collection dataset classification instead of bulk updates.",
     "development": true,
     "production": false,
     "test": false
@@ -16,16 +18,17 @@
     "test": true,
     "production": false
   },
-  "navV2": {
-    "description": "The updated navigation experience with links to related features in the sidebar.",
+  "organizationManagement": {
+    "description": "Management page to configure Organization details for RoPA reporting, messaging, etc.",
     "development": true,
-    "production": true,
-    "test": true
+    "test": true,
+    "production": false
   },
-  "privacyDeclarationDeprecatedFields": {
-    "description": "Show deprecated fields when adding/editing privacy declarations.",
+  "privacyNotices": {
+    "description": "Page to configure consent privacy notices",
     "development": true,
+    "test": true,
     "production": false,
-    "test": false
+    "userCannotModify": true
   }
 }

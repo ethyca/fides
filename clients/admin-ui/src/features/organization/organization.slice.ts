@@ -27,7 +27,10 @@ export const organizationApi = createApi({
       }),
       invalidatesTags: () => ["Organization"],
     }),
-    getOrganizationByFidesKey: build.query<Partial<Organization>, string>({
+    getOrganizationByFidesKey: build.query<
+      Partial<Organization> & Pick<Organization, "fides_key">,
+      string
+    >({
       query: (fides_key) => ({ url: `organization/${fides_key}/` }),
       providesTags: ["Organization"],
     }),

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "03d28ae1-a240-42f8-839e-92a4d43132ed",
+		"_postman_id": "5d1a5ee9-f432-4da2-a9c9-d68c17e776ac",
 		"name": "Fides",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -72,7 +72,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"consent:read\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"messaging:create_or_update\",\n    \"messaging:read\",\n    \"messaging:delete\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"privacy-request-notifications:create_or_update\",\n    \"privacy-request-notifications:read\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"consent:read\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"messaging:create_or_update\",\n    \"messaging:read\",\n    \"messaging:delete\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-notice:create\",\n    \"privacy-notice:read\",\n    \"privacy-notice:update\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"privacy-request-notifications:create_or_update\",\n    \"privacy-request-notifications:read\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"system_manager:delete\",\n    \"system_manager:update\",\n    \"system_manager:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\",\n    \"user-permission:create\",\n    \"user-permission:update\"\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3648,6 +3648,39 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Authorize Oauth Connector",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/connection/{{oauth_connector_key}}/authorize",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"connection",
+								"{{oauth_connector_key}}",
+								"authorize"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -4240,6 +4273,39 @@
 					"response": []
 				},
 				{
+					"name": "Get available connectors - consent",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection_type?consent=true",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection_type"
+							],
+							"query": [
+								{
+									"key": "consent",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get connection secrets schema",
 					"request": {
 						"auth": {
@@ -4487,11 +4553,26 @@
 				{
 					"name": "Test Message",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": {{test_email}}\n}"
+							"raw": "{\n    \"email\": \"{{test_email}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{host}}/messaging/config/test",
@@ -4840,6 +4921,572 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Roles",
+			"item": [
+				{
+					"name": "Add role (Create User Permissions - Usually you'll use Update Permissions instead)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"roles\": [\"viewer\"]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/user/{{user_id}}/permission",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"permission"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update role (Update User Permissions)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"demo_analytics_system\", \"demo_marketing_system\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/user/{{user_id}}/system-manager",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"system-manager"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Allowed Roles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/oauth/role",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"oauth",
+								"role"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "System Managers",
+			"item": [
+				{
+					"name": "Update Managed Systems",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\"demo_analytics_system\", \"demo_marketing_system\"]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/user/{{user_id}}/system-manager",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"system-manager"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Systems Managed By User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/user/{{user_id}}/system-manager",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"system-manager"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single System Managed By User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/user/{{user_id}}/system-manager/demo_marketing_system",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"system-manager",
+								"demo_marketing_system"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove User as System Manager",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/user/{{user_id}}/system-manager/demo_marketing_system",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"user",
+								"{{user_id}}",
+								"system-manager",
+								"demo_marketing_system"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Privacy Notices",
+			"item": [
+				{
+					"name": "Create Privacy Notices",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"name\": \"Profiling\",\n    \"regions\": [\n      \"us_ca\",\n      \"us_ut\"\n    ],\n    \"description\": \"Making a decision solely by automated means.\",\n    \"consent_mechanism\": \"opt_in\",\n    \"data_uses\": [\n      \"personalize\"\n    ],\n    \"enforcement_level\": \"system_wide\",\n    \"has_gpc_flag\": false\n  },\n  {\n    \"name\": \"Essential\",\n    \"regions\": [\n      \"eu_de\"\n    ],\n    \"description\": \"Notify the user about data processing activities that are essential to your services' functionality. Typically consent is not required for this.\",\n    \"consent_mechanism\": \"notice_only\",\n    \"data_uses\": [\n      \"provide.service\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  },\n  {\n    \"name\": \"Advertising\",\n    \"regions\": [\n    \"us_ca\"\n    ],\n    \"description\": \"Sample advertising notice\",\n    \"consent_mechanism\": \"notice_only\",\n    \"data_uses\": [\n    \"advertising\"\n    ],\n    \"enforcement_level\": \"system_wide\"\n  }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Privacy Notice",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"id\": \"{{privacy_notice_id}}\",\n    \"data_uses\": [\n      \"third_party_sharing\"\n    ]\n  }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Privacy Notices",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice?systems_applicable=false&show_disabled=true",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice"
+							],
+							"query": [
+								{
+									"key": "systems_applicable",
+									"value": "false"
+								},
+								{
+									"key": "show_disabled",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Privacy Notices By Data Use",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice-by-data-use",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice-by-data-use"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Privacy Notice",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-notice/{{privacy_notice_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-notice",
+								"{{privacy_notice_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PrivacyPreferences",
+			"item": [
+				{
+					"name": "Create Verification Code for Consent Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone_number\": \"{{phone_number}}\",\n  \"email\": \"{{email}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Code and Return Current Privacy Preferences",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{verification_code}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/verify-for-privacy-preferences",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request",
+								"{{consent_request_id}}",
+								"verify-for-privacy-preferences"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Code and Save Privacy Preferences",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"browser_identity\": {\n       \"ga_client_id\": \"UA-XXXXXXXXX\",\n       \"ljt_readerID\": \"test_sovrn_id\"\n   },\n   \"code\": \"{{verification_code}}\",\n   \"preferences\": [{\n       \"privacy_notice_history_id\": \"{{privacy_notice_history_id}}\",\n       \"preference\": \"opt_out\"\n   }],\n   \"request_origin\": \"privacy_center\",\n   \"url_recorded\": \"example.com/privacy_center\",\n   \"user_agent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24\",\n   \"user_geography\": \"us_ca\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/privacy-preferences",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request",
+								"{{consent_request_id}}",
+								"privacy-preferences"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -5149,6 +5796,26 @@
 		},
 		{
 			"key": "twilio_messaging_service_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "privacy_notice_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "privacy_notice_history_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_email",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "oauth_connector_key",
 			"value": "",
 			"type": "string"
 		}

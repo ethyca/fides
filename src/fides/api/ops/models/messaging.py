@@ -20,6 +20,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     SMS_MESSAGING_SERVICES,
     SUPPORTED_MESSAGING_SERVICE_SECRETS,
     MessagingMethod,
+    MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsTwilioSMS,
@@ -55,9 +56,10 @@ def get_schema_for_secrets(
     """
     try:
         schema = {
-            MessagingServiceType.MAILGUN: MessagingServiceSecretsMailgun,
-            MessagingServiceType.TWILIO_TEXT: MessagingServiceSecretsTwilioSMS,
-            MessagingServiceType.TWILIO_EMAIL: MessagingServiceSecretsTwilioEmail,
+            MessagingServiceType.mailgun: MessagingServiceSecretsMailgun,
+            MessagingServiceType.twilio_text: MessagingServiceSecretsTwilioSMS,
+            MessagingServiceType.twilio_email: MessagingServiceSecretsTwilioEmail,
+            MessagingServiceType.mailchimp_transactional: MessagingServiceSecretsMailchimpTransactional,
         }[service_type]
     except KeyError:
         raise ValueError(
@@ -125,7 +127,7 @@ class MessagingConfig(Base):
         """
         Retrieve the messaging config of the given type
         """
-        return db.query(cls).filter_by(service_type=service_type).first()
+        return db.query(cls).filter_by(service_type=service_type.value).first()
 
     def set_secrets(
         self,

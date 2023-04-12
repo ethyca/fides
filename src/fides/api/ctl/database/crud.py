@@ -206,7 +206,6 @@ async def upsert_resources(
         sql_model=sql_model.__name__,
         fides_keys=[resource["fides_key"] for resource in resource_dicts],
     ):
-
         async with async_session.begin():
             try:
                 log.debug("Upserting resources")

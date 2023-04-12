@@ -85,7 +85,6 @@ class FidesClient:
         data: Optional[Any] = None,
         json: Optional[Any] = None,
     ) -> Request:
-
         if not self.token:
             raise FidesError(
                 f"Unable to create authenticated request. No token for Fides connector for server {self.uri}"

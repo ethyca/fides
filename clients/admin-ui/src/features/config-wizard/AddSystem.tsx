@@ -7,6 +7,7 @@ import {
   ManualSetupIcon,
   OktaLogoIcon,
 } from "~/features/common/Icon";
+import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/v2/routes";
 import { ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
@@ -32,7 +33,7 @@ const AddSystem = () => {
 
   return (
     <Stack spacing={9} data-testid="add-systems">
-      <Stack spacing={6} w={{ base: "100%", md: "50%" }}>
+      <Stack spacing={6} maxWidth="600px">
         <Heading as="h3" size="lg" fontWeight="semibold">
           Fides helps you map your systems to manage your privacy
         </Heading>
@@ -58,7 +59,7 @@ const AddSystem = () => {
             description="Manually add a system for services not covered by automated scanners"
             onClick={() => {
               dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
-              router.push("/add-systems/new");
+              router.push(ADD_SYSTEMS_MANUAL_ROUTE);
             }}
             data-testid="manual-btn"
           />

@@ -49,7 +49,7 @@ class TestPostMessagingConfig:
     def payload(self):
         return {
             "name": "mailgun",
-            "service_type": MessagingServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
         }
 
@@ -57,9 +57,19 @@ class TestPostMessagingConfig:
     def payload_twilio_email(self):
         return {
             "name": "twilio_email",
-            "service_type": MessagingServiceType.TWILIO_EMAIL.value,
+            "service_type": MessagingServiceType.twilio_email.value,
             "details": {
                 MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "test@email.com"
+            },
+        }
+
+    @pytest.fixture(scope="function")
+    def payload_mailchimp_transactional(self):
+        return {
+            "name": "mailchimp_transactional_email",
+            "service_type": MessagingServiceType.mailchimp_transactional.value,
+            "details": {
+                MessagingServiceDetails.EMAIL_FROM.value: "user@example.com",
             },
         }
 
@@ -67,14 +77,14 @@ class TestPostMessagingConfig:
     def payload_twilio_sms(self):
         return {
             "name": "twilio_sms",
-            "service_type": MessagingServiceType.TWILIO_TEXT.value,
+            "service_type": MessagingServiceType.twilio_text.value,
         }
 
     @pytest.fixture(scope="function")
     def payload_twilio_sms_lowered(self):
         return {
             "name": "twilio_sms",
-            "service_type": MessagingServiceType.TWILIO_TEXT.value.lower(),
+            "service_type": MessagingServiceType.twilio_text.value.lower(),
         }
 
     def test_post_email_config_not_authenticated(
@@ -142,7 +152,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "value is not a valid enumeration member; permitted: 'MAILGUN', 'TWILIO_TEXT', 'TWILIO_EMAIL'"
+            == "value is not a valid enumeration member; permitted: 'mailgun', 'twilio_text', 'twilio_email', 'mailchimp_transactional'"
         )
 
     def test_post_email_config_with_no_key(
@@ -202,7 +212,7 @@ class TestPostMessagingConfig:
         expected_response = {
             "key": "my_mailgun_messaging_config",
             "name": "mailgun",
-            "service_type": MessagingServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {
                 MessagingServiceDetails.API_VERSION.value: "v3",
                 MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain",
@@ -225,7 +235,7 @@ class TestPostMessagingConfig:
             json={
                 "key": "my_mailgun_messaging_config",
                 "name": "mailgun",
-                "service_type": MessagingServiceType.MAILGUN.value,
+                "service_type": MessagingServiceType.mailgun.value,
             },
         )
         assert response.status_code == 422
@@ -246,14 +256,45 @@ class TestPostMessagingConfig:
             json={
                 "key": "my_new_mailgun_messaging_config",
                 "name": "mailgun",
-                "service_type": MessagingServiceType.MAILGUN.value,
+                "service_type": MessagingServiceType.mailgun.value,
                 "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
             },
         )
         assert response.status_code == 500
         assert (
-            f"Key (service_type)=(MAILGUN) already exists" in response.json()["detail"]
+            f"Key (service_type)=(mailgun) already exists" in response.json()["detail"]
         )
+
+    def test_post_mailgun_transactional_config(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload_mailchimp_transactional,
+        url,
+        generate_auth_header,
+    ):
+        key = "mailchimp_transactional_messaging_config"
+        payload_mailchimp_transactional["key"] = key
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json=payload_mailchimp_transactional,
+        )
+        assert 200 == response.status_code
+
+        response_body = json.loads(response.text)
+        email_config = db.query(MessagingConfig).filter_by(key=key)[0]
+
+        expected_response = {
+            "key": key,
+            "name": payload_mailchimp_transactional["name"],
+            "service_type": MessagingServiceType.mailchimp_transactional.value,
+            "details": {MessagingServiceDetails.EMAIL_FROM.value: "user@example.com"},
+        }
+        assert expected_response == response_body
+        email_config.delete(db)
 
     def test_post_twilio_email_config(
         self,
@@ -277,7 +318,7 @@ class TestPostMessagingConfig:
         expected_response = {
             "key": "my_twilio_email_config",
             "name": "twilio_email",
-            "service_type": MessagingServiceType.TWILIO_EMAIL.value,
+            "service_type": MessagingServiceType.twilio_email.value,
             "details": {
                 MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "test@email.com"
             },
@@ -307,7 +348,7 @@ class TestPostMessagingConfig:
         expected_response = {
             "key": "my_twilio_sms_config",
             "name": "twilio_sms",
-            "service_type": MessagingServiceType.TWILIO_TEXT.value,
+            "service_type": MessagingServiceType.twilio_text.value,
             "details": None,
         }
         assert expected_response == response_body
@@ -341,7 +382,7 @@ class TestPostMessagingConfig:
         expected_response = {
             "key": "my_twilio_sms_config",
             "name": "twilio_sms",
-            "service_type": MessagingServiceType.TWILIO_TEXT.value,
+            "service_type": MessagingServiceType.twilio_text.value,
             "details": None,
         }
         assert expected_response == response_body
@@ -360,7 +401,7 @@ class TestPatchMessagingConfig:
         return {
             "key": "my_mailgun_messaging_config",
             "name": "mailgun new name",
-            "service_type": MessagingServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
         }
 
@@ -419,7 +460,7 @@ class TestPatchMessagingConfig:
         expected_response = {
             "key": "my_mailgun_messaging_config",
             "name": "mailgun new name",
-            "service_type": MessagingServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {
                 MessagingServiceDetails.API_VERSION.value: "v3",
                 MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain",
@@ -543,6 +584,47 @@ class TestPutMessagingConfigSecretTwilioEmail:
         )
 
 
+class TestPutMessagingConfigSecretMailchimpTransactional:
+    @pytest.fixture(scope="function")
+    def url(self, messaging_config_mailchimp_transactional) -> str:
+        return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
+            config_key=messaging_config_mailchimp_transactional.key
+        )
+
+    def test_put_config_secrets(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        messaging_config_mailchimp_transactional,
+    ):
+        key = "123456789"
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json={
+                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value: key,
+            },
+        )
+        assert 200 == response.status_code
+
+        db.refresh(messaging_config_mailchimp_transactional)
+
+        assert json.loads(response.text) == {
+            "msg": f"Secrets updated for MessagingConfig with key: {messaging_config_mailchimp_transactional.key}.",
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert (
+            messaging_config_mailchimp_transactional.secrets[
+                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
+            ]
+            == key
+        )
+
+
 class TestPutMessagingConfigSecretTwilioSms:
     @pytest.fixture(scope="function")
     def url(self, messaging_config_twilio_sms) -> str:
@@ -659,7 +741,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert (
-            f"Sender phone number must include country code, formatted like +15558675309 ('__root__',)"
+            f"Phone number must be formatted in E.164 format, i.e. '+15558675309'. ('twilio_sender_phone_number',)"
             in response.json()["detail"]
         )
 
@@ -701,7 +783,12 @@ class TestGetMessagingConfigs:
         assert 403 == response.status_code
 
     def test_get_configs(
-        self, db, api_client: TestClient, url, generate_auth_header, messaging_config
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        messaging_config,
     ):
         auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(url, headers=auth_header)
@@ -712,7 +799,7 @@ class TestGetMessagingConfigs:
                 {
                     "key": "my_mailgun_messaging_config",
                     "name": messaging_config.name,
-                    "service_type": MessagingServiceType.MAILGUN.value,
+                    "service_type": MessagingServiceType.mailgun.value,
                     "details": {
                         MessagingServiceDetails.API_VERSION.value: "v3",
                         MessagingServiceDetails.DOMAIN.value: "some.domain",
@@ -757,7 +844,11 @@ class TestGetMessagingConfig:
         assert 404 == response.status_code
 
     def test_get_config(
-        self, url, api_client: TestClient, generate_auth_header, messaging_config
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        messaging_config,
     ):
         auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(url, headers=auth_header)
@@ -768,7 +859,7 @@ class TestGetMessagingConfig:
         assert response_body == {
             "key": "my_mailgun_messaging_config",
             "name": messaging_config.name,
-            "service_type": MessagingServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {
                 MessagingServiceDetails.API_VERSION.value: "v3",
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
@@ -816,7 +907,7 @@ class TestDeleteConfig:
             data={
                 "key": "my_twilio_sms_config",
                 "name": "twilio_sms",
-                "service_type": MessagingServiceType.TWILIO_TEXT,
+                "service_type": MessagingServiceType.twilio_text.value,
             },
         )
         url = (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
@@ -836,6 +927,12 @@ class TestGetDefaultMessagingConfig:
     def url(self, messaging_config: MessagingConfig) -> str:
         return (V1_URL_PREFIX + MESSAGING_DEFAULT_BY_TYPE).format(
             service_type=messaging_config.service_type.value
+        )
+
+    @pytest.fixture(scope="function")
+    def url_uppercase(self, messaging_config: MessagingConfig) -> str:
+        return (V1_URL_PREFIX + MESSAGING_DEFAULT_BY_TYPE).format(
+            service_type=messaging_config.service_type.value.upper()
         )
 
     def test_get_default_config_not_authenticated(self, url, api_client: TestClient):
@@ -870,7 +967,7 @@ class TestGetDefaultMessagingConfig:
         auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(
             (V1_URL_PREFIX + MESSAGING_DEFAULT_BY_TYPE).format(
-                service_type=MessagingServiceType.MAILGUN.value
+                service_type=MessagingServiceType.mailgun.value
             ),
             headers=auth_header,
         )
@@ -892,7 +989,7 @@ class TestGetDefaultMessagingConfig:
         assert response_body == {
             "key": "my_mailgun_messaging_config",
             "name": messaging_config.name,
-            "service_type": MessagingServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {
                 MessagingServiceDetails.API_VERSION.value: "v3",
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
@@ -900,19 +997,19 @@ class TestGetDefaultMessagingConfig:
             },
         }
 
-    def test_get_default_config_lowered_url(
+    def test_get_default_config_uppered_url(
         self,
-        url,
+        url_uppercase,
         api_client: TestClient,
         generate_auth_header,
         messaging_config: MessagingConfig,
     ):
         """
-        Ensure that a lowercased URL can be used, since by default we're
-        using the uppercased enum values in our URL
+        Ensure that a uppercased URL can be used, since by default we're
+        using the lowercased enum values in our URL
         """
         auth_header = generate_auth_header([MESSAGING_READ])
-        response = api_client.get(url.lower(), headers=auth_header)
+        response = api_client.get(url_uppercase.lower(), headers=auth_header)
         assert response.status_code == 200
 
         response_body = response.json()
@@ -920,7 +1017,7 @@ class TestGetDefaultMessagingConfig:
         assert response_body == {
             "key": "my_mailgun_messaging_config",
             "name": messaging_config.name,
-            "service_type": MessagingServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {
                 MessagingServiceDetails.API_VERSION.value: "v3",
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
@@ -937,7 +1034,7 @@ class TestPutDefaultMessagingConfig:
     @pytest.fixture(scope="function")
     def payload(self):
         return {
-            "service_type": MessagingServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
         }
 
@@ -1022,14 +1119,14 @@ class TestPutDefaultMessagingConfig:
         "service_type, details",
         [
             (
-                MessagingServiceType.TWILIO_EMAIL.value,
+                MessagingServiceType.twilio_email.value,
                 {"twilio_email_from": "test_email@test.com"},
             ),
             (
-                MessagingServiceType.TWILIO_EMAIL.value.lower(),
+                MessagingServiceType.twilio_email.value.lower(),
                 {"twilio_email_from": "test_email@test.com"},
             ),
-            (MessagingServiceType.TWILIO_TEXT.value, None),
+            (MessagingServiceType.twilio_text.value, None),
         ],
     )
     def test_put_default_messaging_config_with_different_service_types(
@@ -1051,8 +1148,8 @@ class TestPutDefaultMessagingConfig:
         response_body = json.loads(response.text)
         config_key = response_body["key"]
         messaging_config = MessagingConfig.get_by(db, field="key", value=config_key)
-        assert service_type.upper() == response_body["service_type"]
-        assert service_type.upper() == messaging_config.service_type.value
+        assert service_type == response_body["service_type"]
+        assert service_type == messaging_config.service_type.value
         messaging_config.delete(db)
 
     def test_put_default_messaging_config_twice_only_one_record(
@@ -1136,7 +1233,7 @@ class TestPutDefaultMessagingConfigSecrets:
     @pytest.fixture(scope="function")
     def url(self, messaging_config) -> str:
         return (V1_URL_PREFIX + MESSAGING_DEFAULT_SECRETS).format(
-            service_type=MessagingServiceType.MAILGUN.value
+            service_type=MessagingServiceType.mailgun.value
         )
 
     @pytest.fixture(scope="function")
@@ -1173,7 +1270,7 @@ class TestPutDefaultMessagingConfigSecrets:
     ):
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         url = (V1_URL_PREFIX + MESSAGING_DEFAULT_SECRETS).format(
-            service_type=MessagingServiceType.MAILGUN.value
+            service_type=MessagingServiceType.mailgun.value
         )
         # this should get a 404 because we have not added the messaging config
         # through a fixture
@@ -1311,7 +1408,7 @@ class TestGetActiveDefaultMessagingConfig:
     def notification_service_type_mailgun(self, db):
         """Set mailgun as the `notification_service_type` property"""
         original_value = CONFIG.notifications.notification_service_type
-        CONFIG.notifications.notification_service_type = "MAILGUN"
+        CONFIG.notifications.notification_service_type = "mailgun"
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.notification_service_type = original_value
@@ -1397,7 +1494,7 @@ class TestGetActiveDefaultMessagingConfig:
         assert response_body == {
             "key": "my_mailgun_messaging_config",
             "name": messaging_config.name,
-            "service_type": MessagingServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.mailgun.value,
             "details": {
                 MessagingServiceDetails.API_VERSION.value: "v3",
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
@@ -1467,7 +1564,7 @@ class TestGetMessagingStatus:
         """Set mailgun as the `notification_service_type` property"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = (
-            MessagingServiceType.MAILGUN.value
+            MessagingServiceType.mailgun.value
         )
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
@@ -1479,7 +1576,7 @@ class TestGetMessagingStatus:
         """Set twilio_text as the `notification_service_type` property"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = (
-            MessagingServiceType.TWILIO_TEXT.value
+            MessagingServiceType.twilio_text.value
         )
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
@@ -1491,7 +1588,7 @@ class TestGetMessagingStatus:
         """Set twilio_email as the `notification_service_type` property"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = (
-            MessagingServiceType.TWILIO_EMAIL.value
+            MessagingServiceType.twilio_email.value
         )
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
@@ -1703,7 +1800,7 @@ class TestGetMessagingStatus:
         assert response.status_code == 200
         response = MessagingConfigStatusMessage(**response.json())
         assert response.config_status == MessagingConfigStatus.configured
-        assert MessagingServiceType.MAILGUN.value in (response.detail)
+        assert MessagingServiceType.mailgun.value in (response.detail)
 
     @pytest.mark.usefixtures(
         "notification_service_type_twilio_text", "messaging_config_twilio_sms"
@@ -1724,7 +1821,7 @@ class TestGetMessagingStatus:
         assert response.status_code == 200
         response = MessagingConfigStatusMessage(**response.json())
         assert response.config_status == MessagingConfigStatus.configured
-        assert MessagingServiceType.TWILIO_TEXT.value in (response.detail)
+        assert MessagingServiceType.twilio_text.value in (response.detail)
 
 
 class TestTestMesage:

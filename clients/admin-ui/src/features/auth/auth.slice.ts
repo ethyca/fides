@@ -6,7 +6,7 @@ import { BASE_URL } from "~/constants";
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { utf8ToB64 } from "~/features/common/utils";
 import { User } from "~/features/user-management/types";
-import { RoleRegistry, ScopeRegistry } from "~/types/api";
+import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 import {
   LoginRequest,
@@ -30,20 +30,13 @@ export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    login(
-      state,
-      { payload: { user_data, token_data } }: PayloadAction<LoginResponse>
-    ) {
-      return Object.assign(state, {
-        user: user_data,
-        token: token_data.access_token,
-      });
+    login(draftState, action: PayloadAction<LoginResponse>) {
+      draftState.user = action.payload.user_data;
+      draftState.token = action.payload.token_data.access_token;
     },
-    logout(state) {
-      return Object.assign(state, {
-        user: null,
-        token: null,
-      });
+    logout(draftState) {
+      draftState.user = null;
+      draftState.token = null;
     },
   },
 });
@@ -54,7 +47,7 @@ export const selectToken = (state: RootState) => selectAuth(state).token;
 
 export const { login, logout } = authSlice.actions;
 
-type RoleToScopes = Record<RoleRegistry, ScopeRegistry[]>;
+type RoleToScopes = Record<RoleRegistryEnum, ScopeRegistryEnum[]>;
 
 // Auth API
 export const authApi = createApi({

@@ -1,22 +1,37 @@
 """Contains the nox sessions for running development environments."""
+import time
+from pathlib import Path
 from typing import Literal
-
-from nox import Session, param, parametrize
-from nox import session as nox_session
-from nox.command import CommandFailed
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
-    EXEC,
     EXEC_IT,
     RUN_CYPRESS_TESTS,
     START_APP,
     START_APP_REMOTE_DEBUG,
-    START_TEST_ENV,
 )
 from docker_nox import build
+from nox import Session, param, parametrize
+from nox import session as nox_session
+from nox.command import CommandFailed
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
-from utils_nox import COMPOSE_DOWN_VOLUMES
+from utils_nox import install_requirements, teardown
+
+
+@nox_session()
+def shell(session: Session) -> None:
+    """
+    Open a shell in an already-running Fides webserver container.
+
+    If the container is not running, the command will fail.
+    """
+    shell_command = (*EXEC_IT, "/bin/bash")
+    try:
+        session.run(*shell_command, external=True)
+    except CommandFailed:
+        session.error(
+            "Could not connect to the webserver container. Please confirm it is running and try again."
+        )
 
 
 @nox_session()
@@ -107,10 +122,10 @@ def cypress_tests(session: Session) -> None:
 @nox_session()
 def e2e_test(session: Session) -> None:
     """
-    Spins up the test_env session and runs Cypress E2E tests against it.
+    Spins up the fides_env session and runs Cypress E2E tests against it.
     """
     session.log("Running end-to-end tests...")
-    session.notify("fides_env(test)", posargs=["test"])
+    session.notify("fides_env(test)", posargs=["keep_alive"])
     session.notify("cypress_tests")
     session.notify("teardown")
 
@@ -128,110 +143,84 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     Spins up a full fides environment seeded with data.
 
     Params:
-        dev = Spins up a full fides application with a dev-style docker container. This includes hot-reloading and no pre-baked UI.
-        test = Spins up a full fides application with a production-style docker container. This includes the UI being pre-built as static files.
+        dev = Spins up a full fides application with a dev-style docker container.
+              This includes hot-reloading and no pre-baked UI.
+
+        test = Spins up a full fides application with a production-style docker
+               container. This includes the UI being pre-built as static files.
 
     Posargs:
-        test = instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
         keep_alive = does not automatically call teardown after the session
     """
-
-    is_test = "test" in session.posargs
     keep_alive = "keep_alive" in session.posargs
-
-    exec_command = EXEC if any([is_test, keep_alive]) else EXEC_IT
-    shell_command = "fides" if any([is_test, keep_alive]) else "/bin/bash"
-
-    # Temporarily override some ENV vars as needed. To set local secrets, see 'example.env'
-    test_env_vars = {
-        "FIDES__CONFIG_PATH": "/fides/src/fides/data/test_env/fides.test_env.toml",
-    }
-
-    session.log(
-        "Tearing down existing containers & volumes to prepare test environment..."
-    )
-    try:
-        session.run(*COMPOSE_DOWN_VOLUMES, external=True, env=test_env_vars)
-    except CommandFailed:
+    if fides_image == "dev":
         session.error(
-            "Failed to cleanly teardown existing containers & volumes. Please exit out of all other and try again"
+            "'fides_env(dev)' is not currently implemented! Use 'nox -s dev' to run the server in dev mode. "
+            "Currently unclear how to (cleanly) mount the source code into the running container..."
         )
-    if not keep_alive:
-        session.notify("teardown", posargs=["volumes"])
 
-    session.log("Building images...")
-    build(session, fides_image)
-    build(session, "admin_ui")
-    build(session, "privacy_center")
+    # Record timestamps along the way, so we can generate a build-time report
+    timestamps = []
+    timestamps.append({"time": time.monotonic(), "label": "Start"})
 
+    session.log("Tearing down existing containers & volumes...")
+    try:
+        teardown(session)
+    except CommandFailed:
+        session.error("Failed to cleanly teardown. Please try again!")
+    timestamps.append({"time": time.monotonic(), "label": "Docker Teardown"})
+
+    session.log("Building production images with 'build(test)'...")
+    build(session, "test")
+    timestamps.append({"time": time.monotonic(), "label": "Docker Build"})
+
+    session.log("Installing ethyca-fides locally...")
+    install_requirements(session)
+    session.install("-e", ".", "--no-deps")
+    session.run("fides", "--version")
+    timestamps.append({"time": time.monotonic(), "label": "pip install"})
+
+    # Configure the args for 'fides deploy up' for testing
+    env_file_path = Path(__file__, "../../.env").resolve()
+    fides_deploy_args = [
+        "--no-pull",
+        "--no-init",
+        "--env-file",
+        str(env_file_path),
+    ]
+
+    session.log("Deploying test environment with 'fides deploy up'...")
     session.log(
-        "Starting the application with example databases defined in docker-compose.integration-tests.yml..."
+        f"NOTE: Customize your local Fides configuration via ENV file here: {env_file_path}"
     )
     session.run(
-        *START_TEST_ENV, "fides-ui", "fides-pc", external=True, env=test_env_vars
-    )
-
-    session.log(
-        "Running example setup scripts for DSR Automation tests... (scripts/load_examples.py)"
-    )
-    session.run(
-        *EXEC,
-        "python",
-        "/fides/scripts/load_examples.py",
-        external=True,
-        env=test_env_vars,
-    )
-
-    session.log(
-        "Pushing example resources for Data Mapping tests... (demo_resources/*)"
-    )
-    session.run(
-        *EXEC,
         "fides",
-        "push",
-        "demo_resources/",
-        external=True,
-        env=test_env_vars,
+        "deploy",
+        "up",
+        *fides_deploy_args,
     )
+    timestamps.append({"time": time.monotonic(), "label": "fides deploy"})
 
-    # Make spaces in the info message line up
-    title = (
-        "FIDES TEST ENVIRONMENT" if fides_image == "test" else "FIDES DEV ENVIRONMENT "
-    )
-
-    session.log("****************************************")
-    session.log("*                                      *")
-    session.log(f"*        {title}        *")
-    session.log("*                                      *")
-    session.log("****************************************")
-    session.log("")
-    # Print out some helpful tips for using the test_env!
-    # NOTE: These constants are defined in scripts/setup/constants.py, docker-compose.yml, and docker-compose.integration-tests.yml
-    session.log(
-        "Using secrets set in '.env' for example setup scripts (see 'example.env' for options)"
-    )
-    if fides_image == "test":
+    # Log a quick build-time report to help troubleshoot slow builds
+    session.log("[fides_env]: Ready! Build time report:")
+    session.log(f"{'Step':5} | {'Label':20} | Time")
+    session.log("------+----------------------+------")
+    for index, value in enumerate(timestamps):
+        if index == 0:
+            continue
         session.log(
-            "Fides Admin UI (production build) running at http://localhost:8080 (user: 'root_user', pass: 'Testpassword1!')"
+            f"{index:5} | {value['label']:20} | {value['time'] - timestamps[index-1]['time']:.2f}s"
         )
     session.log(
-        "Run 'fides user login' to authenticate the CLI (user: 'root_user', pass: 'Testpassword1!')"
+        f"      | {'Total':20} | {timestamps[-1]['time'] - timestamps[0]['time']:.2f}s"
     )
-    session.log(
-        "Fides Admin UI (dev) running at http://localhost:3000 (user: 'root_user', pass: 'Testpassword1!')"
-    )
-    session.log(
-        "Fides Privacy Center (production build) running at http://localhost:3001 (user: 'jane@example.com')"
-    )
-    session.log(
-        "Example Postgres Database running at localhost:6432 (user: 'postgres', pass: 'postgres', db: 'postgres_example')"
-    )
-    session.log(
-        "Example Mongo Database running at localhost:27017 (user: 'mongo_test', pass: 'mongo_pass', db: 'mongo_test')"
-    )
-    session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
+    session.log("------+----------------------+------\n")
+
+    # Start a shell session unless 'keep_alive' is provided as a posarg
     if not keep_alive:
-        session.run(*exec_command, shell_command, external=True, env=test_env_vars)
+        session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
+        session.run(*EXEC_IT, "/bin/bash", external=True, success_codes=[0, 1])
+        session.run("fides", "deploy", "down")
 
 
 @nox_session()

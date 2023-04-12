@@ -1,6 +1,11 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { RoleRegistry } from "~/types/api";
+import {
+  ADD_SYSTEMS_ROUTE,
+  DATAMAP_ROUTE,
+  PRIVACY_NOTICES_ROUTE,
+} from "~/features/common/nav/v2/routes";
+import { RoleRegistryEnum } from "~/types/api";
 
 describe("Routes", () => {
   beforeEach(() => {
@@ -20,9 +25,9 @@ describe("Routes", () => {
     });
 
     it("admins can access many routes", () => {
-      cy.assumeRole(RoleRegistry.ADMIN);
+      cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.visit("/");
-      cy.visit("/add-systems");
+      cy.visit(ADD_SYSTEMS_ROUTE);
       cy.wait("@getSystems");
       cy.getByTestId("add-systems");
       cy.visit("/privacy-requests");
@@ -30,17 +35,27 @@ describe("Routes", () => {
       cy.visit("/datastore-connection");
       cy.wait("@getConnectors");
       cy.getByTestId("connection-grid");
+      cy.visit("/privacy-requests/configure");
+      cy.getByTestId("privacy-requests-configure");
+    });
+
+    // This doesn't work right now due needing a fix for `exact` in the `nav-config` helpers
+    // This is the same issue as https://github.com/ethyca/fides/issues/2731
+    it.skip("contributors can not access configuration", () => {
+      cy.assumeRole(RoleRegistryEnum.CONTRIBUTOR);
+      cy.visit("/privacy-requests/configure");
+      cy.getByTestId("home-content");
     });
 
     it("viewers and/or approvers can only access limited routes", () => {
       [
-        RoleRegistry.VIEWER,
-        RoleRegistry.PRIVACY_REQUEST_MANAGER,
-        RoleRegistry.VIEWER_AND_PRIVACY_REQUEST_MANAGER,
+        RoleRegistryEnum.VIEWER,
+        RoleRegistryEnum.APPROVER,
+        RoleRegistryEnum.VIEWER_AND_APPROVER,
       ].forEach((role) => {
         cy.assumeRole(role);
         // cannot access /add-systems
-        cy.visit("/add-systems");
+        cy.visit(ADD_SYSTEMS_ROUTE);
         cy.getByTestId("add-systems").should("not.exist");
         cy.getByTestId("home-content");
         // cannot access /datastore-connection
@@ -51,6 +66,23 @@ describe("Routes", () => {
         cy.visit("/privacy-requests");
         cy.getByTestId("privacy-requests");
       });
+    });
+  });
+
+  describe("plus", () => {
+    it("non-plus cannot access plus routes", () => {
+      stubPlus(false);
+      cy.visit(DATAMAP_ROUTE);
+      cy.getByTestId("home-content");
+      cy.getByTestId("cytoscape-graph").should("not.exist");
+      cy.visit(PRIVACY_NOTICES_ROUTE);
+      cy.getByTestId("home-content");
+    });
+
+    it("plus can access plus routes", () => {
+      stubPlus(true);
+      cy.visit(DATAMAP_ROUTE);
+      cy.getByTestId("cytoscape-graph");
     });
   });
 });

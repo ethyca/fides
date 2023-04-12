@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Braze SaaS Config
+  name: Braze
   type: braze
   description: A sample schema representing the Braze connector for Fides
   version: 0.0.2

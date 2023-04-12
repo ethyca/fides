@@ -27,26 +27,6 @@ from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
 from fides.core.config import CONFIG
 
 
-@pytest.fixture(scope="function")
-def provided_identity_and_consent_request(db):
-    provided_identity_data = {
-        "privacy_request_id": None,
-        "field_name": "email",
-        "hashed_value": ProvidedIdentity.hash_value("test@email.com"),
-        "encrypted_value": {"value": "test@email.com"},
-    }
-    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
-
-    consent_request_data = {
-        "provided_identity_id": provided_identity.id,
-    }
-    consent_request = ConsentRequest.create(db, data=consent_request_data)
-
-    yield provided_identity, consent_request
-    provided_identity.delete(db=db)
-    consent_request.delete(db=db)
-
-
 @pytest.fixture
 def disable_redis():
     current = CONFIG.redis.enabled
@@ -75,7 +55,7 @@ class TestConsentRequest:
         """Overrides autouse fixture to set notification service type to twilio sms"""
         original_value = CONFIG.notifications.notification_service_type
         CONFIG.notifications.notification_service_type = (
-            MessagingServiceType.TWILIO_TEXT.value
+            MessagingServiceType.twilio_text.value
         )
         ApplicationConfig.update_config_set(db, CONFIG)
         yield
@@ -84,8 +64,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
@@ -97,8 +76,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
@@ -117,8 +95,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
         "disable_redis",
     )
@@ -130,8 +107,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
     def test_consent_request_subject_verification_disabled_no_email(
@@ -144,8 +120,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
@@ -157,8 +132,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
@@ -185,8 +159,7 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
-        "email_connection_config",
-        "email_dataset_config",
+        "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
     @patch("fides.api.ops.service._verification.dispatch_message")
@@ -267,7 +240,11 @@ class TestConsentVerify:
     )
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_verify_no_email_provided(
-        self, mock_verify_identity: MagicMock, db, api_client, verification_code
+        self,
+        mock_verify_identity: MagicMock,
+        db,
+        api_client,
+        verification_code,
     ):
         provided_identity_data = {
             "privacy_request_id": None,
@@ -289,7 +266,7 @@ class TestConsentVerify:
         )
 
         assert response.status_code == 404
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
         assert "missing" in response.json()["detail"]
 
     @pytest.mark.usefixtures(
@@ -311,7 +288,7 @@ class TestConsentVerify:
             json={"code": verification_code},
         )
         assert response.status_code == 200
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
         assert response.json()["consent"] is None
 
     @pytest.mark.usefixtures(
@@ -351,7 +328,7 @@ class TestConsentVerify:
             json={"code": verification_code},
         )
         assert response.status_code == 200
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
         expected_consent_data: list[dict[str, Any]] = [
             {
                 "data_use": "email",
@@ -369,6 +346,63 @@ class TestConsentVerify:
             },
         ]
         assert response.json()["consent"] == expected_consent_data
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_verify_consent_stores_verified_at(
+        self,
+        provided_identity_and_consent_request,
+        db,
+        api_client,
+        verification_code,
+    ):
+        provided_identity, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+            },
+        ]
+
+        for data in deepcopy(consent_data):
+            data["provided_identity_id"] = provided_identity.id
+            Consent.create(db, data=data)
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+
+        expected_consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+                "has_gpc_flag": False,
+                "conflicts_with_gpc": False,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+                "has_gpc_flag": False,
+                "conflicts_with_gpc": False,
+            },
+        ]
+        assert response.json()["consent"] == expected_consent_data
+
+        db.refresh(consent_request)
+        assert consent_request.identity_verified_at is not None
 
 
 class TestGetConsentUnverified:
@@ -399,7 +433,10 @@ class TestGetConsentUnverified:
 
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     def test_consent_unverified_no_email_provided(
-        self, mock_verify_identity: MagicMock, db, api_client
+        self,
+        mock_verify_identity: MagicMock,
+        db,
+        api_client,
     ):
         provided_identity_data = {
             "privacy_request_id": None,
@@ -557,7 +594,7 @@ class TestSaveConsent:
         assert "Incorrect identification" in response.json()["detail"]
 
     @pytest.mark.usefixtures(
-        "subject_identity_verification_required",
+        "subject_identity_verification_required", "automatically_approved"
     )
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -569,6 +606,7 @@ class TestSaveConsent:
         api_client,
         verification_code,
         db: Session,
+        consent_policy,
     ):
         _, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
@@ -586,23 +624,27 @@ class TestSaveConsent:
             json={
                 "code": verification_code,
                 "identity": {"email": "test@email.com"},
+                "policy_key": consent_policy.key,  # Optional policy_key supplied,
                 "consent": [{"data_use": "email", "opt_in": True}],
             },
         )
         assert response.status_code == 200
         assert response.json()["consent"][0]["data_use"] == "email"
         assert response.json()["consent"][0]["opt_in"] is True
-        assert not run_privacy_request_mock.called, "date_use: email is not executable"
+        assert (
+            run_privacy_request_mock.called
+        ), "Privacy request queued even though date_use: email is not executable for record keeping"
 
         db.refresh(consent_request)
         assert (
-            not consent_request.privacy_request_id
-        ), "No PrivacyRequest queued because none of the consent options are executable"
+            consent_request.privacy_request_id
+        ), "Privacy requests queued regardless of whether consent options are executable"
 
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
             json={"code": verification_code},
         )
+
         assert response.status_code == 200
         # Assert the code verification endpoint also returns existing consent preferences
         assert response.json()["consent"][0]["data_use"] == "email"
@@ -708,7 +750,7 @@ class TestSaveConsent:
         assert response.status_code == 422
 
     @pytest.mark.usefixtures(
-        "subject_identity_verification_required",
+        "subject_identity_verification_required", "automatically_approved"
     )
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
@@ -782,7 +824,7 @@ class TestSaveConsent:
             },
         ]
         assert response.json()["consent"] == expected_consent_data
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
 
         db.refresh(consent_request)
         assert (
@@ -808,6 +850,7 @@ class TestSaveConsent:
                 "data_use_description": None,
             },
         ], "Only executable consent preferences stored"
+        assert consent_request.preferences == expected_consent_data
 
         assert mock_run_privacy_request.called
 
@@ -863,7 +906,7 @@ class TestSaveConsent:
 
         assert response.status_code == 200
 
-        mock_verify_identity.assert_called_with(verification_code)
+        assert verification_code in mock_verify_identity.call_args_list[0].args
         db.refresh(consent_request)
         assert consent_request.privacy_request.status == PrivacyRequestStatus.pending
         assert not mock_run_privacy_request.called
@@ -875,6 +918,7 @@ class TestSaveConsent:
         provided_identity_and_consent_request,
         db,
         api_client,
+        consent_policy,
     ):
         provided_identity, consent_request = provided_identity_and_consent_request
 
@@ -899,6 +943,7 @@ class TestSaveConsent:
 
         data = {
             "identity": {"email": "test@email.com"},
+            "policy_key": consent_policy.key,  # Optional policy_key supplied,
             "consent": consent_data,
         }
         response = api_client.patch(

@@ -26,7 +26,7 @@ from fides.core.config import CONFIG
 from fides.lib.db.session import get_db_session
 from tests.fixtures.application_fixtures import integration_secrets
 
-from ..service.privacy_request.request_runner_service_test import (
+from ..service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
 

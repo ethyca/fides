@@ -88,6 +88,7 @@ from fides.api.ops.models.policy import (
     PolicyPreWebhook,
     Rule,
 )
+from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLog,
@@ -383,6 +384,7 @@ def _filter_privacy_request_queryset(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    action_type: Optional[ActionType] = None,
 ) -> Query:
     """
     Utility method to apply filters to our privacy request query.
@@ -464,6 +466,14 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.status == PrivacyRequestStatus.error,
             PrivacyRequest.finished_processing_at > errored_gt,
         )
+    if action_type:
+        policy_ids_for_action_type = (
+            db.query(Rule)
+            .filter(Rule.action_type == action_type)
+            .with_entities(Rule.policy_id)
+            .distinct()
+        )
+        query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
 
     return query
 
@@ -556,6 +566,7 @@ def get_request_status(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     download_csv: Optional[bool] = False,
@@ -585,6 +596,7 @@ def get_request_status(
         errored_lt,
         errored_gt,
         external_id,
+        action_type,
     )
 
     logger.info(
@@ -1575,6 +1587,9 @@ def create_privacy_request_func(
     config_proxy: ConfigProxy,
     data: conlist(PrivacyRequestCreate),  # type: ignore
     authenticated: bool = False,
+    privacy_preferences: List[
+        PrivacyPreferenceHistory
+    ] = [],  # For consent requests only
 ) -> BulkPostPrivacyRequests:
     """Creates privacy requests.
 
@@ -1648,6 +1663,9 @@ def create_privacy_request_func(
             privacy_request.persist_identity(
                 db=db, identity=privacy_request_data.identity
             )
+            for privacy_preference in privacy_preferences:
+                privacy_preference.privacy_request_id = privacy_request.id
+                privacy_preference.save(db=db)
 
             cache_data(
                 privacy_request,

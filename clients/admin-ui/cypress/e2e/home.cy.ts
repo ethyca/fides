@@ -1,6 +1,6 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { RoleRegistry } from "~/types/api";
+import { RoleRegistryEnum } from "~/types/api";
 
 const ALL_TILES = [
   "View data map",
@@ -27,36 +27,35 @@ describe("Home page", () => {
 
   describe("permissions", () => {
     beforeEach(() => {
-      // For these tests, let's say we always have systems and connectors
-      cy.intercept("GET", "/api/v1/system", {
-        fixture: "systems/systems.json",
-      }).as("getSystems");
-      cy.intercept("GET", "/api/v1/connection*", {
-        fixture: "connectors/list.json",
-      }).as("getConnectors");
       stubPlus(true);
     });
 
     it("renders all tiles when all scopes are available", () => {
-      cy.assumeRole(RoleRegistry.ADMIN);
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+      cy.visit("/");
+      verifyExpectedTiles(ALL_TILES);
+    });
+
+    it("renders all tiles as contributor", () => {
+      cy.assumeRole(RoleRegistryEnum.CONTRIBUTOR);
       cy.visit("/");
       verifyExpectedTiles(ALL_TILES);
     });
 
     it("renders viewer only tiles", () => {
-      cy.assumeRole(RoleRegistry.VIEWER);
+      cy.assumeRole(RoleRegistryEnum.VIEWER);
       cy.visit("/");
       verifyExpectedTiles(["View data map", "View systems"]);
     });
 
     it("renders privacy request manager tiles", () => {
-      cy.assumeRole(RoleRegistry.PRIVACY_REQUEST_MANAGER);
+      cy.assumeRole(RoleRegistryEnum.APPROVER);
       cy.visit("/");
       verifyExpectedTiles(["Review privacy requests"]);
     });
 
     it("renders privacy request manager + viewer tiles", () => {
-      cy.assumeRole(RoleRegistry.VIEWER_AND_PRIVACY_REQUEST_MANAGER);
+      cy.assumeRole(RoleRegistryEnum.VIEWER_AND_APPROVER);
       cy.visit("/");
       verifyExpectedTiles([
         "View data map",

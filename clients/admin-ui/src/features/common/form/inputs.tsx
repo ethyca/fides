@@ -37,7 +37,7 @@ import { useState } from "react";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
-type Variant = "inline" | "stacked";
+type Variant = "inline" | "stacked" | "block";
 
 interface CustomInputProps {
   disabled?: boolean;
@@ -79,7 +79,7 @@ const TextInput = ({
     setType(type === "password" ? "text" : "password");
 
   return (
-    <InputGroup size="sm" mr="2">
+    <InputGroup size="sm">
       <Input
         {...props}
         type={type}
@@ -206,7 +206,6 @@ const SelectInput = ({
       chakraStyles={{
         container: (provided) => ({
           ...provided,
-          mr: 2,
           flexGrow: 1,
           backgroundColor: "white",
         }),
@@ -305,7 +304,7 @@ const CreatableSelectInput = ({
       size={size}
       classNamePrefix="custom-creatable-select"
       chakraStyles={{
-        container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+        container: (provided) => ({ ...provided, flexGrow: 1 }),
         dropdownIndicator: (provided) => ({
           ...provided,
           background: "white",
@@ -351,7 +350,7 @@ export const CustomTextInput = ({
         <Grid templateColumns="1fr 3fr">
           <Label htmlFor={props.id || props.name}>{label}</Label>
           <Flex alignItems="center">
-            <Flex flexDir="column" flexGrow={1}>
+            <Flex flexDir="column" flexGrow={1} mr="2">
               <TextInput
                 {...field}
                 isDisabled={disabled}
@@ -372,7 +371,7 @@ export const CustomTextInput = ({
     );
   }
   return (
-    <FormControl isInvalid={isInvalid}>
+    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         <Flex alignItems="center">
           <Label htmlFor={props.id || props.name} fontSize="sm" my={0} mr={1}>
@@ -422,7 +421,7 @@ export const CustomSelect = ({
             {label}
           </Label>
           <Flex alignItems="center" data-testid={`input-${field.name}`}>
-            <Flex flexDir="column" flexGrow={1}>
+            <Flex flexDir="column" flexGrow={1} mr={2}>
               <SelectInput
                 options={options}
                 fieldName={field.name}
@@ -505,7 +504,7 @@ export const CustomCreatableSelect = ({
         <Grid templateColumns="1fr 3fr">
           <Label htmlFor={props.id || props.name}>{label}</Label>
           <Flex alignItems="center" data-testid={`input-${field.name}`}>
-            <Flex flexDir="column" flexGrow={1}>
+            <Flex flexDir="column" flexGrow={1} mr={2}>
               <CreatableSelectInput
                 fieldName={field.name}
                 options={options}
@@ -573,7 +572,6 @@ export const CustomTextArea = ({
     <Textarea
       {...field}
       size="sm"
-      mr={2}
       {...textAreaProps}
       data-testid={`input-${field.name}`}
     />
@@ -605,7 +603,7 @@ export const CustomTextArea = ({
         <Grid templateColumns="1fr 3fr">
           {label ? <FormLabel>{label}</FormLabel> : null}
           <Flex>
-            <Flex flexDir="column" flexGrow={1}>
+            <Flex flexDir="column" flexGrow={1} mr={2}>
               {innerTextArea}
               <ErrorMessage
                 isInvalid={isInvalid}

@@ -16,10 +16,7 @@ describe("Smoke test", () => {
     cy.visit(PRIVACY_CENTER_URL);
     cy.getByTestId("card").contains("Access your data").click();
     cy.getByTestId("privacy-request-form").within(() => {
-      cy.get("input#name").type("Jenny");
       cy.get("input#email").type("jenny@example.com");
-
-      cy.get("input#phone").type("555 867 5309");
       cy.get("button").contains("Continue").click();
     });
 
@@ -28,7 +25,7 @@ describe("Smoke test", () => {
     cy.origin(ADMIN_UI_URL, () => {
       // Makes custom commands available to all subsequent cy.origin() commands
       // https://docs.cypress.io/api/commands/origin#Custom-commands
-      require("../support/commands");
+      Cypress.require("../support/commands");
       cy.login();
       cy.get("div").contains("Review privacy requests").click();
       let numCompletedRequests = 0;

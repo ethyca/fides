@@ -148,6 +148,21 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
     formatted_data_subjects, custom_data_subjects = format_data_subjects(
         server_resources["data_subject"]
     )
+
+    privacy_declaration_fields = [
+        "system.privacy_declaration.name",
+        "system.privacy_declaration.data_categories",
+        "system.privacy_declaration.data_use.name",
+        "system.privacy_declaration.data_use.legal_basis",
+        "system.privacy_declaration.data_use.special_category",
+        "system.privacy_declaration.data_use.recipients",
+        "system.privacy_declaration.data_use.legitimate_interest",
+        "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
+        "system.privacy_declaration.data_subjects.name",
+        "system.privacy_declaration.data_subjects.rights_available",
+        "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
+        "system.privacy_declaration.data_qualifier",
+    ]
     output_list: List[Tuple[str, ...]] = [
         (
             "system.fides_key",
@@ -159,18 +174,8 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             "system.system_dependencies",
             "system.ingress",
             "system.egress",
-            "system.privacy_declaration.name",
-            "system.privacy_declaration.data_categories",
-            "system.privacy_declaration.data_use.name",
-            "system.privacy_declaration.data_use.legal_basis",
-            "system.privacy_declaration.data_use.special_category",
-            "system.privacy_declaration.data_use.recipients",
-            "system.privacy_declaration.data_use.legitimate_interest",
-            "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
-            "system.privacy_declaration.data_subjects.name",
-            "system.privacy_declaration.data_subjects.rights_available",
-            "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
-            "system.privacy_declaration.data_qualifier",
+            "system.users",
+            *privacy_declaration_fields,
             "system.data_protection_impact_assessment.is_required",
             "system.data_protection_impact_assessment.progress",
             "system.data_protection_impact_assessment.link",
@@ -194,7 +199,6 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
             keys.append(key_string)
             output_list[0] = tuple(keys)
 
-    system_custom_field_data = {}
     known_fields = (
         "fides_key",
         "name",
@@ -217,23 +221,33 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         "tags",
         "fidesctl_meta",
         "system_type",
+        "users",
     )
+
+    # list to keep track of header order of custom fields
+    system_custom_field_headers = []
     for system in server_resources["system"]:
+        system_custom_field_data = {}
         if not isinstance(system, dict):
             system = system.__dict__
 
+        # process custom columns
         for key, value in system.items():
             if key not in known_fields:
                 keys = list(output_list[0])
                 key_string = f"system.{key}"
-                keys.append(key_string)
-                output_list[0] = tuple(keys)
-                custom_columns[key_string] = key
+                if key_string not in keys:  # if we havent't seen the key yet
+                    keys.append(key_string)  # we add it as a new column
+                    output_list[0] = tuple(keys)  # then update our header row
+                    custom_columns[key_string] = key
+                    # and we also maintain our ordered list of custom field headers
+                    system_custom_field_headers.append(key_string)
                 if isinstance(value, list):
                     system_custom_field_data[key_string] = ", ".join(value)
                 else:
                     system_custom_field_data[key_string] = value
 
+        system_users = ", ".join([user.username for user in system.get("users", [])])
         third_country_list = ", ".join(system.get("third_country_transfers") or [])
         system_dependencies = ", ".join(system.get("system_dependencies") or [])
         if system.get("ingress"):
@@ -294,6 +308,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                         system_dependencies,
                         system_ingress,
                         system_egress,
+                        system_users,
                         declaration["name"],
                         category,
                         data_use["name"],
@@ -316,15 +331,20 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                     for dataset_reference in dataset_references
                 ]
                 cartesian_product_of_declaration = []
-                if system_custom_field_data:
-                    for _, v in system_custom_field_data.items():
-                        for product in cartesian_product_of_declaration_builder:
-                            product.append(v)
-                            cartesian_product_of_declaration.append(tuple(product))
-                else:
-                    cartesian_product_of_declaration = [
-                        tuple(x) for x in cartesian_product_of_declaration_builder
-                    ]
+
+                for product in cartesian_product_of_declaration_builder:
+                    if system_custom_field_data:
+                        # iterate through our ordered list of custom field headers
+                        # and find any corresponding custom field data.
+                        # we can't just iterate through the system_custom_field_data
+                        # dict because its order may not align with the header order
+                        for custom_field_header in system_custom_field_headers:
+                            product.append(
+                                system_custom_field_data.get(
+                                    custom_field_header, EMPTY_COLUMN_PLACEHOLDER
+                                )
+                            )
+                    cartesian_product_of_declaration.append(tuple(product))
 
                 output_list += cartesian_product_of_declaration
         else:
@@ -338,23 +358,27 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                 system_dependencies,
                 system_ingress,
                 system_egress,
+                system_users,
             ]
-            if system_custom_field_data:
-                for _, v in system_custom_field_data.items():
-                    system_row.append(v)
             len_no_privacy = len(system_row)
+            for i in range(len(privacy_declaration_fields)):
+                system_row.insert(len_no_privacy + i, EMPTY_COLUMN_PLACEHOLDER)
+
             system_row.append(data_protection_impact_assessment["is_required"])
             system_row.append(data_protection_impact_assessment["progress"])
             system_row.append(data_protection_impact_assessment["link"])
-            num_privacy_declaration_fields = 3
-            privacy_declaration_start_index = (
-                len_no_privacy - num_privacy_declaration_fields
-            )
-            for i in range(num_privacy_declaration_fields):
-                system_row.insert(
-                    i + privacy_declaration_start_index, EMPTY_COLUMN_PLACEHOLDER
-                )
             system_row.append(EMPTY_COLUMN_PLACEHOLDER)
+
+            # iterate through our ordered list of custom field headers
+            # and find any corresponding custom field data.
+            # we can't just iterate through the system_custom_field_data
+            # dict because its order may not align with the header order
+            for custom_field_header in system_custom_field_headers:
+                system_row.append(
+                    system_custom_field_data.get(
+                        custom_field_header, EMPTY_COLUMN_PLACEHOLDER
+                    )
+                )
 
             # also add n/a for the dataset reference
             output_list += [tuple(system_row)]

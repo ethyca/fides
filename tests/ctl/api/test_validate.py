@@ -36,7 +36,6 @@ def test_validate_success(
     validate_target: str,
     test_client: TestClient,
 ) -> None:
-
     data = {
         "config": EXTERNAL_CONFIG_BODY[validate_target],
         "target": validate_target,
@@ -90,7 +89,6 @@ def test_validate_failure(
     validate_target: str,
     test_client: TestClient,
 ) -> None:
-
     data = {
         "config": EXTERNAL_FAILURE_CONFIG_BODY[validate_target],
         "target": validate_target,

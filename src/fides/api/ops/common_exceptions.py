@@ -29,12 +29,22 @@ class StorageUploadError(FidesopsException):
     """Data cannot be uploaded to storage destination"""
 
 
+class SystemManagerException(FidesopsException):
+    """Exception class when there are errors making a systemmanager"""
+
+
 class ConnectionException(FidesopsException):
     """Exception class when there are errors making a connection"""
 
 
 class InsufficientDataException(FidesopsException):
     """Exception class when there is not sufficient data to proceed"""
+
+
+class SkippingConsentPropagation(BaseException):
+    """Skipping consent propagation for collection. Used to trigger "skipped" execution logs being created where applicable
+    for Privacy Preference requests on saas connectors.
+    """
 
 
 class RedisConnectionError(Exception):
@@ -87,6 +97,10 @@ class DrpActionValidationError(Exception):
 
 class StorageConfigNotFoundException(BaseException):
     """Custom Exception - StorageConfig Not Found"""
+
+
+class PrivacyNoticeHistoryNotFound(BaseException):
+    """PrivacyNoticeHistory Not Found"""
 
 
 class IdentityNotFoundException(BaseException):

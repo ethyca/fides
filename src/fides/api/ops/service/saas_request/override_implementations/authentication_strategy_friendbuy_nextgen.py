@@ -48,7 +48,7 @@ class FriendbuyNextgenAuthenticationStrategy(AuthenticationStrategy):
         token: Optional[str] = secrets.get("token")
         expires_at: Optional[int] = secrets.get("expires_at")
 
-        if not token or self._close_to_expiration(expires_at, connection_config):
+        if not token or self.close_to_expiration(expires_at, connection_config):
             response = post(
                 url=f"https://{domain}/v1/authorization",
                 json={
@@ -87,7 +87,7 @@ class FriendbuyNextgenAuthenticationStrategy(AuthenticationStrategy):
         return request
 
     @staticmethod
-    def _close_to_expiration(
+    def close_to_expiration(
         expires_at: Optional[int], connection_config: ConnectionConfig
     ) -> bool:
         """Check if the access_token will expire in the next 10 minutes."""

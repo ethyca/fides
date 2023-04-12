@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 from enum import Enum
-from re import compile as regex
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
-from fides.api.ops.models.privacy_request import CheckpointActionRequired
+from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.ops.schemas import Msg
+from fides.api.ops.schemas.privacy_preference import (
+    MinimalPrivacyPreferenceHistorySchema,
+)
 from fides.api.ops.schemas.privacy_request import Consent
 
 
@@ -23,16 +25,16 @@ class MessagingMethod(Enum):
 class MessagingServiceType(Enum):
     """Enum for messaging service type. Upper-cased in the database"""
 
-    MAILGUN = "MAILGUN"
-
-    TWILIO_TEXT = "TWILIO_TEXT"
-    TWILIO_EMAIL = "TWILIO_EMAIL"
+    mailgun = "mailgun"
+    twilio_text = "twilio_text"
+    twilio_email = "twilio_email"
+    mailchimp_transactional = "mailchimp_transactional"
 
     @classmethod
     def _missing_(
         cls: Type[MessagingServiceType], value: Any
     ) -> Optional[MessagingServiceType]:
-        value = value.upper()
+        value = value.lower()
         for member in cls:
             if member.value == value:
                 return member
@@ -40,10 +42,11 @@ class MessagingServiceType(Enum):
 
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
-    MessagingServiceType.MAILGUN.value,
-    MessagingServiceType.TWILIO_EMAIL.value,
+    MessagingServiceType.mailgun.value,
+    MessagingServiceType.twilio_email.value,
+    MessagingServiceType.mailchimp_transactional.value,
 )
-SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.TWILIO_TEXT.value,)
+SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.twilio_text.value,)
 
 
 class MessagingActionType(str, Enum):
@@ -72,7 +75,7 @@ class ErrorNotificationBodyParams(BaseModel):
 class SubjectIdentityVerificationBodyParams(BaseModel):
     """Body params required for subject identity verification email/sms template"""
 
-    verification_code: str
+    verification_code: SafeStr
     verification_code_ttl_seconds: int
 
     def get_verification_code_ttl_minutes(self) -> int:
@@ -85,7 +88,7 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
 class RequestReceiptBodyParams(BaseModel):
     """Body params required for privacy request receipt template"""
 
-    request_types: List[str]
+    request_types: List[SafeStr]
 
 
 class AccessRequestCompleteBodyParams(BaseModel):
@@ -98,7 +101,7 @@ class AccessRequestCompleteBodyParams(BaseModel):
 class RequestReviewDenyBodyParams(BaseModel):
     """Body params required for privacy request review deny template"""
 
-    rejection_reason: Optional[str]
+    rejection_reason: Optional[SafeStr]
 
 
 class ConsentPreferencesByUser(BaseModel):
@@ -109,7 +112,12 @@ class ConsentPreferencesByUser(BaseModel):
     """
 
     identities: Dict[str, Any]
-    consent_preferences: List[Consent]  # Consent schema
+    consent_preferences: List[
+        Consent
+    ]  # Consent schema for old workflow # TODO Slated for deprecation
+    privacy_preferences: List[
+        MinimalPrivacyPreferenceHistorySchema
+    ]  # Privacy preferences for new workflow
 
     @root_validator
     def transform_data_use_format(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -137,6 +145,12 @@ class ConsentEmailFulfillmentBodyParams(BaseModel):
     requested_changes: List[ConsentPreferencesByUser]
 
 
+class ErasureRequestBodyParams(BaseModel):
+    controller: str
+    third_party_vendor_name: str
+    identities: List[str]
+
+
 class FidesopsMessage(
     BaseModel,
     smart_union=True,
@@ -152,7 +166,7 @@ class FidesopsMessage(
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             AccessRequestCompleteBodyParams,
-            List[CheckpointActionRequired],
+            ErasureRequestBodyParams,
         ]
     ]
 
@@ -167,13 +181,27 @@ class EmailForActionType(BaseModel):
 class MessagingServiceDetails(Enum):
     """Enum for messaging service details"""
 
+    # Generic
+    DOMAIN = "domain"
+    EMAIL_FROM = "email_from"
+
     # Mailgun
     IS_EU_DOMAIN = "is_eu_domain"
     API_VERSION = "api_version"
-    DOMAIN = "domain"
 
     # Twilio Email
     TWILIO_EMAIL_FROM = "twilio_email_from"
+
+
+class MessagingServiceDetailsMailchimpTransactional(BaseModel):
+    """The details required to represent a Mailchimp Transactional email configuration."""
+
+    email_from: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
 
 
 class MessagingServiceDetailsMailgun(BaseModel):
@@ -203,6 +231,9 @@ class MessagingServiceDetailsTwilioEmail(BaseModel):
 class MessagingServiceSecrets(Enum):
     """Enum for message service secrets"""
 
+    # Mailchimp Transactional
+    MAILCHIMP_TRANSACTIONAL_API_KEY = "mailchimp_transactional_api_key"
+
     # Mailgun
     MAILGUN_API_KEY = "mailgun_api_key"
 
@@ -216,8 +247,19 @@ class MessagingServiceSecrets(Enum):
     TWILIO_API_KEY = "twilio_api_key"
 
 
+class MessagingServiceSecretsMailchimpTransactional(BaseModel):
+    """The secrets required to connect to Mailchimp Transactional."""
+
+    mailchimp_transactional_api_key: str
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
+
+
 class MessagingServiceSecretsMailgun(BaseModel):
-    """The secrets required to connect to mailgun."""
+    """The secrets required to connect to Mailgun."""
 
     mailgun_api_key: str
 
@@ -228,12 +270,12 @@ class MessagingServiceSecretsMailgun(BaseModel):
 
 
 class MessagingServiceSecretsTwilioSMS(BaseModel):
-    """The secrets required to connect to twilio SMS."""
+    """The secrets required to connect to Twilio SMS."""
 
     twilio_account_sid: str
     twilio_auth_token: str
     twilio_messaging_service_sid: Optional[str]
-    twilio_sender_phone_number: Optional[str]
+    twilio_sender_phone_number: Optional[PhoneNumber]
 
     class Config:
         """Restrict adding other fields through this schema."""
@@ -247,12 +289,6 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
             raise ValueError(
                 "Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied."
             )
-        if sender_phone:
-            pattern = regex(r"^\+\d+$")
-            if not pattern.search(sender_phone):
-                raise ValueError(
-                    "Sender phone number must include country code, formatted like +15558675309"
-                )
         return values
 
 
@@ -272,7 +308,11 @@ class MessagingConfigBase(BaseModel):
 
     service_type: MessagingServiceType
     details: Optional[
-        Union[MessagingServiceDetailsMailgun, MessagingServiceDetailsTwilioEmail]
+        Union[
+            MessagingServiceDetailsMailgun,
+            MessagingServiceDetailsTwilioEmail,
+            MessagingServiceDetailsMailchimpTransactional,
+        ]
     ]
 
     class Config:
@@ -288,9 +328,9 @@ class MessagingConfigRequestBase(MessagingConfigBase):
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         service_type = values.get("service_type")
         if service_type:
-            # uppercase to match enums in database
+            # lowercase to match enums in database
             if isinstance(service_type, str):
-                service_type = service_type.upper()
+                service_type = service_type.lower()
 
             # assign the transformed service_type value back into the values dict
             values["service_type"] = service_type
@@ -304,11 +344,11 @@ class MessagingConfigRequestBase(MessagingConfigBase):
     ) -> None:
         if isinstance(service_type, MessagingServiceType):
             service_type = service_type.value
-        if service_type == MessagingServiceType.MAILGUN.value:
+        if service_type == MessagingServiceType.mailgun.value:
             if not details:
                 raise ValueError("Messaging config must include details")
             MessagingServiceDetailsMailgun.validate(details)
-        if service_type == MessagingServiceType.TWILIO_EMAIL.value:
+        if service_type == MessagingServiceType.twilio_email.value:
             if not details:
                 raise ValueError("Messaging config must include details")
             MessagingServiceDetailsTwilioEmail.validate(details)
@@ -336,6 +376,7 @@ SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceSecretsTwilioEmail,
+    MessagingServiceSecretsMailchimpTransactional,
 ]
 
 

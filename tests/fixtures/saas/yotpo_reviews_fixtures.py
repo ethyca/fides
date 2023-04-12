@@ -1,5 +1,4 @@
-from time import sleep
-from typing import Any, Dict, Generator, Optional
+from typing import Any, Dict, Generator
 from uuid import uuid4
 
 import pydash
@@ -8,7 +7,6 @@ import requests
 from faker import Faker
 from requests import Response
 
-from fides.api.ops.models.connectionconfig import ConnectionConfig
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
@@ -105,13 +103,16 @@ class YotpoReviewsTestClient:
             },
         )
 
-    def get_customer(self, external_id: str) -> Optional[Response]:
+    def get_customer(self, external_id: str) -> Any:
         response = requests.get(
             url=f"https://{self.domain}/core/v3/stores/{self.store_id}/customers",
             headers={"X-Yotpo-Token": self.access_token},
             params={"external_ids": external_id},
         )
-        return response if response.json().get("customers") else None
+        customers = response.json().get("customers")
+        return (
+            response if customers and customers[0]["first_name"] != "MASKED" else None
+        )
 
 
 @pytest.fixture

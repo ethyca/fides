@@ -109,3 +109,52 @@ def universal_analytics_dataset_config(
     yield dataset
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def universal_analytics_connection_config_without_secrets(
+    db: session, universal_analytics_config
+) -> Generator:
+    """Universal analytics config without secrets - can't be used to make live requests"""
+    fides_key = universal_analytics_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": {},
+            "saas_config": universal_analytics_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture
+def universal_analytics_dataset_config_without_secrets(
+    db: Session,
+    universal_analytics_connection_config_without_secrets: ConnectionConfig,
+    universal_analytics_dataset: Dict[str, Any],
+) -> Generator:
+    """Universal analytics dataset config without secrets - can't be used to make live requests"""
+
+    fides_key = universal_analytics_dataset["fides_key"]
+    universal_analytics_connection_config_without_secrets.name = fides_key
+    universal_analytics_connection_config_without_secrets.key = fides_key
+    universal_analytics_connection_config_without_secrets.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, universal_analytics_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": universal_analytics_connection_config_without_secrets.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)

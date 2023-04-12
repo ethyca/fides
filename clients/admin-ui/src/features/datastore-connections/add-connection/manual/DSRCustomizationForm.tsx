@@ -3,8 +3,9 @@ import { useAlert } from "common/hooks";
 import { FieldArray, Form, Formik, FormikProps } from "formik";
 import { useRouter } from "next/router";
 import React from "react";
-import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 import * as Yup from "yup";
+
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
 
 import CustomInput from "../forms/CustomInput";
 import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";

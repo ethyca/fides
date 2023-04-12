@@ -8,6 +8,16 @@ Create Date: 2023-02-01 15:13:52.133075
 import sqlalchemy as sa
 import sqlalchemy_utils
 from alembic import op
+from sqlalchemy import text
+from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.sql.elements import TextClause
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    AesGcmEngine,
+    StringEncryptedType,
+)
+
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.core.config import CONFIG
 
 # revision identifiers, used by Alembic.
 revision = "c9ee230fa6da"
@@ -17,13 +27,27 @@ depends_on = None
 
 
 def upgrade():
+    encryptor = sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(
+        JSONTypeOverride,
+        CONFIG.security.app_encryption_key,
+        AesGcmEngine,
+        "pkcs5",
+    )
+    empty_obj = encryptor.process_bind_param({}, JSON)
+
     op.add_column(
         "applicationconfig",
         sa.Column(
             "config_set",
-            sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
+            StringEncryptedType(),
             nullable=False,
+            server_default=empty_obj,
         ),
+    )
+
+    # reset the server_default now that it's initial value has been set
+    op.alter_column(
+        "applicationconfig", "config_set", nullable=False, server_default=None
     )
 
     # include this update here to make up for an earlier miss when creating the table
