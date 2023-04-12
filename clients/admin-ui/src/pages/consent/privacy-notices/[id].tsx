@@ -79,7 +79,7 @@ const PrivacyNoticeDetailPage = () => {
           </Breadcrumb>
         </Box>
       </Box>
-      <Box width={{ base: "100%", lg: "50%" }}>
+      <Box width={{ base: "100%", lg: "70%" }}>
         <Text fontSize="sm" mb={8}>
           Configure your privacy notice including consent mechanism, associated
           data uses and the locations in which this should be displayed to

@@ -1,4 +1,4 @@
-import { Box, Heading } from "@fidesui/react";
+import { Box, Heading, Stack } from "@fidesui/react";
 import { ReactNode } from "react";
 
 const FormSection = ({
@@ -21,7 +21,9 @@ const FormSection = ({
     >
       {title}
     </Heading>
-    <Box p={6}>{children}</Box>
+    <Stack p={6} spacing={6}>
+      {children}
+    </Stack>
   </Box>
 );
 

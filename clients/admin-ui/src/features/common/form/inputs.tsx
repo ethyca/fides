@@ -690,34 +690,64 @@ export const CustomRadioGroup = ({
 interface CustomSwitchProps {
   label: string;
   tooltip?: string;
+  variant?: "inline" | "condensed";
 }
 export const CustomSwitch = ({
   label,
   tooltip,
+  variant = "inline",
   ...props
 }: CustomSwitchProps & FieldHookConfig<boolean>) => {
   const [field, meta] = useField({ ...props, type: "checkbox" });
   const isInvalid = !!(meta.touched && meta.error);
 
+  if (variant === "inline") {
+    return (
+      <FormControl isInvalid={isInvalid}>
+        <Grid templateColumns="1fr 3fr" justifyContent="center">
+          <Label htmlFor={props.id || props.name} my={0}>
+            {label}
+          </Label>
+          <Box display="flex" alignItems="center">
+            <Switch
+              name={field.name}
+              isChecked={field.checked}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              colorScheme="secondary"
+              mr={2}
+              data-testid={`input-${field.name}`}
+            />
+            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          </Box>
+        </Grid>
+      </FormControl>
+    );
+  }
   return (
-    <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr" justifyContent="center">
-        <Label htmlFor={props.id || props.name} my={0}>
+    <FormControl isInvalid={isInvalid} width="fit-content">
+      <Box display="flex" alignItems="center">
+        <Label
+          htmlFor={props.id || props.name}
+          fontSize="sm"
+          color="gray.500"
+          my={0}
+          mr={2}
+        >
           {label}
         </Label>
-        <Box display="flex" alignItems="center">
-          <Switch
-            name={field.name}
-            isChecked={field.checked}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            colorScheme="secondary"
-            mr={2}
-            data-testid={`input-${field.name}`}
-          />
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Box>
-      </Grid>
+
+        <Switch
+          name={field.name}
+          isChecked={field.checked}
+          onChange={field.onChange}
+          onBlur={field.onBlur}
+          colorScheme="secondary"
+          mr={2}
+          data-testid={`input-${field.name}`}
+        />
+        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      </Box>
     </FormControl>
   );
 };
