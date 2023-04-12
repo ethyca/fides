@@ -41,13 +41,26 @@ def get_all_tags(repo):
     return sorted(repo.tags, key=lambda t: t.commit.committed_datetime, reverse=True)
 
 
-def get_current_tag() -> Optional[str]:
+def get_current_tag(
+    existing: bool = False, repo=None, all_tags: List = []
+) -> Optional[str]:
     """
     Get the current git tag.
+    If `existing` is true, this tag must already exist.
+    Otherwise, a tag is generated via `git describe --tags --dirty --always`,
+    which includes "dirty" tags if the working tree has local modifications.
     """
-    from git.repo import Repo
+    if repo is None:
+        from git.repo import Repo
 
-    repo = Repo()
+        repo = Repo()
+    if existing:  # checks for an existing tag on current commit
+        if not all_tags:
+            all_tags = get_all_tags(repo)
+        return next(
+            (tag.name for tag in all_tags if tag.commit == repo.head.commit),
+            None,
+        )
     git_session = repo.git()
     git_session.fetch("--force", "--tags")
     current_tag = git_session.describe("--tags", "--dirty", "--always")

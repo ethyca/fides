@@ -148,6 +148,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     [
         nox.param("prod", id="prod"),
         nox.param("dev", id="dev"),
+        nox.param("git-tag", id="git-tag"),
     ],
 )
 def push(session: nox.Session, tag: str) -> None:
@@ -161,6 +162,7 @@ def push(session: nox.Session, tag: str) -> None:
 
     prod - Tags images with the current version of the application
     dev - Tags images with `dev`
+    git-tag - Tags images with the git tag of the current commit, if it exists
 
     NOTE: Expects these to first be built via 'build(prod)'
     """
@@ -178,6 +180,37 @@ def push(session: nox.Session, tag: str) -> None:
         #   - ethyca/fides-sample-app:dev
         privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:dev"
         sample_app_dev = f"{SAMPLE_APP_IMAGE}:dev"
+        session.run(
+            "docker", "tag", privacy_center_prod, privacy_center_dev, external=True
+        )
+        session.run("docker", "push", privacy_center_dev, external=True)
+        session.run("docker", "tag", sample_app_prod, sample_app_dev, external=True)
+        session.run("docker", "push", sample_app_dev, external=True)
+
+    if tag == "git-tag":
+        # if we have an existing git tag on the current commit, we push up
+        # a set of images that's tagged specifically with this git tag.
+        # this publishes images that correspond to commits that have been explicitly tagged,
+        # e.g. RC builds, `beta` tags on `main`, `alpha` tags for feature branch builds.
+        existing_commit_tag = get_current_tag(existing=True)
+        if existing_commit_tag is None:
+            session.log(
+                "Did not find an existing git tag on the current commit, not pushing git-tag images"
+            )
+
+        session.log(
+            f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag images!"
+        )
+        custom_image_tag = f"{IMAGE}:{existing_commit_tag}"
+        # Push the ethyca/fides image, tagging with :dev
+        session.run("docker", "tag", fides_image_prod, custom_image_tag, external=True)
+        session.run("docker", "push", custom_image_tag, external=True)
+
+        # Push the extra images, tagging with :dev
+        #   - ethyca/fides-privacy-center:dev
+        #   - ethyca/fides-sample-app:dev
+        privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:{existing_commit_tag}"
+        sample_app_dev = f"{SAMPLE_APP_IMAGE}:{existing_commit_tag}"
         session.run(
             "docker", "tag", privacy_center_prod, privacy_center_dev, external=True
         )
