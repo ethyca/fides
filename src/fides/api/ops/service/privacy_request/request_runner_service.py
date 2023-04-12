@@ -152,7 +152,10 @@ def run_webhooks_and_report_status(
 
     for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
         try:
-            privacy_request.trigger_policy_webhook(webhook)
+            privacy_request.trigger_policy_webhook(
+                webhook=webhook,
+                policy_action=privacy_request.policy.get_action_type(),
+            )
         except PrivacyRequestPaused:
             logger.info(
                 "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",

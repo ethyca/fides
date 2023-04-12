@@ -1586,6 +1586,13 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.finished_processing_at is None
         assert mock_trigger_policy_webhook.call_count == 1
 
+        kwarg = "policy_action"
+        assert kwarg in mock_trigger_policy_webhook._mock_call_args_list[0][1]
+        assert (
+            mock_trigger_policy_webhook._mock_call_args_list[0][1][kwarg]
+            == ActionType.access
+        )
+
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
