@@ -30,7 +30,7 @@ const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
   const { tableInstance } = useContext(DatamapTableContext);
 
   if (!tableInstance) {
-    return;
+    return null;
   }
 
   const generateExportFile = (
@@ -97,7 +97,6 @@ const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
     triggerExportFileDownload(file, fileType);
   };
 
-  // eslint-disable-next-line consistent-return
   return (
     <Modal
       initialFocusRef={initialRef}
