@@ -21,30 +21,6 @@ class TestSparkpostConnector:
         for recipient in access_results["sparkpost_instance:recipient"]:
             assert recipient["address"]["email"] == sparkpost_identity_email
 
-    # async def test_strict_erasure_request(
-    #     self,
-    #     sparkpost_runner: ConnectorRunner,
-    #     policy: Policy,
-    #     erasure_policy_string_rewrite: Policy,
-    #     sparkpost_erasure_identity_email: str,
-    #     sparkpost_erasure_data,
-    #     sparkpost_client
-    # ):
-    #     (
-    #         access_results,
-    #         erasure_results,
-    #     ) = await sparkpost_runner.strict_erasure_request(
-    #         access_policy=policy,
-    #         erasure_policy=erasure_policy_string_rewrite,
-    #         identities={"email": sparkpost_erasure_identity_email},
-    #     )
-
-    #     assert erasure_results == {
-    #         "sparkpost_instance:all_recipients": 0,
-    #         "sparkpost_instance:recipient": 0,
-    #     }
-
-
     async def test_non_strict_erasure_request(
         self,
         sparkpost_runner: ConnectorRunner,
