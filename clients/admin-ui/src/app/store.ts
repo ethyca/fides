@@ -31,7 +31,7 @@ import {
 } from "user-management/index";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
-import { authApi, reducer as authReducer } from "~/features/auth";
+import { reducer as authReducer } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
 import { reducer as featuresReducer } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
@@ -84,7 +84,6 @@ const storage =
     : createNoopStorage();
 
 const reducer = {
-  [authApi.reducerPath]: authApi.reducer,
   [baseApi.reducerPath]: baseApi.reducer,
   [connectionTypeApi.reducerPath]: connectionTypeApi.reducer,
   [datamapSlice.name]: datamapSlice.reducer,
@@ -139,7 +138,6 @@ const persistConfig = {
     (https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist)
   */
   blacklist: [
-    authApi.reducerPath,
     baseApi.reducerPath,
     connectionTypeApi.reducerPath,
     dataQualifierApi.reducerPath,
@@ -167,7 +165,6 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
       }).concat(
-        authApi.middleware,
         baseApi.middleware,
         connectionTypeApi.middleware,
         dataQualifierApi.middleware,

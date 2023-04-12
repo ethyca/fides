@@ -1,7 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
-import { selectToken } from "~/features/auth";
 
 import { addCommonHeaders } from "./CommonHeaders";
 
@@ -12,7 +11,7 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
     prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
+      const { token } = (getState() as RootState).auth;
       addCommonHeaders(headers, token);
       return headers;
     },
@@ -25,6 +24,8 @@ export const baseApi = createApi({
     "Datasets",
     "System",
     "PrivacyNotices",
+    "Auth",
+    "Roles",
   ],
   endpoints: () => ({}),
 });
