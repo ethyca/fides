@@ -16,7 +16,6 @@ from setup.postgres_connector import create_postgres_connector
 from setup.privacy_request import create_privacy_request
 from setup.s3_storage import create_s3_storage
 from setup.stripe_connector import create_stripe_connector
-from setup.user import create_user
 
 print("Generating example data for local Fides test environment...")
 
@@ -28,12 +27,10 @@ except RuntimeError:
     )
     raise
 
-# Start by creating an OAuth client and user for testing
+# Start by creating an OAuth client and authenticating
 auth_header = get_auth_header()
-create_user(
-    auth_header=auth_header,
-)
 
+# TODO: update to use default configs
 # Create an S3 storage config to store DSR results
 if get_secret("AWS_SECRETS")["access_key_id"]:
     print("AWS secrets provided, attempting to configure S3 storage...")
@@ -41,7 +38,6 @@ if get_secret("AWS_SECRETS")["access_key_id"]:
 
 # Edit the default DSR policies to use for testing privacy requests
 # NOTE: We use the default policies to test the default privacy center
-# TODO: change this to edit the default policies instead, so the default privacy center can be used
 create_dsr_policy(auth_header=auth_header, key=constants.DEFAULT_ACCESS_POLICY)
 create_dsr_policy(auth_header=auth_header, key=constants.DEFAULT_ERASURE_POLICY)
 create_rule(
@@ -57,6 +53,7 @@ create_rule(
     action_type="erasure",
 )
 
+# TODO: update to use default configs
 # Configure the email integration to use for identity verification and notifications
 if get_secret("MAILGUN_SECRETS")["api_key"]:
     print("Mailgun secrets provided, attempting to configure email...")

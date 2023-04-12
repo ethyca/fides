@@ -594,7 +594,7 @@ class TestSaveConsent:
         assert "Incorrect identification" in response.json()["detail"]
 
     @pytest.mark.usefixtures(
-        "subject_identity_verification_required",
+        "subject_identity_verification_required", "automatically_approved"
     )
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -606,6 +606,7 @@ class TestSaveConsent:
         api_client,
         verification_code,
         db: Session,
+        consent_policy,
     ):
         _, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
@@ -623,23 +624,27 @@ class TestSaveConsent:
             json={
                 "code": verification_code,
                 "identity": {"email": "test@email.com"},
+                "policy_key": consent_policy.key,  # Optional policy_key supplied,
                 "consent": [{"data_use": "email", "opt_in": True}],
             },
         )
         assert response.status_code == 200
         assert response.json()["consent"][0]["data_use"] == "email"
         assert response.json()["consent"][0]["opt_in"] is True
-        assert not run_privacy_request_mock.called, "date_use: email is not executable"
+        assert (
+            run_privacy_request_mock.called
+        ), "Privacy request queued even though date_use: email is not executable for record keeping"
 
         db.refresh(consent_request)
         assert (
-            not consent_request.privacy_request_id
-        ), "No PrivacyRequest queued because none of the consent options are executable"
+            consent_request.privacy_request_id
+        ), "Privacy requests queued regardless of whether consent options are executable"
 
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
             json={"code": verification_code},
         )
+
         assert response.status_code == 200
         # Assert the code verification endpoint also returns existing consent preferences
         assert response.json()["consent"][0]["data_use"] == "email"
@@ -745,7 +750,7 @@ class TestSaveConsent:
         assert response.status_code == 422
 
     @pytest.mark.usefixtures(
-        "subject_identity_verification_required",
+        "subject_identity_verification_required", "automatically_approved"
     )
     @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
@@ -913,6 +918,7 @@ class TestSaveConsent:
         provided_identity_and_consent_request,
         db,
         api_client,
+        consent_policy,
     ):
         provided_identity, consent_request = provided_identity_and_consent_request
 
@@ -937,6 +943,7 @@ class TestSaveConsent:
 
         data = {
             "identity": {"email": "test@email.com"},
+            "policy_key": consent_policy.key,  # Optional policy_key supplied,
             "consent": consent_data,
         }
         response = api_client.patch(

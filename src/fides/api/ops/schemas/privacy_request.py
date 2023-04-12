@@ -73,7 +73,7 @@ class PrivacyRequestCreate(BaseSchema):
     identity: Identity
     policy_key: FidesKey
     encryption_key: Optional[str] = None
-    consent_preferences: Optional[List[Consent]] = None
+    consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
 
     @validator("encryption_key")
     def validate_encryption_key(

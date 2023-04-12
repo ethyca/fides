@@ -88,6 +88,7 @@ from fides.api.ops.models.policy import (
     PolicyPreWebhook,
     Rule,
 )
+from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLog,
@@ -1586,6 +1587,9 @@ def create_privacy_request_func(
     config_proxy: ConfigProxy,
     data: conlist(PrivacyRequestCreate),  # type: ignore
     authenticated: bool = False,
+    privacy_preferences: List[
+        PrivacyPreferenceHistory
+    ] = [],  # For consent requests only
 ) -> BulkPostPrivacyRequests:
     """Creates privacy requests.
 
@@ -1659,6 +1663,9 @@ def create_privacy_request_func(
             privacy_request.persist_identity(
                 db=db, identity=privacy_request_data.identity
             )
+            for privacy_preference in privacy_preferences:
+                privacy_preference.privacy_request_id = privacy_request.id
+                privacy_preference.save(db=db)
 
             cache_data(
                 privacy_request,
