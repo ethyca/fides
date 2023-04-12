@@ -734,6 +734,26 @@ def erasure_policy_two_rules(
 
 
 @pytest.fixture(scope="function")
+def empty_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+) -> Generator:
+    policy = Policy.create(
+        db=db,
+        data={
+            "name": "example empty policy",
+            "key": "example_empty_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+    yield policy
+    try:
+        policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def policy(
     db: Session,
     oauth_client: ClientDetail,
