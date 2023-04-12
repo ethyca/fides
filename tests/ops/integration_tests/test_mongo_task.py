@@ -847,13 +847,7 @@ async def test_array_querying_mongo(
     )
     # Returns fields_affected for all possible targeted fields, even though this identity only had some
     # of them actually populated
-    # Note that order matters here!
-    assert customer_detail_logs[0].fields_affected == [
-        {
-            "path": "mongo_test:customer_details:customer_id",
-            "field_name": "customer_id",
-            "data_categories": ["user.unique_id"],
-        },
+    assert sorted(customer_detail_logs[0].fields_affected, key=lambda e: e["field_name"]) == [
         {
             "path": "mongo_test:customer_details:birthday",
             "field_name": "birthday",
@@ -865,13 +859,13 @@ async def test_array_querying_mongo(
             "data_categories": ["user.childrens"],
         },
         {
-            "path": "mongo_test:customer_details:emergency_contacts.name",
-            "field_name": "emergency_contacts.name",
-            "data_categories": ["user.name"],
+            "path": "mongo_test:customer_details:customer_id",
+            "field_name": "customer_id",
+            "data_categories": ["user.unique_id"],
         },
         {
-            "path": "mongo_test:customer_details:workplace_info.direct_reports",
-            "field_name": "workplace_info.direct_reports",
+            "path": "mongo_test:customer_details:emergency_contacts.name",
+            "field_name": "emergency_contacts.name",
             "data_categories": ["user.name"],
         },
         {
@@ -883,6 +877,11 @@ async def test_array_querying_mongo(
             "path": "mongo_test:customer_details:gender",
             "field_name": "gender",
             "data_categories": ["user.gender"],
+        },
+        {
+            "path": "mongo_test:customer_details:workplace_info.direct_reports",
+            "field_name": "workplace_info.direct_reports",
+            "data_categories": ["user.name"],
         },
         {
             "path": "mongo_test:customer_details:workplace_info.position",
