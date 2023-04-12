@@ -50,6 +50,7 @@ The types of changes are:
 ### Developer Experience
 
 - Nox commands for git tagging to support feature branch builds [#2979](https://github.com/ethyca/fides/pull/2979)
+- Changed test environment (`nox -s fides_env`) to run `fides deploy` for local testing [#3071](https://github.com/ethyca/fides/pull/3017)
 
 ### Removed
 
