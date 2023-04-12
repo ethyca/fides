@@ -12,7 +12,7 @@ from constants_nox import (
     PRIVACY_CENTER_IMAGE,
     SAMPLE_APP_IMAGE,
 )
-from git_nox import get_current_tag
+from git_nox import get_current_tag, recognized_tag
 
 
 def get_current_image() -> str:
@@ -197,18 +197,25 @@ def push(session: nox.Session, tag: str) -> None:
             session.log(
                 "Did not find an existing git tag on the current commit, not pushing git-tag images"
             )
+            return
+
+        if not recognized_tag(existing_commit_tag):
+            session.log(
+                f"Existing git tag {existing_commit_tag} is not a recognized tag, not pushing git-tag images"
+            )
+            return
 
         session.log(
             f"Found git tag {existing_commit_tag} on the current commit, pushing corresponding git-tag images!"
         )
         custom_image_tag = f"{IMAGE}:{existing_commit_tag}"
-        # Push the ethyca/fides image, tagging with :dev
+        # Push the ethyca/fides image, tagging with :{current_head_git_tag}
         session.run("docker", "tag", fides_image_prod, custom_image_tag, external=True)
         session.run("docker", "push", custom_image_tag, external=True)
 
-        # Push the extra images, tagging with :dev
-        #   - ethyca/fides-privacy-center:dev
-        #   - ethyca/fides-sample-app:dev
+        # Push the extra images, tagging with :{current_head_git_tag}
+        #   - ethyca/fides-privacy-center:{current_head_git_tag}
+        #   - ethyca/fides-sample-app:{current_head_git_tag}
         privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:{existing_commit_tag}"
         sample_app_dev = f"{SAMPLE_APP_IMAGE}:{existing_commit_tag}"
         session.run(

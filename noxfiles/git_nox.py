@@ -9,9 +9,9 @@ from packaging.version import Version
 import nox
 
 RELEASE_BRANCH_REGEX = r"release-(([0-9]+\.)+[0-9]+)"
-RC_TAG_REGEX = r"{release_version}rc([0-9]+)"
 RELEASE_TAG_REGEX = r"(([0-9]+\.)+[0-9]+)"
 VERSION_TAG_REGEX = r"{version}{tag_type}([0-9]+)"
+GENERIC_TAG_REGEX = r"{tag_type}([0-9]+)$"
 
 INITIAL_TAG_INCREMENT = 0
 TAG_INCREMENT = 1
@@ -113,6 +113,15 @@ def next_release_increment(session: nox.Session, all_tags: List):
     return Version(
         f"{latest_release.major}.{latest_release.minor}.{latest_release.micro + 1}"
     )
+
+
+def recognized_tag(tag_to_check: str) -> bool:
+    """Utility function to check whether the provided tag matches one of our recognized tag patterns"""
+    for tag_type in TagType:
+        pattern = GENERIC_TAG_REGEX.format(tag_type=tag_type.value)
+        if re.search(pattern, tag_to_check):
+            return True
+    return False
 
 
 def increment_tag(
