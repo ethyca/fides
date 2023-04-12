@@ -219,10 +219,14 @@ def upgrade():
         "privacynotice", sa.Column("internal_description", sa.String(), nullable=True)
     )
     op.add_column(
-        "privacynotice", sa.Column("displayed_in_overlay", sa.Boolean(), nullable=False)
+        "privacynotice",
+        sa.Column(
+            "displayed_in_overlay", sa.Boolean(), nullable=False, server_default="f"
+        ),
     )
     op.add_column(
-        "privacynotice", sa.Column("displayed_in_api", sa.Boolean(), nullable=False)
+        "privacynotice",
+        sa.Column("displayed_in_api", sa.Boolean(), nullable=False, server_default="f"),
     )
     op.drop_column("privacynotice", "displayed_in_privacy_modal")
     op.drop_column("privacynotice", "displayed_in_banner")
@@ -232,21 +236,29 @@ def upgrade():
     )
     op.add_column(
         "privacynoticehistory",
-        sa.Column("displayed_in_overlay", sa.Boolean(), nullable=False),
+        sa.Column(
+            "displayed_in_overlay", sa.Boolean(), nullable=False, server_default="f"
+        ),
     )
     op.add_column(
         "privacynoticehistory",
-        sa.Column("displayed_in_api", sa.Boolean(), nullable=False),
+        sa.Column("displayed_in_api", sa.Boolean(), nullable=False, server_default="f"),
     )
     op.drop_column("privacynoticehistory", "displayed_in_privacy_modal")
     op.drop_column("privacynoticehistory", "displayed_in_banner")
+
+    # Reverting server defaults that were added just for adding new fields
+    op.alter_column("privacynoticehistory", "displayed_in_overlay", server_default=None)
+    op.alter_column("privacynoticehistory", "displayed_in_api", server_default=None)
+    op.alter_column("privacynotice", "displayed_in_overlay", server_default=None)
+    op.alter_column("privacynotice", "displayed_in_api", server_default=None)
 
 
 def downgrade():
     op.add_column(
         "privacynoticehistory",
         sa.Column(
-            "displayed_in_banner", sa.BOOLEAN(), autoincrement=False, nullable=False
+            "displayed_in_banner", sa.BOOLEAN(), autoincrement=False, nullable=True
         ),
     )
     op.add_column(
@@ -255,7 +267,7 @@ def downgrade():
             "displayed_in_privacy_modal",
             sa.BOOLEAN(),
             autoincrement=False,
-            nullable=False,
+            nullable=True,
         ),
     )
     op.drop_column("privacynoticehistory", "displayed_in_api")
@@ -264,7 +276,7 @@ def downgrade():
     op.add_column(
         "privacynotice",
         sa.Column(
-            "displayed_in_banner", sa.BOOLEAN(), autoincrement=False, nullable=False
+            "displayed_in_banner", sa.BOOLEAN(), autoincrement=False, nullable=True
         ),
     )
     op.add_column(
@@ -273,7 +285,7 @@ def downgrade():
             "displayed_in_privacy_modal",
             sa.BOOLEAN(),
             autoincrement=False,
-            nullable=False,
+            nullable=True,
         ),
     )
     op.drop_column("privacynotice", "displayed_in_api")

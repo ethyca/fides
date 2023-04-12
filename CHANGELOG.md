@@ -41,6 +41,7 @@ The types of changes are:
 - Restored `nav-config` back to the admin-ui [#2990](https://github.com/ethyca/fides/pull/2990)
 - Modify privacy center default config to only request email identities, and add validation preventing requesting both email & phone identities [#2539](https://github.com/ethyca/fides/pull/2539)
 - SaaS connector icons are now dynamically loaded from the connector templates [#3018](https://github.com/ethyca/fides/pull/3018)
+- Updated consentmechanism Enum to rename "necessary" to "notice_only" [#3048](https://github.com/ethyca/fides/pull/3048)
 
 ### Removed
 

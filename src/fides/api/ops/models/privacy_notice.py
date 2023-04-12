@@ -58,7 +58,7 @@ class PrivacyNoticeRegion(Enum):
 class ConsentMechanism(Enum):
     opt_in = "opt_in"
     opt_out = "opt_out"
-    necessary = "necessary"
+    notice_only = "notice_only"
 
 
 class EnforcementLevel(Enum):
