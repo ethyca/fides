@@ -13,6 +13,7 @@ import {
   useDisclosure,
   useToast,
 } from "@fidesui/react";
+import { isErrorResult } from "common/helpers";
 import { FormGuard } from "common/hooks/useIsAnyFormDirty";
 import { GearLightIcon } from "common/Icon";
 import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
@@ -50,29 +51,7 @@ export const DataFlowAccordionForm = ({
   const flowType = isIngress ? "Source" : "Destination";
   const pluralFlowType = `${flowType}s`;
   const dataFlowSystemsModal = useDisclosure();
-  const [updateSystemMutationTrigger, mutationResult] =
-    useUpdateSystemMutation();
-
-  useEffect(() => {
-    if (mutationResult.isLoading || mutationResult.isUninitialized) {
-      return;
-    }
-
-    if (mutationResult.isError) {
-      toast(errorToastParams("Failed to update data flows"));
-    }
-    if (mutationResult.isSuccess) {
-      toast(successToastParams(`${pluralFlowType} updated`));
-    }
-  }, [
-    mutationResult.error,
-    mutationResult.isError,
-    mutationResult.isLoading,
-    mutationResult.isSuccess,
-    mutationResult.isUninitialized,
-    pluralFlowType,
-    toast,
-  ]);
+  const [updateSystemMutationTrigger] = useUpdateSystemMutation();
 
   useGetAllSystemsQuery();
   const systems = useAppSelector(selectAllSystems);
@@ -103,7 +82,14 @@ export const DataFlowAccordionForm = ({
       ingress: isIngress ? dataFlowSystems : system.ingress,
       egress: !isIngress ? dataFlowSystems : system.egress,
     };
-    await updateSystemMutationTrigger(updatedSystem);
+    const result = await updateSystemMutationTrigger(updatedSystem);
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams("Failed to update data flows"));
+    } else {
+      toast(successToastParams(`${pluralFlowType} updated`));
+    }
+
     resetForm({ values: { dataFlowSystems } });
   };
 
