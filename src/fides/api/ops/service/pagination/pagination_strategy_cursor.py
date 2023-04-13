@@ -35,7 +35,11 @@ class CursorPaginationStrategy(PaginationStrategy):
         if object_list and isinstance(object_list, list):
             cursor = pydash.get(object_list.pop(), self.field)
 
-        # return None if the cursor value isn't found to stop further pagination
+        # If the cursor value isn't found, try to find the value in response.json() using the field value
+        if cursor is None:
+            cursor = pydash.get(response.json(), self.field)
+
+        # return None if the cursor value still isn't found to stop further pagination
         if cursor is None:
             return None
 
