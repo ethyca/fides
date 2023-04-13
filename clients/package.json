@@ -1,5 +1,9 @@
 {
-  "workspaces": ["admin-ui/", "privacy-center/", "fides-consent/"],
+  "workspaces": [
+    "admin-ui/",
+    "privacy-center/",
+    "fides-consent/"
+  ],
   "scripts": {
     "build": "turbo run build",
     "build-admin-ui": "turbo run build --filter=admin-ui",
@@ -21,5 +25,8 @@
     "analyze:browser": "turbo run analyze:browser",
     "analyze:server": "turbo run analyze:server",
     "openapi:generate": "turbo run openapi:generate"
+  },
+  "dependencies": {
+    "turbo": "^1.9.1"
   }
 }
