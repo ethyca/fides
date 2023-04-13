@@ -1,5 +1,7 @@
 import { UserPrivileges } from "user-management/types";
 
+import { ScopeRegistryEnum } from "./types/api";
+
 export const BASE_API_URN = "/api/v1";
 const API_URL = process.env.NEXT_PUBLIC_FIDESOPS_API
   ? process.env.NEXT_PUBLIC_FIDESOPS_API
@@ -14,111 +16,111 @@ export const STORAGE_ROOT_KEY = "persist:root";
 export const USER_PRIVILEGES: UserPrivileges[] = [
   {
     privilege: "View privacy requests",
-    scope: "privacy-request:read",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_READ,
   },
   {
     privilege: "Approve privacy requests",
-    scope: "privacy-request:review",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW,
   },
   {
     privilege: "Resume privacy requests",
-    scope: "privacy-request:resume",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_RESUME,
   },
   {
     privilege: "View connections",
-    scope: "connection:read",
+    scope: ScopeRegistryEnum.CONNECTION_READ,
   },
   {
     privilege: "Create or update connections",
-    scope: "connection:create_or_update",
+    scope: ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
   },
   {
     privilege: "Instantiate connections",
-    scope: "connection:instantiate",
+    scope: ScopeRegistryEnum.CONNECTION_INSTANTIATE,
   },
   {
     privilege: "Read connection types",
-    scope: "connection_type:read",
+    scope: ScopeRegistryEnum.CONNECTION_TYPE_READ,
   },
   {
     privilege: "Delete connections",
-    scope: "connection:delete",
+    scope: ScopeRegistryEnum.CONNECTION_DELETE,
   },
   {
     privilege: "View user consent preferences",
-    scope: "consent:read",
+    scope: ScopeRegistryEnum.CONSENT_READ,
   },
   {
     privilege: "View datasets",
-    scope: "dataset:read",
+    scope: ScopeRegistryEnum.DATASET_READ,
   },
   {
     privilege: "Create or update datasets",
-    scope: "dataset:create_or_update",
+    scope: ScopeRegistryEnum.DATASET_CREATE_OR_UPDATE,
   },
   {
     privilege: "Delete datasets",
-    scope: "dataset:delete",
+    scope: ScopeRegistryEnum.DATASET_DELETE,
   },
   {
     privilege: "View policies",
-    scope: "policy:read",
+    scope: ScopeRegistryEnum.POLICY_READ,
   },
   {
     privilege: "Create policies",
-    scope: "policy:create_or_update",
+    scope: ScopeRegistryEnum.POLICY_CREATE_OR_UPDATE,
   },
   {
     privilege: "View users",
-    scope: "user:read",
+    scope: ScopeRegistryEnum.USER_READ,
   },
   {
     privilege: "Create users",
-    scope: "user:create",
+    scope: ScopeRegistryEnum.USER_CREATE,
   },
   {
     privilege: "Update users",
-    scope: "user:update",
+    scope: ScopeRegistryEnum.USER_UPDATE,
   },
   {
     privilege: "Delete users",
-    scope: "user:delete",
+    scope: ScopeRegistryEnum.USER_DELETE,
   },
   {
     privilege: "Reset another user's password",
-    scope: "user:password-reset",
+    scope: ScopeRegistryEnum.USER_PASSWORD_RESET,
   },
   {
     privilege: "Assign user permissions",
-    scope: "user-permission:create",
+    scope: ScopeRegistryEnum.USER_PERMISSION_CREATE,
   },
   {
     privilege: "Update user permissions",
-    scope: "user-permission:update",
+    scope: ScopeRegistryEnum.USER_PERMISSION_UPDATE,
   },
   {
     privilege: "Read user permissions",
-    scope: "user-permission:read",
+    scope: ScopeRegistryEnum.USER_PERMISSION_READ,
   },
   {
     privilege: "Upload privacy request data",
-    scope: "privacy-request:upload_data",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_UPLOAD_DATA,
   },
   {
     privilege: "View privacy request data",
-    scope: "privacy-request:view_data",
+    scope: ScopeRegistryEnum.PRIVACY_REQUEST_VIEW_DATA,
   },
   {
-    privilege: "Create manual webhooks",
-    scope: "webhook:create_or_update",
+    privilege: "Create manual processes",
+    scope: ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
   },
   {
-    privilege: "Read manual webhooks",
-    scope: "webhook:read",
+    privilege: "Read manual processes",
+    scope: ScopeRegistryEnum.WEBHOOK_READ,
   },
   {
-    privilege: "Delete manual webhooks",
-    scope: "webhook:delete",
+    privilege: "Delete manual processes",
+    scope: ScopeRegistryEnum.WEBHOOK_DELETE,
   },
 ];
 
@@ -132,13 +134,6 @@ export const VERIFY_AUTH_INTERVAL = 10 * 60 * 1000;
 // API ROUTES
 export const INDEX_ROUTE = "/";
 export const LOGIN_ROUTE = "/login";
-export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const CONNECTION_ROUTE = "/connection";
 export const CONNECTION_TYPE_ROUTE = "/connection_type";
-
-// UI ROUTES
-export const CONFIG_WIZARD_ROUTE = "/add-systems";
-export const DATAMAP_ROUTE = "/datamap";
-export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
-export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
-export const SYSTEM_ROUTE = "/system";
+export const CONNECTOR_TEMPLATE = "/connector_template";

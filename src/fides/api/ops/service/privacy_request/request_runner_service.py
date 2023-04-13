@@ -6,7 +6,7 @@ import requests
 from loguru import logger
 from pydantic import ValidationError
 from redis.exceptions import DataError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.api.v1.urn_registry import (
@@ -27,7 +27,11 @@ from fides.api.ops.graph.analytics_events import (
 )
 from fides.api.ops.graph.config import CollectionAddress, GraphDataset
 from fides.api.ops.graph.graph import DatasetGraph
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import (
@@ -49,9 +53,12 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.connectors import FidesConnector
-from fides.api.ops.service.connectors.email_connector import (
-    email_connector_erasure_send,
+from fides.api.ops.service.connectors import FidesConnector, get_connector
+from fides.api.ops.service.connectors.consent_email_connector import (
+    CONSENT_EMAIL_CONNECTOR_TYPES,
+)
+from fides.api.ops.service.connectors.erasure_email_connector import (
+    ERASURE_EMAIL_CONNECTOR_TYPES,
 )
 from fides.api.ops.service.connectors.fides_connector import (
     filter_fides_connector_datasets,
@@ -75,12 +82,11 @@ from fides.api.ops.util.cache import (
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
-from fides.core.config import get_config
+from fides.core.config import CONFIG
+from fides.core.config.config_proxy import ConfigProxy
 from fides.lib.db.session import get_db_session
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.schemas.base_class import BaseSchema
-
-CONFIG = get_config()
 
 
 class ManualWebhookResults(BaseSchema):
@@ -93,7 +99,6 @@ class ManualWebhookResults(BaseSchema):
 def get_access_manual_webhook_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> ManualWebhookResults:
-
     """Retrieves manually uploaded data for all AccessManualWebhooks and formats in a way
     to match automatically retrieved data (a list of rows). Also returns if execution should proceed.
 
@@ -147,7 +152,10 @@ def run_webhooks_and_report_status(
 
     for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
         try:
-            privacy_request.trigger_policy_webhook(webhook)
+            privacy_request.trigger_policy_webhook(
+                webhook=webhook,
+                policy_action=privacy_request.policy.get_action_type(),
+            )
         except PrivacyRequestPaused:
             logger.info(
                 "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",
@@ -411,39 +419,39 @@ async def run_privacy_request(
             _log_exception(exc, CONFIG.dev_mode)
             return
 
-        # Send erasure requests via email to third parties where applicable
-        if policy.get_rules_for_action(
-            action_type=ActionType.erasure
-        ) and can_run_checkpoint(
-            request_checkpoint=CurrentStep.erasure_email_post_send,
-            from_checkpoint=resume_step,
+        # Check if privacy request needs erasure or consent emails sent
+        if (
+            (
+                policy.get_rules_for_action(action_type=ActionType.erasure)
+                or policy.get_rules_for_action(action_type=ActionType.consent)
+            )
+            and can_run_checkpoint(
+                request_checkpoint=CurrentStep.email_post_send,
+                from_checkpoint=resume_step,
+            )
+            and needs_batch_email_send(session, identity_data, privacy_request)
         ):
-            try:
-                email_connector_erasure_send(
-                    db=session, privacy_request=privacy_request
-                )
-            except MessageDispatchException as exc:
-                privacy_request.cache_failed_checkpoint_details(
-                    step=CurrentStep.erasure_email_post_send, collection=None
-                )
-                privacy_request.error_processing(db=session)
-                await fideslog_graph_failure(
-                    failed_graph_analytics_event(privacy_request, exc)
-                )
-                # If dev mode, log traceback
-                _log_exception(exc, CONFIG.dev_mode)
-                return
-
-        # Run post-execution webhooks
-        proceed = run_webhooks_and_report_status(
-            db=session,
-            privacy_request=privacy_request,
-            webhook_cls=PolicyPostWebhook,  # type: ignore
-        )
-        if not proceed:
+            privacy_request.pause_processing_for_email_send(session)
+            logger.info(
+                "Privacy request '{}' exiting: awaiting email send.",
+                privacy_request.id,
+            )
             return
 
-        if CONFIG.notifications.send_request_completion_notification:
+        # Run post-execution webhooks
+        if can_run_checkpoint(
+            request_checkpoint=CurrentStep.post_webhooks,
+            from_checkpoint=resume_step,
+        ):
+            proceed = run_webhooks_and_report_status(
+                db=session,
+                privacy_request=privacy_request,
+                webhook_cls=PolicyPostWebhook,  # type: ignore
+            )
+            if not proceed:
+                return
+
+        if ConfigProxy(session).notifications.send_request_completion_notification:
             try:
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
@@ -508,7 +516,11 @@ def initiate_privacy_request_completion_email(
     :param access_result_urls: list of urls generated by access request upload
     :param identity_data: Dict of identity data
     """
-    if not (identity_data.get(ProvidedIdentityType.email.value) or identity_data.get(ProvidedIdentityType.phone_number.value)):
+    config_proxy = ConfigProxy(session)
+    if not (
+        identity_data.get(ProvidedIdentityType.email.value)
+        or identity_data.get(ProvidedIdentityType.phone_number.value)
+    ):
         raise IdentityNotFoundException(
             "Identity email or phone number was not found, so request completion message could not be sent."
         )
@@ -522,9 +534,11 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
             to_identity=to_identity,
-            service_type=CONFIG.notifications.notification_service_type,
+            service_type=config_proxy.notifications.notification_service_type,
             message_body_params=AccessRequestCompleteBodyParams(
-                download_links=access_result_urls
+                download_links=access_result_urls,
+                subject_request_download_time_in_days=CONFIG.security.subject_request_download_link_ttl_seconds
+                / 86400,
             ),
         )
     if policy.get_rules_for_action(action_type=ActionType.erasure):
@@ -532,7 +546,7 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_identity=to_identity,
-            service_type=CONFIG.notifications.notification_service_type,
+            service_type=config_proxy.notifications.notification_service_type,
             message_body_params=None,
         )
 
@@ -646,3 +660,82 @@ def _retrieve_child_results(  # pylint: disable=R0911
         return None
 
     return results
+
+
+def get_consent_email_connection_configs(db: Session) -> Query:
+    """Return enabled consent email connection configs."""
+    return db.query(ConnectionConfig).filter(
+        ConnectionConfig.connection_type.in_(CONSENT_EMAIL_CONNECTOR_TYPES),
+        ConnectionConfig.disabled.is_(False),
+        ConnectionConfig.access == AccessLevel.write,
+    )
+
+
+def get_erasure_email_connection_configs(db: Session) -> Query:
+    """Return enabled erasure email connection configs."""
+    return db.query(ConnectionConfig).filter(
+        ConnectionConfig.connection_type.in_(ERASURE_EMAIL_CONNECTOR_TYPES),
+        ConnectionConfig.disabled.is_(False),
+        ConnectionConfig.access == AccessLevel.write,
+    )
+
+
+def needs_batch_email_send(
+    db: Session, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
+) -> bool:
+    """
+    Delegates the "needs email" check to each configured email or
+    generic email consent connector. Returns true if at least one
+    connector needs to send an email.
+
+    If we don't need to send any emails, add skipped logs for any
+    relevant erasure and consent email connectors.
+    """
+    can_skip_erasure_email: List[ConnectionConfig] = []
+    can_skip_consent_email: List[ConnectionConfig] = []
+
+    needs_email_send: bool = False
+
+    for connection_config in get_erasure_email_connection_configs(db):
+        if get_connector(connection_config).needs_email(  # type: ignore
+            user_identities, privacy_request
+        ):
+            needs_email_send = True
+        else:
+            can_skip_erasure_email.append(connection_config)
+
+    for connection_config in get_consent_email_connection_configs(db):
+        if get_connector(connection_config).needs_email(  # type: ignore
+            user_identities, privacy_request
+        ):
+            needs_email_send = True
+        else:
+            can_skip_consent_email.append(connection_config)
+
+    if not needs_email_send:
+        _create_execution_logs_for_skipped_email_send(
+            db, privacy_request, can_skip_erasure_email, can_skip_consent_email
+        )
+
+    return needs_email_send
+
+
+def _create_execution_logs_for_skipped_email_send(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    can_skip_erasure_email: List[ConnectionConfig],
+    can_skip_consent_email: List[ConnectionConfig],
+) -> None:
+    """Create skipped execution logs for relevant connectors
+    if this privacy request does not need an email send at all.
+
+    Otherwise, any needed skipped execution logs will be added later
+    in the weekly email send.
+    """
+    for connection_config in can_skip_erasure_email:
+        connector = get_connector(connection_config)
+        connector.add_skipped_log(db, privacy_request)  # type: ignore[attr-defined]
+
+    for connection_config in can_skip_consent_email:
+        connector = get_connector(connection_config)
+        connector.add_skipped_log(db, privacy_request)  # type: ignore[attr-defined]

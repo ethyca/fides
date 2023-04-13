@@ -1,0 +1,185 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Braintree
+  type: braintree
+  description: A sample schema representing the Braintree connector for Fides
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: public_key
+    - name: private_key
+
+  external_references:
+    - name: braintree_user_id
+      label: Braintree User ID
+      description: Dataset reference to the location of Braintree user IDs
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <public_key>
+        password: <private_key>
+
+  test_request:
+    method: POST
+    path: /graphql
+    headers:
+      - name: Braintree-Version
+        value: "2019-12-17"
+    body: |
+      {
+        "query": "query { ping }"
+      }
+
+  endpoints:
+    - name: customer
+      requests:
+        read:
+          method: POST
+          path: /graphql
+          headers:
+            - name: Braintree-Version
+              value: "2019-12-17"
+          param_values:
+            - name: customer_id
+              references:
+                - braintree_customer_id
+          body: |
+            {
+              "query": "query Search($criteria: CustomerSearchInput!) {
+                search {
+                  customers(input: $criteria) {
+                    edges {
+                      node {
+                        id
+                        legacyId
+                        firstName
+                        lastName
+                        company
+                        createdAt
+                      }
+                    }
+                  }
+                }
+              }",
+              "variables": {
+                "criteria": {
+                  "id": {
+                    "in": ["<customer_id>"]
+                  }
+                }
+              }
+            }
+          data_path: data.search.customers.edges
+          postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: node
+        update:
+          method: POST
+          path: /graphql
+          headers:
+            - name: Braintree-Version
+              value: "2019-12-17"
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.id
+                  direction: from
+          body: |
+            {
+              "query": "mutation UpdateCustomer($input: UpdateCustomerInput!) {
+                updateCustomer(input: $input) {
+                  customer {
+                    firstName
+                    lastName
+                    email
+                    phoneNumber
+                    company
+                  }
+                }
+              }",
+              "variables": {
+                "input": {
+                  "customerId" : "<customer_id>", 
+                  "customer": {
+                    <masked_object_fields>
+                  }
+                }
+              }
+            }
+    - name: transactions
+      requests:
+        read:
+          method: POST
+          path: /graphql
+          headers:
+            - name: Braintree-Version
+              value: "2019-12-17"
+          param_values:
+            - name: customer_id
+              references:
+                - braintree_customer_id
+          body: |
+            {
+              "query": "query Search($criteria: TransactionSearchInput!) {
+                search {
+                  transactions(input: $criteria) {
+                    edges {
+                      node {
+                        id
+                        legacyId
+                        amount {
+                          value
+                          currencyIsoCode
+                        }
+                        paymentMethodSnapshot {
+                          ... on CreditCardDetails {
+                            brandCode
+                            last4
+                          }
+                          ... on PayPalTransactionDetails {
+                            payer {
+                              email
+                              payerId
+                            }
+                            payee {
+                              email
+                              firstName
+                              lastName
+                            }
+                          }
+                          ... on VenmoAccountDetails {
+                            username
+                            venmoUserId
+                          }
+                        }
+                        orderId
+                        status
+                        source
+                        createdAt
+                      }
+                    }
+                  }
+                }
+              }",
+              "variables": {
+                "criteria": {
+                  "customer": {
+                    "id": {
+                      "in": ["<customer_id>"]
+                    }
+                  }
+                }
+              }
+            }
+          data_path: data.search.transactions.edges
+          postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: node

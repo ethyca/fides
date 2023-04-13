@@ -3,15 +3,22 @@ from unittest import mock
 from unittest.mock import Mock
 
 import yaml
+from fideslang.models import DatasetCollection
 
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
-    ConnectorTemplate,
-    load_registry,
-    registry_file,
+    ConnectorRegistry,
     update_saas_configs,
 )
-from fides.api.ops.util.saas_util import load_config, load_dataset, load_yaml_as_string
+from fides.api.ops.util.saas_util import (
+    encode_file_contents,
+    load_config_from_string,
+    load_dataset_from_string,
+    load_yaml_as_string,
+    replace_config_placeholders,
+    replace_dataset_placeholders,
+)
 from fides.core.config.helpers import load_file
 
 NEW_CONFIG_DESCRIPTION = "new test config description"
@@ -39,46 +46,49 @@ NEW_COLLECTION = {
 
 class TestConnectionRegistry:
     def test_get_connector_template(self):
-        registry = load_registry(registry_file)
+        assert "mailchimp" in ConnectorRegistry.connector_types()
 
-        assert "mailchimp" in registry.connector_types()
+        assert ConnectorRegistry.get_connector_template("bad_key") is None
+        mailchimp_template = ConnectorRegistry.get_connector_template("mailchimp")
+        assert mailchimp_template
 
-        assert registry.get_connector_template("bad_key") is None
-        mailchimp_registry = registry.get_connector_template("mailchimp")
-
-        assert mailchimp_registry == ConnectorTemplate(
-            config="data/saas/config/mailchimp_config.yml",
-            dataset="data/saas/dataset/mailchimp_dataset.yml",
-            icon="data/saas/icon/mailchimp.svg",
-            human_readable="Mailchimp",
+        assert mailchimp_template.config == load_yaml_as_string(
+            "data/saas/config/mailchimp_config.yml"
         )
+        assert mailchimp_template.dataset == load_yaml_as_string(
+            "data/saas/dataset/mailchimp_dataset.yml"
+        )
+        assert mailchimp_template.icon == encode_file_contents(
+            "data/saas/icon/mailchimp.svg"
+        )
+        assert mailchimp_template.human_readable == "Mailchimp"
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_dataset_with_replacement"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_with_replacement"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_config_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_from_string"
     )
     def test_update_config_additions(
         self,
-        load_config_mock_object: Mock,
-        load_config_with_replacement_mock_object: Mock,
-        load_dataset_with_replacement_mock_object: Mock,
+        load_config_from_string_mock_object: Mock,
+        replace_config_placeholders_mock_object: Mock,
+        replace_dataset_placeholders_mock_object: Mock,
         db,
         secondary_mailchimp_instance,
         tertiary_mailchimp_instance,
         secondary_sendgrid_instance,
     ):
         update_config(
-            load_config_mock_object,
-            load_config_mocked_additions_function,
-            load_config_with_replacement_mock_object,
-            load_config_with_replacement_mocked_additions_function,
-            load_dataset_with_replacement_mock_object,
-            load_dataset_with_replacement_mocked_additions_function,
+            load_config_from_string_mock_object,
+            load_config_from_string_mocked_additions_function,
+            replace_config_placeholders_mock_object,
+            replace_config_placeholders_mocked_additions_function,
+            replace_dataset_placeholders_mock_object,
+            replace_dataset_placeholders_mocked_additions_function,
             validate_updated_instances_additions,
             db,
             secondary_mailchimp_instance,
@@ -87,31 +97,31 @@ class TestConnectionRegistry:
         )
 
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_dataset_with_replacement"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_dataset_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_with_replacement"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.replace_config_placeholders"
     )
     @mock.patch(
-        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_from_string"
     )
     def test_update_config_removals(
         self,
-        load_config_mock_object: Mock,
-        load_config_with_replacement_mock_object: Mock,
-        load_dataset_with_replacement_mock_object: Mock,
+        load_config_from_string_mock_object: Mock,
+        replace_config_placeholders_mock_object: Mock,
+        replace_dataset_placeholders_mock_object: Mock,
         db,
         secondary_mailchimp_instance,
         tertiary_mailchimp_instance,
         secondary_sendgrid_instance,
     ):
         update_config(
-            load_config_mock_object,
-            load_config_mocked_removals_function,
-            load_config_with_replacement_mock_object,
-            load_config_with_replacement_mocked_removals_function,
-            load_dataset_with_replacement_mock_object,
-            load_dataset_with_replacement_mocked_removals_function,
+            load_config_from_string_mock_object,
+            load_config_from_string_mocked_removals_function,
+            replace_config_placeholders_mock_object,
+            replace_config_placeholders_mocked_removals_function,
+            replace_dataset_placeholders_mock_object,
+            replace_dataset_placeholders_mocked_removals_function,
             validate_updated_instances_removals,
             db,
             secondary_mailchimp_instance,
@@ -121,12 +131,12 @@ class TestConnectionRegistry:
 
 
 def update_config(
-    load_config_mock_object,
-    load_config_mock_function: Callable,
-    load_config_with_replacement_mock_object,
-    load_config_with_replacement_mock_function: Callable,
-    load_dataset_with_replacement_mock_object,
-    load_dataset_with_replacement_mock_function: Callable,
+    load_config_from_string_mock_object,
+    load_config_from_string_mock_function: Callable,
+    replace_config_placeholders_mock_object,
+    replace_config_placeholders_mock_function: Callable,
+    replace_dataset_placeholders_mock_object,
+    replace_dataset_placeholders_mock_function: Callable,
     validation_function: Callable,
     db,
     secondary_mailchimp_instance,
@@ -150,23 +160,22 @@ def update_config(
     Then, confirm that the instances have been updated as expected, by
     invoking a plugged-in `validation_function`
     """
-    registry = load_registry(registry_file)
-    assert "mailchimp" in registry.connector_types()
+    assert "mailchimp" in ConnectorRegistry.connector_types()
 
-    mailchimp_template_config = load_config(
-        registry.get_connector_template("mailchimp").config
+    mailchimp_template_config = load_config_from_string(
+        ConnectorRegistry.get_connector_template("mailchimp").config
     )
-    mailchimp_template_dataset = load_dataset(
-        registry.get_connector_template("mailchimp").dataset
-    )[0]
+    mailchimp_template_dataset = load_dataset_from_string(
+        ConnectorRegistry.get_connector_template("mailchimp").dataset
+    )
     mailchimp_version = mailchimp_template_config["version"]
 
-    sendgrid_template_config = load_config(
-        registry.get_connector_template("sendgrid").config
+    sendgrid_template_config = load_config_from_string(
+        ConnectorRegistry.get_connector_template("sendgrid").config
     )
-    sendgrid_template_dataset = load_dataset(
-        registry.get_connector_template("sendgrid").dataset
-    )[0]
+    sendgrid_template_dataset = load_dataset_from_string(
+        ConnectorRegistry.get_connector_template("sendgrid").dataset
+    )
     sendgrid_version = sendgrid_template_config["version"]
 
     # confirm original version of template works as expected
@@ -219,16 +228,18 @@ def update_config(
     # to produce an updated saas config template
     # this mimics "updates" made to SaaS config and dataset templates
     # for mailchimp and sendgrid
-    load_config_mock_object.side_effect = load_config_mock_function
-    load_config_with_replacement_mock_object.side_effect = (
-        load_config_with_replacement_mock_function
+    load_config_from_string_mock_object.side_effect = (
+        load_config_from_string_mock_function
     )
-    load_dataset_with_replacement_mock_object.side_effect = (
-        load_dataset_with_replacement_mock_function
+    replace_config_placeholders_mock_object.side_effect = (
+        replace_config_placeholders_mock_function
+    )
+    replace_dataset_placeholders_mock_object.side_effect = (
+        replace_dataset_placeholders_mock_function
     )
 
     # run update "script"
-    update_saas_configs(registry, db)
+    update_saas_configs(db)
 
     # confirm updates applied successfully
     secondary_mailchimp_dataset: DatasetConfig = DatasetConfig.filter(
@@ -282,62 +293,55 @@ def increment_ver(version):
 ### Additions helpers ###
 
 
-def load_config_mocked_additions_function(filename: str) -> Dict:
+def load_config_from_string_mocked_additions_function(config_str: str) -> Dict:
     """
-    Loads the saas config from the yaml file
-    Mocked to make additions to mailchimp config template _only_ for testing
+    Loads the SaaS config from the config string
+    Mocked to make additions to Mailchimp config template _only_ for testing
     """
-    yaml_file = load_file([filename])
-    with open(yaml_file, "r", encoding="utf-8") as file:
-        config = yaml.safe_load(file).get("saas_config", [])
-        update_config_additions(config, filename)
-        return config
-
-
-def load_config_with_replacement_mocked_additions_function(
-    filename: str, string_to_replace: str, replacement: str
-) -> Dict:
-    """
-    Loads the saas config from the yaml file and replaces any string with the given value
-    Mocked to make additions to mailchimp config template _only_ for testing
-    """
-    yaml_str: str = load_yaml_as_string(filename).replace(
-        string_to_replace, replacement
-    )
-    config: Dict = yaml.safe_load(yaml_str).get("saas_config", [])
-    update_config_additions(config, filename)
+    config = load_config_from_string(config_str)
+    update_config_additions(config)
     return config
 
 
-def update_config_additions(config: Dict, filename: str):
-    if filename in (
-        "data/saas/config/mailchimp_config.yml",
-        "data/saas/config/sendgrid_config.yml",
-    ):
+def replace_config_placeholders_mocked_additions_function(
+    config_str: str, string_to_replace: str, replacement: str
+) -> Dict:
+    """
+    Loads the SaaS config from the config string and replaces any string with the given value
+    Mocked to make additions to Mailchimp config template _only_ for testing
+    """
+    config: Dict = replace_config_placeholders(
+        config_str, string_to_replace, replacement
+    )
+    update_config_additions(config)
+    return config
+
+
+def update_config_additions(config: Dict):
+    if config["name"] in ("Mailchimp", "SendGrid"):
         config["version"] = increment_ver(config["version"])
         config["description"] = NEW_CONFIG_DESCRIPTION
         config["connector_params"].append(NEW_CONNECTOR_PARAM)
         config["endpoints"].append(NEW_ENDPOINT)
 
 
-def load_dataset_with_replacement_mocked_additions_function(
-    filename: str, string_to_replace: str, replacement: str
+def replace_dataset_placeholders_mocked_additions_function(
+    dataset_str: str, string_to_replace: str, replacement: str
 ) -> Dict:
     """
-    Loads the dataset from the yaml file and replaces any string with the given value
-    Mocked to make additions to mailchimp dataset template _only_ for testing
+    Loads the dataset from the dataset string and replaces any string with the given value
+    Mocked to make additions to Mailchimp dataset template _only_ for testing
     """
-    yaml_str: str = load_yaml_as_string(filename).replace(
-        string_to_replace, replacement
+    dataset: Dict = replace_dataset_placeholders(
+        dataset_str, string_to_replace, replacement
     )
-    dataset: Dict = yaml.safe_load(yaml_str).get("dataset", [])
-    if filename in (
-        "data/saas/dataset/mailchimp_dataset.yml",
-        "data/saas/dataset/sendgrid_dataset.yml",
+    if dataset["name"] in (
+        "Mailchimp Dataset",
+        "SendGrid Dataset",
     ):
-        dataset[0]["description"] = NEW_DATASET_DESCRIPTION
-        dataset[0]["collections"][0]["fields"].append(NEW_FIELD)
-        dataset[0]["collections"].append(NEW_COLLECTION)
+        dataset["description"] = NEW_DATASET_DESCRIPTION
+        dataset["collections"][0]["fields"].append(NEW_FIELD)
+        dataset["collections"].append(NEW_COLLECTION)
     return dataset
 
 
@@ -354,8 +358,11 @@ def validate_updated_instances_additions(
         len(updated_dataset_config.ctl_dataset.collections)
         == len(original_template_dataset["collections"]) + 1
     )
-    assert NEW_COLLECTION in updated_dataset_config.ctl_dataset.collections
-    assert NEW_FIELD in updated_dataset_config.ctl_dataset.collections[0]["fields"]
+
+    assert (
+        DatasetCollection(**NEW_COLLECTION)
+        in updated_dataset_config.ctl_dataset.collections
+    )
 
     # check for config additions to template
     updated_saas_config = updated_dataset_config.connection_config.saas_config
@@ -383,59 +390,55 @@ def validate_updated_instances_additions(
 ### Removals helpers ###
 
 
-def load_config_mocked_removals_function(filename: str) -> Dict:
+def load_config_from_string_mocked_removals_function(config_str: str) -> Dict:
     """
-    Loads the saas config from the yaml file
-    Mocked to make removals to mailchimp config template _only_ for testing
+    Loads the SaaS config from the config string
+    Mocked to make removals to Mailchimp config template _only_ for testing
     """
-    yaml_file = load_file([filename])
-    with open(yaml_file, "r", encoding="utf-8") as file:
-        config = yaml.safe_load(file).get("saas_config", [])
-        update_config_removals(config, filename)
-        return config
-
-
-def load_config_with_replacement_mocked_removals_function(
-    filename: str, string_to_replace: str, replacement: str
-) -> Dict:
-    """
-    Loads the saas config from the yaml file and replaces any string with the given value
-    Mocked to make removals to mailchimp config template _only_ for testing
-    """
-    yaml_str: str = load_yaml_as_string(filename).replace(
-        string_to_replace, replacement
-    )
-    config: Dict = yaml.safe_load(yaml_str).get("saas_config", [])
-    update_config_removals(config, filename)
+    config = load_config_from_string(config_str)
+    update_config_removals(config)
     return config
 
 
-def update_config_removals(config: Dict, filename: str):
-    if filename in (
-        "data/saas/config/mailchimp_config.yml",
-        "data/saas/config/sendgrid_config.yml",
+def replace_config_placeholders_mocked_removals_function(
+    config_str: str, string_to_replace: str, replacement: str
+) -> Dict:
+    """
+    Loads the SaaS config from the config string and replaces any string with the given value
+    Mocked to make removals to Mailchimp config template _only_ for testing
+    """
+    config: Dict = replace_config_placeholders(
+        config_str, string_to_replace, replacement
+    )
+    update_config_removals(config)
+    return config
+
+
+def update_config_removals(config: Dict):
+    if config["name"] in (
+        "Mailchimp",
+        "SendGrid",
     ):
         config["version"] = increment_ver(config["version"])
         config["endpoints"].pop()
         config["connector_params"].pop()
 
 
-def load_dataset_with_replacement_mocked_removals_function(
-    filename: str, string_to_replace: str, replacement: str
+def replace_dataset_placeholders_mocked_removals_function(
+    dataset_str: str, string_to_replace: str, replacement: str
 ) -> Dict:
     """
-    Loads the dataset from the yaml file and replaces any string with the given value
-    Mocked to make removals to mailchimp dataset _only_ for testing
+    Loads the dataset from the dataset string and replaces any string with the given value
+    Mocked to make removals to Mailchimp dataset _only_ for testing
     """
-    yaml_str: str = load_yaml_as_string(filename).replace(
-        string_to_replace, replacement
+    dataset: Dict = replace_dataset_placeholders(
+        dataset_str, string_to_replace, replacement
     )
-    dataset: Dict = yaml.safe_load(yaml_str).get("dataset", [])
-    if filename in (
-        "data/saas/dataset/mailchimp_dataset.yml",
-        "data/saas/dataset/sendgrid_dataset.yml",
+    if dataset["name"] in (
+        "Mailchimp Dataset",
+        "SendGrid Dataset",
     ):
-        dataset[0]["collections"].pop()
+        dataset["collections"].pop()
     return dataset
 
 

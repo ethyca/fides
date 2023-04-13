@@ -5,11 +5,15 @@ import pydash
 from loguru import logger
 from requests import Response
 
-from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
+from fides.api.ops.common_exceptions import (
+    FidesopsException,
+    PostProcessingException,
+    SkippingConsentPropagation,
+)
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
+from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.saas_config import (
     ClientConfig,
@@ -32,6 +36,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
 )
 from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.consent_util import should_opt_in_to_service
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 
@@ -427,10 +432,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
-        consent_preferences: List[Consent],
     ) -> bool:
         """Execute a consent request. Return whether the consent request to the third party succeeded.
-        Return True if 200 OK
+        Should only propagate either the entire set of opt in or opt out requests.
+        Return True if 200 OK. Raises a SkippingConsentPropagation exception if no action is taken
+        against the service.
         """
         logger.info(
             "Starting consent request for node: '{}'",
@@ -438,45 +444,64 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
         self.set_privacy_request_state(privacy_request, node)
         query_config = self.query_config(node)
+        should_opt_in: Optional[bool] = should_opt_in_to_service(
+            self.configuration.system, privacy_request
+        )
 
-        for consent_options in consent_preferences:
-            query_config.action = (
-                "opt_in" if consent_options.opt_in else "opt_out"
-            )  # For logging purposes
+        if should_opt_in is None:
+            logger.info(
+                "Skipping consent requests on node {}: No actionable consent preferences to propagate",
+                node.address.value,
+            )
+            raise SkippingConsentPropagation(
+                f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
+            )
 
-            consent_requests: List[
-                SaaSRequest
-            ] = self._get_consent_requests_by_preference(consent_options.opt_in)
+        matching_consent_requests: List[
+            SaaSRequest
+        ] = self._get_consent_requests_by_preference(should_opt_in)
 
-            if not consent_requests:
-                logger.info(
-                    "Skipping consent requests on node {}: No '{}' requests defined",
-                    node.address.value,
-                    query_config.action,
-                )
-                continue
+        query_config.action = (
+            "opt_in" if should_opt_in else "opt_out"
+        )  # For logging purposes
 
-            for consent_request in consent_requests:
-                self.set_saas_request_state(consent_request)
+        if not matching_consent_requests:
+            logger.info(
+                "Skipping consent requests on node {}: No '{}' requests defined",
+                node.address.value,
+                query_config.action,
+            )
+            raise SkippingConsentPropagation(
+                f"Skipping consent propagation for node {node.address.value} -  No '{query_config.action}' requests defined."
+            )
 
-                try:
-                    prepared_request: SaaSRequestParams = (
-                        query_config.generate_consent_stmt(
-                            policy, privacy_request, consent_request
-                        )
+        fired: bool = False
+        for consent_request in matching_consent_requests:
+            self.set_saas_request_state(consent_request)
+            try:
+                prepared_request: SaaSRequestParams = (
+                    query_config.generate_consent_stmt(
+                        policy, privacy_request, consent_request
                     )
-                except ValueError as exc:
-                    if consent_request.skip_missing_param_values:
-                        logger.info(
-                            "Skipping optional consent request on node {}: {}",
-                            node.address.value,
-                            exc,
-                        )
-                        continue
-                    raise exc
-                client: AuthenticatedClient = self.create_client()
-                client.send(prepared_request)
+                )
+            except ValueError as exc:
+                if consent_request.skip_missing_param_values:
+                    logger.info(
+                        "Skipping optional consent request on node {}: {}",
+                        node.address.value,
+                        exc,
+                    )
+                    continue
+                raise exc
+            client: AuthenticatedClient = self.create_client()
+            client.send(prepared_request)
+            fired = True
         self.unset_connector_state()
+        if not fired:
+            raise SkippingConsentPropagation(
+                "Missing needed values to propagate request."
+            )
+
         return True
 
     def close(self) -> None:
@@ -592,15 +617,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 privacy_request,
                 secrets,
             )  # type: ignore
-        except Exception:
+        except Exception as exc:
             logger.error(
                 "Encountered error executing override mask function '{}",
                 override_function_name,
                 exc_info=True,
             )
-            raise FidesopsException(
-                f"Error executing override mask function '{override_function_name}'"
-            )
+            raise FidesopsException(str(exc))
 
     def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
         """Helper to either pull out the opt-in requests or the opt out requests that were defined."""

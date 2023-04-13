@@ -11,7 +11,6 @@ from fides.api.ops.service.pagination.pagination_strategy import PaginationStrat
 
 
 class CursorPaginationStrategy(PaginationStrategy):
-
     name = "cursor"
     configuration_model = CursorPaginationConfiguration
 

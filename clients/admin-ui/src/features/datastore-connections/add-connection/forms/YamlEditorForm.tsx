@@ -1,37 +1,20 @@
 import { ConfirmationModal } from "@fidesui/components";
 import {
-  Box,
   Button,
   ButtonGroup,
-  Divider,
-  ErrorWarningIcon,
   Flex,
-  Heading,
-  HStack,
-  SlideFade,
-  Tag,
   Text,
   useDisclosure,
   VStack,
 } from "@fidesui/react";
 import { useAlert } from "common/hooks/useAlert";
 import yaml, { YAMLException } from "js-yaml";
-import { narrow } from "narrow-minded";
-import dynamic from "next/dynamic";
 import React, { useRef, useState } from "react";
 
-import { useFeatures } from "~/features/common/features";
+import { Editor, isYamlException } from "~/features/common/yaml/helpers";
+import YamlError from "~/features/common/yaml/YamlError";
 import { useGetAllDatasetsQuery } from "~/features/dataset";
 import { Dataset } from "~/types/api";
-
-const Editor = dynamic(
-  // @ts-ignore
-  () => import("@monaco-editor/react").then((mod) => mod.default),
-  { ssr: false }
-);
-
-const isYamlException = (error: unknown): error is YAMLException =>
-  narrow({ name: "string" }, error) && error.name === "YAMLException";
 
 type YamlEditorFormProps = {
   data: Dataset[];
@@ -56,9 +39,6 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   );
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
-  const {
-    flags: { navV2 },
-  } = useFeatures();
   const warningDisclosure = useDisclosure();
   const { data: allDatasets } = useGetAllDatasetsQuery();
   const [overWrittenKeys, setOverWrittenKeys] = useState<string[]>([]);
@@ -120,7 +100,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
         <Editor
           defaultLanguage="yaml"
           defaultValue={yamlData}
-          height={navV2 ? "calc(100vh - 526px" : "calc(100vh - 394px)"}
+          height="calc(100vh - 526px)"
           onChange={handleChange}
           onMount={handleMount}
           options={{
@@ -150,72 +130,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
         </ButtonGroup>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
-        <SlideFade in>
-          <Box w="fit-content">
-            <Divider color="gray.100" />
-            <HStack mt="16px">
-              <Heading as="h5" color="gray.700" size="xs">
-                YAML
-              </Heading>
-              <Tag colorScheme="red" size="sm" variant="solid">
-                Error
-              </Tag>
-            </HStack>
-            <Box
-              bg="red.50"
-              border="1px solid"
-              borderColor="red.300"
-              color="red.300"
-              mt="16px"
-              borderRadius="6px"
-            >
-              <HStack
-                alignItems="flex-start"
-                margin={["14px", "17px", "14px", "17px"]}
-              >
-                <ErrorWarningIcon />
-                {isEmptyState && (
-                  <Box>
-                    <Heading
-                      as="h5"
-                      color="red.500"
-                      fontWeight="semibold"
-                      size="xs"
-                    >
-                      Error message:
-                    </Heading>
-                    <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      YAML dataset is required
-                    </Text>
-                  </Box>
-                )}
-                {yamlError && (
-                  <Box>
-                    <Heading
-                      as="h5"
-                      color="red.500"
-                      fontWeight="semibold"
-                      size="xs"
-                    >
-                      Error message:
-                    </Heading>
-                    <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      {yamlError.message}
-                    </Text>
-                    <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      {yamlError.reason}
-                    </Text>
-                    <Text color="gray.700" fontSize="sm" fontWeight="400">
-                      Ln <b>{yamlError.mark.line}</b>, Col{" "}
-                      <b>{yamlError.mark.column}</b>, Pos{" "}
-                      <b>{yamlError.mark.position}</b>
-                    </Text>
-                  </Box>
-                )}
-              </HStack>
-            </Box>
-          </Box>
-        </SlideFade>
+        <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />
       )}
       <ConfirmationModal
         isOpen={warningDisclosure.isOpen}

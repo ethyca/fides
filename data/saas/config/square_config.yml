@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Square SaaS Config
+  name: Square
   type: square
   description: A sample schema representing the Square connector for Fides
   version: 0.0.2

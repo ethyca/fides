@@ -272,6 +272,19 @@ class TestUpsertWithCtlDataset:
         assert ctl_dataset.data_categories == postgres_dataset.get("data_categories")
         assert ctl_dataset.collections is not None
 
+        # the `upsert` method instantiates a fideslang `Dataset` underneath.
+        # that instantiation initializes some (important!) fields that aren't present
+        # on the input data that's been passed in.
+        # we need to do the same instantiation here, i.e. on the test side of the fence
+        # to make our assertions more straightforward
+        postgres_dataset_result = Dataset(**postgres_dataset)
+        assert ctl_dataset.collections[0] == postgres_dataset_result.collections[0]
+
+        # ensure 'retention', i.e. one of the fields added via fideslang `Dataset` instantiation
+        # is present on the resulting dataset object
+        assert "retention" in ctl_dataset.collections[0]
+        assert "retention" in ctl_dataset.collections[0]["fields"][0]
+
         dataset_config.delete(db)
         ctl_dataset.delete(db)
 
@@ -287,36 +300,37 @@ class TestUpsertWithCtlDataset:
         assert ctl_dataset.name == "Postgres Example Subscribers Dataset"
         current_ctl_dataset_id = ctl_dataset.id
 
+        dataset_data = {
+            "fides_key": "postgres_example_subscriptions_dataset",
+            "name": "New Dataset Name",
+            "description": "New Dataset Description",
+            "dataset_type": "PostgreSQL",
+            "location": "postgres_example.test",
+            "collections": [
+                {
+                    "name": "subscriptions",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                            "fidesops_meta": {
+                                "identity": "email",
+                            },
+                        },
+                    ],
+                }
+            ],
+        }
         dataset_config = DatasetConfig.upsert_with_ctl_dataset(
             db=db,
             data={
                 "connection_config_id": connection_config.id,
                 "fides_key": "brand_new_fides_key",
-                "dataset": {
-                    "fides_key": "postgres_example_subscriptions_dataset",
-                    "name": "New Dataset Name",
-                    "description": "New Dataset Description",
-                    "dataset_type": "PostgreSQL",
-                    "location": "postgres_example.test",
-                    "collections": [
-                        {
-                            "name": "subscriptions",
-                            "fields": [
-                                {
-                                    "name": "id",
-                                    "data_categories": ["system.operations"],
-                                },
-                                {
-                                    "name": "email",
-                                    "data_categories": ["user.contact.email"],
-                                    "fidesops_meta": {
-                                        "identity": "email",
-                                    },
-                                },
-                            ],
-                        },
-                    ],
-                },
+                "dataset": dataset_data,
             },
         )
         assert dataset_config.fides_key == "brand_new_fides_key"
@@ -338,6 +352,19 @@ class TestUpsertWithCtlDataset:
         assert ctl_dataset.data_categories is None
         assert ctl_dataset.collections is not None
 
+        # the `upsert` method instantiates a fideslang `Dataset` underneath.
+        # that instantiation initializes some (important!) fields that aren't present
+        # on the input data that's been passed in.
+        # we need to do the same instantiation here, i.e. on the test side of the fence
+        # to make our assertions more straightforward
+        dataset_result = Dataset(**dataset_data)
+        assert ctl_dataset.collections[0] == dataset_result.collections[0]
+
+        # ensure 'retention', i.e. one of the fields added via fideslang `Dataset` instantiation
+        # is present on the resulting dataset object
+        assert "retention" in ctl_dataset.collections[0]
+        assert "retention" in ctl_dataset.collections[0]["fields"][0]
+
         dataset_config.delete(db)
         ctl_dataset.delete(db)
 
@@ -346,36 +373,37 @@ class TestUpsertWithCtlDataset:
         existing_ctl_dataset_id = dataset_config.ctl_dataset_id
         existing_ctl_dataset_fides_key = dataset_config.ctl_dataset.fides_key
 
+        dataset_data = {
+            "fides_key": "brand_new_fides_key",
+            "name": "New Dataset Name",
+            "description": "New Dataset Description",
+            "dataset_type": "PostgreSQL",
+            "location": "postgres_example.test",
+            "collections": [
+                {
+                    "name": "subscriptions",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                            "fidesops_meta": {
+                                "identity": "email",
+                            },
+                        },
+                    ],
+                },
+            ],
+        }
         updated_dataset_config = DatasetConfig.upsert_with_ctl_dataset(
             db=db,
             data={
                 "connection_config_id": dataset_config.connection_config_id,
                 "fides_key": dataset_config.fides_key,
-                "dataset": {
-                    "fides_key": "brand_new_fides_key",
-                    "name": "New Dataset Name",
-                    "description": "New Dataset Description",
-                    "dataset_type": "PostgreSQL",
-                    "location": "postgres_example.test",
-                    "collections": [
-                        {
-                            "name": "subscriptions",
-                            "fields": [
-                                {
-                                    "name": "id",
-                                    "data_categories": ["system.operations"],
-                                },
-                                {
-                                    "name": "email",
-                                    "data_categories": ["user.contact.email"],
-                                    "fidesops_meta": {
-                                        "identity": "email",
-                                    },
-                                },
-                            ],
-                        },
-                    ],
-                },
+                "dataset": dataset_data,
             },
         )
 
@@ -393,3 +421,16 @@ class TestUpsertWithCtlDataset:
         assert updated_ctl_dataset.name == "New Dataset Name", "Updated name"
 
         assert updated_ctl_dataset.collections is not None
+
+        # the `upsert` method instantiates a fideslang `Dataset` underneath.
+        # that instantiation initializes some (important!) fields that aren't present
+        # on the input data that's been passed in.
+        # we need to do the same instantiation here, i.e. on the test side of the fence
+        # to make our assertions more straightforward
+        dataset_result = Dataset(**dataset_data)
+        assert updated_ctl_dataset.collections[0] == dataset_result.collections[0]
+
+        # ensure 'retention', i.e. one of the fields added via fideslang `Dataset` instantiation
+        # is present on the resulting dataset object
+        assert "retention" in updated_ctl_dataset.collections[0]
+        assert "retention" in updated_ctl_dataset.collections[0]["fields"][0]

@@ -1,29 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  forwardRef,
-  Spacer,
-  Switch,
-  Text,
-  VStack,
-} from "@fidesui/react";
+import { Flex, forwardRef, Spacer, Switch, Text } from "@fidesui/react";
 import {
   Field,
   FieldInputProps,
-  FieldMetaProps,
   Form,
   Formik,
   FormikHelpers,
   FormikProps,
 } from "formik";
-import { ChangeEvent, useCallback, useImperativeHandle, useRef } from "react";
+import { satisfier } from "narrow-minded";
+import { ChangeEvent, useImperativeHandle, useMemo, useRef } from "react";
 import * as Yup from "yup";
 
-import SelectDropdown from "~/features/common/dropdown/SelectDropdown";
-import { ItemOption } from "~/features/common/dropdown/types";
+import { CustomSelect } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import {
@@ -36,11 +24,11 @@ import {
   ResourceTypes,
 } from "~/types/api";
 
-import { FIELD_TYPE_MAP, RESOURCE_TYPE_MAP } from "./constants";
-import CustomInput from "./form/CustomInput";
+import { FIELD_TYPE_OPTIONS, RESOURCE_TYPE_OPTIONS } from "./constants";
+import CustomInput, { CUSTOM_LABEL_STYLES } from "./form/CustomInput";
 import { Layout } from "./Layout";
 
-const initialValues: CustomFieldDefinition = {
+const initialValuesTemplate: CustomFieldDefinition = {
   active: true,
   allow_list_id: undefined,
   description: undefined,
@@ -49,21 +37,18 @@ const initialValues: CustomFieldDefinition = {
   resource_type: ResourceTypes.DATA_CATEGORY,
 };
 
-type FormValues = typeof initialValues;
-
 const validationSchema = Yup.object().shape({
   allow_list_id: Yup.string().required("Select custom list is required"),
   name: Yup.string().required("Name is required").trim(),
 });
 
-type CreateCustomFieldsProps = {
+type CreateCustomFieldProps = {
   onSubmitComplete: () => void;
   resourceType: ResourceTypes;
 };
 
 const CreateCustomFields = forwardRef(
-  ({ onSubmitComplete, resourceType }, ref) => {
-    initialValues.resource_type = resourceType;
+  ({ onSubmitComplete, resourceType }: CreateCustomFieldProps, ref) => {
     const { errorAlert, successAlert } = useAlert();
     const formRef = useRef(null);
 
@@ -71,8 +56,8 @@ const CreateCustomFields = forwardRef(
     const [addCustomFieldDefinition] = useAddCustomFieldDefinitionMutation();
 
     const handleSubmit = async (
-      values: FormValues,
-      helpers: FormikHelpers<FormValues>
+      values: CustomFieldDefinition,
+      helpers: FormikHelpers<CustomFieldDefinition>
     ) => {
       const result = await addCustomFieldDefinition(values);
       if ("error" in result) {
@@ -87,23 +72,16 @@ const CreateCustomFields = forwardRef(
       onSubmitComplete();
     };
 
-    const loadList = useCallback((): Map<string, ItemOption> => {
-      const list = new Map<string, ItemOption>();
-      if (data?.length) {
-        data.forEach((value, index) => {
-          if (value?.id && value?.name) {
-            list.set(value.name, { value: value.id });
-            if (index === 0) {
-              initialValues.allow_list_id = value.id;
-            }
-          }
-        });
-      }
-      list.set("Select...", { value: "" });
-      return list;
-    }, [data]);
-
-    const list = loadList();
+    const allowListOptions = useMemo(
+      () =>
+        (data ?? [])
+          .filter(satisfier({ name: "string", id: "string" }))
+          .map((allowList) => ({
+            label: allowList.name,
+            value: allowList.id,
+          })),
+      [data]
+    );
 
     useImperativeHandle(
       ref,
@@ -111,18 +89,27 @@ const CreateCustomFields = forwardRef(
         getDirty() {
           let value = false;
           if (formRef.current) {
-            value = (formRef.current as FormikProps<FormValues>).dirty;
+            value = (formRef.current as FormikProps<CustomFieldDefinition>)
+              .dirty;
           }
           return value;
         },
         submitForm() {
           if (formRef.current) {
-            (formRef.current as FormikProps<FormValues>).submitForm();
+            (
+              formRef.current as FormikProps<CustomFieldDefinition>
+            ).submitForm();
           }
         },
       }),
       []
     );
+
+    const initialValues: CustomFieldDefinition = {
+      ...initialValuesTemplate,
+      resource_type: resourceType,
+      allow_list_id: allowListOptions[0]?.value,
+    };
 
     return (
       <Layout>
@@ -135,7 +122,7 @@ const CreateCustomFields = forwardRef(
           validationOnChange={false}
           validationSchema={validationSchema}
         >
-          {(props: FormikProps<FormValues>) => (
+          {(props: FormikProps<CustomFieldDefinition>) => (
             <Form data-testid="create-custom-fields-form" noValidate>
               <Flex
                 flexDirection="column"
@@ -158,109 +145,27 @@ const CreateCustomFields = forwardRef(
                   placeholder=""
                   type="textarea"
                 />
-                <Field name="field_type">
-                  {({ field }: { field: FieldInputProps<string> }) => (
-                    <FormControl display="flex">
-                      <FormLabel
-                        color="gray.600"
-                        fontSize="14px"
-                        fontWeight="semibold"
-                        minWidth="150px"
-                      >
-                        Field type
-                      </FormLabel>
-                      <VStack align="flex-start" flexGrow={1}>
-                        <SelectDropdown
-                          enableSorting={false}
-                          hasClear={false}
-                          label=""
-                          list={FIELD_TYPE_MAP}
-                          menuButtonProps={{
-                            textAlign: "left",
-                            width: "100%",
-                          }}
-                          onChange={(value: string | undefined) => {
-                            props.setFieldValue("field_type", value);
-                          }}
-                          selectedValue={props.values.field_type}
-                        />
-                      </VStack>
-                    </FormControl>
-                  )}
-                </Field>
-                <Field name="allow_list_id">
-                  {({
-                    field,
-                    meta,
-                  }: {
-                    field: FieldInputProps<string>;
-                    meta: FieldMetaProps<string>;
-                  }) => (
-                    <FormControl
-                      display="flex"
-                      isRequired
-                      isInvalid={!!(meta.error && meta.touched)}
-                    >
-                      <FormLabel
-                        color="gray.600"
-                        fontSize="14px"
-                        fontWeight="semibold"
-                        minWidth="150px"
-                      >
-                        Select custom list
-                      </FormLabel>
-                      <VStack align="flex-start" flexGrow={1}>
-                        <SelectDropdown
-                          enableSorting={false}
-                          hasClear={false}
-                          label="Select..."
-                          list={list}
-                          menuButtonProps={{
-                            textAlign: "left",
-                            width: "100%",
-                          }}
-                          onChange={(value: string | undefined) => {
-                            props.setFieldValue("allow_list_id", value);
-                          }}
-                          selectedValue={props.values.allow_list_id || ""}
-                        />
-
-                        <FormErrorMessage>{meta.error}</FormErrorMessage>
-                      </VStack>
-                    </FormControl>
-                  )}
-                </Field>
-                <Field name="resource_type">
-                  {({ field }: { field: FieldInputProps<string> }) => (
-                    <FormControl display="flex">
-                      <FormLabel
-                        color="gray.600"
-                        fontSize="14px"
-                        fontWeight="semibold"
-                        minWidth="150px"
-                      >
-                        Resource type
-                      </FormLabel>
-                      <VStack align="flex-start" flexGrow={1}>
-                        <SelectDropdown
-                          disabled
-                          enableSorting={false}
-                          hasClear={false}
-                          label=""
-                          list={RESOURCE_TYPE_MAP}
-                          menuButtonProps={{
-                            textAlign: "left",
-                            width: "100%",
-                          }}
-                          onChange={(value: string | undefined) => {
-                            props.setFieldValue("resource_type", value);
-                          }}
-                          selectedValue={props.values.resource_type}
-                        />
-                      </VStack>
-                    </FormControl>
-                  )}
-                </Field>
+                <CustomSelect
+                  label="Field type"
+                  labelProps={CUSTOM_LABEL_STYLES}
+                  name="field_type"
+                  options={FIELD_TYPE_OPTIONS}
+                />
+                <CustomSelect
+                  isRequired
+                  label="Select custom list"
+                  labelProps={CUSTOM_LABEL_STYLES}
+                  menuPosition="fixed"
+                  name="allow_list_id"
+                  options={allowListOptions}
+                />
+                <CustomSelect
+                  isDisabled
+                  label="Resource type"
+                  labelProps={CUSTOM_LABEL_STYLES}
+                  name="resource_type"
+                  options={RESOURCE_TYPE_OPTIONS}
+                />
               </Flex>
               <Flex
                 background="gray.50"

@@ -2,12 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { CollectionMeta } from "./CollectionMeta";
 import type { DatasetField } from "./DatasetField";
 
 /**
  * The DatasetCollection resource model.
  *
- * This resource is nested witin a Dataset.
+ * This resource is nested within a Dataset.
  */
 export type DatasetCollection = {
   /**
@@ -34,4 +35,5 @@ export type DatasetCollection = {
    * An array of objects that describe the collection's fields.
    */
   fields: Array<DatasetField>;
+  fides_meta?: CollectionMeta;
 };

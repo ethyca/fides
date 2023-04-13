@@ -1,84 +1,312 @@
-from __future__ import annotations
+# pylint: disable=protected-access
+import os
+from abc import ABC, abstractmethod
+from ast import AST, AnnAssign
+from operator import getitem
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
+from zipfile import ZipFile
 
-from os.path import exists
-from typing import Dict, Iterable, List, Optional, Union
-
+from AccessControl.ZopeGuards import safe_builtins
 from fideslang.models import Dataset
 from loguru import logger
-from packaging.version import LegacyVersion, Version
+from packaging.version import Version
 from packaging.version import parse as parse_version
-from pydantic import BaseModel, validator
+from RestrictedPython import compile_restricted
+from RestrictedPython.transformer import RestrictingNodeTransformer
 from sqlalchemy.orm import Session
-from toml import load as load_toml
 
+from fides.api.ops.api.deps import get_api_session
+from fides.api.ops.common_exceptions import FidesopsException, ValidationError
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.ops.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
 )
+from fides.api.ops.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.util.saas_util import (
+    encode_file_contents,
     load_config,
-    load_config_with_replacement,
-    load_dataset,
-    load_dataset_with_replacement,
+    load_config_from_string,
+    load_dataset_from_string,
+    load_yaml_as_string,
+    replace_config_placeholders,
+    replace_dataset_placeholders,
+    replace_version,
 )
+from fides.core.config import CONFIG
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 
-_registry: Optional[ConnectorRegistry] = None
-registry_file = "data/saas/saas_connector_registry.toml"
+
+class ConnectorTemplateLoader(ABC):
+    _instance: Optional["ConnectorTemplateLoader"] = None
+
+    def __new__(cls: Type["ConnectorTemplateLoader"]) -> "ConnectorTemplateLoader":
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._templates = {}  # type: ignore[attr-defined]
+            cls._instance._load_connector_templates()
+        return cls._instance
+
+    @classmethod
+    def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:
+        """Returns a map of connection templates."""
+        return cls()._instance._templates  # type: ignore[attr-defined, union-attr]
+
+    @abstractmethod
+    def _load_connector_templates(self) -> None:
+        """Load connector templates into the _templates dictionary"""
 
 
-class ConnectorTemplate(BaseModel):
+class FileConnectorTemplateLoader(ConnectorTemplateLoader):
     """
-    A collection of paths to artifacts that make up
-    a complete SaaS connector (SaaS config, dataset, etc.)
+    Loads SaaS connector templates from the data/saas directory.
     """
 
-    config: str
-    dataset: str
-    icon: str
-    human_readable: str
+    def _load_connector_templates(self) -> None:
+        logger.info("Loading connectors templates from the data/saas directory")
+        for file in os.listdir("data/saas/config"):
+            if file.endswith(".yml"):
+                config_file = os.path.join("data/saas/config", file)
+                config_dict = load_config(config_file)
+                connector_type = config_dict["type"]
+                human_readable = config_dict["name"]
 
-    @validator("config")
-    def validate_config(cls, config: str) -> str:
-        """Validates the config at the given path"""
-        SaaSConfig(**load_config(config))
-        return config
+                try:
+                    icon = encode_file_contents(f"data/saas/icon/{connector_type}.svg")
+                except FileNotFoundError:
+                    logger.debug(
+                        f"Could not find the expected {connector_type}.svg in the data/saas/icon/ directory, using default icon"
+                    )
+                    icon = encode_file_contents("data/saas/icon/default.svg")
 
-    @validator("dataset")
-    def validate_dataset(cls, dataset: str) -> str:
-        """Validates the dataset at the given path"""
-        Dataset(**load_dataset(dataset)[0])
-        return dataset
+                # store connector template for retrieval
+                try:
+                    FileConnectorTemplateLoader.get_connector_templates()[
+                        connector_type
+                    ] = ConnectorTemplate(
+                        config=load_yaml_as_string(config_file),
+                        dataset=load_yaml_as_string(
+                            f"data/saas/dataset/{connector_type}_dataset.yml"
+                        ),
+                        icon=icon,
+                        functions=None,
+                        human_readable=human_readable,
+                    )
+                except Exception:
+                    logger.exception("Unable to load {} connector", connector_type)
 
-    @validator("icon")
-    def validate_icon(cls, icon: str) -> str:
-        """Validates the icon at the given path"""
-        if not exists(icon):
-            raise ValueError(f"Icon file {icon} was not found")
-        return icon
+
+class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
+    """
+    Loads custom connector templates defined in the custom_connector_template database table.
+    """
+
+    def _load_connector_templates(self) -> None:
+        logger.info("Loading connectors templates from the database.")
+        db = get_api_session()
+        for template in CustomConnectorTemplate.all(db=db):
+            if (
+                template.replaceable
+                and CustomConnectorTemplateLoader._replacement_available(template)
+            ):
+                logger.info(
+                    f"Replacing {template.key} connector template with newer version."
+                )
+                template.delete(db=db)
+                continue
+            try:
+                CustomConnectorTemplateLoader._register_template(template)
+            except Exception:
+                logger.exception("Unable to load {} connector", template.key)
+
+    @staticmethod
+    def _replacement_available(template: CustomConnectorTemplate) -> bool:
+        """
+        Check the connector templates in the FileConnectorTemplateLoader and return if a newer version is available.
+        """
+        replacement_connector = (
+            FileConnectorTemplateLoader.get_connector_templates().get(template.key)
+        )
+        if not replacement_connector:
+            return False
+
+        custom_saas_config = SaaSConfig(**load_config_from_string(template.config))
+        replacement_saas_config = SaaSConfig(
+            **load_config_from_string(replacement_connector.config)
+        )
+        return parse_version(replacement_saas_config.version) > parse_version(
+            custom_saas_config.version
+        )
+
+    @classmethod
+    def _register_template(
+        cls,
+        template: CustomConnectorTemplate,
+    ) -> None:
+        """
+        Registers a custom connector template by converting it to a ConnectorTemplate,
+        registering any custom functions, and adding it to the loader's template dictionary.
+        """
+        connector_template = ConnectorTemplate(
+            config=template.config,
+            dataset=template.dataset,
+            icon=template.icon,
+            functions=template.functions,
+            human_readable=template.name,
+        )
+
+        # register custom functions if available
+        if template.functions:
+            register_custom_functions(template.functions)
+            logger.info(
+                f"Loaded functions from the custom connector template '{template.key}'"
+            )
+
+        # register the template in the loader's template dictionary
+        CustomConnectorTemplateLoader.get_connector_templates()[
+            template.key
+        ] = connector_template
+
+    # pylint: disable=too-many-branches
+    @classmethod
+    def save_template(cls, db: Session, zip_file: ZipFile) -> None:
+        """
+        Extracts and validates the contents of a zip file containing a
+        custom connector template, registers the template, and saves it to the database.
+        """
+
+        config_contents = None
+        dataset_contents = None
+        icon_contents = None
+        function_contents = None
+
+        for info in zip_file.infolist():
+            try:
+                file_contents = zip_file.read(info).decode()
+            except UnicodeDecodeError:
+                # skip any hidden metadata files that can't be decoded with UTF-8
+                logger.debug(f"Unable to decode the file: {info.filename}")
+                continue
+
+            if info.filename.endswith("config.yml"):
+                if not config_contents:
+                    config_contents = file_contents
+                else:
+                    raise ValidationError(
+                        "Multiple files ending with config.yml found, only one is allowed."
+                    )
+            elif info.filename.endswith("dataset.yml"):
+                if not dataset_contents:
+                    dataset_contents = file_contents
+                else:
+                    raise ValidationError(
+                        "Multiple files ending with dataset.yml found, only one is allowed."
+                    )
+            elif info.filename.endswith(".svg"):
+                if not icon_contents:
+                    icon_contents = str_to_b64_str(file_contents)
+                else:
+                    raise ValidationError(
+                        "Multiple svg files found, only one is allowed."
+                    )
+            elif info.filename.endswith(".py"):
+                if not function_contents:
+                    function_contents = file_contents
+                else:
+                    raise ValidationError(
+                        "Multiple Python (.py) files found, only one is allowed."
+                    )
+
+        if not config_contents:
+            raise ValidationError("Zip file does not contain a config.yml file.")
+
+        if not dataset_contents:
+            raise ValidationError("Zip file does not contain a dataset.yml file.")
+
+        # early validation of SaaS config and dataset
+        saas_config = SaaSConfig(**load_config_from_string(config_contents))
+        Dataset(**load_dataset_from_string(dataset_contents))
+
+        # extract connector_type, human_readable, and replaceable values from the SaaS config
+        connector_type = saas_config.type
+        human_readable = saas_config.name
+        replaceable = saas_config.replaceable
+
+        # if the incoming connector is flagged as replaceable we will update the version to match
+        # that of the existing connector template this way the custom connector template can be
+        # removed once a newer version is bundled with Fides
+        if replaceable:
+            existing_connector = (
+                FileConnectorTemplateLoader.get_connector_templates().get(
+                    connector_type
+                )
+            )
+            if existing_connector:
+                existing_config = SaaSConfig(
+                    **load_config_from_string(existing_connector.config)
+                )
+                config_contents = replace_version(
+                    config_contents, existing_config.version
+                )
+
+        template = CustomConnectorTemplate(
+            key=connector_type,
+            name=human_readable,
+            config=config_contents,
+            dataset=dataset_contents,
+            icon=icon_contents,
+            functions=function_contents,
+            replaceable=replaceable,
+        )
+
+        # attempt to register the template, raises an exception if validation fails
+        CustomConnectorTemplateLoader._register_template(template)
+
+        # save the custom connector to the database if it passed validation
+        CustomConnectorTemplate.create_or_update(
+            db=db,
+            data={
+                "key": connector_type,
+                "name": human_readable,
+                "config": config_contents,
+                "dataset": dataset_contents,
+                "icon": icon_contents,
+                "functions": function_contents,
+                "replaceable": replaceable,
+            },
+        )
 
 
-class ConnectorRegistry(BaseModel):
-    """A map of SaaS connector templates"""
+class ConnectorRegistry:
+    @classmethod
+    def _get_combined_templates(cls) -> Dict[str, ConnectorTemplate]:
+        """
+        Returns a combined map of connector templates from all registered loaders.
+        The resulting map is an aggregation of templates from the file loader and the custom loader,
+        with custom loader templates taking precedence in case of conflicts.
+        """
+        return {
+            **FileConnectorTemplateLoader.get_connector_templates(),  # type: ignore
+            **CustomConnectorTemplateLoader.get_connector_templates(),  # type: ignore
+        }
 
-    __root__: Dict[str, ConnectorTemplate]
-
-    def connector_types(self) -> List[str]:
+    @classmethod
+    def connector_types(cls) -> List[str]:
         """List of registered SaaS connector types"""
-        return list(self.__root__)
+        return list(cls._get_combined_templates().keys())
 
-    def get_connector_template(
-        self, connector_type: str
-    ) -> Optional[ConnectorTemplate]:
+    @classmethod
+    def get_connector_template(cls, connector_type: str) -> Optional[ConnectorTemplate]:
         """
-        Returns an object containing the references to the various SaaS connector artifacts
+        Returns an object containing the various SaaS connector artifacts
         """
-        return self.__root__.get(connector_type)
+        return cls._get_combined_templates().get(connector_type)
 
 
 def create_connection_config_from_template_no_save(
@@ -88,9 +316,9 @@ def create_connection_config_from_template_no_save(
     system_id: Optional[str] = None,
 ) -> ConnectionConfig:
     """Creates a SaaS connection config from a template without saving it."""
-    # Load saas config from template and replace every instance of "<instance_fides_key>" with the fides_key
+    # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
     # the user has chosen
-    config_from_template: Dict = load_config_with_replacement(
+    config_from_template: Dict = replace_config_placeholders(
         template.config, "<instance_fides_key>", template_values.instance_key
     )
 
@@ -126,9 +354,9 @@ def upsert_dataset_config_from_template(
     """
     # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
     # the user has chosen
-    dataset_from_template: Dict = load_dataset_with_replacement(
+    dataset_from_template: Dict = replace_dataset_placeholders(
         template.dataset, "<instance_fides_key>", template_values.instance_key
-    )[0]
+    )
     data = {
         "connection_config_id": connection_config.id,
         "fides_key": template_values.instance_key,
@@ -138,15 +366,7 @@ def upsert_dataset_config_from_template(
     return dataset_config
 
 
-def load_registry(config_file: str) -> ConnectorRegistry:
-    """Loads a SaaS connector registry from the given config file."""
-    global _registry  # pylint: disable=W0603
-    if _registry is None:
-        _registry = ConnectorRegistry.parse_obj(load_toml(config_file))
-    return _registry
-
-
-def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
+def update_saas_configs(db: Session) -> None:
     """
     Updates SaaS config instances currently in the DB if to the
     corresponding template in the registry are found.
@@ -154,18 +374,16 @@ def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
     Effectively an "update script" for SaaS config instances,
     to be run on server bootstrap.
     """
-    for connector_type in registry.connector_types():
+    for connector_type in ConnectorRegistry.connector_types():
         logger.debug(
             "Determining if any updates are needed for connectors of type {} based on templates...",
             connector_type,
         )
-        template: ConnectorTemplate = registry.get_connector_template(  # type: ignore
+        template: ConnectorTemplate = ConnectorRegistry.get_connector_template(  # type: ignore
             connector_type
         )
-        saas_config_template = SaaSConfig.parse_obj(load_config(template.config))
-        template_version: Union[LegacyVersion, Version] = parse_version(
-            saas_config_template.version
-        )
+        saas_config = SaaSConfig(**load_config_from_string(template.config))
+        template_version: Version = parse_version(saas_config.version)
 
         connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
             db=db,
@@ -189,10 +407,9 @@ def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
                         saas_config_instance,
                     )
                 except Exception:
-                    logger.error(
+                    logger.exception(
                         "Encountered error attempting to update SaaS config instance {}",
                         saas_config_instance.fides_key,
-                        exc_info=True,
                     )
 
 
@@ -215,10 +432,87 @@ def update_saas_instance(
         instance_key=saas_config_instance.fides_key,
     )
 
-    config_from_template: Dict = load_config_with_replacement(
+    config_from_template: Dict = replace_config_placeholders(
         template.config, "<instance_fides_key>", template_vals.instance_key
     )
 
     connection_config.update_saas_config(db, SaaSConfig(**config_from_template))
 
     upsert_dataset_config_from_template(db, connection_config, template, template_vals)
+
+
+def register_custom_functions(script: str) -> None:
+    """
+    Registers custom functions by executing the given script in a restricted environment.
+
+    The script is compiled and executed with RestrictedPython, which is designed to reduce
+    the risk of executing untrusted code. It provides a set of safe builtins to prevent
+    malicious or unintended behavior.
+
+    Args:
+        script (str): The Python script containing the custom functions to be registered.
+
+    Raises:
+        FidesopsException: If allow_custom_connector_functions is disabled.
+        SyntaxError: If the script contains a syntax error or uses restricted language features.
+        Exception: If an exception occurs during the execution of the script.
+    """
+
+    if CONFIG.security.allow_custom_connector_functions:
+        restricted_code = compile_restricted(
+            script, "<string>", "exec", policy=CustomRestrictingNodeTransformer
+        )
+        safe_builtins["__import__"] = custom_guarded_import
+        safe_builtins["_getitem_"] = getitem
+        safe_builtins["staticmethod"] = staticmethod
+
+        # pylint: disable=exec-used
+        exec(
+            restricted_code,
+            {
+                "__metaclass__": type,
+                "__name__": "restricted_module",
+                "__builtins__": safe_builtins,
+            },
+        )
+    else:
+        raise FidesopsException(
+            message="The import of connector templates with custom functions is disabled by the 'security.allow_custom_connector_functions' setting."
+        )
+
+
+class CustomRestrictingNodeTransformer(RestrictingNodeTransformer):
+    """
+    Custom node transformer class that extends RestrictedPython's RestrictingNodeTransformer
+    to allow the use of type annotations (AnnAssign) in restricted code.
+    """
+
+    def visit_AnnAssign(self, node: AnnAssign) -> AST:
+        return self.node_contents_visit(node)
+
+
+def custom_guarded_import(
+    name: str,
+    _globals: Optional[dict] = None,
+    _locals: Optional[dict] = None,
+    fromlist: Optional[Tuple[str, ...]] = None,
+    level: int = 0,
+) -> Any:
+    """
+    A custom import function that prevents the import of certain potentially unsafe modules.
+    """
+    if name in [
+        "os",
+        "sys",
+        "subprocess",
+        "shutil",
+        "socket",
+        "importlib",
+        "tempfile",
+        "glob",
+    ]:
+        # raising SyntaxError to be consistent with exceptions thrown from other guarded functions
+        raise SyntaxError(f"Import of '{name}' module is not allowed.")
+    if fromlist is None:
+        fromlist = ()
+    return __import__(name, _globals, _locals, fromlist, level)

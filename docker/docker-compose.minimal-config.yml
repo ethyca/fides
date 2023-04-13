@@ -22,6 +22,7 @@ services:
       FIDES__DATABASE__PASSWORD: "fides"
       FIDES__DATABASE__PORT: "5432"
       FIDES__DATABASE__DB: "fides"
+      FIDES__REDIS__PASSWORD: "redispassword"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
       FIDES__SECURITY__APP_ENCRYPTION_KEY: "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
       FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: "fidesadmin"
@@ -52,9 +53,7 @@ services:
 
   redis:
     image: "redis:6.2.5-alpine"
-    command: redis-server --requirepass testpassword
-    environment:
-      - REDIS_PASSWORD=testpassword
+    command: redis-server --requirepass redispassword
     expose:
       - 6379
     ports:

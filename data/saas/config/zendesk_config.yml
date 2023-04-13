@@ -1,15 +1,14 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Zendesk SaaS Config
+  name: Zendesk
   type: zendesk
-  description: A sample schema representing the Zendesk connector for Fidesops
+  description: A sample schema representing the Zendesk connector for Fides
   version: 0.0.1
 
   connector_params:
     - name: domain
     - name: username
     - name: api_key
-    - name: page_size
 
   client_config:
     protocol: https
@@ -28,7 +27,7 @@ saas_config:
         value: test@ethyca
 
   endpoints:
-    - name: users
+    - name: user
       requests:
         read:
           method: GET
@@ -47,7 +46,7 @@ saas_config:
             - name: user_id
               references:
                 - dataset: <instance_fides_key>
-                  field: users.id
+                  field: user.id
                   direction: from
     - name: user_identities
       requests:
@@ -56,15 +55,13 @@ saas_config:
           path: /api/v2/users/<user_id>/identities.json
           query_params:
             - name: page[size]
-              value: <page_size>
+              value: 100
           param_values:
             - name: user_id
               references:
                 - dataset: <instance_fides_key>
-                  field: users.id
+                  field: user.id
                   direction: from
-            - name: page_size
-              connector_param: page_size
           data_path: identities
           pagination:
             strategy: link
@@ -78,15 +75,13 @@ saas_config:
           path: /api/v2/users/<user_id>/tickets/requested.json
           query_params:
             - name: page[size]
-              value: <page_size>
+              value: 100
           param_values:
             - name: user_id
               references:
                 - dataset: <instance_fides_key>
-                  field: users.id
+                  field: user.id
                   direction: from
-            - name: page_size
-              connector_param: page_size
           data_path: tickets
           pagination:
             strategy: link
@@ -109,15 +104,13 @@ saas_config:
           path: /api/v2/tickets/<ticket_id>/comments.json
           query_params:
             - name: page[size]
-              value: <page_size>
+              value: 100
           param_values:
             - name: ticket_id
               references:
                 - dataset: <instance_fides_key>
                   field: tickets.id
                   direction: from
-            - name: page_size
-              connector_param: page_size
           data_path: comments
           pagination:
             strategy: link

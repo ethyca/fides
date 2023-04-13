@@ -8,7 +8,6 @@ import {
   AccessLevel,
   ConnectionTestStatus,
   DisabledStatus,
-  SaasType,
   TestingStatus,
 } from "./constants";
 
@@ -205,20 +204,20 @@ export type DatastoreConnectionUpdate = {
 export type SaasConfig = {
   fides_key: string;
   name: string;
-  type: SaasType;
+  type: string;
 };
 
-export type CreateSassConnectionConfigRequest = {
+export type CreateSaasConnectionConfigRequest = {
   name: string;
   description: string;
   instance_key: string;
-  saas_connector_type: SaasType;
+  saas_connector_type: string;
   secrets: {
     [key: string]: any;
   };
 };
 
-export type CreateSassConnectionConfigResponse = {
+export type CreateSaasConnectionConfigResponse = {
   connection: DatastoreConnection;
   dataset: {
     fides_key: string;

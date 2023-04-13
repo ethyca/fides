@@ -4,10 +4,13 @@
 Contains all of the SqlAlchemy models for the Fides resources.
 """
 
+from __future__ import annotations
+
 from enum import Enum as EnumType
-from typing import Dict
+from typing import Any, Dict, List, Optional, Set, Type
 
 from fideslang.models import Dataset as FideslangDataset
+from pydantic import BaseModel
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
@@ -25,7 +28,7 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from fides.core.config import FidesConfig, get_config
+from fides.core.config import CONFIG
 from fides.lib.db.base import (  # type: ignore[attr-defined]
     Base,
     ClientDetail,
@@ -33,8 +36,6 @@ from fides.lib.db.base import (  # type: ignore[attr-defined]
     FidesUserPermissions,
 )
 from fides.lib.db.base_class import FidesBase as FideslibBase
-
-CONFIG: FidesConfig = get_config()
 
 
 class FidesBase(FideslibBase):
@@ -185,6 +186,26 @@ class DataUse(Base, FidesBase):
     legitimate_interest_impact_assessment = Column(String, nullable=True)
     is_default = Column(BOOLEAN, default=False)
 
+    @staticmethod
+    def get_parent_uses(data_use_key: str) -> Set[str]:
+        """
+        Utility method to traverse "up" the taxonomy hierarchy and unpack
+        a given data use fides key into a set of fides keys that include its
+        parent fides keys.
+
+        The utility takes a fides key string input to make the method more applicable -
+        since in many spots of our application we do not have a true `DataUse` instance,
+        just a "soft" reference to its fides key.
+
+        Example inputs and outputs:
+            - `a.b.c` --> [`a.b.c`, `a.b`, `a`]
+            - `a` --> [`a`]
+        """
+        parent_uses = {data_use_key}
+        while data_use_key := data_use_key.rpartition(".")[0]:
+            parent_uses.add(data_use_key)
+        return parent_uses
+
 
 # Dataset
 class Dataset(Base, FidesBase):
@@ -286,6 +307,68 @@ class System(Base, FidesBase):
     data_protection_impact_assessment = Column(JSON)
     egress = Column(JSON)
     ingress = Column(JSON)
+
+    users = relationship(
+        "FidesUser",
+        secondary="systemmanager",
+        back_populates="systems",
+        lazy="selectin",
+    )
+
+    @staticmethod
+    def collapse_data_uses(
+        privacy_declarations: List[dict[str, Any]], include_parents: bool
+    ) -> Set:
+        """Helper method to collapse the data uses off of multiple privacy declarations into a Set
+
+        The `include_parents` arg determines whether the method traverses "up" the data use hierarchy
+        to also return all _parent_ data uses of the specific data uses associated with a given system.
+        This can be useful if/when we consider these parent data uses as applicable to a system.
+        """
+        data_uses = set()
+        for declaration in privacy_declarations:
+            if data_use := declaration.get("data_use", None):
+                if include_parents:
+                    data_uses.update(DataUse.get_parent_uses(data_use))
+                else:
+                    data_uses.add(data_use)
+        return data_uses
+
+    @classmethod
+    def get_system_data_uses(
+        cls: Type[System], db: Session, include_parents: bool = True
+    ) -> set[str]:
+        """
+        Utility method to get any data use that is associated with at least one System
+        """
+        data_uses = set()
+        for row in db.query(System.privacy_declarations).all():
+            data_uses.update(
+                cls.collapse_data_uses(row.privacy_declarations, include_parents)
+            )
+        return data_uses
+
+    def get_data_uses(self, include_parents: bool = True) -> set[str]:
+        """Utility method to get all the data uses off the current System"""
+        return self.collapse_data_uses(self.privacy_declarations or [], include_parents)
+
+
+class SystemModel(BaseModel):
+    fides_key: str
+    registry_id: str
+    meta: Optional[Dict[str, Any]]
+    fidesctl_meta: Optional[Dict[str, Any]]
+    system_type: str
+    data_responsibility_title: Optional[str]
+    system_dependencies: Optional[List[str]]
+    joint_controller: Optional[str]
+    third_country_transfers: Optional[List[str]]
+    privacy_declarations: Optional[Dict[str, Any]]
+    administrating_department: Optional[str]
+    data_protection_impact_assessment: Optional[Dict[str, Any]]
+    egress: Optional[Dict[str, Any]]
+    ingress: Optional[Dict[str, Any]]
+    value: Optional[List[Any]]
 
 
 class SystemScans(Base):

@@ -69,11 +69,10 @@ class DatasetConfig(Base):
             """
             ctl_dataset_data = data.copy()
             validated_data = Dataset(**ctl_dataset_data.get("dataset", {}))
-
             if ctl_dataset_obj:
                 # It's possible this updates the ctl_dataset.fides_key and this causes a conflict
                 # with another ctl_dataset, if we fetched the datasetconfig.ctl_dataset.
-                for key, val in ctl_dataset_data.get("dataset", {}).items():
+                for key, val in validated_data.dict().items():
                     setattr(
                         ctl_dataset_obj, key, val
                     )  # Just update the existing ctl_dataset with the new values
@@ -154,7 +153,6 @@ class DatasetConfig(Base):
             and self.connection_config.saas_config is not None
             and self.connection_config.saas_config["fides_key"] == self.fides_key
         ):
-
             dataset_graph = merge_datasets(
                 dataset_graph,
                 self.connection_config.get_saas_config().get_graph(self.connection_config.secrets),  # type: ignore

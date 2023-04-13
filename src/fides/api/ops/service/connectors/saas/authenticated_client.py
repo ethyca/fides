@@ -20,16 +20,13 @@ from fides.api.ops.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
     from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
     from fides.api.ops.schemas.saas.saas_config import ClientConfig
     from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
-
-
-CONFIG = get_config()
 
 
 class AuthenticatedClient:
@@ -108,7 +105,9 @@ class AuthenticatedClient:
                     sleep_time = backoff_factor * (2 ** (attempt + 1))
                     try:
                         return func(*args, **kwargs)
-                    except RequestFailureResponseException as exc:  # pylint: disable=W0703
+                    except (
+                        RequestFailureResponseException
+                    ) as exc:  # pylint: disable=W0703
                         response: Response = exc.response
                         status_code: int = response.status_code
                         last_exception = ClientUnsuccessfulException(

@@ -19,10 +19,12 @@ server_port = 8080
 
 [user]
 analytics_opt_out = false
+username = "root_user"
+password = "Testpassword1!"
 
 [redis]
 host = "redis"
-password = "testpassword"
+password = "redispassword"
 port = 6379
 charset = "utf8"
 default_ttl_seconds = 604800
@@ -39,7 +41,7 @@ app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 drp_jwt_secret = "secret"
-env = "dev"
+env = "prod"
 
 [execution]
 masking_strict = true

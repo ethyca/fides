@@ -28,11 +28,9 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.manual_connector import ManualAction
 from fides.api.ops.util.cache import FidesopsRedis, get_identity_cache_key
 from fides.api.ops.util.constants import API_DATE_FORMAT
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
-
-CONFIG = get_config()
 
 
 def test_privacy_request(
@@ -509,7 +507,6 @@ class TestCacheManualErasureCount:
 
 class TestPrivacyRequestCacheFailedStep:
     def test_cache_failed_step_and_collection(self, privacy_request):
-
         privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.erasure, collection=paused_location
         )
@@ -734,7 +731,7 @@ class TestCanRunFromCheckpoint:
     def test_can_run_from_checkpoint(self):
         assert (
             can_run_checkpoint(
-                request_checkpoint=CurrentStep.erasure_email_post_send,
+                request_checkpoint=CurrentStep.email_post_send,
                 from_checkpoint=CurrentStep.erasure,
             )
             is True

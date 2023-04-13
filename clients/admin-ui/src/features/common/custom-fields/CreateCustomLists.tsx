@@ -1,17 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Flex, forwardRef, Icon, IconButton, Text } from "@fidesui/react";
+import { Flex, forwardRef, IconButton, Text } from "@fidesui/react";
 import { FieldArray, Form, Formik, FormikHelpers, FormikProps } from "formik";
 import { useEffect, useImperativeHandle, useRef, useState } from "react";
 import * as Yup from "yup";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { useUpsertAllowListMutation } from "~/features/plus/plus.slice";
 import { AllowListUpdate } from "~/types/api";
 
 import CustomInput from "./form/CustomInput";
 import { AddIcon } from "./icons/AddIcon";
-import { TrashCanSolidIcon } from "./icons/TrashCanSolidIcon";
 import { Layout } from "./Layout";
 
 const initialValues: AllowListUpdate = {
@@ -30,181 +29,186 @@ const validationSchema = Yup.object().shape({
     .label("allowed_values"),
 });
 
-type CreateCustomListsProps = {
+type CreateCustomListProps = {
   onSubmitComplete: () => void;
 };
 
-const CreateCustomLists = forwardRef(({ onSubmitComplete }, ref) => {
-  const { errorAlert, successAlert } = useAlert();
-  const formRef = useRef(null);
-  const fieldRef = useRef<HTMLInputElement>(null);
-  const [hasAutoScroll, setHasAutoScroll] = useState(false);
+const CreateCustomLists = forwardRef(
+  ({ onSubmitComplete }: CreateCustomListProps, ref) => {
+    const { errorAlert, successAlert } = useAlert();
+    const formRef = useRef(null);
+    const fieldRef = useRef<HTMLInputElement>(null);
+    const [hasAutoScroll, setHasAutoScroll] = useState(false);
 
-  const [upsertAllowList] = useUpsertAllowListMutation();
+    const [upsertAllowList] = useUpsertAllowListMutation();
 
-  const handleSubmit = async (
-    values: FormValues,
-    helpers: FormikHelpers<FormValues>
-  ) => {
-    const uniqueValues = new Set(
-      values.allowed_values.map((v) => v.toLowerCase().trim()).map((v) => v)
-    );
-    if (uniqueValues.size < values.allowed_values.length) {
-      errorAlert("List item value must be unique");
-      return;
-    }
-
-    // Save the form data
-    const result = await upsertAllowList(values);
-    if ("error" in result) {
-      errorAlert(
-        getErrorMessage(result.error),
-        `Custom list has failed to save due to the following:`
+    const handleSubmit = async (
+      values: FormValues,
+      helpers: FormikHelpers<FormValues>
+    ) => {
+      const uniqueValues = new Set(
+        values.allowed_values.map((v) => v.toLowerCase().trim()).map((v) => v)
       );
-    } else {
-      helpers.resetForm();
-      successAlert(`Custom list successfully saved`);
-    }
-    onSubmitComplete();
-  };
+      if (uniqueValues.size < values.allowed_values.length) {
+        errorAlert("List item value must be unique");
+        return;
+      }
 
-  useEffect(() => {
-    if (hasAutoScroll && fieldRef.current) {
-      fieldRef.current.scrollIntoView({ behavior: "smooth" });
-      setHasAutoScroll(false);
-    }
-  }, [hasAutoScroll]);
+      // Save the form data
+      const result = await upsertAllowList(values);
+      if ("error" in result) {
+        errorAlert(
+          getErrorMessage(result.error),
+          `Custom list has failed to save due to the following:`
+        );
+      } else {
+        helpers.resetForm();
+        successAlert(`Custom list successfully saved`);
+      }
+      onSubmitComplete();
+    };
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      getDirty() {
-        let value = false;
-        if (formRef.current) {
-          value = (formRef.current as FormikProps<FormValues>).dirty;
-        }
-        return value;
-      },
-      submitForm() {
-        if (formRef.current) {
-          (formRef.current as FormikProps<FormValues>).submitForm();
-        }
-      },
-    }),
-    []
-  );
+    useEffect(() => {
+      if (hasAutoScroll && fieldRef.current) {
+        fieldRef.current.scrollIntoView({ behavior: "smooth" });
+        setHasAutoScroll(false);
+      }
+    }, [hasAutoScroll]);
 
-  return (
-    <Layout>
-      <Formik
-        enableReinitialize
-        initialValues={initialValues}
-        innerRef={formRef}
-        onSubmit={handleSubmit}
-        validationOnBlur={false}
-        validationOnChange={false}
-        validationSchema={validationSchema}
-      >
-        {(props: FormikProps<FormValues>) => (
-          <Form data-testid="create-custom-lists-form" noValidate>
-            <Flex
-              flexDirection="column"
-              gap="12px"
-              paddingTop="6px"
-              paddingBottom="24px"
-            >
-              <CustomInput
-                displayHelpIcon={false}
-                isRequired
-                label="Name"
-                name="name"
-                placeholder=""
-              />
-              <CustomInput
-                displayHelpIcon={false}
-                height="100px"
-                label="Description"
-                name="description"
-                placeholder=""
-                type="textarea"
-              />
-              <FieldArray
-                name="allowed_values"
-                render={(fieldArrayProps) => {
-                  // eslint-disable-next-line @typescript-eslint/naming-convention
-                  const { allowed_values } = props.values;
-                  return (
-                    <Flex flexDirection="column" gap="24px" pl="24px">
-                      <Flex flexDirection="column">
-                        {allowed_values.map((_value, index) => (
-                          <Flex
-                            alignItems="baseline"
-                            flexGrow={1}
-                            gap="12px"
-                            // eslint-disable-next-line react/no-array-index-key
-                            key={index}
-                            mt={index > 0 ? "12px" : undefined}
-                            ref={fieldRef}
-                          >
-                            <Text
-                              color="gray.600"
-                              fontSize="sm"
-                              fontWeight="500"
-                              lineHeight="20px"
-                              minW="126px"
-                              pr="8px"
+    useImperativeHandle(
+      ref,
+      () => ({
+        getDirty() {
+          let value = false;
+          if (formRef.current) {
+            value = (formRef.current as FormikProps<FormValues>).dirty;
+          }
+          return value;
+        },
+        submitForm() {
+          if (formRef.current) {
+            (formRef.current as FormikProps<FormValues>).submitForm();
+          }
+        },
+      }),
+      []
+    );
+
+    return (
+      <Layout>
+        <Formik
+          enableReinitialize
+          initialValues={initialValues}
+          innerRef={formRef}
+          onSubmit={handleSubmit}
+          validationOnBlur={false}
+          validationOnChange={false}
+          validationSchema={validationSchema}
+        >
+          {(props: FormikProps<FormValues>) => (
+            <Form data-testid="create-custom-lists-form" noValidate>
+              <Flex
+                flexDirection="column"
+                gap="12px"
+                paddingTop="6px"
+                paddingBottom="24px"
+              >
+                <CustomInput
+                  displayHelpIcon={false}
+                  isRequired
+                  label="Name"
+                  name="name"
+                  placeholder=""
+                />
+                <CustomInput
+                  displayHelpIcon={false}
+                  height="100px"
+                  label="Description"
+                  name="description"
+                  placeholder=""
+                  type="textarea"
+                />
+                <FieldArray
+                  name="allowed_values"
+                  render={(fieldArrayProps) => {
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    const { allowed_values } = props.values;
+                    return (
+                      <Flex flexDirection="column" gap="24px" pl="24px">
+                        <Flex flexDirection="column">
+                          {allowed_values.map((_value, index) => (
+                            <Flex
+                              flexGrow={1}
+                              gap="12px"
+                              // eslint-disable-next-line react/no-array-index-key
+                              key={index}
+                              mt={index > 0 ? "12px" : undefined}
+                              ref={fieldRef}
                             >
-                              List item {index + 1}
-                            </Text>
-                            <CustomInput
-                              displayHelpIcon={false}
-                              name={`allowed_values[${index}]`}
-                            />
-                            <Icon
-                              as={TrashCanSolidIcon}
-                              _hover={{ cursor: "pointer" }}
-                              onClick={() => fieldArrayProps.remove(index)}
-                            />
-                          </Flex>
-                        ))}
-                      </Flex>
-                      <Flex alignItems="center">
-                        <Text
-                          color="gray.600"
-                          fontSize="xs"
-                          fontWeight="500"
-                          lineHeight="16px"
-                          pr="8px"
-                        >
-                          Add a list value
-                        </Text>
-                        <IconButton
-                          aria-label="Add a list value"
-                          data-testid="add-list-value-btn"
-                          icon={<AddIcon h="7px" w="7px" />}
-                          onClick={() => {
-                            fieldArrayProps.push("");
-                            setHasAutoScroll(true);
-                          }}
-                          size="xs"
-                          variant="outline"
-                        />
-                        {allowed_values.length === 0 && (
-                          <Text color="red.500" pl="18px" size="sm">
-                            {props.errors.allowed_values}
+                              <CustomInput
+                                customLabelProps={{
+                                  color: "gray.600",
+                                  fontSize: "sm",
+                                  fontWeight: "500",
+                                  lineHeight: "20px",
+                                  minW: "126px",
+                                  pr: "8px",
+                                }}
+                                displayHelpIcon={false}
+                                isRequired
+                                label={`List item ${index + 1}`}
+                                name={`allowed_values[${index}]`}
+                              />
+                              <IconButton
+                                aria-label="Remove this list value"
+                                data-testid={`remove-list-value-btn-${index}`}
+                                icon={<TrashCanSolidIcon />}
+                                isDisabled={allowed_values.length <= 1}
+                                onClick={() => fieldArrayProps.remove(index)}
+                                size="sm"
+                                variant="ghost"
+                              />
+                            </Flex>
+                          ))}
+                        </Flex>
+                        <Flex alignItems="center">
+                          <Text
+                            color="gray.600"
+                            fontSize="xs"
+                            fontWeight="500"
+                            lineHeight="16px"
+                            pr="8px"
+                          >
+                            Add a list value
                           </Text>
-                        )}
+                          <IconButton
+                            aria-label="Add a list value"
+                            data-testid="add-list-value-btn"
+                            icon={<AddIcon h="7px" w="7px" />}
+                            onClick={() => {
+                              fieldArrayProps.push("");
+                              setHasAutoScroll(true);
+                            }}
+                            size="xs"
+                            variant="outline"
+                          />
+                          {allowed_values.length === 0 && (
+                            <Text color="red.500" pl="18px" size="sm">
+                              {props.errors.allowed_values}
+                            </Text>
+                          )}
+                        </Flex>
                       </Flex>
-                    </Flex>
-                  );
-                }}
-              />
-            </Flex>
-          </Form>
-        )}
-      </Formik>
-    </Layout>
-  );
-});
+                    );
+                  }}
+                />
+              </Flex>
+            </Form>
+          )}
+        </Formik>
+      </Layout>
+    );
+  }
+);
 
 export { CreateCustomLists };

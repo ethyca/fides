@@ -3,36 +3,56 @@ import { HealthCheck } from "~/types/api";
 
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
-    fixture: "data_categories.json",
-  }).as("getDataCategory");
+    fixture: "taxonomy/data_categories.json",
+  }).as("getDataCategories");
   cy.intercept("GET", "/api/v1/data_qualifier", {
-    fixture: "data_qualifiers.json",
-  }).as("getDataQualifier");
+    fixture: "taxonomy/data_qualifiers.json",
+  }).as("getDataQualifiers");
   cy.intercept("GET", "/api/v1/data_subject", {
-    fixture: "data_subjects.json",
-  }).as("getDataSubject");
+    fixture: "taxonomy/data_subjects.json",
+  }).as("getDataSubjects");
   cy.intercept("GET", "/api/v1/data_use", {
-    fixture: "data_uses.json",
-  }).as("getDataUse");
+    fixture: "taxonomy/data_uses.json",
+  }).as("getDataUses");
 };
 
 export const stubSystemCrud = () => {
-  cy.intercept("POST", "/api/v1/system", { fixture: "system.json" }).as(
+  cy.intercept("POST", "/api/v1/system", { fixture: "systems/system.json" }).as(
     "postSystem"
   );
-  cy.intercept("GET", "/api/v1/system/*", { fixture: "system.json" }).as(
-    "getSystem"
-  );
-  cy.intercept("PUT", "/api/v1/system*", { fixture: "system.json" }).as(
+  cy.intercept("GET", "/api/v1/system/*", {
+    fixture: "systems/system.json",
+  }).as("getSystem");
+  cy.intercept("PUT", "/api/v1/system*", { fixture: "systems/system.json" }).as(
     "putSystem"
   );
-  cy.fixture("system.json").then((system) => {
+  cy.fixture("systems/system.json").then((system) => {
     cy.intercept("DELETE", "/api/v1/system/*", {
       body: {
         message: "resource deleted",
         resource: system,
       },
     }).as("deleteSystem");
+  });
+};
+
+export const stubOrganizationCrud = () => {
+  cy.intercept("POST", "/api/v1/organization", {
+    fixture: "organizations/default_organization.json",
+  }).as("postOrganization");
+  cy.intercept("GET", "/api/v1/organization/*", {
+    fixture: "organizations/default_organization.json",
+  }).as("getOrganization");
+  cy.intercept("PUT", "/api/v1/organization*", {
+    fixture: "organizations/default_organization.json",
+  }).as("putOrganization");
+  cy.fixture("organizations/default_organization.json").then((organization) => {
+    cy.intercept("DELETE", "/api/v1/organization/*", {
+      body: {
+        message: "resource deleted",
+        resource: organization,
+      },
+    }).as("deleteOrganization");
   });
 };
 
@@ -85,6 +105,10 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("PUT", "/api/v1/storage/default/*/secret", {
     fixture: "/privacy-requests/settings_configuration.json",
   }).as("createStorageSecrets");
+
+  cy.intercept("PUT", "/api/v1/messaging/default", {
+    fixture: "/privacy-requests/messaging_configuration.json",
+  }).as("createMessagingConfiguration");
 };
 
 export const CONNECTION_STRING =
@@ -177,4 +201,16 @@ export const stubPrivacyRequests = () => {
       fixture: "privacy-requests/deny.json",
     }
   ).as("denyPrivacyRequest");
+};
+
+export const stubDatamap = () => {
+  cy.intercept("GET", "/api/v1/plus/datamap/*", {
+    fixture: "datamap/datamap.json",
+  }).as("getDatamap");
+  cy.intercept("GET", "/api/v1/data_category", {
+    fixture: "taxonomy/data_categories.json",
+  }).as("getDataCategory");
+  cy.intercept("GET", "/api/v1/system", { fixture: "systems/systems.json" }).as(
+    "getSystems"
+  );
 };

@@ -241,6 +241,7 @@ class Endpoint(BaseModel):
     name: str
     requests: SaaSRequestMap
     after: List[FidesCollectionKey] = []
+    erase_after: List[FidesCollectionKey] = []
 
     @validator("requests")
     def validate_grouped_inputs(
@@ -315,7 +316,7 @@ class ExternalDatasetReference(BaseModel):
 
 class SaaSConfigBase(BaseModel):
     """
-    Used to store base info for a saas config
+    Used to store base info for a SaaS config
     """
 
     fides_key: FidesKey
@@ -354,6 +355,7 @@ class SaaSConfig(SaaSConfigBase):
 
     description: str
     version: str
+    replaceable: bool = False
     connector_params: List[ConnectorParam]
     external_references: Optional[List[ExternalDatasetReference]]
     client_config: ClientConfig
@@ -409,6 +411,10 @@ class SaaSConfig(SaaSConfigBase):
                         grouped_inputs=grouped_inputs,
                         after={
                             CollectionAddress(*s.split(".")) for s in endpoint.after
+                        },
+                        erase_after={
+                            CollectionAddress(*s.split("."))
+                            for s in endpoint.erase_after
                         },
                     )
                 )
