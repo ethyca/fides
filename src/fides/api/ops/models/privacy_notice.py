@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from collections import defaultdict
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Tuple, Type
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
 
+from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.util import hybridproperty
 
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import ValidationError
 from fides.lib.db.base_class import Base, FidesBase
 
@@ -55,7 +58,7 @@ class PrivacyNoticeRegion(Enum):
 class ConsentMechanism(Enum):
     opt_in = "opt_in"
     opt_out = "opt_out"
-    necessary = "necessary"
+    notice_only = "notice_only"
 
 
 class EnforcementLevel(Enum):
@@ -65,6 +68,7 @@ class EnforcementLevel(Enum):
 
     frontend = "frontend"
     system_wide = "system_wide"
+    not_applicable = "not_applicable"
 
 
 class PrivacyNoticeBase:
@@ -73,8 +77,9 @@ class PrivacyNoticeBase:
     """
 
     name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    origin = Column(String, nullable=True)  # pointer back to an origin template ID
+    description = Column(String)  # User-facing description
+    internal_description = Column(String)  # Visible to internal users only
+    origin = Column(String)  # pointer back to an origin template ID
     regions = Column(
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
         index=True,
@@ -89,8 +94,18 @@ class PrivacyNoticeBase:
     disabled = Column(Boolean, nullable=False, default=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
     displayed_in_privacy_center = Column(Boolean, nullable=False, default=True)
-    displayed_in_banner = Column(Boolean, nullable=False, default=True)
-    displayed_in_privacy_modal = Column(Boolean, nullable=False, default=True)
+    displayed_in_overlay = Column(Boolean, nullable=False, default=True)
+    displayed_in_api = Column(Boolean, nullable=False, default=True)
+
+    def applies_to_system(self, system: System) -> bool:
+        """Privacy Notice applies to System if a data use matches or the Privacy Notice
+        Data Use is a parent of a System Data Use
+        """
+        for system_data_use in system.get_data_uses(include_parents=True):
+            for privacy_notice_data_use in self.data_uses or []:
+                if system_data_use == privacy_notice_data_use:
+                    return True
+        return False
 
 
 class PrivacyNotice(PrivacyNoticeBase, Base):
@@ -98,6 +113,22 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     A notice set up by a system administrator that an end user (i.e., data subject)
     accepts or rejects to indicate their consent for particular data uses
     """
+
+    histories = relationship(
+        "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
+    )
+
+    @hybridproperty
+    def privacy_notice_history_id(self) -> Optional[str]:
+        """Convenience property that returns the historical privacy notice history id for the current version.
+
+        Note that there are possibly many historical records for the given notice, this just returns the current
+        corresponding historical record.
+        """
+        history: PrivacyNoticeHistory = self.histories.filter_by(  # type: ignore # pylint: disable=no-member
+            version=self.version
+        ).first()
+        return history.id if history else None
 
     @classmethod
     def create(
@@ -147,8 +178,8 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
                 "disabled": self.disabled,
                 "has_gpc_flag": self.has_gpc_flag,
                 "displayed_in_privacy_center": self.displayed_in_privacy_center,
-                "displayed_in_banner": self.displayed_in_banner,
-                "displayed_in_privacy_modal": self.displayed_in_privacy_modal,
+                "displayed_in_overlay": self.displayed_in_overlay,
+                "displayed_in_api": self.displayed_in_api,
                 "privacy_notice_id": self.id,
             }
             PrivacyNoticeHistory.create(db, data=history_data, check_name=False)
@@ -215,7 +246,7 @@ def check_conflicting_data_uses(
             region_uses = uses_by_region[PrivacyNoticeRegion(region)]
             # check each of the incoming notice's data uses
             for data_use in privacy_notice.data_uses:
-                for (existing_use, notice_name) in region_uses:
+                for existing_use, notice_name in region_uses:
                     # we need to check for hierachical overlaps in _both_ directions
                     # i.e. whether the incoming DataUse is a parent _or_ a child of
                     # an existing DataUse
@@ -239,4 +270,17 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False
     )
-    privacy_notice = relationship(PrivacyNotice, backref="histories")
+
+    def calculate_relevant_systems(self, db: Session) -> List[FidesKey]:
+        """Method to cache the relevant systems at the time to store on PrivacyPreferenceHistory for record keeping
+
+        Provided the notice's enforcement level is "system_wide" - a system is relevant if
+        their data use is an exact match or a child of the notice's data use.
+        """
+        relevant_systems: List[FidesKey] = []
+        if self.enforcement_level == EnforcementLevel.system_wide:
+            for system in db.query(System):
+                if self.applies_to_system(system):
+                    relevant_systems.append(system.fides_key)
+                    continue
+        return relevant_systems

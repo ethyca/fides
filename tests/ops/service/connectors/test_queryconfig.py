@@ -519,7 +519,6 @@ class TestMongoQueryConfig:
         expected_result_0 = {"_id": 1}
         expected_result_1 = {
             "$set": {
-                "_id": None,
                 "birthday": None,
                 "children.0": None,
                 "children.1": None,

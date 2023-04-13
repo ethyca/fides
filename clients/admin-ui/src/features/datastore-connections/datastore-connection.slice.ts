@@ -13,8 +13,8 @@ import { DisabledStatus, TestingStatus } from "./constants";
 import {
   CreateAccessManualWebhookRequest,
   CreateAccessManualWebhookResponse,
-  CreateSassConnectionConfigRequest,
-  CreateSassConnectionConfigResponse,
+  CreateSaasConnectionConfigRequest,
+  CreateSaasConnectionConfigResponse,
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionRequest,
@@ -164,8 +164,8 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       invalidatesTags: () => ["DatastoreConnection"],
     }),
     createSassConnectionConfig: build.mutation<
-      CreateSassConnectionConfigResponse,
-      CreateSassConnectionConfigRequest
+      CreateSaasConnectionConfigResponse,
+      CreateSaasConnectionConfigRequest
     >({
       query: (params) => ({
         url: `${CONNECTION_ROUTE}/instantiate/${params.saas_connector_type}`,

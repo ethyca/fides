@@ -50,6 +50,10 @@ class ActionType(str, EnumType):
     update = "update"
 
 
+# action types we actively support in policies/requests
+SUPPORTED_ACTION_TYPES = {ActionType.access, ActionType.consent, ActionType.erasure}
+
+
 class DrpAction(EnumType):
     """
     Enum to hold valid DRP actions. For more details, see:
@@ -156,6 +160,12 @@ class Policy(Base):
         """Returns a Consent Rule if it exists. There should only be one."""
         consent_rules = self.get_rules_for_action(ActionType.consent)
         return consent_rules[0] if consent_rules else None
+
+    def get_action_type(self) -> Optional[ActionType]:
+        try:
+            return self.rules[0].action_type  # type: ignore[attr-defined]
+        except IndexError:
+            return None
 
 
 def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:

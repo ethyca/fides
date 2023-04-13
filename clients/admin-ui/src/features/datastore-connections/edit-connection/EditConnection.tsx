@@ -98,7 +98,7 @@ const EditConnection: React.FC = () => {
         whiteSpace="nowrap"
       >
         <Box alignItems="center" display="flex">
-          <ConnectionTypeLogo data={connection} />
+          <ConnectionTypeLogo data={connectionOption} />
           <Text ml="8px">{connection.name}</Text>
         </Box>
       </Heading>

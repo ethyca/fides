@@ -7,6 +7,7 @@ from fides.api.ctl.sql_models import Organization  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.messaging import MessagingConfig
+from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.messaging.messaging import MessagingServiceType
 from fides.api.ops.service.connectors.base_connector import DB_CONNECTOR_TYPE
 from fides.core.config import CONFIG
@@ -43,6 +44,10 @@ class BaseEmailConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         """
         Aggregates the identities provided by multiple privacy requests and sends them in a single batch email.
         """
+
+    @abstractmethod
+    def add_skipped_log(self, db: Session, privacy_request: PrivacyRequest) -> None:
+        """Add skipped log for the email connector to a privacy request"""
 
 
 def get_org_name(db: Session) -> str:

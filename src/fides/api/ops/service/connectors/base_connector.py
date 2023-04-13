@@ -5,7 +5,7 @@ from fides.api.ops.common_exceptions import NotSupportedForCollection
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import Consent, PrivacyRequest
+from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.service.connectors.query_config import QueryConfig
 from fides.api.ops.util.collection_util import Row
 from fides.core.config import CONFIG
@@ -93,7 +93,6 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
-        consent_preferences: List[Consent],
     ) -> bool:
         """
         Base method for executing a consent request. Override on a given connector if functionality

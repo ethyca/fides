@@ -14,3 +14,8 @@ export type ConnectionSystemTypeMap = {
   human_readable: string;
   encoded_icon?: string;
 };
+
+export const isConnectionSystemTypeMap = (
+  obj: any
+): obj is ConnectionSystemTypeMap =>
+  (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
