@@ -8,28 +8,17 @@ on:
   pull_request:
     paths-ignore:
       - "**.md"
+      - "clients/**"
   push:
     branches:
       - "main"
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10.7"
+  DEFAULT_PYTHON_VERSION: "3.10.11"
 
 jobs:
-  Test-Envs:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Initialize the test environment
-        run: nox -s "fides_env(test)" -- test
-
-  Fides-Deploy:
+  # Basic smoke test of a local install of the fides Python CLI
+  Fides-Install:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -44,14 +33,8 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Build the sample image
-        run: nox -s "build(sample)"
-
       - name: Install fides
         run: pip install .
 
-      - name: Start the sample application
-        run: fides deploy up --no-pull --no-init
-
-      - name: Stop the sample application
-        run: fides deploy down
+      - name: Run `fides --version`
+        run: fides --version

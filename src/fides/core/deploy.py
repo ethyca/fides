@@ -1,3 +1,4 @@
+import sys
 import webbrowser
 from functools import partial
 from os import environ, getcwd, makedirs
@@ -11,7 +12,7 @@ import fides
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.utils import echo_green, echo_red
 
-FIDES_UPLOADS_DIR = getcwd() + "/fides_uploads/"
+FIDES_DEPLOY_UPLOADS_DIR = getcwd() + "/fides_uploads/"
 REQUIRED_DOCKER_VERSION = "20.10.17"
 SAMPLE_PROJECT_DIR = join(
     dirname(__file__),
@@ -97,14 +98,46 @@ def check_docker_version() -> bool:
     return version_is_valid
 
 
+def check_virtualenv() -> bool:
+    """
+    Check to see if the deploy is running from a virtual environment, and log a
+    warning if not.
+
+    In many cases, running outside of a virtual environment will lead to
+    mysterious Docker or Python errors, so warning the user helps get ahead of
+    some of these problems.
+    """
+
+    # Adapted from https://stackoverflow.com/a/58026969/
+    # Detect a virtualenv by checking sys.prefix if the  "base" prefixes match
+    real_prefix = getattr(sys, "real_prefix", None)  # set by older virtualenv
+    base_prefix = getattr(sys, "base_prefix", sys.prefix)
+    running_in_virtualenv = (base_prefix or real_prefix) != sys.prefix
+
+    if not running_in_virtualenv:
+        echo_red(
+            f"WARNING: Your 'fides' CLI is installed outside of a virtual environment at: {sys.prefix}"
+        )
+        echo_red(
+            "Docker may not have permission to access this path, so if you encounter issues with Docker mounts, "
+            "try reinstalling 'ethyca-fides' using a virtual environment (see https://docs.python.org/3/library/venv.html)."
+        )
+        echo_red(
+            "If you did install using a virtual environment, check your PATH. "
+            "You may have a global version of 'ethyca-fides' installed that is taking precedence!"
+        )
+        return False
+    return True
+
+
 def seed_example_data() -> None:
     run_shell(
         DOCKER_COMPOSE_COMMAND
-        + "run --no-deps --rm fides fides push src/fides/data/sample_project/sample_resources/"
+        + """exec fides /bin/bash -c "fides user login && fides push src/fides/data/sample_project/sample_resources/" """
     )
     run_shell(
         DOCKER_COMPOSE_COMMAND
-        + "run --no-deps --rm fides python scripts/load_examples.py"
+        + """exec fides /bin/bash -c "python scripts/load_examples.py" """
     )
 
 
@@ -115,21 +148,21 @@ def check_fides_uploads_dir() -> None:
     This fixes an error that was happening in CI checks related to
     binding a file that doesn't exist.
     """
-    if not exists(FIDES_UPLOADS_DIR):
-        makedirs(FIDES_UPLOADS_DIR)
+    if not exists(FIDES_DEPLOY_UPLOADS_DIR):
+        makedirs(FIDES_DEPLOY_UPLOADS_DIR)
 
 
 def teardown_application() -> None:
     """Teardown all of the application containers for fides."""
 
     # This needs to get set, or else it throws an error
-    environ["FIDES_UPLOADS_DIR"] = FIDES_UPLOADS_DIR
+    environ["FIDES_DEPLOY_UPLOADS_DIR"] = FIDES_DEPLOY_UPLOADS_DIR
     run_shell(DOCKER_COMPOSE_COMMAND + "down --remove-orphans --volumes")
 
 
 def start_application() -> None:
     """Spin up the application via a docker compose file."""
-    environ["FIDES_UPLOADS_DIR"] = FIDES_UPLOADS_DIR
+    environ["FIDES_DEPLOY_UPLOADS_DIR"] = FIDES_DEPLOY_UPLOADS_DIR
     run_shell(
         DOCKER_COMPOSE_COMMAND + "up --wait",
     )
@@ -175,13 +208,13 @@ def pull_specific_docker_image() -> None:
         run_shell(f"docker pull {current_privacy_center_image}")
         run_shell(f"docker pull {current_sample_app_image}")
         run_shell(
-            f"docker tag {current_fides_image} {fides_image_stub.format('sample')}"
+            f"docker tag {current_fides_image} {fides_image_stub.format('local')}"
         )
         run_shell(
-            f"docker tag {current_privacy_center_image} {privacy_center_image_stub.format('sample')}"
+            f"docker tag {current_privacy_center_image} {privacy_center_image_stub.format('local')}"
         )
         run_shell(
-            f"docker tag {current_sample_app_image} {sample_app_image_stub.format('sample')}"
+            f"docker tag {current_sample_app_image} {sample_app_image_stub.format('local')}"
         )
     except CalledProcessError:
         print("Unable to fetch matching version, defaulting to 'dev' versions...")
@@ -196,13 +229,13 @@ def pull_specific_docker_image() -> None:
             run_shell(f"docker pull {dev_privacy_center_image}")
             run_shell(f"docker pull {dev_sample_app_image}")
             run_shell(
-                f"docker tag {dev_fides_image} {fides_image_stub.format('sample')}"
+                f"docker tag {dev_fides_image} {fides_image_stub.format('local')}"
             )
             run_shell(
-                f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('sample')}"
+                f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('local')}"
             )
             run_shell(
-                f"docker tag {dev_sample_app_image} {sample_app_image_stub.format('sample')}"
+                f"docker tag {dev_sample_app_image} {sample_app_image_stub.format('local')}"
             )
         except CalledProcessError:
             echo_red("Failed to pull 'dev' versions of docker containers! Aborting...")
@@ -225,7 +258,7 @@ def print_deploy_success() -> None:
 
     # Admin UI
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
-    echo_green("    (user=fidestest, password=Apassword1!)")
+    echo_green("    (user=root_user, password=Testpassword1!)")
 
     # Sample App
     echo_green("\n- Sample 'Cookie House' Application running at http://localhost:3000")
@@ -244,4 +277,4 @@ def print_deploy_success() -> None:
 
     # Open the landing page and DSR directory
     webbrowser.open("http://localhost:3000/landing")
-    webbrowser.open(f"file:///{FIDES_UPLOADS_DIR}")
+    webbrowser.open(f"file:///{FIDES_DEPLOY_UPLOADS_DIR}")

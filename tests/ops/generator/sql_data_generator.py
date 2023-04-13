@@ -22,7 +22,6 @@ faker.add_provider(lorem)
 
 
 class DataGeneratorFunctions:
-
     faker = Faker(use_weighting=False)
 
     def name(cls):

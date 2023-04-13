@@ -17,13 +17,16 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
+from fides.api.ops.api.v1.scope_registry import USER_CREATE, USER_DELETE, USER_READ
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config import FidesConfig, get_config
+from fides.lib.exceptions import AuthorizationError
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api import urn_registry as urls
 from fides.lib.oauth.api.deps import get_db
+from fides.lib.oauth.roles import VIEWER
 from fides.lib.oauth.schemas.oauth import AccessToken
 from fides.lib.oauth.schemas.user import (
     UserCreate,
@@ -31,12 +34,6 @@ from fides.lib.oauth.schemas.user import (
     UserLogin,
     UserLoginResponse,
     UserResponse,
-)
-from fides.lib.oauth.scopes import (
-    PRIVACY_REQUEST_READ,
-    USER_CREATE,
-    USER_DELETE,
-    USER_READ,
 )
 
 router = APIRouter()
@@ -59,6 +56,8 @@ def create_user(
     If `password` is sent as a base64 encoded string, it will automatically be decoded
     server-side before being encrypted and persisted.
     If `password` is sent as a plaintext string, it will be encrypted and persisted as is.
+
+    The user is given no roles by default.
     """
 
     # The root user is not stored in the database so make sure here that the user name
@@ -81,7 +80,8 @@ def create_user(
     user = FidesUser.create(db=db, data=user_data.dict())
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+        db=db,
+        data={"user_id": user.id, "roles": [VIEWER]},
     )
     return user
 
@@ -175,6 +175,7 @@ def user_login(
             object_id=config.security.oauth_root_client_id,
             config=config,
             scopes=config.security.root_user_scopes,
+            roles=config.security.root_user_roles,
         )
 
         if not client_check:
@@ -240,9 +241,20 @@ def perform_login(
             db,
             client_id_byte_length,
             client_secret_btye_length,
-            scopes=user.permissions.scopes,  # type: ignore
+            scopes=[],  # type: ignore
+            roles=user.permissions.roles,  # type: ignore
+            systems=user.system_ids,  # type: ignore
             user_id=user.id,
         )
+    else:
+        # Refresh the client just in case - for example, scopes and roles were added via the db directly.
+        client.roles = user.permissions.roles  # type: ignore
+        client.systems = user.system_ids  # type: ignore
+        client.save(db)
+
+    if not user.permissions.roles and not user.systems:  # type: ignore
+        logger.warning("User {} needs roles or systems to login.", user.id)
+        raise AuthorizationError(detail="Not Authorized for this action")
 
     user.last_login_at = datetime.utcnow()
     user.save(db)

@@ -1,17 +1,13 @@
 """This module contains logic related to loading/manipulation/writing the config."""
 import os
-from os import environ, getenv
+from os import environ
 from pathlib import Path
 from re import compile as regex
 from typing import Any, Dict, List, Union
 
-import toml
 from click import echo
 from loguru import logger
-from pydantic import BaseSettings
 from toml import dump, load
-
-from fides.core.utils import echo_red
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
@@ -103,58 +99,6 @@ def update_config_file(  # type: ignore
             echo(f"\tSet {key}.{subkey} = {val}")
 
 
-def create_config_file(
-    config: BaseSettings, fides_directory_location: str = "."
-) -> str:
-    """
-    Creates the .fides/fides.toml file and initializes it, if it doesn't exist.
-
-    Returns the config_path if successful.
-    """
-    # TODO: These important constants should live elsewhere
-    fides_dir_name = ".fides"
-    fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
-    config_file_name = "fides.toml"
-    config_path = f"{fides_dir_path}/{config_file_name}"
-
-    included_values = {
-        "database": {
-            "server",
-            "user",
-            "password",
-            "port",
-            "db",
-        },
-        "logging": {
-            "level",
-            "destination",
-            "serialization",
-        },
-        "cli": {"server_protocol", "server_host", "server_port"},
-    }
-
-    # create the .fides dir if it doesn't exist
-    if not os.path.exists(fides_dir_path):
-        os.mkdir(fides_dir_path)
-        echo(f"Created a '{fides_dir_path}' directory.")
-    else:
-        echo(f"Directory '{fides_dir_path}' already exists.")
-
-    # create a fides.toml config file if it doesn't exist
-    if not os.path.isfile(config_path):
-        with open(config_path, "w", encoding="utf-8") as config_file:
-            config_dict = config.dict(include=included_values)  # type: ignore[arg-type]
-            toml.dump(config_dict, config_file)
-        echo(f"Created a fides config file: {config_path}")
-    else:
-        echo(f"Configuration file already exists: {config_path}")
-
-    echo("To learn more about configuring fides, see:")
-    echo("\thttps://ethyca.github.io/fides/installation/configuration/")
-
-    return config_path
-
-
 def handle_deprecated_fields(settings: Dict[str, Any]) -> Dict[str, Any]:
     """Custom logic for handling deprecated values."""
 
@@ -194,49 +138,3 @@ def handle_deprecated_env_variables(settings: Dict[str, Any]) -> Dict[str, Any]:
             settings["database"][setting] = val
 
     return settings
-
-
-def check_required_webserver_config_values() -> None:
-    """Check for required env vars and print a user-friendly error message."""
-    required_config_dict = {
-        "app_encryption_key": {
-            "env_var": "FIDES__SECURITY__APP_ENCRYPTION_KEY",
-            "config_subsection": "security",
-        },
-        "oauth_root_client_id": {
-            "env_var": "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID",
-            "config_subsection": "security",
-        },
-        "oauth_root_client_secret": {
-            "env_var": "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET",
-            "config_subsection": "security",
-        },
-    }
-
-    missing_required_config_vars = []
-    for key, value in required_config_dict.items():
-        try:
-            config_value = getenv(value["env_var"]) or get_config_from_file(
-                "",
-                value["config_subsection"],
-                key,
-            )
-        except FileNotFoundError:
-            config_value = None
-
-        if not config_value:
-            missing_required_config_vars.append(key)
-
-    if missing_required_config_vars:
-        echo_red(
-            "\nThere are missing required configuration variables. Please add the following config variables to either the "
-            "`fides.toml` file or your environment variables to start Fides: \n"
-        )
-        for missing_value in missing_required_config_vars:
-            print(f"- {missing_value}")
-        print(
-            "\nVisit the Fides deployment documentation for more information: "
-            "https://ethyca.github.io/fides/deployment/"
-        )
-
-        raise SystemExit(1)

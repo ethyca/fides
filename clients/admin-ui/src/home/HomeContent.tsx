@@ -1,86 +1,59 @@
-import { Center, Flex, SimpleGrid, Text } from "@fidesui/react";
+import { Flex, SimpleGrid, Text } from "@fidesui/react";
 import Link from "next/link";
 import * as React from "react";
 import { useMemo } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
+import { selectThisUsersScopes } from "~/features/user-management";
 
-import { MODULE_CARD_ITEMS, ModuleCardKeys } from "./constants";
-
-const DEFAULT_CARD_ITEMS = MODULE_CARD_ITEMS.filter((item) =>
-  [
-    ModuleCardKeys.ADD_SYSTEMS,
-    ModuleCardKeys.CONFIGURE_PRIVACY_REQUESTS,
-  ].includes(item.key)
-);
+import { MODULE_CARD_ITEMS } from "./constants";
+import { configureTiles } from "./tile-config";
 
 const HomeContent: React.FC = () => {
-  const COLUMNS = 3;
-  const { connectionsCount, systemsCount } = useFeatures();
-  const hasConnections = connectionsCount > 0;
-  const hasSystems = systemsCount > 0;
+  const { plus } = useFeatures();
+  const userScopes = useAppSelector(selectThisUsersScopes);
 
-  const getCardItem = (key: ModuleCardKeys) => {
-    const cardItem = MODULE_CARD_ITEMS.find((item) => item.key === key);
-    return cardItem;
-  };
-
-  const getCardList = useMemo(
-    () => () => {
-      const list = [...DEFAULT_CARD_ITEMS];
-      if (hasConnections || hasSystems) {
-        if (hasConnections) {
-          const card = getCardItem(ModuleCardKeys.REVIEW_PRIVACY_REQUESTS);
-          list.push(card!);
-        }
-        if (hasSystems) {
-          const card = getCardItem(ModuleCardKeys.MANAGE_SYSTEMS);
-          list.push(card!);
-        }
-      }
-      return list;
-    },
-    [hasConnections, hasSystems]
+  const list = useMemo(
+    () =>
+      configureTiles({
+        config: MODULE_CARD_ITEMS,
+        hasPlus: plus,
+        userScopes,
+      }),
+    [plus, userScopes]
   );
 
-  const list = getCardList();
-
   return (
-    <Center px="36px">
-      <SimpleGrid
-        columns={list.length >= COLUMNS ? COLUMNS : list.length}
-        spacing="24px"
-      >
+    <Flex paddingX={10} data-testid="home-content">
+      <SimpleGrid columns={{ md: 2, xl: 3 }} spacing="24px">
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
-            <Link
-              data-testid={item.name}
-              href={item.href}
-              key={item.key}
-              passHref
-            >
+            <Link href={item.href} key={item.key} passHref>
               <Flex
-                background={item.backgroundColor}
+                background={`${item.color}.50`}
                 borderRadius="8px"
-                boxShadow="base"
                 flexDirection="column"
                 maxH="164px"
                 overflow="hidden"
                 padding="16px 16px 20px 16px"
                 maxW="469.33px"
+                border="1px solid"
+                borderColor="transparent"
                 _hover={{
                   border: "1px solid",
-                  borderColor: `${item.hoverBorderColor}`,
+                  borderColor: `${item.color}.500`,
                   cursor: "pointer",
                 }}
+                data-testid={`tile-${item.name}`}
               >
                 <Flex
                   alignItems="center"
                   border="2px solid"
-                  borderColor={item.titleColor}
+                  borderColor={`${item.color}.300`}
                   borderRadius="5.71714px"
-                  color={item.titleColor}
+                  color={`${item.color}.300`}
                   fontSize="22px"
                   fontWeight="extrabold"
                   h="48px"
@@ -91,7 +64,7 @@ const HomeContent: React.FC = () => {
                   {item.title}
                 </Flex>
                 <Flex
-                  color={item.nameColor}
+                  color={`${item.color}.800`}
                   fontSize="16px"
                   fontWeight="semibold"
                   lineHeight="24px"
@@ -102,7 +75,7 @@ const HomeContent: React.FC = () => {
                   &nbsp; &#8594;
                 </Flex>
                 <Flex
-                  color={item.descriptionColor}
+                  color="gray.500"
                   fontSize="14px"
                   h="40px"
                   lineHeight="20px"
@@ -113,7 +86,7 @@ const HomeContent: React.FC = () => {
             </Link>
           ))}
       </SimpleGrid>
-    </Center>
+    </Flex>
   );
 };
 

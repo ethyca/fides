@@ -1,26 +1,38 @@
-import { Divider, Heading } from "@fidesui/react";
 import { utf8ToB64 } from "common/utils";
-import React from "react";
+import { useRouter } from "next/router";
+import React, { useEffect } from "react";
+import UserManagementTabs from "user-management/UserManagementTabs";
 
-import { useCreateUserMutation } from "./user-management.slice";
-import UserForm, { FormValues } from "./UserForm";
+import { useAppDispatch } from "~/app/hooks";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+
+import {
+  setActiveUserId,
+  useCreateUserMutation,
+} from "./user-management.slice";
+import { FormValues } from "./UserForm";
 
 const NewUserForm = () => {
+  const router = useRouter();
   const [createUser] = useCreateUserMutation();
+  const dispatch = useAppDispatch();
 
-  const handleSubmit = (values: FormValues) => {
+  useEffect(() => {
+    dispatch(setActiveUserId(undefined));
+  }, [dispatch]);
+
+  const handleSubmit = async (values: FormValues) => {
     const b64Password = utf8ToB64(values.password);
-    return createUser({ ...values, password: b64Password });
+    const result = await createUser({
+      ...values,
+      password: b64Password,
+    }).unwrap();
+    router.push(`${USER_MANAGEMENT_ROUTE}/profile/${result.id}`);
   };
-
   return (
     <div>
       <main>
-        <Heading mb={4} fontSize="xl" colorScheme="primary">
-          Profile
-        </Heading>
-        <Divider mb={7} />
-        <UserForm onSubmit={handleSubmit} />
+        <UserManagementTabs onSubmit={handleSubmit} />
       </main>
     </div>
   );

@@ -16,16 +16,20 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops import common_exceptions
-from fides.api.ops.common_exceptions import WebhookOrderException
+from fides.api.ops.common_exceptions import (
+    StorageConfigNotFoundException,
+    WebhookOrderException,
+)
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.models.storage import (
+    StorageConfig,
+    get_active_default_storage_config,
+)
 from fides.api.ops.util.data_category import _validate_data_category
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.db.base_class import Base, FidesBase
 from fides.lib.models.client import ClientDetail
-
-CONFIG = get_config()
 
 
 class CurrentStep(EnumType):
@@ -33,7 +37,7 @@ class CurrentStep(EnumType):
     access = "access"
     erasure = "erasure"
     consent = "consent"
-    erasure_email_post_send = "erasure_email_post_send"
+    email_post_send = "email_post_send"
     post_webhooks = "post_webhooks"
 
 
@@ -44,6 +48,10 @@ class ActionType(str, EnumType):
     consent = "consent"
     erasure = "erasure"
     update = "update"
+
+
+# action types we actively support in policies/requests
+SUPPORTED_ACTION_TYPES = {ActionType.access, ActionType.consent, ActionType.erasure}
 
 
 class DrpAction(EnumType):
@@ -93,11 +101,6 @@ def _validate_rule(
         if masking_strategy is None:
             raise common_exceptions.RuleValidationError(
                 "Erasure Rules must have masking strategies."
-            )
-    if action_type == ActionType.access.value:
-        if storage_destination_id is None:
-            raise common_exceptions.RuleValidationError(
-                "Access Rules must have a storage destination."
             )
     if action_type in [ActionType.update.value]:
         raise common_exceptions.RuleValidationError(
@@ -157,6 +160,12 @@ class Policy(Base):
         """Returns a Consent Rule if it exists. There should only be one."""
         consent_rules = self.get_rules_for_action(ActionType.consent)
         return consent_rules[0] if consent_rules else None
+
+    def get_action_type(self) -> Optional[ActionType]:
+        try:
+            return self.rules[0].action_type  # type: ignore[attr-defined]
+        except IndexError:
+            return None
 
 
 def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
@@ -275,7 +284,7 @@ class Rule(Base):
         return super().save(db=db)
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
+    def create(cls, db: Session, *, data: Dict[str, Any], check_name: bool = True) -> FidesBase:  # type: ignore[override]
         """Validate this object's data before deferring to the superclass on create"""
         policy_id: Optional[str] = data.get("policy_id")
 
@@ -303,7 +312,7 @@ class Rule(Base):
             storage_destination_id=data.get("storage_destination_id"),
             masking_strategy=data.get("masking_strategy"),
         )
-        return super().create(db=db, data=data)
+        return super().create(db=db, data=data, check_name=check_name)
 
     def delete(self, db: Session) -> Optional[FidesBase]:
         """Cascade delete all targets on deletion of a Rule."""
@@ -316,6 +325,21 @@ class Rule(Base):
         that this Rule is configured to apply to.
         """
         return [target.data_category for target in self.targets]  # type: ignore[attr-defined]
+
+    def get_storage_destination(self, db: Session) -> StorageConfig:
+        """
+        Utility to return the appropriate proper storage destination for the Rule.
+        If the Rule does not have an explicit `storage_destination` set, then the
+        application's default storage config will be returned
+        """
+        if self.storage_destination:
+            return self.storage_destination
+        storage_destination = get_active_default_storage_config(db)
+        if storage_destination is None:
+            raise StorageConfigNotFoundException(
+                f"The given rule `{self.key}` has no `storage_destination` configured, and there is no active default storage configuration defined"
+            )
+        return storage_destination
 
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
@@ -431,7 +455,7 @@ class RuleTarget(Base):
         return db_obj  # type: ignore[return-value]
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
+    def create(cls, db: Session, *, data: Dict[str, Any], check_name: bool = True) -> FidesBase:  # type: ignore[override]
         """Validate data_category on object creation."""
         data_category = data.get("data_category")
         if not data_category:
@@ -468,7 +492,7 @@ class RuleTarget(Base):
 
             _validate_rule_target_collection(erasure_categories)
 
-        return super().create(db=db, data=data)
+        return super().create(db=db, data=data, check_name=check_name)
 
     def save(self, db: Session) -> FidesBase:
         """Validate data_category on object save."""

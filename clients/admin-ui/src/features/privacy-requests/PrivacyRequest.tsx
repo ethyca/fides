@@ -14,7 +14,7 @@ const PrivacyRequest: React.FC<PrivacyRequestProps> = ({
   data: subjectRequest,
 }) => (
   <VStack align="stretch" display="flex-start" spacing={6}>
-    <Box>
+    <Box data-testid="privacy-request-details">
       <RequestDetails subjectRequest={subjectRequest} />
     </Box>
     <Box>

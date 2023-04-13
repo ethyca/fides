@@ -48,11 +48,18 @@ class FidesConnector(BaseConnector[FidesClient]):
     def create_client(self) -> FidesClient:
         """Returns a client used to connect to a Fides instance"""
         config = FidesConnectorSchema(**self.configuration.secrets or {})
+
+        # use polling_timeout here to provide a base read timeout
+        # on the HTTP client underlying the FidesClient, since even
+        # in non-polling context, we may hit a blocking HTTP call
+        # e.g., in privacy request creation we can block until completion
         client = FidesClient(
             uri=config.uri,
             username=config.username,
             password=config.password,
+            connection_read_timeout=self.polling_timeout,
         )
+
         client.login()
         return client
 

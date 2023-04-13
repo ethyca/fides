@@ -9,6 +9,7 @@ import type { SystemScannerStatus } from "./SystemScannerStatus";
  */
 export type HealthCheck = {
   core_fides_version: string;
+  fidesplus_version: string;
   fidesplus_server: string;
   system_scanner: SystemScannerStatus;
 };

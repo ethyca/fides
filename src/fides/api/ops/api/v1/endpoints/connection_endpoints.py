@@ -210,6 +210,7 @@ def patch_connections(
     CONNECTION_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_DELETE])],
     status_code=HTTP_204_NO_CONTENT,
+    response_model=None,
 )
 def delete_connection(
     connection_key: FidesKey, *, db: Session = Depends(deps.get_db)

@@ -9,6 +9,7 @@ export enum CurrentStep {
   PRE_WEBHOOKS = "pre_webhooks",
   ACCESS = "access",
   ERASURE = "erasure",
-  ERASURE_EMAIL_POST_SEND = "erasure_email_post_send",
+  CONSENT = "consent",
+  EMAIL_POST_SEND = "email_post_send",
   POST_WEBHOOKS = "post_webhooks",
 }

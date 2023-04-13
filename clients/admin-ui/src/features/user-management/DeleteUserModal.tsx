@@ -1,8 +1,6 @@
 import {
   Button,
-  FormControl,
-  Input,
-  MenuItem,
+  ButtonGroup,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -11,106 +9,123 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
-  Text,
-  useDisclosure,
+  UseDisclosureReturn,
+  useToast,
 } from "@fidesui/react";
-import React, { useState } from "react";
+import { Form, Formik } from "formik";
+import { useRouter } from "next/router";
+import React from "react";
+import * as Yup from "yup";
+
+import { useAppDispatch } from "~/app/hooks";
+import { CustomTextInput } from "~/features/common/form/inputs";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { User } from "./types";
-import { useDeleteUserMutation } from "./user-management.slice";
+import {
+  setActiveUserId,
+  useDeleteUserMutation,
+} from "./user-management.slice";
 
-const DeleteUserModal: React.FC<User> = ({ id, username }) => {
-  const [usernameValue, setUsernameValue] = useState("");
-  const [confirmValue, setConfirmValue] = useState("");
-  const { isOpen, onOpen, onClose } = useDisclosure();
+const initialValues = { username: "", usernameConfirmation: "" };
+
+const useDeleteUserModal = ({
+  id,
+  username,
+  onClose,
+}: Pick<User, "id" | "username"> & { onClose: () => void }) => {
+  const toast = useToast();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const [deleteUser] = useDeleteUserMutation();
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.name === "username") {
-      setUsernameValue(event.target.value);
+  const handleDeleteUser = async () => {
+    const result = await deleteUser(id);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      setConfirmValue(event.target.value);
-    }
-  };
-
-  const deletionValidation = !!(
-    id &&
-    confirmValue &&
-    usernameValue &&
-    username === usernameValue &&
-    username === confirmValue
-  );
-
-  const handleDeleteUser = () => {
-    if (deletionValidation && id) {
-      deleteUser(id);
+      toast(successToastParams("Successfully deleted user"));
       onClose();
     }
+    dispatch(setActiveUserId(undefined));
+    router.push(USER_MANAGEMENT_ROUTE);
   };
 
-  return (
-    <>
-      <MenuItem
-        _focus={{ color: "complimentary.500", bg: "gray.100" }}
-        onClick={onOpen}
-      >
-        <Text fontSize="sm">Delete</Text>
-      </MenuItem>
-      <Modal isCentered isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Delete User</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Stack direction="column" spacing="15px">
-              <FormControl>
-                <Input
-                  isRequired
-                  name="username"
-                  onChange={handleChange}
-                  placeholder="Enter username"
-                  value={usernameValue}
-                />
-              </FormControl>
-              <FormControl>
-                <Input
-                  isRequired
-                  name="confirmUsername"
-                  onChange={handleChange}
-                  placeholder="Confirm username"
-                  value={confirmValue}
-                />
-              </FormControl>
-            </Stack>
-          </ModalBody>
+  const validationSchema = Yup.object().shape({
+    username: Yup.string()
+      .required()
+      .oneOf([username], "Username must match this user's")
+      .label("Username"),
+    usernameConfirmation: Yup.string()
+      .required()
+      .oneOf([Yup.ref("username")], "Usernames must match")
+      .label("Username confirmation"),
+  });
 
-          <ModalFooter>
-            <Button
-              onClick={onClose}
-              marginRight="10px"
-              size="sm"
-              variant="solid"
-              bg="white"
-              width="50%"
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={!deletionValidation}
-              onClick={handleDeleteUser}
-              mr={3}
-              size="sm"
-              variant="solid"
-              bg="primary.800"
-              color="white"
-              width="50%"
-            >
-              Delete User
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+  return {
+    handleDeleteUser,
+    validationSchema,
+  };
+};
+
+const DeleteUserModal = ({
+  user,
+  ...modal
+}: { user: User } & UseDisclosureReturn) => {
+  const { isOpen, onClose } = modal;
+  const { handleDeleteUser, validationSchema } = useDeleteUserModal({
+    id: user.id,
+    username: user.username,
+    onClose,
+  });
+
+  return (
+    <Modal isCentered isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent data-testid="delete-user-modal">
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleDeleteUser}
+        >
+          {({ isSubmitting, dirty, isValid }) => (
+            <Form>
+              <ModalHeader>Delete User</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <Stack direction="column" spacing={4}>
+                  <CustomTextInput name="username" label="Enter username" />
+                  <CustomTextInput
+                    name="usernameConfirmation"
+                    label="Confirm username"
+                  />
+                </Stack>
+              </ModalBody>
+
+              <ModalFooter>
+                <ButtonGroup size="sm" spacing="2" width="100%">
+                  <Button onClick={onClose} variant="outline" width="50%">
+                    Cancel
+                  </Button>
+                  <Button
+                    colorScheme="primary"
+                    disabled={!dirty || !isValid}
+                    isLoading={isSubmitting}
+                    type="submit"
+                    width="50%"
+                    data-testid="submit-btn"
+                  >
+                    Delete User
+                  </Button>
+                </ButtonGroup>
+              </ModalFooter>
+            </Form>
+          )}
+        </Formik>
+      </ModalContent>
+    </Modal>
   );
 };
 

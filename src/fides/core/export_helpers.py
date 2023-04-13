@@ -138,7 +138,9 @@ def export_datamap_to_excel(
     return filename
 
 
-def format_data_uses(data_uses: List[DataUse]) -> Dict[FidesKey, Dict[str, str]]:
+def format_data_uses(
+    data_uses: List[DataUse],
+) -> Tuple[Dict[FidesKey, Dict[str, str]], Dict[str, str]]:
     """
     This function formats data uses for use when exporting,
     returning the necessary values as a dict. Formatting
@@ -146,38 +148,65 @@ def format_data_uses(data_uses: List[DataUse]) -> Dict[FidesKey, Dict[str, str]]
     """
 
     formatted_data_uses = {}
+    custom_columns = {}
+    known_attributes = (
+        "legal_basis",
+        "special_category",
+        "recipients",
+        "legitimate_interest_impact_assessment",
+        "legitimate_interest",
+    )
+    excluded_attributes = (
+        "id",
+        "tags",
+        "description",
+        "updated_at",
+        "is_default",
+        "organization_fides_key",
+        "parent",
+        "created_at",
+        "name",
+        "parent_key",
+        "fides_key",
+    )
     for data_use in data_uses:
+        if not isinstance(data_use, dict):
+            data_use = data_use.dict()
+
         formatted_data_use = {
-            "name": data_use.name,
+            "name": data_use["name"],
         }
 
-        for attribute in [
-            "legal_basis",
-            "special_category",
-            "recipients",
-            "legitimate_interest_impact_assessment",
-            "legitimate_interest",
-        ]:
-            attribute_value = getattr(data_use, attribute)
+        for attribute in known_attributes:
+            attribute_value = data_use.get(attribute)
             if attribute_value is None:
                 attribute_value = "N/A"
             elif isinstance(attribute_value, list):
                 attribute_value = ", ".join(attribute_value)
             elif attribute == "legitimate_interest":
                 if attribute_value is True:
-                    attribute_value = getattr(data_use, "name")
+                    attribute_value = data_use.get("name")
                 else:
                     attribute_value = "N/A"
 
             formatted_data_use[attribute] = attribute_value
 
-        formatted_data_uses[data_use.fides_key] = formatted_data_use
-    return formatted_data_uses
+        for k, v in data_use.items():
+            if k not in known_attributes and k not in excluded_attributes:
+                custom_columns[k] = k
+                if isinstance(v, list):
+                    formatted_data_use[k] = ", ".join(v)
+                else:
+                    formatted_data_use[k] = v
+
+        formatted_data_uses[data_use["fides_key"]] = formatted_data_use
+
+    return formatted_data_uses, custom_columns
 
 
 def format_data_subjects(
     data_subjects: List[DataSubject],
-) -> Dict[FidesKey, Dict[str, str]]:
+) -> Tuple[Dict[FidesKey, Dict[str, str]], Dict[str, str]]:
     """
     This function formats data subjects from the server, returning the necessary values
     as a list of dicts.
@@ -194,9 +223,26 @@ def format_data_subjects(
     ]
 
     formatted_data_subjects: Dict[FidesKey, Dict[str, str]] = {}
+    excluded_attributes = (
+        "tags",
+        "id",
+        "description",
+        "updated_at",
+        "automated_decisions_or_profiling",
+        "fides_key",
+        "organization_fides_key",
+        "name",
+        "created_at",
+        "rights",
+        "is_default",
+        "rights_available",
+    )
+    custom_columns = {}
 
     for data_subject in data_subjects:
-        data_subject_dict = data_subject.dict()
+        if not isinstance(data_subject, dict):
+            data_subject = data_subject.dict()
+
         formatted_data_subject = dict(
             zip(
                 formatted_data_subject_attributes_list,
@@ -208,21 +254,29 @@ def format_data_subjects(
         )
 
         # calculate and format data subject rights as applicable
-        if data_subject_dict["rights"]:
-            data_subject_dict["rights_available"] = calculate_data_subject_rights(
-                data_subject_dict["rights"]
+        if data_subject.get("rights"):
+            data_subject["rights_available"] = calculate_data_subject_rights(
+                data_subject["rights"]
             )
         else:
-            data_subject_dict["rights_available"] = "No data subject rights listed"
+            data_subject["rights_available"] = "No data subject rights listed"
 
         formatted_data_subject = {
-            attribute: data_subject_dict.get(attribute) or "N/A"
+            attribute: data_subject.get(attribute) or "N/A"
             for attribute in formatted_data_subject_attributes_list
         }
 
-        formatted_data_subjects[data_subject.fides_key] = formatted_data_subject
+        for k, v in data_subject.items():
+            if k not in excluded_attributes:
+                custom_columns[k] = k
+                if isinstance(v, list):
+                    formatted_data_subject[k] = ", ".join(v)
+                else:
+                    formatted_data_subject[k] = v
 
-    return formatted_data_subjects
+        formatted_data_subjects[data_subject["fides_key"]] = formatted_data_subject
+
+    return formatted_data_subjects, custom_columns
 
 
 def convert_tuple_to_string(values: Tuple[str, ...]) -> str:
@@ -296,7 +350,6 @@ def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.Dat
     # isolate the system data categories into a new dataframe and create a common column
     joined_df = joined_df.drop(
         [
-            "system.privacy_declaration.name",
             "dataset.description",
         ],
         axis=1,
@@ -354,6 +407,8 @@ def get_formatted_data_protection_impact_assessment(
     data_protection_impact_assessment: dict,
 ) -> dict:
     "Replace None with N/A for consistent formatting of the data map"
+    if not isinstance(data_protection_impact_assessment, dict):
+        data_protection_impact_assessment = data_protection_impact_assessment.dict()
     return {
         key: ("N/A" if value is None else value)
         for key, value in data_protection_impact_assessment.items()

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <title>Notification of users' consent preference changes from {{body.controller}}</title>
+      <style>
+         .consent_preferences {
+           padding: 5px;
+           border-bottom: 1px solid #121439;
+           text-align: left;
+         }
+         .identity_column {
+           padding-right: 15px;
+         }
+      </style>
+   </head>
+   <body>
+      <main>
+         <p> The following users of {{body.controller}} have made changes to their consent preferences. You are notified of the changes because
+            {{body.third_party_vendor_name}} has been identified as a third-party processor to {{body.controller}} that processes user information. </p>
+
+         <p> Please find below the updated list of users and their consent preferences:
+            <table>
+               <tr>
+                 {% for identity_type in body.required_identities -%}
+                     <th class="identity_column"> {{identity_type}}</th>
+                 {%- endfor %}
+                 <th>Preferences</th>
+               </tr>
+               {% for requested_change in body.requested_changes -%}
+                  <tr class="consent_preferences">
+                     {% for identity_type in body.required_identities -%}
+                        <td class="identity_column"> {{requested_change.identities.get(identity_type)}}</td>
+                     {%- endfor %}
+                     <td>
+                        {% for consent_option in requested_change.consent_preferences -%}
+                           {{consent_option.data_use}}: {{"Opt-in" if consent_option.opt_in else "Opt-out"}}{{", " if loop.index < requested_change.consent_preferences|length else ""}}
+                        {%- endfor %}
+                        {% for privacy_preference in requested_change.privacy_preferences -%}
+                           {{privacy_preference.privacy_notice_history.name}}: {{"Opt-in" if privacy_preference.preference.value == "opt_in" else "Opt-out"}}{{", " if loop.index < requested_change.privacy_preferences|length else ""}}
+                        {%- endfor %}
+                     </td>
+                  </tr>
+               {%- endfor %}
+            </table>
+         </p>
+
+         <p> You are legally obligated to honor the users' consent preferences. </p>
+
+      </main>
+   </body>
+</html>

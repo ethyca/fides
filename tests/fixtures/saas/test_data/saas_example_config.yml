@@ -1,0 +1,290 @@
+saas_config:
+  fides_key: saas_connector_example
+  name: SaaS Example Config
+  type: custom
+  description: A sample schema representing a SaaS for Fides
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+      default_value: localhost
+    - name: username
+    - name: api_key
+    - name: api_version
+    - name: page_size
+    - name: account_types
+      options: [checking, savings, investment]
+      multiselect: True
+
+  external_references:
+    - name: customer_id
+      description: An external reference to customer ID that must be configured, i.e. as if it came from another dataset
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <username>
+        password: <api_key>
+
+  test_request:
+    method: GET
+    path: /3.0/lists
+
+  endpoints:
+    - name: messages
+      requests:
+        read:
+          method: GET
+          path: /3.0/conversations/<conversation_id>/messages
+          param_values:
+            - name: conversation_id
+              references:
+                - dataset: saas_connector_example
+                  field: conversations.id
+                  direction: from
+          data_path: conversation_messages
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: from_email
+                value:
+                  identity: email
+    - name: conversations
+      requests:
+        read:
+          method: GET
+          ignore_errors: true
+          path: /3.0/conversations
+          query_params:
+            - name: count
+              value: 1000
+            - name: offset
+              value: 0
+          param_values:
+            - name: placeholder
+              identity: email
+          data_path: conversations
+    - name: member
+      requests:
+        read:
+          - method: GET
+            path: /3.0/search-members
+            query_params:
+              - name: query
+                value: <email>
+            param_values:
+              - name: email
+                identity: email
+            data_path: exact_matches.members
+          - method: GET
+            path: /3.0/search-members
+            query_params:
+              - name: query
+                value: <phone>
+            param_values:
+              - name: phone
+                identity: phone
+            data_path: exact_matches.members
+        update:
+          method: PUT
+          path: /3.0/lists/<list_id>/members/<subscriber_hash>
+          param_values:
+            - name: list_id
+              references:
+                - dataset: saas_connector_example
+                  field: member.list_id
+                  direction: from
+            - name: subscriber_hash
+              references:
+                - dataset: saas_connector_example
+                  field: member.id
+                  direction: from
+          body: |
+            {
+              <masked_object_fields>
+            }
+    - name: payment_methods
+      requests:
+        read:
+          method: GET
+          path: /<version>/payment_methods
+          headers:
+            - name: Content-Type
+              value: application/json
+            - name: On-Behalf-Of
+              value: <email>
+            - name: Token
+              value: Custom <api_key>
+          query_params:
+            - name: limit
+              value: <limit>
+            - name: query
+              value: <email>
+          param_values:
+            - name: limit
+              connector_param: page_size
+            - name: version
+              connector_param: api_version
+            - name: email
+              identity: email
+            - name: api_key
+              connector_param: api_key
+        update:
+          method: PUT
+          path: /<version>/payment_methods
+          param_values:
+            - name: version
+              connector_param: api_version
+          body: |
+            {
+              <masked_object_fields>
+            }
+    - name: projects
+      requests:
+        read:
+          method: GET
+          path: /api/0/projects/
+          param_values:
+            - name: placeholder
+              identity: email
+    - name: users
+      after: [saas_connector_example.projects]
+      requests:
+        read:
+          method: GET
+          path: /api/0/projects/<organization_slug>/<project_slug>/user-feedback/
+          query_params:
+            - name: query
+              value: <query>
+          grouped_inputs: [organization_slug, project_slug, query]
+          param_values:
+            - name: organization_slug
+              references:
+                - dataset: saas_connector_example
+                  field: projects.organization.slug
+                  direction: from
+            - name: project_slug
+              references:
+                - dataset: saas_connector_example
+                  field: projects.slug
+                  direction: from
+            - name: query
+              identity: email
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /v1/customers/<customer_id>
+          param_values:
+            - name: customer_id
+              references:
+                - customer_id
+        update:
+          method: POST
+          path: /v1/customers/<customer_id>
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: saas_connector_example
+                  field: customer.id
+                  direction: from
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          body: |
+            {
+              <all_object_fields>
+            }
+    - name: data_management
+      requests:
+        read:
+          method: GET
+          path: /v1/privacy_request/<privacy_request_id>
+          param_values:
+            - name: placeholder
+              identity: email
+        update:
+          method: POST
+          path: /v1/privacy_request/
+          param_values:
+            - name: placeholder
+              identity: email
+          body: |
+            {
+              "unique_id": "<privacy_request_id>"
+            }
+    - name: accounts
+      requests:
+        read:
+          method: GET
+          path: /v1/<customer_id>/account
+          grouped_inputs: [customer_id, customer_name]
+          query_params:
+            - name: account_type
+              value: <account_type>
+            - name: customer_name
+              value: <customer_name>
+          param_values:
+            - name: account_type
+              connector_param: account_types
+            - name: customer_id
+              references:
+                - dataset: saas_connector_example
+                  field: customer.id
+                  direction: from
+            - name: customer_name
+              references:
+                - dataset: saas_connector_example
+                  field: customer.name
+                  direction: from
+    - name: mailing_lists
+      requests:
+        read:
+          method: GET
+          path: /v1/mailing_list/<list_id>
+          param_values:
+            - name: list_id
+              references:
+                - dataset: saas_connector_example
+                  field: users.list_ids
+                  direction: from
+              unpack: True
+    - name: people
+      requests:
+        delete:
+          method: POST
+          path: /api/1/people/delete_jobs
+          query_params:
+            - name: email
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+    - name: tickets
+      requests:
+        read:
+          - method: GET
+            path: /v1/tickets
+            query_params:
+              - name: status
+                value: open
+            param_values:
+              - name: customer_id
+                references:
+                  - dataset: saas_connector_example
+                    field: customer.id
+                    direction: from
+          - method: GET
+            path: /v1/tickets
+            query_params:
+              - name: status
+                value: closed
+            param_values:
+              - name: customer_id
+                references:
+                  - dataset: saas_connector_example
+                    field: customer.id
+                    direction: from

@@ -6,7 +6,7 @@ import SearchBar from "~/features/common/SearchBar";
 import SystemCard from "~/features/system/SystemCard";
 import { System } from "~/types/api";
 
-const SEARCH_FILTER = (system: System, search: string) =>
+export const SEARCH_FILTER = (system: System, search: string) =>
   system.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
   system.description?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
 
@@ -37,6 +37,7 @@ const SystemsManagement = ({ systems }: Props) => {
           maxWidth="30vw"
           placeholder="Search system name or description"
           data-testid="system-search"
+          withIcon
         />
       </Box>
       <BorderGrid<System>

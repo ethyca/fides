@@ -1,0 +1,52 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Kustomer
+  type: kustomer
+  description: A sample schema representing the Kustomer connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: api.kustomerapp.com
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <api_key>
+
+  test_request:
+    method: GET
+    path: /v1/audit-logs
+    query_params:
+      - name: count
+        value: 1
+
+  endpoints:
+    - name: customer
+      requests:
+        read:
+          - method: GET
+            path: /v1/customers/email=<email>
+            param_values:
+              - name: email
+                identity: email
+            data_path: data
+          - method: GET
+            path: /v1/customers/phone=<phone_number>
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            data_path: data
+        delete:
+          method: DELETE
+          path: /v1/customers/<customer_id>
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customer.id
+                  direction: from

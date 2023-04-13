@@ -23,12 +23,13 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
         <Box
           boxShadow="base"
           borderRadius="5px"
-          maxWidth="232px"
+          maxWidth="331px"
           overflow="hidden"
           _hover={{
             boxShadow: "lg",
             cursor: "pointer",
           }}
+          data-testid={`${i.identifier}-item`}
         >
           <Flex
             alignItems="center"
@@ -41,7 +42,7 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
             lineHeight="20px"
             h="80px"
           >
-            <ConnectionTypeLogo data={i.identifier} />
+            <ConnectionTypeLogo data={i} />
             <Text ml="12px">{i.human_readable}</Text>
           </Flex>
         </Box>

@@ -2,6 +2,7 @@
 import { ThemingProps } from "@chakra-ui/system";
 import {
   Button,
+  Center,
   Modal,
   ModalBody,
   ModalContent,
@@ -25,6 +26,8 @@ interface Props {
   isLoading?: boolean;
   returnFocusOnClose?: boolean;
   isCentered?: boolean;
+  testId?: string;
+  icon?: ReactNode;
 }
 const ConfirmationModal = ({
   isOpen,
@@ -39,17 +42,24 @@ const ConfirmationModal = ({
   isLoading,
   returnFocusOnClose,
   isCentered,
+  testId = "confirmation-modal",
+  icon,
 }: Props) => (
   <Modal
     isOpen={isOpen}
     onClose={onClose}
     size="lg"
-    returnFocusOnClose={returnFocusOnClose || true}
+    returnFocusOnClose={returnFocusOnClose ?? true}
     isCentered={isCentered}
   >
     <ModalOverlay />
-    <ModalContent textAlign="center" p={2} data-testid="confirmation-modal">
-      {title ? <ModalHeader fontWeight="medium">{title}</ModalHeader> : null}
+    <ModalContent textAlign="center" p={6} data-testid={testId}>
+      {icon ? <Center mb={2}>{icon}</Center> : null}
+      {title ? (
+        <ModalHeader fontWeight="medium" pb={0}>
+          {title}
+        </ModalHeader>
+      ) : null}
       {message ? <ModalBody>{message}</ModalBody> : null}
       <ModalFooter>
         <SimpleGrid columns={2} width="100%">

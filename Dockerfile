@@ -1,5 +1,5 @@
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
-ARG PYTHON_VERSION="3.10.7"
+ARG PYTHON_VERSION="3.10.11"
 
 
 #########################
@@ -118,3 +118,6 @@ COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-buil
 # Install without a symlink
 RUN python setup.py sdist
 RUN pip install dist/ethyca-fides-*.tar.gz
+
+# Remove this directory to prevent issues with catch all
+RUN rm -r /fides/src/fides/ui-build

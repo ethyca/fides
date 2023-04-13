@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 from fideslang.validation import FidesKey
 from pydantic import Field, validator
 
+from fides.api.custom_types import SafeStr
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -18,11 +19,9 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.models.audit_log import AuditLogAction
 from fides.lib.oauth.schemas.user import PrivacyRequestReviewer
-
-CONFIG = get_config()
 
 
 class PrivacyRequestDRPStatus(EnumType):
@@ -60,6 +59,8 @@ class Consent(BaseSchema):
     data_use: str
     data_use_description: Optional[str] = None
     opt_in: bool
+    has_gpc_flag: bool = False
+    conflicts_with_gpc: bool = False
 
 
 class PrivacyRequestCreate(BaseSchema):
@@ -72,7 +73,7 @@ class PrivacyRequestCreate(BaseSchema):
     identity: Identity
     policy_key: FidesKey
     encryption_key: Optional[str] = None
-    consent_preferences: Optional[List[Consent]] = None
+    consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
 
     @validator("encryption_key")
     def validate_encryption_key(
@@ -222,7 +223,7 @@ class ReviewPrivacyRequestIds(BaseSchema):
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):
     """Pass in a list of privacy request ids and rejection reason"""
 
-    reason: Optional[str]
+    reason: Optional[SafeStr]
 
 
 class BulkPostPrivacyRequests(BulkResponse):

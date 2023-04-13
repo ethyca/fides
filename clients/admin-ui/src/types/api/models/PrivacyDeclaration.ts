@@ -12,7 +12,7 @@ export type PrivacyDeclaration = {
   /**
    * The name of the privacy declaration on the system.
    */
-  name: string;
+  name?: string;
   /**
    * An array of data categories describing a system in a privacy declaration.
    */

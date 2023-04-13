@@ -27,7 +27,6 @@ services:
       FIDES__DATABASE__DB: "child_test_db"
       FIDES__DATABASE__TEST_DB: "child_test_db"
       FIDES__DEV_MODE: "True"
-      FIDES__REDIS__ENABLED: "True"
       FIDES__REDIS__HOST: "redis-child"
       FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
@@ -66,9 +65,7 @@ services:
 
   redis-child:
     image: "redis:6.2.5-alpine"
-    command: redis-server --requirepass testpassword
-    environment:
-      - REDIS_PASSWORD=testpassword
+    command: redis-server --requirepass redispassword
     expose:
       - 6379
     ports:

@@ -52,6 +52,7 @@ from fides.api.ops.api.v1.urn_registry import (
 )
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.application_config import ApplicationConfig
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.policy import ActionType, CurrentStep, Policy
@@ -76,25 +77,24 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.policy import PolicyResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.task import graph_task
-from fides.api.ops.task.graph_task import run_access_request
-from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 from fides.api.ops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.roles import APPROVER, VIEWER
 
-CONFIG = get_config()
 page_size = Params().size
 
 
@@ -593,6 +593,13 @@ class TestGetPrivacyRequests:
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
+    def test_get_privacy_requests_approver_role(
+        self, api_client: TestClient, generate_role_header, url
+    ):
+        auth_header = generate_role_header(roles=[APPROVER])
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
     def test_conflicting_query_params(
         self, api_client: TestClient, generate_auth_header, url
     ):
@@ -812,6 +819,30 @@ class TestGetPrivacyRequests:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert resp["items"][0].get("identity") is None
+
+    def test_filter_privacy_requests_by_action(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request,
+        executable_consent_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url + f"?action_type=access", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+
+        response = api_client.get(url + f"?action_type=consent", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 1
+
+        response = api_client.get(url + f"?action_type=erasure", headers=auth_header)
+        assert 200 == response.status_code
+        resp = response.json()
+        assert len(resp["items"]) == 0
 
     def test_filter_privacy_requests_by_status(
         self,
@@ -1285,6 +1316,7 @@ class TestGetPrivacyRequests:
             "email": TEST_EMAIL,
             "phone_number": TEST_PHONE,
             "ga_client_id": None,
+            "ljt_readerID": None,
         }
         assert first_row["Request Type"] == "access"
         assert first_row["Status"] == "approved"
@@ -1443,7 +1475,7 @@ class TestGetPrivacyRequests:
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
         privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -1454,7 +1486,7 @@ class TestGetPrivacyRequests:
         data = response.json()["items"][0]
         assert data["status"] == "error"
         assert data["action_required_details"] == {
-            "step": "erasure_email_post_send",
+            "step": "email_post_send",
             "collection": None,
             "action_needed": None,
         }
@@ -1525,7 +1557,8 @@ class TestGetPrivacyRequests:
         api_client.post(url, json=data)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        resp = api_client.get(
+        resp = api_client.request(
+            "GET",
             f"{url}?sort_direction=asc&sort_field=due_date",
             json=data,
             headers=auth_header,
@@ -1535,7 +1568,8 @@ class TestGetPrivacyRequests:
         for i, request in enumerate(asc_response_data):
             assert request["days_left"] == days_left_values[i]
 
-        resp = api_client.get(
+        resp = api_client.request(
+            "GET",
             f"{url}?sort_direction=desc&sort_field=due_date",
             json=data,
             headers=auth_header,
@@ -1790,12 +1824,14 @@ class TestApprovePrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUEST_APPROVE
 
     @pytest.fixture(scope="function")
-    def privacy_request_review_notification_enabled(self):
+    def privacy_request_review_notification_enabled(self, db):
         """Enable request review notification"""
         original_value = CONFIG.notifications.send_request_review_notification
         CONFIG.notifications.send_request_review_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_review_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_approve_privacy_request_not_authenticated(self, url, api_client):
         response = api_client.patch(url)
@@ -1807,6 +1843,27 @@ class TestApprovePrivacyRequest:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.patch(url, headers=auth_header)
         assert response.status_code == 403
+
+    def test_approve_privacy_request_viewer_role(
+        self, url, api_client, generate_role_header
+    ):
+        auth_header = generate_role_header(roles=[VIEWER])
+        response = api_client.patch(url, headers=auth_header)
+        assert response.status_code == 403
+
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_approve_privacy_request_approver_role(
+        self, _, url, api_client, generate_role_header, privacy_request, db
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+
+        auth_header = generate_role_header(roles=[APPROVER])
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -1915,7 +1972,7 @@ class TestApprovePrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -1961,7 +2018,7 @@ class TestApprovePrivacyRequest:
         privacy_request_review_notification_enabled,
     ):
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -1989,7 +2046,7 @@ class TestApprovePrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2007,12 +2064,14 @@ class TestDenyPrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUEST_DENY
 
     @pytest.fixture(autouse=True, scope="function")
-    def privacy_request_review_notification_enabled(self):
+    def privacy_request_review_notification_enabled(self, db):
         """Enable request review notification"""
         original_value = CONFIG.notifications.send_request_review_notification
         CONFIG.notifications.send_request_review_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_review_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_deny_privacy_request_not_authenticated(self, url, api_client):
         response = api_client.patch(url)
@@ -2088,7 +2147,7 @@ class TestDenyPrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2119,7 +2178,7 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2159,7 +2218,7 @@ class TestDenyPrivacyRequest:
         privacy_request.save(db=db)
 
         payload = {
-            JWE_PAYLOAD_SCOPES: user.client.scopes,
+            JWE_PAYLOAD_ROLES: user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
@@ -2190,7 +2249,7 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2783,7 +2842,7 @@ class TestBulkRestartFromFailure:
         privacy_requests[0].save(db)
 
         privacy_requests[0].cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -2800,7 +2859,7 @@ class TestBulkRestartFromFailure:
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_requests[0].id,
-            from_step=CurrentStep.erasure_email_post_send.value,
+            from_step=CurrentStep.email_post_send.value,
             from_webhook_id=None,
         )
 
@@ -2929,7 +2988,7 @@ class TestRestartFromFailure:
         privacy_request.save(db)
 
         privacy_request.cache_failed_checkpoint_details(
-            step=CurrentStep.erasure_email_post_send,
+            step=CurrentStep.email_post_send,
             collection=None,
         )
 
@@ -2941,7 +3000,7 @@ class TestRestartFromFailure:
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_request.id,
-            from_step=CurrentStep.erasure_email_post_send.value,
+            from_step=CurrentStep.email_post_send.value,
             from_webhook_id=None,
         )
 
@@ -2956,12 +3015,14 @@ class TestVerifyIdentity:
         )
 
     @pytest.fixture(scope="function")
-    def privacy_request_receipt_notification_enabled(self):
+    def privacy_request_receipt_notification_enabled(self, db):
         """Enable request receipt"""
         original_value = CONFIG.notifications.send_request_receipt_notification
         CONFIG.notifications.send_request_receipt_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_receipt_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_incorrect_privacy_request_status(self, api_client, url, privacy_request):
         request_body = {"code": self.code}
@@ -3112,7 +3173,7 @@ class TestVerifyIdentity:
         assert task_kwargs["to_identity"] == Identity(
             phone_number="+12345678910", email="test@example.com"
         )
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3220,7 +3281,7 @@ class TestVerifyIdentity:
         assert task_kwargs["to_identity"] == Identity(
             phone_number="+12345678910", email="test@example.com"
         )
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3239,12 +3300,14 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
     @pytest.fixture(scope="function")
-    def subject_identity_verification_required(self):
+    def subject_identity_verification_required(self, db):
         """Override autouse fixture to enable identity verification for tests"""
         original_value = CONFIG.execution.subject_identity_verification_required
         CONFIG.execution.subject_identity_verification_required = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.execution.subject_identity_verification_required = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_create_privacy_request_no_email_config(
         self,
@@ -3320,7 +3383,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
             kwargs["action_type"] == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
         )
         assert kwargs["to_identity"] == Identity(email="test@example.com")
-        assert kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert kwargs["service_type"] == MessagingServiceType.mailgun.value
         assert kwargs["message_body_params"] == SubjectIdentityVerificationBodyParams(
             verification_code=pr.get_cached_verification_code(),
             verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
@@ -3793,12 +3856,14 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
     @pytest.fixture(scope="function")
-    def privacy_request_receipt_notification_enabled(self):
+    def privacy_request_receipt_notification_enabled(self, db):
         """Enable request receipt notification"""
         original_value = CONFIG.notifications.send_request_receipt_notification
         CONFIG.notifications.send_request_receipt_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.notifications.send_request_receipt_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -3837,7 +3902,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3888,7 +3953,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3909,11 +3974,13 @@ class TestCreatePrivacyRequestAuthenticated:
         return f"{V1_URL_PREFIX}{PRIVACY_REQUEST_AUTHENTICATED}"
 
     @pytest.fixture
-    def verification_config(self):
+    def verification_config(self, db):
         original = CONFIG.execution.subject_identity_verification_required
         CONFIG.execution.subject_identity_verification_required = True
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
         CONFIG.execution.subject_identity_verification_required = original
+        ApplicationConfig.update_config_set(db, CONFIG)
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"

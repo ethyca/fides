@@ -27,7 +27,6 @@ from fides.api.ops.util.encryption.secrets_util import SecretsUtil
 
 
 class AesEncryptionMaskingStrategy(MaskingStrategy):
-
     name = "aes_encrypt"
     configuration_model = AesEncryptionMaskingConfiguration
 

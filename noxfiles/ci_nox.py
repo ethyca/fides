@@ -3,9 +3,15 @@ from functools import partial
 from typing import Callable, Dict
 
 import nox
-
-from constants_nox import IMAGE_NAME, RUN, RUN_NO_DEPS, START_APP, WITH_TEST_CONFIG
-from test_setup_nox import pytest_ctl, pytest_lib, pytest_ops
+from constants_nox import (
+    CONTAINER_NAME,
+    IMAGE_NAME,
+    LOGIN,
+    RUN_NO_DEPS,
+    START_APP,
+    WITH_TEST_CONFIG,
+)
+from test_setup_nox import pytest_ctl, pytest_lib, pytest_nox, pytest_ops
 from utils_nox import install_requirements
 
 
@@ -96,7 +102,11 @@ def xenon(session: nox.Session) -> None:
 ##################
 @nox.session()
 def check_install(session: nox.Session) -> None:
-    """Check that fides installs works correctly."""
+    """
+    Check that fides installs and works correctly.
+
+    This is also a good sanity check for correct syntax.
+    """
     session.install(".")
 
     REQUIRED_ENV_VARS = {
@@ -125,8 +135,11 @@ def fides_db_scan(session: nox.Session) -> None:
     """Scan the fides application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
-    run_command = (
-        *RUN,
+    scan_command = (
+        "docker",
+        "container",
+        "exec",
+        CONTAINER_NAME,
         "fides",
         "scan",
         "dataset",
@@ -134,7 +147,8 @@ def fides_db_scan(session: nox.Session) -> None:
         "--credentials-id",
         "app_postgres",
     )
-    session.run(*run_command, external=True)
+    session.run(*LOGIN, external=True)
+    session.run(*scan_command, external=True)
 
 
 @nox.session()
@@ -171,6 +185,7 @@ TEST_GROUPS = [
     nox.param("ops-external-datastores", id="ops-external-datastores"),
     nox.param("ops-saas", id="ops-saas"),
     nox.param("lib", id="lib"),
+    nox.param("nox", id="nox"),
 ]
 
 TEST_MATRIX: Dict[str, Callable] = {
@@ -183,6 +198,7 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
     "ops-saas": partial(pytest_ops, mark="saas"),
     "lib": pytest_lib,
+    "nox": pytest_nox,
 }
 
 
@@ -201,6 +217,9 @@ def validate_test_matrix(session: nox.Session) -> None:
 def collect_tests(session: nox.Session) -> None:
     """
     Collect all pytests as a validity check.
+
+    Good to run as a sanity check that there aren't any obvious syntax
+    errors within the test code.
     """
     session.install(".")
     install_requirements(session)

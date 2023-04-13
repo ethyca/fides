@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Hubspot Dataset
-    description: A sample dataset representing the Hubspot connector for Fidesops
+    description: A sample dataset representing the Hubspot connector for Fides
     collections:
       - name: contacts
         fields:

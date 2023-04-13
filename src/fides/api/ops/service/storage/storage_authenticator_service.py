@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from botocore.exceptions import ClientError
 
@@ -13,9 +13,17 @@ from fides.api.ops.util.storage_authenticator import get_s3_session
 
 def secrets_are_valid(
     secrets: SUPPORTED_STORAGE_SECRETS,
-    storage_type: StorageType,
+    storage_type: Union[StorageType, str],
 ) -> bool:
     """Authenticates upload destination with appropriate upload method"""
+    if not isinstance(storage_type, StorageType):
+        # try to coerce into an enum
+        try:
+            storage_type = StorageType[storage_type]
+        except KeyError:
+            raise ValueError(
+                "storage_type argument must be a valid StorageType enum member."
+            )
     uploader: Any = _get_authenticator_from_config(storage_type)
     return uploader(secrets)
 

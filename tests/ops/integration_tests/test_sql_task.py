@@ -26,7 +26,7 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.core.config import get_config
+from fides.core.config import CONFIG
 
 from ..graph.graph_test_util import (
     assert_rows_match,
@@ -39,8 +39,6 @@ from ..task.traversal_data import (
     integration_db_graph,
     str_converter,
 )
-
-CONFIG = get_config()
 
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
@@ -131,7 +129,6 @@ async def test_composite_key_erasure(
     db,
     integration_postgres_config: ConnectionConfig,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=str(uuid4()))
     policy = erasure_policy("A")
     customer = Collection(
@@ -281,7 +278,6 @@ async def test_postgres_access_request_task(
     integration_postgres_config,
     postgres_integration_db,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
@@ -454,7 +450,6 @@ async def test_mssql_access_request_task(
     connection_config_mssql,
     mssql_integration_db,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
@@ -542,7 +537,6 @@ async def test_mysql_access_request_task(
     connection_config_mysql,
     mysql_integration_db,
 ) -> None:
-
     privacy_request = PrivacyRequest(id=str(uuid4()))
 
     v = await graph_task.run_access_request(
@@ -935,7 +929,6 @@ async def test_access_erasure_type_conversion(
 class TestRetrievingData:
     @pytest.fixture
     def connector(self, integration_postgres_config):
-
         return get_connector(integration_postgres_config)
 
     @pytest.fixture

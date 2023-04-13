@@ -135,8 +135,32 @@ const usePrivacyRequestForm = ({
     },
     validationSchema: Yup.object().shape({
       name: nameValidation(identityInputs?.name),
-      email: emailValidation(identityInputs?.email),
-      phone: phoneValidation(identityInputs?.phone),
+      email: emailValidation(identityInputs?.email).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (value, context) => {
+          if (
+            identityInputs?.email === "optional" &&
+            identityInputs?.phone === "optional"
+          ) {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
+        }
+      ),
+      phone: phoneValidation(identityInputs?.phone).test(
+        "one of email or phone entered",
+        "You must enter either email or phone",
+        (value, context) => {
+          if (
+            identityInputs?.email === "optional" &&
+            identityInputs?.phone === "optional"
+          ) {
+            return Boolean(context.parent.phone || context.parent.email);
+          }
+          return true;
+        }
+      ),
     }),
   });
 
@@ -233,10 +257,13 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   name="email"
                   type="email"
                   focusBorderColor="primary.500"
-                  placeholder="test-email@example.com"
+                  placeholder="your-email@example.com"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.email}
+                  isDisabled={Boolean(
+                    typeof values.phone !== "undefined" && values.phone
+                  )}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
@@ -256,6 +283,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   }}
                   onBlur={handleBlur}
                   value={values.phone}
+                  isDisabled={Boolean(
+                    typeof values.email !== "undefined" && values.email
+                  )}
                 />
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>

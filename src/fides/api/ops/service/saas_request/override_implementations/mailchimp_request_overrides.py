@@ -57,7 +57,6 @@ def mailchimp_messages_access(
     processed_data = []
     if conversation_ids:
         for conversation_id in conversation_ids:
-
             response = client.send(
                 SaaSRequestParams(
                     method=HTTPMethod.GET,

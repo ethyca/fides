@@ -22,7 +22,10 @@ import { ConnectionType } from "~/types/api";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
 import { formatKey } from "../helpers";
-import { DatabaseConnectorParametersFormFields } from "../types";
+import {
+  BaseConnectorParametersFields,
+  DatabaseConnectorParametersFormFields,
+} from "../types";
 
 type ConnectorParametersProps = {
   data: ConnectionTypeSecretSchemaReponse;
@@ -36,19 +39,14 @@ type ConnectorParametersProps = {
   onTestConnectionClick: (value: any) => void;
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
-  data,
+export const useDatabaseConnector = ({
   onConnectionCreated,
-  onTestConnectionClick,
-}) => {
+  data,
+}: Pick<ConnectorParametersProps, "onConnectionCreated" | "data">) => {
   const dispatch = useDispatch();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
-  const defaultValues = {
-    description: "",
-    instance_key: "",
-    name: "",
-  } as DatabaseConnectorParametersFormFields;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption } = useAppSelector(
@@ -59,8 +57,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSubmit = async (values: any, _actions: any) => {
+  const handleSubmit = async (values: BaseConnectorParametersFields) => {
     try {
       setIsSubmitting(true);
       const params1: DatastoreConnectionRequest = {
@@ -109,6 +106,23 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       setIsSubmitting(false);
     }
   };
+
+  return { isSubmitting, handleSubmit, connectionOption };
+};
+
+export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
+  data,
+  onConnectionCreated,
+  onTestConnectionClick,
+}) => {
+  const defaultValues = {
+    description: "",
+    instance_key: "",
+    name: "",
+  } as DatabaseConnectorParametersFormFields;
+  const { isSubmitting, handleSubmit, connectionOption } = useDatabaseConnector(
+    { onConnectionCreated, data }
+  );
 
   return (
     <>

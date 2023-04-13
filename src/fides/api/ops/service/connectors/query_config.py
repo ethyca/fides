@@ -108,7 +108,6 @@ class QueryConfig(Generic[T], ABC):
         t = QueryToken()
 
         for field_str, input_collection_address in self.query_sources().items():
-
             if (
                 len(input_collection_address) == 1
                 and input_collection_address[0] == ROOT_COLLECTION_ADDRESS
