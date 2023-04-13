@@ -35,19 +35,32 @@ jobs:
         run: nox -s "push(dev)"
 
       - name: Check Prod Tag
-        id: check-tag
+        id: check-prod-tag
         run: |
           if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo ::set-output name=match::true
+              echo "match=true" >> $GITHUB_OUTPUT
           else
-              echo ::set-output name=match::false
+              echo "match=false" >> $GITHUB_OUTPUT
           fi
+      - name: Check RC Tag
+        id: check-rc-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+(rc[0-9]+)$ ]]; then
+              echo "match=true" >> $GITHUB_OUTPUT
+          else
+              echo "match=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Push Fides Prod Tags
-        if: steps.check-tag.outputs.match == 'true'
+        if: steps.check-prod-tag.outputs.match == 'true'
         run: nox -s "push(prod)"
 
-      # if not a prod tag, then we run the git-tag job to publish images with a git tag
+      - name: Push Fides RC Tags
+        if: steps.check-rc-tag.outputs.match == 'true'
+        run: nox -s "push(rc)"
+
+      # if not a prod or RC tag, then we run the git-tag job to publish images with a git tag
       # if one exists on the current commit. the job is a no-op if the commit hasn't been tagged
       - name: Push Fides Commit Tags
-        if: steps.check-tag.outputs.match == 'false'
+        if: steps.check-prod-tag.outputs.match == 'false'
         run: nox -s "push(git-tag)"
