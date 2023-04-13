@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { narrow } from "narrow-minded";
 import type { ConnectionType } from "./ConnectionType";
 import type { SystemType } from "./SystemType";
 
@@ -17,11 +16,6 @@ export type ConnectionSystemTypeMap = {
 };
 
 export const isConnectionSystemTypeMap = (
-  obj: unknown
+  obj: any
 ): obj is ConnectionSystemTypeMap =>
-  narrow(
-    {
-      encoded_icon: "string",
-    },
-    obj
-  );
+  (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
