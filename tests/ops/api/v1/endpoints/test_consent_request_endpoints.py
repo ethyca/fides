@@ -97,9 +97,8 @@ class TestConsentRequestReporting:
         assert response.status_code == 200
         data = response.json()
         assert data["total"] == 1
-        for idx in [0]:
-            item = data["items"][idx]
-            assert item["data_use"] == "email"
+        item = data["items"][0]
+        assert item["data_use"] == "email"
 
     def test_consent_request_report_filters_opt_in(
         self,
@@ -116,9 +115,8 @@ class TestConsentRequestReporting:
         assert response.status_code == 200
         data = response.json()
         assert data["total"] == 1
-        for idx in [0]:
-            item = data["items"][idx]
-            assert item["opt_in"] == True
+        item = data["items"][0]
+        assert item["opt_in"] == True
 
     def test_consent_request_report_filters_gpc_flag(
         self,
