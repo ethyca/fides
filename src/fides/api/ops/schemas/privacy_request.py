@@ -63,6 +63,14 @@ class Consent(BaseSchema):
     conflicts_with_gpc: bool = False
 
 
+class ConsentReport(Consent):
+    """Schema for reporting Consent requests."""
+
+    identity: Identity
+    created_at: datetime
+    updated_at: datetime
+
+
 class PrivacyRequestCreate(BaseSchema):
     """Data required to create a PrivacyRequest"""
 

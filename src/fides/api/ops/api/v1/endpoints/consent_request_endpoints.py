@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
 from fastapi import Depends, HTTPException, Security
+from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, Query
+from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
@@ -42,7 +47,7 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingMethod
-from fides.api.ops.schemas.privacy_request import BulkPostPrivacyRequests
+from fides.api.ops.schemas.privacy_request import BulkPostPrivacyRequests, ConsentReport
 from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
@@ -64,6 +69,94 @@ router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
 
 CONFIG_JSON_PATH = "clients/privacy-center/config/config.json"
+
+
+def _filter_consent(
+    query: Query,
+    data_use: Optional[str] = None,
+    has_gpc_flag: Optional[bool] = None,
+    opt_in: Optional[bool] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    updated_lt: Optional[datetime] = None,
+    updated_gt: Optional[datetime] = None,
+) -> Query:
+    if data_use:
+        query = query.filter(Consent.data_use == data_use)
+    if has_gpc_flag:
+        query = query.filter(Consent.has_gpc_flag == has_gpc_flag)
+    if opt_in:
+        query = query.filter(Consent.opt_in == opt_in)
+
+    for end, start, field_name in [
+        [created_lt, created_gt, "created"],
+        [updated_lt, updated_gt, "completed"],
+    ]:
+        if end is None or start is None:
+            continue
+
+        if not (isinstance(end, datetime) and isinstance(start, datetime)):
+            continue
+
+        if end < start:
+            # With date fields, if the start date is after the end date, return a 400
+            # because no records will lie within this range.
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
+            )
+
+    if created_lt:
+        query = query.filter(Consent.created_at < created_lt)
+    if created_gt:
+        query = query.filter(Consent.created_at > created_gt)
+    if updated_lt:
+        query = query.filter(Consent.created_at < created_lt)
+    if updated_gt:
+        query = query.filter(Consent.created_at > created_gt)
+    return query
+
+
+@router.get(
+    CONSENT_REQUEST_PREFERENCES,
+    dependencies=[Security(verify_oauth_client, scopes=[CONSENT_READ])],
+    status_code=HTTP_200_OK,
+    response_model=Page[ConsentReport],
+)
+def report_consent_requests(
+    *,
+    db: Session = Depends(get_db),
+    params: Params = Depends(),
+    data_use: Optional[str] = None,
+    has_gpc_flag: Optional[bool] = None,
+    opt_in: Optional[bool] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    updated_lt: Optional[datetime] = None,
+    updated_gt: Optional[datetime] = None,
+) -> Union[StreamingResponse, AbstractPage[ConsentReport]]:
+    """Provides a paginated, sorted list of all consent requests."""
+
+    query = Consent.query(db)
+    query = _filter_consent(
+        query,
+        data_use,
+        has_gpc_flag,
+        opt_in,
+        created_gt,
+        created_lt,
+        updated_gt,
+        updated_lt,
+    )
+    paginated = paginate(query, params)
+    paginated.items = [
+        _prepare_consent_report(
+            db=db,
+            consent=item,
+        )
+        for item in paginated.items
+    ]
+    return paginated
 
 
 @router.post(
@@ -507,14 +600,31 @@ def _get_consent_request_and_provided_identity(
     return consent_request, provided_identity
 
 
+def _prepare_consent_report(
+    db: Session,
+    consent: Consent,
+) -> ConsentReport:
+    """Enhances a consent request with identity, created and updated timestamps."""
+    provided_identity = ProvidedIdentity.get_by(
+        db=db,
+        field="id",
+        value=consent.provided_identity_id,
+    )
+    consent.identity = provided_identity.as_identity_schema()
+    report = ConsentReport.from_orm(consent)
+    return report
+
+
 def _prepare_consent_preferences(
-    db: Session, provided_identity: ProvidedIdentity
+    db: Session,
+    provided_identity: ProvidedIdentity,
 ) -> ConsentPreferences:
-    consent: List[Consent] = Consent.filter(
+    """Returns consent preferences for the identity given."""
+    consent_records: List[Consent] = Consent.filter(
         db=db, conditions=Consent.provided_identity_id == provided_identity.id
     ).all()
 
-    if not consent:
+    if not consent_records:
         return ConsentPreferences(consent=None)
 
     return ConsentPreferences(
@@ -526,6 +636,6 @@ def _prepare_consent_preferences(
                 has_gpc_flag=x.has_gpc_flag,
                 conflicts_with_gpc=x.conflicts_with_gpc,
             )
-            for x in consent
+            for x in consent_records
         ],
     )

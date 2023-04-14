@@ -877,6 +877,22 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         )
         return hashed_value
 
+    def as_identity_schema(self) -> Identity:
+        """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
+        identity = Identity()
+        if any([
+            not self.field_name,
+            not self.encrypted_value,
+        ]):
+            return identity
+
+        setattr(
+            identity,
+            self.field_name.value,
+            self.encrypted_value.get("value"),
+        )
+        return identity
+
 
 class Consent(Base):
     """The DB ORM model for Consent."""
