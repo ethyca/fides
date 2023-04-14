@@ -78,48 +78,52 @@ for model_type, fides_model in model_map.items():
         prefix=f"{API_PREFIX}/{model_type}",
     )
 
-    @router.post(
-        "/",
-        response_model=fides_model,
-        status_code=status.HTTP_201_CREATED,
-        dependencies=[
-            Security(
-                verify_oauth_client_prod,
-                scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}"],
-            )
-        ],
-        responses={
-            status.HTTP_403_FORBIDDEN: {
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "detail": {
-                                "error": "user does not have permission to modify this resource",
-                                "resource_type": model_type,
-                                "fides_key": "example.key",
+    if (
+        model_type != "system"
+    ):  # System Create endpoint defined separately in /routes/system.py
+
+        @router.post(
+            "/",
+            response_model=fides_model,
+            status_code=status.HTTP_201_CREATED,
+            dependencies=[
+                Security(
+                    verify_oauth_client_prod,
+                    scopes=[f"{CLI_SCOPE_PREFIX_MAPPING[model_type]}:{CREATE}"],
+                )
+            ],
+            responses={
+                status.HTTP_403_FORBIDDEN: {
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "detail": {
+                                    "error": "user does not have permission to modify this resource",
+                                    "resource_type": model_type,
+                                    "fides_key": "example.key",
+                                }
                             }
                         }
                     }
-                }
+                },
             },
-        },
-    )
-    async def create(
-        resource: fides_model,
-        resource_type: str = get_resource_type(router),
-        db: AsyncSession = Depends(get_async_db),
-    ) -> Dict:
-        """
-        Create a resource.
+        )
+        async def create(
+            resource: fides_model,
+            resource_type: str = get_resource_type(router),
+            db: AsyncSession = Depends(get_async_db),
+        ) -> Dict:
+            """
+            Create a resource.
 
-        Payloads with an is_default field can only be set to False,
-        will return a `403 Forbidden`.
-        """
-        sql_model = sql_model_map[resource_type]
-        await validate_data_categories(resource, db)
-        if sql_model in models_with_default_field and resource.is_default:
-            raise errors.ForbiddenError(resource_type, resource.fides_key)
-        return await create_resource(sql_model, resource.dict(), db)
+            Payloads with an is_default field can only be set to False,
+            will return a `403 Forbidden`.
+            """
+            sql_model = sql_model_map[resource_type]
+            await validate_data_categories(resource, db)
+            if sql_model in models_with_default_field and resource.is_default:
+                raise errors.ForbiddenError(resource_type, resource.fides_key)
+            return await create_resource(sql_model, resource.dict(), db)
 
     @router.get(
         "/",

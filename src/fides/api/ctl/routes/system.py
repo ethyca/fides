@@ -5,21 +5,33 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
+from loguru import logger as log
 from pydantic.types import conlist
+from sqlalchemy import insert
+from sqlalchemy import update as _update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
-from fides.api.ctl.database.crud import delete_resource, update_resource
+from fides.api.ctl.database.crud import (
+    create_resource,
+    delete_resource,
+    get_resource,
+    update_resource,
+)
 from fides.api.ctl.database.session import get_async_db
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
+from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
+    PrivacyDeclaration,
+    System,
+)
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
+    SYSTEM_CREATE,
 )
 from fides.api.ops.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
 from fides.api.ops.models.connectionconfig import ConnectionConfig
@@ -29,7 +41,7 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
 )
 from fides.api.ops.util.connection_util import patch_connection_configs
-from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.oauth_util import verify_oauth_client, verify_oauth_client_prod
 from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
@@ -123,7 +135,59 @@ async def update(
     Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes
     to add additional "system manager" permission checks.
     """
-    return await update_resource(System, resource.dict(), db)
+    system: System = await get_resource(
+        sql_model=System, fides_key=resource.fides_key, async_session=db
+    )
+
+    declaration_by_data_use: dict[str, PrivacyDeclaration] = {}
+    # map existing declarations by their data use
+    for existing_declaration in system.privacy_declarations:
+        declaration_by_data_use[existing_declaration.data_use] = existing_declaration
+
+    try:
+        async with db.begin():
+            # now iterate through declarations specified on the request
+            for privacy_declaration in resource.privacy_declarations:
+                data = privacy_declaration.dict()
+                data["system_id"] = resource.fides_key  # add FK back to system
+
+                # if the system already has a declaration with the data use
+                # then use its ID to update the declaration record in place
+                if existing_declaration := declaration_by_data_use.get(
+                    privacy_declaration.data_use, None
+                ):
+                    # remove the existing item to indicate it was specified in the update
+                    declaration_by_data_use.pop(privacy_declaration.data_use)
+                    # update the declaration in place
+                    await db.execute(
+                        _update(PrivacyDeclaration)
+                        .where(PrivacyDeclaration.id == existing_declaration.id)
+                        .values(data)
+                    )
+
+                else:  # otherwise, create the declaration
+                    query = insert(PrivacyDeclaration).values(data)
+                    await db.execute(query)
+
+            # any declarations that remain here should be deleted, as they were
+            # not specified  on the upsert request
+            for existing_declaration in declaration_by_data_use.values():
+                await db.delete(existing_declaration)
+    except Exception as e:
+        log.error(
+            f"Error adding privacy declarations, reverting system creation: {str(e)}"
+        )
+        raise e
+
+    delattr(
+        resource, "privacy_declarations"
+    )  # remove the attribute on the system since we've already updated declarations
+
+    # perform any updates on the system resource itself
+    updated_system = await update_resource(System, resource.dict(), db)
+    async with db.begin():
+        await db.refresh(updated_system)
+    return updated_system
 
 
 @system_router.delete(
@@ -163,3 +227,62 @@ async def delete(
         "message": "resource deleted",
         "resource": deleted_resource_dict,
     }
+
+
+@system_router.post(
+    "/",
+    response_model=SystemSchema,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_CREATE],
+        )
+    ],
+)
+async def create(
+    resource: SystemSchema,
+    db: AsyncSession = Depends(get_async_db),
+) -> Dict:
+    """
+    Override `System` create/POST to handle `.privacy_declarations` defined inline,
+    for backward compatibility and ease of use for API users.
+    """
+    # copy out the declarations to be stored separately
+    # as they will be processed AFTER the system is added
+    privacy_declarations = resource.privacy_declarations
+
+    # remove the attribute on the system update since the declarations will be created separately
+    delattr(resource, "privacy_declarations")
+
+    # create the system resource using generic creation
+    # the system must be created before the privacy declarations so that it can be referenced
+    created_system = await create_resource(
+        System, resource_dict=resource.dict(), async_session=db
+    )
+
+    privacy_declaration_exception = None
+    try:
+        async with db.begin():
+            # create the specified declarations as records in their own table
+            for privacy_declaration in privacy_declarations:
+                data = privacy_declaration.dict()
+                data["system_id"] = resource.fides_key  # add FK back to system
+                PrivacyDeclaration.create(
+                    db, data=data
+                )  # create the associated PrivacyDeclaration
+    except Exception as e:
+        privacy_declaration_exception = e
+
+    if privacy_declaration_exception:
+        log.error(
+            f"Error adding privacy declarations, reverting system creation: {str(privacy_declaration_exception)}"
+        )
+        async with db.begin():
+            await db.delete(created_system)
+        raise privacy_declaration_exception
+
+    async with db.begin():
+        await db.refresh(created_system)
+
+    return created_system
