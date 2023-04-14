@@ -35,6 +35,54 @@ def disable_redis():
     CONFIG.redis.enabled = current
 
 
+class TestConsentRequestReporting:
+    """Tests the functionality of `get_consent_requests`."""
+
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}"
+
+    def test_consent_request_report_wrong_scope(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+    ):
+        auth_header = generate_auth_header(scopes=[])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Not Authorized for this action"}
+
+    def test_consent_request_report(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+        consent_records,
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 2
+        for idx in [0, 1]:
+            item = data["items"][idx]
+            consent_record = consent_records[idx]
+            assert item["data_use"] == consent_record.data_use
+            assert item["has_gpc_flag"] == consent_record.has_gpc_flag
+            assert item["opt_in"] == consent_record.opt_in
+            assert (
+                item["identity"]["email"]
+                == consent_record.provided_identity.encrypted_value["value"]
+            )
+
+
 class TestConsentRequest:
     @pytest.fixture(scope="function")
     def url(self) -> str:
