@@ -135,9 +135,9 @@ def report_consent_requests(
     updated_lt: Optional[datetime] = None,
     updated_gt: Optional[datetime] = None,
 ) -> Union[StreamingResponse, AbstractPage[ConsentReport]]:
-    """Provides a paginated, sorted list of all consent requests."""
+    """Provides a paginated list of all consent requests sorted by the most recently updated."""
 
-    query = Consent.query(db)
+    query = Consent.query(db).order_by(Consent.updated_at.desc())
     query = _filter_consent(
         query,
         data_use,

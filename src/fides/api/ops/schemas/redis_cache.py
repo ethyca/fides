@@ -23,8 +23,3 @@ class Identity(IdentityBase):
 
     ga_client_id: Optional[str] = None
     ljt_readerID: Optional[str] = None
-
-    class Config:
-        """Only allow phone_number, email, and GA client id to be supplied"""
-
-        extra = Extra.forbid
