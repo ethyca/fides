@@ -21,5 +21,13 @@ class IdentityBase(BaseSchema):
 class Identity(IdentityBase):
     """Some PII grouping pertaining to a human"""
 
+    # These are repeated so we can continue to forbid extra fields
+    phone_number: Optional[PhoneNumber] = None
+    email: Optional[EmailStr] = None
     ga_client_id: Optional[str] = None
     ljt_readerID: Optional[str] = None
+
+    class Config:
+        """Only allow phone_number, and email."""
+
+        extra = Extra.forbid
