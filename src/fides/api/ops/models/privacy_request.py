@@ -42,10 +42,7 @@ from fides.api.ops.models.policy import (
 )
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fides.api.ops.schemas.external_https import (
-    SecondPartyResponseFormat,
-    WebhookJWE,
-)
+from fides.api.ops.schemas.external_https import SecondPartyResponseFormat, WebhookJWE
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import celery_app
