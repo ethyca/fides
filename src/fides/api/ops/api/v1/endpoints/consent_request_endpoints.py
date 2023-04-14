@@ -143,18 +143,18 @@ def report_consent_requests(
         data_use,
         has_gpc_flag,
         opt_in,
-        created_gt,
         created_lt,
-        updated_gt,
+        created_gt,
         updated_lt,
+        updated_gt,
     )
     paginated = paginate(query, params)
-    paginated.items = [
+    paginated.items = [  # type: ignore
         _prepare_consent_report(
             db=db,
             consent=item,
         )
-        for item in paginated.items
+        for item in paginated.items  # type: ignore
     ]
     return paginated
 

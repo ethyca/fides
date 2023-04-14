@@ -880,16 +880,18 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     def as_identity_schema(self) -> Identity:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
         identity = Identity()
-        if any([
-            not self.field_name,
-            not self.encrypted_value,
-        ]):
+        if any(
+            [
+                not self.field_name,
+                not self.encrypted_value,
+            ]
+        ):
             return identity
 
         setattr(
             identity,
-            self.field_name.value,
-            self.encrypted_value.get("value"),
+            self.field_name.value,  # type:ignore
+            self.encrypted_value.get("value"),  # type:ignore
         )
         return identity
 
