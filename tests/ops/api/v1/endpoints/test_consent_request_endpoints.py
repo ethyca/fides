@@ -120,6 +120,25 @@ class TestConsentRequestReporting:
             item = data["items"][idx]
             assert item["opt_in"] == True
 
+    def test_consent_request_report_filters_gpc_flag(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+        consent_records,
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.get(
+            url + "?has_gpc_flag=false",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 2
+        for idx in [0, 1]:
+            item = data["items"][idx]
+            assert item["has_gpc_flag"] == False
+
 
 class TestConsentRequest:
     @pytest.fixture(scope="function")

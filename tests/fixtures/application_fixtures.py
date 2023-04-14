@@ -1845,6 +1845,13 @@ def system_manager(db: Session, system) -> System:
 
 
 @pytest.fixture(scope="function")
+def empty_provided_identity(db):
+    provided_identity = ProvidedIdentity.create(db, data={"field_name": "email"})
+    yield provided_identity
+    provided_identity.delete(db)
+
+
+@pytest.fixture(scope="function")
 def provided_identity_and_consent_request(db):
     provided_identity_data = {
         "privacy_request_id": None,
