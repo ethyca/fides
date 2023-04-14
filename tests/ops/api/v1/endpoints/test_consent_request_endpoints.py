@@ -71,6 +71,9 @@ class TestConsentRequestReporting:
         assert response.status_code == 200
         data = response.json()
         assert data["total"] == 2
+        # Reverse the fixture list so that items are sorted in the same way
+        # the API returns them
+        consent_records.sort(reverse=True)
         for idx in [0, 1]:
             item = data["items"][idx]
             consent_record = consent_records[idx]
