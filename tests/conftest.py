@@ -19,7 +19,7 @@ from sqlalchemy.orm import sessionmaker
 from toml import load as load_toml
 
 from fides.api.ctl.database.session import sync_engine
-from fides.api.ctl.sql_models import DataUse
+from fides.api.ctl.sql_models import DataUse, PrivacyDeclaration
 
 # from fides.api.ctl.database.session import sync_engine, sync_session
 from fides.api.main import app
@@ -941,18 +941,6 @@ def system(db: Session) -> System:
             "organization_fides_key": "default_organization",
             "system_type": "Service",
             "data_responsibility_title": "Processor",
-            "privacy_declarations": [
-                {
-                    "name": "Collect data for marketing",
-                    "data_categories": ["user.device.cookie_id"],
-                    "data_use": "advertising",
-                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                    "data_subjects": ["customer"],
-                    "dataset_references": None,
-                    "egress": None,
-                    "ingress": None,
-                }
-            ],
             "data_protection_impact_assessment": {
                 "is_required": False,
                 "progress": None,
@@ -960,6 +948,22 @@ def system(db: Session) -> System:
             },
         },
     )
+
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for marketing",
+            "system_id": system.fides_key,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "advertising",
+            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
     return system
 
 
@@ -974,23 +978,26 @@ def system_third_party_sharing(db: Session) -> System:
             "organization_fides_key": "default_organization",
             "system_type": "Service",
             "data_responsibility_title": "Processor",
-            "privacy_declarations": [
-                {
-                    "name": "Collect data for third party sharing",
-                    "data_categories": ["user.device.cookie_id"],
-                    "data_use": "third_party_sharing",
-                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                    "data_subjects": ["customer"],
-                    "dataset_references": None,
-                    "egress": None,
-                    "ingress": None,
-                }
-            ],
             "data_protection_impact_assessment": {
                 "is_required": False,
                 "progress": None,
                 "link": None,
             },
+        },
+    )
+
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for third party sharing",
+            "system_id": system_third_party_sharing.fides_key,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "third_party_sharing",
+            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
         },
     )
     return system_third_party_sharing
@@ -1007,23 +1014,26 @@ def system_provide_service(db: Session) -> System:
             "organization_fides_key": "default_organization",
             "system_type": "Service",
             "data_responsibility_title": "Processor",
-            "privacy_declarations": [
-                {
-                    "name": "The source service, system, or product being provided to the user",
-                    "data_categories": ["user.device.cookie_id"],
-                    "data_use": "provide.service",
-                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                    "data_subjects": ["customer"],
-                    "dataset_references": None,
-                    "egress": None,
-                    "ingress": None,
-                }
-            ],
             "data_protection_impact_assessment": {
                 "is_required": False,
                 "progress": None,
                 "link": None,
             },
+        },
+    )
+
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "The source service, system, or product being provided to the user",
+            "system_id": system_provide_service.fides_key,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "provide.service",
+            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
         },
     )
     return system_provide_service
@@ -1040,23 +1050,26 @@ def system_provide_service_operations_support_optimization(db: Session) -> Syste
             "organization_fides_key": "default_organization",
             "system_type": "Service",
             "data_responsibility_title": "Processor",
-            "privacy_declarations": [
-                {
-                    "name": "Optimize and improve support operations in order to provide the service",
-                    "data_categories": ["user.device.cookie_id"],
-                    "data_use": "provide.service.operations.support.optimization",
-                    "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
-                    "data_subjects": ["customer"],
-                    "dataset_references": None,
-                    "egress": None,
-                    "ingress": None,
-                }
-            ],
             "data_protection_impact_assessment": {
                 "is_required": False,
                 "progress": None,
                 "link": None,
             },
+        },
+    )
+
+    PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Optimize and improve support operations in order to provide the service",
+            "system_id": system_provide_service_operations_support_optimization.fides_key,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "provide.service.operations.support.optimization",
+            "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
         },
     )
     return system_provide_service_operations_support_optimization
@@ -1078,7 +1091,7 @@ def system_manager_client(db, system):
     client.delete(db)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function", autouse=True)
 def load_default_data_uses(db):
     for data_use in DEFAULT_TAXONOMY.data_use:
         # weirdly, only in some test scenarios, we already have the default taxonomy

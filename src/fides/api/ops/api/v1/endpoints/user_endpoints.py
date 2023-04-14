@@ -353,7 +353,6 @@ async def get_managed_system_details(
         system.fides_key,
         user_id,
     )
-
     return system
 
 

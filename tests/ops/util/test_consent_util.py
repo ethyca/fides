@@ -63,7 +63,10 @@ class TestShouldOptIntoService:
         System Data Use = "provide.service.operations"
         """
         privacy_declarations = system.privacy_declarations
-        privacy_declarations[0]["data_use"] = "provide.service.operations"
+        system.privacy_declarations[0].update(
+            db=db, data={"data_use": "provide.service.operations"}
+        )
+
         system.privacy_declarations = privacy_declarations
         flag_modified(system, "privacy_declarations")
         system.save(db)
@@ -102,7 +105,7 @@ class TestShouldOptIntoService:
         System Data Use = "provide"
         """
         privacy_declarations = system.privacy_declarations
-        privacy_declarations[0]["data_use"] = "provide"
+        system.privacy_declarations[0].update(db=db, data={"data_use": "provide"})
         system.privacy_declarations = privacy_declarations
         flag_modified(system, "privacy_declarations")
         system.save(db)
