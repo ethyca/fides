@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.10.1b3.post0.dev15"
+    "version": "2.10.1b3.post0.dev16"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5745,6 +5745,184 @@
         ]
       }
     },
+    "/api/v1/consent-request/preferences": {
+      "get": {
+        "tags": [
+          "Consent"
+        ],
+        "summary": "Report Consent Requests",
+        "description": "Provides a paginated list of all consent requests sorted by the most recently updated.",
+        "operationId": "report_consent_requests_api_v1_consent_request_preferences_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Use",
+              "type": "string"
+            },
+            "name": "data_use",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Has Gpc Flag",
+              "type": "boolean"
+            },
+            "name": "has_gpc_flag",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Opt In",
+              "type": "boolean"
+            },
+            "name": "opt_in",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Created Lt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "created_lt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Created Gt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "created_gt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Updated Lt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "updated_lt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Updated Gt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "updated_gt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ConsentReport_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "consent:read"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Consent"
+        ],
+        "summary": "Get Consent Preferences",
+        "description": "Gets the consent preferences for the specified user.",
+        "operationId": "get_consent_preferences_api_v1_consent_request_preferences_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Identity"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentPreferences"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "consent:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/consent-request": {
       "post": {
         "tags": [
@@ -5953,55 +6131,6 @@
             }
           }
         }
-      }
-    },
-    "/api/v1/consent-request/preferences": {
-      "post": {
-        "tags": [
-          "Consent"
-        ],
-        "summary": "Get Consent Preferences",
-        "description": "Gets the consent preferences for the specified user.",
-        "operationId": "get_consent_preferences_api_v1_consent_request_preferences_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Identity"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConsentPreferences"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "consent:read"
-            ]
-          }
-        ]
       }
     },
     "/api/v1/connection/{connection_key}/validate_dataset": {
@@ -13724,6 +13853,55 @@
         },
         "description": "Schema for consent preferences including the verification code."
       },
+      "ConsentReport": {
+        "title": "ConsentReport",
+        "required": [
+          "data_use",
+          "opt_in",
+          "identity",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object",
+        "properties": {
+          "data_use": {
+            "title": "Data Use",
+            "type": "string"
+          },
+          "data_use_description": {
+            "title": "Data Use Description",
+            "type": "string"
+          },
+          "opt_in": {
+            "title": "Opt In",
+            "type": "boolean"
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean",
+            "default": false
+          },
+          "conflicts_with_gpc": {
+            "title": "Conflicts With Gpc",
+            "type": "boolean",
+            "default": false
+          },
+          "identity": {
+            "$ref": "#/components/schemas/IdentityBase"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Schema for reporting Consent requests."
+      },
       "ConsentRequestMap": {
         "title": "ConsentRequestMap",
         "type": "object",
@@ -15491,6 +15669,23 @@
         "additionalProperties": false,
         "description": "Some PII grouping pertaining to a human"
       },
+      "IdentityBase": {
+        "title": "IdentityBase",
+        "type": "object",
+        "properties": {
+          "phone_number": {
+            "title": "Phone Number",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The minimum fields required to represent an identity."
+      },
       "IdentityTypes": {
         "title": "IdentityTypes",
         "required": [
@@ -16346,6 +16541,40 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ConnectionSystemTypeMap"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_ConsentReport_": {
+        "title": "Page[ConsentReport]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsentReport"
             }
           },
           "total": {
