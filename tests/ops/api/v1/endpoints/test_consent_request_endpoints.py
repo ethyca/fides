@@ -73,7 +73,7 @@ class TestConsentRequestReporting:
         assert data["total"] == 2
         # Reverse the fixture list so that items are sorted in the same way
         # the API returns them
-        consent_records.sort(reverse=True)
+        consent_records.sort(key=lambda consent: consent.updated_at, reverse=True)
         for idx in [0, 1]:
             item = data["items"][idx]
             consent_record = consent_records[idx]
