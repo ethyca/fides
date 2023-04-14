@@ -47,7 +47,7 @@ from fides.api.ops.schemas.external_https import (
     WebhookJWE,
 )
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.redis_cache import Identity, IdentityBase
 from fides.api.ops.tasks import celery_app
 from fides.api.ops.util.cache import (
     FidesopsRedis,
@@ -877,9 +877,9 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         )
         return hashed_value
 
-    def as_identity_schema(self) -> Identity:
+    def as_identity_schema(self) -> IdentityBase:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
-        identity = Identity()
+        identity = IdentityBase()
         if any(
             [
                 not self.field_name,

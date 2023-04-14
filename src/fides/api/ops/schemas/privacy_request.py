@@ -66,7 +66,7 @@ class Consent(BaseSchema):
 class ConsentReport(Consent):
     """Schema for reporting Consent requests."""
 
-    identity: Identity
+    identity: IdentityBase
     created_at: datetime
     updated_at: datetime
 
