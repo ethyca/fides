@@ -631,14 +631,12 @@ class TestSaveConsent:
         assert response.status_code == 200
         assert response.json()["consent"][0]["data_use"] == "email"
         assert response.json()["consent"][0]["opt_in"] is True
-        assert (
-            run_privacy_request_mock.called
-        ), "Privacy request queued even though date_use: email is not executable for record keeping"
+        assert not run_privacy_request_mock.called, "date_use: email is not executable"
 
         db.refresh(consent_request)
         assert (
-            consent_request.privacy_request_id
-        ), "Privacy requests queued regardless of whether consent options are executable"
+            not consent_request.privacy_request_id
+        ), "No PrivacyRequest queued because none of the consent options are executable"
 
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",

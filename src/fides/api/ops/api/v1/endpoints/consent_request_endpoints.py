@@ -273,6 +273,14 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
         if pref.data_use in executable_data_uses
     ]
 
+    if not executable_consent_preferences:
+        logger.info(
+            "Skipping propagating consent preferences to third-party services as "
+            "specified consent preferences: {} are not executable.",
+            [pref.data_use for pref in consent_preferences.consent or []],
+        )
+        return None
+
     logger.info("Executable consent options: {}", executable_data_uses)
     privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
         db=db,
