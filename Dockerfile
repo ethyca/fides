@@ -100,7 +100,8 @@ COPY clients/package.json ./
 COPY clients/package-lock.json ./
 COPY clients/fides-consent/package.json clients/fides-consent/package-lock.json ./
 COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
-RUN npm install
+#RUN npm install
+#RUN echo whereis turbo
 COPY clients/admin-ui/ .
 
 ####################

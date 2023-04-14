@@ -20,9 +20,9 @@ const generateConsentConfig = () => {
   );
 
   /**
-   * @type {import('../../types/config').Config}
+   * @type {import('privacy-center/types/config').Config}
    */
-  const privacyCenterConfig = require("../../config/config.json");
+  const privacyCenterConfig = require("privacy-center/config/config.json");
   const isV1ConsentConfig = typeof privacyCenterConfig.consent?.button === "undefined";
   const privacyCenterOptions = isV1ConsentConfig ? privacyCenterConfig.consent?.consentOptions : privacyCenterConfig.consent?.page.consentOptions;
 
