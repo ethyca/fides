@@ -186,8 +186,30 @@ class DataUse(Base, FidesBase):
     legitimate_interest_impact_assessment = Column(String, nullable=True)
     is_default = Column(BOOLEAN, default=False)
 
+    privacy_declarations = relationship(
+        "PrivacyDeclaration",
+        back_populates="data_use_object",
+        cascade="all, delete-orphan",
+    )
+
+    def get_parent_uses(self) -> Set[str]:
+        """
+        Utility method to traverse "up" the taxonomy hierarchy and unpack
+        a given data use fides key into a set of fides keys that include its
+        parent fides keys.
+
+        The utility takes a fides key string input to make the method more applicable -
+        since in many spots of our application we do not have a true `DataUse` instance,
+        just a "soft" reference to its fides key.
+
+        Example inputs and outputs:
+            - `a.b.c` --> [`a.b.c`, `a.b`, `a`]
+            - `a` --> [`a`]
+        """
+        return DataUse.get_parent_uses_from_key(self.fides_key)
+
     @staticmethod
-    def get_parent_uses(data_use_key: str) -> Set[str]:
+    def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
         """
         Utility method to traverse "up" the taxonomy hierarchy and unpack
         a given data use fides key into a set of fides keys that include its
@@ -302,11 +324,17 @@ class System(Base, FidesBase):
     system_dependencies = Column(ARRAY(String))
     joint_controller = Column(PGEncryptedString, nullable=True)
     third_country_transfers = Column(ARRAY(String))
-    privacy_declarations = Column(JSON)
     administrating_department = Column(String)
     data_protection_impact_assessment = Column(JSON)
     egress = Column(JSON)
     ingress = Column(JSON)
+
+    privacy_declarations = relationship(
+        "PrivacyDeclaration",
+        cascade="all, delete",
+        back_populates="system",
+        lazy="selectin",
+    )
 
     users = relationship(
         "FidesUser",
@@ -317,7 +345,7 @@ class System(Base, FidesBase):
 
     @staticmethod
     def collapse_data_uses(
-        privacy_declarations: List[dict[str, Any]], include_parents: bool
+        privacy_declarations: List[PrivacyDeclaration], include_parents: bool
     ) -> Set:
         """Helper method to collapse the data uses off of multiple privacy declarations into a Set
 
@@ -327,11 +355,11 @@ class System(Base, FidesBase):
         """
         data_uses = set()
         for declaration in privacy_declarations:
-            if data_use := declaration.get("data_use", None):
+            if data_use := declaration.data_use_object:
                 if include_parents:
-                    data_uses.update(DataUse.get_parent_uses(data_use))
+                    data_uses.update(data_use.get_parent_uses())
                 else:
-                    data_uses.add(data_use)
+                    data_uses.add(data_use.fides_key)
         return data_uses
 
     @classmethod
@@ -342,7 +370,7 @@ class System(Base, FidesBase):
         Utility method to get any data use that is associated with at least one System
         """
         data_uses = set()
-        for row in db.query(System.privacy_declarations).all():
+        for row in db.query(System).all():
             data_uses.update(
                 cls.collapse_data_uses(row.privacy_declarations, include_parents)
             )
@@ -351,6 +379,38 @@ class System(Base, FidesBase):
     def get_data_uses(self, include_parents: bool = True) -> set[str]:
         """Utility method to get all the data uses off the current System"""
         return self.collapse_data_uses(self.privacy_declarations or [], include_parents)
+
+
+class PrivacyDeclaration(Base):
+    """
+    The SQL model for a Privacy Declaration associated with a given System.
+    """
+
+    name = Column(String)  # Processing Activity
+    data_categories = Column(ARRAY(String))  # TODO: maybe relationship?
+    data_qualifier = Column(String)  # TODO: maybe relationship? is this needed?
+    data_subjects = Column(ARRAY(String))  # TODO: maybe relationship?
+    dataset_references = Column(ARRAY(String))  # TODO: maybe relationship?
+    egress = Column(JSON)  # TODO: needed?
+    ingress = Column(JSON)  # TODO: needed?
+
+    system_id = Column(String, ForeignKey(System.fides_key), nullable=False, index=True)
+    system = relationship(System, back_populates="privacy_declarations")
+
+    # the FK column is just plain `data_use` to align with the `FidesKey` field on the pydantic model
+    data_use = Column(String, ForeignKey(DataUse.fides_key), nullable=False, index=True)
+    data_use_object = relationship(DataUse)
+
+    @classmethod
+    def create(
+        cls: Type[PrivacyDeclaration],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = False,  # this is the reason for the override
+    ) -> PrivacyDeclaration:
+        """Overrides baes create to avoid unique check on `name` column"""
+        return super().create(db=db, data=data, check_name=check_name)
 
 
 class SystemModel(BaseModel):

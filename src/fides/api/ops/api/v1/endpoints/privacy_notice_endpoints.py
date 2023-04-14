@@ -111,7 +111,7 @@ def get_privacy_notice_by_data_use(*, db: Session = Depends(deps.get_db)) -> Dat
     data_uses_by_parents: dict[str, str] = {
         parent: data_use
         for data_use in system_data_uses
-        for parent in DataUse.get_parent_uses(data_use)
+        for parent in DataUse.get_parent_uses_from_key(data_use)
     }
 
     # get all notices that are not disabled and share a data use with a system.

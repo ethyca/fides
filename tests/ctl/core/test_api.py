@@ -8,18 +8,22 @@ import requests
 from fideslang import DEFAULT_TAXONOMY, model_list, models, parse
 from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
+from sqlalchemy.exc import IntegrityError
 from starlette.status import (
     HTTP_200_OK,
+    HTTP_201_CREATED,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
+    HTTP_409_CONFLICT,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 from starlette.testclient import TestClient
 
 from fides.api.ctl.database.crud import get_resource
 from fides.api.ctl.routes import health
 from fides.api.ctl.routes.util import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
-from fides.api.ctl.sql_models import Dataset
+from fides.api.ctl.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.ops.api.v1.scope_registry import (
     CREATE,
     DELETE,
@@ -28,6 +32,7 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_READ,
     READ,
+    SYSTEM_CREATE,
     SYSTEM_DELETE,
     SYSTEM_UPDATE,
     UPDATE,
@@ -416,8 +421,236 @@ class TestCrud:
 
 
 @pytest.mark.unit
+class TestSystemCreate:
+    @pytest.fixture(scope="function", autouse=True)
+    def remove_all_systems(self, db) -> SystemSchema:
+        """Remove any systems before test execution for clean state"""
+        for system in System.all(db):
+            system.delete(db)
+
+    @pytest.fixture(scope="function")
+    def system_create_request_body(self) -> SystemSchema:
+        return SystemSchema(
+            organization_fides_key=1,
+            registryId=1,
+            fides_key="system_fides_key",
+            system_type="SYSTEM",
+            name="Test System",
+            description="A Test System",
+            privacy_declarations=[
+                models.PrivacyDeclaration(
+                    name="declaration-name",
+                    data_categories=[],
+                    data_use="provide",
+                    data_subjects=[],
+                    data_qualifier="aggregated_data",
+                    dataset_references=[],
+                ),
+                models.PrivacyDeclaration(
+                    name="declaration-name-2",
+                    data_categories=[],
+                    data_use="advertising",
+                    data_subjects=[],
+                    data_qualifier="aggregated_data",
+                    dataset_references=[],
+                ),
+            ],
+            system_dependencies=[],
+        )
+
+    def test_system_create_not_authenticated(
+        self,
+        test_config,
+        system_create_request_body,
+        db,
+    ):
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers={},
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_401_UNAUTHORIZED
+        assert not System.all(db)  # ensure our system wasn't created
+
+    def test_system_create_no_direct_scope(
+        self,
+        test_config,
+        generate_auth_header,
+        system_create_request_body,
+        db,
+    ):
+        auth_header = generate_auth_header(scopes=[POLICY_CREATE_OR_UPDATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_403_FORBIDDEN
+
+        assert not System.all(db)  # ensure our system wasn't created
+
+    def test_system_create_no_encompassing_role(
+        self,
+        test_config,
+        system_create_request_body,
+        db,
+        generate_role_header,
+    ):
+        auth_header = generate_role_header(roles=[VIEWER])
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_403_FORBIDDEN
+
+        assert not System.all(db)  # ensure our system wasn't created
+
+    def test_system_create_system_already_exists(
+        self,
+        test_config,
+        system,
+        system_create_request_body,
+        db,
+        generate_auth_header,
+    ):
+        system_create_request_body.fides_key = system.fides_key
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_409_CONFLICT
+
+        assert (
+            len(System.all(db)) == 1
+        )  # ensure our system wasn't created, still only one system
+
+    async def test_system_create(
+        self, generate_auth_header, db, test_config, system_create_request_body
+    ):
+        """Ensure system create works for base case, which includes 2 privacy declarations"""
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_201_CREATED
+        assert result.json()["name"] == "Test System"
+        assert len(result.json()["privacy_declarations"]) == 2
+
+        systems = System.all(db)
+        assert len(systems) == 1
+        assert systems[0].name == "Test System"
+        assert len(systems[0].privacy_declarations) == 2
+
+    def test_system_create_has_role_that_can_update_all_systems(
+        self,
+        test_config,
+        system_create_request_body,
+        db,
+        generate_role_header,
+    ):
+        """Ensure system create works for owner role, which has necessary scope"""
+        auth_header = generate_role_header(roles=[OWNER])
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_201_CREATED
+        assert result.json()["name"] == "Test System"
+        assert len(result.json()["privacy_declarations"]) == 2
+
+        systems = System.all(db)
+        assert len(systems) == 1
+        assert systems[0].name == "Test System"
+        assert len(systems[0].privacy_declarations) == 2
+
+    async def test_system_create_no_privacy_declarations(
+        self, generate_auth_header, db, test_config, system_create_request_body
+    ):
+        """Ensure system create works even with no privacy declarations passed"""
+        system_create_request_body.privacy_declarations = []
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_201_CREATED
+        assert result.json()["name"] == "Test System"
+        assert len(result.json()["privacy_declarations"]) == 0
+
+        systems = System.all(db)
+        assert len(systems) == 1
+        assert systems[0].name == "Test System"
+        assert len(systems[0].privacy_declarations) == 0
+
+    async def test_system_create_invalid_privacy_declarations(
+        self, generate_auth_header, db, test_config, system_create_request_body
+    ):
+        """Ensure system create errors with invalid privacy declarations"""
+        system_create_request_body.privacy_declarations[1].data_use = None
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert len(System.all(db)) == 0  # ensure our system wasn't created
+        assert (
+            len(PrivacyDeclaration.all(db)) == 0
+        )  # ensure neither of our declarations were created
+
+        system_create_request_body.privacy_declarations[1].data_use = "invalid_data_use"
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        # TODO: improve our handling so that this raises a better error
+        with pytest.raises(IntegrityError):
+            result = _api.create(
+                url=test_config.cli.server_url,
+                headers=auth_header,
+                resource_type="system",
+                json_resource=system_create_request_body.json(exclude_none=True),
+            )
+
+        # assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert len(System.all(db)) == 0  # ensure our system wasn't created
+        assert (
+            len(PrivacyDeclaration.all(db)) == 0
+        )  # ensure neither of our declarations were created
+
+
+@pytest.mark.unit
 class TestSystemUpdate:
     updated_system_name = "Updated System Name"
+
+    @pytest.fixture(scope="function", autouse=True)
+    def remove_all_systems(self, db) -> SystemSchema:
+        """Remove any systems before test execution for clean state"""
+        for system in System.all(db):
+            system.delete(db)
 
     @pytest.fixture(scope="function")
     def system_update_request_body(self, system) -> SystemSchema:
@@ -488,9 +721,19 @@ class TestSystemUpdate:
 
         assert result.status_code == HTTP_200_OK
         assert result.json()["name"] == self.updated_system_name
+        assert len(result.json()["privacy_declarations"]) == 1
+        assert (
+            result.json()["privacy_declarations"][0]["data_use"]
+            == system_update_request_body.privacy_declarations[0].data_use
+        )
 
         db.refresh(system)
         assert system.name == self.updated_system_name
+        assert len(system.privacy_declarations) == 1
+        assert (
+            system.privacy_declarations[0].data_use
+            == system_update_request_body.privacy_declarations[0].data_use
+        )
 
     def test_system_update_no_encompassing_role(
         self,
@@ -589,6 +832,107 @@ class TestSystemUpdate:
             json_resource=system_update_request_body.json(exclude_none=True),
         )
         assert result.status_code == HTTP_404_NOT_FOUND
+
+    @pytest.mark.parametrize(
+        "update_declarations",
+        [
+            (
+                [  # add a privacy declaration distinct from existing declaration
+                    models.PrivacyDeclaration(
+                        name="declaration-name",
+                        data_categories=[],
+                        data_use="provide",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    )
+                ]
+            ),
+            (
+                # add 2 privacy declarations distinct from existing declaration
+                [
+                    models.PrivacyDeclaration(
+                        name="declaration-name",
+                        data_categories=[],
+                        data_use="provide",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                    models.PrivacyDeclaration(
+                        name="declaration-name-2",
+                        data_categories=[],
+                        data_use="third_party_sharing",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                ]
+            ),
+            (
+                # add 2 privacy declarations, one the same data use as existing
+                [
+                    models.PrivacyDeclaration(
+                        name="declaration-name",
+                        data_categories=[],
+                        data_use="provide",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                    models.PrivacyDeclaration(
+                        name="declaration-name-2",
+                        data_categories=[],
+                        data_use="advertising",
+                        data_subjects=[],
+                        data_qualifier="aggregated_data",
+                        dataset_references=[],
+                    ),
+                ]
+            ),
+            (
+                # specify no declarations, declarations should be cleared off the system
+                []
+            ),
+        ],
+    )
+    def test_system_update_updates_declarations(
+        self,
+        db,
+        test_config,
+        system,
+        generate_auth_header,
+        system_update_request_body,
+        update_declarations,
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_UPDATE])
+        system_update_request_body.privacy_declarations = update_declarations
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+
+        # assert the declarations in our responses match those in our requests
+        response_decs = result.json()["privacy_declarations"]
+        for update_dec in update_declarations:
+            response_decs.remove(update_dec.dict())
+        # and assert we don't have any extra response declarations
+        assert len(response_decs) == 0
+
+        # do the same for the declarations in our db record
+        system = System.all(db)[0]
+        db.refresh(system)
+        db_decs = [
+            models.PrivacyDeclaration.from_orm(db_dec)
+            for db_dec in system.privacy_declarations
+        ]
+
+        for update_dec in update_declarations:
+            db_decs.remove(update_dec.dict())
+        # and assert we don't have any extra response declarations
+        assert len(db_decs) == 0
 
 
 @pytest.mark.unit
