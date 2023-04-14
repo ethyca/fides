@@ -83,14 +83,14 @@ def _filter_consent(
 ) -> Query:
     if data_use:
         query = query.filter(Consent.data_use == data_use)
-    if has_gpc_flag:
+    if has_gpc_flag is not None:
         query = query.filter(Consent.has_gpc_flag == has_gpc_flag)
-    if opt_in:
+    if opt_in is not None:
         query = query.filter(Consent.opt_in == opt_in)
 
     for end, start, field_name in [
         [created_lt, created_gt, "created"],
-        [updated_lt, updated_gt, "completed"],
+        [updated_lt, updated_gt, "updated"],
     ]:
         if end is None or start is None:
             continue
@@ -111,9 +111,9 @@ def _filter_consent(
     if created_gt:
         query = query.filter(Consent.created_at > created_gt)
     if updated_lt:
-        query = query.filter(Consent.created_at < created_lt)
+        query = query.filter(Consent.updated_at < updated_lt)
     if updated_gt:
-        query = query.filter(Consent.created_at > created_gt)
+        query = query.filter(Consent.updated_at > updated_gt)
     return query
 
 
