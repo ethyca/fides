@@ -82,6 +82,44 @@ class TestConsentRequestReporting:
                 == consent_record.provided_identity.encrypted_value["value"]
             )
 
+    def test_consent_request_report_filters_data_use(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+        consent_records,
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.get(
+            url + "?data_use=email",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 1
+        for idx in [0]:
+            item = data["items"][idx]
+            assert item["data_use"] == "email"
+
+    def test_consent_request_report_filters_opt_in(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+        consent_records,
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.get(
+            url + "?opt_in=true",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 1
+        for idx in [0]:
+            item = data["items"][idx]
+            assert item["opt_in"] == True
+
 
 class TestConsentRequest:
     @pytest.fixture(scope="function")
