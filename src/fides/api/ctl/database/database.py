@@ -16,7 +16,7 @@ from fides.api.ctl.utils.errors import get_full_exception_name
 from fides.core.utils import get_db_engine
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
-from .seed import load_default_resources
+from .seed import load_default_resources, load_sample_resources
 from .session import async_session
 
 DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
@@ -41,7 +41,7 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
-async def init_db(database_url: str) -> None:
+async def init_db(database_url: str, load_samples: bool = False) -> None:
     """
     Runs the migrations and creates all of the database objects.
     """
@@ -51,6 +51,8 @@ async def init_db(database_url: str) -> None:
 
     async with async_session() as session:
         await load_default_resources(session)
+        if load_samples:
+            await load_sample_resources(session)
 
 
 def create_db_if_not_exists(database_url: str) -> None:
@@ -98,11 +100,11 @@ def get_db_health(database_url: str, db: Session) -> DatabaseHealth:
         return "unhealthy"
 
 
-async def configure_db(database_url: str) -> None:
+async def configure_db(database_url: str, load_samples: bool = False) -> None:
     """Set up the db to be used by the app."""
     try:
         create_db_if_not_exists(database_url)
-        await init_db(database_url)
+        await init_db(database_url, load_samples=load_samples)
     except InvalidCiphertextError as cipher_error:
         log.error(
             "Unable to configure database due to a decryption error! Check to ensure your `app_encryption_key` has not changed."

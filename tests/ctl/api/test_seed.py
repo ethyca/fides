@@ -3,12 +3,14 @@ from typing import Generator
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
-from fides.api.ctl.database import seed
+from fides.api.ctl.database import sample_resources, seed
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.core import api as _api
 from fides.core.config import CONFIG, FidesConfig
 from fides.lib.models.fides_user import FidesUser
+from fides.api.ctl.sql_models import System, Dataset, PolicyCtl
 
 
 @pytest.fixture(scope="function", name="data_category")
@@ -436,3 +438,80 @@ async def test_load_orginizations(loguru_caplog, async_session, monkeypatch):
 
     assert "INSERTED 1" in loguru_caplog.text
     assert f"SKIPPED {current_orgs}" in loguru_caplog.text
+
+
+class TestLoadSampleResources:
+    """Tests related to load_sample_resources"""
+
+    async def test_load_sample_resources(
+        self,
+        async_session: AsyncSession,
+    ) -> None:
+        """Should load expected sample resources"""
+
+        async with async_session.begin():
+            # Ensure we start with an empty database
+            systems = (await async_session.execute(select(System))).scalars().all()
+            datasets = (await async_session.execute(select(Dataset))).scalars().all()
+            policies = (await async_session.execute(select(PolicyCtl))).scalars().all()
+            # TODO: uncomment these once done testing iteratively
+            # assert len(systems) == 0
+            # assert len(datasets) == 0
+            # assert len(policies) == 0
+
+            # Load the sample resources
+        await seed.load_sample_resources(async_session)
+
+        async with async_session.begin():
+            # Check the results are as expected!
+            systems = (await async_session.execute(select(System))).scalars().all()
+            datasets = (await async_session.execute(select(Dataset))).scalars().all()
+            policies = (await async_session.execute(select(PolicyCtl))).scalars().all()
+            assert len(systems) == 4
+            assert len(datasets) == 2
+            assert len(policies) == 1
+
+            assert sorted([e.fides_key for e in systems]) == [
+                "cookie_house",
+                "cookie_house_marketing",
+                "cookie_house_mongo",
+                "cookie_house_postgres",
+            ]
+            assert sorted([e.fides_key for e in datasets]) == [
+                "mongo_test",
+                "postgres_example_test_dataset",
+            ]
+            assert sorted([e.fides_key for e in policies]) == ["sample_policy"]
+
+            # TODO: assert connectors are populated too
+
+    async def test_load_sample_resources_strict(self):
+        """
+        Ensure that the resource files in the sample project are all
+        successfully parsed by the load_sample_resources() function. This makes
+        sure we don't make some changes to the sample project files that aren't
+        automatically loaded into the database via this function.
+
+        NOTE: If you've found this test, that probably means you were making
+        some changes to the code and this failed unexpectedly. Maybe you removed
+        a field, changed a default, or wanted to edit some sample data?
+
+        To fix the test, you just need to ensure the load_sample_resources()
+        function has all the logic it needs to parse everything from this
+        directory: src/fides/data/sample_project/sample_resources/*.yml
+
+        See src/fides/api/ctl/database/sample_resources.py for details.
+
+        Sorry for the trouble, but we want to ensure there isn't a subtle bug
+        sneaking into our sample project code!
+        """
+        try:
+            resources_dict = sample_resources.load_sample_resources_from_project(
+                strict=True
+            )
+            assert resources_dict
+        except Exception as exc:
+            assert not exc, (
+                "Unexpected error loading sample resources; did you make changes to the sample project?"
+                f"See tests/ctl/api/test_seed.py for details. error={exc}"
+            )
