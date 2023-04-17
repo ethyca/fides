@@ -27,7 +27,7 @@ secrets = get_secrets("amplitude")
 def amplitude_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "amplitude.domain") or secrets["domain"],
-        "authorization_key": pydash.get(saas_config, "amplitude.authorization_key") or secrets["authorization_key"],
+        "secret_key": pydash.get(saas_config, "amplitude.secret_key") or secrets["secret_key"],
         "api_key": pydash.get(saas_config, "amplitude.api_key") or secrets["api_key"],
         "identity_domain": pydash.get(saas_config, "amplitude.identity_domain") or secrets["identity_domain"],
 

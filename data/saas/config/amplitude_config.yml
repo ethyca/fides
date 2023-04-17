@@ -8,17 +8,17 @@ saas_config:
   connector_params:
     - name: domain
       default_value: amplitude.com
-    - name: authorization_key
+    - name: api_key
+    - name: secret_key
 
   client_config:
     protocol: https
     host: <domain>
     authentication:
-        strategy: api_key
+        strategy: basic
         configuration:
-          headers:
-            - name: Authorization
-              value: Basic <authorization_key>
+          username: <api_key>
+          password: <secret_key>
 
   test_request:
     method: GET
