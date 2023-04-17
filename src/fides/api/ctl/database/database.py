@@ -34,7 +34,7 @@ def get_alembic_config(database_url: str) -> Config:
     config.set_main_option("sqlalchemy.url", database_url)
     return config
 
-
+# Prevent logging out sensitive values during failures
 def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     "Upgrade the database to the specified migration revision."
     log.info("Running database migrations")
