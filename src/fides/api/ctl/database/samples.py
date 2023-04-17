@@ -5,13 +5,13 @@ sample project at src/fides/data/sample_project.
 See load_samples() in seed.py for usage.
 """
 from importlib.resources import files
-from typing import Any, Dict, List, TextIO, Union
+from typing import Dict, List, TextIO, Union
 
 import yaml
-from expandvars import expandvars
+from expandvars import expandvars  # type: ignore
 from fideslang.models import Dataset, Organization, Policy, System
 
-import fides.data.sample_project
+import fides.data.sample_project  # type: ignore
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
 )
@@ -36,7 +36,7 @@ def load_sample_resources_from_project(
     sample_resources_path = files(fides.data.sample_project).joinpath(
         "sample_resources/"
     )
-    sample_resources_dict = {
+    sample_resources_dict: Dict[str, List] = {
         "dataset": [],
         "organization": [],
         "policy": [],
@@ -107,12 +107,13 @@ def load_sample_connectors_from_project() -> (
         with yaml_path.open("r") as file:
             # Expand ENV vars when reading the YAML, to handle secrets
             yaml_dict = load_sample_yaml_file(file, expand_vars=True)
-            if yaml_dict.get("connector", []):
-                connectors = [
+            connectors = yaml_dict.get("connector", [])
+            sample_connectors.extend(
+                [
                     CreateConnectionConfigurationWithSecrets.parse_obj(e)
-                    for e in yaml_dict.get("connector")
+                    for e in connectors
                 ]
-                sample_connectors.extend(connectors)
+            )
 
     # Disable any connectors whose "secrets" dict has empty values
     for connector in sample_connectors:
@@ -122,7 +123,7 @@ def load_sample_connectors_from_project() -> (
             continue
 
         # If any of the secret values are missing, disable!
-        for key, value in connector.secrets.items():
+        for _, value in dict(connector.secrets).items():
             if not value or value == "":
                 connector.disabled = True
 
@@ -134,5 +135,4 @@ def load_sample_yaml_file(file: TextIO, expand_vars: bool = True) -> Dict:
     yaml_str = file.read()
     if expand_vars:
         return yaml.safe_load(expandvars(yaml_str))
-    else:
-        return yaml.safe_load(file)
+    return yaml.safe_load(file)
