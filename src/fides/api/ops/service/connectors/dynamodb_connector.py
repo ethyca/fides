@@ -32,6 +32,9 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
     def build_uri(self) -> None:
         """Not used for this type"""
 
+    def close(self) -> None:
+        """Not used for this type"""
+
     def create_client(self) -> Any:  # type: ignore
         """Returns a client for a DynamoDB instance"""
         config = DynamoDBSchema(**self.configuration.secrets or {})

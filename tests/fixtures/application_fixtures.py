@@ -141,6 +141,15 @@ integration_secrets = {
             integration_config, "fides_example.polling_timeout"
         ),
     },
+    "dynamodb_example": {
+        "region": pydash.get(integration_config, "dynamodb_example.region"),
+        "aws_access_key_id": pydash.get(
+            integration_config, "dynamodb_example.aws_access_key_id"
+        ),
+        "aws_secret_access_key": pydash.get(
+            integration_config, "dynamodb_example.aws_secret_access_key"
+        ),
+    },
 }
 
 
@@ -1543,6 +1552,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/manual_dataset.yml",
         "data/dataset/email_dataset.yml",
         "data/dataset/remote_fides_example_test_dataset.yml",
+        "data/dataset/dynamodb_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

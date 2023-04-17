@@ -54,7 +54,8 @@ db="timescale_example"
 port=5432
 
 [fides_example]
-uri="http://fides:8080"
-username="root_user"
-password="Testpassword1!"
-polling_timeout=1800
+
+[dynamodb_example]
+aws_access_key_id = "access_key"
+aws_secret_access_key = "secret_access_key"
+region = "aws-region"

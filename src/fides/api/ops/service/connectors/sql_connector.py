@@ -23,7 +23,6 @@ from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
-    DynamoDBSchema,
     MicrosoftSQLServerSchema,
     PostgreSQLSchema,
     RedshiftSchema,
@@ -427,11 +426,3 @@ class MicrosoftSQLServerConnector(SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
-
-
-class DynamoDBConnector(SQLConnector):
-    """
-    Connector specific to AWS DynamoDB
-    """
-
-    secrets_schema = DynamoDBSchema
