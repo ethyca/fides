@@ -27,7 +27,6 @@ secrets = get_secrets("unbounce")
 def unbounce_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "unbounce.domain") or secrets["domain"],
-        "lead_id": pydash.get(saas_config, "unbounce.lead_id") or secrets["lead_id"],
         "api_key": pydash.get(saas_config, "unbounce.api_key") or secrets["api_key"],
     }
 

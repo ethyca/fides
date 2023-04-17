@@ -1,6 +1,6 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: Unbounce Dataset
+    name: unbounce
     description: A sample dataset representing the Unbounce connector for Fides
     collections:
       - name: lead
@@ -10,7 +10,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: id
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: extra_data
@@ -27,7 +27,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: last_name
-                data_categories: [user.name]
+                data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
               - name: first_name
@@ -66,3 +66,75 @@ dataset:
                     data_categories: [system.operations]
                     fidesops_meta:
                       data_type: string
+      - name: pages
+        fields:
+          - name: subAccountId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: integrations
+          - name: integrationsCount
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: integrationsErrorsCount
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: url
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: metadata
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: documentation
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: location
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: related
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: leads
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: subAccount
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: formFields
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+          - name: createdAt
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: state
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: lastPublishedAt
+          - name: variantsCount
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: domain
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string

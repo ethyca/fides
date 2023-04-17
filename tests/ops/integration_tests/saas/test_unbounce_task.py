@@ -50,6 +50,26 @@ async def test_unbounce_access_request_task(
     )
 
     assert_rows_match(
+        v[f"{dataset_name}:pages"],
+        min_size=1,
+        keys=[
+            "subAccountId",
+            "integrations",
+            "integrationsCount",
+            "integrationsErrorsCount",
+            "id",
+            "url",
+            "metadata",
+            "createdAt",
+            "name",
+            "state",
+            "lastPublishedAt",
+            "variantsCount",
+            "domain"
+        ],
+    )
+
+    assert_rows_match(
         v[f"{dataset_name}:lead"],
         min_size=1,
         keys=[
@@ -59,10 +79,10 @@ async def test_unbounce_access_request_task(
             "form_data",
             "page_id",
             "variant_id",
-            "metadata",
+            "metadata"
         ],
     )
 
     # verify we only returned data for our identity email
-    unbounce_secrets = unbounce_connection_config.secrets
-    assert v[f"{dataset_name}:lead"][0]["id"] == f"{unbounce_secrets['lead_id']}"
+    for leads in v[f"{dataset_name}:lead"]:
+        assert leads["form_data"]['email'] == unbounce_identity_email
