@@ -15,7 +15,7 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.policy import PolicyResponse as PolicySchema
-from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.redis_cache import Identity, IdentityBase
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
@@ -61,6 +61,14 @@ class Consent(BaseSchema):
     opt_in: bool
     has_gpc_flag: bool = False
     conflicts_with_gpc: bool = False
+
+
+class ConsentReport(Consent):
+    """Schema for reporting Consent requests."""
+
+    identity: IdentityBase
+    created_at: datetime
+    updated_at: datetime
 
 
 class PrivacyRequestCreate(BaseSchema):

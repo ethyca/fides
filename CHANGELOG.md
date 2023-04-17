@@ -15,7 +15,10 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.10.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.11.0...main)
+
+
+## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
 
 ### Added
 
@@ -25,6 +28,7 @@ The types of changes are:
 - Introduced a `FixedLayout` component (from the datamap UI) for pages that need to be a fixed height and scroll within [#2992](https://github.com/ethyca/fides/pull/2992)
 - Added preliminary privacy notice page [#2995](https://github.com/ethyca/fides/pull/2995)
 - Table for privacy notices [#3001](https://github.com/ethyca/fides/pull/3001)
+- Added connector template endpoint [#2946](https://github.com/ethyca/fides/pull/2946)
 - Query params on connection type endpoint to filter by supported action type [#2996](https://github.com/ethyca/fides/pull/2996)
 - Scope restrictions for privacy notice table in the UI [#3007](https://github.com/ethyca/fides/pull/3007)
 - Toggle for enabling/disabling privacy notices in the UI [#3010](https://github.com/ethyca/fides/pull/3010)
@@ -34,6 +38,7 @@ The types of changes are:
 - Empty state for privacy notices [#3027](https://github.com/ethyca/fides/pull/3027)
 - Added Data flow modal [#3008](https://github.com/ethyca/fides/pull/3008)
 - Update datamap table export [#3038](https://github.com/ethyca/fides/pull/3038)
+- Added more advanced privacy center styling [#2943](https://github.com/ethyca/fides/pull/2943)
 
 ### Changed
 
@@ -42,24 +47,22 @@ The types of changes are:
 - Modify privacy center default config to only request email identities, and add validation preventing requesting both email & phone identities [#2539](https://github.com/ethyca/fides/pull/2539)
 - SaaS connector icons are now dynamically loaded from the connector templates [#3018](https://github.com/ethyca/fides/pull/3018)
 - Updated consentmechanism Enum to rename "necessary" to "notice_only" [#3048](https://github.com/ethyca/fides/pull/3048)
+- Updated test data for Mongo, CLI [#3011](https://github.com/ethyca/fides/pull/3011)
+- Updated the check for if a user can assign owner roles to be scope-based instead of role-based [#2964](https://github.com/ethyca/fides/pull/2964)
+- Replaced menu in user management table with delete icon [#2958](https://github.com/ethyca/fides/pull/2958)
+- Added extra fields to webhook payloads [#2830](https://github.com/ethyca/fides/pull/2830)
 
 ### Removed
 
 - Removed interzone navigation logic now that the datamap UI and admin UI are one app [#2990](https://github.com/ethyca/fides/pull/2990)
-
-### Changed
-
-- Updated the check for if a user can assign owner roles to be scope-based instead of role-based [#2964](https://github.com/ethyca/fides/pull/2964)
-- Replaced menu in user management table with delete icon [#2958](https://github.com/ethyca/fides/pull/2958)
+- Remove the `unknown` state for generated datasets displaying on fidesplus [#2957](https://github.com/ethyca/fides/pull/2957)
+- Removed datamap export API [#2999](https://github.com/ethyca/fides/pull/2999)
 
 ### Developer Experience
 
 - Nox commands for git tagging to support feature branch builds [#2979](https://github.com/ethyca/fides/pull/2979)
 - Changed test environment (`nox -s fides_env`) to run `fides deploy` for local testing [#3071](https://github.com/ethyca/fides/pull/3017)
-
-### Removed
-
-* Remove the `unknown` state for generated datasets displaying on fidesplus [#2957](https://github.com/ethyca/fides/pull/2957)
+- Publish git-tag specific docker images [#3050](https://github.com/ethyca/fides/pull/3050)
 
 ## [2.10.0](https://github.com/ethyca/fides/compare/2.9.2...2.10.0)
 

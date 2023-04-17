@@ -1,5 +1,3 @@
-import { narrow } from "narrow-minded";
-
 import {
   ConnectionSystemTypeMap,
   ConnectionType,
@@ -161,14 +159,9 @@ export const isDatastoreConnection = (obj: any): obj is DatastoreConnection =>
   (obj as DatastoreConnection).connection_type !== undefined;
 
 export const isConnectionSystemTypeMap = (
-  obj: unknown
+  obj: any
 ): obj is ConnectionSystemTypeMap =>
-  narrow(
-    {
-      encoded_icon: "string",
-    },
-    obj
-  );
+  (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
 
 export type DatastoreConnectionParams = {
   search: string;
