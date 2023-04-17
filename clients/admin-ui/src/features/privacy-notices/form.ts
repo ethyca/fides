@@ -13,6 +13,10 @@ export const defaultInitialValues: PrivacyNoticeCreation = {
   consent_mechanism: ConsentMechanism.OPT_IN,
   data_uses: [],
   enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+  // Match backend defaults
+  displayed_in_api: true,
+  displayed_in_overlay: true,
+  displayed_in_privacy_center: true,
 };
 
 export const transformPrivacyNoticeResponseToCreation = (

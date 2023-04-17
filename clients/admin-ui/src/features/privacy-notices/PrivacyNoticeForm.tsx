@@ -9,6 +9,7 @@ import {
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
+import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
@@ -35,6 +36,7 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
+import { PRIVACY_NOTICES_ROUTE } from "../common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "../common/toast";
 import { ENFORCEMENT_LEVEL_MAP, MECHANISM_MAP } from "./constants";
 import {
@@ -42,7 +44,10 @@ import {
   transformPrivacyNoticeResponseToCreation,
   ValidationSchema,
 } from "./form";
-import { usePatchPrivacyNoticesMutation } from "./privacy-notices.slice";
+import {
+  usePatchPrivacyNoticesMutation,
+  usePostPrivacyNoticeMutation,
+} from "./privacy-notices.slice";
 
 const CONSENT_MECHANISM_OPTIONS = enumToOptions(ConsentMechanism).map(
   (opt) => ({
@@ -74,13 +79,32 @@ const PrivacyNoticeForm = ({
   const dataUseOptions = useAppSelector(selectDataUseOptions);
 
   const [patchNoticesMutationTrigger] = usePatchPrivacyNoticesMutation();
+  const [postNoticesMutationTrigger] = usePostPrivacyNoticeMutation();
+
+  const isEditing = useMemo(
+    () => !!passedInPrivacyNotice,
+    [passedInPrivacyNotice]
+  );
 
   const handleSubmit = async (values: PrivacyNoticeCreation) => {
-    const result = await patchNoticesMutationTrigger([values]);
+    let result;
+    if (isEditing) {
+      result = await patchNoticesMutationTrigger([values]);
+    } else {
+      result = await postNoticesMutationTrigger([values]);
+    }
+
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      toast(successToastParams("Privacy notice updated"));
+      toast(
+        successToastParams(
+          `Privacy notice ${isEditing ? "updated" : "created"}`
+        )
+      );
+      if (!isEditing) {
+        router.push(PRIVACY_NOTICES_ROUTE);
+      }
     }
   };
 
@@ -139,6 +163,7 @@ const PrivacyNoticeForm = ({
                   options={dataUseOptions}
                   variant="stacked"
                   isMulti
+                  isRequired
                 />
                 <CustomTextArea
                   label="Description of the privacy notice (visible to internal users only)"
@@ -151,6 +176,7 @@ const PrivacyNoticeForm = ({
                   options={REGION_OPTIONS}
                   variant="stacked"
                   isMulti
+                  isRequired
                 />
                 <Box>
                   <Text fontSize="sm" fontWeight="medium" mb={2}>
