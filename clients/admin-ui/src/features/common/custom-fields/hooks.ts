@@ -24,8 +24,7 @@ export const useCustomFields = ({
   resourceType,
 }: UseCustomFieldsOptions) => {
   const { errorAlert, successAlert } = useAlert();
-  const { flags, plus } = useFeatures();
-  const isEnabled = flags.customFields && plus;
+  const { plus: isEnabled } = useFeatures();
 
   // This keeps track of the fides key that was initially passed in. If that key started out blank,
   // then we know the API call will just 404.
