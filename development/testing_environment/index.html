@@ -627,6 +627,20 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#quickstart" class="md-nav__link">
+    Quickstart
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#configuration" class="md-nav__link">
     Configuration
   </a>
@@ -634,15 +648,15 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#secrets-management" class="md-nav__link">
-    Secrets Management
+  <a href="#advanced-usage" class="md-nav__link">
+    Advanced Usage
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#spinning-up-the-environment" class="md-nav__link">
-    Spinning up the Environment
+  <a href="#automated-cypress-e2e-tests" class="md-nav__link">
+    Automated Cypress E2E Tests
   </a>
   
 </li>
@@ -877,6 +891,20 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#quickstart" class="md-nav__link">
+    Quickstart
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#configuration" class="md-nav__link">
     Configuration
   </a>
@@ -884,15 +912,15 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#secrets-management" class="md-nav__link">
-    Secrets Management
+  <a href="#advanced-usage" class="md-nav__link">
+    Advanced Usage
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#spinning-up-the-environment" class="md-nav__link">
-    Spinning up the Environment
+  <a href="#automated-cypress-e2e-tests" class="md-nav__link">
+    Automated Cypress E2E Tests
   </a>
   
 </li>
@@ -916,24 +944,36 @@ You're not viewing the latest version.
 
 
 <h1 id="testing-environment">Testing Environment</h1>
-<p>To facilitate thorough manual testing of the application, there is a comprehensive testing environment that can be set up via a single <code>nox</code> command.</p>
-<h2 id="configuration">Configuration</h2>
-<p>The environment will configure the <code>fides</code> server and CLI using the TOML configuration set in <code>src/fides/data/test_env/fides.test_env.toml</code>. To test out other configurations, you can edit this file and reload the test env; however, don't commit these changes unless you are sure that the default configuration for testing should change for everyone!</p>
-<h2 id="secrets-management">Secrets Management</h2>
-<p>The environment will work "out of the box", but can also be configured with secrets needed to configure other features like S3 storage, Mailgun notifications, etc. To configure this, you'll need to create the <code>.env</code> file, place it at the root of the repository directory, and provide some secrets. There is an <code>example.env</code> file you can reference to see what secrets are supported.</p>
-<p>This <code>.env</code> file is ignored by git and therefore safe to keep in your local repo during development.</p>
-<p>For Ethyca-internal engineers, you can also grab a fully populated <code>.env</code> file from 1Password (called <code>Fides .env</code>).</p>
-<h2 id="spinning-up-the-environment">Spinning up the Environment</h2>
-<p>Running <code>nox -s fides_env(test)</code> will spin up a comprehensive testing environment that does the following:</p>
+<h2 id="quickstart">Quickstart</h2>
 <ol>
-<li>Builds the Webserver, Admin UI and Privacy Center.</li>
-<li>Downloads all required images.</li>
-<li>Spins up the entire application, including external Docker-based datastores.</li>
-<li>Runs various commands and scripts to seed the application with example data, create a user, etc.</li>
-<li>Opens a shell with the CLI loaded and available for use.</li>
+<li>Use <code>nox -s "fides_env(test)"</code> to launch the test environment</li>
+<li>Read the terminal output for details</li>
+<li>Customize Fides ENV variables by editing <code>.env</code></li>
 </ol>
-<p>Just before the shell is opened, a <code>Fides Test Environment</code> banner will be displayed along with various information about the testing environment and how to access various parts of the application.</p>
-<p>From here, everything has been configured and you may commence testing.</p>
+<h2 id="overview">Overview</h2>
+<p>To facilitate thorough manual testing of the application, there is a comprehensive testing environment that can be set up via a single <code>nox</code> command: <code>nox -s "fides_env(test)"</code>.</p>
+<p>This test environment includes:
+* Fides Server
+* Fides Admin UI
+* Fides Postgres Database &amp; Redis Cache
+* Sample "Cookie House" Application
+* Test Postgres Database
+* Test Redis Database
+* Sample Resources
+* Sample Connectors
+* etc.</p>
+<p>This test environment is exactly the same environment that users can launch themselves using <code>fides deploy up</code>, and you can find all the configuration and settings in <code>src/fides/data/sample_project</code>.</p>
+<h2 id="configuration">Configuration</h2>
+<p>There are two ways to configure the <code>fides</code> server and CLI:
+1. Editing the ENV file in the project root: <code>.env</code>
+2. Editing the TOML file in the sample project files: <code>src/fides/data/sample_project/fides.toml</code></p>
+<p>The <code>.env</code> file is safest to add secrets and local customizations, since it is <code>.gitignore</code>'d and will not be accidentally committed to version control.</p>
+<p>The <code>fides.toml</code> file should be used for configurations that should be present for all users testing out the application.</p>
+<h2 id="advanced-usage">Advanced Usage</h2>
+<p>The environment will work "out of the box", but can also be configured to enable other features like S3 storage, email notifications, etc.</p>
+<p>To configure these, you'll need to edit the <code>.env</code> file and provide some secrets - see <code>example.env</code> for what is supported.</p>
+<h2 id="automated-cypress-e2e-tests">Automated Cypress E2E Tests</h2>
+<p>The test environment is also used to run automated end-to-end (E2E) tests via Cypress. Use <code>nox -s e2e_test</code> to run this locally.</p>
 
               
             </article>

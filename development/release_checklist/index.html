@@ -712,15 +712,15 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#admin-ui" class="md-nav__link">
-    Admin UI
+  <a href="#privacy-center" class="md-nav__link">
+    Privacy Center
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#privacy-center" class="md-nav__link">
-    Privacy Center
+  <a href="#admin-ui" class="md-nav__link">
+    Admin UI
   </a>
   
 </li>
@@ -947,15 +947,15 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#admin-ui" class="md-nav__link">
-    Admin UI
+  <a href="#privacy-center" class="md-nav__link">
+    Privacy Center
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#privacy-center" class="md-nav__link">
-    Privacy Center
+  <a href="#admin-ui" class="md-nav__link">
+    Admin UI
   </a>
   
 </li>
@@ -1002,39 +1002,16 @@ You're not viewing the latest version.
 <p>This checklist should be copy/pasted into the final pre-release PR, and checked off as you complete each step.</p>
 <h2 id="pre-release-steps">Pre-Release Steps</h2>
 <h3 id="general">General</h3>
-<ul>
-<li>[ ] Quickstart verified working and up-to-date</li>
-<li>[ ] <code>nox -s "fides_env(test)"</code> works (verify the admin UI on localhost:8080, privacy center, CLI and webserver)</li>
-<li>[ ] <code>nox -s "build(sample)"</code> works on the release branch, creating the sample images (this is also prereq for <code>fides deploy up</code>)</li>
-<li>[ ] <code>fides deploy up --no-pull</code> works using the images built in previous step (verify the admin UI, privacy center, CLI and webserver)</li>
-</ul>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>mkdir ~/fides-2-1-0-test
-cd ~/fides-2-1-0-test
-python3 -m venv venv
-source venv/bin/activate
-pip install git+https://github.com/ethyca/fides.git@&lt;branch&gt;
-fides deploy up --no-pull
-fides status
-fides deploy down
-rm -rf ~/fides-2-1-0-test
-exit
-</code></pre></div></td></tr></table></div>
-<p>Next, run the following checks against the environment you've spun up using <code>fides deploy up --no-pull</code>:</p>
+<p>From the release branch, confirm the following:
+- [ ] Quickstart works: <code>nox -s quickstart</code> (verify you can complete the interactive prompts from the command-line)
+- [ ] Test environment works: <code>nox -s "fides_env(test)"</code> (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)</p>
+<p>Next, run the following checks via the test environment:</p>
 <h3 id="api">API</h3>
 <ul>
-<li>[ ] Verify that the generated API docs are correct</li>
+<li>[ ] Verify that the generated API docs are correct (http://localhost:8080/docs)</li>
 </ul>
 <h3 id="cli">CLI</h3>
-<p>Run these from within <code>nox -s dev -- shell</code></p>
+<p>Run these from within the test environment shell:</p>
 <ul>
 <li>[ ] Make sure to login your CLI user by running <code>fides user login -u root_user -p Testpassword1!</code></li>
 <li>[ ] Run a <code>fides push</code></li>
@@ -1043,17 +1020,17 @@ exit
 <li>[ ] Generate a dataset with <code>fides generate dataset db --credentials-id app_postgres test.yml</code></li>
 <li>[ ] Scan a database with <code>fides scan dataset db --credentials-id app_postgres</code></li>
 </ul>
-<h3 id="admin-ui">Admin UI</h3>
-<ul>
-<li>[ ] Every navigation button works</li>
-<li>[ ] DSR approval succeeds</li>
-<li>[ ] DSR execution succeeds</li>
-</ul>
 <h3 id="privacy-center">Privacy Center</h3>
 <ul>
 <li>[ ] Every navigation button works</li>
 <li>[ ] DSR submission succeeds</li>
 <li>[ ] Consent request submission succeeds</li>
+</ul>
+<h3 id="admin-ui">Admin UI</h3>
+<ul>
+<li>[ ] Every navigation button works</li>
+<li>[ ] DSR approval succeeds</li>
+<li>[ ] DSR execution succeeds</li>
 </ul>
 <h3 id="documentation">Documentation</h3>
 <ul>
@@ -1067,6 +1044,7 @@ exit
 <li>[ ] Verify the fides-privacy-center release is published to DockerHub: <a href="https://hub.docker.com/r/ethyca/fides-privacy-center">https://hub.docker.com/r/ethyca/fides-privacy-center</a></li>
 <li>[ ] Verify the fides-sample-app release is published to DockerHub: <a href="https://hub.docker.com/r/ethyca/fides-sample-app">https://hub.docker.com/r/ethyca/fides-sample-app</a></li>
 <li>[ ] Smoke test the PyPi &amp; DockerHub releases with a clean <code>pip install ethyca-fides</code> and <code>fides deploy up</code></li>
+<li>[ ] Announce the release!</li>
 </ul>
 
               

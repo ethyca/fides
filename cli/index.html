@@ -1805,10 +1805,18 @@ _Note: The common MANIFESTS_DIR argument _always_ defaults to &quot;.fides/&quot
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  --no-pull  Use a local image instead of trying to pull from DockerHub.
-  --no-init  Disable the initialization of the Fides CLI, to run in headless
-             mode.
-  --help     Show this message and exit.
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>  --no-pull        Use a local image instead of trying to pull from DockerHub.
+  --no-init        Disable the initialization of the Fides CLI, to run in
+                   headless mode.
+  --env-file PATH  Use a custom ENV file for the Fides container to override
+                   settings.
+  --image TEXT     Use a custom image for the Fides container instead of the
+                   default (&#39;ethyca/fides&#39;).
+  --help           Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-evaluate">fides evaluate</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Evaluate System-level Privacy Declarations against Organization-level Policy Rules.

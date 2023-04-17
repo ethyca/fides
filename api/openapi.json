@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.10.0"
+    "version": "2.11.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4354,123 +4354,6 @@
         ]
       }
     },
-    "/api/v1/datamap/{organization_fides_key}": {
-      "get": {
-        "tags": [
-          "Datamap"
-        ],
-        "summary": "Export Datamap",
-        "description": "An endpoint to return the data map for a given Organization.\n\nThe Organization `fides_key` is the only url parameter required. In most cases,\nthis should be `default_organization`\n\nUses shared logic from the CLI, first gathering all resources from the server then\nformatting all attributes appropriately.\n\nReturns the expected datamap for a given organization fides key as a set of records.",
-        "operationId": "export_datamap_api_v1_datamap__organization_fides_key__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Organization Fides Key",
-              "type": "string"
-            },
-            "name": "organization_fides_key",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Include Deprecated Columns",
-              "type": "boolean",
-              "default": false
-            },
-            "name": "include_deprecated_columns",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Export Datamap Api V1 Datamap  Organization Fides Key  Get",
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                },
-                "example": [
-                  {
-                    "system.name": "Demo Analytics System",
-                    "system.data_responsibility_title": "Controller",
-                    "system.administrating_department": "Engineering",
-                    "system.privacy_declaration.data_use.name": "System",
-                    "system.privacy_declaration.data_use.legal_basis": "N/A",
-                    "system.privacy_declaration.data_use.special_category": "N/A",
-                    "system.privacy_declaration.data_use.recipients": "N/A",
-                    "system.privacy_declaration.data_use.legitimate_interest": "N/A",
-                    "system.privacy_declaration.data_use.legitimate_interest_impact_assessment": "N/A",
-                    "system.privacy_declaration.data_subjects.name": "Customer",
-                    "system.privacy_declaration.data_subjects.rights_available": "No data subject rights listed",
-                    "system.privacy_declaration.data_subjects.automated_decisions_or_profiling": "N/A",
-                    "system.data_protection_impact_assessment.is_required": "true",
-                    "system.data_protection_impact_assessment.progress": "Complete",
-                    "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
-                    "dataset.source_name": "N/A",
-                    "third_country_combined": "GBR, USA, CAN",
-                    "unioned_data_categories": "user.contact",
-                    "dataset.retention": "N/A",
-                    "system.joint_controller": "",
-                    "system.third_country_safeguards": "",
-                    "system.link_to_processor_contract": "",
-                    "organization.link_to_security_policy": "https://ethyca.com/privacy-policy/",
-                    "system.fides_key": "",
-                    "dataset.fides_key": "",
-                    "system.system_dependencies": "",
-                    "system.description": "",
-                    "system.ingress": [],
-                    "system.egress": []
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": "Unable to compile data map."
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": "Resource not found."
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "datamap:read"
-            ]
-          }
-        ]
-      }
-    },
     "/api/v1/generate": {
       "post": {
         "tags": [
@@ -5279,7 +5162,7 @@
           "Connection Types"
         ],
         "summary": "Get All Connection Types",
-        "description": "Returns a list of connection options in Fidesops - includes only database and saas options here.",
+        "description": "Returns a list of connection options in Fides - includes only database and saas options here.\n\nQuery params for types of requests supported - `consent`, `access` and `erasure` - act as filters.\nIf set to `true`, only connections that support the specified type of request will be returned.\nIf no filters are specified, then no filtering is performed.\nWhen applied together, the filters act as a union: result sets are additive.",
         "operationId": "get_all_connection_types_api_v1_connection_type_get",
         "parameters": [
           {
@@ -5297,6 +5180,33 @@
               "$ref": "#/components/schemas/SystemType"
             },
             "name": "system_type",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Consent",
+              "type": "boolean"
+            },
+            "name": "consent",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Access",
+              "type": "boolean"
+            },
+            "name": "access",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Erasure",
+              "type": "boolean"
+            },
+            "name": "erasure",
             "in": "query"
           },
           {
@@ -5835,6 +5745,184 @@
         ]
       }
     },
+    "/api/v1/consent-request/preferences": {
+      "get": {
+        "tags": [
+          "Consent"
+        ],
+        "summary": "Report Consent Requests",
+        "description": "Provides a paginated list of all consent requests sorted by the most recently updated.",
+        "operationId": "report_consent_requests_api_v1_consent_request_preferences_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Use",
+              "type": "string"
+            },
+            "name": "data_use",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Has Gpc Flag",
+              "type": "boolean"
+            },
+            "name": "has_gpc_flag",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Opt In",
+              "type": "boolean"
+            },
+            "name": "opt_in",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Created Lt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "created_lt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Created Gt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "created_gt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Updated Lt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "updated_lt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Updated Gt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "updated_gt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ConsentReport_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "consent:read"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Consent"
+        ],
+        "summary": "Get Consent Preferences",
+        "description": "Gets the consent preferences for the specified user.",
+        "operationId": "get_consent_preferences_api_v1_consent_request_preferences_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Identity"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentPreferences"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "consent:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/consent-request": {
       "post": {
         "tags": [
@@ -5883,7 +5971,7 @@
           "Consent"
         ],
         "summary": "Consent Request Verify",
-        "description": "Verifies the verification code and returns the current consent preferences if successful.",
+        "description": "Verifies the verification code and returns the current consent preferences if successful.\n\nNote that this returns just Consent records - which is the old workflow that saves Consent with respect to a data use.",
         "operationId": "consent_request_verify_api_v1_consent_request__consent_request_id__verify_post",
         "parameters": [
           {
@@ -5998,7 +6086,7 @@
           "Consent"
         ],
         "summary": "Set Consent Preferences",
-        "description": "Verifies the verification code and saves the user's consent preferences if successful.",
+        "description": "Verifies the verification code and saves the user's consent preferences if successful.\n\nNote that this allows you to save Consent records under our old workflow that saves Consent with respect to a data use.\n\n# TODO Slated for deprecation",
         "operationId": "set_consent_preferences_api_v1_consent_request__consent_request_id__preferences_patch",
         "parameters": [
           {
@@ -6043,55 +6131,6 @@
             }
           }
         }
-      }
-    },
-    "/api/v1/consent-request/preferences": {
-      "post": {
-        "tags": [
-          "Consent"
-        ],
-        "summary": "Get Consent Preferences",
-        "description": "Gets the consent preferences for the specified user.",
-        "operationId": "get_consent_preferences_api_v1_consent_request_preferences_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Identity"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConsentPreferences"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "consent:read"
-            ]
-          }
-        ]
       }
     },
     "/api/v1/connection/{connection_key}/validate_dataset": {
@@ -8731,7 +8770,7 @@
           "Privacy Notice"
         ],
         "summary": "Get Privacy Notice List",
-        "description": "Return a paginated list of PrivacyNotice records in this system.\nIncludes some query params to help filter the list if needed",
+        "description": "Return a paginated list of `PrivacyNotice` records in this system.\nIncludes some query params to help filter the list if needed",
         "operationId": "get_privacy_notice_list_api_v1_privacy_notice_get",
         "parameters": [
           {
@@ -8929,6 +8968,42 @@
         ]
       }
     },
+    "/api/v1/privacy-notice-by-data-use": {
+      "get": {
+        "tags": [
+          "Privacy Notice"
+        ],
+        "summary": "Get Privacy Notice By Data Use",
+        "description": "Endpoint to retrieve a map of `DataUse`s with their corresponding `PrivacyNotice`s\n\nOnly `DataUse`s that are associated with a `System` are included in the map.\n\n`DataUse`s that do not have any `PrivacyNotice` associated with them are included\nin the map, with empty lists.",
+        "operationId": "get_privacy_notice_by_data_use_api_v1_privacy_notice_by_data_use_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Privacy Notice By Data Use Api V1 Privacy Notice By Data Use Get",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/PrivacyNoticeResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-notice:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-notice/{privacy_notice_id}": {
       "get": {
         "tags": [
@@ -8977,6 +9052,139 @@
             ]
           }
         ]
+      }
+    },
+    "/api/v1/consent-request/{consent_request_id}/verify-for-privacy-preferences": {
+      "post": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Consent Request Verify For Privacy Preferences",
+        "description": "Verifies the verification code and returns the CurrentPrivacyPreferences if successful.\nThese are just the latest preferences saved for each PrivacyNotice.",
+        "operationId": "consent_request_verify_for_privacy_preferences_api_v1_consent_request__consent_request_id__verify_for_privacy_preferences_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Consent Request Id",
+              "type": "string"
+            },
+            "name": "consent_request_id",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_CurrentPrivacyPreferenceSchema_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consent-request/{consent_request_id}/privacy-preferences": {
+      "patch": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Save Privacy Preferences",
+        "description": "Verifies the verification code and saves the user's privacy preferences if successful.\n\nCreates a historical record for each privacy preference for record keeping and then upserts the current preference\nfor each privacy notice.  Creates a Privacy Request linked to the historical preferences to\npropagate these preferences where applicable.\n\nThis workflow is for users saving preferences for privacy notices with a verified identity.",
+        "operationId": "save_privacy_preferences_api_v1_consent_request__consent_request_id__privacy_preferences_patch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Consent Request Id",
+              "type": "string"
+            },
+            "name": "consent_request_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivacyPreferencesCreateWithCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Save Privacy Preferences Api V1 Consent Request  Consent Request Id  Privacy Preferences Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/privacy-request": {
@@ -11799,6 +12007,55 @@
         ]
       }
     },
+    "/api/v1/connector_template/register": {
+      "post": {
+        "tags": [
+          "SaaS Configs"
+        ],
+        "summary": "Register Custom Connector Template",
+        "description": "Registers a custom connector template from a zip file uploaded by the user.\nThe endpoint performs the following steps:\n\n1. Validates the uploaded file is a proper zip file.\n2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.\n\nIf the uploaded file is not a valid zip file or there are any validation errors\nwhen creating the ConnectorTemplates an HTTP 400 status code with error details is returned.",
+        "operationId": "register_custom_connector_template_api_v1_connector_template_register_post",
+        "requestBody": {
+          "content": {
+            "application/zip": {
+              "schema": {
+                "title": "File",
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:register"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/user/{user_id}/reset-password": {
       "post": {
         "tags": [
@@ -13524,9 +13781,27 @@
         "enum": [
           "opt_in",
           "opt_out",
-          "necessary"
+          "notice_only"
         ],
         "description": "An enumeration."
+      },
+      "ConsentOptionCreate": {
+        "title": "ConsentOptionCreate",
+        "required": [
+          "privacy_notice_history_id",
+          "preference"
+        ],
+        "type": "object",
+        "properties": {
+          "privacy_notice_history_id": {
+            "title": "Privacy Notice History Id",
+            "type": "string"
+          },
+          "preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          }
+        },
+        "description": "Schema for saving the user's preference for a given notice"
       },
       "ConsentPreferences": {
         "title": "ConsentPreferences",
@@ -13577,6 +13852,55 @@
           }
         },
         "description": "Schema for consent preferences including the verification code."
+      },
+      "ConsentReport": {
+        "title": "ConsentReport",
+        "required": [
+          "data_use",
+          "opt_in",
+          "identity",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object",
+        "properties": {
+          "data_use": {
+            "title": "Data Use",
+            "type": "string"
+          },
+          "data_use_description": {
+            "title": "Data Use Description",
+            "type": "string"
+          },
+          "opt_in": {
+            "title": "Opt In",
+            "type": "boolean"
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean",
+            "default": false
+          },
+          "conflicts_with_gpc": {
+            "title": "Conflicts With Gpc",
+            "type": "boolean",
+            "default": false
+          },
+          "identity": {
+            "$ref": "#/components/schemas/IdentityBase"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Schema for reporting Consent requests."
       },
       "ConsentRequestMap": {
         "title": "ConsentRequestMap",
@@ -13818,6 +14142,33 @@
         },
         "additionalProperties": false,
         "description": "Schema for creating a connection configuration including secrets."
+      },
+      "CurrentPrivacyPreferenceSchema": {
+        "title": "CurrentPrivacyPreferenceSchema",
+        "required": [
+          "id",
+          "preference",
+          "privacy_notice_history",
+          "privacy_preference_history_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "privacy_notice_history": {
+            "$ref": "#/components/schemas/PrivacyNoticeHistorySchema"
+          },
+          "privacy_preference_history_id": {
+            "title": "Privacy Preference History Id",
+            "type": "string"
+          }
+        },
+        "description": "Schema to represent the latest saved preference for a given privacy notice\nNote that we return the privacy notice *history* record here though which has the\ncontents of the notice the user consented to at the time."
       },
       "CurrentStep": {
         "title": "CurrentStep",
@@ -14742,7 +15093,8 @@
         "title": "EnforcementLevel",
         "enum": [
           "frontend",
-          "system_wide"
+          "system_wide",
+          "not_applicable"
         ],
         "description": "Enum is not formalized in the DB because it may be subject to frequent change"
       },
@@ -15316,6 +15668,23 @@
         },
         "additionalProperties": false,
         "description": "Some PII grouping pertaining to a human"
+      },
+      "IdentityBase": {
+        "title": "IdentityBase",
+        "type": "object",
+        "properties": {
+          "phone_number": {
+            "title": "Phone Number",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The minimum fields required to represent an identity."
       },
       "IdentityTypes": {
         "title": "IdentityTypes",
@@ -16191,6 +16560,74 @@
           }
         }
       },
+      "Page_ConsentReport_": {
+        "title": "Page[ConsentReport]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsentReport"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_CurrentPrivacyPreferenceSchema_": {
+        "title": "Page[CurrentPrivacyPreferenceSchema]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceSchema"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_DatasetConfigSchema_": {
         "title": "Page[DatasetConfigSchema]",
         "required": [
@@ -17014,6 +17451,10 @@
             "title": "Description",
             "type": "string"
           },
+          "internal_description": {
+            "title": "Internal Description",
+            "type": "string"
+          },
           "origin": {
             "title": "Origin",
             "type": "string"
@@ -17046,23 +17487,119 @@
           },
           "has_gpc_flag": {
             "title": "Has Gpc Flag",
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
           },
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
-          "displayed_in_privacy_modal": {
-            "title": "Displayed In Privacy Modal",
-            "type": "boolean"
+          "displayed_in_overlay": {
+            "title": "Displayed In Overlay",
+            "type": "boolean",
+            "default": true
           },
-          "displayed_in_banner": {
-            "title": "Displayed In Banner",
-            "type": "boolean"
+          "displayed_in_api": {
+            "title": "Displayed In Api",
+            "type": "boolean",
+            "default": true
           }
         },
         "additionalProperties": false,
         "description": "An API representation of a PrivacyNotice.\nThis model doesn't include an `id` so that it can be used for creation.\nIt also establishes some fields _required_ for creation"
+      },
+      "PrivacyNoticeHistorySchema": {
+        "title": "PrivacyNoticeHistorySchema",
+        "required": [
+          "name",
+          "regions",
+          "consent_mechanism",
+          "data_uses",
+          "enforcement_level",
+          "id",
+          "version",
+          "privacy_notice_id"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "internal_description": {
+            "title": "Internal Description",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "regions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrivacyNoticeRegion"
+            }
+          },
+          "consent_mechanism": {
+            "$ref": "#/components/schemas/ConsentMechanism"
+          },
+          "data_uses": {
+            "title": "Data Uses",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enforcement_level": {
+            "$ref": "#/components/schemas/EnforcementLevel"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "has_gpc_flag": {
+            "title": "Has Gpc Flag",
+            "type": "boolean",
+            "default": false
+          },
+          "displayed_in_privacy_center": {
+            "title": "Displayed In Privacy Center",
+            "type": "boolean",
+            "default": true
+          },
+          "displayed_in_overlay": {
+            "title": "Displayed In Overlay",
+            "type": "boolean",
+            "default": true
+          },
+          "displayed_in_api": {
+            "title": "Displayed In Api",
+            "type": "boolean",
+            "default": true
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "number"
+          },
+          "privacy_notice_id": {
+            "title": "Privacy Notice Id",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An API representation of a PrivacyNoticeHistory used for response payloads"
       },
       "PrivacyNoticeRegion": {
         "title": "PrivacyNoticeRegion",
@@ -17107,7 +17644,8 @@
           "id",
           "created_at",
           "updated_at",
-          "version"
+          "version",
+          "privacy_notice_history_id"
         ],
         "type": "object",
         "properties": {
@@ -17117,6 +17655,10 @@
           },
           "description": {
             "title": "Description",
+            "type": "string"
+          },
+          "internal_description": {
+            "title": "Internal Description",
             "type": "string"
           },
           "origin": {
@@ -17151,19 +17693,23 @@
           },
           "has_gpc_flag": {
             "title": "Has Gpc Flag",
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
           },
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
-          "displayed_in_privacy_modal": {
-            "title": "Displayed In Privacy Modal",
-            "type": "boolean"
+          "displayed_in_overlay": {
+            "title": "Displayed In Overlay",
+            "type": "boolean",
+            "default": true
           },
-          "displayed_in_banner": {
-            "title": "Displayed In Banner",
-            "type": "boolean"
+          "displayed_in_api": {
+            "title": "Displayed In Api",
+            "type": "boolean",
+            "default": true
           },
           "id": {
             "title": "Id",
@@ -17182,6 +17728,10 @@
           "version": {
             "title": "Version",
             "type": "number"
+          },
+          "privacy_notice_history_id": {
+            "title": "Privacy Notice History Id",
+            "type": "string"
           }
         },
         "additionalProperties": false,
@@ -17202,6 +17752,10 @@
             "title": "Description",
             "type": "string"
           },
+          "internal_description": {
+            "title": "Internal Description",
+            "type": "string"
+          },
           "origin": {
             "title": "Origin",
             "type": "string"
@@ -17234,19 +17788,23 @@
           },
           "has_gpc_flag": {
             "title": "Has Gpc Flag",
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
           },
           "displayed_in_privacy_center": {
             "title": "Displayed In Privacy Center",
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           },
-          "displayed_in_privacy_modal": {
-            "title": "Displayed In Privacy Modal",
-            "type": "boolean"
+          "displayed_in_overlay": {
+            "title": "Displayed In Overlay",
+            "type": "boolean",
+            "default": true
           },
-          "displayed_in_banner": {
-            "title": "Displayed In Banner",
-            "type": "boolean"
+          "displayed_in_api": {
+            "title": "Displayed In Api",
+            "type": "boolean",
+            "default": true
           },
           "id": {
             "title": "Id",
@@ -17255,6 +17813,51 @@
         },
         "additionalProperties": false,
         "description": "An API representation of a PrivacyNotice that includes an `id` field.\nUsed to help model API responses and update payloads"
+      },
+      "PrivacyPreferencesCreateWithCode": {
+        "title": "PrivacyPreferencesCreateWithCode",
+        "required": [
+          "browser_identity",
+          "preferences"
+        ],
+        "type": "object",
+        "properties": {
+          "browser_identity": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "preferences": {
+            "title": "Preferences",
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsentOptionCreate"
+            }
+          },
+          "policy_key": {
+            "title": "Policy Key",
+            "pattern": "^[a-zA-Z0-9_.<>-]+$",
+            "type": "string"
+          },
+          "request_origin": {
+            "$ref": "#/components/schemas/RequestOrigin"
+          },
+          "url_recorded": {
+            "title": "Url Recorded",
+            "type": "string"
+          },
+          "user_agent": {
+            "title": "User Agent",
+            "type": "string"
+          },
+          "user_geography": {
+            "$ref": "#/components/schemas/PrivacyNoticeRegion"
+          }
+        },
+        "description": "Schema for saving privacy preferences and accompanying user data\nincluding the verification code."
       },
       "PrivacyRequestCreate": {
         "title": "PrivacyRequestCreate",
@@ -17816,6 +18419,15 @@
         },
         "description": "The Registry resource model.\n\nSystems can be assigned to this resource, but it doesn't inherently\npoint to any other resources."
       },
+      "RequestOrigin": {
+        "title": "RequestOrigin",
+        "enum": [
+          "privacy_center",
+          "overlay",
+          "api"
+        ],
+        "description": "An enumeration."
+      },
       "ResourceFilter": {
         "title": "ResourceFilter",
         "required": [
@@ -18050,6 +18662,11 @@
             "title": "Version",
             "type": "string"
           },
+          "replaceable": {
+            "title": "Replaceable",
+            "type": "boolean",
+            "default": false
+          },
           "connector_params": {
             "title": "Connector Params",
             "type": "array",
@@ -18112,7 +18729,7 @@
             "type": "string"
           }
         },
-        "description": "Used to store base info for a saas config"
+        "description": "Used to store base info for a SaaS config"
       },
       "SaaSConfigValidationDetails": {
         "title": "SaaSConfigValidationDetails",
@@ -18356,6 +18973,7 @@
           "connection:read",
           "connection:authorize",
           "connection_type:read",
+          "connector_template:register",
           "consent:read",
           "ctl_dataset:create",
           "ctl_dataset:read",
@@ -18382,7 +19000,6 @@
           "data_use:read",
           "data_use:delete",
           "data_use:update",
-          "datamap:read",
           "dataset:create_or_update",
           "dataset:delete",
           "dataset:read",
@@ -19070,6 +19687,15 @@
         },
         "additionalProperties": false,
         "description": "TimescaleDB Secrets Schema for API Docs"
+      },
+      "UserConsentPreference": {
+        "title": "UserConsentPreference",
+        "enum": [
+          "opt_in",
+          "opt_out",
+          "acknowledge"
+        ],
+        "description": "An enumeration."
       },
       "UserCreate": {
         "title": "UserCreate",
