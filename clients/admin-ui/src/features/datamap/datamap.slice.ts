@@ -64,6 +64,7 @@ const DEPRECATED_COLUMNS = [
   "dataset.fides_key",
   "system.link_to_processor_contract",
   "system.privacy_declaration.data_use.legitimate_interest",
+  // SYSTEM_SYSTEM_DEPENDENCIES, // This will be removed once all customers have migration to data flow
   // 'system.fides_key', it looks like this is needed for the graph. Disable properly later.
 ];
 
