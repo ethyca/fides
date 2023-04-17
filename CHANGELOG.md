@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.11.0...main)
 
+### Removed
+- Removed the warning about access control migration [#3055](https://github.com/ethyca/fides/pull/3055)
 
 ## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
 
