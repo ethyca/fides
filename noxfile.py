@@ -54,6 +54,9 @@ def check_for_env_file() -> None:
             f"Creating env file for local testing & development from {env_file_example}: {env_file}"
         )
         shutil.copy(env_file_example, env_file)
+        
+        
+# Add a command that opens the docs
 
 
 def convert_semver_to_list(semver: str) -> List[int]:
