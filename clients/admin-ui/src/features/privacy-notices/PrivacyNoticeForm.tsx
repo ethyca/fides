@@ -36,7 +36,7 @@ import {
 } from "~/types/api";
 
 import { errorToastParams, successToastParams } from "../common/toast";
-import { MECHANISM_MAP } from "./constants";
+import { ENFORCEMENT_LEVEL_MAP, MECHANISM_MAP } from "./constants";
 import {
   defaultInitialValues,
   transformPrivacyNoticeResponseToCreation,
@@ -51,7 +51,10 @@ const CONSENT_MECHANISM_OPTIONS = enumToOptions(ConsentMechanism).map(
   })
 );
 
-const ENFORCEMENT_OPTIONS = enumToOptions(EnforcementLevel);
+const ENFORCEMENT_OPTIONS = enumToOptions(EnforcementLevel).map((opt) => ({
+  label: ENFORCEMENT_LEVEL_MAP.get(opt.label) || opt.label,
+  value: opt.value,
+}));
 
 const REGION_OPTIONS = enumToOptions(PrivacyNoticeRegion);
 
