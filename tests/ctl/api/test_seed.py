@@ -5,12 +5,13 @@ from fideslang import DEFAULT_TAXONOMY, DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from fides.api.ctl.database import sample_resources, seed
+from fides.api.ctl.database import samples, seed
+from fides.api.ctl.sql_models import Dataset, PolicyCtl, System
+from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.core import api as _api
 from fides.core.config import CONFIG, FidesConfig
 from fides.lib.models.fides_user import FidesUser
-from fides.api.ctl.sql_models import System, Dataset, PolicyCtl
 
 
 @pytest.fixture(scope="function", name="data_category")
@@ -443,7 +444,7 @@ async def test_load_orginizations(loguru_caplog, async_session, monkeypatch):
 class TestLoadSampleResources:
     """Tests related to load_sample_resources"""
 
-    async def test_load_sample_resources(
+    async def test_load_samples(
         self,
         async_session: AsyncSession,
     ) -> None:
@@ -454,22 +455,29 @@ class TestLoadSampleResources:
             systems = (await async_session.execute(select(System))).scalars().all()
             datasets = (await async_session.execute(select(Dataset))).scalars().all()
             policies = (await async_session.execute(select(PolicyCtl))).scalars().all()
-            # TODO: uncomment these once done testing iteratively
-            # assert len(systems) == 0
-            # assert len(datasets) == 0
-            # assert len(policies) == 0
+            connectors = (
+                (await async_session.execute(select(ConnectionConfig))).scalars().all()
+            )
+            assert len(systems) == 0
+            assert len(datasets) == 0
+            assert len(policies) == 0
+            assert len(connectors) == 0
 
-            # Load the sample resources
-        await seed.load_sample_resources(async_session)
+        # Load the sample resources & connectors
+        await seed.load_samples(async_session)
 
         async with async_session.begin():
             # Check the results are as expected!
             systems = (await async_session.execute(select(System))).scalars().all()
             datasets = (await async_session.execute(select(Dataset))).scalars().all()
             policies = (await async_session.execute(select(PolicyCtl))).scalars().all()
+            connectors = (
+                (await async_session.execute(select(ConnectionConfig))).scalars().all()
+            )
             assert len(systems) == 4
             assert len(datasets) == 2
             assert len(policies) == 1
+            assert len(connectors) == 0
 
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
@@ -482,8 +490,6 @@ class TestLoadSampleResources:
                 "postgres_example_test_dataset",
             ]
             assert sorted([e.fides_key for e in policies]) == ["sample_policy"]
-
-            # TODO: assert connectors are populated too
 
     async def test_load_sample_resources_strict(self):
         """
@@ -500,18 +506,20 @@ class TestLoadSampleResources:
         function has all the logic it needs to parse everything from this
         directory: src/fides/data/sample_project/sample_resources/*.yml
 
-        See src/fides/api/ctl/database/sample_resources.py for details.
+        See src/fides/api/ctl/database/samples.py for details.
 
         Sorry for the trouble, but we want to ensure there isn't a subtle bug
         sneaking into our sample project code!
         """
         try:
-            resources_dict = sample_resources.load_sample_resources_from_project(
-                strict=True
-            )
+            resources_dict = samples.load_sample_resources_from_project(strict=True)
             assert resources_dict
         except Exception as exc:
             assert not exc, (
                 "Unexpected error loading sample resources; did you make changes to the sample project?"
                 f"See tests/ctl/api/test_seed.py for details. error={exc}"
             )
+
+    async def test_load_sample_connectors(self):
+        # TODO
+        assert False, "Not implemented!"

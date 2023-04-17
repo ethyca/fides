@@ -239,7 +239,7 @@ async def setup_server() -> None:
         raise FidesError("No database uri provided")
 
     # TODO: load samples if requested to do so!
-    await configure_db(CONFIG.database.sync_database_uri, load_samples=False)
+    await configure_db(CONFIG.database.sync_database_uri, samples=False)
 
     try:
         create_or_update_parent_user()

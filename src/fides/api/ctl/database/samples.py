@@ -1,12 +1,13 @@
 """
-Sample resources to use for seeding the database. These are loaded & parsed from
-the sample project at src/fides/data/sample_project.
+Sample data to use for seeding the database. This are loaded & parsed from the
+sample project at src/fides/data/sample_project.
 
-See load_sample_resources() in seed.py for usage.
+See load_samples() in seed.py for usage.
 """
-import yaml
 from importlib.resources import files
 from typing import Dict, List, Union
+
+import yaml
 from fideslang.models import Dataset, Organization, Policy, System
 
 import fides.data.sample_project
