@@ -334,6 +334,10 @@ async def run_privacy_request(
             )
 
         try:
+            import pdb
+
+            pdb.set_trace()
+
             datasets = DatasetConfig.all(db=session)
             dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
             dataset_graph = DatasetGraph(*dataset_graphs)

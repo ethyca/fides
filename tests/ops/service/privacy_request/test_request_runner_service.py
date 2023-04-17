@@ -1,4 +1,6 @@
+# pylint: disable=missing-docstring, redefined-outer-name
 import time
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import ANY, Mock, call
@@ -41,6 +43,7 @@ from fides.api.ops.schemas.privacy_request import Consent
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.service.connectors.dynamodb_connector import DynamoDBConnector
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
 from fides.api.ops.service.connectors.sql_connector import (
     RedshiftConnector,
@@ -2108,3 +2111,121 @@ class TestConsentEmailStep:
             {"email": "customer-1@example.com", "ljt_readerID": "12345"},
             privacy_request_with_consent_policy,
         )
+
+
+@pytest.fixture(scope="function")
+def dynamodb_resources(
+    dynamodb_example_test_dataset_config,
+):
+    dynamodb_connection_config = dynamodb_example_test_dataset_config.connection_config
+    dynamodb_client = DynamoDBConnector(dynamodb_connection_config).client()
+    uuid = "test_uuid"
+    customer_email = f"customer-{uuid}@example.com"
+    customer_name = f"{uuid}"
+    table_name = "customer"
+
+    item = {
+        "id": {"S": customer_name},
+        "name": {"S": customer_name},
+        "email": {"S": customer_email},
+        "address_id": {"S": customer_name},
+        "created": {"S": datetime.now(timezone.utc).isoformat()},
+    }
+
+    res = dynamodb_client.put_item(
+        TableName=table_name,
+        Item=item,
+    )
+
+    assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+    yield {
+        "email": customer_email,
+        "formatted_email": customer_email,
+        "name": customer_name,
+        "id": uuid,
+        "client": dynamodb_client,
+    }
+    # Remove test data and close Dynamodb connection in teardown
+    item = {"id": {"S": customer_name}}
+    res = dynamodb_client.delete_item(
+        TableName=table_name,
+        Key=item,
+    )
+    assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_dynamodb
+def test_create_and_process_access_request_dynamodb(
+    dynamodb_resources,
+    db,
+    cache,
+    policy,
+    run_privacy_request_task,
+):
+    customer_email = dynamodb_resources["email"]
+    customer_name = dynamodb_resources["name"]
+    customer_id = dynamodb_resources["id"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        # "identity": {"email": customer_email},
+        "identity": {"id": customer_id},
+    }
+    # import json
+
+    # with open("data.json", "w") as fp:
+    #     json.dump(data, fp)
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    )
+    results = pr.get_results()
+    customer_table_key = (
+        f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:customer"
+    )
+    assert len(results[customer_table_key]) == 1
+    assert results[customer_table_key][0]["email"] == customer_email
+    assert results[customer_table_key][0]["name"] == customer_name
+
+    pr.delete(db=db)
+
+
+@pytest.mark.integration_external
+# @pytest.mark.integration_dynamodb
+def test_create_and_process_erasure_request_dynamodb(
+    dynamodb_example_test_dataset_config,
+    dynamodb_resources,
+    integration_config: Dict[str, str],
+    db,
+    cache,
+    erasure_policy,
+    run_privacy_request_task,
+):
+    customer_email = dynamodb_resources["email"]
+    dynamodb_client = dynamodb_resources["client"]
+    formatted_customer_email = dynamodb_resources["formatted_email"]
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": customer_email},
+    }
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    )
+    pr.delete(db=db)
+
+    # stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
+    # res = dynamodb_client.execute(stmt).all()
+    # for row in res:
+    #     assert row.name is None
+    #     assert row.variant_eg is None
