@@ -691,15 +691,30 @@ interface CustomSwitchProps {
   label: string;
   tooltip?: string;
   variant?: "inline" | "condensed";
+  isDisabled?: boolean;
 }
 export const CustomSwitch = ({
   label,
   tooltip,
   variant = "inline",
+  isDisabled,
   ...props
 }: CustomSwitchProps & FieldHookConfig<boolean>) => {
   const [field, meta] = useField({ ...props, type: "checkbox" });
   const isInvalid = !!(meta.touched && meta.error);
+
+  const innerSwitch = (
+    <Switch
+      name={field.name}
+      isChecked={field.checked}
+      onChange={field.onChange}
+      onBlur={field.onBlur}
+      colorScheme="secondary"
+      mr={2}
+      data-testid={`input-${field.name}`}
+      disabled={isDisabled}
+    />
+  );
 
   if (variant === "inline") {
     return (
@@ -709,15 +724,7 @@ export const CustomSwitch = ({
             {label}
           </Label>
           <Box display="flex" alignItems="center">
-            <Switch
-              name={field.name}
-              isChecked={field.checked}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              colorScheme="secondary"
-              mr={2}
-              data-testid={`input-${field.name}`}
-            />
+            {innerSwitch}
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}
           </Box>
         </Grid>
@@ -736,16 +743,7 @@ export const CustomSwitch = ({
         >
           {label}
         </Label>
-
-        <Switch
-          name={field.name}
-          isChecked={field.checked}
-          onChange={field.onChange}
-          onBlur={field.onBlur}
-          colorScheme="secondary"
-          mr={2}
-          data-testid={`input-${field.name}`}
-        />
+        {innerSwitch}
         {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Box>
     </FormControl>

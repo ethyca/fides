@@ -29,8 +29,6 @@ import {
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
 import {
-  ConsentMechanism,
-  EnforcementLevel,
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponse,
@@ -38,7 +36,7 @@ import {
 
 import { PRIVACY_NOTICES_ROUTE } from "../common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "../common/toast";
-import { ENFORCEMENT_LEVEL_MAP, MECHANISM_MAP } from "./constants";
+import ConsentMechanismForm from "./ConsentMechanismForm";
 import {
   defaultInitialValues,
   transformPrivacyNoticeResponseToCreation,
@@ -48,18 +46,6 @@ import {
   usePatchPrivacyNoticesMutation,
   usePostPrivacyNoticeMutation,
 } from "./privacy-notices.slice";
-
-const CONSENT_MECHANISM_OPTIONS = enumToOptions(ConsentMechanism).map(
-  (opt) => ({
-    label: MECHANISM_MAP.get(opt.label) || opt.label,
-    value: opt.value,
-  })
-);
-
-const ENFORCEMENT_OPTIONS = enumToOptions(EnforcementLevel).map((opt) => ({
-  label: ENFORCEMENT_LEVEL_MAP.get(opt.label) || opt.label,
-  value: opt.value,
-}));
 
 const REGION_OPTIONS = enumToOptions(PrivacyNoticeRegion);
 
@@ -131,31 +117,7 @@ const PrivacyNoticeForm = ({
                   variant="stacked"
                 />
               </FormSection>
-              <FormSection title="Consent mechanism">
-                <CustomSelect
-                  label="If this use of data requires consent, you can specify the method of consent here."
-                  name="consent_mechanism"
-                  options={CONSENT_MECHANISM_OPTIONS}
-                  variant="stacked"
-                />
-                <CustomSelect
-                  label="Select the enforcement level for this consent mechanism"
-                  name="enforcement_level"
-                  options={ENFORCEMENT_OPTIONS}
-                  variant="stacked"
-                />
-                <Box>
-                  <Text fontSize="sm" fontWeight="medium" mb={2}>
-                    Configure whether this notice conforms to the Global Privacy
-                    Control.
-                  </Text>
-                  <CustomSwitch
-                    label="GPC Enabled"
-                    name="has_gpc_flag"
-                    variant="condensed"
-                  />
-                </Box>
-              </FormSection>
+              <ConsentMechanismForm />
               <FormSection title="Privacy notice configuration">
                 <CustomSelect
                   name="data_uses"
