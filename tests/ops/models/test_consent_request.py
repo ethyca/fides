@@ -154,8 +154,8 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             consent_preferences=consent_preferences,
             executable_consents=executable_consents,
         )
-
         assert mock_create_privacy_request.called
+
         call_kwargs = mock_create_privacy_request.call_args[1]
         assert call_kwargs["db"] == db
         assert call_kwargs["data"][0].identity.email == "test@email.com"
@@ -171,7 +171,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
     @mock.patch(
         "fides.api.ops.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
     )
-    def test_privacy_request_queued_even_if_no_executable_preferences(
+    def test_do_not_queue_privacy_request_if_no_executable_preferences(
         self, mock_create_privacy_request, db, consent_policy
     ):
         mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
@@ -205,7 +205,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             ],
         )
 
-        assert mock_create_privacy_request.called
+        assert not mock_create_privacy_request.called
 
     @mock.patch(
         "fides.api.ops.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
