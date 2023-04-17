@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Removed
 - Removed the warning about access control migration [#3055](https://github.com/ethyca/fides/pull/3055)
+- Remove `customFields` feature flag [#3080](https://github.com/ethyca/fides/pull/3080)
 
 ## [2.11.0](https://github.com/ethyca/fides/compare/2.10.0...2.11.0)
 
