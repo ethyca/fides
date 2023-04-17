@@ -847,7 +847,9 @@ async def test_array_querying_mongo(
     )
     # Returns fields_affected for all possible targeted fields, even though this identity only had some
     # of them actually populated
-    assert sorted(customer_detail_logs[0].fields_affected, key=lambda e: e["field_name"]) == [
+    assert sorted(
+        customer_detail_logs[0].fields_affected, key=lambda e: e["field_name"]
+    ) == [
         {
             "path": "mongo_test:customer_details:birthday",
             "field_name": "birthday",
