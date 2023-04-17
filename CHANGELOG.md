@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Access and erasure support for Aircall [#2589](https://github.com/ethyca/fides/pull/2589)
 
+### Changed
+- The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
+
 ### Removed
 - Removed the warning about access control migration [#3055](https://github.com/ethyca/fides/pull/3055)
 - Remove `customFields` feature flag [#3080](https://github.com/ethyca/fides/pull/3080)
