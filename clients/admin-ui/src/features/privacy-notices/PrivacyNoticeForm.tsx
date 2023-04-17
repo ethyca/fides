@@ -137,7 +137,6 @@ const PrivacyNoticeForm = ({
                   variant="stacked"
                   isMulti
                 />
-                {/* TODO: this one doesn't exist in the backend yet */}
                 <CustomTextArea
                   label="Description of the privacy notice (visible to internal users only)"
                   name="internal_description"
@@ -163,12 +162,12 @@ const PrivacyNoticeForm = ({
                     />
                     <CustomSwitch
                       label="Show in Banner"
-                      name="displayed_in_privacy_modal"
+                      name="displayed_in_api"
                       variant="condensed"
                     />
                     <CustomSwitch
                       label="Show in Privacy Modal"
-                      name="displayed_in_banner"
+                      name="displayed_in_overlay"
                       variant="condensed"
                     />
                   </HStack>

@@ -18,7 +18,14 @@ export const defaultInitialValues: PrivacyNoticeCreation = {
 export const transformPrivacyNoticeResponseToCreation = (
   notice: PrivacyNoticeResponse
 ): PrivacyNoticeCreation => {
-  const { created_at: createdAt, updated_at: updatedAt, ...rest } = notice;
+  // Remove the fields not needed for editing/creation
+  const {
+    created_at: createdAt,
+    updated_at: updatedAt,
+    privacy_notice_history_id: historyId,
+    version,
+    ...rest
+  } = notice;
   return {
     ...rest,
     name: notice.name ?? defaultInitialValues.name,

@@ -90,7 +90,7 @@ export const selectDataUsesMap = createSelector(
 
 export const selectDataUseOptions = createSelector(selectDataUses, (dataUses) =>
   dataUses.map((du) => ({
-    label: du.name ?? du.fides_key,
+    label: du.fides_key,
     value: du.fides_key,
   }))
 );
