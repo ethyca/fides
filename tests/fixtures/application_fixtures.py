@@ -1,3 +1,4 @@
+from copy import deepcopy
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Generator, List, Optional
@@ -40,6 +41,7 @@ from fides.api.ops.models.privacy_notice import (
 )
 from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.ops.models.privacy_request import (
+    Consent,
     ConsentRequest,
     PrivacyRequest,
     PrivacyRequestStatus,
@@ -1843,6 +1845,13 @@ def system_manager(db: Session, system) -> System:
 
 
 @pytest.fixture(scope="function")
+def empty_provided_identity(db):
+    provided_identity = ProvidedIdentity.create(db, data={"field_name": "email"})
+    yield provided_identity
+    provided_identity.delete(db)
+
+
+@pytest.fixture(scope="function")
 def provided_identity_and_consent_request(db):
     provided_identity_data = {
         "privacy_request_id": None,
@@ -1884,7 +1893,9 @@ def executable_consent_request(
 
 @pytest.fixture(scope="function")
 def privacy_preference_history(
-    db, provided_identity_and_consent_request, privacy_notice
+    db,
+    provided_identity_and_consent_request,
+    privacy_notice,
 ):
     provided_identity, consent_request = provided_identity_and_consent_request
     privacy_notice_history = privacy_notice.histories[0]
@@ -1906,3 +1917,35 @@ def privacy_preference_history(
     )
     yield preference_history_record
     preference_history_record.delete(db)
+
+
+@pytest.fixture(scope="function")
+def consent_records(
+    db,
+    provided_identity_and_consent_request,
+):
+    provided_identity, consent_request = provided_identity_and_consent_request
+    consent_request.cache_identity_verification_code("abcdefg")
+
+    consent_data = [
+        {
+            "data_use": "email",
+            "data_use_description": None,
+            "opt_in": True,
+        },
+        {
+            "data_use": "location",
+            "data_use_description": "Location data",
+            "opt_in": False,
+        },
+    ]
+
+    records = []
+    for data in deepcopy(consent_data):
+        data["provided_identity_id"] = provided_identity.id
+        records.append(Consent.create(db, data=data))
+
+    yield records
+
+    for record in records:
+        record.delete(db)

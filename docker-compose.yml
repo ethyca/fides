@@ -62,7 +62,7 @@ services:
       - "3001:3000"
     volumes:
       - type: bind
-        source: ./src/fides/data/test_env/privacy_center_config
+        source: ./src/fides/data/sample_project/privacy_center/config
         target: /app/config
         read_only: False
 
