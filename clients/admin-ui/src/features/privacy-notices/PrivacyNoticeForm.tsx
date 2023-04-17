@@ -24,6 +24,8 @@ import {
   getErrorMessage,
   isErrorResult,
 } from "~/features/common/helpers";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectDataUseOptions,
   useGetAllDataUsesQuery,
@@ -34,8 +36,6 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
-import { PRIVACY_NOTICES_ROUTE } from "../common/nav/v2/routes";
-import { errorToastParams, successToastParams } from "../common/toast";
 import ConsentMechanismForm from "./ConsentMechanismForm";
 import {
   defaultInitialValues,
