@@ -1,9 +1,13 @@
+import io
+import os
+from textwrap import dedent
 from typing import Generator
 
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from unittest.mock import patch
 
 from fides.api.ctl.database import samples, seed
 from fides.api.ctl.sql_models import Dataset, PolicyCtl, System
@@ -441,14 +445,32 @@ async def test_load_orginizations(loguru_caplog, async_session, monkeypatch):
     assert f"SKIPPED {current_orgs}" in loguru_caplog.text
 
 
+@pytest.mark.integration
 class TestLoadSampleResources:
     """Tests related to load_sample_resources"""
 
+    SAMPLE_ENV_VARS = {
+        # Include test secrets for Postgres and Stripe, only
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST": "test-var-expansion",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT": "9090",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME": "test-var-db",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__USER": "test-var-user",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD": "test-var-password",
+        "FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN": "test-stripe-domain",
+        "FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY": "test-stripe-api-key",
+    }
+
+    @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
     async def test_load_samples(
         self,
         async_session: AsyncSession,
     ) -> None:
-        """Should load expected sample resources"""
+        """
+        Test that we can load the sample resources, connectors, and upsert those
+        into the database. See the other tests in this class for more detailed
+        assertions - this one just ensures the e2e result is what we expect: a
+        database full of sample data!
+        """
 
         async with async_session.begin():
             # Ensure we start with an empty database
@@ -477,7 +499,7 @@ class TestLoadSampleResources:
             assert len(systems) == 4
             assert len(datasets) == 2
             assert len(policies) == 1
-            assert len(connectors) == 0
+            assert len(connectors) == 2
 
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
@@ -490,36 +512,128 @@ class TestLoadSampleResources:
                 "postgres_example_test_dataset",
             ]
             assert sorted([e.fides_key for e in policies]) == ["sample_policy"]
+            # NOTE: Only the connectors configured by SAMPLE_ENV_VARS are expected
+            assert sorted([e.key for e in connectors]) == [
+                "postgres_connector",
+                "stripe_connector",
+            ]
 
     async def test_load_sample_resources_strict(self):
         """
         Ensure that the resource files in the sample project are all
-        successfully parsed by the load_sample_resources() function. This makes
-        sure we don't make some changes to the sample project files that aren't
-        automatically loaded into the database via this function.
+        successfully parsed by the load_sample_resources_from_project()
+        function. This makes sure we don't make some changes to the sample
+        project files that aren't automatically loaded into the database via
+        this function.
 
         NOTE: If you've found this test, that probably means you were making
         some changes to the code and this failed unexpectedly. Maybe you removed
         a field, changed a default, or wanted to edit some sample data?
 
-        To fix the test, you just need to ensure the load_sample_resources()
-        function has all the logic it needs to parse everything from this
-        directory: src/fides/data/sample_project/sample_resources/*.yml
+        To fix the test, you just need to ensure the code has all the logic it
+        needs to parse everything from this directory:
+        - src/fides/data/sample_project/sample_resources/*.yml
 
         See src/fides/api/ctl/database/samples.py for details.
 
         Sorry for the trouble, but we want to ensure there isn't a subtle bug
         sneaking into our sample project code!
         """
+        error_message = (
+            "Unexpected error loading sample resources; did you make changes to the sample project? "
+            "See tests/ctl/api/test_seed.py for details."
+        )
         try:
             resources_dict = samples.load_sample_resources_from_project(strict=True)
             assert resources_dict
         except Exception as exc:
-            assert not exc, (
-                "Unexpected error loading sample resources; did you make changes to the sample project?"
-                f"See tests/ctl/api/test_seed.py for details. error={exc}"
-            )
+            assert not exc, error_message
 
+    @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
     async def test_load_sample_connectors(self):
-        # TODO
-        assert False, "Not implemented!"
+        """
+        Ensure that the sample connectors file in the sample project can be
+        parsed and loaded by the load_sample_connectors_from_project() function.
+        This makes sure we don't make some changes to the sample project files
+        that aren't automatically loaded into the database via this function.
+
+        NOTE: If you've found this test, that probably means you were making
+        some changes to the code and this failed unexpectedly. Maybe you removed
+        a field, changed a default, or wanted to edit some sample data?
+
+        To fix the test, you just need to ensure the code has all the logic it
+        needs to parse everything from this directory:
+        - src/fides/data/sample_project/sample_connectors/*.yml
+
+        See src/fides/api/ctl/database/samples.py for details.
+
+        Sorry for the trouble, but we want to ensure there isn't a subtle bug
+        sneaking into our sample project code!
+        """
+        error_message = (
+            "Unexpected error loading sample connectors; did you make changes to the sample project? "
+            "See tests/ctl/api/test_seed.py for details."
+        )
+        connectors = []
+        try:
+            connectors = samples.load_sample_connectors_from_project()
+        except Exception as exc:
+            assert not exc, error_message
+
+        # Assert that only the connectors with all their secrets are returned
+        assert len(connectors) == 2
+        assert sorted([e.key for e in connectors]) == [
+            "postgres_connector",
+            "stripe_connector",
+        ]
+
+        # Assert that variable expansion worked as expected
+        postgres_connector = [e for e in connectors if e.connection_type == "postgres"][
+            0
+        ].dict()
+        assert postgres_connector["secrets"]["host"] == "test-var-expansion"
+        assert postgres_connector["secrets"]["port"] == 9090
+
+    @patch.dict(
+        os.environ,
+        {
+            "TEST_VAR_1": "var-1",
+            "TEST_VAR_2": "var-2",
+        },
+        clear=True,
+    )
+    async def test_load_sample_yaml_file(self):
+        """
+        Test that we can safely load, parse, and perform variable expansion on
+        a sample project file.
+        """
+        sample_str = dedent(
+            """\
+            connector:
+              - key: test_connector
+                name: Test Connector $TEST_VAR_1
+                connection_type: postgres
+                access: write
+                secrets:
+                  host: test-host
+                  port: 9001
+                  dbname: $TEST_VAR_2
+                  username: user-${TEST_VAR_2}
+                  password: ${TEST_VAR_1}-${TEST_VAR_2}
+        """
+        )
+        # sample_file = io.TextIOWrapper(io.BytesIO(sample_str.encode()))
+        sample_file = io.StringIO(sample_str)
+
+        sample_dict = samples.load_sample_yaml_file(sample_file)
+        assert list(sample_dict.keys()) == ["connector"]
+        sample_connector = sample_dict["connector"][0]
+        assert sample_connector["key"] == "test_connector"
+        assert sample_connector["name"] == "Test Connector var-1"
+        assert sample_connector["connection_type"] == "postgres"
+        assert sample_connector["access"] == "write"
+        assert sample_connector["secrets"]["host"] == "test-host"
+        assert sample_connector["secrets"]["port"] == 9001
+        assert sample_connector["secrets"]["dbname"] == "var-2"
+        assert sample_connector["secrets"]["username"] == "user-var-2"
+        assert sample_connector["secrets"]["password"] == "var-1-var-2"

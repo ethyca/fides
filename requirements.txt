@@ -8,6 +8,7 @@ colorama>=0.4.3
 cryptography==38.0.3
 dask==2022.9.2
 deepdiff==5.8.1
+expandvars==0.9.0
 fastapi[all]==0.89.1
 fastapi-caching[redis]==0.3.0
 fastapi-pagination[sqlalchemy]~= 0.10.0
