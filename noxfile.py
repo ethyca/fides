@@ -1,7 +1,7 @@
 """
 This file aggregates nox commands for various development tasks.
 """
-
+import webbrowser
 import shutil
 import sys
 from os.path import isfile
@@ -23,9 +23,17 @@ from utils_nox import *
 
 REQUIRED_DOCKER_VERSION = "20.10.17"
 
-# Sets the default session to `--list`
-nox.options.sessions = []
+nox.options.sessions = ["open_docs"]
+
+# This is important for caching pip installs
 nox.options.reuse_existing_virtualenvs = True
+
+
+@nox.session()
+def open_docs(session: nox.Session) -> None:
+    """Open the webpage for the developer/contribution docs."""
+    docs_url = "https://ethyca.github.io/fides/stable/development/overview/"
+    webbrowser.open(docs_url)
 
 
 @nox.session()
@@ -54,8 +62,8 @@ def check_for_env_file() -> None:
             f"Creating env file for local testing & development from {env_file_example}: {env_file}"
         )
         shutil.copy(env_file_example, env_file)
-        
-        
+
+
 # Add a command that opens the docs
 
 
