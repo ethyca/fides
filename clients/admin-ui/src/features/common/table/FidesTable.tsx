@@ -22,7 +22,12 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import EmptyState from "./EmptyState";
 
-type Props<T extends object> = {
+type BaseRowFields = {
+  id: string;
+  name: string;
+};
+
+type Props<T extends BaseRowFields> = {
   columns: Column<T>[];
   data: T[];
   userCanUpdate: boolean;
@@ -31,7 +36,7 @@ type Props<T extends object> = {
   tableType: string;
 };
 
-export const FidesTable = <T extends object>({
+export const FidesTable = <T extends BaseRowFields>({
   columns,
   data,
   userCanUpdate,
