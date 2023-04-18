@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.11.0...main)
 
+### Added
+- Endpoints for consent reporting [#3095](https://github.com/ethyca/fides/pull/3095)
+
 ### Removed
 - Removed the warning about access control migration [#3055](https://github.com/ethyca/fides/pull/3055)
 - Remove `customFields` feature flag [#3080](https://github.com/ethyca/fides/pull/3080)
