@@ -197,7 +197,7 @@ describe("Privacy notices", () => {
 
         // consent mechanism section
         cy.getSelectValueContainer("input-consent_mechanism").contains(
-          "Consent not necessary"
+          "Notice only"
         );
         cy.getSelectValueContainer("input-enforcement_level").contains(
           "Not applicable"
@@ -249,7 +249,7 @@ describe("Privacy notices", () => {
 
     it("should disable certain fields when notice is notice_only", () => {
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
-      cy.selectOption("input-consent_mechanism", "Consent not necessary");
+      cy.selectOption("input-consent_mechanism", "Notice only");
       cy.getSelectValueContainer("input-enforcement_level").within(() => {
         cy.get("input").should("be.disabled");
       });
