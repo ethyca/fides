@@ -6,21 +6,23 @@ Additionally, much of what `nox` helps abstract is related to Docker. This usual
 
 ## Terminology
 
-For the purposes of this documentation, there is some Nox-terminology that is helpful to understand first.
+For the purposes of this documentation, there is some Nox-specific terminology that is used and is helpful to understand before reading the rest of the guide.
 
-* `posarg` - This refers to a _Positional Argument_. These can be provided to _any_ Nox command by putting `--` at the end of a command followed by the argument that you would like to provide. For instance `nox -s dev -- shell`
 * `session` - This is the equivalent of a single command, or a `target` in Make. They can be chained together arbitrarily, and the order of execution will be preserved. For example `nox -s isort black`
+* `posarg` - This refers to a _Positional Argument_. These can be provided to _any_ Nox command by putting `--` at the end of a command followed by the argument that you would like to provide. For instance `nox -s dev -- shell`
 * `param` - This is a specified value that is provided directly to a session. For instance `nox -s "isort(<param>)"`. Note that due to terminal limitations, the `session` + `param` must be wrapped in quotes for proper escaping. Additionally, if a `session` has multiple params but none are specific, all permutations of that session will be run.
 
-## General Commands to Know
+## Utility Commands to Know
 
-While there are many sessions available in our `nox` setup, there are a few that are generally useful to know when trying to familiarize yourself with the development environment or introspect.
+While there are many sessions available in our `nox` setup, there are a few that are generally useful to know when trying to familiarize yourself with the development environment.
 
-| Command | Example | Description |
-| :-----: | :-----: | :---------: |
-| `nox` | N/A | This is the default session that runs when no other session is provided. Automatically opens this page. |
-| `nox -l`| N/A | Provides a list of all available `nox` sessions. |
-| `nox -s usage -- <command>` | `nox -s usage -- dev` | Shows the full docstring for a single session. The name of the session is provided as a positional argument. |
+| Command | Description |
+| :-----: | :---------: |
+| `nox` | This is the default session that runs when no other session is provided. Automatically opens this page. |
+| `nox -l`| Provides a list of all available `nox` sessions. |
+| `nox -s usage -- <command>` | Shows the full docstring for a single session. The name of the session is provided as a positional argument. |
+| `nox -s clean` | Completely wipes out all Docker volumes, images, and caches across the entire machine. _Note: This should only be used as a last resort! If you find yourself running this command often, there is probably an issue that needs to be addressed._ |
+| `nox -s teardown` | Spins down all of the Docker containers for the Fides project. Including the `-- volumes` posarg will also delete the application database data. |
 
 ## Getting Started
 
@@ -60,11 +62,11 @@ With that done, we can do things like evaluations:
 
 Listing all resources of a type:
 
-`fides ls system
+`fides ls system`
 
 and more. It is recommended to run `fides -h` to see the full breadth of the commands offered by the CLI.
 
-## Verifying Your Changes
+## Checking Your Changes
 
 Once you've made some changes, it's time to verify that they are working as expected.
 
@@ -76,8 +78,6 @@ To dig in even deeper, you can use the **Authorize** button at the top of the AP
 
 ## Running Tests
 
-This is a discrete section because unless following strict [TDD](https://en.wikipedia.org/wiki/Test-driven_development), there will probably be some manual verification done before moving on to formal testing.
-
 To keep things organized and to prevent this page from being too large, the documentation for testing is kept on a separate page. Head over to [Testing](testing.md) for a full walkthrough of testing Fides and running test environments.
 
 ## Static Checks
@@ -86,9 +86,7 @@ For the sake of simplicity, all of the typical pre-commit static checks are pack
 
 `nox -s static_checks`
 
-This installs and runs the various checks in their own virtual environment for maximum consistency.
-
----
+This installs and runs the various checks in their own virtual environment for maximum consistency. For more information about code style in Fides, check [Code Style](code_style.md).
 
 ## Debugging Fides in VSCode
 

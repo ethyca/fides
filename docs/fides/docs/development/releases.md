@@ -2,7 +2,7 @@
 
 ## Versioning
 
-Fides uses semantic versioning. Due to the rapid development of the project, some minor versions may also contain minor breaking changes. The best practice is to always pin versions, and carefully test before bumping to a new version. 
+Fides uses semantic versioning. Due to the rapid development of the project, some minor versions may also contain minor breaking changes. The best practice is to always pin versions, and carefully test before bumping to a new version.
 
 Patch versions will never cause breaking changes, and are only used to hotfix critical bugs.
 
@@ -168,6 +168,6 @@ It may be necessary for a patch release to contain only select commits to the `m
 
         ```sh
         git merge tags/1.2.4
-
         ```
+
     1. Handle any merge conflicts, and push to the remote `main` branch

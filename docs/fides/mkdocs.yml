@@ -16,16 +16,14 @@ nav:
       - Contributing:
           - Overview: development/overview.md
           - Developing Fides: development/developing_fides.md
-          - Contributing Details: development/contributing_details.md
+          - Development Tips: development/development_tips.md
           - Code Style: development/code_style.md
           - UI Development: development/ui.md
           - User Analytics: development/fideslog.md
-          - Database Migration: development/database_migration.md
           - Documentation: development/documentation.md
           - Testing: development/testing.md
           - Pull Requests: development/pull_requests.md
           - Releases: development/releases.md
-          - Release Checklist: development/release_checklist.md
           - Using Postman: development/postman/using_postman.md
           - Updating the Database Diagram: development/update_erd_diagram.md
       - Community:

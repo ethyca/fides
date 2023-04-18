@@ -1,16 +1,18 @@
-# Contributing Details
+# Development Tips
+
+This page is dedicated to providing further context and information around specific implementation details such as code organization, running migrations and more.
+
+If you're looking for a general getting started guide, please see the [Overview](overview.md) and [Development Guide](developing_fides.md).
 
 ## API Endpoints
 
-### Postman API collection
-
-The [fides Postman Collection](./postman/Fides.postman_collection.json)) can be used to test a variety of privacy request endpoints. Follow the [Using Postman](./postman/using_postman.md) guide to learn more about the how to use the collection.
+---
 
 ### API URLs
 
 We define API URLs for specific API versions as constants within `fides.api.ops.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
 
-```
+```sh
 PRIVACY_REQUEST = "/privacy-request"
 PRIVACY_REQUEST_DETAIL = "/privacy-request/{privacy_request_id}"
 ```
@@ -18,6 +20,8 @@ PRIVACY_REQUEST_DETAIL = "/privacy-request/{privacy_request_id}"
 would both resolve as `/api/v1/privacy-request` and `/api/v1/privacy-request/{privacy_request_id}` respectively.
 
 ## Database and Models
+
+---
 
 ### The ORM -- SQLAlchemy
 
@@ -28,7 +32,7 @@ SQLAlchemy is an Object Relational Mapper, allowing us to avoid writing direct d
 Database tables are defined with model classes. Model files should live in `src/app/models/`. Individual model classes must inherit from our custom base class at `app.db.base_class.Base` to ensure uniformity within the database. Multiple models per file are encouraged so long as they fit the same logical delineation within the project. An example model declaration is added below. For a comprehensive guide see: <https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping>
 You should also import your model in src/fides/api/ops/db/base.py so it is visible for alembic.
 
-```
+```python
 class Book(Base):
     __tablename__ = 'book'
 
@@ -47,14 +51,14 @@ Once you've added database tables via project models, you're ready to read, writ
 - Import our application's database session: `from fides.api.ops.db.session import get_db_session`
 - Instantiate the database interaction object:
 
-```
+```python
 SessionLocal = get_db_session(config)
 db = SessionLocal()
 ```
 
 - Create a new row in a table:
 
-```
+```python
 db_obj = User(
     email="admin@fides.app",
     full_name="Fides Admin",
@@ -71,7 +75,7 @@ db.refresh(db_obj)
 - Get a specific row in a table: `user = db.query(User).get(User.email == "admin@fides.app")`
 - Update a specific row in a table:
 
-```
+```python
 user.email = "updated@fides.app"
 db.add(user)
 db.commit()
@@ -108,7 +112,7 @@ When working on a PR with a migration, ensure that `down_revision` in the genera
 
 Our preference for exception handling is by overriding the nearest sensible error, for example:
 
-```
+```python
 class SomeException(ValueError):
     "a docstring"
 
