@@ -2,7 +2,7 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Unbounce
   type: unbounce
-  description: A sample schema representing the Unbounce_latest connector for Fides
+  description: A sample schema representing the Unbounce connector for Fides
   version: 0.1.0
 
   connector_params:
