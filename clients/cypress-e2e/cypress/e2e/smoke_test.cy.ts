@@ -2,7 +2,7 @@ import {
   ADMIN_UI_URL,
   API_URL,
   PRIVACY_CENTER_URL,
-} from "../support/constants";
+} from "support/constants";
 
 describe("Smoke test", () => {
   it("can submit an access request from the privacy center", () => {
@@ -25,7 +25,7 @@ describe("Smoke test", () => {
     cy.origin(ADMIN_UI_URL, () => {
       // Makes custom commands available to all subsequent cy.origin() commands
       // https://docs.cypress.io/api/commands/origin#Custom-commands
-      Cypress.require("../support/commands");
+      Cypress.require("support/commands");
       cy.login();
       cy.get("div").contains("Review privacy requests").click();
       let numCompletedRequests = 0;
