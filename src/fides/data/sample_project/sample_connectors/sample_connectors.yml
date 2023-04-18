@@ -7,9 +7,9 @@ connector:
       host: $FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST
       port: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT
       dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
-      username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USER
+      username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
       password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
-  - key: mongo_connector
+  - key: mongodb_connector
     name: MongoDB Connector
     connection_type: mongodb
     access: write
@@ -17,7 +17,7 @@ connector:
       host: $FIDES_DEPLOY__CONNECTORS__MONGO_HOST
       port: $FIDES_DEPLOY__CONNECTORS__MONGO_PORT
       defaultauthdb: $FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB
-      username: $FIDES_DEPLOY__CONNECTORS__MONGO_USER
+      username: $FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME
       password: $FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD
   - key: mailchimp_connector
     name: Mailchimp Connector
