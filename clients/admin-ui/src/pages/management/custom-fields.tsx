@@ -1,17 +1,5 @@
 import { Box, Heading, Text } from "@fidesui/react";
-import type { NextPage } from "next";
-
-import { useAppSelector } from "~/app/hooks";
-import Layout from "~/features/common/Layout";
-import {
-  selectAllCustomFieldDefinitions,
-  useGetAllCustomFieldDefinitionsQuery,
-  useUpdateCustomFieldDefinitionMutation,
-} from "~/features/plus/plus.slice";
 import { useHasPermission } from "common/Restrict";
-import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
-import { Column } from "react-table";
-import { useMemo } from "react";
 import {
   DateCell,
   EnableCell,
@@ -21,6 +9,18 @@ import {
   WrappedCell,
 } from "common/table/cells";
 import { FidesTable } from "common/table/FidesTable";
+import type { NextPage } from "next";
+import { useMemo } from "react";
+import { Column } from "react-table";
+
+import { useAppSelector } from "~/app/hooks";
+import Layout from "~/features/common/Layout";
+import {
+  selectAllCustomFieldDefinitions,
+  useGetAllCustomFieldDefinitionsQuery,
+  useUpdateCustomFieldDefinitionMutation,
+} from "~/features/plus/plus.slice";
+import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 
 const CustomFields: NextPage = () => {
   useGetAllCustomFieldDefinitionsQuery();
@@ -84,9 +84,9 @@ const CustomFields: NextPage = () => {
             columns={columns}
             data={customFields}
             userCanUpdate={userCanUpdate}
-            redirectRoute={""}
+            redirectRoute=""
             createScope={ScopeRegistryEnum.CUSTOM_FIELD_CREATE}
-            tableType={"custom field"}
+            tableType="custom field"
           />
         </Box>
       </Box>

@@ -1,9 +1,9 @@
-export { FidesTable } from "./FidesTable";
 export {
-  WrappedCell,
   DateCell,
+  EnableCell,
   MechanismCell,
   MultiTagCell,
-  EnableCell,
   TitleCell,
+  WrappedCell,
 } from "./cells";
+export { FidesTable } from "./FidesTable";

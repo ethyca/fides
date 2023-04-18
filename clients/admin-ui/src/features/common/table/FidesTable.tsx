@@ -22,7 +22,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import EmptyState from "./EmptyState";
 
-type BaseRowFields = {
+export type BaseRowFields = {
   id: string;
   name: string;
 };

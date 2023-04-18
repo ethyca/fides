@@ -1,10 +1,22 @@
 import { PRIVACY_REQUESTS_ROUTE } from "@fidesui/components";
 import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
+import { useHasPermission } from "common/Restrict";
 import NextLink from "next/link";
+import { useMemo } from "react";
+import { Column } from "react-table";
 
+import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
-import { useAppSelector } from "~/app/hooks";
+import {
+  DateCell,
+  EnableCell,
+  FidesTable,
+  MechanismCell,
+  MultiTagCell,
+  TitleCell,
+  WrappedCell,
+} from "~/features/common/table";
 import {
   selectAllPrivacyNotices,
   selectPage,
@@ -12,19 +24,7 @@ import {
   useGetAllPrivacyNoticesQuery,
   usePatchPrivacyNoticesMutation,
 } from "~/features/privacy-notices/privacy-notices.slice";
-import { useHasPermission } from "common/Restrict";
 import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
-import { Column } from "react-table";
-import { useMemo } from "react";
-import {
-  DateCell,
-  EnableCell,
-  MechanismCell,
-  MultiTagCell,
-  TitleCell,
-  WrappedCell,
-  FidesTable,
-} from "~/features/common/table";
 
 const PrivacyNoticesPage = () => {
   // Subscribe to get all privacy notices

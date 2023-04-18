@@ -10,10 +10,11 @@ import { ChangeEvent } from "react";
 import { CellProps } from "react-table";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
+import type { BaseRowFields } from "~/features/common/table/FidesTable";
 
 import { MECHANISM_MAP } from "./constants";
 
-export const TitleCell = <T extends object>({
+export const TitleCell = <T extends BaseRowFields>({
   value,
 }: CellProps<T, string>) => (
   <Text fontWeight="semibold" color="gray.600">
@@ -21,14 +22,14 @@ export const TitleCell = <T extends object>({
   </Text>
 );
 
-export const WrappedCell = <T extends object>({
+export const WrappedCell = <T extends BaseRowFields>({
   value,
 }: CellProps<T, string>) => <Text whiteSpace="normal">{value}</Text>;
 
 export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
   new Date(value).toDateString();
 
-export const MechanismCell = <T extends object>({
+export const MechanismCell = <T extends BaseRowFields>({
   value,
 }: CellProps<T, string>) => (
   <Tag size="sm" backgroundColor="primary.400" color="white">
@@ -36,7 +37,7 @@ export const MechanismCell = <T extends object>({
   </Tag>
 );
 
-export const MultiTagCell = <T extends object>({
+export const MultiTagCell = <T extends BaseRowFields>({
   value,
 }: CellProps<T, string[]>) => {
   // If we are over a certain number, render an "..." instead of all of the tags
@@ -66,11 +67,11 @@ export const MultiTagCell = <T extends object>({
   );
 };
 
-type EnableCellProps<T extends object> = CellProps<T, boolean> & {
+type EnableCellProps<T extends BaseRowFields> = CellProps<T, boolean> & {
   onToggle: (data: any) => Promise<any>;
 };
 
-export const EnableCell = <T extends object>({
+export const EnableCell = <T extends BaseRowFields>({
   value,
   column,
   row,
