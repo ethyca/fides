@@ -106,12 +106,14 @@ const PrivacyNoticesPage = () => {
       </Text>
       <Box data-testid="privacy-notices-page">
         <FidesTable
+          /* @ts-ignore */
           columns={columns}
           data={privacyNotices}
           userCanUpdate={userCanUpdate}
           redirectRoute={PRIVACY_NOTICES_ROUTE}
           createScope={ScopeRegistryEnum.PRIVACY_NOTICE_CREATE}
-          tableType="privacy notice"
+          tableType="Add a privacy notice +"
+          testId="privacy-notice"
         />
       </Box>
     </Layout>

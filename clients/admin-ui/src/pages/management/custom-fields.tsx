@@ -1,18 +1,18 @@
 import { Box, Heading, Text } from "@fidesui/react";
 import { useHasPermission } from "common/Restrict";
-import {
-  EnableCell,
-  FieldTypeCell,
-  TitleCell,
-  WrappedCell,
-} from "common/table/cells";
-import { FidesTable } from "common/table/FidesTable";
 import type { NextPage } from "next";
 import { useMemo } from "react";
 import { Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
+import {
+  EnableCell,
+  FieldTypeCell,
+  TitleCell,
+  WrappedCell,
+} from "~/features/common/table/cells";
+import { FidesTable } from "~/features/common/table/FidesTable";
 import {
   selectAllCustomFieldDefinitions,
   useGetAllCustomFieldDefinitionsQuery,
@@ -78,7 +78,8 @@ const CustomFields: NextPage = () => {
             userCanUpdate={userCanUpdate}
             redirectRoute=""
             createScope={ScopeRegistryEnum.CUSTOM_FIELD_CREATE}
-            tableType="custom field"
+            addButtonText="Add a custom field +"
+            testId="custom-field"
           />
         </Box>
       </Box>

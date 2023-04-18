@@ -22,10 +22,6 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import EmptyState from "./EmptyState";
 
-// export type BaseRowFields = {
-//   id?: string;
-//   name: string;
-// };
 
 type Props<T extends object> = {
   columns: Column<T>[];
@@ -33,7 +29,8 @@ type Props<T extends object> = {
   userCanUpdate: boolean;
   redirectRoute: string;
   createScope: ScopeRegistryEnum;
-  tableType: string;
+  addButtonText: string;
+  testId?: string;
 };
 
 export const FidesTable = <T extends object>({
@@ -42,7 +39,8 @@ export const FidesTable = <T extends object>({
   userCanUpdate,
   redirectRoute,
   createScope,
-  tableType,
+  addButtonText,
+  testId,
 }: Props<T>) => {
   const router = useRouter();
 
@@ -54,7 +52,7 @@ export const FidesTable = <T extends object>({
   if (data.length === 0) {
     return <EmptyState />;
   }
-
+  console.log(testId)
   return (
     <TableContainer>
       <Table
@@ -163,9 +161,9 @@ export const FidesTable = <T extends object>({
                 <Button
                   size="xs"
                   colorScheme="primary"
-                  data-testid={`add-${tableType}-btn`}
+                  data-testid={`add-${testId}-btn`}
                 >
-                  Add a {tableType} +
+                  {addButtonText}
                 </Button>
               </Restrict>
             </Td>
