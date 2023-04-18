@@ -132,11 +132,7 @@ export const FidesTable = <T extends object>({
               >
                 {row.cells.map((cell) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();
-                  console.log(
-                    "is a Enable cell",
-                    cell.column.Cell === EnableCell,
-                    cell.column.Header
-                  );
+
                   return (
                     <Td
                       key={cellKey}

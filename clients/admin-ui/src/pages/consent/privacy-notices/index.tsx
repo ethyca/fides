@@ -67,7 +67,7 @@ const PrivacyNoticesPage = () => {
         onToggle: patchNoticeMutationTrigger,
       },
     ],
-    [userCanUpdate]
+    [patchNoticeMutationTrigger, userCanUpdate]
   );
   return (
     <Layout title="Privacy notices">

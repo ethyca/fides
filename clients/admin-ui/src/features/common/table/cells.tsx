@@ -77,9 +77,7 @@ export const EnableCell = <T extends object>({
   onToggle,
 }: EnableCellProps<T>) => {
   const modal = useDisclosure();
-  console.log(onToggle);
   const handlePatch = async ({ enable }: { enable: boolean }) => {
-
     // @ts-ignore
     await onToggle([{ id: row.original.id, disabled: !enable }]);
   };
