@@ -152,13 +152,13 @@ const PrivacyNoticeForm = ({
                       variant="condensed"
                     />
                     <CustomSwitch
-                      label="API Only"
-                      name="displayed_in_api"
+                      label="Show in Privacy Overlay"
+                      name="displayed_in_overlay"
                       variant="condensed"
                     />
                     <CustomSwitch
-                      label="Show in Privacy Overlay"
-                      name="displayed_in_overlay"
+                      label="API Only"
+                      name="displayed_in_api"
                       variant="condensed"
                     />
                   </HStack>
