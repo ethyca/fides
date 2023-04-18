@@ -32,7 +32,7 @@ const CustomFields: NextPage = () => {
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.CUSTOM_FIELD_UPDATE,
   ]);
-  //
+  //  @ts-ignore
   const columns: Column<CustomFieldDefinitionWithId>[] = useMemo(
     () => [
       {

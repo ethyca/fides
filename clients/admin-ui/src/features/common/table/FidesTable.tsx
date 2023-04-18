@@ -22,12 +22,12 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import EmptyState from "./EmptyState";
 
-export type BaseRowFields = {
-  id: string;
-  name: string;
-};
+// export type BaseRowFields = {
+//   id?: string;
+//   name: string;
+// };
 
-type Props<T extends BaseRowFields> = {
+type Props<T extends object> = {
   columns: Column<T>[];
   data: T[];
   userCanUpdate: boolean;
@@ -36,7 +36,7 @@ type Props<T extends BaseRowFields> = {
   tableType: string;
 };
 
-export const FidesTable = <T extends BaseRowFields>({
+export const FidesTable = <T extends object>({
   columns,
   data,
   userCanUpdate,
@@ -113,9 +113,12 @@ export const FidesTable = <T extends BaseRowFields>({
             const { key: rowKey, ...rowProps } = row.getRowProps();
             const onClick = () => {
               if (userCanUpdate) {
+                // @ts-ignore
                 router.push(`${redirectRoute}/${row.original.id}`);
               }
             };
+            // @ts-ignore
+            const rowName = row.original.name;
             return (
               <Tr
                 key={rowKey}
@@ -125,7 +128,7 @@ export const FidesTable = <T extends BaseRowFields>({
                     ? { backgroundColor: "gray.50", cursor: "pointer" }
                     : undefined
                 }
-                data-testid={`row-${row.original.name}`}
+                data-testid={`row-${rowName}`}
               >
                 {row.cells.map((cell) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();

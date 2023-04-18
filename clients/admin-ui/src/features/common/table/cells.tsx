@@ -10,11 +10,10 @@ import { ChangeEvent } from "react";
 import { CellProps } from "react-table";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
-import type { BaseRowFields } from "~/features/common/table/FidesTable";
 
 import { MECHANISM_MAP } from "./constants";
 
-export const TitleCell = <T extends BaseRowFields>({
+export const TitleCell = <T extends object>({
   value,
 }: CellProps<T, string>) => (
   <Text fontWeight="semibold" color="gray.600">
@@ -22,14 +21,14 @@ export const TitleCell = <T extends BaseRowFields>({
   </Text>
 );
 
-export const WrappedCell = <T extends BaseRowFields>({
+export const WrappedCell = <T extends object>({
   value,
 }: CellProps<T, string>) => <Text whiteSpace="normal">{value}</Text>;
 
 export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
   new Date(value).toDateString();
 
-export const MechanismCell = <T extends BaseRowFields>({
+export const MechanismCell = <T extends object>({
   value,
 }: CellProps<T, string>) => (
   <Tag size="sm" backgroundColor="primary.400" color="white">
@@ -37,7 +36,7 @@ export const MechanismCell = <T extends BaseRowFields>({
   </Tag>
 );
 
-export const MultiTagCell = <T extends BaseRowFields>({
+export const MultiTagCell = <T extends object>({
   value,
 }: CellProps<T, string[]>) => {
   // If we are over a certain number, render an "..." instead of all of the tags
@@ -67,11 +66,11 @@ export const MultiTagCell = <T extends BaseRowFields>({
   );
 };
 
-type EnableCellProps<T extends BaseRowFields> = CellProps<T, boolean> & {
+type EnableCellProps<T extends object> = CellProps<T, boolean> & {
   onToggle: (data: any) => Promise<any>;
 };
 
-export const EnableCell = <T extends BaseRowFields>({
+export const EnableCell = <T extends object>({
   value,
   column,
   row,
@@ -80,6 +79,8 @@ export const EnableCell = <T extends BaseRowFields>({
   const modal = useDisclosure();
   console.log(onToggle);
   const handlePatch = async ({ enable }: { enable: boolean }) => {
+
+    // @ts-ignore
     await onToggle([{ id: row.original.id, disabled: !enable }]);
   };
 
