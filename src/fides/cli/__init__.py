@@ -23,6 +23,7 @@ from .commands.user import user
 from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
 
+# Refactor how "local" commands work, by putting it on the command itself instead of at the top level
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
 LOCAL_COMMAND_DICT = {
