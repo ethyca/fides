@@ -1,10 +1,8 @@
 import { Box, Heading, Text } from "@fidesui/react";
 import { useHasPermission } from "common/Restrict";
 import {
-  DateCell,
   EnableCell,
-  MechanismCell,
-  MultiTagCell,
+  FieldTypeCell,
   TitleCell,
   WrappedCell,
 } from "common/table/cells";
@@ -45,14 +43,8 @@ const CustomFields: NextPage = () => {
         accessor: "description",
         Cell: WrappedCell,
       },
-      {
-        Header: "Mechanism",
-        accessor: "consent_mechanism",
-        Cell: MechanismCell,
-      },
-      { Header: "Locations", accessor: "regions", Cell: MultiTagCell },
-      { Header: "Created", accessor: "created_at", Cell: DateCell },
-      { Header: "Last update", accessor: "updated_at", Cell: DateCell },
+      { Header: "Field Type", accessor: "field_type", Cell: FieldTypeCell },
+      { Header: "Locations", accessor: "resource_type", Cell: WrappedCell },
       {
         Header: "Enable",
         accessor: "disabled",

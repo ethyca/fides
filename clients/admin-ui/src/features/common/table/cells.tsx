@@ -11,7 +11,7 @@ import { CellProps } from "react-table";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 
-import { MECHANISM_MAP } from "./constants";
+import { FIELD_TYPE_MAP, MECHANISM_MAP } from "./constants";
 
 export const TitleCell = <T extends object>({
   value,
@@ -33,6 +33,14 @@ export const MechanismCell = <T extends object>({
 }: CellProps<T, string>) => (
   <Tag size="sm" backgroundColor="primary.400" color="white">
     {MECHANISM_MAP.get(value) ?? value}
+  </Tag>
+);
+
+export const FieldTypeCell = <T extends object>({
+  value,
+}: CellProps<T, string>) => (
+  <Tag size="sm" backgroundColor="primary.400" color="white">
+    {FIELD_TYPE_MAP.get(value) ?? value}
   </Tag>
 );
 
