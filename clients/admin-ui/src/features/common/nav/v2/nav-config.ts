@@ -268,7 +268,7 @@ const configureNavRoute = ({
   }
 
   const groupChild: NavGroupChild = {
-    title: route.title ?? "", // ?? navGroup.title,
+    title: route.title ?? navGroupTitle,
     path: route.path,
     exact: route.exact,
     children,
