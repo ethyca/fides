@@ -4,13 +4,13 @@ import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
-import { useRouter } from "next/router";
 import { useAppSelector } from "~/app/hooks";
 import {
   selectAllPrivacyNotices,
   selectPage,
   selectPageSize,
-  useGetAllPrivacyNoticesQuery, usePatchPrivacyNoticesMutation
+  useGetAllPrivacyNoticesQuery,
+  usePatchPrivacyNoticesMutation,
 } from "~/features/privacy-notices/privacy-notices.slice";
 import { useHasPermission } from "common/Restrict";
 import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
@@ -64,7 +64,7 @@ const PrivacyNoticesPage = () => {
         accessor: "disabled",
         disabled: !userCanUpdate,
         Cell: EnableCell,
-        onToggle: patchNoticeMutationTrigger
+        onToggle: patchNoticeMutationTrigger,
       },
     ],
     [userCanUpdate]

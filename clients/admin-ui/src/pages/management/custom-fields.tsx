@@ -20,7 +20,7 @@ import {
   TitleCell,
   WrappedCell,
 } from "common/table/cells";
-import {FidesTable} from "common/table/FidesTable";
+import { FidesTable } from "common/table/FidesTable";
 
 const CustomFields: NextPage = () => {
   useGetAllCustomFieldDefinitionsQuery();
