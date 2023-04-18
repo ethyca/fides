@@ -152,12 +152,12 @@ const PrivacyNoticeForm = ({
                       variant="condensed"
                     />
                     <CustomSwitch
-                      label="Show in Banner"
+                      label="API Only"
                       name="displayed_in_api"
                       variant="condensed"
                     />
                     <CustomSwitch
-                      label="Show in Privacy Modal"
+                      label="Show in Privacy Overlay"
                       name="displayed_in_overlay"
                       variant="condensed"
                     />
