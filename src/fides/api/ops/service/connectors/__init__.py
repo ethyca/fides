@@ -11,7 +11,9 @@ from fides.api.ops.models.connectionconfig import ConnectionType as ConnectionTy
 from fides.api.ops.service.connectors.base_connector import (
     BaseConnector as BaseConnector,
 )
-from fides.api.ops.service.connectors.dynamodb_connector import DynamoDBConnector
+from fides.api.ops.service.connectors.dynamodb_connector import (
+    DynamoDBConnector as DynamoDBConnector,
+)
 from fides.api.ops.service.connectors.email.attentive_connector import (
     AttentiveConnector,
 )
