@@ -11,6 +11,8 @@ export type NavConfigRoute = {
   requiresFlag?: FlagNames;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
+  /** Child routes which will be rendered in the side nav */
+  routes?: NavConfigRoute[];
 };
 
 export type NavConfigGroup = {
@@ -50,11 +52,21 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
-        title: "Privacy notices",
+        title: "Consent",
+        // For now, we don't have a full Consent page, so just use the privacy notice route
         path: routes.PRIVACY_NOTICES_ROUTE,
         requiresFlag: "privacyNotices",
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+        routes: [
+          {
+            title: "Privacy notices",
+            path: routes.PRIVACY_NOTICES_ROUTE,
+            requiresFlag: "privacyNotices",
+            requiresPlus: true,
+            scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+          },
+        ],
       },
     ],
   },
@@ -147,6 +159,7 @@ export type NavGroupChild = {
   title: string;
   path: string;
   exact?: boolean;
+  children: Array<NavGroupChild>;
 };
 
 export type NavGroup = {
@@ -203,17 +216,73 @@ const navRouteInScope = (
   return true;
 };
 
+interface ConfigureNavProps {
+  config: NavConfigGroup[];
+  userScopes: ScopeRegistryEnum[];
+  hasPlus?: boolean;
+  flags?: Record<string, boolean>;
+}
+
+const configureNavRoute = ({
+  route,
+  hasPlus,
+  flags,
+  userScopes,
+  navGroupTitle,
+}: Omit<ConfigureNavProps, "config"> & {
+  route: NavConfigRoute;
+  navGroupTitle: string;
+}): NavGroupChild | undefined => {
+  // If the target route would require plus in a non-plus environment,
+  // exclude it from the group.
+  if (route.requiresPlus && !hasPlus) {
+    return undefined;
+  }
+
+  // If the target route is protected by a feature flag that is not enabled,
+  // exclude it from the group
+  if (route.requiresFlag && (!flags || !flags[route.requiresFlag])) {
+    return undefined;
+  }
+
+  // If the target route is protected by a scope that the user does not
+  // have, exclude it from the group
+  if (!navRouteInScope(route, userScopes)) {
+    return undefined;
+  }
+
+  const children: NavGroupChild["children"] = [];
+  if (route.routes) {
+    route.routes.forEach((childRoute) => {
+      const configuredChildRoute = configureNavRoute({
+        route: childRoute,
+        userScopes,
+        hasPlus,
+        flags,
+        navGroupTitle,
+      });
+      if (configuredChildRoute) {
+        children.push(configuredChildRoute);
+      }
+    });
+  }
+
+  const groupChild: NavGroupChild = {
+    title: route.title ?? "", // ?? navGroup.title,
+    path: route.path,
+    exact: route.exact,
+    children,
+  };
+
+  return groupChild;
+};
+
 export const configureNavGroups = ({
   config,
   userScopes,
   hasPlus = false,
   flags,
-}: {
-  config: NavConfigGroup[];
-  userScopes: ScopeRegistryEnum[];
-  hasPlus?: boolean;
-  flags?: Record<string, boolean>;
-}): NavGroup[] => {
+}: ConfigureNavProps): NavGroup[] => {
   const navGroups: NavGroup[] = [];
 
   config.forEach((group) => {
@@ -228,29 +297,16 @@ export const configureNavGroups = ({
     navGroups.push(navGroup);
 
     group.routes.forEach((route) => {
-      // If the target route would require plus in a non-plus environment,
-      // exclude it from the group.
-      if (route.requiresPlus && !hasPlus) {
-        return;
-      }
-
-      // If the target route is protected by a feature flag that is not enabled,
-      // exclude it from the group
-      if (route.requiresFlag && (!flags || !flags[route.requiresFlag])) {
-        return;
-      }
-
-      // If the target route is protected by a scope that the user does not
-      // have, exclude it from the group
-      if (!navRouteInScope(route, userScopes)) {
-        return;
-      }
-
-      navGroup.children.push({
-        title: route.title ?? navGroup.title,
-        path: route.path,
-        exact: route.exact,
+      const routeConfig = configureNavRoute({
+        route,
+        hasPlus,
+        flags,
+        userScopes,
+        navGroupTitle: group.title,
       });
+      if (routeConfig) {
+        navGroup.children.push(routeConfig);
+      }
     });
   });
 
