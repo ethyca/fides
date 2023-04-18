@@ -139,7 +139,7 @@ declare global {
       /**
        * Clears the value of a CustomSelect that is a single select
        *
-       * @example removeMultiValue("input-multifield", "Eevee");
+       * @example removeMultiValue("input-singlefield");
        */
       clearSingleValue(selectorId: string): void;
     }
