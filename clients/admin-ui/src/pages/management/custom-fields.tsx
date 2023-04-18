@@ -7,10 +7,58 @@ import {
   selectAllCustomFieldDefinitions,
   useGetAllCustomFieldDefinitionsQuery,
 } from "~/features/plus/plus.slice";
+import { useHasPermission } from "common/Restrict";
+import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
+import { Column } from "react-table";
+import { useMemo } from "react";
+import {
+  DateCell,
+  EnablePrivacyNoticeCell,
+  MechanismCell,
+  MultiTagCell,
+  TitleCell,
+  WrappedCell,
+} from "common/table/cells";
+import FidesTable from "common/table/FidesTable";
 
 const CustomFields: NextPage = () => {
   useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
+
+  // // Permissions
+  const userCanUpdate = useHasPermission([
+    ScopeRegistryEnum.CUSTOM_FIELD_UPDATE,
+  ]);
+  //
+  const columns: Column<CustomFieldDefinitionWithId>[] = useMemo(
+    () => [
+      {
+        Header: "Title",
+        accessor: "name",
+        Cell: TitleCell,
+      },
+      {
+        Header: "Description",
+        accessor: "description",
+        Cell: WrappedCell,
+      },
+      {
+        Header: "Mechanism",
+        accessor: "consent_mechanism",
+        Cell: MechanismCell,
+      },
+      { Header: "Locations", accessor: "regions", Cell: MultiTagCell },
+      { Header: "Created", accessor: "created_at", Cell: DateCell },
+      { Header: "Last update", accessor: "updated_at", Cell: DateCell },
+      {
+        Header: "Enable",
+        accessor: "disabled",
+        disabled: !userCanUpdate,
+        Cell: EnablePrivacyNoticeCell,
+      },
+    ],
+    [userCanUpdate]
+  );
 
   return (
     <Layout title="Organization">
@@ -27,9 +75,14 @@ const CustomFields: NextPage = () => {
             reportable fields that are visible on the data map.
           </Text>
           <Box background="gray.50" padding={2}>
-            {customFields.map((customField) => (
-              <Box key={customField.id}>{customField.name}</Box>
-            ))}
+            <FidesTable<CustomFieldDefinitionWithId>
+              columns={columns}
+              data={customFields}
+              userCanUpdate={userCanUpdate}
+              redirectRoute={""}
+              createScope={ScopeRegistryEnum.CUSTOM_FIELD_CREATE}
+              tableType={"custom field"}
+            />
           </Box>
         </Box>
       </Box>
