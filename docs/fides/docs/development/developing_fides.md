@@ -24,6 +24,10 @@ While there are many sessions available in our `nox` setup, there are a few that
 
 ## Getting Started
 
+This section will run through the basics of getting everything up and running so that you can start making changes.
+
+### Docker
+
 Given that the majority of commands rely on Docker images, the first step is going to be getting some Docker images built. This is handled by the `build` session. Check the docs with the `usage` session:
 
 ```sh
@@ -32,13 +36,49 @@ nox -s usage -- build
 
 The simplest way to build everything is to run `nox -s build`. This will build all available Docker images used for development and testing. Additionally, to build only a specific image(s), run `nox -s usage -- build` to see what params have been documented.
 
+### Running the Webserver
+
+Now that all of the potential images we'll need are built, it's time to spin up the webserver:
+
+`nox -s dev`
+
+Depending on your computer, this will take anywhere from ~30 seconds to ~2 minutes. The webserver will log all of its activity to that window which is useful for debugging and checking potential server-side errors.
+
+### Opening a Shell
+
+Now that the webserver is up and running, a convenient way to interact with it as well as the Fides CLI is to open a shell directly into the running webserver container. Open a new terminal and run the following:
+
+`nox -s shell`
+
+With the shell open, we'll need to authenticate before we can start using the CLI. Run the following to authenticate the shell and get ready to run the CLI:
+
+`fides user login`
+
+With that done, we can do things like evaluations:
+
+`fides evaluate`
+
+Listing all resources of a type:
+
+`fides ls system
+
+and more. It is recommended to run `fides -h` to see the full breadth of the commands offered by the CLI.
+
 ## Verifying Your Changes
 
 Once you've made some changes, it's time to verify that they are working as expected.
 
+If you've made changes to the CLI, you can verify them directly using the `shell` method described [here](#opening-a-shell).
+
+If you've made an API change, there are a few different ways to verify your changes. The first and most simple is to go to `localhost:8080/docs` and verify that the changes you made show up as expected in the documentation. This is most useful when adding a new endpoint or changing a schema.
+
+To dig in even deeper, you can use the **Authorize** button at the top of the API docs page to login (credentials are available in the `.fides/fides.toml` config file). This will allow you to send requests, view responses, etc.
+
 ## Running Tests
 
-This is a discrete section because unless following strict [TDD](https://en.wikipedia.org/wiki/Test-driven_development), there will probably be some manual verification done before moving on to testing.
+This is a discrete section because unless following strict [TDD](https://en.wikipedia.org/wiki/Test-driven_development), there will probably be some manual verification done before moving on to formal testing.
+
+To keep things organized and to prevent this page from being too large, the documentation for testing is kept on a separate page. Head over to [Testing](testing.md) for a full walkthrough of testing Fides and running test environments.
 
 ## Static Checks
 
@@ -47,3 +87,124 @@ For the sake of simplicity, all of the typical pre-commit static checks are pack
 `nox -s static_checks`
 
 This installs and runs the various checks in their own virtual environment for maximum consistency.
+
+---
+
+## Debugging Fides in VSCode
+
+This is a quick guide to show how VSCode can be used to debug Fides running locally in Docker. The general approach is to allow the local `fides` Docker Compose service to allow remote debugging connections, and to start a remote debugger from a host VSCode workspace.
+
+### Setup
+
+#### Run Fides with Remote Debugging Enabled
+
+In order to accept incoming remote debugging connections, the `fides` Docker Compose service must be run with slight alterations. To enable this functionality, simply add the `remote_debug` flag to a `nox` command. For example:
+
+`nox -s dev -- remote_debug`
+
+or
+
+`nox -s dev -- remote_debug postgres timescale`
+
+With those commands, the `fides` Docker Compose service that's running the Fides server locally is able to accept incoming remote debugging connections.
+
+Note that, at this point, the `remote_debug` flag is not enabled for other `nox` sessions, e.g. `fides_env`, `pytest_ops`, etc.
+
+#### Attach a Remote Debugger to the Fides Server 
+
+Now that the running Fides server can accept incoming remote debugging connections, you can attach a remote debugger from a local VSCode workspace to actively debug the server application. A launch configuration is included in the `fides` repo to facilitate this step.
+
+* Open up the `fides` repo in a VSCode workspace
+* Go to the `Run and Debug` view
+* From the debugger dropdown list, select the `Python debugger: Remote Attach Fides` configuration
+* Click the `Start Debugging` play button
+* The remote debugger should now be attached to the Fides server!
+  * To confirm the debugger is attached, at least one `RUNNING` line item should appear in the `CALL STACK` window
+
+### Debug!
+
+At this point, VSCode is ready to debug the running Fides server. Try setting breakpoints and hitting them by, e.g., making certain HTTP requests against the Fides server. [This guide](https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger) provides more information on how to use the VSCode Python debugger. 
+
+### Links
+
+Some relevant VSCode documentation for reference:
+
+* <https://code.visualstudio.com/docs/python/debugging#_debugging-by-attaching-over-a-network-connection>
+* <https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger>
+
+## Debugging Fides in IntelliJ IDEA Ultimate
+
+This guide will show how to use the IntelliJ debugger with Fides running in Docker.
+The setup for PyCharm Professional should be very similar.
+
+### Prerequisites
+
+* [Intellij IDEA Ultimate](https://www.jetbrains.com/idea/buy/#commercial) or [PyCharm Professional](https://www.jetbrains.com/pycharm/buy/#commercial)
+* [Docker plugin](https://plugins.jetbrains.com/plugin/7724-docker)
+* [Python plugin](https://plugins.jetbrains.com/plugin/631-python) *(this is needed for Intellij)*
+* [Docker Desktop](https://www.docker.com/products/docker-desktop)
+
+### Setup
+
+#### Connect to Docker daemon
+
+This step will allow the IDE to connect to Docker Desktop.
+
+Go to: **Settings/Preferences** -> **Docker** -> **+**
+
+* Select **Docker for "your operating system"**
+
+See the screenshot below:
+
+![Screenshot of IDE Docker setup](../img/ide/docker.png)
+
+### Configure Python Remote Interpreter
+
+Define a Docker-based remote interpreter.
+
+Go to: **File** -> **Project Structure...** -> **Platform Settings** -> **SDKs** -> **+**
+
+* Set **Server** to `Docker`
+* Set **Configuration files** to `.docker-compose.yml`
+* Set **Python interpreter path** to `python`
+
+After clicking **OK** the Remote Python Docker Compose should be listed as an SDK.
+
+See screenshots below:
+
+![Screenshot of Add Python Interpreter](../img/ide/add_python_interpreter.png)
+
+![Screenshot of Project Structure SDKs](../img/ide/SDKs.png)
+
+### Run/Debug Configuration
+
+Set up a Run/Debug Configuration so that breakpoints can be hit in the f sourcecode.
+
+Go to: **Run/Debug Configurations** -> **+** -> **Python**
+
+* To debug Fides, debug the `<path on your machine>/src/fides/main.py` script
+* Make sure to select **Use specified interpreter** set the Remote Python Docker Compose *(created in the previous section)*
+* Add `FIDES__CONFIG_PATH=/fides` to **Environment variables**
+
+See screenshot below:
+
+![Screenshot of Run/Debug Configuration for main.py](../img/ide/debug_config.png)
+
+### Hit a Breakpoint
+
+Now the IDE is ready to debug the source code. Click the debug button for **main** *(setup in the previous section)*.
+
+Try firing a http request to Fides from Postman or Curl and hit a break point.
+
+There is a postman collection in this repo: `docs/fides/docs/development/postman/Fides.postman_collection.json`
+
+Screenshot of hit breakpoint below:
+
+![Screenshot of Debugging from IntelliJ](../img/ide/debugging.png)
+
+### Links
+
+The information is this guide is largely based on these docs
+
+* <https://www.jetbrains.com/help/pycharm/using-docker-as-a-remote-interpreter.html>
+* <https://www.jetbrains.com/help/idea/configuring-local-python-interpreters.html>

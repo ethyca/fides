@@ -19,17 +19,13 @@ nav:
           - Contributing Details: development/contributing_details.md
           - Code Style: development/code_style.md
           - UI Development: development/ui.md
-          - Fideslog Analytics: development/fideslog.md
+          - User Analytics: development/fideslog.md
           - Database Migration: development/database_migration.md
           - Documentation: development/documentation.md
-          - Writing Tests: development/testing.md
-          - Testing Environment: development/testing_environment.md
-          - Local Fides Deploy: development/dev_deployment.md
+          - Testing: development/testing.md
           - Pull Requests: development/pull_requests.md
           - Releases: development/releases.md
           - Release Checklist: development/release_checklist.md
-          - VSCode Debugging: development/vscode_debugging.md
-          - Jetbrains Debugging: development/jetbrains_debugging.md
           - Using Postman: development/postman/using_postman.md
           - Updating the Database Diagram: development/update_erd_diagram.md
       - Community:
