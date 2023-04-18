@@ -27,7 +27,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: last_name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: first_name
