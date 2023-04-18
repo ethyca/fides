@@ -21,8 +21,8 @@ The primary requirements for contributing to Fides are `Docker` and `Python`. Th
 * [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
 * [Python](https://www.python.org/downloads/) (version 3.8 through 3.10)
 
-!!!note
-    Although it functions "out of the box", there are some additional configuration steps that can be taken on Apple's ARM silicon (M-series chips, i.e. M1, M2, M2 Max, etc.) to make developing with Docker a smoother experience as well as a few potential bugs:
+!!! warning
+    Although it should function "out of the box", there are some additional configuration steps that should be taken on Apple's ARM silicon (M-series chips, i.e. M1, M2, M2 Max, etc.) to make developing with Docker a smoother experience as well as a few potential bugs:
 
     1. Increase disk space allocation in Docker Desktop.
     2. There are known issues around connecting to MSSQL for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).

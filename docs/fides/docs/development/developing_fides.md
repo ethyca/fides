@@ -33,7 +33,7 @@ This section will run through the basics of getting everything up and running so
 
 ### Docker
 
-Given that the majority of commands rely on Docker images, the first step is going to be getting some Docker images built. This is handled by the `build` session. Check the docs with the `usage` session:
+Given that the majority of commands rely on Docker images, the first step is going to be getting some Docker images built. This is handled by the `build` session. As an excercise, let's check the docs for the `build` session via the `usage` session:
 
 ```sh
 nox -s usage -- build
@@ -49,7 +49,7 @@ Now that all of the potential images we'll need are built, it's time to spin up 
 
 Depending on your computer, this will take anywhere from ~30 seconds to ~2 minutes. The webserver will log all of its activity to that window which is useful for debugging and checking potential server-side errors.
 
-!!! note
+!!! warning
     When running `nox -s dev`, if you get an `importlib.metadata.PackageNotFoundError: fides`, it means that `fides` was not properly installed. Run `nox -s dev -- shell`, and then run `pip install -e .`
 
     You can verify Fides is installed with `pip list | grep fides`
@@ -72,7 +72,7 @@ Listing all resources of a type:
 
 `fides ls system`
 
-and more. It is recommended to run `fides -h` to see the full breadth of the commands offered by the CLI.
+and more. Run `fides -h` to see the full list of commands offered by the CLI.
 
 ## Checking Your Changes
 
@@ -86,7 +86,7 @@ To dig in even deeper, you can use the **Authorize** button at the top of the AP
 
 ## Running Tests
 
-To keep things organized and to prevent this page from being too large, the documentation for testing is kept on a separate page. Head over to [Testing](testing.md) for a full walkthrough of testing Fides and running test environments.
+To keep things organized and to prevent this page from getting overloaded, the documentation for testing has its own page. Head over to [Testing](testing.md) for a full walkthrough of testing Fides and running test environments.
 
 ## Static Checks
 
