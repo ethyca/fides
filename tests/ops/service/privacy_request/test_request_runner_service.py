@@ -2122,13 +2122,21 @@ def dynamodb_resources(
     uuid = "test_uuid"
     customer_email = f"customer-{uuid}@example.com"
     customer_name = f"{uuid}"
-    table_name = "customer"
+    table_name = "customer_identifier"
+
+    ## document and remove remaining comments if we can't get the bigger test running
+    # item = {
+    #     "id": {"S": customer_name},
+    #     "name": {"S": customer_name},
+    #     "email": {"S": customer_email},
+    #     "address_id": {"S": customer_name},
+    #     "created": {"S": datetime.now(timezone.utc).isoformat()},
+    # }
 
     item = {
-        "id": {"S": customer_name},
-        "name": {"S": customer_name},
+        "customer_id": {"S": customer_name},
         "email": {"S": customer_email},
-        "address_id": {"S": customer_name},
+        "name": {"S": customer_name},
         "created": {"S": datetime.now(timezone.utc).isoformat()},
     }
 
@@ -2143,11 +2151,12 @@ def dynamodb_resources(
         "email": customer_email,
         "formatted_email": customer_email,
         "name": customer_name,
-        "id": uuid,
+        "customer_id": uuid,
         "client": dynamodb_client,
     }
     # Remove test data and close Dynamodb connection in teardown
-    item = {"id": {"S": customer_name}}
+    # item = {"id": {"S": customer_name}}
+    item = {"email": {"S": customer_email}}
     res = dynamodb_client.delete_item(
         TableName=table_name,
         Key=item,
@@ -2166,17 +2175,12 @@ def test_create_and_process_access_request_dynamodb(
 ):
     customer_email = dynamodb_resources["email"]
     customer_name = dynamodb_resources["name"]
-    customer_id = dynamodb_resources["id"]
+    # customer_id = dynamodb_resources["customer_id"]
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": policy.key,
-        # "identity": {"email": customer_email},
-        "identity": {"id": customer_id},
+        "identity": {"email": customer_email},
     }
-    # import json
-
-    # with open("data.json", "w") as fp:
-    #     json.dump(data, fp)
 
     pr = get_privacy_request_results(
         db,
@@ -2187,7 +2191,7 @@ def test_create_and_process_access_request_dynamodb(
     )
     results = pr.get_results()
     customer_table_key = (
-        f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:customer"
+        f"EN_{pr.id}__access_request__dynamodb_example_test_dataset:customer_identifier"
     )
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
@@ -2197,7 +2201,7 @@ def test_create_and_process_access_request_dynamodb(
 
 
 @pytest.mark.integration_external
-# @pytest.mark.integration_dynamodb
+@pytest.mark.integration_dynamodb
 def test_create_and_process_erasure_request_dynamodb(
     dynamodb_example_test_dataset_config,
     dynamodb_resources,

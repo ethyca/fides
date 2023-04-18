@@ -51,14 +51,14 @@ def dynamodb_connection_config(
     """
     dynamodb_connection_config = dynamodb_connection_config_without_secrets
     region = integration_config.get("aws", {}).get("region") or os.environ.get(
-        "DYNAMODB_TEST_REGION"
+        "DYNAMODB_REGION"
     )
     aws_access_key_id = integration_config.get("aws", {}).get(
         "aws_access_key_id"
-    ) or os.environ.get("DYNAMODB_TEST_ACCESS_KEY")
+    ) or os.environ.get("DYNAMODB_ACCESS_KEY")
     aws_secret_access_key = integration_config.get("aws", {}).get(
         "aws_secret_access_key"
-    ) or os.environ.get("DYNAMODB_TEST_SECRET_ACCESS_KEY")
+    ) or os.environ.get("DYNAMODB_SECRET_ACCESS_KEY")
     if region is not None:
         schema = DynamoDBSchema(
             region_name=region,

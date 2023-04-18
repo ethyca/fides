@@ -91,13 +91,17 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
             for attribute_definition in attribute_definitions:
                 attribute_name = attribute_definition["AttributeName"]
                 attribute_type = attribute_definition["AttributeType"]
-                attribute_value = input_data[attribute_name]
+                attribute_value = input_data[attribute_name][0]
                 query_param[attribute_name] = {attribute_type: attribute_value}
             item = client.get_item(
                 TableName=collection_name,
                 Key=query_param,  # type: ignore
             )
-            return list(item["Item"])  # type: ignore
+            result = {}
+            if "Item" in item:
+                for key in item["Item"]:
+                    result[key] = [*item["Item"][key].values()][0]
+            return [result]
         except ClientError as error:
             raise ConnectorFailureException(error.response["Error"]["Message"])
 
