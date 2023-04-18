@@ -12,6 +12,7 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
+import { EnableCell } from "common/table/cells";
 import { useRouter } from "next/router";
 import { ReactNode } from "react";
 import { Column, useSortBy, useTable } from "react-table";
@@ -30,7 +31,7 @@ type Props<T extends object> = {
   tableType: string;
 };
 
-const FidesTable = <T extends object>({
+export const FidesTable = <T extends object>({
   columns,
   data,
   userCanUpdate,
@@ -123,6 +124,11 @@ const FidesTable = <T extends object>({
               >
                 {row.cells.map((cell) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();
+                  console.log(
+                    "is a Enable cell",
+                    cell.column.Cell === EnableCell,
+                    cell.column.Header
+                  );
                   return (
                     <Td
                       key={cellKey}
@@ -133,7 +139,12 @@ const FidesTable = <T extends object>({
                         cell.column.Header !== "Enable" ? onClick : undefined
                       }
                     >
-                      {cell.render("Cell")}
+                      {cell.column.Cell === EnableCell
+                        ? cell.render("Cell", {
+                            // @ts-ignore
+                            onToggle: cell.column.onToggle,
+                          })
+                        : cell.render("Cell")}
                     </Td>
                   );
                 })}
@@ -160,5 +171,3 @@ const FidesTable = <T extends object>({
     </TableContainer>
   );
 };
-
-export default FidesTable;

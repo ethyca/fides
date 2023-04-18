@@ -10,43 +10,43 @@ import { ChangeEvent } from "react";
 import { CellProps } from "react-table";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
-import { PrivacyNoticeResponse } from "~/types/api";
 
 import { MECHANISM_MAP } from "./constants";
-import { usePatchPrivacyNoticesMutation } from "./privacy-notices.slice";
 
-export const TitleCell = ({
+export const TitleCell = <T extends object>({
   value,
-}: CellProps<PrivacyNoticeResponse, string>) => (
+}: CellProps<T, string>) => (
   <Text fontWeight="semibold" color="gray.600">
     {value}
   </Text>
 );
 
-export const WrappedCell = ({
+export const WrappedCell = <T extends object>({
   value,
-}: CellProps<PrivacyNoticeResponse, string>) => (
-  <Text whiteSpace="normal">{value}</Text>
-);
+}: CellProps<T, string>) => <Text whiteSpace="normal">{value}</Text>;
 
-export const DateCell = ({ value }: CellProps<PrivacyNoticeResponse, string>) =>
+export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
   new Date(value).toDateString();
 
-export const MechanismCell = ({
+export const MechanismCell = <T extends object>({
   value,
-}: CellProps<PrivacyNoticeResponse, string>) => (
+}: CellProps<T, string>) => (
   <Tag size="sm" backgroundColor="primary.400" color="white">
     {MECHANISM_MAP.get(value) ?? value}
   </Tag>
 );
 
-export const MultiTagCell = ({
+export const MultiTagCell = <T extends object>({
   value,
-}: CellProps<PrivacyNoticeResponse, string[]>) => {
+}: CellProps<T, string[]>) => {
   // If we are over a certain number, render an "..." instead of all of the tags
   const maxNum = 8;
-  const tags =
-    value.length > maxNum ? [...value.slice(0, maxNum), "..."] : value;
+  // eslint-disable-next-line no-nested-ternary
+  const tags = value
+    ? value.length > maxNum
+      ? [...value.slice(0, maxNum), "..."]
+      : value
+    : [];
   return (
     <Box whiteSpace="normal">
       {tags.map((v, idx) => (
@@ -66,18 +66,20 @@ export const MultiTagCell = ({
   );
 };
 
-export const EnablePrivacyNoticeCell = ({
+type EnableCellProps<T extends object> = CellProps<T, boolean> & {
+  onToggle: (data: any) => Promise<any>;
+};
+
+export const EnableCell = <T extends object>({
   value,
   column,
   row,
-}: CellProps<PrivacyNoticeResponse, boolean>) => {
+  onToggle,
+}: EnableCellProps<T>) => {
   const modal = useDisclosure();
-  const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
-
+  console.log(onToggle);
   const handlePatch = async ({ enable }: { enable: boolean }) => {
-    await patchNoticeMutationTrigger([
-      { id: row.original.id, disabled: !enable },
-    ]);
+    await onToggle([{ id: row.original.id, disabled: !enable }]);
   };
 
   const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {

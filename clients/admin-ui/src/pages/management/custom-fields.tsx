@@ -6,6 +6,7 @@ import Layout from "~/features/common/Layout";
 import {
   selectAllCustomFieldDefinitions,
   useGetAllCustomFieldDefinitionsQuery,
+  useUpdateCustomFieldDefinitionMutation,
 } from "~/features/plus/plus.slice";
 import { useHasPermission } from "common/Restrict";
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
@@ -13,17 +14,19 @@ import { Column } from "react-table";
 import { useMemo } from "react";
 import {
   DateCell,
-  EnablePrivacyNoticeCell,
+  EnableCell,
   MechanismCell,
   MultiTagCell,
   TitleCell,
   WrappedCell,
 } from "common/table/cells";
-import FidesTable from "common/table/FidesTable";
+import {FidesTable} from "common/table/FidesTable";
 
 const CustomFields: NextPage = () => {
   useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
+  const [updateCustomFieldDefinitionTrigger] =
+    useUpdateCustomFieldDefinitionMutation();
 
   // // Permissions
   const userCanUpdate = useHasPermission([
@@ -54,12 +57,12 @@ const CustomFields: NextPage = () => {
         Header: "Enable",
         accessor: "disabled",
         disabled: !userCanUpdate,
-        Cell: EnablePrivacyNoticeCell,
+        Cell: EnableCell,
+        onToggle: updateCustomFieldDefinitionTrigger,
       },
     ],
-    [userCanUpdate]
+    [updateCustomFieldDefinitionTrigger, userCanUpdate]
   );
-
 
   return (
     <Layout title="Custom fields">
@@ -75,16 +78,16 @@ const CustomFields: NextPage = () => {
             systems or elements within a taxonomy, and once added, they become
             reportable fields that are visible on the data map.
           </Text>
-          <Box background="gray.50" padding={2}>
-            <FidesTable<CustomFieldDefinitionWithId>
-              columns={columns}
-              data={customFields}
-              userCanUpdate={userCanUpdate}
-              redirectRoute={""}
-              createScope={ScopeRegistryEnum.CUSTOM_FIELD_CREATE}
-              tableType={"custom field"}
-            />
-          </Box>
+        </Box>
+        <Box background="gray.50" padding={2}>
+          <FidesTable<CustomFieldDefinitionWithId>
+            columns={columns}
+            data={customFields}
+            userCanUpdate={userCanUpdate}
+            redirectRoute={""}
+            createScope={ScopeRegistryEnum.CUSTOM_FIELD_CREATE}
+            tableType={"custom field"}
+          />
         </Box>
       </Box>
     </Layout>
