@@ -49,6 +49,11 @@ Now that all of the potential images we'll need are built, it's time to spin up 
 
 Depending on your computer, this will take anywhere from ~30 seconds to ~2 minutes. The webserver will log all of its activity to that window which is useful for debugging and checking potential server-side errors.
 
+!!! note
+    When running `nox -s dev`, if you get an `importlib.metadata.PackageNotFoundError: fides`, it means that `fides` was not properly installed. Run `nox -s dev -- shell`, and then run `pip install -e .`
+
+    You can verify Fides is installed with `pip list | grep fides`
+
 ### Opening a Shell
 
 Now that the webserver is up and running, a convenient way to interact with it as well as the Fides CLI is to open a shell directly into the running webserver container. Open a new terminal and run the following:
