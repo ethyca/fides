@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Set
+
+import yaml
 
 from fides.api.ops.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.ops.models.connectionconfig import ConnectionType
+from fides.api.ops.models.policy import SUPPORTED_ACTION_TYPES, ActionType
 from fides.api.ops.schemas.connection_configuration import (
     SaaSSchemaFactory,
     secrets_schemas,
@@ -70,14 +73,65 @@ def connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:
 
 
 def get_connection_types(
-    search: str | None = None, system_type: SystemType | None = None
+    search: str | None = None,
+    system_type: SystemType | None = None,
+    action_types: Set[ActionType] = SUPPORTED_ACTION_TYPES,
 ) -> list[ConnectionSystemTypeMap]:
     def is_match(elem: str) -> bool:
         """If a search query param was included, is it a substring of an available connector type?"""
         return search.lower() in elem.lower() if search else True
 
+    def saas_request_type_filter(connection_type: str) -> bool:
+        """
+        If any of the request type filters are set to true,
+        ensure the given saas connector supports requests of at least one of those types.
+        """
+        if SUPPORTED_ACTION_TYPES == action_types:
+            # if none of our filters are enabled, pass quickly to avoid unnecessary overhead
+            return True
+
+        template = ConnectorRegistry.get_connector_template(connection_type)
+        if template is None:  # shouldn't happen, but we can be safe
+            return False
+
+        saas_config = SaaSConfig(**yaml.safe_load(template.config).get("saas_config"))
+        has_access = bool(
+            next(
+                (
+                    request.read
+                    for request in [
+                        endpoint.requests for endpoint in saas_config.endpoints
+                    ]
+                ),
+                None,
+            )
+        )
+        has_erasure = (
+            bool(
+                next(
+                    (
+                        request.update or request.delete
+                        for request in [
+                            endpoint.requests for endpoint in saas_config.endpoints
+                        ]
+                    ),
+                    None,
+                )
+            )
+            or saas_config.data_protection_request
+        )
+        has_consent = saas_config.consent_requests
+
+        return bool(
+            (ActionType.consent in action_types and has_consent)
+            or (ActionType.access in action_types and has_access)
+            or (ActionType.erasure in action_types and has_erasure)
+        )
+
     connection_system_types: list[ConnectionSystemTypeMap] = []
-    if system_type == SystemType.database or system_type is None:
+    if (system_type == SystemType.database or system_type is None) and (
+        ActionType.access in action_types or ActionType.erasure in action_types
+    ):
         database_types: list[str] = sorted(
             [
                 conn_type.value
@@ -110,7 +164,7 @@ def get_connection_types(
             [
                 saas_type
                 for saas_type in ConnectorRegistry.connector_types()
-                if is_match(saas_type)
+                if is_match(saas_type) and saas_request_type_filter(saas_type)
             ]
         )
 
@@ -131,7 +185,9 @@ def get_connection_types(
                 )
             )
 
-    if system_type == SystemType.manual or system_type is None:
+    if (
+        system_type == SystemType.manual or system_type is None
+    ) and ActionType.access in action_types:
         manual_types: list[str] = sorted(
             [
                 manual_type.value
@@ -159,6 +215,16 @@ def get_connection_types(
                 if email_type
                 in ERASURE_EMAIL_CONNECTOR_TYPES + CONSENT_EMAIL_CONNECTOR_TYPES
                 and is_match(email_type.value)
+                and (  # include consent or erasure connectors if requested, respectively
+                    (
+                        ActionType.consent in action_types
+                        and email_type in CONSENT_EMAIL_CONNECTOR_TYPES
+                    )
+                    or (
+                        ActionType.erasure in action_types
+                        and email_type in ERASURE_EMAIL_CONNECTOR_TYPES
+                    )
+                )
             ]
         )
         connection_system_types.extend(

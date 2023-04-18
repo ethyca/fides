@@ -19,6 +19,10 @@ import {
 const DESCRIPTION =
   "Ethyca has updated how permissions work from a scope-based model to a role-based permissions scheme. To update user roles, please log in as your root user and upgrade the roles as you see fit.";
 
+/**
+ * This component is not currently used, but could easily be used again/modified
+ * if we ever need to show another banner message to a user (see fides#2842)
+ */
 const NotificationBanner = () => {
   const showBanner = useAppSelector(selectShowNotificationBanner);
   const dispatch = useAppDispatch();

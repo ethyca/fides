@@ -186,6 +186,26 @@ class DataUse(Base, FidesBase):
     legitimate_interest_impact_assessment = Column(String, nullable=True)
     is_default = Column(BOOLEAN, default=False)
 
+    @staticmethod
+    def get_parent_uses(data_use_key: str) -> Set[str]:
+        """
+        Utility method to traverse "up" the taxonomy hierarchy and unpack
+        a given data use fides key into a set of fides keys that include its
+        parent fides keys.
+
+        The utility takes a fides key string input to make the method more applicable -
+        since in many spots of our application we do not have a true `DataUse` instance,
+        just a "soft" reference to its fides key.
+
+        Example inputs and outputs:
+            - `a.b.c` --> [`a.b.c`, `a.b`, `a`]
+            - `a` --> [`a`]
+        """
+        parent_uses = {data_use_key}
+        while data_use_key := data_use_key.rpartition(".")[0]:
+            parent_uses.add(data_use_key)
+        return parent_uses
+
 
 # Dataset
 class Dataset(Base, FidesBase):
@@ -295,19 +315,42 @@ class System(Base, FidesBase):
         lazy="selectin",
     )
 
+    @staticmethod
+    def collapse_data_uses(
+        privacy_declarations: List[dict[str, Any]], include_parents: bool
+    ) -> Set:
+        """Helper method to collapse the data uses off of multiple privacy declarations into a Set
+
+        The `include_parents` arg determines whether the method traverses "up" the data use hierarchy
+        to also return all _parent_ data uses of the specific data uses associated with a given system.
+        This can be useful if/when we consider these parent data uses as applicable to a system.
+        """
+        data_uses = set()
+        for declaration in privacy_declarations:
+            if data_use := declaration.get("data_use", None):
+                if include_parents:
+                    data_uses.update(DataUse.get_parent_uses(data_use))
+                else:
+                    data_uses.add(data_use)
+        return data_uses
+
     @classmethod
-    def get_system_data_uses(cls: Type[System], db: Session) -> Set[str]:
+    def get_system_data_uses(
+        cls: Type[System], db: Session, include_parents: bool = True
+    ) -> set[str]:
         """
         Utility method to get any data use that is associated with at least one System
         """
         data_uses = set()
         for row in db.query(System.privacy_declarations).all():
-            declarations: List[dict[str, Any]] = row[0]
-            for declaration in declarations:
-                data_use = declaration.get("data_use", None)
-                if data_use is not None:
-                    data_uses.add(data_use)
+            data_uses.update(
+                cls.collapse_data_uses(row.privacy_declarations, include_parents)
+            )
         return data_uses
+
+    def get_data_uses(self, include_parents: bool = True) -> set[str]:
+        """Utility method to get all the data uses off the current System"""
+        return self.collapse_data_uses(self.privacy_declarations or [], include_parents)
 
 
 class SystemModel(BaseModel):

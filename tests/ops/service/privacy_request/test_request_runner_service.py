@@ -23,6 +23,7 @@ from fides.api.ops.models.privacy_request import (
     ActionType,
     CheckpointActionRequired,
     ExecutionLog,
+    ExecutionLogStatus,
     PolicyPreWebhook,
     PrivacyRequest,
     PrivacyRequestStatus,
@@ -1588,6 +1589,13 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.finished_processing_at is None
         assert mock_trigger_policy_webhook.call_count == 1
 
+        kwarg = "policy_action"
+        assert kwarg in mock_trigger_policy_webhook._mock_call_args_list[0][1]
+        assert (
+            mock_trigger_policy_webhook._mock_call_args_list[0][1][kwarg]
+            == ActionType.access
+        )
+
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
@@ -2034,7 +2042,11 @@ def test_build_consent_dataset_graph(
 
 class TestConsentEmailStep:
     def test_privacy_request_completes_if_no_consent_email_send_needed(
-        self, db, privacy_request_with_consent_policy, run_privacy_request_task
+        self,
+        db,
+        privacy_request_with_consent_policy,
+        run_privacy_request_task,
+        sovrn_email_connection_config,
     ):
         run_privacy_request_task.delay(
             privacy_request_id=privacy_request_with_consent_policy.id,
@@ -2044,9 +2056,19 @@ class TestConsentEmailStep:
         assert (
             privacy_request_with_consent_policy.status == PrivacyRequestStatus.complete
         )
+        execution_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request_with_consent_policy.id,
+            dataset_name=sovrn_email_connection_config.name,
+        )
+
+        assert execution_logs.count() == 1
+
+        assert [log.status for log in execution_logs] == [
+            ExecutionLogStatus.skipped,
+        ]
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
-    def test_privacy_request_is_put_in_awaiting_email_send_status(
+    def test_privacy_request_is_put_in_awaiting_email_send_status_old_workflow(
         self,
         db,
         privacy_request_with_consent_policy,
@@ -2070,6 +2092,33 @@ class TestConsentEmailStep:
         )
         assert privacy_request_with_consent_policy.awaiting_email_send_at is not None
 
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_privacy_request_is_put_in_awaiting_email_new_workflow(
+        self,
+        db,
+        privacy_request_with_consent_policy,
+        run_privacy_request_task,
+        privacy_preference_history,
+    ):
+        identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
+        privacy_request_with_consent_policy.cache_identity(identity)
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+        privacy_request_with_consent_policy.save(db)
+
+        run_privacy_request_task.delay(
+            privacy_request_id=privacy_request_with_consent_policy.id,
+            from_step=None,
+        ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+        db.refresh(privacy_request_with_consent_policy)
+        assert (
+            privacy_request_with_consent_policy.status
+            == PrivacyRequestStatus.awaiting_email_send
+        )
+        assert privacy_request_with_consent_policy.awaiting_email_send_at is not None
+
     def test_needs_batch_email_send_no_consent_preferences(
         self, db, privacy_request_with_consent_policy
     ):
@@ -2077,7 +2126,30 @@ class TestConsentEmailStep:
             db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
         )
 
-    def test_needs_batch_email_send_no_email_consent_connections(
+    def test_needs_batch_email_send_no_email_consent_connections_old_workflow(
+        self, db, privacy_request_with_consent_policy
+    ):
+        privacy_request_with_consent_policy.consent_preferences = [
+            Consent(data_use="advertising", opt_in=False).dict()
+        ]
+        privacy_request_with_consent_policy.save(db)
+        assert not needs_batch_email_send(
+            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
+        )
+
+    def test_needs_batch_email_send_no_email_consent_connections_new_workflow(
+        self, db, privacy_request_with_consent_policy, privacy_preference_history
+    ):
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+        assert not needs_batch_email_send(
+            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
+        )
+
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_needs_batch_email_send_no_relevant_identities_old_workflow(
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
@@ -2089,23 +2161,61 @@ class TestConsentEmailStep:
         )
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
-    def test_needs_batch_email_send_no_relevant_identities(
+    def test_needs_batch_email_send_no_relevant_identities_new_workflow(
+        self, db, privacy_request_with_consent_policy, privacy_preference_history
+    ):
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+        assert not needs_batch_email_send(
+            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
+        )
+
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_needs_batch_email_send_old_workflow(
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
             Consent(data_use="advertising", opt_in=False).dict()
         ]
         privacy_request_with_consent_policy.save(db)
-        assert not needs_batch_email_send(
-            db, {"email": "customer-1@example.com"}, privacy_request_with_consent_policy
+        assert needs_batch_email_send(
+            db,
+            {"email": "customer-1@example.com", "ljt_readerID": "12345"},
+            privacy_request_with_consent_policy,
         )
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
-    def test_needs_batch_email_send(self, db, privacy_request_with_consent_policy):
-        privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="advertising", opt_in=False).dict()
-        ]
-        privacy_request_with_consent_policy.save(db)
+    def test_needs_batch_email_send_system_and_notice_data_use_mismatch(
+        self,
+        db,
+        privacy_request_with_consent_policy,
+        system,
+        privacy_preference_history_us_ca_provide,
+        sovrn_email_connection_config,
+    ):
+        sovrn_email_connection_config.system_id = system.id
+        sovrn_email_connection_config.save(db)
+
+        privacy_preference_history_us_ca_provide.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history_us_ca_provide.save(db)
+        assert not needs_batch_email_send(
+            db,
+            {"email": "customer-1@example.com", "ljt_readerID": "12345"},
+            privacy_request_with_consent_policy,
+        )
+
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_needs_batch_email_send_new_workflow(
+        self, db, privacy_request_with_consent_policy, privacy_preference_history
+    ):
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
         assert needs_batch_email_send(
             db,
             {"email": "customer-1@example.com", "ljt_readerID": "12345"},

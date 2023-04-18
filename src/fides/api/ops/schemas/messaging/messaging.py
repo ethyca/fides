@@ -9,6 +9,9 @@ from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.ops.schemas import Msg
+from fides.api.ops.schemas.privacy_preference import (
+    MinimalPrivacyPreferenceHistorySchema,
+)
 from fides.api.ops.schemas.privacy_request import Consent
 
 
@@ -109,7 +112,12 @@ class ConsentPreferencesByUser(BaseModel):
     """
 
     identities: Dict[str, Any]
-    consent_preferences: List[Consent]  # Consent schema
+    consent_preferences: List[
+        Consent
+    ]  # Consent schema for old workflow # TODO Slated for deprecation
+    privacy_preferences: List[
+        MinimalPrivacyPreferenceHistorySchema
+    ]  # Privacy preferences for new workflow
 
     @root_validator
     def transform_data_use_format(cls, values: Dict[str, Any]) -> Dict[str, Any]:

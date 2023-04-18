@@ -1,9 +1,10 @@
-import { stubDatamap } from "cypress/support/stubs";
+import { stubDatamap, stubPlus } from "cypress/support/stubs";
 
 describe("Datamap table and spatial view", () => {
   beforeEach(() => {
     cy.login();
     stubDatamap();
+    stubPlus(true);
   });
 
   it("Can render only render one view at a time", () => {
@@ -37,7 +38,7 @@ describe("Datamap table and spatial view", () => {
 
   it("Renders a modal to prompt the user to get started when there is no datamap yet", () => {
     // Button only shows up when data map is empty (no systems)
-    cy.intercept("GET", "/api/v1/datamap/*", {
+    cy.intercept("GET", "/api/v1/plus/datamap/*", {
       fixture: "datamap/empty_datamap.json",
     }).as("getEmptyDatamap");
     cy.visit("/datamap");

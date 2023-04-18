@@ -9,9 +9,18 @@ CONFIG = "/config"
 CONSENT_REQUEST = "/consent-request"
 CONSENT_REQUEST_PREFERENCES = "/consent-request/preferences"
 CONSENT_REQUEST_PREFERENCES_WITH_ID = (
-    "/consent-request/{consent_request_id}/preferences"
+    "/consent-request/{consent_request_id}/preferences"  # TODO: slated to be deprecated
 )
+
 CONSENT_REQUEST_VERIFY = "/consent-request/{consent_request_id}/verify"
+
+# Privacy Preference URLs
+CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID = (
+    "/consent-request/{consent_request_id}/privacy-preferences"
+)
+CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY = (
+    "/consent-request/{consent_request_id}/verify-for-privacy-preferences"
+)
 
 
 # Oauth Client URLs
@@ -62,6 +71,7 @@ POLICY_DETAIL = "/dsr/policy/{policy_key}"
 # Privacy Notice URLs
 PRIVACY_NOTICE = "/privacy-notice"
 PRIVACY_NOTICE_DETAIL = "/privacy-notice/{privacy_notice_id}"
+PRIVACY_NOTICE_BY_DATA_USE = "/privacy-notice-by-data-use"
 
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"

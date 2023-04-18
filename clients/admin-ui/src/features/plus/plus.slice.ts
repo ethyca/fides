@@ -202,6 +202,15 @@ export const plusApi = createApi({
       invalidatesTags: ["CustomFields"],
     }),
 
+    getAllCustomFieldDefinitions: build.query<
+      CustomFieldDefinitionWithId[],
+      void
+    >({
+      query: () => ({
+        url: `custom-metadata/custom-field-definition`,
+      }),
+      providesTags: ["CustomFieldDefinition"],
+    }),
     // Custom Metadata Custom Field Definition
     addCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
@@ -259,6 +268,7 @@ export const {
   useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
+  useGetAllCustomFieldDefinitionsQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
@@ -358,4 +368,10 @@ export const selectClassifyInstanceFieldMap = createSelector(
 export const selectClassifyInstanceField = createSelector(
   [selectClassifyInstanceFieldMap, selectActiveField],
   (fieldMap, active) => (active ? fieldMap.get(active.name) : undefined)
+);
+
+const emptySelectAllCustomFields: CustomFieldDefinitionWithId[] = [];
+export const selectAllCustomFieldDefinitions = createSelector(
+  plusApi.endpoints.getAllCustomFieldDefinitions.select(),
+  ({ data }) => data || emptySelectAllCustomFields
 );
