@@ -60,9 +60,10 @@ const CustomFields: NextPage = () => {
     [userCanUpdate]
   );
 
+
   return (
-    <Layout title="Organization">
-      <Box data-testid="organization-management">
+    <Layout title="Custom fields">
+      <Box data-testid="custom-fields-management">
         <Heading marginBottom={4} fontSize="2xl">
           Manage custom fields
         </Heading>
