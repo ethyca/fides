@@ -22,7 +22,7 @@ const NewPrivacyNoticePage = () => (
           <BreadcrumbItem>
             <NextLink href={PRIVACY_REQUESTS_ROUTE}>Privacy requests</NextLink>
           </BreadcrumbItem>
-          {/* TODO: Add Consent breadcrumb once the page exists */}
+         
           <BreadcrumbItem>
             <NextLink href={PRIVACY_NOTICES_ROUTE}>Privacy notices</NextLink>
           </BreadcrumbItem>
