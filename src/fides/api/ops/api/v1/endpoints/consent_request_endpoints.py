@@ -10,7 +10,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
@@ -47,11 +47,12 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingMethod
-from fides.api.ops.schemas.privacy_request import BulkPostPrivacyRequests, ConsentReport
+from fides.api.ops.schemas.privacy_request import BulkPostPrivacyRequests
 from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
+    ConsentReport,
     ConsentRequestResponse,
     ConsentWithExecutableStatus,
     PrivacyRequestCreate,
@@ -71,6 +72,29 @@ router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 CONFIG_JSON_PATH = "clients/privacy-center/config/config.json"
 
 
+def validate_start_and_end_filters(
+    date_filters: List[Tuple[Optional[datetime], Optional[datetime], str]]
+) -> None:
+    """Assert that start date isn't after end date
+
+    Pass in a list of tuples like: [(less_than_filter, greater_than_filter, filter_name)]
+    """
+    for end, start, field_name in date_filters:
+        if end is None or start is None:
+            continue
+
+        if not (isinstance(end, datetime) and isinstance(start, datetime)):
+            continue
+
+        if end < start:
+            # With date fields, if the start date is after the end date, return a 400
+            # because no records will lie within this range.
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
+            )
+
+
 def _filter_consent(
     query: Query,
     data_use: Optional[str] = None,
@@ -88,23 +112,12 @@ def _filter_consent(
     if opt_in is not None:
         query = query.filter(Consent.opt_in == opt_in)
 
-    for end, start, field_name in [
-        [created_lt, created_gt, "created"],
-        [updated_lt, updated_gt, "updated"],
-    ]:
-        if end is None or start is None:
-            continue
-
-        if not (isinstance(end, datetime) and isinstance(start, datetime)):
-            continue
-
-        if end < start:
-            # With date fields, if the start date is after the end date, return a 400
-            # because no records will lie within this range.
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
-            )
+    validate_start_and_end_filters(
+        [
+            (created_lt, created_gt, "created"),
+            (updated_lt, updated_gt, "updated"),
+        ]
+    )
 
     if created_lt:
         query = query.filter(Consent.created_at < created_lt)

@@ -42,7 +42,12 @@ from fides.api.ops.service.connectors.base_email_connector import (
     get_org_name,
 )
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
-from fides.api.ops.util.consent_util import filter_privacy_preferences_for_propagation
+from fides.api.ops.util.consent_util import (
+    add_complete_system_status_for_consent_reporting,
+    add_errored_system_status_for_consent_reporting,
+    cache_initial_status_and_identities_for_consent_reporting,
+    filter_privacy_preferences_for_propagation,
+)
 from fides.core.config import get_config
 
 CONFIG = get_config()
@@ -160,7 +165,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         return True
 
     def add_skipped_log(self, db: Session, privacy_request: PrivacyRequest) -> None:
-        """Add skipped log for the connector to the privacy request"""
+        """Add skipped log for the connector to the privacy request and also cache this skipped status
+        on *all* privacy preferences as no privacy preferences are relevant for this connector.
+        """
         ExecutionLog.create(
             db=db,
             data={
@@ -172,6 +179,29 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 "status": ExecutionLogStatus.skipped,
                 "message": f"Consent email skipped for '{self.configuration.name}'",
             },
+        )
+        for pref in privacy_request.privacy_preferences:
+            pref.cache_system_status(
+                self.configuration.system_key, ExecutionLogStatus.skipped
+            )
+
+    def add_errored_log(self, db: Session, privacy_request: PrivacyRequest) -> None:
+        """Add errored log for the connector to the privacy request and also cache this error
+        on the subset of relevant privacy request preferences"""
+        ExecutionLog.create(
+            db=db,
+            data={
+                "connection_key": self.configuration.key,
+                "dataset_name": self.configuration.name,
+                "collection_name": self.configuration.name,
+                "privacy_request_id": privacy_request.id,
+                "action_type": ActionType.consent,
+                "status": ExecutionLogStatus.error,
+                "message": f"Consent email send error for '{self.configuration.name}'",
+            },
+        )
+        add_errored_system_status_for_consent_reporting(
+            privacy_request, self.configuration
         )
 
     def batch_email_send(self, privacy_requests: Query) -> None:
@@ -207,6 +237,13 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             if filtered_user_identities and (
                 consent_preference_schemas or filtered_privacy_preference_records
             ):
+                cache_initial_status_and_identities_for_consent_reporting(
+                    privacy_request=privacy_request,
+                    connection_config=self.configuration,
+                    relevant_preferences=filtered_privacy_preference_records,
+                    relevant_user_identities=filtered_user_identities,
+                )
+
                 batched_consent_preferences.append(
                     ConsentPreferencesByUser(
                         identities=filtered_user_identities,
@@ -244,6 +281,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             )
         except MessageDispatchException as exc:
             logger.info("Consent email failed with exception {}", exc)
+            for privacy_request in privacy_requests:
+                if privacy_request.id not in skipped_privacy_requests:
+                    self.add_errored_log(db, privacy_request)
             raise
 
         for privacy_request in privacy_requests:
@@ -259,6 +299,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                         "status": ExecutionLogStatus.complete,
                         "message": f"Consent email instructions dispatched for '{self.configuration.name}'",
                     },
+                )
+                add_complete_system_status_for_consent_reporting(
+                    privacy_request, self.configuration
                 )
 
 

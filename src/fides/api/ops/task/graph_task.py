@@ -45,6 +45,9 @@ from fides.api.ops.task.refine_target_path import FieldPathNodeInput
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import NodeInput, Row, append, partition
+from fides.api.ops.util.consent_util import (
+    add_errored_system_status_for_consent_reporting,
+)
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.core.config import CONFIG
@@ -105,7 +108,6 @@ def retry(
                 except (
                     CollectionDisabled,
                     NotSupportedForCollection,
-                    SkippingConsentPropagation,
                 ) as exc:
                     logger.warning(
                         "Skipping collection {} for privacy_request: {}",
@@ -113,6 +115,20 @@ def retry(
                         self.resources.request.id,
                     )
                     self.log_skipped(action_type, exc)
+                    return default_return
+                except (SkippingConsentPropagation,) as exc:
+                    logger.warning(
+                        "Skipping collection {} for privacy_request: {}",
+                        self.traversal_node.address,
+                        self.resources.request.id,
+                    )
+                    self.log_skipped(action_type, exc)
+                    for pref in self.resources.request.privacy_preferences:
+                        # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
+                        pref.cache_system_status(
+                            self.connector.configuration.system_key,
+                            ExecutionLogStatus.skipped,
+                        )
                     return default_return
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= CONFIG.execution.task_retry_backoff
@@ -124,10 +140,12 @@ def retry(
                     )
                     sleep(func_delay)
                     raised_ex = ex
-
             self.log_end(action_type, raised_ex)
             self.resources.request.cache_failed_checkpoint_details(
                 step=action_type, collection=self.traversal_node.address
+            )
+            add_errored_system_status_for_consent_reporting(
+                self.resources.request, self.connector.configuration
             )
             # Re-raise to stop privacy request execution on failure.
             raise raised_ex  # type: ignore
@@ -573,7 +591,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.consent, default_return=False)
     def consent_request(self, identity: Dict[str, Any]) -> bool:
         """Run consent request request"""
-
         if not self.can_write_data():
             logger.warning(
                 "No consent on {} as its ConnectionConfig does not have write access.",

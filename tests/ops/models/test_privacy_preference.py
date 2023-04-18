@@ -11,7 +11,11 @@ from fides.api.ops.models.privacy_preference import (
     RequestOrigin,
     UserConsentPreference,
 )
-from fides.api.ops.models.privacy_request import ProvidedIdentity, ProvidedIdentityType
+from fides.api.ops.models.privacy_request import (
+    ExecutionLogStatus,
+    ProvidedIdentity,
+    ProvidedIdentityType,
+)
 
 
 class TestPrivacyPreferenceHistory:
@@ -172,3 +176,46 @@ class TestPrivacyPreferenceHistory:
 
         preference_history_record.delete(db)
         next_preference_history_record.delete(db)
+
+    def test_cache_system_status(self, privacy_preference_history):
+        assert privacy_preference_history.affected_system_status == {}
+
+        privacy_preference_history.cache_system_status(
+            "test_system_key", ExecutionLogStatus.pending
+        )
+        assert privacy_preference_history.affected_system_status == {
+            "test_system_key": ExecutionLogStatus.pending.value
+        }
+
+        privacy_preference_history.cache_system_status(
+            "test_system_key", ExecutionLogStatus.complete
+        )
+        assert privacy_preference_history.affected_system_status == {
+            "test_system_key": ExecutionLogStatus.complete.value
+        }
+
+    def test_update_secondary_user_ids(self, privacy_preference_history):
+        assert privacy_preference_history.secondary_user_ids is None
+
+        privacy_preference_history.update_secondary_user_ids(
+            {"email": "test@example.com"}
+        )
+        assert privacy_preference_history.secondary_user_ids == {
+            "email": "test@example.com"
+        }
+
+        privacy_preference_history.update_secondary_user_ids(
+            {"ljt_readerID": "customer-123"}
+        )
+        assert privacy_preference_history.secondary_user_ids == {
+            "email": "test@example.com",
+            "ljt_readerID": "customer-123",
+        }
+
+        privacy_preference_history.update_secondary_user_ids(
+            {"email": "hello@example.com"}
+        )
+        assert privacy_preference_history.secondary_user_ids == {
+            "email": "hello@example.com",
+            "ljt_readerID": "customer-123",
+        }

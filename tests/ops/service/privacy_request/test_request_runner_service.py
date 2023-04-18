@@ -2206,6 +2206,42 @@ class TestConsentEmailStep:
         )
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
+    def test_skipped_batch_email_send_updates_privacy_preferences_with_system_status(
+        self,
+        db,
+        privacy_request_with_consent_policy,
+        system,
+        privacy_preference_history_us_ca_provide,
+        sovrn_email_connection_config,
+        run_privacy_request_task,
+    ):
+        sovrn_email_connection_config.system_id = system.id
+        sovrn_email_connection_config.save(db)
+
+        privacy_preference_history_us_ca_provide.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history_us_ca_provide.save(db)
+
+        identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
+        privacy_request_with_consent_policy.cache_identity(identity)
+
+        run_privacy_request_task.delay(
+            privacy_request_id=privacy_request_with_consent_policy.id,
+            from_step=None,
+        ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+        db.refresh(privacy_request_with_consent_policy)
+        assert (
+            privacy_request_with_consent_policy.status == PrivacyRequestStatus.complete
+        )
+        assert privacy_request_with_consent_policy.awaiting_email_send_at is None
+        db.refresh(privacy_request_with_consent_policy.privacy_preferences[0])
+
+        assert privacy_request_with_consent_policy.privacy_preferences[
+            0
+        ].affected_system_status == {system.fides_key: "skipped"}
+
+    @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_needs_batch_email_send_new_workflow(
         self, db, privacy_request_with_consent_policy, privacy_preference_history
     ):
