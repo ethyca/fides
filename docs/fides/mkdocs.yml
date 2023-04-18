@@ -17,15 +17,15 @@ nav:
           - Overview: development/overview.md
           - Developing Fides: development/developing_fides.md
           - Development Tips: development/development_tips.md
+          - Testing: development/testing.md
           - Code Style: development/code_style.md
           - UI Development: development/ui.md
-          - User Analytics: development/fideslog.md
           - Documentation: development/documentation.md
-          - Testing: development/testing.md
           - Pull Requests: development/pull_requests.md
           - Releases: development/releases.md
           - Using Postman: development/postman/using_postman.md
           - Updating the Database Diagram: development/update_erd_diagram.md
+          - User Analytics: development/fideslog.md
       - Community:
           - Github, Slack, and Discord: community/overview.md
           - Community Hints and Tips: community/hints_tips.md

@@ -12,15 +12,18 @@ For the purposes of this documentation, there is some Nox-specific terminology t
 * `posarg` - This refers to a _Positional Argument_. These can be provided to _any_ Nox command by putting `--` at the end of a command followed by the argument that you would like to provide. For instance `nox -s dev -- shell`
 * `param` - This is a specified value that is provided directly to a session. For instance `nox -s "isort(<param>)"`. Note that due to terminal limitations, the `session` + `param` must be wrapped in quotes for proper escaping. Additionally, if a `session` has multiple params but none are specific, all permutations of that session will be run.
 
-## Utility Commands to Know
+## Sessions to Know
 
-While there are many sessions available in our `nox` setup, there are a few that are generally useful to know when trying to familiarize yourself with the development environment.
+While there are many sessions available in our `nox` setup, these are the ones that you are most likely to use regularly. This is intended as a brief introduction, as many of these commands will be explained further in specific sections below.
 
 | Command | Description |
 | :-----: | :---------: |
 | `nox` | This is the default session that runs when no other session is provided. Automatically opens this page. |
 | `nox -l`| Provides a list of all available `nox` sessions. |
-| `nox -s usage -- <command>` | Shows the full docstring for a single session. The name of the session is provided as a positional argument. |
+| `nox -s usage -- <command>` | Shows the full docstring for a single session. The name of the session is provided as a positional argument. Use this whenever you want to know more about a specific session's usage. |
+| `nox -s dev` | Spins up the Fides webserver with all required infrastructure. |
+| `nox -s shell` | Opens an interactive shell in a running Fides webserver container. |
+| `nox -s build` | Builds and tags docker containers. |
 | `nox -s clean` | Completely wipes out all Docker volumes, images, and caches across the entire machine. _Note: This should only be used as a last resort! If you find yourself running this command often, there is probably an issue that needs to be addressed._ |
 | `nox -s teardown` | Spins down all of the Docker containers for the Fides project. Including the `-- volumes` posarg will also delete the application database data. |
 
