@@ -12,6 +12,7 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { ReactNode, useMemo } from "react";
 import { Column, useSortBy, useTable } from "react-table";
@@ -186,13 +187,15 @@ const PrivacyNoticesTable = () => {
           <Tr>
             <Td colSpan={columns.length} px={4} py={3.5}>
               <Restrict scopes={[ScopeRegistryEnum.PRIVACY_NOTICE_CREATE]}>
-                <Button
-                  size="xs"
-                  colorScheme="primary"
-                  data-testid="add-privacy-notice-btn"
-                >
-                  Add a privacy notice +
-                </Button>
+                <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
+                  <Button
+                    size="xs"
+                    colorScheme="primary"
+                    data-testid="add-privacy-notice-btn"
+                  >
+                    Add a privacy notice +
+                  </Button>
+                </NextLink>
               </Restrict>
             </Td>
           </Tr>
