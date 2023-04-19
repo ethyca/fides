@@ -1,4 +1,4 @@
-connector:
+connection:
   - key: postgres_connector
     name: Postgres Connector
     connection_type: postgres

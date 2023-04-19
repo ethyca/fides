@@ -45,7 +45,7 @@ def load_sample_resources_from_project(
     }
     for yaml_path in sample_resources_path.iterdir():
         with yaml_path.open("r") as file:
-            # TODO: expand ENV vars here, like load_sample_connectors() does?
+            # TODO: expand ENV vars here, like load_sample_connections() does?
             # ...probably not since fides push doesn't support that!
             yaml_dict = yaml.safe_load(file)
 
@@ -74,10 +74,10 @@ def load_sample_resources_from_project(
     return sample_resources_dict
 
 
-class SampleConnector(CreateConnectionConfigurationWithSecrets):
+class SampleConnection(CreateConnectionConfigurationWithSecrets):
     """
-    Schema for creating a sample connector to initialize the database, usable
-    for both database & SaaS connectors. Extends the existing models with an
+    Schema for creating a sample connection to initialize the database, usable
+    for both database & SaaS connections. Extends the existing models with an
     optional 'dataset' field.
     """
 
@@ -89,10 +89,10 @@ class SampleConnector(CreateConnectionConfigurationWithSecrets):
     """
 
 
-def load_sample_connectors_from_project() -> List[SampleConnector]:
+def load_sample_connections_from_project() -> List[SampleConnection]:
     """
-    Loads all the sample connector YAML files from the sample project by
-    traversing through the sample_connectors/ folder, inspecting each file, and
+    Loads all the sample connection YAML files from the sample project by
+    traversing through the sample_connections/ folder, inspecting each file, and
     parsing them into "ConnectionConfig" models that would be suitable for the
     `PATCH /api/v1/connection` API.
 
@@ -101,9 +101,9 @@ def load_sample_connectors_from_project() -> List[SampleConnector]:
     as ENV var names (e.g. $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD) and
     replaced with "real" values at runtime.
 
-    After parsing the models, this function then *excludes* any connector missing
-    any of it's secrets. This prevents gotchas with failing connectors at runtime
-    and also makes it easy to programmatically control which connectors should be
+    After parsing the models, this function then *excludes* any connection missing
+    any of it's secrets. This prevents gotchas with failing connections at runtime
+    and also makes it easy to programmatically control which connections should be
     enabled by simply adding/removing the secrets to the config file.
 
     Returns a list of models, ready to be upserted!
@@ -113,35 +113,35 @@ def load_sample_connectors_from_project() -> List[SampleConnector]:
     We've added extra tests that are designed to be defensive and warn us if
     something drifts.
     """
-    sample_connectors_path = files(fides.data.sample_project).joinpath(
-        "sample_connectors/"
+    sample_connections_path = files(fides.data.sample_project).joinpath(
+        "sample_connections/"
     )
-    sample_connectors = []
-    for yaml_path in sample_connectors_path.iterdir():
+    sample_connections = []
+    for yaml_path in sample_connections_path.iterdir():
         with yaml_path.open("r") as file:
             # Expand ENV vars when reading the YAML, to handle secrets
             yaml_dict = load_sample_yaml_file(file, expand_vars=True)
-            connectors = yaml_dict.get("connector", [])
-            sample_connectors.extend([
-                    SampleConnector.parse_obj(e)
-                    for e in connectors
+            connections = yaml_dict.get("connection", [])
+            sample_connections.extend([
+                    SampleConnection.parse_obj(e)
+                    for e in connections
                 ]
             )
 
-    # Disable any connectors whose "secrets" dict has empty values
-    for connector in sample_connectors:
+    # Disable any connections whose "secrets" dict has empty values
+    for connection in sample_connections:
         # If there are no secrets at all, disable!
-        if not connector.secrets:
-            connector.disabled = True
+        if not connection.secrets:
+            connection.disabled = True
             continue
 
         # If any of the secret values are missing, disable!
-        for _, value in dict(connector.secrets).items():
+        for _, value in dict(connection.secrets).items():
             if not value or value == "":
-                connector.disabled = True
+                connection.disabled = True
 
-    # Exclude any disabled connectors from the final results
-    return [e for e in sample_connectors if not e.disabled]
+    # Exclude any disabled connections from the final results
+    return [e for e in sample_connections if not e.disabled]
 
 
 def load_sample_yaml_file(file: TextIO, expand_vars: bool = True) -> Dict:

@@ -467,13 +467,13 @@ class TestLoadSampleResources:
         async_session: AsyncSession,
     ) -> None:
         """
-        Test that we can load the sample resources, connectors, and upsert those
+        Test that we can load the sample resources, connections, and upsert those
         into the database. See the other tests in this class for more detailed
         assertions - this one just ensures the e2e result is what we expect: a
         database full of sample data!
         """
 
-        # Load the sample resources & connectors
+        # Load the sample resources & connections
         await seed.load_samples(async_session)
 
         async with async_session.begin():
@@ -481,7 +481,7 @@ class TestLoadSampleResources:
             systems = (await async_session.execute(select(System))).scalars().all()
             datasets = (await async_session.execute(select(Dataset))).scalars().all()
             policies = (await async_session.execute(select(PolicyCtl))).scalars().all()
-            connectors = (
+            connections = (
                 (await async_session.execute(select(ConnectionConfig))).scalars().all()
             )
             dataset_configs = (
@@ -490,7 +490,7 @@ class TestLoadSampleResources:
             assert len(systems) == 4
             assert len(datasets) == 3
             assert len(policies) == 1
-            assert len(connectors) == 2
+            assert len(connections) == 2
             assert len(dataset_configs) == 2
 
             assert sorted([e.fides_key for e in systems]) == [
@@ -502,20 +502,20 @@ class TestLoadSampleResources:
             assert sorted([e.fides_key for e in datasets]) == [
                 "mongo_test",
                 "postgres_example_test_dataset",
-                "stripe_connector",
+                "stripe_connection",
             ]
             assert sorted([e.fides_key for e in policies]) == ["sample_policy"]
 
-            # NOTE: Only the connectors configured by SAMPLE_ENV_VARS above are
-            # expected to exist; the others defined in the sample_connectors.yml
+            # NOTE: Only the connections configured by SAMPLE_ENV_VARS above are
+            # expected to exist; the others defined in the sample_connections.yml
             # will be ignored since they are missing secrets!
-            assert sorted([e.key for e in connectors]) == [
-                "postgres_connector",
-                "stripe_connector",
+            assert sorted([e.key for e in connections]) == [
+                "postgres_connection",
+                "stripe_connection",
             ]
             assert sorted([e.fides_key for e in dataset_configs]) == [
                 "postgres_example_test_dataset",
-                "stripe_connector",
+                "stripe_connection",
             ]
 
 
@@ -551,10 +551,10 @@ class TestLoadSampleResources:
             assert not exc, error_message
 
     @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
-    async def test_load_sample_connectors(self):
+    async def test_load_sample_connections(self):
         """
-        Ensure that the sample connectors file in the sample project can be
-        parsed and loaded by the load_sample_connectors_from_project() function.
+        Ensure that the sample connections file in the sample project can be
+        parsed and loaded by the load_sample_connections_from_project() function.
         This makes sure we don't make some changes to the sample project files
         that aren't automatically loaded into the database via this function.
 
@@ -564,7 +564,7 @@ class TestLoadSampleResources:
 
         To fix the test, you just need to ensure the code has all the logic it
         needs to parse everything from this directory:
-        - src/fides/data/sample_project/sample_connectors/*.yml
+        - src/fides/data/sample_project/sample_connections/*.yml
 
         See src/fides/api/ctl/database/samples.py for details.
 
@@ -572,24 +572,24 @@ class TestLoadSampleResources:
         sneaking into our sample project code!
         """
         error_message = (
-            "Unexpected error loading sample connectors; did you make changes to the sample project? "
+            "Unexpected error loading sample connections; did you make changes to the sample project? "
             "See tests/ctl/api/test_seed.py for details."
         )
-        connectors = []
+        connections = []
         try:
-            connectors = samples.load_sample_connectors_from_project()
+            connections = samples.load_sample_connections_from_project()
         except Exception as exc:
             assert not exc, error_message
 
-        # Assert that only the connectors with all their secrets are returned
-        assert len(connectors) == 2
-        assert sorted([e.key for e in connectors]) == [
-            "postgres_connector",
-            "stripe_connector",
+        # Assert that only the connections with all their secrets are returned
+        assert len(connections) == 2
+        assert sorted([e.key for e in connections]) == [
+            "postgres_connection",
+            "stripe_connection",
         ]
 
         # Assert that variable expansion worked as expected
-        postgres = [e for e in connectors if e.connection_type == "postgres"][0].dict()
+        postgres = [e for e in connections if e.connection_type == "postgres"][0].dict()
         assert postgres["secrets"]["host"] == "test-var-expansion"
         assert postgres["secrets"]["port"] == 9090
 
@@ -608,8 +608,8 @@ class TestLoadSampleResources:
         """
         sample_str = dedent(
             """\
-            connector:
-              - key: test_connector
+            connection:
+              - key: test_connection
                 name: Test Connector $TEST_VAR_1
                 connection_type: postgres
                 access: write
@@ -624,14 +624,14 @@ class TestLoadSampleResources:
         sample_file = io.StringIO(sample_str)
 
         sample_dict = samples.load_sample_yaml_file(sample_file)
-        assert list(sample_dict.keys()) == ["connector"]
-        sample_connector = sample_dict["connector"][0]
-        assert sample_connector["key"] == "test_connector"
-        assert sample_connector["name"] == "Test Connector var-1"
-        assert sample_connector["connection_type"] == "postgres"
-        assert sample_connector["access"] == "write"
-        assert sample_connector["secrets"]["host"] == "test-host"
-        assert sample_connector["secrets"]["port"] == 9001
-        assert sample_connector["secrets"]["dbname"] == "var-2"
-        assert sample_connector["secrets"]["username"] == "user-var-2"
-        assert sample_connector["secrets"]["password"] == "var-1-var-2"
+        assert list(sample_dict.keys()) == ["connection"]
+        sample_connection = sample_dict["connection"][0]
+        assert sample_connection["key"] == "test_connection"
+        assert sample_connection["name"] == "Test Connector var-1"
+        assert sample_connection["connection_type"] == "postgres"
+        assert sample_connection["access"] == "write"
+        assert sample_connection["secrets"]["host"] == "test-host"
+        assert sample_connection["secrets"]["port"] == 9001
+        assert sample_connection["secrets"]["dbname"] == "var-2"
+        assert sample_connection["secrets"]["username"] == "user-var-2"
+        assert sample_connection["secrets"]["password"] == "var-1-var-2"
