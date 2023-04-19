@@ -322,6 +322,7 @@ async def test_google_analytics_consent_request_task_new_workflow(
 @pytest.mark.integration_saas
 @pytest.mark.integration_google_analytics
 @pytest.mark.asyncio
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
 async def test_google_analytics_consent_request_task_new_errored_workflow(
     mocked_client_send,

@@ -1,8 +1,10 @@
 from typing import Any, Dict
+from unittest import mock
 
 import pytest
 from bson import ObjectId
 
+from fides.api.ops.common_exceptions import SkippingConsentPropagation
 from fides.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -15,6 +17,7 @@ from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.ops.models.privacy_request import ExecutionLog, ExecutionLogStatus
 from fides.api.ops.task.graph_task import (
     EMPTY_REQUEST,
     GraphTask,
@@ -25,6 +28,9 @@ from fides.api.ops.task.graph_task import (
     start_function,
     update_erasure_mapping_from_cache,
 )
+from fides.api.ops.util.consent_util import (
+    cache_initial_status_and_identities_for_consent_reporting,
+)
 
 from ..graph.graph_test_util import (
     MockMongoTask,
@@ -33,6 +39,7 @@ from ..graph.graph_test_util import (
     erasure_policy,
     field,
     generate_field_list,
+    generate_node,
 )
 from .traversal_data import (
     combined_mongo_postgresql_graph,
@@ -659,3 +666,128 @@ class TestUpdateErasureMappingFromCache:
         }  # a cache with the results of the ds_1 collection erasure
         update_erasure_mapping_from_cache(dsk, task_resource)
         assert dsk[CollectionAddress("dr_1", "ds_1")] == 1
+
+
+class TestGraphTaskAffectedConsentSystems:
+    @pytest.fixture()
+    def mock_graph_task(
+        self,
+        db,
+        mailchimp_transactional_connection_config_no_secrets,
+        privacy_request_with_consent_policy,
+    ):
+        task_resources = TaskResources(
+            privacy_request_with_consent_policy,
+            privacy_request_with_consent_policy.policy,
+            [mailchimp_transactional_connection_config_no_secrets],
+            db,
+        )
+        tn = TraversalNode(generate_node("a", "b", "c", "c2"))
+        tn.node.dataset.connection_key = (
+            mailchimp_transactional_connection_config_no_secrets.key
+        )
+        return GraphTask(tn, task_resources)
+
+    @mock.patch(
+        "fides.api.ops.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+    )
+    def test_skipped_consent_task_for_connector(
+        self,
+        mock_run_consent_request,
+        mock_graph_task,
+        db,
+        privacy_request_with_consent_policy,
+        privacy_preference_history,
+        privacy_preference_history_us_ca_provide,
+    ):
+        """Test that all privacy preferences for a consent connector get marked as skipped if SkippingConsentPropagation gets called"""
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history_us_ca_provide.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+        privacy_preference_history_us_ca_provide.save(db)
+
+        mock_run_consent_request.side_effect = SkippingConsentPropagation(
+            "No preferences are relevant"
+        )
+
+        ret = mock_graph_task.consent_request({"email": "customer-1@example.com"})
+        assert ret is False
+
+        db.refresh(privacy_preference_history)
+        db.refresh(privacy_preference_history_us_ca_provide)
+
+        assert privacy_preference_history.affected_system_status == {
+            "mailchimp_transactional_instance": "skipped"
+        }
+        assert privacy_preference_history_us_ca_provide.affected_system_status == {
+            "mailchimp_transactional_instance": "skipped"
+        }
+
+        logs = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id
+                == privacy_request_with_consent_policy.id
+            )
+            .order_by(ExecutionLog.created_at.desc())
+        )
+        assert logs.first().status == ExecutionLogStatus.skipped
+
+    @mock.patch(
+        "fides.api.ops.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+    )
+    def test_errored_consent_task_for_connector_no_relevant_preferences(
+        self,
+        mock_run_consent_request,
+        mailchimp_transactional_connection_config_no_secrets,
+        mock_graph_task,
+        db,
+        privacy_request_with_consent_policy,
+        privacy_preference_history,
+        privacy_preference_history_us_ca_provide,
+    ):
+        """Test privacy preferences only marked as errored if they have pending logs"""
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history_us_ca_provide.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+        privacy_preference_history_us_ca_provide.save(db)
+
+        mock_run_consent_request.side_effect = BaseException("Request failed")
+        cache_initial_status_and_identities_for_consent_reporting(
+            db,
+            privacy_request_with_consent_policy,
+            mailchimp_transactional_connection_config_no_secrets,
+            relevant_preferences=[privacy_preference_history_us_ca_provide],
+            relevant_user_identities={"email": "customer-1@example.com"},
+        )
+        with pytest.raises(BaseException):
+            ret = mock_graph_task.consent_request({"email": "customer-1@example.com"})
+            assert ret is False
+
+        db.refresh(privacy_preference_history)
+        db.refresh(privacy_preference_history_us_ca_provide)
+
+        assert privacy_preference_history.affected_system_status == {
+            "mailchimp_transactional_instance": "skipped"
+        }
+        assert privacy_preference_history_us_ca_provide.affected_system_status == {
+            "mailchimp_transactional_instance": "error"
+        }
+
+        logs = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id
+                == privacy_request_with_consent_policy.id
+            )
+            .order_by(ExecutionLog.created_at.desc())
+        )
+        assert logs.first().status == ExecutionLogStatus.error
