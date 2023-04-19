@@ -70,7 +70,7 @@ const CustomFields: NextPage = () => {
               : "Custom fields provide organizations with the capability to capture metrics that are unique to their specific needs, allowing them to create customized reports. These fields can be added to either systems or elements within a taxonomy, and once added, they become reportable fields that are visible on the data map."}
           </Text>
         </Box>
-        <Box padding={2}>
+        <Box padding={2} data-testid="custom-fields-page">
           <FidesTable<CustomFieldDefinitionWithId>
             columns={columns}
             data={customFields}
