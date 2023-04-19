@@ -1,5 +1,5 @@
-from copy import deepcopy
 import logging
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Generator, List, Optional
 from unittest import mock
@@ -1432,20 +1432,6 @@ def privacy_notice(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def privacy_preference_history(db: Session, privacy_notice) -> Generator:
-    pref_1 = PrivacyPreferenceHistory.create(
-        db=db,
-        data={
-            "preference": "opt_out",
-            "privacy_notice_history_id": privacy_notice,
-        },
-        check_name=False,
-    )
-    yield pref_1
-    pref_1.delete(db)
-
-
-@pytest.fixture(scope="function")
 def privacy_notice_us_ca_provide(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
@@ -1908,7 +1894,6 @@ def privacy_preference_history(
             "privacy_notice_history_id": privacy_notice_history.id,
             "provided_identity_id": provided_identity.id,
             "request_origin": "privacy_center",
-            "secondary_user_ids": {"ga_client_id": "test"},
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/324.42 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/425.24",
             "user_geography": "us_ca",
             "url_recorded": "example.com/privacy_center",

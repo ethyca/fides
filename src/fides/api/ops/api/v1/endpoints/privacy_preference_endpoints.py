@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import List, Optional, Tuple
 
 from fastapi import Depends, HTTPException
-from fastapi_pagination import Page, Params, paginate
+from fastapi.params import Security
+from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy import literal
+from sqlalchemy.orm import Query, Session
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
@@ -17,9 +21,16 @@ from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
+from fides.api.ops.api.v1.endpoints.utils import validate_start_and_end_filters
+from fides.api.ops.api.v1.scope_registry import (
+    CURRENT_PRIVACY_PREFERENCE_READ,
+    PRIVACY_PREFERENCE_HISTORY_READ,
+)
 from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST_PRIVACY_PREFERENCES_VERIFY,
     CONSENT_REQUEST_PRIVACY_PREFERENCES_WITH_ID,
+    CURRENT_PRIVACY_PREFERENCES,
+    HISTORICAL_PRIVACY_PREFERENCES,
     V1_URL_PREFIX,
 )
 from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeHistory
@@ -27,8 +38,14 @@ from fides.api.ops.models.privacy_preference import (
     CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
 )
-from fides.api.ops.models.privacy_request import ProvidedIdentity, ProvidedIdentityType
+from fides.api.ops.models.privacy_request import (
+    PrivacyRequest,
+    ProvidedIdentity,
+    ProvidedIdentityType,
+)
 from fides.api.ops.schemas.privacy_preference import (
+    ConsentReportingSchema,
+    CurrentPrivacyPreferenceReportingSchema,
     CurrentPrivacyPreferenceSchema,
     PrivacyPreferencesCreateWithCode,
 )
@@ -39,7 +56,9 @@ from fides.api.ops.schemas.privacy_request import (
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.core.config.config_proxy import ConfigProxy
+from fides.lib.models.fides_user import FidesUser
 
 router = APIRouter(tags=["Privacy Preference"], prefix=V1_URL_PREFIX)
 
@@ -76,7 +95,6 @@ def consent_request_verify_for_privacy_preferences(
         db.query(CurrentPrivacyPreference)
         .filter(CurrentPrivacyPreference.provided_identity_id == provided_identity.id)
         .order_by(CurrentPrivacyPreference.privacy_notice_id)
-        .all()
     )
     return paginate(query, params)
 
@@ -183,9 +201,6 @@ def save_privacy_preferences(
                 "privacy_notice_history_id": privacy_preference.privacy_notice_history_id,
                 "provided_identity_id": provided_identity.id,
                 "request_origin": data.request_origin,
-                "secondary_user_ids": {
-                    label: value for label, value in data.browser_identity if value
-                },
                 "user_agent": data.user_agent,
                 "user_geography": data.user_geography,
                 "url_recorded": data.url_recorded,
@@ -230,3 +245,97 @@ def save_privacy_preferences(
     consent_request.save(db=db)
 
     return upserted_current_preferences
+
+
+@router.get(
+    CURRENT_PRIVACY_PREFERENCES,
+    status_code=HTTP_200_OK,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[CURRENT_PRIVACY_PREFERENCE_READ])
+    ],
+    response_model=Page[CurrentPrivacyPreferenceReportingSchema],
+)
+def get_current_privacy_preferences(
+    *,
+    params: Params = Depends(),
+    db: Session = Depends(get_db),
+    updated_lt: Optional[datetime] = None,
+    updated_gt: Optional[datetime] = None,
+) -> AbstractPage[CurrentPrivacyPreference]:
+    """Returns the most recently saved privacy preferences for a given privacy notice"""
+
+    validate_start_and_end_filters([(updated_lt, updated_gt, "updated")])
+
+    query: Query[CurrentPrivacyPreference] = db.query(CurrentPrivacyPreference)
+
+    if updated_lt:
+        query = query.filter(CurrentPrivacyPreference.updated_at < updated_lt)
+    if updated_gt:
+        query = query.filter(CurrentPrivacyPreference.updated_at > updated_gt)
+
+    query = query.order_by(CurrentPrivacyPreference.updated_at.desc())
+
+    return paginate(query, params)
+
+
+@router.get(
+    HISTORICAL_PRIVACY_PREFERENCES,
+    status_code=HTTP_200_OK,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_PREFERENCE_HISTORY_READ])
+    ],
+    response_model=Page[ConsentReportingSchema],
+)
+def get_historical_consent_reporting(
+    *,
+    params: Params = Depends(),
+    db: Session = Depends(get_db),
+    request_timestamp_gt: Optional[datetime] = None,
+    request_timestamp_lt: Optional[datetime] = None,
+) -> AbstractPage[PrivacyPreferenceHistory]:
+    """Endpoint to return a historical record of all privacy preferences saved for consent reporting"""
+
+    validate_start_and_end_filters(
+        [(request_timestamp_lt, request_timestamp_gt, "request_timestamp")]
+    )
+
+    query: Query[PrivacyPreferenceHistory] = (
+        db.query(
+            PrivacyPreferenceHistory.id,
+            PrivacyRequest.id.label("privacy_request_id"),
+            PrivacyPreferenceHistory.email.label("user_id"),
+            PrivacyPreferenceHistory.secondary_user_ids,
+            PrivacyPreferenceHistory.created_at.label("request_timestamp"),
+            PrivacyPreferenceHistory.request_origin.label("request_origin"),
+            PrivacyRequest.status.label("request_status"),
+            literal("consent").label(
+                "request_type"
+            ),  # Right now, we know this is consent, so hardcoding to avoid the Policy/Rule join
+            FidesUser.username.label("approver_id"),
+            PrivacyPreferenceHistory.privacy_notice_history_id.label(
+                "privacy_notice_history_id"
+            ),
+            PrivacyPreferenceHistory.preference.label("preference"),
+            PrivacyPreferenceHistory.user_geography.label("user_geography"),
+            PrivacyPreferenceHistory.relevant_systems.label("relevant_systems"),
+            PrivacyPreferenceHistory.affected_system_status.label(
+                "affected_system_status"
+            ),
+            PrivacyPreferenceHistory.url_recorded.label("url_recorded"),
+            PrivacyPreferenceHistory.user_agent.label("user_agent"),
+        )
+        .outerjoin(
+            PrivacyRequest,
+            PrivacyRequest.id == PrivacyPreferenceHistory.privacy_request_id,
+        )
+        .outerjoin(FidesUser, PrivacyRequest.reviewed_by == FidesUser.id)
+    )
+
+    if request_timestamp_lt:
+        query = query.filter(PrivacyPreferenceHistory.created_at < request_timestamp_lt)
+    if request_timestamp_gt:
+        query = query.filter(PrivacyPreferenceHistory.created_at > request_timestamp_gt)
+
+    query = query.order_by(PrivacyPreferenceHistory.created_at.desc())
+
+    return paginate(query, params)
