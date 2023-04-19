@@ -447,8 +447,8 @@ async def test_load_orginizations(loguru_caplog, async_session, monkeypatch):
 
 
 @pytest.mark.integration
-class TestLoadSampleResources:
-    """Tests related to load_sample_resources"""
+class TestLoadSamples:
+    """Tests related to load_samples"""
 
     SAMPLE_ENV_VARS = {
         # Include test secrets for Postgres and Stripe, only
