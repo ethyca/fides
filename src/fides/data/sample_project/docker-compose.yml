@@ -41,7 +41,7 @@ services:
       FIDES_DEPLOY__CONNECTORS__MONGO_PORT: 27017
       FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB: mongo_test
       FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME: mongo_user
-      FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD: mongo_password
+      FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD: mongo_pass
     # Mount a local volume so the user can see their privacy requests
     volumes:
       - type: bind
