@@ -2,6 +2,7 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   Button,
+  Flex,
   Table,
   TableContainer,
   Tbody,
@@ -15,11 +16,12 @@ import {
 import { EnableCell } from "common/table/cells";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { ReactElement, ReactNode } from "react";
-import { Column, useSortBy, useTable } from "react-table";
+import React, { ReactElement, ReactNode } from "react";
+import { Column, useGlobalFilter, useSortBy, useTable } from "react-table";
 import { UrlObject } from "url";
 
 import Restrict from "~/features/common/Restrict";
+import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import { ScopeRegistryEnum } from "~/types/api";
 
 type Props<T extends object> = {
@@ -32,6 +34,7 @@ type Props<T extends object> = {
   addButtonHref: string | UrlObject;
   testId: string;
   EmptyState: ReactElement;
+  searchBar?: boolean;
 };
 
 export const FidesTable = <T extends object>({
@@ -44,10 +47,11 @@ export const FidesTable = <T extends object>({
   addButtonHref,
   testId,
   EmptyState,
+  searchBar,
 }: Props<T>) => {
   const router = useRouter();
 
-  const tableInstance = useTable({ columns, data }, useSortBy);
+  const tableInstance = useTable({ columns, data }, useGlobalFilter, useSortBy);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
@@ -58,6 +62,14 @@ export const FidesTable = <T extends object>({
 
   return (
     <TableContainer>
+      {searchBar ? (
+        <Flex flexGrow={1} marginBottom={3}>
+          <GlobalFilter
+            globalFilter={tableInstance.state.globalFilter}
+            setGlobalFilter={tableInstance.setGlobalFilter}
+          />
+        </Flex>
+      ) : null}
       <Table
         {...getTableProps()}
         borderRadius="6px 6px 0px 0px"

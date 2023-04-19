@@ -65,14 +65,12 @@ const CustomFields: NextPage = () => {
         </Heading>
         <Box maxWidth="600px">
           <Text marginBottom={10} fontSize="sm">
-            Custom fields provide organizations with the capability to capture
-            metrics that are unique to their specific needs, allowing them to
-            create customized reports. These fields can be added to either
-            systems or elements within a taxonomy, and once added, they become
-            reportable fields that are visible on the data map.
+            {customFields.length > 0
+              ? "Custom fields enable you to capture metrics specific to your organization and have those metrics appear in the data map and in reports."
+              : "Custom fields provide organizations with the capability to capture metrics that are unique to their specific needs, allowing them to create customized reports. These fields can be added to either systems or elements within a taxonomy, and once added, they become reportable fields that are visible on the data map."}
           </Text>
         </Box>
-        <Box background="gray.50" padding={2}>
+        <Box padding={2}>
           <FidesTable<CustomFieldDefinitionWithId>
             columns={columns}
             data={customFields}
@@ -82,17 +80,18 @@ const CustomFields: NextPage = () => {
             addButtonText="Add a custom field +"
             addButtonHref=""
             testId="custom-field"
+            searchBar
             EmptyState={
               <EmptyTableState
                 title="It looks like it’s your first time here!"
                 buttonHref=""
                 buttonText="Add a custom field"
                 description={
-                  <Text>
+                  <>
                     You haven’t created any custom fields yet. To create a
                     custom field, click on the{" "}
                     <strong>&quot;Add a custom field&quot;</strong> button
-                  </Text>
+                  </>
                 }
               />
             }
