@@ -3,6 +3,7 @@ connector:
     name: Postgres Connector
     connection_type: postgres
     access: write
+    dataset: postgres_example_test_dataset
     secrets:
       host: $FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST
       port: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT
@@ -13,6 +14,7 @@ connector:
     name: MongoDB Connector
     connection_type: mongodb
     access: write
+    dataset: mongo_test
     secrets:
       host: $FIDES_DEPLOY__CONNECTORS__MONGO_HOST
       port: $FIDES_DEPLOY__CONNECTORS__MONGO_PORT
@@ -36,3 +38,11 @@ connector:
     secrets:
       domain: $FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN
       api_key: $FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY
+  - key: hubspot_connector
+    name: Hubspot Connector
+    connection_type: saas
+    saas_connector_type: hubspot
+    access: write
+    secrets:
+      domain: $FIDES_DEPLOY__CONNECTORS__HUBSPOT__DOMAIN
+      private_app_token: $FIDES_DEPLOY__CONNECTORS__HUBSPOT__PRIVATE_APP_TOKEN

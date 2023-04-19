@@ -9,9 +9,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.database.session import sync_session
-from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
+from fides.api.ctl.sql_models import Dataset, sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
+from fides.api.ops.api.v1.endpoints.dataset_endpoints import patch_dataset_configs
+from fides.api.ops.api.v1.endpoints.saas_config_endpoints import instantiate_connection_from_template
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.ops.schemas.connection_configuration.connection_config import (
+    CreateConnectionConfigurationWithSecrets,
+    SaasConnectionTemplateValues,
+)
+from fides.api.ops.schemas.dataset import DatasetConfigCtlDataset
 from fides.api.ops.util.connection_util import patch_connection_configs
 from fides.core.config import CONFIG
 from fides.lib.db.base_class import FidesBase
@@ -409,6 +418,66 @@ async def load_samples(async_session: AsyncSession) -> None:
     try:
         sample_connectors = load_sample_connectors_from_project()
         with sync_session() as db_session:
-            patch_connection_configs(db_session, sample_connectors)
+            for connector in sample_connectors:
+                # If the connection config already exists, skip creation!
+                # NOTE: This creates an edge case where the sample data was
+                # created previously, but has since changed. By not deleting &
+                # recreating here, we allow the "old" data to persist. That's an
+                # acceptable risk here, so we log an INFO message to provide a
+                # breadcrumb back to this code.
+                connection_config = ConnectionConfig.get_by(db=db_session, field="key", value=connector.key)
+                if connection_config:
+                    log.info(f"Sample connector '{connector.key}' already exists, skipping...")
+                    continue
+
+                # For SaaS connectors, reuse our "instantiate from template" API
+                if connector.connection_type == "saas":
+                    log.info(f"Loading sample connector with SaaS connection type '{connector.saas_connector_type}'...")
+                    saas_template_data = dict(connector)
+                    saas_template_data["instance_key"] = connector.key
+                    saas_template_data.pop("dataset", None) # not supported by this API!
+                    instantiate_connection_from_template(
+                        db=db_session,
+                        saas_connector_type=connector.saas_connector_type,
+                        template_values=SaasConnectionTemplateValues.parse_obj(saas_template_data),
+                    )
+
+                    # Check that it succeeded!
+                    connection_config = ConnectionConfig.get_by(db=db_session, field="key", value=connector.key)
+                    if not connection_config:
+                        log.info(f"Failed to create sample connector '{connector.key}'")
+                    continue
+
+                # For non-SaaS connectors, reuse our connection & dataset APIs
+                log.info(f"Loading sample connector with type '{connector.connection_type}'...")
+                connection_config_data = dict(connector)
+                connection_config_data.pop("dataset", None) # not supported by this API!
+                patch_connection_configs(
+                    db=db_session,
+                    configs=[CreateConnectionConfigurationWithSecrets.parse_obj(connection_config_data)],
+                )
+
+                # Check that it succeeded!
+                connection_config = ConnectionConfig.get_by(db=db_session, field="key", value=connector.key)
+                if not connection_config:
+                    log.info(f"Failed to create sample connector '{connector.key}'")
+                    continue
+
+                # Create the DatasetConfig by linking to an existing Dataset
+                dataset_key = connector.dataset
+                if dataset_key:
+                    log.info(f"Linking sample connector with key '{connector.key}' to dataset '{dataset_key}'...")
+                    dataset = Dataset.get_by(db=db_session, field="fides_key", value=dataset_key)
+                    if not dataset:
+                        log.info(f"Could not find existing dataset '{dataset_key}' for sample connector '{connector.key}'")
+                        continue
+
+                    dataset_pair = DatasetConfigCtlDataset(fides_key=dataset_key, ctl_dataset_fides_key=dataset_key)
+                    patch_dataset_configs(dataset_pairs=[dataset_pair], db=db_session, connection_config=connection_config)
+                    dataset_config = DatasetConfig.get_by(db=db_session, field="fides_key", value=dataset_key)
+                    if not dataset_config:
+                        log.info(f"Failed to create dataset config '{dataset_key}' for sample connector '{connector.key}'")
+                        continue
+
     except QueryError:  # pragma: no cover
         pass  # The upsert_resources function will log any error

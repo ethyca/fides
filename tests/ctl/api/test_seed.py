@@ -12,6 +12,7 @@ from sqlalchemy.future import select
 from fides.api.ctl.database import samples, seed
 from fides.api.ctl.sql_models import Dataset, PolicyCtl, System
 from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.core import api as _api
 from fides.core.config import CONFIG, FidesConfig
@@ -454,7 +455,7 @@ class TestLoadSampleResources:
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST": "test-var-expansion",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT": "9090",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME": "test-var-db",
-        "FIDES_DEPLOY__CONNECTORS__POSTGRES__USER": "test-var-user",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME": "test-var-user",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD": "test-var-password",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN": "test-stripe-domain",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY": "test-stripe-api-key",
@@ -472,19 +473,6 @@ class TestLoadSampleResources:
         database full of sample data!
         """
 
-        async with async_session.begin():
-            # Ensure we start with an empty database
-            systems = (await async_session.execute(select(System))).scalars().all()
-            datasets = (await async_session.execute(select(Dataset))).scalars().all()
-            policies = (await async_session.execute(select(PolicyCtl))).scalars().all()
-            connectors = (
-                (await async_session.execute(select(ConnectionConfig))).scalars().all()
-            )
-            assert len(systems) == 0
-            assert len(datasets) == 0
-            assert len(policies) == 0
-            assert len(connectors) == 0
-
         # Load the sample resources & connectors
         await seed.load_samples(async_session)
 
@@ -496,10 +484,14 @@ class TestLoadSampleResources:
             connectors = (
                 (await async_session.execute(select(ConnectionConfig))).scalars().all()
             )
+            dataset_configs = (
+                (await async_session.execute(select(DatasetConfig))).scalars().all()
+            )
             assert len(systems) == 4
-            assert len(datasets) == 2
+            assert len(datasets) == 3
             assert len(policies) == 1
             assert len(connectors) == 2
+            assert len(dataset_configs) == 2
 
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
@@ -510,13 +502,22 @@ class TestLoadSampleResources:
             assert sorted([e.fides_key for e in datasets]) == [
                 "mongo_test",
                 "postgres_example_test_dataset",
+                "stripe_connector",
             ]
             assert sorted([e.fides_key for e in policies]) == ["sample_policy"]
-            # NOTE: Only the connectors configured by SAMPLE_ENV_VARS are expected
+
+            # NOTE: Only the connectors configured by SAMPLE_ENV_VARS above are
+            # expected to exist; the others defined in the sample_connectors.yml
+            # will be ignored since they are missing secrets!
             assert sorted([e.key for e in connectors]) == [
                 "postgres_connector",
                 "stripe_connector",
             ]
+            assert sorted([e.fides_key for e in dataset_configs]) == [
+                "postgres_example_test_dataset",
+                "stripe_connector",
+            ]
+
 
     async def test_load_sample_resources_strict(self):
         """
@@ -588,11 +589,9 @@ class TestLoadSampleResources:
         ]
 
         # Assert that variable expansion worked as expected
-        postgres_connector = [e for e in connectors if e.connection_type == "postgres"][
-            0
-        ].dict()
-        assert postgres_connector["secrets"]["host"] == "test-var-expansion"
-        assert postgres_connector["secrets"]["port"] == 9090
+        postgres = [e for e in connectors if e.connection_type == "postgres"][0].dict()
+        assert postgres["secrets"]["host"] == "test-var-expansion"
+        assert postgres["secrets"]["port"] == 9090
 
     @patch.dict(
         os.environ,
@@ -622,7 +621,6 @@ class TestLoadSampleResources:
                   password: ${TEST_VAR_1}-${TEST_VAR_2}
         """
         )
-        # sample_file = io.TextIOWrapper(io.BytesIO(sample_str.encode()))
         sample_file = io.StringIO(sample_str)
 
         sample_dict = samples.load_sample_yaml_file(sample_file)

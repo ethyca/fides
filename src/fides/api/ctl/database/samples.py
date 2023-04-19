@@ -5,11 +5,12 @@ sample project at src/fides/data/sample_project.
 See load_samples() in seed.py for usage.
 """
 from importlib.resources import files
-from typing import Dict, List, TextIO, Union
+from typing import Dict, List, Optional, TextIO, Union
 
 import yaml
 from expandvars import expandvars  # type: ignore
 from fideslang.models import Dataset, Organization, Policy, System
+from fideslang.validation import FidesKey
 
 import fides.data.sample_project  # type: ignore
 from fides.api.ops.schemas.connection_configuration.connection_config import (
@@ -73,9 +74,22 @@ def load_sample_resources_from_project(
     return sample_resources_dict
 
 
-def load_sample_connectors_from_project() -> (
-    List[CreateConnectionConfigurationWithSecrets]
-):
+class SampleConnector(CreateConnectionConfigurationWithSecrets):
+    """
+    Schema for creating a sample connector to initialize the database, usable
+    for both database & SaaS connectors. Extends the existing models with an
+    optional 'dataset' field.
+    """
+
+    dataset: Optional[FidesKey] = None
+    """
+    (Optional) Valid fides_key for an existing dataset that should be used
+    for this ConnectionConfig. If a dataset does not exist for this key,
+    creation will fail.
+    """
+
+
+def load_sample_connectors_from_project() -> List[SampleConnector]:
     """
     Loads all the sample connector YAML files from the sample project by
     traversing through the sample_connectors/ folder, inspecting each file, and
@@ -108,9 +122,8 @@ def load_sample_connectors_from_project() -> (
             # Expand ENV vars when reading the YAML, to handle secrets
             yaml_dict = load_sample_yaml_file(file, expand_vars=True)
             connectors = yaml_dict.get("connector", [])
-            sample_connectors.extend(
-                [
-                    CreateConnectionConfigurationWithSecrets.parse_obj(e)
+            sample_connectors.extend([
+                    SampleConnector.parse_obj(e)
                     for e in connectors
                 ]
             )
