@@ -4,9 +4,11 @@ tests/conftest.py file.
 
 import pytest
 import requests
+from fideslang import DEFAULT_TAXONOMY
 from pytest import MonkeyPatch
 
 from fides.api.ctl.database.session import sync_engine, sync_session
+from fides.api.ctl.sql_models import DataUse
 from fides.core import api
 from tests.conftest import create_citext_extension
 
@@ -65,3 +67,12 @@ def db():
 
     yield session
     session.close()
+
+
+@pytest.fixture(scope="function", autouse=True)
+def load_default_data_uses(db):
+    for data_use in DEFAULT_TAXONOMY.data_use:
+        # weirdly, only in some test scenarios, we already have the default taxonomy
+        # loaded, in which case the create will throw an error. so we first check existence.
+        if DataUse.get_by(db, field="name", value=data_use.name) is None:
+            DataUse.create(db=db, data=data_use.dict())
