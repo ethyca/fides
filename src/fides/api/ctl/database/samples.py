@@ -78,9 +78,15 @@ def load_sample_resources_from_project(
 
 class SampleConnection(CreateConnectionConfigurationWithSecrets):
     """
-    Schema for creating a sample connection to initialize the database, usable
-    for both database & SaaS connections. Extends the existing models with an
-    optional 'dataset' field.
+    We use the `PATCH /api/v1/connection` endpoint function to instantiate the
+    sample connections, which expects a ConnectionConfig-style model as input,
+    so this model extends the CreateConnectionConfigurationWithSecrets model as
+    a base.
+
+    However, we also want to (optionally) support other fields in the sample
+    connections YAML, such as a 'dataset' field which isn't supported in the
+    ConnectionConfig APIs. Therefore, we extend that "base" model with our new
+    fields and then reformat this source model as needed to suit those APIs.
     """
 
     dataset: Optional[FidesKey] = None
