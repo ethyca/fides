@@ -964,6 +964,7 @@ def system(db: Session) -> System:
         },
     )
 
+    db.refresh(system)
     return system
 
 
@@ -1000,6 +1001,7 @@ def system_third_party_sharing(db: Session) -> System:
             "ingress": None,
         },
     )
+    db.refresh(system_third_party_sharing)
     return system_third_party_sharing
 
 
@@ -1036,6 +1038,7 @@ def system_provide_service(db: Session) -> System:
             "ingress": None,
         },
     )
+    db.refresh(system_provide_service)
     return system_provide_service
 
 
@@ -1072,6 +1075,7 @@ def system_provide_service_operations_support_optimization(db: Session) -> Syste
             "ingress": None,
         },
     )
+    db.refresh(system_provide_service_operations_support_optimization)
     return system_provide_service_operations_support_optimization
 
 
