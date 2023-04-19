@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.11.1b0.post0.dev6"
+    "version": "2.11.1b0.post0.dev7"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9187,6 +9187,174 @@
         }
       }
     },
+    "/api/v1/current-privacy-preferences": {
+      "get": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Get Current Privacy Preferences",
+        "description": "Returns the most recently saved privacy preferences for a given privacy notice",
+        "operationId": "get_current_privacy_preferences_api_v1_current_privacy_preferences_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Updated Lt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "updated_lt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Updated Gt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "updated_gt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_CurrentPrivacyPreferenceReportingSchema_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "current-privacy-preference:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/historical-privacy-preferences": {
+      "get": {
+        "tags": [
+          "Privacy Preference"
+        ],
+        "summary": "Get Historical Consent Reporting",
+        "description": "Endpoint to return a historical record of all privacy preferences saved for consent reporting",
+        "operationId": "get_historical_consent_reporting_api_v1_historical_privacy_preferences_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Request Timestamp Gt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "request_timestamp_gt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Request Timestamp Lt",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "request_timestamp_lt",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ConsentReportingSchema_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-preference-history:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request": {
       "get": {
         "tags": [
@@ -13902,6 +14070,112 @@
         },
         "description": "Schema for reporting Consent requests."
       },
+      "ConsentReportingSchema": {
+        "title": "ConsentReportingSchema",
+        "required": [
+          "id",
+          "request_timestamp",
+          "request_type",
+          "privacy_notice_history_id",
+          "preference",
+          "affected_system_status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "The PrivacyPreferenceHistory id",
+            "type": "string"
+          },
+          "privacy_request_id": {
+            "title": "The Privacy Request id created to propagate preferences",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "Email if provided",
+            "type": "string"
+          },
+          "secondary_user_ids": {
+            "title": "Other browser identifiers",
+            "type": "object"
+          },
+          "request_timestamp": {
+            "title": "Timestamp when Privacy Preference was saved.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "request_origin": {
+            "title": "Origin of request - privacy center, modal, overlay, API, etc..",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RequestOrigin"
+              }
+            ]
+          },
+          "request_status": {
+            "title": "Status of the Privacy Request created to propagate preferences.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestStatus"
+              }
+            ]
+          },
+          "request_type": {
+            "title": "The Type of Privacy Request.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActionType"
+              }
+            ]
+          },
+          "approver_id": {
+            "title": "The username of the user who approved the Privacy Request if applicable",
+            "type": "string"
+          },
+          "privacy_notice_history_id": {
+            "title": "The id of the specific Privacy Notice History that the user consented to",
+            "type": "string"
+          },
+          "preference": {
+            "title": "The user's preference for the given notice: opt_in, opt_out, or acknowledge",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserConsentPreference"
+              }
+            ]
+          },
+          "user_geography": {
+            "title": "Detected geography of the user",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyNoticeRegion"
+              }
+            ]
+          },
+          "relevant_systems": {
+            "title": "Systems relevant to the given notice by data use.  Note that just because a system is relevant does not mean that a request is necessarily propagated.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "affected_system_status": {
+            "title": "Affected system status",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ExecutionLogStatus"
+            }
+          },
+          "url_recorded": {
+            "title": "URL of page where preference was recorded",
+            "type": "string"
+          },
+          "user_agent": {
+            "title": "User agent",
+            "type": "string"
+          }
+        },
+        "description": "Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest"
+      },
       "ConsentRequestMap": {
         "title": "ConsentRequestMap",
         "type": "object",
@@ -14142,6 +14416,44 @@
         },
         "additionalProperties": false,
         "description": "Schema for creating a connection configuration including secrets."
+      },
+      "CurrentPrivacyPreferenceReportingSchema": {
+        "title": "CurrentPrivacyPreferenceReportingSchema",
+        "required": [
+          "id",
+          "preference",
+          "privacy_notice_history_id",
+          "privacy_preference_history_id",
+          "created_at"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "preference": {
+            "$ref": "#/components/schemas/UserConsentPreference"
+          },
+          "privacy_notice_history_id": {
+            "title": "Privacy Notice History Id",
+            "type": "string"
+          },
+          "privacy_preference_history_id": {
+            "title": "Privacy Preference History Id",
+            "type": "string"
+          },
+          "provided_identity_id": {
+            "title": "Provided Identity Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Schema to represent the latest saved preference for a given privacy notice\nNote that we return the privacy notice *history* record here though which has the\ncontents of the notice the user consented to at the time."
       },
       "CurrentPrivacyPreferenceSchema": {
         "title": "CurrentPrivacyPreferenceSchema",
@@ -16594,6 +16906,74 @@
           }
         }
       },
+      "Page_ConsentReportingSchema_": {
+        "title": "Page[ConsentReportingSchema]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsentReportingSchema"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_CurrentPrivacyPreferenceReportingSchema_": {
+        "title": "Page[CurrentPrivacyPreferenceReportingSchema]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrentPrivacyPreferenceReportingSchema"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_CurrentPrivacyPreferenceSchema_": {
         "title": "Page[CurrentPrivacyPreferenceSchema]",
         "required": [
@@ -18983,6 +19363,7 @@
           "ctl_policy:read",
           "ctl_policy:delete",
           "ctl_policy:update",
+          "current-privacy-preference:read",
           "database:reset",
           "data_category:create",
           "data_category:delete",
@@ -19025,6 +19406,7 @@
           "privacy-notice:create",
           "privacy-notice:update",
           "privacy-notice:read",
+          "privacy-preference-history:read",
           "privacy-request:create",
           "privacy-request:resume",
           "privacy-request:delete",
