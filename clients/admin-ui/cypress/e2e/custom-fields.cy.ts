@@ -108,7 +108,7 @@ describe("Custom Fields", () => {
 
     describe("enabling and disabling", () => {
       beforeEach(() => {
-        cy.intercept("PATCH", "/api/v1/plus/custom-metadata/custom-field-definition*", {
+        cy.intercept("PUT", "/api/v1/plus/custom-metadata/custom-field-definition*", {
           fixture: "custom-fields/list.json",
         }).as("patchCustomFields");
       });
@@ -123,7 +123,8 @@ describe("Custom Fields", () => {
 
         cy.wait("@patchCustomFields").then((interception) => {
           const { body } = interception.request;
-          expect(body).to.eql([{ id: TAXONOMY_SINGLE_SELECT_ID, disabled: false }]);
+          expect(body.id).to.eql( TAXONOMY_SINGLE_SELECT_ID);
+          expect(body.active).to.eql( true);
         });
         // redux should requery after invalidation
         cy.wait("@getCustomFields");
@@ -141,7 +142,8 @@ describe("Custom Fields", () => {
         cy.getByTestId("continue-btn").click();
         cy.wait("@patchCustomFields").then((interception) => {
           const { body } = interception.request;
-          expect(body).to.eql([{ id: ESSENTIAL_NOTICE_ID, disabled: true }]);
+          expect(body.id).to.eql( ESSENTIAL_NOTICE_ID);
+          expect(body.active).to.eql( false);
         });
         // redux should requery after invalidation
         cy.wait("@getCustomFields");

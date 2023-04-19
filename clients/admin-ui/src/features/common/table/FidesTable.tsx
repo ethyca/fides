@@ -14,7 +14,6 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import { EnableCell } from "common/table/cells";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { ReactElement, ReactNode } from "react";
@@ -167,12 +166,15 @@ export const FidesTable = <T extends object>({
                         cell.column.Header !== "Enable" ? onClick : undefined
                       }
                     >
-                      {cell.column.Cell === EnableCell
-                        ? cell.render("Cell", {
-                            // @ts-ignore
-                            onToggle: cell.column.onToggle,
-                          })
-                        : cell.render("Cell")}
+                      {
+                        // @ts-ignore
+                        cell.column.onToggle
+                          ? cell.render("Cell", {
+                              // @ts-ignore
+                              onToggle: cell.column.onToggle,
+                            })
+                          : cell.render("Cell")
+                      }
                     </Td>
                   );
                 })}

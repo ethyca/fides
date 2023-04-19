@@ -1,6 +1,5 @@
 export {
   DateCell,
-  EnableCell,
   MechanismCell,
   MultiTagCell,
   TitleCell,

@@ -6,7 +6,7 @@
         "allow_list_id": "plu_84f4fc75-d843-48de-bf89-f88e5591cae9",
         "resource_type": "data category",
         "field_definition": null,
-        "active": true,
+        "active": false,
         "id": "plu_1850be9e-fabc-424d-8224-2fc44c84605a"
     },
     {
@@ -16,7 +16,7 @@
         "allow_list_id": "plu_84f4fc75-d843-48de-bf89-f88e5591cae9",
         "resource_type": "data category",
         "field_definition": null,
-        "active": true,
+        "active": false,
         "id": "plu_71634679-2353-4b80-b291-b9efaba0e7ef"
     },
     {
