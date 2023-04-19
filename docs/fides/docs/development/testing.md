@@ -50,6 +50,10 @@ Generally, tests that include mocking are discouraged. Mocking can create a fals
 
 ## Running tests
 
+Given the relative complexity of the setup around Fides and reliance on Docker, testing commands should usually be run in a shell or via Nox sessions.
+
+### Running Tests in a Shell
+
 Fides uses `pytest` for unit testing. To run tests, invoke `pytest` from the `/fides/ctl/` directory:
 
 ```bash
@@ -78,6 +82,8 @@ Integration tests also test integration with external services like Snowflake wh
 # run all tests except external ones
 pytest -m "not external"
 ```
+
+### Running Test Suites via Nox 
 
 ## CI Workflows
 
