@@ -502,7 +502,7 @@ class TestLoadSampleResources:
             assert sorted([e.fides_key for e in datasets]) == [
                 "mongo_test",
                 "postgres_example_test_dataset",
-                "stripe_connection",
+                "stripe_connector",
             ]
             assert sorted([e.fides_key for e in policies]) == ["sample_policy"]
 
@@ -510,14 +510,13 @@ class TestLoadSampleResources:
             # expected to exist; the others defined in the sample_connections.yml
             # will be ignored since they are missing secrets!
             assert sorted([e.key for e in connections]) == [
-                "postgres_connection",
-                "stripe_connection",
+                "postgres_connector",
+                "stripe_connector",
             ]
             assert sorted([e.fides_key for e in dataset_configs]) == [
                 "postgres_example_test_dataset",
-                "stripe_connection",
+                "stripe_connector",
             ]
-
 
     async def test_load_sample_resources_strict(self):
         """
@@ -584,8 +583,8 @@ class TestLoadSampleResources:
         # Assert that only the connections with all their secrets are returned
         assert len(connections) == 2
         assert sorted([e.key for e in connections]) == [
-            "postgres_connection",
-            "stripe_connection",
+            "postgres_connector",
+            "stripe_connector",
         ]
 
         # Assert that variable expansion worked as expected
