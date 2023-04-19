@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Changed
 - The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
+- Update fides deploy to use a new database.load_samples setting to initialize sample Systems, Datasets, and Connections for testing [#3102](https://github.com/ethyca/fides/pull/3102)
 
 ### Removed
 - Removed the warning about access control migration [#3055](https://github.com/ethyca/fides/pull/3055)
