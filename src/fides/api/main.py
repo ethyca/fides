@@ -66,6 +66,7 @@ from fides.api.ops.util.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
+from fides.cli.utils import FIDES_ASCII_ART
 from fides.core.config import CONFIG, check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
@@ -220,6 +221,13 @@ async def prepare_and_log_request(
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
+    setup_logging(
+        CONFIG.logging.level,
+        serialize=CONFIG.logging.serialization,
+        desination=CONFIG.logging.destination,
+    )
+    logger.bind(api_config=CONFIG.logging.json()).debug("Logger configuration options in use")
+
     logger.info(f"Starting Fides - v{VERSION}")
     logger.info(
         "Startup configuration: reloading = {}, dev_mode = {}",
@@ -298,14 +306,10 @@ async def setup_server() -> None:
         )
     )
 
-    # TODO: move this higher up
-    setup_logging(
-        CONFIG.logging.level,
-        serialize=CONFIG.logging.serialization,
-        desination=CONFIG.logging.destination,
-    )
+    logger.info(FIDES_ASCII_ART)
+    logger.info(f"Fides startup complete! v{VERSION}")
 
-    logger.bind(api_config=CONFIG.logging.json()).debug("Configuration options in use")
+
 
 
 @app.middleware("http")

@@ -36,7 +36,7 @@ from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.roles import OWNER
 from fides.lib.utils.text import to_snake_case
 
-from .crud import create_resource, list_resource, upsert_resources
+from .crud import create_resource, get_resource, list_resource, upsert_resources
 from .samples import (
     load_sample_connections_from_project,
     load_sample_resources_from_project,
@@ -88,13 +88,13 @@ def create_or_update_parent_user() -> None:
 
         if user and CONFIG.security.parent_server_password:
             if not user.credentials_valid(CONFIG.security.parent_server_password):
-                log.info("Updating parent user")
+                log.debug("Updating Fides parent user credentials")
                 user.update_password(db_session, CONFIG.security.parent_server_password)
                 return
             # clean exit if parent user already exists and credentials match
             return
 
-        log.info("Creating parent user")
+        log.debug("Creating Fides parent user credentials")
         user = FidesUser.create(
             db=db_session,
             data={
@@ -162,7 +162,7 @@ def load_default_access_policy(
         db_session, field="key", value=DEFAULT_ACCESS_POLICY
     )
     if not access_policy:
-        log.info(f"Creating: {DEFAULT_ACCESS_POLICY}...")
+        log.info(f"Creating default policy: {DEFAULT_ACCESS_POLICY}...")
         access_policy = Policy.create(
             db=db_session,
             data={
@@ -174,7 +174,7 @@ def load_default_access_policy(
             },
         )
     else:
-        log.info(
+        log.debug(
             f"Skipping {DEFAULT_ACCESS_POLICY} creation as it already exists in the database"
         )
 
@@ -182,7 +182,7 @@ def load_default_access_policy(
         db_session, field="key", value=DEFAULT_ACCESS_POLICY_RULE
     )
     if not access_rule:
-        log.info(f"Creating: {DEFAULT_ACCESS_POLICY_RULE}...")
+        log.info(f"Creating default policy rule: {DEFAULT_ACCESS_POLICY_RULE}...")
         access_rule = Rule.create(
             db=db_session,
             data={
@@ -194,7 +194,7 @@ def load_default_access_policy(
             },
         )
 
-        log.info("Creating: Data Category Access Rules...")
+        log.info("Creating default policy rules targets...")
         for target in default_data_categories:
             data = {
                 "data_category": target,
@@ -211,7 +211,7 @@ def load_default_access_policy(
                 # This rule target already exists against the Policy
                 pass
     else:
-        log.info(
+        log.debug(
             f"Skipping {DEFAULT_ACCESS_POLICY_RULE} creation as it already exists in the database"
         )
 
@@ -223,7 +223,7 @@ def load_default_erasure_policy(
         db_session, field="key", value=DEFAULT_ERASURE_POLICY
     )
     if not erasure_policy:
-        log.info(f"Creating: {DEFAULT_ERASURE_POLICY}...")
+        log.info(f"Creating default policy: {DEFAULT_ERASURE_POLICY}...")
         erasure_policy = Policy.create(
             db=db_session,
             data={
@@ -235,7 +235,7 @@ def load_default_erasure_policy(
             },
         )
     else:
-        log.info(
+        log.debug(
             f"Skipping {DEFAULT_ERASURE_POLICY} creation as it already exists in the database"
         )
 
@@ -243,7 +243,7 @@ def load_default_erasure_policy(
         db_session, field="key", value=DEFAULT_ERASURE_POLICY_RULE
     )
     if not erasure_rule:
-        log.info(f"Creating: {DEFAULT_ERASURE_POLICY_RULE}...")
+        log.info(f"Creating default policy rule: {DEFAULT_ERASURE_POLICY_RULE}...")
         erasure_rule = Rule.create(
             db=db_session,
             data={
@@ -259,7 +259,7 @@ def load_default_erasure_policy(
             },
         )
 
-        log.info("Creating: Data Category Erasure Rules...")
+        log.info("Creating default policy rule targets...")
         for target in default_data_categories:
             data = {
                 "data_category": target,
@@ -276,11 +276,11 @@ def load_default_erasure_policy(
                 # This rule target already exists against the Policy
                 pass
     else:
-        log.info(
+        log.debug(
             f"Skipping {DEFAULT_ERASURE_POLICY_RULE} creation as it already exists in the database"
         )
 
-    log.info("Creating: Default Consent Policy")
+    log.info(f"Creating default policy: {DEFAULT_CONSENT_POLICY}...")
     consent_policy = Policy.create_or_update(
         db=db_session,
         data={
@@ -291,7 +291,7 @@ def load_default_erasure_policy(
         },
     )
 
-    log.info("Creating: Default Consent Rule")
+    log.info(f"Creating default policy rule: {DEFAULT_CONSENT_RULE}...")
     Rule.create_or_update(
         db=db_session,
         data={
@@ -330,14 +330,14 @@ def load_default_dsr_policies() -> None:
         default_data_categories = filter_data_categories(
             all_data_categories, excluded_data_categories
         )
-        log.info(
+        log.debug(
             f"Preparing to create default rules for the following Data Categories: {default_data_categories} if they do not already exist"
         )
 
         load_default_access_policy(db_session, client_id, default_data_categories)
         load_default_erasure_policy(db_session, client_id, default_data_categories)
 
-        log.info("All Policies & Rules Seeded.")
+        log.info("All default policies & rules created")
 
 
 async def load_default_organization(async_session: AsyncSession) -> None:
@@ -346,19 +346,21 @@ async def load_default_organization(async_session: AsyncSession) -> None:
     one with a matching name already exists.
     """
 
-    log.info("Creating the default organization...")
+    log.info("Loading the default organization...")
     organizations = list(map(dict, DEFAULT_TAXONOMY.dict()["organization"]))
 
     inserted = 0
     for org in organizations:
         try:
-            await create_resource(sql_model_map["organization"], org, async_session)
-            inserted += 1
+            existing = await get_resource(sql_model_map["organization"], org["fides_key"], async_session)
+            if not existing:
+                await create_resource(sql_model_map["organization"], org, async_session)
+                inserted += 1
         except AlreadyExistsError:
             pass
 
-    log.info(f"INSERTED {inserted} organization resource(s)")
-    log.info(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
+    log.debug(f"INSERTED {inserted} organization resource(s)")
+    log.debug(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
 
 
 async def load_default_taxonomy(async_session: AsyncSession) -> None:
@@ -367,9 +369,9 @@ async def load_default_taxonomy(async_session: AsyncSession) -> None:
     upsert_resource_types = list(DEFAULT_TAXONOMY.__fields_set__)
     upsert_resource_types.remove("organization")
 
-    log.info("INSERTING new default fideslang taxonomy resources")
+    log.info("Loading the default fideslang taxonomy resources...")
     for resource_type in upsert_resource_types:
-        log.info(f"Processing {resource_type} resources...")
+        log.debug(f"Processing {resource_type} resources...")
         default_resources = DEFAULT_TAXONOMY.dict()[resource_type]
         existing_resources = await list_resource(
             sql_model_map[resource_type], async_session
@@ -382,18 +384,17 @@ async def load_default_taxonomy(async_session: AsyncSession) -> None:
         ]
 
         if len(resources) == 0:
-            log.info(f"No new {resource_type} resources to add from default taxonomy.")
+            log.debug(f"No new {resource_type} resources to add from default taxonomy.")
             continue
 
         try:
-            for resource in resources:
-                await create_resource(
-                    sql_model_map[resource_type], resource, async_session
-                )
+            await upsert_resources(
+                sql_model_map[resource_type], resources, async_session
+            )
         except QueryError:  # pragma: no cover
             pass  # The create_resource function will log the error
         else:
-            log.info(f"INSERTED {len(resources)} {resource_type} resource(s)")
+            log.debug(f"UPSERTED {len(resources)} {resource_type} resource(s)")
 
 
 async def load_default_resources(async_session: AsyncSession) -> None:
@@ -407,7 +408,7 @@ async def load_default_resources(async_session: AsyncSession) -> None:
 
 
 async def load_samples(async_session: AsyncSession) -> None:
-    log.info("Loading sample resources into database...")
+    log.info("Loading sample resources...")
     try:
         sample_resources = load_sample_resources_from_project(strict=False)
         for resource_type, resources in sample_resources.items():
@@ -419,7 +420,7 @@ async def load_samples(async_session: AsyncSession) -> None:
     except QueryError:  # pragma: no cover
         pass  # The upsert_resources function will log any error
 
-    log.info("Loading sample connections into database...")
+    log.info("Loading sample connections...")
     try:
         sample_connections = load_sample_connections_from_project()
         with sync_session() as db_session:
@@ -434,17 +435,14 @@ async def load_samples(async_session: AsyncSession) -> None:
                     db=db_session, field="key", value=connection.key
                 )
                 if connection_config:
-                    log.info(
+                    log.debug(
                         f"Sample connection '{connection.key}' already exists, skipping..."
                     )
                     continue
 
                 # For SaaS connections, reuse our "instantiate from template" API
-                if (
-                    connection.connection_type == "saas"
-                    and connection.saas_connector_type
-                ):
-                    log.info(
+                if connection.connection_type == "saas" and connection.saas_connector_type:
+                    log.debug(
                         f"Loading sample connection with SaaS connection type '{connection.saas_connector_type}'..."
                     )
                     saas_template_data = dict(connection)
@@ -465,13 +463,11 @@ async def load_samples(async_session: AsyncSession) -> None:
                         db=db_session, field="key", value=connection.key
                     )
                     if not connection_config:
-                        log.info(
-                            f"Failed to create sample connection '{connection.key}'"
-                        )
+                        log.debug(f"Failed to create sample connection '{connection.key}'")
                     continue
 
                 # For non-SaaS connections, reuse our connection & dataset APIs
-                log.info(
+                log.debug(
                     f"Loading sample connection with type '{connection.connection_type}'..."
                 )
                 connection_config_data = dict(connection)
@@ -492,20 +488,20 @@ async def load_samples(async_session: AsyncSession) -> None:
                     db=db_session, field="key", value=connection.key
                 )
                 if not connection_config:
-                    log.info(f"Failed to create sample connection '{connection.key}'")
+                    log.debug(f"Failed to create sample connection '{connection.key}'")
                     continue
 
                 # Create the DatasetConfig by linking to an existing Dataset
                 dataset_key = connection.dataset
                 if dataset_key:
-                    log.info(
+                    log.debug(
                         f"Linking sample connection with key '{connection.key}' to dataset '{dataset_key}'..."
                     )
                     dataset = Dataset.get_by(
                         db=db_session, field="fides_key", value=dataset_key
                     )
                     if not dataset:
-                        log.info(
+                        log.debug(
                             f"Could not find existing dataset '{dataset_key}' for sample connection '{connection.key}'"
                         )
                         continue
@@ -522,7 +518,7 @@ async def load_samples(async_session: AsyncSession) -> None:
                         db=db_session, field="fides_key", value=dataset_key
                     )
                     if not dataset_config:
-                        log.info(
+                        log.debug(
                             f"Failed to create dataset config '{dataset_key}' for sample connection '{connection.key}'"
                         )
                         continue

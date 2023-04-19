@@ -38,7 +38,7 @@ async def create_resource(
             already_exists_error = errors.AlreadyExistsError(
                 sql_model.__name__, resource_dict["fides_key"]
             )
-            log.bind(error=already_exists_error.detail["error"]).error(  # type: ignore[index]
+            log.bind(error=already_exists_error.detail["error"]).info(  # type: ignore[index]
                 "Failed to insert resource"
             )
             raise already_exists_error
@@ -50,7 +50,7 @@ async def create_resource(
                 await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
                     "Failed to create resource"
                 )
                 raise sa_error
@@ -74,7 +74,7 @@ async def get_resource(
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
                     "Failed to fetch resource"
                 )
                 raise sa_error
@@ -82,7 +82,7 @@ async def get_resource(
             sql_resource = result.scalars().first()
             if sql_resource is None:
                 not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
-                log.bind(error=not_found_error.detail["error"]).error("Resource not found")  # type: ignore[index]
+                log.bind(error=not_found_error.detail["error"]).info("Resource not found")  # type: ignore[index]
                 raise not_found_error
 
             return sql_resource
@@ -120,7 +120,7 @@ async def get_resource_with_custom_fields(
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
                     "Failed to fetch custom fields"
                 )
                 raise sa_error
@@ -156,7 +156,7 @@ async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Ba
                 sql_resources = result.scalars().all()
             except SQLAlchemyError:
                 error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to fetch resources"
                 )
                 raise error
@@ -184,7 +184,7 @@ async def update_resource(
                 )
             except SQLAlchemyError:
                 error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to update resource"
                 )
                 raise error
@@ -237,7 +237,7 @@ async def upsert_resources(
 
             except SQLAlchemyError:
                 error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to upsert resources"
                 )
                 raise error
@@ -275,7 +275,7 @@ async def delete_resource(
                 await async_session.execute(query)
             except SQLAlchemyError:
                 error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error(  # type: ignore[index]
+                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to delete resource"
                 )
                 raise error
