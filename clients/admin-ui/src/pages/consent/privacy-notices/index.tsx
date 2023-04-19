@@ -34,7 +34,7 @@ const PrivacyNoticesPage = () => {
   // Subscribe to get all privacy notices
   const page = useAppSelector(selectPage);
   const pageSize = useAppSelector(selectPageSize);
-  useGetAllPrivacyNoticesQuery({ page, size: pageSize });
+  const { isLoading } = useGetAllPrivacyNoticesQuery({ page, size: pageSize });
 
   const privacyNotices = useAppSelector(selectAllPrivacyNotices);
   const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
@@ -119,6 +119,7 @@ const PrivacyNoticesPage = () => {
           addButtonText="Add a privacy notice +"
           addButtonHref={`${PRIVACY_NOTICES_ROUTE}/new`}
           testId="privacy-notice"
+          isLoading={isLoading}
           EmptyState={
             <EmptyTableState
               title="To start configuring consent, please first add data uses"

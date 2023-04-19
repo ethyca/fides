@@ -22,7 +22,7 @@ import {
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 
 const CustomFields: NextPage = () => {
-  useGetAllCustomFieldDefinitionsQuery();
+  const { isLoading } = useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
   const [updateCustomFieldDefinitionTrigger] =
     useUpdateCustomFieldDefinitionMutation();
@@ -81,6 +81,7 @@ const CustomFields: NextPage = () => {
             addButtonHref=""
             testId="custom-field"
             searchBar
+            isLoading={isLoading}
             EmptyState={
               <EmptyTableState
                 title="It looks like it’s your first time here!"
