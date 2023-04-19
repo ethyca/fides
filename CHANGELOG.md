@@ -21,6 +21,7 @@ The types of changes are:
 - Access and erasure support for Aircall [#2589](https://github.com/ethyca/fides/pull/2589)
 - Access and erasure support for Klaviyo [#2501](https://github.com/ethyca/fides/pull/2501)
 - Page to edit or add privacy notices [#3058](https://github.com/ethyca/fides/pull/3058)
+- Side navigation bar can now also have children navigation links [#3099](https://github.com/ethyca/fides/pull/3099)
 
 ### Changed
 - The `cursor` pagination strategy now also searches for data outside of the `data_path` when determining the cursor value [#3068](https://github.com/ethyca/fides/pull/3068)
