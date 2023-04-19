@@ -259,6 +259,10 @@ jobs:
           BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
           BIGQUERY_DATASET: fidesopstest
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
+          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
+          DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
+          DYNAMODB_SECRET_ACCESS_KEY: ${{ secrets.DYNAMODB_SECRET_ACCESS_KEY }}
+
         run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
