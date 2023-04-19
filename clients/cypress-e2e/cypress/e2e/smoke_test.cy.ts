@@ -66,10 +66,11 @@ describe("Smoke test", () => {
     cy.wait("@getConnections");
     cy.get("a").contains("Connection manager").click();
     cy.wait("@getConnectionType");
-    cy.getByTestId("connection-grid-item-mongodb_connector").within(() => {
-      // TODO: UI does not appear to indicate when test fails
+    cy.getByTestId("connection-grid-item-MongoDB Connector").within(() => {
       cy.get("button").contains("Test").click();
     });
-    cy.getByTestId("connection-grid-item-postgres_connector");
+    cy.getByTestId("connection-grid-item-Postgres Connector").within(() => {
+      cy.get("button").contains("Test").click();
+    });
   });
 });
