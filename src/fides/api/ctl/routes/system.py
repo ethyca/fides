@@ -1,6 +1,6 @@
-from typing import Dict
+from typing import Dict, List
 
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -26,12 +26,14 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     System,
 )
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.api.ctl.utils.errors import NotFoundError
 from fides.api.ops.api import deps
-from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     SYSTEM_CREATE,
+    SYSTEM_DELETE,
+    SYSTEM_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import SYSTEM_CONNECTIONS, V1_URL_PREFIX
 from fides.api.ops.models.connectionconfig import ConnectionConfig
@@ -126,7 +128,7 @@ def patch_connections(
 async def update(
     resource: SystemSchema = Security(
         verify_oauth_client_for_system_from_request_body_cli,
-        scopes=[scope_registry.SYSTEM_UPDATE],
+        scopes=[SYSTEM_UPDATE],
     ),  # Security dependency defined here instead of the path operation decorator so we have access to the request body
     # to be able to look up the system as well as return a value
     db: AsyncSession = Depends(get_async_db),
@@ -135,6 +137,53 @@ async def update(
     Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes
     to add additional "system manager" permission checks.
     """
+    return await update_system(resource, db)
+
+
+@system_router.post(
+    "/upsert",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[
+                SYSTEM_CREATE,
+                SYSTEM_UPDATE,
+            ],
+        )
+    ],
+)
+async def upsert(
+    resources: List[SystemSchema],
+    response: Response,
+    db: AsyncSession = Depends(get_async_db),
+) -> Dict:
+    inserted = 0
+    updated = 0
+    for resource in resources:
+        try:
+            await get_resource(System, resource.fides_key, db)
+        except NotFoundError:
+            log.debug(
+                f"Upsert System with fides_key {resource.fides_key} not found, will create"
+            )
+            await create(resource=resource, db=db)
+            inserted += 1
+            continue
+        await update_system(resource=resource, db=db)
+        updated += 1
+
+    response.status_code = (
+        status.HTTP_201_CREATED if inserted > 0 else response.status_code
+    )
+    return {
+        "message": f"Upserted {len(resources)} System(s)",
+        "inserted": inserted,
+        "updated": updated,
+    }
+
+
+async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:
+    """Helper function to share core system update logic for wrapping endpoint functions"""
     system: System = await get_resource(
         sql_model=System, fides_key=resource.fides_key, async_session=db
     )
@@ -211,7 +260,7 @@ async def update(
 async def delete(
     fides_key: str = Security(
         verify_oauth_client_for_system_from_fides_key_cli,
-        scopes=[scope_registry.SYSTEM_DELETE],
+        scopes=[SYSTEM_DELETE],
     ),  # Security dependency defined here instead of the path operation decorator so we have access to the fides_key
     # to retrieve the System and also return a value
     db: AsyncSession = Depends(get_async_db),
