@@ -93,22 +93,27 @@ RUN pip install -e . --no-deps
 ###################
 ## Frontend Base ##
 ###################
-FROM node:16-slim as frontend
-# Build the admin-ui frontend
+FROM node:16-alpine as frontend
+ARG CLIENT_FOLDER=clients/
+
+RUN apk add --no-cache libc6-compat
+# Build the frontend clients
 WORKDIR /fides/clients
 COPY clients/package.json ./
 COPY clients/package-lock.json ./
-COPY clients/fides-consent/package.json clients/fides-consent/package-lock.json ./
-COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
-#RUN npm install
-#RUN echo whereis turbo
-COPY clients/admin-ui/ .
+COPY clients/fides-consent/package.json ./fides-consent/package.json
+COPY clients/admin-ui/package.json ./admin-ui/package.json
+COPY clients/privacy-center/package.json ./privacy-center/package.json
+
+RUN npm install
+
+COPY ${CLIENT_FOLDER} .
 
 ####################
 ## Built frontend ##
 ####################
 FROM frontend as built_frontend
-RUN turbo run export
+RUN npm run export
 
 #############################
 ## Production Application ##

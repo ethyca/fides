@@ -18,6 +18,9 @@
     },
     "dev:mock": {
       "dependsOn": ["build"]
+    },
+    "dev": {
+      "dependsOn": []
     }
   }
 }

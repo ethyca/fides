@@ -10,6 +10,9 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+COPY ./package.json ./package-lock.json ./
+
+WORKDIR .
 RUN npm clean-install
 
 
@@ -49,7 +52,7 @@ COPY --from=builder --chown=nextjs:nodejs /app .
 # and we to rebuild with a custom config.
 RUN rm -r config
 
-COPY ./start.sh . 
+COPY ./start.sh .
 RUN chmod +x start.sh && chown nextjs:nodejs start.sh
 
 USER nextjs
