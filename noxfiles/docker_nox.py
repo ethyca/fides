@@ -88,24 +88,24 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     if image in ("test", "prod"):
         if image == "prod":
             tag_name = get_current_tag()
-            # prod PC is pushed to ethyca/fides-privacy-center Dockerhub
-            session.log("Building extra images:")
-            privacy_center_image_tag = f"{PRIVACY_CENTER_IMAGE}:{tag_name}"
-            session.log(f"  - {privacy_center_image_tag}")
-            session.run(
-                "docker",
-                "build",
-                f"--target=frontend",
-                "--build-arg",
-                "CLIENT_FOLDER=clients/privacy-center/"
-                "--tag",
-                privacy_center_image_tag,
-                external=True,
-            )
         if image == "test":
             tag_name = "local"
-        sample_app_image_tag = f"{SAMPLE_APP_IMAGE}:{tag_name}"
         session.log("Building extra images:")
+        # prod/test PC is pushed to ethyca/fides-privacy-center image
+        privacy_center_image_tag = f"{PRIVACY_CENTER_IMAGE}:{tag_name}"
+        session.log(f"  - {privacy_center_image_tag}")
+        session.run(
+            "docker",
+            "build",
+            "--build-arg",
+            "CLIENT_FOLDER=clients/privacy-center/",
+            f"--target=frontend",
+            "--tag",
+            privacy_center_image_tag,
+            ".",
+            external=True,
+        )
+        sample_app_image_tag = f"{SAMPLE_APP_IMAGE}:{tag_name}"
         session.log(f"  - {sample_app_image_tag}")
         session.run(
             "docker",
@@ -116,35 +116,24 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             external=True,
         )
 
-    # Allow building the fides-privacy-center:local image directly when
-    # requested (for development purposes)
-    # if image == "privacy_center":
-    #     session.run(
-    #         "docker",
-    #         "build",
-    #         "clients/privacy-center",
-    #         "--tag",
-    #         "ethyca/fides-privacy-center:local",
-    #         external=True,
-    #     )
-    else:
-        # Build the main ethyca/fides image
-        target = build_matrix[image]["target"]
-        tag = build_matrix[image]["tag"]
-        build_command = (
-            "docker",
-            "build",
-            f"--target={target}",
-            "--platform",
-            build_platform,
-            "--tag",
-            tag(),
-            ".",
-        )
-        if "nocache" in session.posargs:
-            build_command = (*build_command, "--no-cache")
+    # Build the main ethyca/fides image
+    # E.g. of PC command: docker build --target=frontend --platform linux/arm64 --tag ethyca/fides:local-pc .
+    target = build_matrix[image]["target"]
+    tag = build_matrix[image]["tag"]
+    build_command = (
+        "docker",
+        "build",
+        f"--target={target}",
+        "--platform",
+        build_platform,
+        "--tag",
+        tag(),
+        ".",
+    )
+    if "nocache" in session.posargs:
+        build_command = (*build_command, "--no-cache")
 
-        session.run(*build_command, external=True)
+    session.run(*build_command, external=True)
 
 
 @nox.session()

@@ -18,6 +18,7 @@
     "format:ci": "turbo run format:ci",
     "test": "turbo run test",
     "test:ci": "turbo run test:ci",
+    "export": "turbo run export --filter=admin-ui",
     "cy:open": "turbo run cy:open",
     "cy:run": "turbo run cy:run",
     "cy:start": "turbo run cy:start",

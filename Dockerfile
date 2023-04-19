@@ -95,6 +95,7 @@ RUN pip install -e . --no-deps
 ###################
 FROM node:16-alpine as frontend
 ARG CLIENT_FOLDER=clients/
+RUN echo $CLIENT_FOLDER
 
 RUN apk add --no-cache libc6-compat
 # Build the frontend clients
@@ -107,12 +108,13 @@ COPY clients/privacy-center/package.json ./privacy-center/package.json
 
 RUN npm install
 
-COPY ${CLIENT_FOLDER} .
+COPY $CLIENT_FOLDER .
 
 ####################
 ## Built frontend ##
 ####################
 FROM frontend as built_frontend
+# Only exports admin-ui for now
 RUN npm run export
 
 #############################

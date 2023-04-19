@@ -67,6 +67,8 @@ services:
         source: ./privacy_center/public/assets
         target: /app/public/assets
         read_only: False
+#      # do not volume mount over the node_modules
+#      - /fides/clients/node_modules
 
   fides-db:
     container_name: fides-db
