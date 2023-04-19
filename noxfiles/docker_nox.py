@@ -97,9 +97,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         session.run(
             "docker",
             "build",
-            "--build-arg",
-            "CLIENT_FOLDER=clients/privacy-center/",
-            f"--target=frontend",
+            "--target=prod_pc",
             "--tag",
             privacy_center_image_tag,
             ".",

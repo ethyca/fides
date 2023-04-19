@@ -1,4 +1,5 @@
 /* eslint-disable import/prefer-default-export */
+// todo- needs to be runtime not buildtime
 import configJson from "~/config/config.json";
 import {
   isV1ConsentConfig,

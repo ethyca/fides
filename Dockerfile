@@ -94,8 +94,6 @@ RUN pip install -e . --no-deps
 ## Frontend Base ##
 ###################
 FROM node:16-alpine as frontend
-ARG CLIENT_FOLDER=clients/
-RUN echo $CLIENT_FOLDER
 
 RUN apk add --no-cache libc6-compat
 # Build the frontend clients
@@ -108,14 +106,54 @@ COPY clients/privacy-center/package.json ./privacy-center/package.json
 
 RUN npm install
 
-COPY $CLIENT_FOLDER .
+COPY clients/ .
 
 ####################
 ## Built frontend ##
 ####################
 FROM frontend as built_frontend
-# Only exports admin-ui for now
+
+# Builds and exports admin-ui
+# fixme - rename
 RUN npm run export
+# builds privacy-center
+RUN npm run build-pc
+
+#############################
+## Production PC ##
+#############################
+FROM node:16-alpine as prod_pc
+
+WORKDIR /fides/clients
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+#RUN addgroup --system --gid 1001 nodejs
+#RUN adduser --system --uid 1001 nextjs
+#
+#RUN chown nextjs:nodejs /app
+
+# We need to copy everything so we can rebuild with the new configs if needed
+COPY --from=built_frontend /fides/clients /fides/clients
+#RUN ln -s /fides/clients/privacy-center /app
+
+WORKDIR /fides/clients/privacy-center
+#COPY --from=built_frontend /fides/clients/privacy-center .
+
+# The config directory is not needed unless it is mounted as a volume because the next
+# build has already been run. By deleteing it we can check if is was added with a volume
+# and we to rebuild with a custom config.
+RUN rm -r config
+
+RUN chmod +x start.sh
+
+# todo- need to run as root so we can rebuild and copy PC over to /app. We want to eventually remove the rebuild entirely
+#USER nextjs
+
+EXPOSE 3000
+
+CMD ["./start.sh"]
 
 #############################
 ## Production Application ##
