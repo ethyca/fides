@@ -491,6 +491,11 @@ def create_or_update_rule_targets(
                     "client_id": client.id,
                 },
             )
+            logger.debug(
+                "Create/update succeess for rule target {} on rule {}",
+                schema.key,
+                rule_key,
+            )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
                 "Create/update failed for rule target {} on rule {}: {}",

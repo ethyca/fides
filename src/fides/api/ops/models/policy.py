@@ -26,7 +26,10 @@ from fides.api.ops.models.storage import (
     StorageConfig,
     get_active_default_storage_config,
 )
-from fides.api.ops.util.data_category import _validate_data_category
+from fides.api.ops.util.data_category import (
+    _validate_data_category,
+    get_fides_data_category_superset,
+)
 from fides.core.config import CONFIG
 from fides.lib.db.base_class import Base, FidesBase
 from fides.lib.models.client import ClientDetail
@@ -170,7 +173,7 @@ class Policy(Base):
 
 def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
     """Returns the DataCategory model from the DEFAULT_TAXONOMY corresponding to fides_key."""
-    for item in DEFAULT_TAXONOMY.data_category:
+    for item in get_fides_data_category_superset():
         if item.fides_key == fides_key:
             return item
 

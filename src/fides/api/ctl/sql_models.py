@@ -9,7 +9,10 @@ from __future__ import annotations
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Type
 
-from fideslang.models import Dataset as FideslangDataset
+from fideslang.models import (
+    DataCategory as FideslangDataCategory,
+    Dataset as FideslangDataset,
+)
 from pydantic import BaseModel
 from sqlalchemy import ARRAY, BOOLEAN, JSON, Column
 from sqlalchemy import Enum as EnumColumn
@@ -147,6 +150,18 @@ class DataCategory(Base, FidesBase):
 
     parent_key = Column(Text)
     is_default = Column(BOOLEAN, default=False)
+
+    def to_fideslang_obj(self) -> FideslangDataCategory:
+        """
+        Convert the DataCategory to a Fideslang DataCategory object.
+        """
+        return FideslangDataCategory(
+            name=self.name,
+            description=self.description,
+            fides_key=self.fides_key,
+            tags=self.tags,
+            parent_key=self.parent_key,
+        )
 
 
 class DataQualifier(Base, FidesBase):

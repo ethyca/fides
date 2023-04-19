@@ -1,12 +1,14 @@
 from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
+from pydantic import validator
 
+from fides.api.ops import common_exceptions
 from fides.api.ops.models.policy import ActionType, DrpAction
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.storage.storage import StorageDestinationResponse
-from fides.api.ops.util.data_category import DataCategory
+from fides.api.ops.util.data_category import _validate_data_category
 
 
 class PolicyMaskingSpec(BaseSchema):
@@ -31,12 +33,20 @@ class RuleTarget(BaseSchema):
 
     name: Optional[str]
     key: Optional[FidesKey]
-    data_category: DataCategory  # type: ignore
+    data_category: str
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
 
         use_enum_values = True
+
+    @validator("data_category")
+    def validate_data_category(cls, data_category: str) -> str:
+        """Ensures the value passed in is either in the default Fides taxonomy or in the database"""
+        try:
+            return _validate_data_category(data_category)
+        except common_exceptions.DataCategoryNotSupported:
+            raise ValueError(f"The data category {data_category} is not supported.")
 
 
 class RuleBase(BaseSchema):
