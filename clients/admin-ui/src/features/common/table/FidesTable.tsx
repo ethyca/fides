@@ -13,15 +13,14 @@ import {
   Tr,
 } from "@fidesui/react";
 import { EnableCell } from "common/table/cells";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { ReactNode } from "react";
+import { ReactElement, ReactNode } from "react";
 import { Column, useSortBy, useTable } from "react-table";
+import { UrlObject } from "url";
 
 import Restrict from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
-
-import EmptyState from "./EmptyState";
-
 
 type Props<T extends object> = {
   columns: Column<T>[];
@@ -30,7 +29,9 @@ type Props<T extends object> = {
   redirectRoute: string;
   createScope: ScopeRegistryEnum;
   addButtonText: string;
-  testId?: string;
+  addButtonHref: string | UrlObject;
+  testId: string;
+  EmptyState: ReactElement;
 };
 
 export const FidesTable = <T extends object>({
@@ -40,7 +41,9 @@ export const FidesTable = <T extends object>({
   redirectRoute,
   createScope,
   addButtonText,
+  addButtonHref,
   testId,
+  EmptyState,
 }: Props<T>) => {
   const router = useRouter();
 
@@ -50,9 +53,9 @@ export const FidesTable = <T extends object>({
     tableInstance;
 
   if (data.length === 0) {
-    return <EmptyState />;
+    return EmptyState;
   }
-  console.log(testId)
+
   return (
     <TableContainer>
       <Table
@@ -158,13 +161,15 @@ export const FidesTable = <T extends object>({
           <Tr>
             <Td colSpan={columns.length} px={4} py={3.5}>
               <Restrict scopes={[createScope]}>
-                <Button
-                  size="xs"
-                  colorScheme="primary"
-                  data-testid={`add-${testId}-btn`}
-                >
-                  {addButtonText}
-                </Button>
+                <NextLink href={addButtonHref}>
+                  <Button
+                    size="xs"
+                    colorScheme="primary"
+                    data-testid={`add-${testId}-btn`}
+                  >
+                    {addButtonText}
+                  </Button>
+                </NextLink>
               </Restrict>
             </Td>
           </Tr>

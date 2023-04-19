@@ -12,6 +12,7 @@ import {
   TitleCell,
   WrappedCell,
 } from "~/features/common/table/cells";
+import EmptyTableState from "~/features/common/table/EmptyTableState";
 import { FidesTable } from "~/features/common/table/FidesTable";
 import {
   selectAllCustomFieldDefinitions,
@@ -79,7 +80,22 @@ const CustomFields: NextPage = () => {
             redirectRoute=""
             createScope={ScopeRegistryEnum.CUSTOM_FIELD_CREATE}
             addButtonText="Add a custom field +"
+            addButtonHref=""
             testId="custom-field"
+            EmptyState={
+              <EmptyTableState
+                title="It looks like it’s your first time here!"
+                buttonHref=""
+                buttonText="Add a custom field"
+                description={
+                  <Text>
+                    You haven’t created any custom fields yet. To create a
+                    custom field, click on the{" "}
+                    <strong>&quot;Add a custom field&quot;</strong> button
+                  </Text>
+                }
+              />
+            }
           />
         </Box>
       </Box>

@@ -1,13 +1,17 @@
 import { PRIVACY_REQUESTS_ROUTE } from "@fidesui/components";
 import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
 import { useHasPermission } from "common/Restrict";
+import EmptyTableState from "common/table/EmptyTableState";
 import NextLink from "next/link";
 import { useMemo } from "react";
 import { Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  PRIVACY_NOTICES_ROUTE,
+  SYSTEM_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import {
   DateCell,
   EnableCell,
@@ -112,8 +116,21 @@ const PrivacyNoticesPage = () => {
           userCanUpdate={userCanUpdate}
           redirectRoute={PRIVACY_NOTICES_ROUTE}
           createScope={ScopeRegistryEnum.PRIVACY_NOTICE_CREATE}
-          tableType="Add a privacy notice +"
+          addButtonText="Add a privacy notice +"
+          addButtonHref={`${PRIVACY_NOTICES_ROUTE}/new`}
           testId="privacy-notice"
+          EmptyState={
+            <EmptyTableState
+              title="To start configuring consent, please first add data uses"
+              description="It looks like you have not yet added any data uses to the system. Fides
+        relies on how you use data in your organization to provide intelligent
+        recommendations and pre-built templates for privacy notices you may need
+        to display to your users. To get started with privacy notices, first add
+        your data uses to systems on your data map."
+              buttonHref={SYSTEM_ROUTE}
+              buttonText="Set up data uses"
+            />
+          }
         />
       </Box>
     </Layout>
