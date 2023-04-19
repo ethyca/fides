@@ -394,7 +394,12 @@ class PrivacyDeclaration(Base):
     egress = Column(JSON)  # TODO: needed?
     ingress = Column(JSON)  # TODO: needed?
 
-    system_id = Column(String, ForeignKey(System.fides_key), nullable=False, index=True)
+    system_id = Column(
+        String,
+        ForeignKey(System.fides_key, ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     system = relationship(System, back_populates="privacy_declarations")
 
     # the FK column is just plain `data_use` to align with the `FidesKey` field on the pydantic model
