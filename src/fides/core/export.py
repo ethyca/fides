@@ -285,16 +285,14 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
         )
         if system.get("privacy_declarations"):
             for declaration in system["privacy_declarations"]:
-                if not isinstance(declaration, dict):
-                    declaration = declaration.dict()
 
-                data_use = formatted_data_uses[declaration["data_use"]]
-                data_categories = declaration["data_categories"] or []
+                data_use = formatted_data_uses[declaration.data_use]
+                data_categories = declaration.data_categories or []
                 data_subjects = [
                     formatted_data_subjects[data_subject_fides_key]
-                    for data_subject_fides_key in declaration["data_subjects"]
+                    for data_subject_fides_key in declaration.data_subjects
                 ]
-                dataset_references = declaration["dataset_references"] or [
+                dataset_references = declaration.dataset_references or [
                     EMPTY_COLUMN_PLACEHOLDER
                 ]
                 cartesian_product_of_declaration_builder = [
@@ -309,7 +307,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                         system_ingress,
                         system_egress,
                         system_users,
-                        declaration["name"],
+                        declaration.name,
                         category,
                         data_use["name"],
                         data_use["legal_basis"],
@@ -320,7 +318,7 @@ def generate_system_records(  # pylint: disable=too-many-nested-blocks, too-many
                         subject["name"],
                         subject["rights_available"],
                         subject["automated_decisions_or_profiling"],
-                        declaration["data_qualifier"],
+                        declaration.data_qualifier,
                         data_protection_impact_assessment["is_required"],
                         data_protection_impact_assessment["progress"],
                         data_protection_impact_assessment["link"],
