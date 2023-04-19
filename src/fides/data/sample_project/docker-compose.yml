@@ -31,7 +31,7 @@ services:
       - ${FIDES_DEPLOY_ENV_FILE:-sample.env}
     environment:
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
-      # Configure sample connector secrets (see services below)
+      # Configure sample connection secrets for Postgres & Mongo (see services below)
       FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST: postgres-test
       FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT: 5432
       FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME: postgres_example

@@ -130,19 +130,6 @@ def check_virtualenv() -> bool:
     return True
 
 
-# TODO: this is really dependent on us loading all the source code into the docker image...
-def seed_example_data() -> None:
-    # TODO: disable this and use init_db with samples=True
-    run_shell(
-        DOCKER_COMPOSE_COMMAND
-        + """exec fides /bin/bash -c "fides user login && fides push src/fides/data/sample_project/sample_resources/" """
-    )
-    run_shell(
-        DOCKER_COMPOSE_COMMAND
-        + """exec fides /bin/bash -c "python scripts/load_examples.py" """
-    )
-
-
 def check_fides_uploads_dir() -> None:
     """
     Create the './fides_uploads/ dir if it doesn't already exist

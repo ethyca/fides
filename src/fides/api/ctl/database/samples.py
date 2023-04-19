@@ -45,8 +45,10 @@ def load_sample_resources_from_project(
     }
     for yaml_path in sample_resources_path.iterdir():
         with yaml_path.open("r") as file:
-            # TODO: expand ENV vars here, like load_sample_connections() does?
-            # ...probably not since fides push doesn't support that!
+            # NOTE: in load_sample_connections, we use `expandvars` to expand
+            # ENV vars into string to allow injecting secrets, etc. We don't do
+            # that for the sample_resources/*, however, to stay consistent with
+            # the behaviour of `fides push`
             yaml_dict = yaml.safe_load(file)
 
             # Parse the contents of the YAML into the respective Pydantic models
