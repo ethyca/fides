@@ -77,12 +77,10 @@ const EnableCell = <T extends object>({
           handlePatch({ enable: false });
           modal.onClose();
         }}
-        title="Disable privacy notice"
+        title="Disable custom field"
         message={
           <Text color="gray.500">
-            Are you sure you want to disable this privacy notice? Disabling this
-            notice means your users will no longer see this explanation about
-            your data uses which is necessary to ensure compliance.
+            Are you sure you want to disable this custom field?
           </Text>
         }
         continueButtonText="Confirm"
