@@ -9,10 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.database.session import sync_session
-from fides.api.ctl.sql_models import Dataset, sql_model_map  # type: ignore[attr-defined]
+from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
+    Dataset,
+    sql_model_map,
+)
 from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
 from fides.api.ops.api.v1.endpoints.dataset_endpoints import patch_dataset_configs
-from fides.api.ops.api.v1.endpoints.saas_config_endpoints import instantiate_connection_from_template
+from fides.api.ops.api.v1.endpoints.saas_config_endpoints import (
+    instantiate_connection_from_template,
+)
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
@@ -425,40 +430,67 @@ async def load_samples(async_session: AsyncSession) -> None:
                 # recreating here, we allow the "old" data to persist. That's an
                 # acceptable risk here, so we log an INFO message to provide a
                 # breadcrumb back to this code.
-                connection_config = ConnectionConfig.get_by(db=db_session, field="key", value=connection.key)
+                connection_config = ConnectionConfig.get_by(
+                    db=db_session, field="key", value=connection.key
+                )
                 if connection_config:
-                    log.info(f"Sample connection '{connection.key}' already exists, skipping...")
+                    log.info(
+                        f"Sample connection '{connection.key}' already exists, skipping..."
+                    )
                     continue
 
                 # For SaaS connections, reuse our "instantiate from template" API
-                if connection.connection_type == "saas":
-                    log.info(f"Loading sample connection with SaaS connection type '{connection.saas_connection_type}'...")
+                if (
+                    connection.connection_type == "saas"
+                    and connection.saas_connector_type
+                ):
+                    log.info(
+                        f"Loading sample connection with SaaS connection type '{connection.saas_connector_type}'..."
+                    )
                     saas_template_data = dict(connection)
                     saas_template_data["instance_key"] = connection.key
-                    saas_template_data.pop("dataset", None) # not supported by this API!
+                    saas_template_data.pop(
+                        "dataset", None
+                    )  # not supported by this API!
                     instantiate_connection_from_template(
                         db=db_session,
                         saas_connector_type=connection.saas_connector_type,
-                        template_values=SaasConnectionTemplateValues.parse_obj(saas_template_data),
+                        template_values=SaasConnectionTemplateValues.parse_obj(
+                            saas_template_data
+                        ),
                     )
 
                     # Check that it succeeded!
-                    connection_config = ConnectionConfig.get_by(db=db_session, field="key", value=connection.key)
+                    connection_config = ConnectionConfig.get_by(
+                        db=db_session, field="key", value=connection.key
+                    )
                     if not connection_config:
-                        log.info(f"Failed to create sample connection '{connection.key}'")
+                        log.info(
+                            f"Failed to create sample connection '{connection.key}'"
+                        )
                     continue
 
                 # For non-SaaS connections, reuse our connection & dataset APIs
-                log.info(f"Loading sample connection with type '{connection.connection_type}'...")
+                log.info(
+                    f"Loading sample connection with type '{connection.connection_type}'..."
+                )
                 connection_config_data = dict(connection)
-                connection_config_data.pop("dataset", None) # not supported by this API!
+                connection_config_data.pop(
+                    "dataset", None
+                )  # not supported by this API!
                 patch_connection_configs(
                     db=db_session,
-                    configs=[CreateConnectionConfigurationWithSecrets.parse_obj(connection_config_data)],
+                    configs=[
+                        CreateConnectionConfigurationWithSecrets.parse_obj(
+                            connection_config_data
+                        )
+                    ],
                 )
 
                 # Check that it succeeded!
-                connection_config = ConnectionConfig.get_by(db=db_session, field="key", value=connection.key)
+                connection_config = ConnectionConfig.get_by(
+                    db=db_session, field="key", value=connection.key
+                )
                 if not connection_config:
                     log.info(f"Failed to create sample connection '{connection.key}'")
                     continue
@@ -466,17 +498,33 @@ async def load_samples(async_session: AsyncSession) -> None:
                 # Create the DatasetConfig by linking to an existing Dataset
                 dataset_key = connection.dataset
                 if dataset_key:
-                    log.info(f"Linking sample connection with key '{connection.key}' to dataset '{dataset_key}'...")
-                    dataset = Dataset.get_by(db=db_session, field="fides_key", value=dataset_key)
+                    log.info(
+                        f"Linking sample connection with key '{connection.key}' to dataset '{dataset_key}'..."
+                    )
+                    dataset = Dataset.get_by(
+                        db=db_session, field="fides_key", value=dataset_key
+                    )
                     if not dataset:
-                        log.info(f"Could not find existing dataset '{dataset_key}' for sample connection '{connection.key}'")
+                        log.info(
+                            f"Could not find existing dataset '{dataset_key}' for sample connection '{connection.key}'"
+                        )
                         continue
 
-                    dataset_pair = DatasetConfigCtlDataset(fides_key=dataset_key, ctl_dataset_fides_key=dataset_key)
-                    patch_dataset_configs(dataset_pairs=[dataset_pair], db=db_session, connection_config=connection_config)
-                    dataset_config = DatasetConfig.get_by(db=db_session, field="fides_key", value=dataset_key)
+                    dataset_pair = DatasetConfigCtlDataset(
+                        fides_key=dataset_key, ctl_dataset_fides_key=dataset_key
+                    )
+                    patch_dataset_configs(
+                        dataset_pairs=[dataset_pair],
+                        db=db_session,
+                        connection_config=connection_config,
+                    )
+                    dataset_config = DatasetConfig.get_by(
+                        db=db_session, field="fides_key", value=dataset_key
+                    )
                     if not dataset_config:
-                        log.info(f"Failed to create dataset config '{dataset_key}' for sample connection '{connection.key}'")
+                        log.info(
+                            f"Failed to create dataset config '{dataset_key}' for sample connection '{connection.key}'"
+                        )
                         continue
 
     except QueryError:  # pragma: no cover
