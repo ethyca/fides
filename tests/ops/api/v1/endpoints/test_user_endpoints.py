@@ -1443,6 +1443,7 @@ class TestUpdateSystemsManagedByUser:
                 "ingress": None,
             },
         )
+        db.refresh(second_system)
 
         assert viewer_user.systems == []
         viewer_user.set_as_system_manager(db, system)
