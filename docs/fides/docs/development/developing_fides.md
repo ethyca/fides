@@ -17,7 +17,7 @@ For the purposes of this documentation, there is some Nox-specific terminology t
 While there are many sessions available in our `nox` setup, these are the ones that you are most likely to use regularly. This is intended as a brief introduction, as many of these commands will be explained further in specific sections below.
 
 | Command | Description |
-| :-----: | :---------: |
+| :-----: | :--------- |
 | `nox` | This is the default session that runs when no other session is provided. Automatically opens this page. |
 | `nox -l`| Provides a list of all available `nox` sessions. |
 | `nox -s usage -- <command>` | Shows the full docstring for a single session. The name of the session is provided as a positional argument. Use this whenever you want to know more about a specific session's usage. |
