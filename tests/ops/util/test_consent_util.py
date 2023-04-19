@@ -282,6 +282,7 @@ class TestCacheSystemStatusesForConsentReporting:
         privacy_preference_history.save(db)
 
         cache_initial_status_and_identities_for_consent_reporting(
+            db,
             privacy_request_with_consent_policy,
             connection_config,
             relevant_preferences=[
@@ -328,6 +329,7 @@ class TestCacheSystemStatusesForConsentReporting:
         privacy_preference_history.save(db)
 
         cache_initial_status_and_identities_for_consent_reporting(
+            db,
             privacy_request_with_consent_policy,
             connection_config,
             relevant_preferences=[
@@ -337,7 +339,7 @@ class TestCacheSystemStatusesForConsentReporting:
         )
 
         add_complete_system_status_for_consent_reporting(
-            privacy_request_with_consent_policy, connection_config
+            db, privacy_request_with_consent_policy, connection_config
         )
 
         db.refresh(privacy_preference_history)
@@ -378,6 +380,7 @@ class TestCacheSystemStatusesForConsentReporting:
         privacy_preference_history.save(db)
 
         cache_initial_status_and_identities_for_consent_reporting(
+            db,
             privacy_request_with_consent_policy,
             connection_config,
             relevant_preferences=[
@@ -387,7 +390,7 @@ class TestCacheSystemStatusesForConsentReporting:
         )
 
         add_errored_system_status_for_consent_reporting(
-            privacy_request_with_consent_policy, connection_config
+            db, privacy_request_with_consent_policy, connection_config
         )
 
         db.refresh(privacy_preference_history)

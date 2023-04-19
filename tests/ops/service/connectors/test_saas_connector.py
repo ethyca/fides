@@ -15,12 +15,7 @@ from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.schemas.saas.saas_config import (
-    ParamValue,
-    QueryParam,
-    SaaSConfig,
-    SaaSRequest,
-)
+from fides.api.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
@@ -439,6 +434,7 @@ class TestSaasConnectorRunConsentRequest:
         consent_policy,
         privacy_request_with_consent_policy,
         mailchimp_transactional_connection_config_no_secrets,
+        db,
     ):
         connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
         with pytest.raises(SkippingConsentPropagation) as exc:
@@ -447,6 +443,7 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request_with_consent_policy,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
         assert "no actionable consent preferences to propagate" in str(exc)
 
@@ -473,6 +470,7 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request_with_consent_policy,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
 
         assert "no actionable consent preferences to propagate" in str(exc)
@@ -503,6 +501,7 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request_with_consent_policy,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
         assert "no actionable consent preferences to propagate" in str(exc)
 
@@ -539,6 +538,7 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
 
         db.refresh(privacy_preference_history)
@@ -575,6 +575,7 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
 
         assert "Missing needed values to propagate request" in str(exc)
@@ -611,6 +612,7 @@ class TestSaasConnectorRunConsentRequest:
                 policy=consent_policy,
                 privacy_request=privacy_request,
                 identity_data={"ljt_readerID": "abcde"},
+                session=db,
             )
 
         assert "No 'opt_in' requests defined" in str(exc)
@@ -642,6 +644,7 @@ class TestSaasConnectorRunConsentRequest:
             policy=consent_policy,
             privacy_request=privacy_request_with_consent_policy,
             identity_data={"ljt_readerID": "abcde"},
+            session=db,
         )
         assert mock_send.called
         db.refresh(privacy_preference_history)

@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 import pydash
 from loguru import logger
 from requests import Response
+from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (
     FidesopsException,
@@ -453,6 +454,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         identity_data: Dict[str, Any],
+        session: Session,
     ) -> bool:
         """Execute a consent request. Return whether the consent request to the third party succeeded.
         Should only propagate either the entire set of opt in or opt out requests.
@@ -498,6 +500,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )
 
         cache_initial_status_and_identities_for_consent_reporting(
+            db=session,
             privacy_request=privacy_request,
             connection_config=self.configuration,
             relevant_preferences=filtered_preferences,
@@ -533,7 +536,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 "Missing needed values to propagate request."
             )
         add_complete_system_status_for_consent_reporting(
-            privacy_request, self.configuration
+            session, privacy_request, self.configuration
         )
 
         return True

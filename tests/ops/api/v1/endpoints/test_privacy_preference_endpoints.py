@@ -797,10 +797,10 @@ class TestHistoricalPreferences:
         privacy_preference_history.save(db)
 
         privacy_preference_history.update_secondary_user_ids(
-            {"ljt_readerID": "preference_history_test"}
+            db, {"ljt_readerID": "preference_history_test"}
         )
         privacy_preference_history.cache_system_status(
-            system=system.fides_key, status=ExecutionLogStatus.complete
+            db, system=system.fides_key, status=ExecutionLogStatus.complete
         )
 
         privacy_request_with_consent_policy.reviewed_by = user.id
@@ -1049,19 +1049,19 @@ class TestCurrentPrivacyPreferences:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CURRENT_PRIVACY_PREFERENCE_READ])
 
-        # Filter for everything created before the first preference
+        # Filter for everything updated before the first preference
         response = api_client.get(
             url
-            + f"?created_lt={privacy_preference_history.current_privacy_preference.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?updated_lt={privacy_preference_history.current_privacy_preference.updated_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 200
         assert response.json()["items"] == []
 
-        # Filter for everything created before the last preference plus an hour
+        # Filter for everything updated before the last preference plus an hour
         response = api_client.get(
             url
-            + f"?created_lt={(privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.created_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?updated_lt={(privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.updated_at + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 200
@@ -1080,10 +1080,10 @@ class TestCurrentPrivacyPreferences:
             == privacy_preference_history.current_privacy_preference.id
         )
 
-        # Filter for everything created after the first preference
+        # Filter for everything updated after the first preference
         response = api_client.get(
             url
-            + f"?created_gt={privacy_preference_history.current_privacy_preference.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?updated_gt={privacy_preference_history.current_privacy_preference.updated_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 200
@@ -1100,9 +1100,9 @@ class TestCurrentPrivacyPreferences:
         # Invalid filter
         response = api_client.get(
             url
-            + f"?created_lt={privacy_preference_history.current_privacy_preference.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&created_gt={privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
+            + f"?updated_lt={privacy_preference_history.current_privacy_preference.updated_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}&updated_gt={privacy_preference_history_eu_fr_provide_service_frontend_only.current_privacy_preference.created_at.strftime('%Y-%m-%dT%H:%M:%S.%f')}",
             headers=auth_header,
         )
         assert response.status_code == 400
-        assert "Value specified for created_lt" in response.json()["detail"]
-        assert "must be after created_gt" in response.json()["detail"]
+        assert "Value specified for updated_lt" in response.json()["detail"]
+        assert "must be after updated_gt" in response.json()["detail"]

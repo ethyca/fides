@@ -116,9 +116,9 @@ def retry(
                     )
                     self.log_skipped(action_type, exc)
                     return default_return
-                except (SkippingConsentPropagation,) as exc:
+                except SkippingConsentPropagation as exc:
                     logger.warning(
-                        "Skipping collection {} for privacy_request: {}",
+                        "Skipping consent propagation on collection {} for privacy_request: {}",
                         self.traversal_node.address,
                         self.resources.request.id,
                     )
@@ -126,6 +126,7 @@ def retry(
                     for pref in self.resources.request.privacy_preferences:
                         # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
                         pref.cache_system_status(
+                            self.resources.session,
                             self.connector.configuration.system_key,
                             ExecutionLogStatus.skipped,
                         )
@@ -145,7 +146,9 @@ def retry(
                 step=action_type, collection=self.traversal_node.address
             )
             add_errored_system_status_for_consent_reporting(
-                self.resources.request, self.connector.configuration
+                self.resources.session,
+                self.resources.request,
+                self.connector.configuration,
             )
             # Re-raise to stop privacy request execution on failure.
             raise raised_ex  # type: ignore
@@ -610,6 +613,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.resources.policy,
             self.resources.request,
             identity,
+            self.resources.session,
         )
         self.log_end(ActionType.consent)
         return output

@@ -26,6 +26,7 @@ from fides.api.ops.api.deps import get_config_proxy, get_db
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
+from fides.api.ops.api.v1.endpoints.utils import validate_start_and_end_filters
 from fides.api.ops.api.v1.scope_registry import CONSENT_READ
 from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -70,29 +71,6 @@ router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
 
 CONFIG_JSON_PATH = "clients/privacy-center/config/config.json"
-
-
-def validate_start_and_end_filters(
-    date_filters: List[Tuple[Optional[datetime], Optional[datetime], str]]
-) -> None:
-    """Assert that start date isn't after end date
-
-    Pass in a list of tuples like: [(less_than_filter, greater_than_filter, filter_name)]
-    """
-    for end, start, field_name in date_filters:
-        if end is None or start is None:
-            continue
-
-        if not (isinstance(end, datetime) and isinstance(start, datetime)):
-            continue
-
-        if end < start:
-            # With date fields, if the start date is after the end date, return a 400
-            # because no records will lie within this range.
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
-            )
 
 
 def _filter_consent(

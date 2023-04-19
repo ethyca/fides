@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Optional, Tuple
 
+from sqlalchemy.orm import Session
+
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.privacy_notice import EnforcementLevel
@@ -93,6 +95,7 @@ def should_opt_in_to_service(
 
 
 def cache_initial_status_and_identities_for_consent_reporting(
+    db: Session,
     privacy_request: PrivacyRequest,
     connection_config: ConnectionConfig,
     relevant_preferences: List[PrivacyPreferenceHistory],
@@ -108,17 +111,18 @@ def cache_initial_status_and_identities_for_consent_reporting(
     """
     for pref in privacy_request.privacy_preferences:
         if pref in relevant_preferences:
-            pref.update_secondary_user_ids(relevant_user_identities)
+            pref.update_secondary_user_ids(db, relevant_user_identities)
             pref.cache_system_status(
-                connection_config.system_key, ExecutionLogStatus.pending
+                db, connection_config.system_key, ExecutionLogStatus.pending
             )
         else:
             pref.cache_system_status(
-                connection_config.system_key, ExecutionLogStatus.skipped
+                db, connection_config.system_key, ExecutionLogStatus.skipped
             )
 
 
 def add_complete_system_status_for_consent_reporting(
+    db: Session,
     privacy_request: PrivacyRequest,
     connection_config: ConnectionConfig,
 ) -> None:
@@ -134,12 +138,14 @@ def add_complete_system_status_for_consent_reporting(
             == ExecutionLogStatus.pending.value
         ):
             pref.cache_system_status(
+                db,
                 connection_config.system_key,
                 ExecutionLogStatus.complete,
             )
 
 
 def add_errored_system_status_for_consent_reporting(
+    db: Session,
     privacy_request: PrivacyRequest,
     connection_config: ConnectionConfig,
 ) -> None:
@@ -155,6 +161,7 @@ def add_errored_system_status_for_consent_reporting(
             == ExecutionLogStatus.pending.value
         ):
             pref.cache_system_status(
+                db,
                 connection_config.system_key,
                 ExecutionLogStatus.error,
             )

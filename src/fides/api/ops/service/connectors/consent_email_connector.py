@@ -182,7 +182,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         )
         for pref in privacy_request.privacy_preferences:
             pref.cache_system_status(
-                self.configuration.system_key, ExecutionLogStatus.skipped
+                db, self.configuration.system_key, ExecutionLogStatus.skipped
             )
 
     def add_errored_log(self, db: Session, privacy_request: PrivacyRequest) -> None:
@@ -201,7 +201,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             },
         )
         add_errored_system_status_for_consent_reporting(
-            privacy_request, self.configuration
+            db, privacy_request, self.configuration
         )
 
     def batch_email_send(self, privacy_requests: Query) -> None:
@@ -238,6 +238,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 consent_preference_schemas or filtered_privacy_preference_records
             ):
                 cache_initial_status_and_identities_for_consent_reporting(
+                    db=db,
                     privacy_request=privacy_request,
                     connection_config=self.configuration,
                     relevant_preferences=filtered_privacy_preference_records,
@@ -301,7 +302,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                     },
                 )
                 add_complete_system_status_for_consent_reporting(
-                    privacy_request, self.configuration
+                    db, privacy_request, self.configuration
                 )
 
 

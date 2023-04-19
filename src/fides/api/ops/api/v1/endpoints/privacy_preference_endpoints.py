@@ -17,11 +17,11 @@ from fides.api.ctl.database.seed import DEFAULT_CONSENT_POLICY
 from fides.api.ops.api.deps import get_db
 from fides.api.ops.api.v1.endpoints.consent_request_endpoints import (
     _get_consent_request_and_provided_identity,
-    validate_start_and_end_filters,
 )
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     create_privacy_request_func,
 )
+from fides.api.ops.api.v1.endpoints.utils import validate_start_and_end_filters
 from fides.api.ops.api.v1.scope_registry import (
     CURRENT_PRIVACY_PREFERENCE_READ,
     PRIVACY_PREFERENCE_HISTORY_READ,
@@ -259,21 +259,21 @@ def get_current_privacy_preferences(
     *,
     params: Params = Depends(),
     db: Session = Depends(get_db),
-    created_lt: Optional[datetime] = None,
-    created_gt: Optional[datetime] = None,
+    updated_lt: Optional[datetime] = None,
+    updated_gt: Optional[datetime] = None,
 ) -> AbstractPage[CurrentPrivacyPreference]:
     """Returns the most recently saved privacy preferences for a given privacy notice"""
 
-    validate_start_and_end_filters([(created_lt, created_gt, "created")])
+    validate_start_and_end_filters([(updated_lt, updated_gt, "updated")])
 
     query: Query[CurrentPrivacyPreference] = db.query(CurrentPrivacyPreference)
 
-    if created_lt:
-        query = query.filter(CurrentPrivacyPreference.created_at < created_lt)
-    if created_gt:
-        query = query.filter(CurrentPrivacyPreference.created_at > created_gt)
+    if updated_lt:
+        query = query.filter(CurrentPrivacyPreference.updated_at < updated_lt)
+    if updated_gt:
+        query = query.filter(CurrentPrivacyPreference.updated_at > updated_gt)
 
-    query = query.order_by(CurrentPrivacyPreference.created_at.desc())
+    query = query.order_by(CurrentPrivacyPreference.updated_at.desc())
 
     return paginate(query, params)
 
