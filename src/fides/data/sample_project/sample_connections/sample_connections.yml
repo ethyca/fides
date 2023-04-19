@@ -46,3 +46,10 @@ connection:
     secrets:
       domain: $FIDES_DEPLOY__CONNECTORS__HUBSPOT__DOMAIN
       private_app_token: $FIDES_DEPLOY__CONNECTORS__HUBSPOT__PRIVATE_APP_TOKEN
+  - key: mailchimp_transactional_connector
+    name: Mailchimp Transactional Connector
+    connection_type: saas
+    saas_connector_type: mailchimp_transactional
+    access: write
+    secrets:
+      api_key: $FIDES_DEPLOY__CONNECTORS__MAILCHIMP_TRANSACTIONAL_API_KEY
