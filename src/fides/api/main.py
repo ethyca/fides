@@ -94,6 +94,12 @@ def create_fides_app(
     security_env: str = CONFIG.security.env,
 ) -> FastAPI:
     """Return a properly configured application."""
+    setup_logging(
+        CONFIG.logging.level,
+        serialize=CONFIG.logging.serialization,
+        desination=CONFIG.logging.destination,
+    )
+    logger.bind(api_config=CONFIG.logging.json()).debug("Logger configuration options in use")
 
     fastapi_app = FastAPI(title="fides", version=app_version)
     fastapi_app.state.limiter = Limiter(
@@ -221,13 +227,6 @@ async def prepare_and_log_request(
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
-    setup_logging(
-        CONFIG.logging.level,
-        serialize=CONFIG.logging.serialization,
-        desination=CONFIG.logging.destination,
-    )
-    logger.bind(api_config=CONFIG.logging.json()).debug("Logger configuration options in use")
-
     logger.info(f"Starting Fides - v{VERSION}")
     logger.info(
         "Startup configuration: reloading = {}, dev_mode = {}",
