@@ -352,7 +352,7 @@ async def load_default_organization(async_session: AsyncSession) -> None:
     inserted = 0
     for org in organizations:
         try:
-            existing = await get_resource(sql_model_map["organization"], org["fides_key"], async_session)
+            existing = await get_resource(sql_model_map["organization"], org["fides_key"], async_session, raise_not_found=False)
             if not existing:
                 await create_resource(sql_model_map["organization"], org, async_session)
                 inserted += 1

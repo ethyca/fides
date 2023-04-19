@@ -59,7 +59,7 @@ async def create_resource(
 
 
 async def get_resource(
-    sql_model: Base, fides_key: str, async_session: AsyncSession
+    sql_model: Base, fides_key: str, async_session: AsyncSession, raise_not_found: bool=True
 ) -> Base:
     """
     Get a resource from the databse by its FidesKey.
@@ -80,7 +80,7 @@ async def get_resource(
                 raise sa_error
 
             sql_resource = result.scalars().first()
-            if sql_resource is None:
+            if sql_resource is None and raise_not_found:
                 not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
                 log.bind(error=not_found_error.detail["error"]).info("Resource not found")  # type: ignore[index]
                 raise not_found_error
