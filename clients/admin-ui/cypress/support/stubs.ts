@@ -111,6 +111,21 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   }).as("createMessagingConfiguration");
 };
 
+export const stubPrivacyNoticesCrud = () => {
+  cy.intercept("GET", "/api/v1/privacy-notice/*", {
+    fixture: "privacy-notices/list.json",
+  }).as("getNotices");
+  cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
+    fixture: "privacy-notices/notice.json",
+  }).as("getNoticeDetail");
+  cy.intercept("POST", "/api/v1/privacy-notice", {
+    fixture: "privacy-notices/list.json",
+  }).as("postNotices");
+  cy.intercept("PATCH", "/api/v1/privacy-notice", {
+    fixture: "privacy-notices/list.json",
+  }).as("patchNotices");
+};
+
 export const CONNECTION_STRING =
   "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
 

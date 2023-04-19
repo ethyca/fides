@@ -25,6 +25,7 @@ export type SaaSConfig = {
   type: string;
   description: string;
   version: string;
+  replaceable?: boolean;
   connector_params: Array<ConnectorParam>;
   external_references?: Array<ExternalDatasetReference>;
   client_config: ClientConfig;
