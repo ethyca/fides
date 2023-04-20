@@ -1,6 +1,8 @@
 import {
   Box,
+  Flex,
   Heading,
+  Spinner,
   Switch,
   Text,
   useDisclosure,
@@ -9,7 +11,7 @@ import {
 import ConfirmationModal from "common/ConfirmationModal";
 import { useHasPermission } from "common/Restrict";
 import type { NextPage } from "next";
-import { ChangeEvent, useMemo } from "react";
+import React, { ChangeEvent, useMemo } from "react";
 import { CellProps, Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
@@ -127,6 +129,14 @@ const CustomFields: NextPage = () => {
     [updateCustomFieldDefinitionTrigger, userCanUpdate]
   );
 
+  if (isLoading) {
+    return (
+      <Flex height="100%" justifyContent="center" alignItems="center">
+        <Spinner />
+      </Flex>
+    );
+  }
+
   return (
     <Layout title="Custom fields">
       <Box data-testid="custom-fields-management">
@@ -151,7 +161,6 @@ const CustomFields: NextPage = () => {
             addButtonHref=""
             testId="custom-field"
             showSearchBar
-            isLoading={isLoading}
             EmptyState={
               <EmptyTableState
                 title="It looks like it’s your first time here!"

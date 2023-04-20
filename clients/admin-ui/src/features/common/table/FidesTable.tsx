@@ -35,7 +35,6 @@ type Props<T extends object> = {
   testId: string;
   EmptyState: ReactElement;
   showSearchBar?: boolean;
-  isLoading: boolean;
 };
 
 export const FidesTable = <T extends object>({
@@ -49,7 +48,6 @@ export const FidesTable = <T extends object>({
   testId,
   EmptyState,
   showSearchBar,
-  isLoading,
 }: Props<T>) => {
   const router = useRouter();
 
@@ -57,14 +55,6 @@ export const FidesTable = <T extends object>({
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
-
-  if (isLoading) {
-    return (
-      <Flex height="100%" justifyContent="center" alignItems="center">
-        <Spinner />
-      </Flex>
-    );
-  }
 
   if (data.length === 0) {
     return EmptyState;

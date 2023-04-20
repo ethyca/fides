@@ -3,7 +3,9 @@ import {
   Box,
   Breadcrumb,
   BreadcrumbItem,
+  Flex,
   Heading,
+  Spinner,
   Switch,
   Text,
   useDisclosure,
@@ -13,7 +15,7 @@ import ConfirmationModal from "common/ConfirmationModal";
 import { useHasPermission } from "common/Restrict";
 import EmptyTableState from "common/table/EmptyTableState";
 import NextLink from "next/link";
-import { ChangeEvent, useMemo } from "react";
+import React, { ChangeEvent, useMemo } from "react";
 import { CellProps, Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
@@ -147,6 +149,15 @@ const PrivacyNoticesPage = () => {
     ],
     [patchNoticeMutationTrigger, userCanUpdate]
   );
+
+  if (isLoading) {
+    return (
+      <Flex height="100%" justifyContent="center" alignItems="center">
+        <Spinner />
+      </Flex>
+    );
+  }
+
   return (
     <Layout title="Privacy notices">
       <Box mb={4}>
@@ -193,7 +204,6 @@ const PrivacyNoticesPage = () => {
           addButtonText="Add a privacy notice +"
           addButtonHref={`${PRIVACY_NOTICES_ROUTE}/new`}
           testId="privacy-notice"
-          isLoading={isLoading}
           EmptyState={
             <EmptyTableState
               title="To start configuring consent, please first add data uses"
