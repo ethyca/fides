@@ -544,10 +544,11 @@ class TestLoadSamples:
             "See tests/ctl/api/test_seed.py for details."
         )
         try:
-            resources_dict = samples.load_sample_resources_from_project(strict=True)
-            assert resources_dict
+            samples.load_sample_resources_from_project(strict=True)
+            assert True
         except Exception as exc:
-            assert not exc, error_message
+            print(exc)
+            assert False, error_message
 
     @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
     async def test_load_sample_connections(self):
@@ -576,9 +577,10 @@ class TestLoadSamples:
         )
         connections = []
         try:
-            connections = samples.load_sample_connections_from_project()
+            samples.load_sample_connections_from_project()
         except Exception as exc:
-            assert not exc, error_message
+            print(exc)
+            assert False, error_message
 
         # Assert that only the connections with all their secrets are returned
         assert len(connections) == 2

@@ -18,6 +18,7 @@ firebase-admin==5.3.0
 GitPython==3.1.27
 httpx==0.23.1
 hvac==0.11.2
+importlib_resources==5.12.0
 Jinja2==3.1.2
 loguru>=0.5,<0.6
 multidimensional_urlencode==0.0.4
