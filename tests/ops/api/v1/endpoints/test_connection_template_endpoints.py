@@ -57,9 +57,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 6
-        )  # there are 6 connection types that are not returned by the endpoint
-        # this would be nice to know which 6 they are and list them explicitly
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
+        )  # there are 4 connection types that are not returned by the endpoint
 
         assert {
             "identifier": ConnectionType.postgres.value,
