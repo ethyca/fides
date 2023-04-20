@@ -63,14 +63,23 @@ jobs:
           cd clients
           npm install
 
-      - name: Cypress E2E tests
+      - name: Cypress E2E Admin-UI
         uses: cypress-io/github-action@v4
         with:
           working-directory: clients
           install: false
-          start: npm run cy:start
+          start: npm run cy-ui:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
+
+      - name: Cypress E2E Privacy-Center
+          uses: cypress-io/github-action@v4
+          with:
+            working-directory: clients
+            install: false
+            start: npm run cy-pc:start
+            wait-on: "http://localhost:3000"
+            wait-on-timeout: 180
 
       - uses: actions/upload-artifact@v3
         if: failure()

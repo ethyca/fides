@@ -23,6 +23,8 @@
     "cy:open": "turbo run cy:open",
     "cy:run": "turbo run cy:run",
     "cy:start": "turbo run cy:start",
+    "cy-ui:start": "turbo run cy:start --filter=admin-ui",
+    "cy-pc:start": "turbo run cy:start --filter=privacy-center",
     "analyze": "turbo run analyze",
     "analyze:browser": "turbo run analyze:browser",
     "analyze:server": "turbo run analyze:server",
