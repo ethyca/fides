@@ -953,7 +953,7 @@ def system(db: Session) -> System:
         db=db,
         data={
             "name": "Collect data for marketing",
-            "system_id": system.fides_key,
+            "system_id": system.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "advertising",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
@@ -991,7 +991,7 @@ def system_third_party_sharing(db: Session) -> System:
         db=db,
         data={
             "name": "Collect data for third party sharing",
-            "system_id": system_third_party_sharing.fides_key,
+            "system_id": system_third_party_sharing.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "third_party_sharing",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
@@ -1028,7 +1028,7 @@ def system_provide_service(db: Session) -> System:
         db=db,
         data={
             "name": "The source service, system, or product being provided to the user",
-            "system_id": system_provide_service.fides_key,
+            "system_id": system_provide_service.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "provide.service",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
@@ -1065,7 +1065,7 @@ def system_provide_service_operations_support_optimization(db: Session) -> Syste
         db=db,
         data={
             "name": "Optimize and improve support operations in order to provide the service",
-            "system_id": system_provide_service_operations_support_optimization.fides_key,
+            "system_id": system_provide_service_operations_support_optimization.id,
             "data_categories": ["user.device.cookie_id"],
             "data_use": "provide.service.operations.support.optimization",
             "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",

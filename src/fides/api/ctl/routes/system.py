@@ -7,19 +7,12 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from loguru import logger as log
 from pydantic.types import conlist
-from sqlalchemy import insert
-from sqlalchemy import update as _update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fides.api.ctl.database.crud import (
-    create_resource,
-    delete_resource,
-    get_resource,
-    update_resource,
-)
+from fides.api.ctl.database.crud import create_resource, get_resource, update_resource
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
     DataUse,
@@ -215,39 +208,17 @@ async def upsert_privacy_declarations(
     db: AsyncSession, resource: SystemSchema, system: System
 ) -> None:
     """Helper to handle the specific upsert logic for privacy declarations"""
-    # map existing declarations by their data use
-    declaration_by_data_use: dict[str, PrivacyDeclaration] = {}
-    for existing_declaration in system.privacy_declarations:
-        declaration_by_data_use[existing_declaration.data_use] = existing_declaration
 
     async with db.begin():
-        # iterate through declarations specified on the request
+        # clear out any existing privacy declarations on the System
+        for existing_declaration in system.privacy_declarations:
+            await db.delete(existing_declaration)
+
+        # iterate through declarations specified on the request and create them
         for privacy_declaration in resource.privacy_declarations:
             data = privacy_declaration.dict()
-            data["system_id"] = resource.fides_key  # add FK back to system
-
-            # if the system already has a declaration with the data use
-            # then use its ID to update the declaration record in place
-            if existing_declaration := declaration_by_data_use.get(
-                privacy_declaration.data_use, None
-            ):
-                # remove the existing item to indicate it was specified in the update
-                declaration_by_data_use.pop(privacy_declaration.data_use)
-                # update the declaration in place
-                await db.execute(
-                    _update(PrivacyDeclaration)
-                    .where(PrivacyDeclaration.id == existing_declaration.id)
-                    .values(data)
-                )
-
-            else:  # otherwise, create the declaration
-                query = insert(PrivacyDeclaration).values(data)
-                await db.execute(query)
-
-        # any declarations that remain here should be deleted, as they were
-        # not specified  on the upsert request
-        for existing_declaration in declaration_by_data_use.values():
-            await db.delete(existing_declaration)
+            data["system_id"] = system.id  # add FK back to system
+            PrivacyDeclaration.create(db, data=data)
 
 
 async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:
@@ -306,9 +277,11 @@ async def delete(
     Delete a System by its fides_key. Defined outside of the crud routes
     to add additional "system manager" permission checks.
     """
-    deleted_resource = await delete_resource(System, fides_key, db)
+    system_to_delete = await get_resource(System, fides_key, db)
+    async with db.begin():
+        await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
-    deleted_resource_dict = SystemSchema.from_orm(deleted_resource).dict()
+    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).dict()
     return {
         "message": "resource deleted",
         "resource": deleted_resource_dict,
@@ -354,7 +327,7 @@ async def create(
             # create the specified declarations as records in their own table
             for privacy_declaration in privacy_declarations:
                 data = privacy_declaration.dict()
-                data["system_id"] = resource.fides_key  # add FK back to system
+                data["system_id"] = created_system.id  # add FK back to system
                 PrivacyDeclaration.create(
                     db, data=data
                 )  # create the associated PrivacyDeclaration

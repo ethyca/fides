@@ -186,28 +186,6 @@ class DataUse(Base, FidesBase):
     legitimate_interest_impact_assessment = Column(String, nullable=True)
     is_default = Column(BOOLEAN, default=False)
 
-    privacy_declarations = relationship(
-        "PrivacyDeclaration",
-        back_populates="data_use_object",
-        cascade="all, delete-orphan",
-    )
-
-    def get_parent_uses(self) -> Set[str]:
-        """
-        Utility method to traverse "up" the taxonomy hierarchy and unpack
-        a given data use fides key into a set of fides keys that include its
-        parent fides keys.
-
-        The utility takes a fides key string input to make the method more applicable -
-        since in many spots of our application we do not have a true `DataUse` instance,
-        just a "soft" reference to its fides key.
-
-        Example inputs and outputs:
-            - `a.b.c` --> [`a.b.c`, `a.b`, `a`]
-            - `a` --> [`a`]
-        """
-        return DataUse.get_parent_uses_from_key(self.fides_key)
-
     @staticmethod
     def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
         """
@@ -355,11 +333,11 @@ class System(Base, FidesBase):
         """
         data_uses = set()
         for declaration in privacy_declarations:
-            if data_use := declaration.data_use_object:
+            if data_use := declaration.data_use:
                 if include_parents:
-                    data_uses.update(data_use.get_parent_uses())
+                    data_uses.update(DataUse.get_parent_uses_from_key(data_use))
                 else:
-                    data_uses.add(data_use.fides_key)
+                    data_uses.add(data_use)
         return data_uses
 
     @classmethod
@@ -386,12 +364,13 @@ class PrivacyDeclaration(Base):
     The SQL model for a Privacy Declaration associated with a given System.
     """
 
-    name = Column(String)  # labeled as Processing Activity in the UI
+    name = Column(String, index=True, nullable=False)  # labeled as Processing Activity in the UI
     ### keep egress/ingress as JSON blobs as they have always been
     egress = Column(JSON)
     ingress = Column(JSON)
 
     ### references to other tables, but kept as 'soft reference' strings for now
+    data_use = Column(String, index=True, nullable=False)
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(String)
     data_subjects = Column(ARRAY(String))
@@ -401,16 +380,11 @@ class PrivacyDeclaration(Base):
     # System
     system_id = Column(
         String,
-        ForeignKey(System.fides_key, ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey(System.id),
         nullable=False,
         index=True,
     )
     system = relationship(System, back_populates="privacy_declarations")
-
-    # DataUse
-    # the FK column is just plain `data_use` to align with the `FidesKey` field on the pydantic model
-    data_use = Column(String, ForeignKey(DataUse.fides_key), nullable=False, index=True)
-    data_use_object = relationship(DataUse)
 
     @classmethod
     def create(
@@ -420,7 +394,7 @@ class PrivacyDeclaration(Base):
         data: dict[str, Any],
         check_name: bool = False,  # this is the reason for the override
     ) -> PrivacyDeclaration:
-        """Overrides baes create to avoid unique check on `name` column"""
+        """Overrides base create to avoid unique check on `name` column"""
         return super().create(db=db, data=data, check_name=check_name)
 
 
