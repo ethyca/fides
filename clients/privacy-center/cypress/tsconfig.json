@@ -6,6 +6,6 @@
     "lib": ["es5", "dom"],
     "types": ["cypress", "cypress-wait-until", "node"]
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "../cypress.config.ts"],
   "exclude": []
 }
