@@ -1,7 +1,7 @@
 """
 Provides functions that seed the application with data.
 """
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from fideslang import DEFAULT_TAXONOMY
 from loguru import logger as log
@@ -347,12 +347,17 @@ async def load_default_organization(async_session: AsyncSession) -> None:
     """
 
     log.info("Loading the default organization...")
-    organizations = list(map(dict, DEFAULT_TAXONOMY.dict()["organization"]))
+    organizations: List[Dict] = list(map(dict, DEFAULT_TAXONOMY.dict()["organization"]))
 
     inserted = 0
     for org in organizations:
         try:
-            existing = await get_resource(sql_model_map["organization"], org["fides_key"], async_session, raise_not_found=False)
+            existing = await get_resource(
+                sql_model_map["organization"],
+                org["fides_key"],
+                async_session,
+                raise_not_found=False,
+            )
             if not existing:
                 await create_resource(sql_model_map["organization"], org, async_session)
                 inserted += 1
@@ -441,7 +446,10 @@ async def load_samples(async_session: AsyncSession) -> None:
                     continue
 
                 # For SaaS connections, reuse our "instantiate from template" API
-                if connection.connection_type == "saas" and connection.saas_connector_type:
+                if (
+                    connection.connection_type == "saas"
+                    and connection.saas_connector_type
+                ):
                     log.debug(
                         f"Loading sample connection with SaaS connection type '{connection.saas_connector_type}'..."
                     )
@@ -463,7 +471,9 @@ async def load_samples(async_session: AsyncSession) -> None:
                         db=db_session, field="key", value=connection.key
                     )
                     if not connection_config:
-                        log.debug(f"Failed to create sample connection '{connection.key}'")
+                        log.debug(
+                            f"Failed to create sample connection '{connection.key}'"
+                        )
                     continue
 
                 # For non-SaaS connections, reuse our connection & dataset APIs

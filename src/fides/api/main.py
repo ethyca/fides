@@ -99,7 +99,9 @@ def create_fides_app(
         serialize=CONFIG.logging.serialization,
         desination=CONFIG.logging.destination,
     )
-    logger.bind(api_config=CONFIG.logging.json()).debug("Logger configuration options in use")
+    logger.bind(api_config=CONFIG.logging.json()).debug(
+        "Logger configuration options in use"
+    )
 
     fastapi_app = FastAPI(title="fides", version=app_version)
     fastapi_app.state.limiter = Limiter(
@@ -307,8 +309,6 @@ async def setup_server() -> None:
 
     logger.info(FIDES_ASCII_ART)
     logger.info(f"Fides startup complete! v{VERSION}")
-
-
 
 
 @app.middleware("http")

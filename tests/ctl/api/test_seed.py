@@ -577,7 +577,7 @@ class TestLoadSamples:
         )
         connections = []
         try:
-            samples.load_sample_connections_from_project()
+            connections = samples.load_sample_connections_from_project()
         except Exception as exc:
             print(exc)
             assert False, error_message

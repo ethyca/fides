@@ -4,15 +4,16 @@ sample project at src/fides/data/sample_project.
 
 See load_samples() in seed.py for usage.
 """
-# TODO: is there a way to use the stdlib in Python 3.9+?
-# from importlib.resources import files
-from importlib_resources import files
 from typing import Dict, List, Optional, TextIO, Union
 
 import yaml
 from expandvars import expandvars  # type: ignore
 from fideslang.models import Dataset, Organization, Policy, System
 from fideslang.validation import FidesKey
+
+# TODO: is there a way to use the stdlib in Python 3.9+?
+# from importlib.resources import files
+from importlib_resources import files
 
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
@@ -36,6 +37,7 @@ def load_sample_resources_from_project(
     doesn't fall out of date.
     """
     import fides.data.sample_project  # type: ignore
+
     sample_resources_path = files(fides.data.sample_project).joinpath(
         "sample_resources/"
     )
@@ -124,6 +126,7 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
     something drifts.
     """
     import fides.data.sample_project  # type: ignore
+
     sample_connections_path = files(fides.data.sample_project).joinpath(
         "sample_connections/"
     )

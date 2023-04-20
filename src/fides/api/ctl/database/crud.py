@@ -59,7 +59,10 @@ async def create_resource(
 
 
 async def get_resource(
-    sql_model: Base, fides_key: str, async_session: AsyncSession, raise_not_found: bool=True
+    sql_model: Base,
+    fides_key: str,
+    async_session: AsyncSession,
+    raise_not_found: bool = True,
 ) -> Base:
     """
     Get a resource from the databse by its FidesKey.
