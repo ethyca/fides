@@ -12,7 +12,7 @@ from sqlalchemy import update as _update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.ctl.database.crud import (
     create_resource,
@@ -22,6 +22,7 @@ from fides.api.ctl.database.crud import (
 )
 from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
+    DataUse,
     PrivacyDeclaration,
     System,
 )
@@ -63,6 +64,29 @@ def get_system(db: Session, fides_key: str) -> System:
             detail="A valid system must be provided to create or update connections",
         )
     return system
+
+
+async def validate_privacy_declarations_data_uses(
+    db: AsyncSession, system: SystemSchema
+):
+    """
+    Ensure that the `PrivacyDeclaration`s on the provided `System` resource reference
+    valid `DataUse` records.
+
+    If not, a `400` is raised
+    """
+    for privacy_declaration in system.privacy_declarations:
+        try:
+            await get_resource(
+                sql_model=DataUse,
+                fides_key=privacy_declaration.data_use,
+                async_session=db,
+            )
+        except NotFoundError:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"Invalid privacy declaration referencing unknown DataUse {privacy_declaration.data_use}",
+            )
 
 
 @system_connections_router.get(
@@ -137,6 +161,7 @@ async def update(
     Update a System by the fides_key extracted from the request body.  Defined outside of the crud routes
     to add additional "system manager" permission checks.
     """
+    await validate_privacy_declarations_data_uses(db, resource)
     return await update_system(resource, db)
 
 
@@ -159,6 +184,10 @@ async def upsert(
 ) -> Dict:
     inserted = 0
     updated = 0
+    # first pass to validate privacy declarations before proceeding
+    for resource in resources:
+        await validate_privacy_declarations_data_uses(db, resource)
+
     for resource in resources:
         try:
             await get_resource(System, resource.fides_key, db)
@@ -182,46 +211,54 @@ async def upsert(
     }
 
 
+async def upsert_privacy_declarations(
+    db: AsyncSession, resource: SystemSchema, system: System
+) -> None:
+    """Helper to handle the specific upsert logic for privacy declarations"""
+    # map existing declarations by their data use
+    declaration_by_data_use: dict[str, PrivacyDeclaration] = {}
+    for existing_declaration in system.privacy_declarations:
+        declaration_by_data_use[existing_declaration.data_use] = existing_declaration
+
+    async with db.begin():
+        # iterate through declarations specified on the request
+        for privacy_declaration in resource.privacy_declarations:
+            data = privacy_declaration.dict()
+            data["system_id"] = resource.fides_key  # add FK back to system
+
+            # if the system already has a declaration with the data use
+            # then use its ID to update the declaration record in place
+            if existing_declaration := declaration_by_data_use.get(
+                privacy_declaration.data_use, None
+            ):
+                # remove the existing item to indicate it was specified in the update
+                declaration_by_data_use.pop(privacy_declaration.data_use)
+                # update the declaration in place
+                await db.execute(
+                    _update(PrivacyDeclaration)
+                    .where(PrivacyDeclaration.id == existing_declaration.id)
+                    .values(data)
+                )
+
+            else:  # otherwise, create the declaration
+                query = insert(PrivacyDeclaration).values(data)
+                await db.execute(query)
+
+        # any declarations that remain here should be deleted, as they were
+        # not specified  on the upsert request
+        for existing_declaration in declaration_by_data_use.values():
+            await db.delete(existing_declaration)
+
+
 async def update_system(resource: SystemSchema, db: AsyncSession) -> Dict:
     """Helper function to share core system update logic for wrapping endpoint functions"""
     system: System = await get_resource(
         sql_model=System, fides_key=resource.fides_key, async_session=db
     )
 
-    declaration_by_data_use: dict[str, PrivacyDeclaration] = {}
-    # map existing declarations by their data use
-    for existing_declaration in system.privacy_declarations:
-        declaration_by_data_use[existing_declaration.data_use] = existing_declaration
-
+    # handle the privacy declaration upsert logic
     try:
-        async with db.begin():
-            # now iterate through declarations specified on the request
-            for privacy_declaration in resource.privacy_declarations:
-                data = privacy_declaration.dict()
-                data["system_id"] = resource.fides_key  # add FK back to system
-
-                # if the system already has a declaration with the data use
-                # then use its ID to update the declaration record in place
-                if existing_declaration := declaration_by_data_use.get(
-                    privacy_declaration.data_use, None
-                ):
-                    # remove the existing item to indicate it was specified in the update
-                    declaration_by_data_use.pop(privacy_declaration.data_use)
-                    # update the declaration in place
-                    await db.execute(
-                        _update(PrivacyDeclaration)
-                        .where(PrivacyDeclaration.id == existing_declaration.id)
-                        .values(data)
-                    )
-
-                else:  # otherwise, create the declaration
-                    query = insert(PrivacyDeclaration).values(data)
-                    await db.execute(query)
-
-            # any declarations that remain here should be deleted, as they were
-            # not specified  on the upsert request
-            for existing_declaration in declaration_by_data_use.values():
-                await db.delete(existing_declaration)
+        await upsert_privacy_declarations(db, resource, system)
     except Exception as e:
         log.error(
             f"Error adding privacy declarations, reverting system creation: {str(e)}"
@@ -297,6 +334,7 @@ async def create(
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
+    await validate_privacy_declarations_data_uses(db, resource)
     # copy out the declarations to be stored separately
     # as they will be processed AFTER the system is added
     privacy_declarations = resource.privacy_declarations
@@ -321,15 +359,12 @@ async def create(
                     db, data=data
                 )  # create the associated PrivacyDeclaration
     except Exception as e:
-        privacy_declaration_exception = e
-
-    if privacy_declaration_exception:
         log.error(
             f"Error adding privacy declarations, reverting system creation: {str(privacy_declaration_exception)}"
         )
         async with db.begin():
             await db.delete(created_system)
-        raise privacy_declaration_exception
+        raise e
 
     async with db.begin():
         await db.refresh(created_system)
