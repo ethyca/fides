@@ -1,7 +1,7 @@
 export {
   DateCell,
   EnableCell,
-  MechanismCell,
+  MapCell,
   MultiTagCell,
   TitleCell,
   WrappedCell,

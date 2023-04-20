@@ -8,7 +8,7 @@ import { enumToOptions } from "~/features/common/helpers";
 import {
   ENFORCEMENT_LEVEL_MAP,
   MECHANISM_MAP,
-} from "~/features/common/table/constants";
+} from "~/features/privacy-notices/constants";
 import {
   ConsentMechanism,
   EnforcementLevel,

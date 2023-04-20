@@ -10,8 +10,6 @@ import ConfirmationModal from "common/ConfirmationModal";
 import React, { ChangeEvent } from "react";
 import { CellProps } from "react-table";
 
-import { FIELD_TYPE_MAP, MECHANISM_MAP } from "./constants";
-
 export const TitleCell = <T extends object>({
   value,
 }: CellProps<T, string>) => (
@@ -27,19 +25,13 @@ export const WrappedCell = <T extends object>({
 export const DateCell = <T extends object>({ value }: CellProps<T, string>) =>
   new Date(value).toDateString();
 
-export const MechanismCell = <T extends object>({
-  value,
-}: CellProps<T, string>) => (
-  <Tag size="sm" backgroundColor="primary.400" color="white">
-    {MECHANISM_MAP.get(value) ?? value}
-  </Tag>
-);
+type MapCellProps<T extends object> = CellProps<T, string> & {
+  map: Map<string, string>;
+};
 
-export const FieldTypeCell = <T extends object>({
-  value,
-}: CellProps<T, string>) => (
+export const MapCell = <T extends object>({ map, value }: MapCellProps<T>) => (
   <Tag size="sm" backgroundColor="primary.400" color="white">
-    {FIELD_TYPE_MAP.get(value) ?? value}
+    {map.get(value) ?? value}
   </Tag>
 );
 
