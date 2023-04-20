@@ -17,7 +17,9 @@ def get_fides_data_categories_from_db() -> List[FideslangDataCategory]:
     default taxonomy.
     """
     db: Session = get_db_session(get_config())()
-    return [cat.to_fideslang_obj() for cat in DataCategoryDbModel.all(db)]
+    all_categories = DataCategoryDbModel.all(db)
+    db.close()
+    return [cat.to_fideslang_obj() for cat in all_categories]
 
 
 def get_fides_data_categories_from_taxonomy() -> List[FideslangDataCategory]:
