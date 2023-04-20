@@ -1,10 +1,11 @@
 import { PRIVACY_REQUESTS_ROUTE } from "@fidesui/components";
 import { Box, Breadcrumb, BreadcrumbItem, Heading, Text } from "@fidesui/react";
 import NextLink from "next/link";
+import React from "react";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
-import PrivacyNoticesTable from "~/features/privacy-notices/PrivacyNoticesTable";
+import { PrivacyNoticesTable } from "~/features/privacy-notices/PrivacyNoticesTable";
 
 const PrivacyNoticesPage = () => (
   <Layout title="Privacy notices">
