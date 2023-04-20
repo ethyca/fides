@@ -386,14 +386,19 @@ class PrivacyDeclaration(Base):
     The SQL model for a Privacy Declaration associated with a given System.
     """
 
-    name = Column(String)  # Processing Activity
-    data_categories = Column(ARRAY(String))  # TODO: maybe relationship?
-    data_qualifier = Column(String)  # TODO: maybe relationship? is this needed?
-    data_subjects = Column(ARRAY(String))  # TODO: maybe relationship?
-    dataset_references = Column(ARRAY(String))  # TODO: maybe relationship?
-    egress = Column(JSON)  # TODO: needed?
-    ingress = Column(JSON)  # TODO: needed?
+    name = Column(String)  # labeled as Processing Activity in the UI
+    ### keep egress/ingress as JSON blobs as they have always been
+    egress = Column(JSON)
+    ingress = Column(JSON)
 
+    ### references to other tables, but kept as 'soft reference' strings for now
+    data_categories = Column(ARRAY(String))
+    data_qualifier = Column(String)
+    data_subjects = Column(ARRAY(String))
+    dataset_references = Column(ARRAY(String))
+
+    ### proper FK references to other tables
+    # System
     system_id = Column(
         String,
         ForeignKey(System.fides_key, ondelete="CASCADE", onupdate="CASCADE"),
@@ -402,6 +407,7 @@ class PrivacyDeclaration(Base):
     )
     system = relationship(System, back_populates="privacy_declarations")
 
+    # DataUse
     # the FK column is just plain `data_use` to align with the `FidesKey` field on the pydantic model
     data_use = Column(String, ForeignKey(DataUse.fides_key), nullable=False, index=True)
     data_use_object = relationship(DataUse)
