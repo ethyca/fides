@@ -415,13 +415,14 @@ async def load_default_resources(async_session: AsyncSession) -> None:
 async def load_samples(async_session: AsyncSession) -> None:
     log.info("Loading sample resources...")
     try:
-        sample_resources = load_sample_resources_from_project(strict=False)
+        sample_resources = dict(load_sample_resources_from_project())
         for resource_type, resources in sample_resources.items():
-            await upsert_resources(
-                sql_model_map[resource_type],
-                [e.dict() for e in resources],
-                async_session,
-            )
+            if len(resources):
+                await upsert_resources(
+                    sql_model_map[resource_type],
+                    [e.dict() for e in resources],
+                    async_session,
+                )
     except QueryError:  # pragma: no cover
         pass  # The upsert_resources function will log any error
 

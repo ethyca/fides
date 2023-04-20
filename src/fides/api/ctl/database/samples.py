@@ -4,80 +4,38 @@ sample project at src/fides/data/sample_project.
 
 See load_samples() in seed.py for usage.
 """
-from typing import Dict, List, Optional, TextIO, Union
+from typing import Dict, List, Optional, TextIO
 
 import yaml
 from expandvars import expandvars  # type: ignore
-from fideslang.models import Dataset, Organization, Policy, System
+from fideslang import Taxonomy
 from fideslang.validation import FidesKey
 
-# TODO: is there a way to use the stdlib in Python 3.9+?
-# from importlib.resources import files
+# DEFER: This can be changed to importlib.resources once we drop support for Python 3.8
 from importlib_resources import files
 
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
 )
+from fides.core.parse import parse
 
 
-def load_sample_resources_from_project(
-    strict: bool = False,
-) -> Dict[str, List[Union[Dataset, Organization, Policy, System]]]:
+def load_sample_resources_from_project() -> Taxonomy:
     """
     Loads all the sample resource YAML files from the sample project by
     traversing through the sample_resources/ folder, inspecting each file, and
     parsing them into fideslang models.
 
-    Returns a dictionary, grouped by resource type (e.g. Dataset, System...)
-
-    NOTE: This only implements parsing for types we _currently_ expect to use in
-    the sample project. If new types are added to the project, this will quietly
-    ignore them unless strict=True is provided, which throws an error. We test
-    the "strict" version of this in the integration tests to ensure this code
-    doesn't fall out of date.
+    Returns a Taxonomy object, which has accessor for each resource type
+    (system, dataset, etc.) and a list of models for each.
     """
     import fides.data.sample_project  # type: ignore
 
     sample_resources_path = files(fides.data.sample_project).joinpath(
         "sample_resources/"
     )
-    sample_resources_dict: Dict[str, List] = {
-        "dataset": [],
-        "organization": [],
-        "policy": [],
-        "system": [],
-    }
-    for yaml_path in sample_resources_path.iterdir():
-        with yaml_path.open("r") as file:
-            # NOTE: in load_sample_connections, we use `expandvars` to expand
-            # ENV vars into string to allow injecting secrets, etc. We don't do
-            # that for the sample_resources/*, however, to stay consistent with
-            # the behaviour of `fides push`
-            yaml_dict = yaml.safe_load(file)
-
-            # Parse the contents of the YAML into the respective Pydantic models
-            if yaml_dict.get("dataset", []):
-                datasets = [Dataset.parse_obj(e) for e in yaml_dict.get("dataset")]
-                sample_resources_dict["dataset"].extend(datasets)
-            elif yaml_dict.get("organization", []):
-                organizations = [
-                    Organization.parse_obj(e) for e in yaml_dict.get("organization")
-                ]
-                sample_resources_dict["organization"].extend(organizations)
-            elif yaml_dict.get("policy", []):
-                policies = [Policy.parse_obj(e) for e in yaml_dict.get("policy")]
-                sample_resources_dict["policy"].extend(policies)
-            elif yaml_dict.get("system", []):
-                systems = [System.parse_obj(e) for e in yaml_dict.get("system")]
-                sample_resources_dict["system"].extend(systems)
-            else:
-                if strict:
-                    unknown_resource_keys = list(yaml_dict.keys())
-                    raise NotImplementedError(
-                        f"Unexpected sample resource type, keys={unknown_resource_keys}"
-                    )
-                # quietly ignore failures when strict=False, so we only fail during tests
-    return sample_resources_dict
+    resources: Taxonomy = parse(str(sample_resources_path))
+    return resources
 
 
 class SampleConnection(CreateConnectionConfigurationWithSecrets):

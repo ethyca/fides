@@ -518,7 +518,7 @@ class TestLoadSamples:
                 "stripe_connector",
             ]
 
-    async def test_load_sample_resources_strict(self):
+    async def test_load_sample_resources(self):
         """
         Ensure that the resource files in the sample project are all
         successfully parsed by the load_sample_resources_from_project()
@@ -544,7 +544,7 @@ class TestLoadSamples:
             "See tests/ctl/api/test_seed.py for details."
         )
         try:
-            samples.load_sample_resources_from_project(strict=True)
+            samples.load_sample_resources_from_project()
             assert True
         except Exception as exc:
             print(exc)
