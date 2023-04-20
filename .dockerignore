@@ -8,7 +8,14 @@ src/ui-build/
 # Frontend
 **/node_modules
 **/.next
-
+**/.eslingrc.json
+**/.jest.config.js
+**/jest.config.jest
+**/.prettierignore
+**/.prettierrc.json
+**/__tests__
+**/npm-debug.log
+**/*__mocks__
 
 # Ignore Python-Specific Files
 **/.mypy_cache/
@@ -38,6 +45,7 @@ src/ui-build/
 # docs/
 
 # Ignore dev files
+.gitignore
 .github/
 .devcontainer/
 
