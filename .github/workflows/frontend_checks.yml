@@ -79,9 +79,9 @@ jobs:
           path: /home/runner/work/fides/fides/clients/cypress-e2e/videos/*.mp4
 
       - name: Cypress component tests
-          uses: cypress-io/github-action@v4
-          with:
-            working-directory: clients/admin-ui
-            install: false
-            component: true
+        uses: cypress-io/github-action@v4
+        with:
+          working-directory: clients/admin-ui
+          install: false
+          component: true
 
