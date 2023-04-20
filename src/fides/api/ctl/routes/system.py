@@ -68,7 +68,7 @@ def get_system(db: Session, fides_key: str) -> System:
 
 async def validate_privacy_declarations_data_uses(
     db: AsyncSession, system: SystemSchema
-):
+) -> None:
     """
     Ensure that the `PrivacyDeclaration`s on the provided `System` resource reference
     valid `DataUse` records.
