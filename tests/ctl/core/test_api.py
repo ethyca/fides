@@ -12,6 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
@@ -626,16 +627,14 @@ class TestSystemCreate:
         system_create_request_body.privacy_declarations[1].data_use = "invalid_data_use"
         auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
 
-        # TODO: improve our handling so that this raises a better error
-        with pytest.raises(IntegrityError):
-            result = _api.create(
-                url=test_config.cli.server_url,
-                headers=auth_header,
-                resource_type="system",
-                json_resource=system_create_request_body.json(exclude_none=True),
-            )
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
 
-        # assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert result.status_code == HTTP_400_BAD_REQUEST
         assert len(System.all(db)) == 0  # ensure our system wasn't created
         assert (
             len(PrivacyDeclaration.all(db)) == 0
@@ -832,6 +831,25 @@ class TestSystemUpdate:
             json_resource=system_update_request_body.json(exclude_none=True),
         )
         assert result.status_code == HTTP_404_NOT_FOUND
+
+    def test_system_update_privacy_declaration_invalid_data_use(
+        self,
+        system,
+        test_config,
+        system_update_request_body,
+        generate_role_header,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        system_update_request_body.privacy_declarations[0].data_use = "invalid_data_use"
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        # assert the system's privacy declaration has not been updated
+        assert system.privacy_declarations[0].data_use == "advertising"
 
     @pytest.mark.parametrize(
         "update_declarations",
