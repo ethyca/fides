@@ -158,6 +158,21 @@ const PrivacyNoticesPage = () => {
     );
   }
 
+  if (privacyNotices.length === 0) {
+    return (
+      <EmptyTableState
+        title="To start configuring consent, please first add data uses"
+        description="It looks like you have not yet added any data uses to the system. Fides
+        relies on how you use data in your organization to provide intelligent
+        recommendations and pre-built templates for privacy notices you may need
+        to display to your users. To get started with privacy notices, first add
+        your data uses to systems on your data map."
+        buttonHref={SYSTEM_ROUTE}
+        buttonText="Set up data uses"
+      />
+    );
+  }
+
   return (
     <Layout title="Privacy notices">
       <Box mb={4}>
@@ -204,18 +219,6 @@ const PrivacyNoticesPage = () => {
           addButtonText="Add a privacy notice +"
           addButtonHref={`${PRIVACY_NOTICES_ROUTE}/new`}
           testId="privacy-notice"
-          EmptyState={
-            <EmptyTableState
-              title="To start configuring consent, please first add data uses"
-              description="It looks like you have not yet added any data uses to the system. Fides
-        relies on how you use data in your organization to provide intelligent
-        recommendations and pre-built templates for privacy notices you may need
-        to display to your users. To get started with privacy notices, first add
-        your data uses to systems on your data map."
-              buttonHref={SYSTEM_ROUTE}
-              buttonText="Set up data uses"
-            />
-          }
         />
       </Box>
     </Layout>

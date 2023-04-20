@@ -3,7 +3,6 @@ import {
   ArrowUpIcon,
   Button,
   Flex,
-  Spinner,
   Table,
   TableContainer,
   Tbody,
@@ -16,7 +15,7 @@ import {
 } from "@fidesui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React, { ReactElement, ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { Column, useGlobalFilter, useSortBy, useTable } from "react-table";
 import { UrlObject } from "url";
 
@@ -33,7 +32,6 @@ type Props<T extends object> = {
   addButtonText: string;
   addButtonHref: string | UrlObject;
   testId: string;
-  EmptyState: ReactElement;
   showSearchBar?: boolean;
 };
 
@@ -46,7 +44,6 @@ export const FidesTable = <T extends object>({
   addButtonText,
   addButtonHref,
   testId,
-  EmptyState,
   showSearchBar,
 }: Props<T>) => {
   const router = useRouter();
@@ -55,10 +52,6 @@ export const FidesTable = <T extends object>({
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
-
-  if (data.length === 0) {
-    return EmptyState;
-  }
 
   return (
     <TableContainer>

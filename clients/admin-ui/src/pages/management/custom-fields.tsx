@@ -137,6 +137,22 @@ const CustomFields: NextPage = () => {
     );
   }
 
+  if (customFields.length === 0) {
+    return (
+      <EmptyTableState
+        title="It looks like it’s your first time here!"
+        buttonHref=""
+        buttonText="Add a custom field"
+        description={
+          <>
+            You haven’t created any custom fields yet. To create a custom field,
+            click on the <strong>&quot;Add a custom field&quot;</strong> button
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <Layout title="Custom fields">
       <Box data-testid="custom-fields-management">
@@ -161,20 +177,6 @@ const CustomFields: NextPage = () => {
             addButtonHref=""
             testId="custom-field"
             showSearchBar
-            EmptyState={
-              <EmptyTableState
-                title="It looks like it’s your first time here!"
-                buttonHref=""
-                buttonText="Add a custom field"
-                description={
-                  <>
-                    You haven’t created any custom fields yet. To create a
-                    custom field, click on the{" "}
-                    <strong>&quot;Add a custom field&quot;</strong> button
-                  </>
-                }
-              />
-            }
           />
         </Box>
       </Box>
