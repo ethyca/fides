@@ -2,7 +2,6 @@
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.validation import FidesKey
 from sqlalchemy import Column
@@ -172,7 +171,7 @@ class Policy(Base):
 
 
 def _get_ref_from_taxonomy(fides_key: FidesKey) -> FideslangDataCategory:
-    """Returns the DataCategory model from the DEFAULT_TAXONOMY corresponding to fides_key."""
+    """Returns the DataCategory model corresponding to fides_key."""
     for item in get_fides_data_category_superset():
         if item.fides_key == fides_key:
             return item
@@ -189,7 +188,7 @@ def _is_ancestor_of_contained_categories(
     """
     Returns True if `fides_key` is an ancestor of any item in `data_categories`.
     Warning that this algorithm is recursive, is susceptible to infinite loops and
-    other misconfigurations in the underlying DEFAULT_TAXONOMY imported from fideslang.
+    other misconfigurations in the underlying taxonomy of data categories imported from fideslang.
 
     TODO: Should we memoize this function?
     """

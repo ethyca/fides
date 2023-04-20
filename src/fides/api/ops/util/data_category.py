@@ -1,11 +1,11 @@
 from enum import Enum as EnumType
-from typing import List, Set, Type, Union
+from typing import List, Type
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel
+from fides.api.ctl.sql_models import DataCategory as DataCategoryDbModel  # type: ignore
 from fides.api.ops import common_exceptions
 from fides.core.config import get_config
 from fides.lib.db.session import get_db_session
