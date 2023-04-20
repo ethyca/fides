@@ -128,8 +128,17 @@ const Home: NextPage = () => {
         </Flex>
       </header>
 
-      <main data-testid="home">
-        <Stack align="center" py={["6", "16"]} px={5} spacing={14}>
+      <main
+        data-testid="home"
+        style={{ overflow: "auto", height: "100vh", paddingBottom: "20vh" }}
+      >
+        <Stack
+          align="center"
+          py={["6", "16"]}
+          px={5}
+          spacing={14}
+          overflow="scroll"
+        >
           <Stack align="center" spacing={3}>
             <Heading
               fontSize={["3xl", "4xl"]}
