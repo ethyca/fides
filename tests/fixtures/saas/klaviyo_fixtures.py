@@ -28,7 +28,7 @@ def klaviyo_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "klaviyo.domain") or secrets["domain"],
         "api_key": pydash.get(saas_config, "klaviyo.api_key") or secrets["api_key"],
-        "revision": pydash.get(saas_config, "klaviyo.revision") or secrets["revision"]
+        "revision": pydash.get(saas_config, "klaviyo.revision") or secrets["revision"],
     }
 
 
@@ -107,28 +107,28 @@ def klaviyo_dataset_config(
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
 
+
 @pytest.fixture(scope="function")
 def klaviyo_create_erasure_data(
     klaviyo_connection_config: ConnectionConfig, klaviyo_erasure_identity_email: str
 ) -> None:
-
     klaviyo_secrets = klaviyo_connection_config.secrets
     base_url = f"https://{klaviyo_secrets['domain']}"
     headers = {
         "Authorization": f"Klaviyo-API-Key {klaviyo_secrets['api_key']}",
-        "revision": klaviyo_secrets['revision']
+        "revision": klaviyo_secrets["revision"],
     }
     # user
     body = {
         "data": {
             "type": "profile",
-            "attributes": {
-                "email": klaviyo_erasure_identity_email
-            }
+            "attributes": {"email": klaviyo_erasure_identity_email},
         }
     }
 
-    users_response = requests.post(url=f"{base_url}/api/profiles/", headers=headers, json=body)
+    users_response = requests.post(
+        url=f"{base_url}/api/profiles/", headers=headers, json=body
+    )
     user = users_response.json()
 
     yield user
