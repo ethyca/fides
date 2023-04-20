@@ -70,9 +70,6 @@ def check_for_env_file() -> None:
         shutil.copy(env_file_example, env_file)
 
 
-# Add a command that opens the docs
-
-
 def convert_semver_to_list(semver: str) -> List[int]:
     """
     Convert a standard semver string to a list of ints

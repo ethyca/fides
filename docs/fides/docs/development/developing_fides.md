@@ -86,7 +86,7 @@ To dig in even deeper, you can use the **Authorize** button at the top of the AP
 
 ## Running Tests
 
-To keep things organized and to prevent this page from getting overloaded, the documentation for testing has its own page. Head over to [Testing](testing.md) for a full walkthrough of testing Fides and running test environments.
+For a full walkthrough on testing, head over to the [Testing](testing.md) page.
 
 ## Static Checks
 
