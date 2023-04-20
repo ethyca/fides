@@ -1,8 +1,8 @@
 """create privacy declarations table
 
 Revision ID: 48d9caacebd4
-Revises: 144d9b85c712
-Create Date: 2023-04-14 14:16:50.700532
+Revises: 8342453518cc
+Create Date: 2023-04-20 20:35:05.377471
 
 """
 import json
@@ -13,7 +13,6 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy import text
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.exc import IntegrityError
 
 # revision identifiers, used by Alembic.
 revision = "48d9caacebd4"
@@ -39,27 +38,22 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("name", sa.String(), nullable=True),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("egress", sa.JSON(), nullable=True),
+        sa.Column("ingress", sa.JSON(), nullable=True),
+        sa.Column("data_use", sa.String(), nullable=False),
         sa.Column("data_categories", sa.ARRAY(sa.String()), nullable=True),
         sa.Column("data_qualifier", sa.String(), nullable=True),
         sa.Column("data_subjects", sa.ARRAY(sa.String()), nullable=True),
         sa.Column("dataset_references", sa.ARRAY(sa.String()), nullable=True),
-        sa.Column("egress", sa.JSON(), nullable=True),
-        sa.Column("ingress", sa.JSON(), nullable=True),
         sa.Column("system_id", sa.String(), nullable=False),
-        sa.Column("data_use", sa.String(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["data_use"],
-            ["ctl_data_uses.fides_key"],
-        ),
         sa.ForeignKeyConstraint(
             ["system_id"],
-            ["ctl_systems.fides_key"],
-            onupdate="CASCADE",
-            ondelete="CASCADE",
+            ["ctl_systems.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+
     op.create_index(
         op.f("ix_privacydeclaration_data_use"),
         "privacydeclaration",
@@ -70,18 +64,23 @@ def upgrade():
         op.f("ix_privacydeclaration_id"), "privacydeclaration", ["id"], unique=False
     )
     op.create_index(
+        op.f("ix_privacydeclaration_name"), "privacydeclaration", ["name"], unique=False
+    )
+    op.create_index(
         op.f("ix_privacydeclaration_system_id"),
         "privacydeclaration",
         ["system_id"],
         unique=False,
     )
 
+    # Data migration
+
     bind = op.get_bind()
     existing_declarations = bind.execute(
-        text("SELECT fides_key, privacy_declarations FROM ctl_systems;")
+        text("SELECT id, privacy_declarations FROM ctl_systems;")
     )
     for row in existing_declarations:
-        system_id = row["fides_key"]
+        system_id = row["id"]
         old_privacy_declarations = row["privacy_declarations"]
         for privacy_declaration in old_privacy_declarations:
             new_privacy_declaration_id: str = "pri_" + str(uuid.uuid4())
@@ -96,16 +95,10 @@ def upgrade():
                 "VALUES (:id, :name, :data_categories, :data_qualifier, :data_subjects, :dataset_references, :egress, :ingress, :system_id, :data_use)"
             )
 
-            try:
-                bind.execute(
-                    insert_privacy_declarations_query,
-                    new_data,
-                )
-            except IntegrityError as exc:
-                raise Exception(
-                    f"Fides attempted to copy System.privacy_declarations into their own privacydeclaration rows but got error: {exc}. "
-                    f"Adjust the 'data_use' value to ponit to an existing data use to migrate successfully"
-                )
+            bind.execute(
+                insert_privacy_declarations_query,
+                new_data,
+            )
 
     op.drop_column("ctl_systems", "privacy_declarations")
     # ### end Alembic commands ###
@@ -122,6 +115,8 @@ def downgrade():
             nullable=True,
         ),
     )
+
+    # Data migration
 
     bind = op.get_bind()
     existing_declarations = bind.execute(
@@ -144,20 +139,21 @@ def downgrade():
         }
         pds_by_system[system_id].append(privacy_declaration)
 
-    for system_key, pds in pds_by_system.items():
+    for system_id, pds in pds_by_system.items():
         privacy_declarations = json.dumps(pds)
         update_systems_query = text(
-            "update ctl_systems set privacy_declarations = :privacy_declarations where fides_key = :system_key;"
+            "update ctl_systems set privacy_declarations = :privacy_declarations where id = :system_id;"
         )
 
         bind.execute(
             update_systems_query,
-            {"system_key": system_key, "privacy_declarations": privacy_declarations},
+            {"system_id": system_id, "privacy_declarations": privacy_declarations},
         )
 
     op.drop_index(
         op.f("ix_privacydeclaration_system_id"), table_name="privacydeclaration"
     )
+    op.drop_index(op.f("ix_privacydeclaration_name"), table_name="privacydeclaration")
     op.drop_index(op.f("ix_privacydeclaration_id"), table_name="privacydeclaration")
     op.drop_index(
         op.f("ix_privacydeclaration_data_use"), table_name="privacydeclaration"
