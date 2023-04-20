@@ -23,7 +23,12 @@ import Restrict from "~/features/common/Restrict";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import { ScopeRegistryEnum } from "~/types/api";
 
-type Props<T extends object> = {
+interface FidesObject {
+  id?: string;
+  name?: string;
+}
+
+type Props<T extends FidesObject> = {
   columns: Column<T>[];
   data: T[];
   userCanUpdate: boolean;
@@ -35,7 +40,7 @@ type Props<T extends object> = {
   showSearchBar?: boolean;
 };
 
-export const FidesTable = <T extends object>({
+export const FidesTable = <T extends FidesObject>({
   columns,
   data,
   userCanUpdate,
@@ -119,11 +124,9 @@ export const FidesTable = <T extends object>({
             const { key: rowKey, ...rowProps } = row.getRowProps();
             const onClick = () => {
               if (userCanUpdate) {
-                // @ts-ignore
                 router.push(`${redirectRoute}/${row.original.id}`);
               }
             };
-            // @ts-ignore
             const rowName = row.original.name;
             return (
               <Tr

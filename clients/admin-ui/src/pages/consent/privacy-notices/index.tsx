@@ -41,11 +41,11 @@ import {
 } from "~/features/privacy-notices/privacy-notices.slice";
 import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
 
-type EnableCellProps<T extends object> = CellProps<T, boolean> & {
+type EnableCellProps<T extends { id: string }> = CellProps<T, boolean> & {
   onToggle: (data: any) => Promise<any>;
 };
 
-export const EnableCell = <T extends object>({
+export const EnableCell = <T extends { id: string }>({
   value,
   column,
   row,
@@ -53,7 +53,6 @@ export const EnableCell = <T extends object>({
 }: EnableCellProps<T>) => {
   const modal = useDisclosure();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
-    // @ts-ignore
     await onToggle([{ id: row.original.id, disabled: !enable }]);
   };
 
@@ -209,8 +208,7 @@ const PrivacyNoticesPage = () => {
         and how you use that data.
       </Text>
       <Box data-testid="privacy-notices-page">
-        <FidesTable
-          /* @ts-ignore */
+        <FidesTable<PrivacyNoticeResponse>
           columns={columns}
           data={privacyNotices}
           userCanUpdate={userCanUpdate}

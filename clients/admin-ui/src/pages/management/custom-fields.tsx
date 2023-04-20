@@ -99,11 +99,10 @@ const CustomFields: NextPage = () => {
   const [updateCustomFieldDefinitionTrigger] =
     useUpdateCustomFieldDefinitionMutation();
 
-  // // Permissions
+  // Permissions
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.CUSTOM_FIELD_UPDATE,
   ]);
-  //  @ts-ignore
   const columns: Column<CustomFieldDefinitionWithId>[] = useMemo(
     () => [
       {
