@@ -140,15 +140,7 @@ export const FidesTable = <T extends FidesObject>({
                         cell.column.Header !== "Enable" ? onClick : undefined
                       }
                     >
-                      {
-                        // @ts-ignore
-                        cell.column.onToggle
-                          ? cell.render("Cell", {
-                              // @ts-ignore
-                              onToggle: cell.column.onToggle,
-                            })
-                          : cell.render("Cell")
-                      }
+                      {cell.render("Cell")}
                     </Td>
                   );
                 })}

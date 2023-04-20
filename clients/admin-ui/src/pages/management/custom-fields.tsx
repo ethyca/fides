@@ -1,22 +1,13 @@
-import {
-  Box,
-  Flex,
-  Heading,
-  Spinner,
-  Switch,
-  Text,
-  useDisclosure,
-  WarningIcon,
-} from "@fidesui/react";
-import ConfirmationModal from "common/ConfirmationModal";
-import  { useHasPermission } from "common/Restrict";
+import { Box, Flex, Heading, Spinner, Text } from "@fidesui/react";
+import { useHasPermission } from "common/Restrict";
 import type { NextPage } from "next";
-import React, { ChangeEvent, useMemo } from "react";
+import React, { useMemo } from "react";
 import { CellProps, Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
 import {
+  EnableCell,
   FieldTypeCell,
   TitleCell,
   WrappedCell,
@@ -28,76 +19,39 @@ import {
   useGetAllCustomFieldDefinitionsQuery,
   useUpdateCustomFieldDefinitionMutation,
 } from "~/features/plus/plus.slice";
-import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
+import {
+  CustomFieldDefinition,
+  CustomFieldDefinitionWithId,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
-type EnableCellProps<T extends object> = CellProps<T, boolean> & {
-  onToggle: (data: any) => Promise<any>;
-};
+export const EnableCustomFieldCell = (
+  cellProps: CellProps<CustomFieldDefinition, boolean>
+) => {
+  const [updateCustomFieldDefinitionTrigger] =
+    useUpdateCustomFieldDefinitionMutation();
+  const { row } = cellProps;
 
-const EnableCell = <T extends object>({
-  value,
-  column,
-  row,
-  onToggle,
-}: EnableCellProps<T>) => {
-  const modal = useDisclosure();
-  const handlePatch = async ({ enable }: { enable: boolean }) => {
-    // @ts-ignore
-    await onToggle({ ...row.original, active: enable });
-  };
-
-  const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
-    if (checked) {
-      await handlePatch({ enable: true });
-    } else {
-      modal.onOpen();
-    }
+  const onToggle = async (toggle: boolean) => {
+    await updateCustomFieldDefinitionTrigger({
+      ...row.original,
+      active: toggle,
+    });
   };
 
   return (
-    <>
-      <Switch
-        colorScheme="complimentary"
-        isChecked={!value}
-        data-testid={`toggle-${column.Header}`}
-        /**
-         * It's difficult to use a custom column in react-table 7 since we'd have to modify
-         * the declaration file. However, that modifies the type globally, so our datamap table
-         * would also have issues. Ignoring the type for now, but should potentially revisit
-         * if we update to react-table 8
-         * https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/59837
-         */
-        // @ts-ignore
-        disabled={column.disabled}
-        onChange={handleToggle}
-      />
-      <ConfirmationModal
-        isOpen={modal.isOpen}
-        onClose={modal.onClose}
-        onConfirm={() => {
-          handlePatch({ enable: false });
-          modal.onClose();
-        }}
-        title="Disable custom field"
-        message={
-          <Text color="gray.500">
-            Are you sure you want to disable this custom field?
-          </Text>
-        }
-        continueButtonText="Confirm"
-        isCentered
-        icon={<WarningIcon color="orange.100" />}
-      />
-    </>
+    <EnableCell<CustomFieldDefinition>
+      {...cellProps}
+      onToggle={onToggle}
+      title="Disable custom field"
+      message="Are you sure you want to disable this custom field?"
+    />
   );
-};
+}; // use this one in custom-fields/index.tsx column def
 
 const CustomFields: NextPage = () => {
   const { isLoading } = useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
-  const [updateCustomFieldDefinitionTrigger] =
-    useUpdateCustomFieldDefinitionMutation();
 
   // Permissions
   const userCanUpdate = useHasPermission([
@@ -121,11 +75,10 @@ const CustomFields: NextPage = () => {
         Header: "Enable",
         accessor: (row) => !row.active,
         disabled: !userCanUpdate,
-        Cell: EnableCell,
-        onToggle: updateCustomFieldDefinitionTrigger,
+        Cell: EnableCustomFieldCell,
       },
     ],
-    [updateCustomFieldDefinitionTrigger, userCanUpdate]
+    [userCanUpdate]
   );
 
   if (isLoading) {

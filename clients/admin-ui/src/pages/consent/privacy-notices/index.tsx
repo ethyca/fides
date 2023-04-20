@@ -7,16 +7,12 @@ import {
   Flex,
   Heading,
   Spinner,
-  Switch,
   Text,
-  useDisclosure,
-  WarningIcon,
 } from "@fidesui/react";
-import ConfirmationModal from "common/ConfirmationModal";
 import Restrict, { useHasPermission } from "common/Restrict";
 import EmptyTableState from "common/table/EmptyTableState";
 import NextLink from "next/link";
-import React, { ChangeEvent, useMemo } from "react";
+import React, { useMemo } from "react";
 import { CellProps, Column } from "react-table";
 
 import { useAppSelector } from "~/app/hooks";
@@ -27,6 +23,7 @@ import {
 } from "~/features/common/nav/v2/routes";
 import {
   DateCell,
+  EnableCell,
   FidesTable,
   FidesTableFooter,
   MechanismCell,
@@ -43,67 +40,29 @@ import {
 } from "~/features/privacy-notices/privacy-notices.slice";
 import { PrivacyNoticeResponse, ScopeRegistryEnum } from "~/types/api";
 
-type EnableCellProps<T extends { id: string }> = CellProps<T, boolean> & {
-  onToggle: (data: any) => Promise<any>;
-};
+const EnablePrivacyNoticeCell = (
+  cellProps: CellProps<PrivacyNoticeResponse, boolean>
+) => {
+  const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
 
-export const EnableCell = <T extends { id: string }>({
-  value,
-  column,
-  row,
-  onToggle,
-}: EnableCellProps<T>) => {
-  const modal = useDisclosure();
-  const handlePatch = async ({ enable }: { enable: boolean }) => {
-    await onToggle([{ id: row.original.id, disabled: !enable }]);
+  const { row } = cellProps;
+  const onToggle = async (toggle: boolean) => {
+    await patchNoticeMutationTrigger([
+      {
+        id: row.original.id,
+        disabled: !toggle,
+      },
+    ]);
   };
-
-  const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
-    if (checked) {
-      await handlePatch({ enable: true });
-    } else {
-      modal.onOpen();
-    }
-  };
-
   return (
-    <>
-      <Switch
-        colorScheme="complimentary"
-        isChecked={!value}
-        data-testid={`toggle-${column.Header}`}
-        /**
-         * It's difficult to use a custom column in react-table 7 since we'd have to modify
-         * the declaration file. However, that modifies the type globally, so our datamap table
-         * would also have issues. Ignoring the type for now, but should potentially revisit
-         * if we update to react-table 8
-         * https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/59837
-         */
-        // @ts-ignore
-        disabled={column.disabled}
-        onChange={handleToggle}
-      />
-      <ConfirmationModal
-        isOpen={modal.isOpen}
-        onClose={modal.onClose}
-        onConfirm={() => {
-          handlePatch({ enable: false });
-          modal.onClose();
-        }}
-        title="Disable privacy notice"
-        message={
-          <Text color="gray.500">
-            Are you sure you want to disable this privacy notice? Disabling this
+    <EnableCell<PrivacyNoticeResponse>
+      {...cellProps}
+      onToggle={onToggle}
+      title="Disable privacy notice"
+      message="Are you sure you want to disable this privacy notice? Disabling this
             notice means your users will no longer see this explanation about
-            your data uses which is necessary to ensure compliance.
-          </Text>
-        }
-        continueButtonText="Confirm"
-        isCentered
-        icon={<WarningIcon color="orange.100" />}
-      />
-    </>
+            your data uses which is necessary to ensure compliance."
+    />
   );
 };
 
@@ -114,7 +73,6 @@ const PrivacyNoticesPage = () => {
   const { isLoading } = useGetAllPrivacyNoticesQuery({ page, size: pageSize });
 
   const privacyNotices = useAppSelector(selectAllPrivacyNotices);
-  const [patchNoticeMutationTrigger] = usePatchPrivacyNoticesMutation();
   // Permissions
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.PRIVACY_NOTICE_UPDATE,
@@ -144,11 +102,10 @@ const PrivacyNoticesPage = () => {
         Header: "Enable",
         accessor: "disabled",
         disabled: !userCanUpdate,
-        Cell: EnableCell,
-        onToggle: patchNoticeMutationTrigger,
+        Cell: EnablePrivacyNoticeCell,
       },
     ],
-    [patchNoticeMutationTrigger, userCanUpdate]
+    [userCanUpdate]
   );
 
   if (isLoading) {
