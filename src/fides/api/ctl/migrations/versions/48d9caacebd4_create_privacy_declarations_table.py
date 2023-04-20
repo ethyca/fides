@@ -17,7 +17,7 @@ from sqlalchemy.exc import IntegrityError
 
 # revision identifiers, used by Alembic.
 revision = "48d9caacebd4"
-down_revision = "144d9b85c712"
+down_revision = "8342453518cc"
 branch_labels = None
 depends_on = None
 
