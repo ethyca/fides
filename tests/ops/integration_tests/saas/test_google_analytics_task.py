@@ -226,6 +226,13 @@ async def test_google_analytics_no_ga_client_id_new_workflow(
         ), "Node-level is given the same name as the dataset name"
         assert log.action_type == ActionType.consent
 
+    # Assert GA is marked as skipped because we don't have the correct identifier
+    db.refresh(privacy_preference_history)
+    assert privacy_preference_history.affected_system_status == {
+        "google_analytics_instance": "skipped"
+    }
+    assert not privacy_preference_history.secondary_user_ids
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_google_analytics
@@ -238,16 +245,25 @@ async def test_google_analytics_consent_request_task_new_workflow(
     google_analytics_dataset_config,
     google_analytics_client_id,
     privacy_preference_history,
+    privacy_preference_history_us_ca_provide,
+    system,
 ) -> None:
     """Full consent request based on the Google Analytics SaaS config
     for the new workflow where we save preferences w.r.t. privacy notices"""
+    google_analytics_connection_config.system_id = system.id
+    google_analytics_connection_config.save(db)
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()), status=PrivacyRequestStatus.pending
     )
     privacy_request.save(db)
+    # This preference matches on data use
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
+
+    # This preference does not match on data use
+    privacy_preference_history_us_ca_provide.privacy_request_id = privacy_request.id
+    privacy_preference_history_us_ca_provide.save(db=db)
 
     identity = Identity(**{"ga_client_id": google_analytics_client_id})
     privacy_request.cache_identity(identity)
@@ -288,6 +304,101 @@ async def test_google_analytics_consent_request_task_new_workflow(
         ), "Node-level is given the same name as the dataset name"
         assert log.action_type == ActionType.consent
 
+    # Google Analytics system added as complete to relevant privacy preference
+    assert privacy_preference_history.affected_system_status == {
+        google_analytics_connection_config.system_key: ExecutionLogStatus.complete.value
+    }
+    assert privacy_preference_history.secondary_user_ids == {
+        "ga_client_id": google_analytics_client_id
+    }
+
+    # Google Analytics added as skipped to privacy preference not matching data use
+    assert privacy_preference_history_us_ca_provide.affected_system_status == {
+        google_analytics_connection_config.system_key: ExecutionLogStatus.skipped.value
+    }
+    assert not privacy_preference_history_us_ca_provide.secondary_user_ids
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_google_analytics
+@pytest.mark.asyncio
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
+@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+async def test_google_analytics_consent_request_task_new_errored_workflow(
+    mocked_client_send,
+    db,
+    consent_policy,
+    google_analytics_connection_config,
+    google_analytics_dataset_config,
+    google_analytics_client_id,
+    privacy_preference_history,
+    privacy_preference_history_us_ca_provide,
+    system,
+) -> None:
+    """Testing errored Google Analytics SaaS config
+    for the new workflow where we save preferences w.r.t. privacy notices
+
+    Assert logging created appropriately
+    """
+    mocked_client_send.side_effect = Exception("KeyError")
+
+    google_analytics_connection_config.system_id = system.id
+    google_analytics_connection_config.save(db)
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()), status=PrivacyRequestStatus.pending
+    )
+    privacy_request.save(db)
+
+    # This preference matches on data use
+    privacy_preference_history.privacy_request_id = privacy_request.id
+    privacy_preference_history.save(db=db)
+
+    # This preference does not match on data use
+    privacy_preference_history_us_ca_provide.privacy_request_id = privacy_request.id
+    privacy_preference_history_us_ca_provide.save(db=db)
+
+    identity = Identity(**{"ga_client_id": google_analytics_client_id})
+    privacy_request.cache_identity(identity)
+
+    with pytest.raises(Exception):
+        await graph_task.run_consent_request(
+            privacy_request,
+            consent_policy,
+            build_consent_dataset_graph([google_analytics_dataset_config]),
+            [google_analytics_connection_config],
+            {"ga_client_id": google_analytics_client_id},
+            db,
+        )
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    google_analytics_logs = execution_logs.filter_by(
+        collection_name=google_analytics_dataset_config.fides_key
+    ).order_by("created_at")
+    assert google_analytics_logs.count() == 2
+
+    assert [log.status for log in google_analytics_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.error,
+    ]
+
+    # Google Analytics system added as errored to relevant privacy preference
+    assert privacy_preference_history.affected_system_status == {
+        google_analytics_connection_config.system_key: ExecutionLogStatus.error.value
+    }
+    assert privacy_preference_history.secondary_user_ids == {
+        "ga_client_id": google_analytics_client_id
+    }
+
+    # Google Analytics added as skipped to privacy preference not matching data use
+    assert privacy_preference_history_us_ca_provide.affected_system_status == {
+        google_analytics_connection_config.system_key: ExecutionLogStatus.skipped.value
+    }
+    assert not privacy_preference_history_us_ca_provide.secondary_user_ids
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_google_analytics
@@ -306,7 +417,6 @@ async def test_google_analytics_consent_prepared_requests_new_workflow(
     """Assert attributes of the PreparedRequest created by the client for running the consent request
     for the new workflow
     """
-
     privacy_request = PrivacyRequest(
         id=str(uuid4()), status=PrivacyRequestStatus.pending
     )

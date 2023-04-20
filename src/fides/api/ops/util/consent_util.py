@@ -1,12 +1,15 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
+from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
+from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.privacy_notice import EnforcementLevel
 from fides.api.ops.models.privacy_preference import (
     PrivacyPreferenceHistory,
     UserConsentPreference,
 )
-from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
 
 
 def filter_privacy_preferences_for_propagation(
@@ -34,9 +37,16 @@ def filter_privacy_preferences_for_propagation(
 
 def should_opt_in_to_service(
     system: Optional[System], privacy_request: PrivacyRequest
-) -> Optional[bool]:
+) -> Tuple[Optional[bool], List[PrivacyPreferenceHistory]]:
     """
-    Determine if we should opt in (return True), opt out (return False), or do nothing (return None) for the given System.
+    For SaaS Connectors, examine the Privacy Preferences and collapse this information into a single should we opt in? (True),
+    should we opt out? (False) or should we do nothing? (None).
+
+    Email connectors should instead call "filter_privacy_preferences_for_propagation" directly, since we can have preferences with
+    conflicting opt in/opt out values for those connector types.
+
+    Also return filtered preferences here so we can cache affected systems and/or secondary identifiers directly on these
+    filtered preferences for consent reporting.
 
     - If using the old workflow (privacyrequest.consent_preferences), return True if all attached consent preferences
     are opt in, otherwise False.  System check is ignored.
@@ -48,19 +58,110 @@ def should_opt_in_to_service(
 
     # OLD WORKFLOW
     if privacy_request.consent_preferences:
-        return all(
-            consent_pref["opt_in"]
-            for consent_pref in privacy_request.consent_preferences
+        return (
+            all(
+                consent_pref["opt_in"]
+                for consent_pref in privacy_request.consent_preferences
+            ),
+            [],  # Don't need to return the filtered preferences, this is just relevant for the new workflow
         )
 
     # NEW WORKFLOW
-    filtered_preferences = filter_privacy_preferences_for_propagation(
+    relevant_preferences = filter_privacy_preferences_for_propagation(
         system, privacy_request.privacy_preferences
     )
-    if not filtered_preferences:
-        return None  # We should do nothing here
+    if not relevant_preferences:
+        return None, []  # We should do nothing here
 
-    return all(
-        filtered_pref.preference == UserConsentPreference.opt_in
-        for filtered_pref in filtered_preferences
+    # Collapse relevant preferences into whether we should opt-in or opt-out
+    preference_to_propagate: UserConsentPreference = (
+        UserConsentPreference.opt_out
+        if any(
+            filtered_pref.preference == UserConsentPreference.opt_out
+            for filtered_pref in relevant_preferences
+        )
+        else UserConsentPreference.opt_in
     )
+
+    # Hopefully rare final filtering in case there are conflicting preferences
+    filtered_preferences: List[PrivacyPreferenceHistory] = [
+        pref
+        for pref in relevant_preferences
+        if pref.preference == preference_to_propagate
+    ]
+
+    # Return whether we should opt in, and the filtered preferences so we can update those for consent reporting
+    return preference_to_propagate == UserConsentPreference.opt_in, filtered_preferences
+
+
+def cache_initial_status_and_identities_for_consent_reporting(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    connection_config: ConnectionConfig,
+    relevant_preferences: List[PrivacyPreferenceHistory],
+    relevant_user_identities: Dict[str, Any],
+) -> None:
+    """Add a pending system status and cache relevant identities on the applicable PrivacyPreferenceHistory
+    records for consent reporting.
+
+    Preferences that aren't relevant for the given system/connector are given a skipped status.
+
+    Typically used when *some* but not all privacy preferences are relevant.  Otherwise,
+    other methods just mark all the preferences as skipped.
+    """
+    for pref in privacy_request.privacy_preferences:
+        if pref in relevant_preferences:
+            pref.update_secondary_user_ids(db, relevant_user_identities)
+            pref.cache_system_status(
+                db, connection_config.system_key, ExecutionLogStatus.pending
+            )
+        else:
+            pref.cache_system_status(
+                db, connection_config.system_key, ExecutionLogStatus.skipped
+            )
+
+
+def add_complete_system_status_for_consent_reporting(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    connection_config: ConnectionConfig,
+) -> None:
+    """Cache a complete system status for consent reporting on just the subset
+    of preferences that were deemed relevant for the connector on failure
+
+    Deeming them relevant if they already had a "pending" log added to them.
+    """
+    for pref in privacy_request.privacy_preferences:
+        if (
+            pref.affected_system_status
+            and pref.affected_system_status.get(connection_config.system_key)
+            == ExecutionLogStatus.pending.value
+        ):
+            pref.cache_system_status(
+                db,
+                connection_config.system_key,
+                ExecutionLogStatus.complete,
+            )
+
+
+def add_errored_system_status_for_consent_reporting(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    connection_config: ConnectionConfig,
+) -> None:
+    """Cache an errored system status for consent reporting on just the subset
+    of preferences that were deemed relevant for the connector on failure
+
+    Deeming them relevant if they already had a "pending" log added to them.
+    """
+    for pref in privacy_request.privacy_preferences:
+        if (
+            pref.affected_system_status
+            and pref.affected_system_status.get(connection_config.system_key)
+            == ExecutionLogStatus.pending.value
+        ):
+            pref.cache_system_status(
+                db,
+                connection_config.system_key,
+                ExecutionLogStatus.error,
+            )
