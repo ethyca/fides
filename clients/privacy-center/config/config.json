@@ -12,7 +12,7 @@
 			"description": "We will text you a report of the data related to your account.",
 			"identity_inputs": {
 				"name": "required",
-				"email": "required"
+				"phone": "required"
 			}
 		},
 		{
@@ -22,7 +22,7 @@
 			"description": "We will delete your account and all of its associated data within 45 days. This action cannot be undone: your account, rewards, punchcard points, etc. can never be recovered once deleted.",
 			"identity_inputs": {
 				"name": "required",
-				"email": "required"
+				"phone": "required"
 			}
 		}
 	],
