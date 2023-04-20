@@ -114,9 +114,8 @@ COPY clients/ .
 FROM frontend as built_frontend
 
 # Builds and exports admin-ui
-# fixme - rename
-RUN npm run export
-# builds privacy-center
+RUN npm run export-ui
+# Builds privacy-center
 RUN npm run build-pc
 
 #############################

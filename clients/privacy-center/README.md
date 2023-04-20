@@ -64,7 +64,10 @@ Not exactly the most appealing color scheme – but note that wherever those var
 
 ## Development
 
-To serve this application locally, first install your local dependencies by running
+To serve this application locally, first install your local dependencies by installing at the root `client` directory level:
+
+
+In `/clients`:
 
 ```bash
 npm install
@@ -73,15 +76,18 @@ npm install
 Then, run:
 
 ```bash
-npm run dev
+cd privacy-center
+turbo run dev
 ```
+
+This will automatically build and run the project.
 
 ## Building
 
-To build this application, run:
+To build this application directly, run:
 
 ```bash
-npm run build
+turbo run build
 ```
 
 As a Next application, it will output build artifacts to the `.next` directory.
@@ -91,7 +97,7 @@ As a Next application, it will output build artifacts to the `.next` directory.
 To run the interactive test interface, run:
 
 ```bash
-npm run test
+turbo run test
 ```
 
 ## Deployment

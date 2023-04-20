@@ -34,17 +34,17 @@ jobs:
         run: npm install
 
       - name: Lint
-        run: turbo run lint
+        run: npm run lint
 
       - name: Format
-        run: turbo run format:ci
+        run: npm run format:ci
 
       - name: Build
-        run: turbo run build
+        run: npm run build
 
       - name: Jest test
-        run: turbo run test:ci
-  Admin-UI-Cypress:
+        run: npm run test:ci
+  Frontend-Cypress:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -66,9 +66,9 @@ jobs:
       - name: Cypress E2E tests
         uses: cypress-io/github-action@v4
         with:
-          working-directory: clients/admin-ui
+          working-directory: clients
           install: false
-          start: turbo run cy:start
+          start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
 
@@ -76,7 +76,7 @@ jobs:
         if: failure()
         with:
           name: cypress-videos
-          path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
+          path: /home/runner/work/fides/fides/clients/cypress-e2e/videos/*.mp4
 
       - name: Cypress component tests
           uses: cypress-io/github-action@v4
@@ -85,30 +85,3 @@ jobs:
             install: false
             component: true
 
-  Privacy-Center-Cypress:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: |
-          cd clients 
-          npm install
-
-      - name: Cypress E2E tests
-        uses: cypress-io/github-action@v4
-        with:
-          working-directory: clients/privacy-center
-          install: false
-          start: turbo run cy:start
-          wait-on: "http://localhost:3000"
-          wait-on-timeout: 120

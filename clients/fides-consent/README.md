@@ -221,18 +221,16 @@ Note that this module does _not_ define the `Fides.consent` global, as that is u
 
 This package is built and hosted independently from the privacy center, but the privacy center's scripts should automatically keep it up-to-date automatically.
 
-To build the minified script it manually:
+To build the minified script manually:
 
 ```sh
 # From fides-consent
-npm run build
-# From privacy-center
-npm run build:fides-consent
+turbo run build
 ```
 
 Or, to watch for changes and build without minification:
 
 ```sh
 # From fides-consent
-npm run watch
+turbo run watch
 ```
