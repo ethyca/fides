@@ -150,7 +150,7 @@ const CustomFields: NextPage = () => {
             addButtonText="Add a custom field +"
             addButtonHref=""
             testId="custom-field"
-            searchBar
+            showSearchBar
             isLoading={isLoading}
             EmptyState={
               <EmptyTableState

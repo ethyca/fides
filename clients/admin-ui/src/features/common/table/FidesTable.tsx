@@ -34,7 +34,7 @@ type Props<T extends object> = {
   addButtonHref: string | UrlObject;
   testId: string;
   EmptyState: ReactElement;
-  searchBar?: boolean;
+  showSearchBar?: boolean;
   isLoading: boolean;
 };
 
@@ -48,7 +48,7 @@ export const FidesTable = <T extends object>({
   addButtonHref,
   testId,
   EmptyState,
-  searchBar,
+  showSearchBar,
   isLoading,
 }: Props<T>) => {
   const router = useRouter();
@@ -72,7 +72,7 @@ export const FidesTable = <T extends object>({
 
   return (
     <TableContainer>
-      {searchBar ? (
+      {showSearchBar ? (
         <Flex flexGrow={1} marginBottom={3}>
           <GlobalFilter
             globalFilter={tableInstance.state.globalFilter}
