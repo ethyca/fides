@@ -16,15 +16,20 @@ Once that's complete, there are a few different tools to install for get everyth
 
 ## Requirements
 
-The primary requirements for contributing to Fides are `Docker` and `Python`. The download links as well as minimum required versions are provided below:
+The primary requirements for contributing to Fides are `Docker` and `Python`. The download links as well as minimum required versions are provided below
 
-* [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
-* [Python](https://www.python.org/downloads/) (version 3.8 through 3.10)
+ _NOTE: Installing these requirements via Brew or other package managers is highly discouraged. Please use the provided links for a more stable experience._
+
+* __Docker Desktop (version 20.10.11 or later)__ - [Docker Desktop Download Page](https://www.docker.com/products/docker-desktop/)
+* __Python (version 3.8 through 3.10)__ - To simplify the installation experience and create a more stable Python installation that can be managed indepently, we recommend installing Python via Anaconda. The installer for Anaconda can be found [here](https://www.anaconda.com/download).
 
 !!! warning
-    Although it should function "out of the box", there are some additional configuration steps that should be taken on Apple's ARM silicon (M-series chips, i.e. M1, M2, M2 Max, etc.) to make developing with Docker a smoother experience as well as a few potential bugs:
+    _Mac Users_: Although it should function "out of the box", there are some additional configuration steps that should be taken on Apple's ARM silicon (M-series chips, i.e. M1, M2, M2 Max, etc.) to make developing with Docker a smoother experience as well as a few potential bugs:
 
-    1. Increase disk space allocation in Docker Desktop.
+    1. Explicitly set resource allocations in Docker Desktop:
+        * CPUs: 4
+        * Memory:8GB
+        * Disk Limit: 200GB
     2. There are known issues around connecting to MSSQL for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).
 
 Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend doing this in a virtual environment or using [pipx](https://pypa.github.io/pipx/), but specific details are outside the scope of this guide.

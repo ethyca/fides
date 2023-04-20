@@ -1,10 +1,9 @@
 """
 This file aggregates nox commands for various development tasks.
 """
-from http.client import HTTPConnection, HTTPException
-import webbrowser
 import shutil
 import sys
+import webbrowser
 from os.path import isfile
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
