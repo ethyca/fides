@@ -1,4 +1,5 @@
 import random
+
 import pytest
 import requests
 
@@ -54,17 +55,14 @@ async def test_klaviyo_access_request_task(
     assert_rows_match(
         v[f"{dataset_name}:profiles"],
         min_size=1,
-        keys=[
-            "type",
-            "id",
-            "attributes",
-            "links",
-            "relationships"
-        ],
+        keys=["type", "id", "attributes", "links", "relationships"],
     )
 
     # verify we only returned data for our identity email
-    assert v[f"{dataset_name}:profiles"][0]['attributes']["email"] == klaviyo_identity_email
+    assert (
+        v[f"{dataset_name}:profiles"][0]["attributes"]["email"]
+        == klaviyo_identity_email
+    )
     user_id = v[f"{dataset_name}:profiles"][0]["id"]
 
 
@@ -107,13 +105,7 @@ async def test_klaviyo_erasure_request_task(
     assert_rows_match(
         v[f"{dataset_name}:profiles"],
         min_size=1,
-        keys=[
-            "type",
-            "id",
-            "attributes",
-            "links",
-            "relationships"
-        ],
+        keys=["type", "id", "attributes", "links", "relationships"],
     )
 
     x = await graph_task.run_erasure(
@@ -134,16 +126,16 @@ async def test_klaviyo_erasure_request_task(
     base_url = f"https://{klaviyo_secrets['domain']}"
     headers = {
         "Authorization": f"Klaviyo-API-Key {klaviyo_secrets['api_key']}",
-        "revision": klaviyo_secrets['revision']
+        "revision": klaviyo_secrets["revision"],
     }
 
     # user
     response = requests.get(
         url=f"{base_url}/api/profiles",
         headers=headers,
-        params={"filter": "equals(email,'"+klaviyo_erasure_identity_email+"')"},
+        params={"filter": "equals(email,'" + klaviyo_erasure_identity_email + "')"},
     )
-    
+
     assert response.status_code == 200
 
     CONFIG.execution.masking_strict = masking_strict

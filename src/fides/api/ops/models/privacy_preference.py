@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Type
+from typing import Any, Dict, Type
 
-from sqlalchemy import ARRAY, Column
+from sqlalchemy import ARRAY, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, relationship
@@ -21,7 +21,11 @@ from fides.api.ops.models.privacy_notice import (
     PrivacyNoticeHistory,
     PrivacyNoticeRegion,
 )
-from fides.api.ops.models.privacy_request import PrivacyRequest, ProvidedIdentity
+from fides.api.ops.models.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequest,
+    ProvidedIdentity,
+)
 from fides.core.config import CONFIG
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
@@ -46,6 +50,7 @@ class PrivacyPreferenceHistory(Base):
     affected_system_status = Column(
         MutableDict.as_mutable(JSONB), server_default="{}", default=dict
     )
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     email = Column(
         StringEncryptedType(
             type_in=String(),
@@ -110,6 +115,31 @@ class PrivacyPreferenceHistory(Base):
         uselist=False,
     )
 
+    def cache_system_status(
+        self, db: Session, system: str, status: ExecutionLogStatus
+    ) -> None:
+        """Update the cached affected system status for consent reporting
+
+        Typically this should just be called for consent connectors only.
+        If no request is made or email is sent, this should be called with a status of skipped.
+        """
+        if not self.affected_system_status:
+            self.affected_system_status = {}
+        self.affected_system_status[system] = status.value
+        self.save(db)
+
+    def update_secondary_user_ids(
+        self, db: Session, new_identities: Dict[str, Any]
+    ) -> None:
+        """Update secondary user identities for consent reporting
+
+        The intent is to only put identities here that we intend to send to third party systems.
+        """
+        secondary_user_ids = self.secondary_user_ids or {}
+        secondary_user_ids.update(new_identities)
+        self.secondary_user_ids = secondary_user_ids
+        self.save(db)
+
     @classmethod
     def create(
         cls: Type[PrivacyPreferenceHistory],
@@ -170,6 +200,13 @@ class CurrentPrivacyPreference(Base):
     The specific privacy notice history and privacy preference history record are linked as well.
     """
 
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        index=True,
+    )
     preference = Column(EnumColumn(UserConsentPreference), nullable=False, index=True)
     provided_identity_id = Column(String, ForeignKey(ProvidedIdentity.id), index=True)
     privacy_notice_id = Column(
