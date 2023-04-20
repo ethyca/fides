@@ -20,8 +20,6 @@
     "test:ci": "turbo run test:ci",
     "prod-export-ui": "turbo run prod-export --filter=admin-ui",
     "export-ui": "turbo run export --filter=admin-ui",
-    "cy:open": "turbo run cy:open",
-    "cy:run": "turbo run cy:run",
     "cy-ui:start": "turbo run cy:start --filter=admin-ui",
     "cy-pc:start": "turbo run cy:start --filter=privacy-center",
     "analyze": "turbo run analyze",
