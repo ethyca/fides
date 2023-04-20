@@ -1067,7 +1067,6 @@ class TestGetPrivacyNoticesByDataUse:
         db: Session,
         request,
     ):
-
         # load the provided system fixtures
         for system_fixture in system_fixtures:
             request.getfixturevalue(system_fixture)
