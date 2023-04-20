@@ -224,22 +224,27 @@ async def test_universal_analytics_no_ga_client_id_new_workflow(
         privacy_request_id=privacy_request.id
     )
 
-    google_analytics_logs = execution_logs.filter_by(
+    universal_analytics_logs = execution_logs.filter_by(
         collection_name=dataset_name
     ).order_by("created_at")
-    assert google_analytics_logs.count() == 2
+    assert universal_analytics_logs.count() == 2
 
-    assert [log.status for log in google_analytics_logs] == [
+    assert [log.status for log in universal_analytics_logs] == [
         ExecutionLogStatus.in_processing,
         ExecutionLogStatus.skipped,
     ]
 
-    for log in google_analytics_logs:
+    for log in universal_analytics_logs:
         assert log.dataset_name == dataset_name
         assert (
             log.collection_name == dataset_name
         ), "Node-level is given the same name as the dataset name"
         assert log.action_type == ActionType.consent
+
+    assert privacy_preference_history.affected_system_status == {
+        universal_analytics_connection_config_without_secrets.system_key: ExecutionLogStatus.skipped.value
+    }
+    assert not privacy_preference_history.secondary_user_ids
 
 
 @pytest.mark.integration_saas
@@ -253,17 +258,26 @@ async def test_universal_analytics_consent_request_task_new_workflow(
     universal_analytics_dataset_config,
     universal_analytics_client_id,
     privacy_preference_history,
+    privacy_preference_history_us_ca_provide,
+    system,
 ) -> None:
     """Full consent request based on the Google Analytics SaaS config
     for the new workflow where we save consent with respect to privacy preferences
     """
+    universal_analytics_connection_config.system_id = system.id
+    universal_analytics_connection_config.save(db)
 
     privacy_request = PrivacyRequest(
         id=str(uuid4()), status=PrivacyRequestStatus.pending
     )
     privacy_request.save(db)
+    # This preference matches on data use
     privacy_preference_history.privacy_request_id = privacy_request.id
     privacy_preference_history.save(db=db)
+
+    # This preference does not match on data use
+    privacy_preference_history_us_ca_provide.privacy_request_id = privacy_request.id
+    privacy_preference_history_us_ca_provide.save(db=db)
 
     identity = Identity(**{"ga_client_id": universal_analytics_client_id})
     privacy_request.cache_identity(identity)
@@ -303,6 +317,102 @@ async def test_universal_analytics_consent_request_task_new_workflow(
             log.collection_name == dataset_name
         ), "Node-level is given the same name as the dataset name"
         assert log.action_type == ActionType.consent
+
+    # Universal Analytics system added as complete to relevant privacy preference
+    assert privacy_preference_history.affected_system_status == {
+        universal_analytics_connection_config.system_key: ExecutionLogStatus.complete.value
+    }
+    assert privacy_preference_history.secondary_user_ids == {
+        "ga_client_id": universal_analytics_client_id
+    }
+
+    # Universal Analytics added as skipped to privacy preference not matching data use
+    assert privacy_preference_history_us_ca_provide.affected_system_status == {
+        universal_analytics_connection_config.system_key: ExecutionLogStatus.skipped.value
+    }
+    assert not privacy_preference_history_us_ca_provide.secondary_user_ids
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_universal_analytics
+@pytest.mark.asyncio
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
+@mock.patch("fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send")
+async def test_universal_analytics_consent_request_task_new_errored_workflow(
+    mocked_client_send,
+    db,
+    consent_policy,
+    universal_analytics_connection_config,
+    universal_analytics_dataset_config,
+    universal_analytics_client_id,
+    privacy_preference_history,
+    privacy_preference_history_us_ca_provide,
+    system,
+) -> None:
+    """Testing errored Universal Analytics SaaS config
+    for the new workflow where we save preferences w.r.t. privacy notices
+
+    Assert logging created appropriately
+    """
+    mocked_client_send.side_effect = Exception("KeyError")
+
+    universal_analytics_connection_config.system_id = system.id
+    universal_analytics_connection_config.save(db)
+
+    privacy_request = PrivacyRequest(
+        id=str(uuid4()), status=PrivacyRequestStatus.pending
+    )
+    privacy_request.save(db)
+    # This preference matches on data use
+    privacy_preference_history.privacy_request_id = privacy_request.id
+    privacy_preference_history.save(db=db)
+
+    # This preference does not match on data use
+    privacy_preference_history_us_ca_provide.privacy_request_id = privacy_request.id
+    privacy_preference_history_us_ca_provide.save(db=db)
+
+    identity = Identity(**{"ga_client_id": universal_analytics_client_id})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = "universal_analytics_instance"
+
+    with pytest.raises(Exception):
+        await graph_task.run_consent_request(
+            privacy_request,
+            consent_policy,
+            build_consent_dataset_graph([universal_analytics_dataset_config]),
+            [universal_analytics_connection_config],
+            {"ga_client_id": universal_analytics_client_id},
+            db,
+        )
+
+    execution_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id
+    )
+
+    universal_analytics_logs = execution_logs.filter_by(
+        collection_name=dataset_name
+    ).order_by("created_at")
+    assert universal_analytics_logs.count() == 2
+
+    assert [log.status for log in universal_analytics_logs] == [
+        ExecutionLogStatus.in_processing,
+        ExecutionLogStatus.error,
+    ]
+
+    # Universal Analytics system added as complete to relevant privacy preference
+    assert privacy_preference_history.affected_system_status == {
+        universal_analytics_connection_config.system_key: ExecutionLogStatus.error.value
+    }
+    assert privacy_preference_history.secondary_user_ids == {
+        "ga_client_id": universal_analytics_client_id
+    }
+
+    # Universal Analytics added as skipped to privacy preference not matching data use
+    assert privacy_preference_history_us_ca_provide.affected_system_status == {
+        universal_analytics_connection_config.system_key: ExecutionLogStatus.skipped.value
+    }
+    assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
 
 @pytest.mark.integration_saas
