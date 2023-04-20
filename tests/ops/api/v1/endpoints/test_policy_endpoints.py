@@ -1237,6 +1237,56 @@ class TestRuleTargets:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 2
 
+    def test_create_rule_target_with_custom_category(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+        custom_data_category,
+    ):
+        rule = policy.rules[0]
+        data = [
+            {
+                "data_category": custom_data_category.fides_key,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
+        resp = api_client.patch(
+            self.get_rule_url(policy.key, rule.key),
+            json=data,
+            headers=auth_header,
+        )
+
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+    def test_create_target_with_invalid_category(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+    ):
+        rule = policy.rules[0]
+        invalid_data_category = "invalid_category"
+        data = [
+            {
+                "data_category": invalid_data_category,
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
+        resp = api_client.patch(
+            self.get_rule_url(policy.key, rule.key),
+            json=data,
+            headers=auth_header,
+        )
+
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == f"The data category {invalid_data_category} is not supported."
+        )
+
     def test_create_duplicate_rule_targets(
         self,
         api_client: TestClient,
