@@ -45,7 +45,6 @@
       }
     ],
     // Default exports are slightly preferred for component files, but this rule has too many false positives.
-    "import/prefer-default-export": "off",
-    "cypress/unsafe-to-chain-command": "off"
+    "import/prefer-default-export": "off"
   }
 }

@@ -22,7 +22,6 @@ describe("Privacy request", () => {
         // `.blur()` which triggers input validation.
 
         // test email being typed, continue becoming disabled due to invalid email
-        /* eslint-disable cypress/unsafe-to-chain-command */
         cy.root().get("input#email").type("invalid email").blur();
         cy.root().should("contain", "Email is invalid");
         cy.root().get("button").contains("Continue").should("be.disabled");
@@ -32,7 +31,6 @@ describe("Privacy request", () => {
         cy.root().get("input#email").type("valid@example.com").blur();
         cy.root().get("button").contains("Continue").should("be.enabled");
         cy.root().get("input#email").clear().blur();
-        /* eslint-enable cypress/unsafe-to-chain-command */
       });
     });
   });
