@@ -5,9 +5,15 @@ Revises: 144d9b85c712
 Create Date: 2023-04-14 14:16:50.700532
 
 """
+import json
+import uuid
+from collections import defaultdict
+
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy import text
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.exc import IntegrityError
 
 # revision identifiers, used by Alembic.
 revision = "48d9caacebd4"
@@ -70,7 +76,36 @@ def upgrade():
         unique=False,
     )
 
-    # TODO: migrate data - pull from systems table JSON, populate privacy declarations table.
+    bind = op.get_bind()
+    existing_declarations = bind.execute(
+        text("SELECT fides_key, privacy_declarations FROM ctl_systems;")
+    )
+    for row in existing_declarations:
+        system_id = row["fides_key"]
+        old_privacy_declarations = row["privacy_declarations"]
+        for privacy_declaration in old_privacy_declarations:
+            new_privacy_declaration_id: str = "pri_" + str(uuid.uuid4())
+            new_data = {
+                **privacy_declaration,
+                "system_id": system_id,
+                "id": new_privacy_declaration_id,
+            }
+
+            insert_privacy_declarations_query = text(
+                "INSERT INTO privacydeclaration (id, name, data_categories, data_qualifier, data_subjects, dataset_references, egress, ingress, system_id, data_use) "
+                "VALUES (:id, :name, :data_categories, :data_qualifier, :data_subjects, :dataset_references, :egress, :ingress, :system_id, :data_use)"
+            )
+
+            try:
+                bind.execute(
+                    insert_privacy_declarations_query,
+                    new_data,
+                )
+            except IntegrityError as exc:
+                raise Exception(
+                    f"Fides attempted to copy System.privacy_declarations into their own privacydeclaration rows but got error: {exc}. "
+                    f"Adjust the 'data_use' value to ponit to an existing data use to migrate successfully"
+                )
 
     op.drop_column("ctl_systems", "privacy_declarations")
     # ### end Alembic commands ###
@@ -88,7 +123,37 @@ def downgrade():
         ),
     )
 
-    # TODO: migrate data - pull from privacy declarations table, populate systems table with JSON.
+    bind = op.get_bind()
+    existing_declarations = bind.execute(
+        text(
+            "SELECT id, name, data_categories, data_qualifier, data_subjects, dataset_references, egress, ingress, system_id, data_use FROM privacydeclaration;"
+        )
+    )
+    pds_by_system = defaultdict(list)
+    for row in existing_declarations:
+        system_id = row["system_id"]
+        privacy_declaration = {
+            "name": row["name"],
+            "data_categories": row["data_categories"],
+            "data_qualifier": row["data_qualifier"],
+            "data_subjects": row["data_subjects"],
+            "dataset_references": row["dataset_references"],
+            "egress": row["egress"],
+            "ingress": row["ingress"],
+            "data_use": row["data_use"],
+        }
+        pds_by_system[system_id].append(privacy_declaration)
+
+    for system_key, pds in pds_by_system.items():
+        privacy_declarations = json.dumps(pds)
+        update_systems_query = text(
+            "update ctl_systems set privacy_declarations = :privacy_declarations where fides_key = :system_key;"
+        )
+
+        bind.execute(
+            update_systems_query,
+            {"system_key": system_key, "privacy_declarations": privacy_declarations},
+        )
 
     op.drop_index(
         op.f("ix_privacydeclaration_system_id"), table_name="privacydeclaration"
