@@ -9,7 +9,7 @@ import {
   WarningIcon,
 } from "@fidesui/react";
 import ConfirmationModal from "common/ConfirmationModal";
-import { useHasPermission } from "common/Restrict";
+import  { useHasPermission } from "common/Restrict";
 import type { NextPage } from "next";
 import React, { ChangeEvent, useMemo } from "react";
 import { CellProps, Column } from "react-table";
@@ -171,10 +171,6 @@ const CustomFields: NextPage = () => {
             data={customFields}
             userCanUpdate={userCanUpdate}
             redirectRoute=""
-            createScope={ScopeRegistryEnum.CUSTOM_FIELD_CREATE}
-            addButtonText="Add a custom field +"
-            addButtonHref=""
-            testId="custom-field"
             showSearchBar
           />
         </Box>

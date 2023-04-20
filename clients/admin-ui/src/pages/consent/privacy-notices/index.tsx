@@ -3,6 +3,7 @@ import {
   Box,
   Breadcrumb,
   BreadcrumbItem,
+  Button,
   Flex,
   Heading,
   Spinner,
@@ -12,7 +13,7 @@ import {
   WarningIcon,
 } from "@fidesui/react";
 import ConfirmationModal from "common/ConfirmationModal";
-import { useHasPermission } from "common/Restrict";
+import Restrict, { useHasPermission } from "common/Restrict";
 import EmptyTableState from "common/table/EmptyTableState";
 import NextLink from "next/link";
 import React, { ChangeEvent, useMemo } from "react";
@@ -27,6 +28,7 @@ import {
 import {
   DateCell,
   FidesTable,
+  FidesTableFooter,
   MechanismCell,
   MultiTagCell,
   TitleCell,
@@ -213,10 +215,21 @@ const PrivacyNoticesPage = () => {
           data={privacyNotices}
           userCanUpdate={userCanUpdate}
           redirectRoute={PRIVACY_NOTICES_ROUTE}
-          createScope={ScopeRegistryEnum.PRIVACY_NOTICE_CREATE}
-          addButtonText="Add a privacy notice +"
-          addButtonHref={`${PRIVACY_NOTICES_ROUTE}/new`}
-          testId="privacy-notice"
+          footer={
+            <FidesTableFooter totalColumns={columns.length}>
+              <Restrict scopes={[ScopeRegistryEnum.PRIVACY_NOTICE_CREATE]}>
+                <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
+                  <Button
+                    size="xs"
+                    colorScheme="primary"
+                    data-testid="add-privacy-notice-btn"
+                  >
+                    Add a privacy notice +
+                  </Button>
+                </NextLink>
+              </Restrict>
+            </FidesTableFooter>
+          }
         />
       </Box>
     </Layout>

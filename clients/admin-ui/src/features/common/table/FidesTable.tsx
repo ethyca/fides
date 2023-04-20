@@ -1,27 +1,21 @@
 import {
   ArrowDownIcon,
   ArrowUpIcon,
-  Button,
   Flex,
   Table,
   TableContainer,
   Tbody,
   Td,
   Text,
-  Tfoot,
   Th,
   Thead,
   Tr,
 } from "@fidesui/react";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { ReactNode } from "react";
 import { Column, useGlobalFilter, useSortBy, useTable } from "react-table";
-import { UrlObject } from "url";
 
-import Restrict from "~/features/common/Restrict";
 import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
-import { ScopeRegistryEnum } from "~/types/api";
 
 interface FidesObject {
   id?: string;
@@ -33,11 +27,8 @@ type Props<T extends FidesObject> = {
   data: T[];
   userCanUpdate: boolean;
   redirectRoute: string;
-  createScope: ScopeRegistryEnum;
-  addButtonText: string;
-  addButtonHref: string | UrlObject;
-  testId: string;
   showSearchBar?: boolean;
+  footer?: ReactNode;
 };
 
 export const FidesTable = <T extends FidesObject>({
@@ -45,11 +36,8 @@ export const FidesTable = <T extends FidesObject>({
   data,
   userCanUpdate,
   redirectRoute,
-  createScope,
-  addButtonText,
-  addButtonHref,
-  testId,
   showSearchBar,
+  footer,
 }: Props<T>) => {
   const router = useRouter();
 
@@ -168,23 +156,7 @@ export const FidesTable = <T extends FidesObject>({
             );
           })}
         </Tbody>
-        <Tfoot backgroundColor="gray.50">
-          <Tr>
-            <Td colSpan={columns.length} px={4} py={3.5}>
-              <Restrict scopes={[createScope]}>
-                <NextLink href={addButtonHref}>
-                  <Button
-                    size="xs"
-                    colorScheme="primary"
-                    data-testid={`add-${testId}-btn`}
-                  >
-                    {addButtonText}
-                  </Button>
-                </NextLink>
-              </Restrict>
-            </Td>
-          </Tr>
-        </Tfoot>
+        {footer}
       </Table>
     </TableContainer>
   );
