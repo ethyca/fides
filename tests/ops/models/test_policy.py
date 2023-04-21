@@ -1,5 +1,7 @@
+from fideslang.models import DataCategory as FideslangDataCategory
 import pytest
 from sqlalchemy.orm import Session
+from unittest import mock
 
 from fides.api.ops.common_exceptions import (
     DataCategoryNotSupported,
@@ -12,6 +14,7 @@ from fides.api.ops.models.policy import (
     Policy,
     Rule,
     RuleTarget,
+    _get_ref_from_taxonomy,
     _is_ancestor_of_contained_categories,
 )
 from fides.api.ops.models.storage import StorageConfig
@@ -24,6 +27,15 @@ from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
 from fides.api.ops.util.data_category import DataCategory
 from fides.api.ops.util.text import to_snake_case
 from fides.lib.models.client import ClientDetail
+
+
+@mock.patch("fides.api.ops.models.policy.get_fides_data_category_superset")
+def test_get_ref_from_taxonomy_calls_superset(
+    mock_get_ref_from_taxonomy: mock.Mock,
+) -> None:
+    mock_get_ref_from_taxonomy.return_value = [FideslangDataCategory(fides_key="user")]
+    _get_ref_from_taxonomy("user")
+    assert mock_get_ref_from_taxonomy.called
 
 
 def test_policy_sets_slug(
