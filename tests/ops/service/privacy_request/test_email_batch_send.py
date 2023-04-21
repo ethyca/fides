@@ -26,10 +26,7 @@ from fides.api.ops.service.privacy_request.email_batch_service import (
 )
 from fides.api.ops.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.core.config import get_config
-from tests.fixtures.application_fixtures import (
-    _create_privacy_request_for_policy,
-    privacy_preference_history_us_ca_provide,
-)
+from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 CONFIG = get_config()
 

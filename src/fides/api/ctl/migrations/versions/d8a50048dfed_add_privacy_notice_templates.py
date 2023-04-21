@@ -76,9 +76,6 @@ def upgrade():
         ["id"],
     )
 
-    conn = op.get_bind()
-    conn.execute("COMMIT")
-
 
 def downgrade():
     op.drop_constraint(

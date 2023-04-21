@@ -58,6 +58,7 @@ from fides.api.ops.service.privacy_request.email_batch_service import (
 from fides.api.ops.service.saas_request.override_implementations import *
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
+from fides.api.ops.util.consent_util import load_default_notices
 from fides.api.ops.util.logger import _log_exception
 from fides.api.ops.util.oauth_util import get_root_client, verify_oauth_client_prod
 from fides.api.ops.util.system_manager_oauth_util import (
@@ -80,6 +81,10 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     system.system_connections_router,
     system.system_router,
 ]
+
+DEFAULT_PRIVACY_NOTICES_PATH = (
+    "/fides/data/privacy_notices/privacy_notice_templates.yml"
+)
 
 
 def create_fides_app(
@@ -281,6 +286,15 @@ async def setup_server() -> None:
         return
     else:
         logger.debug("Connection to cache succeeded")
+
+    logger.info("Loading default privacy notices")
+    try:
+        db = get_api_session()
+        load_default_notices(db, DEFAULT_PRIVACY_NOTICES_PATH)
+    except Exception as e:
+        logger.error("Skipping loading default privacy notices: {}", str(e))
+    finally:
+        db.close()
 
     if not scheduler.running:
         scheduler.start()

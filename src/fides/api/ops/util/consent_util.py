@@ -4,8 +4,8 @@ import yaml
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ctl.sql_models import DataUse  # type: ignore[attr-defined]
+from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.custom_types import SafeStr
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.privacy_notice import (
