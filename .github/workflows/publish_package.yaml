@@ -33,7 +33,7 @@ jobs:
       - name: Build and export frontend files
         run: |
           cd clients
-          npm run prod-export-ui
+          npm run prod-export-admin-ui
 
       - name: Install Twine and wheel
         run: pip install twine wheel

@@ -114,7 +114,7 @@ COPY clients/ .
 FROM frontend as built_frontend
 
 # Builds and exports admin-ui
-RUN npm run export-ui
+RUN npm run export-admin-ui
 # Builds privacy-center
 RUN npm run build-pc
 
