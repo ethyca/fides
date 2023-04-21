@@ -1,6 +1,11 @@
-import { Box, Flex, Spinner, Text } from "@fidesui/react";
-import { useHasPermission } from "common/Restrict";
-import { FidesTable, TitleCell, WrappedCell } from "common/table";
+import { Box, Button, Flex, Spinner, Text, useDisclosure } from "@fidesui/react";
+import Restrict, { useHasPermission } from "common/Restrict";
+import {
+  FidesTable,
+  FidesTableFooter,
+  TitleCell,
+  WrappedCell,
+} from "common/table";
 import EmptyTableState from "common/table/EmptyTableState";
 import React, { useMemo } from "react";
 import { Column } from "react-table";
@@ -13,10 +18,12 @@ import {
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 
 import { EnableCustomFieldCell, FieldTypeCell } from "./cells";
+import { CustomFieldModal } from "./CustomFieldModal";
 
 export const CustomFieldsTable = () => {
   const { isLoading } = useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
+  const { isOpen, onClose, onOpen} = useDisclosure();
 
   // Permissions
   const userCanUpdate = useHasPermission([
@@ -86,7 +93,22 @@ export const CustomFieldsTable = () => {
           userCanUpdate={userCanUpdate}
           redirectRoute=""
           showSearchBar
+          footer={
+            <FidesTableFooter totalColumns={columns.length}>
+              <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}>
+                  <Button
+                    size="xs"
+                    colorScheme="primary"
+                    data-testid="add-custom-field-btn"
+                    onClick={onOpen}
+                  >
+                    Add a custom field +
+                  </Button>
+              </Restrict>
+            </FidesTableFooter>
+          }
         />
+        <CustomFieldModal isOpen={isOpen} onClose={onClose} isLoading={false}/>
       </Box>
     </>
   );
