@@ -44,7 +44,8 @@ jobs:
 
       - name: Jest test
         run: npm run test:ci
-  Frontend-Cypress:
+
+  Clients-Cypress:
     runs-on: ubuntu-latest
     strategy:
       matrix:

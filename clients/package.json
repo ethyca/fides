@@ -7,7 +7,7 @@
   "scripts": {
     "build": "turbo run build",
     "build-admin-ui": "turbo run build --filter=admin-ui",
-    "build-pc": "turbo run build --filter=privacy-center",
+    "build-privacy-center": "turbo run build --filter=privacy-center",
     "dev": "turbo run dev",
     "dev-admin-ui": "turbo run dev --filter=admin-ui",
     "dev-pc": "turbo run dev --filter=privacy-center",

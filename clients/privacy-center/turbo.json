@@ -3,9 +3,6 @@
   "pipeline": {
     "build-privacy-portal": {
       "dependsOn": ["build"]
-    },
-    "dev": {
-      "dependsOn": ["build"]
     }
   }
 }

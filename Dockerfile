@@ -116,11 +116,11 @@ FROM frontend as built_frontend
 # Builds and exports admin-ui
 RUN npm run export-admin-ui
 # Builds privacy-center
-RUN npm run build-pc
+RUN npm run build-privacy-center
 
-###################
-## Production PC ##
-###################
+###############################
+## Production Privacy Center ##
+###############################
 FROM node:16-alpine as prod_pc
 
 WORKDIR /fides/clients
