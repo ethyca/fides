@@ -19,14 +19,15 @@ from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.common_exceptions import ValidationError
-from fides.api.ops.models.privacy_notice import (
-    PrivacyNotice,
-    PrivacyNoticeRegion,
-    check_conflicting_data_uses,
-)
+from fides.api.ops.models.privacy_notice import PrivacyNotice, PrivacyNoticeRegion
 from fides.api.ops.schemas import privacy_notice as schemas
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.consent_util import create_privacy_notices_util
+from fides.api.ops.util.consent_util import (
+    create_privacy_notices_util,
+    ensure_unique_ids,
+    prepare_privacy_notice_patches,
+    validate_notice_data_uses,
+)
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
@@ -169,22 +170,6 @@ def get_privacy_notice(
     return get_privacy_notice_or_error(db, privacy_notice_id)  # type: ignore[return-value]
 
 
-def validate_notice_data_uses(
-    privacy_notices: List[schemas.PrivacyNotice],
-    db: Session,
-) -> None:
-    """
-    Ensures that all the provided `PrivacyNotice`s have valid data uses.
-    Raises a 422 HTTP exception if an unknown data use is found on any `PrivacyNotice`
-    """
-    valid_data_uses = [data_use.fides_key for data_use in DataUse.query(db).all()]
-    try:
-        for privacy_notice in privacy_notices:
-            privacy_notice.validate_data_uses(valid_data_uses)
-    except ValueError as e:
-        raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
-
-
 @router.post(
     urls.PRIVACY_NOTICE,
     status_code=HTTP_200_OK,
@@ -206,76 +191,9 @@ def create_privacy_notices(
     """
 
     try:
-        return create_privacy_notices_util(db, privacy_notices, PrivacyNotice)  # type: ignore[return-value]
+        return create_privacy_notices_util(db, privacy_notices)
     except (ValueError, ValidationError) as e:
         raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
-
-
-def prepare_privacy_notice_patches(
-    privacy_notice_updates: List[schemas.PrivacyNoticeWithId],
-    db: Session,
-) -> List[Tuple[schemas.PrivacyNoticeWithId, PrivacyNotice]]:
-    """
-    Prepares our privacy notice patch updates,
-    including performing data use conflict validation on proposed patch updates.
-
-    Returns a list of tuples that have the PrivacyNotice update data (API schema) alongside
-    their associated existing PrivacyNotice db record that will be updated
-    """
-
-    # first we populate a map of privacy notices in the db, indexed by ID
-    existing_notices: Dict[str, PrivacyNotice] = {}
-    for existing_notice in PrivacyNotice.query(db).all():
-        existing_notices[existing_notice.id] = existing_notice
-
-    # then associate existing notices with their updates
-    # we'll return this set of data to actually process updates
-    updates_and_existing: List[Tuple[schemas.PrivacyNoticeWithId, PrivacyNotice]] = []
-    for update_data in privacy_notice_updates:
-        if update_data.id not in existing_notices:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail=f"No PrivacyNotice found for id {update_data.id}.",
-            )
-
-        updates_and_existing.append((update_data, existing_notices[update_data.id]))
-
-    # we temporarily store proposed update data in-memory for validation purposes only
-    validation_updates = []
-    for update_data, existing_notice in updates_and_existing:
-        # add the patched update to our temporary updates for validation
-        validation_updates.append(
-            existing_notice.dry_update(data=update_data.dict(exclude_unset=True))
-        )
-        # and don't include it anymore in the existing notices used for validation
-        existing_notices.pop(existing_notice.id, None)
-
-    # run the validation here on our proposed "dry-run" updates
-    try:
-        check_conflicting_data_uses(validation_updates, existing_notices.values())
-    except ValidationError as e:
-        raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
-
-    # return the tuples of update data associated with their existing db records
-    return updates_and_existing
-
-
-def ensure_unique_ids(
-    privacy_notices: List[schemas.PrivacyNoticeWithId],
-) -> None:
-    """
-    Ensures that all the provided `PrivacyNotice`s have unique IDs
-    Raises a 422 HTTP exception if there is more than one PrivacyNotice with the same ID
-    """
-    ids = set()
-    for privacy_notice in privacy_notices:
-        if privacy_notice.id not in ids:
-            ids.add(privacy_notice.id)
-        else:
-            raise HTTPException(
-                HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"More than one provided PrivacyNotice with ID {privacy_notice.id}.",
-            )
 
 
 @router.patch(
@@ -303,7 +221,13 @@ def update_privacy_notices(
 
     updates_and_existing: List[
         Tuple[schemas.PrivacyNoticeWithId, PrivacyNotice]
-    ] = prepare_privacy_notice_patches(privacy_notice_updates, db)
+    ] = prepare_privacy_notice_patches(  # type: ignore[assignment]
+        privacy_notice_updates,
+        db,
+        PrivacyNotice,
+        allow_create=False,
+        ignore_disabled=True,
+    )
     return [
         existing_notice.update(db, data=update_data.dict(exclude_unset=True))
         for (update_data, existing_notice) in updates_and_existing

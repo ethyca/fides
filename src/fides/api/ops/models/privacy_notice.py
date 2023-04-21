@@ -14,7 +14,7 @@ from sqlalchemy.util import hybridproperty
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import ValidationError
-from fides.lib.db.base_class import Base, FidesBase
+from fides.lib.db.base_class import Base
 
 
 class PrivacyNoticeRegion(Enum):
@@ -119,6 +119,25 @@ class PrivacyNoticeBase:
                     return True
         return False
 
+    def dry_update(self, *, data: dict[str, Any]) -> PrivacyNoticeBase:
+        """
+        A utility method to get an updated object without saving it to the db.
+
+        This is used to see what an object update would look like, in memory,
+        without actually persisting the update to the db
+        """
+        # Update our attributes with values in data
+        cloned_attributes = self.__dict__.copy()
+        for key, val in data.items():
+            cloned_attributes[key] = val
+
+        # remove protected fields from the cloned dict
+        cloned_attributes.pop("_sa_instance_state")
+
+        # create a new object with the updated attribute data to keep this
+        # ORM object (i.e., `self`) pristine
+        return self.__class__(**cloned_attributes)
+
 
 class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
     """
@@ -209,29 +228,11 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         return self
 
-    def dry_update(self, *, data: dict[str, Any]) -> FidesBase:
-        """
-        A utility method to get an updated object without saving it to the db.
-
-        This is used to see what an object update would look like, in memory,
-        without actually persisting the update to the db
-        """
-        # Update our attributes with values in data
-        cloned_attributes = self.__dict__.copy()
-        for key, val in data.items():
-            cloned_attributes[key] = val
-
-        # remove protected fields from the cloned dict
-        cloned_attributes.pop("_sa_instance_state")
-
-        # create a new object with the updated attribute data to keep this
-        # ORM object (i.e., `self`) pristine
-        return PrivacyNotice(**cloned_attributes)
-
 
 def check_conflicting_data_uses(
     new_privacy_notices: Iterable[Union[PrivacyNotice, PrivacyNoticeTemplate]],
     existing_privacy_notices: Iterable[Union[PrivacyNotice, PrivacyNoticeTemplate]],
+    ignore_disabled: bool = True,
 ) -> None:
     """
     Checks the provided lists of potential "new" (incoming) `PrivacyNotice` records
@@ -251,7 +252,7 @@ def check_conflicting_data_uses(
     # this gives us a simple "lookup table" for region and data use conflicts in incoming notices
     uses_by_region: Dict[PrivacyNoticeRegion, List[Tuple[str, str]]] = defaultdict(list)
     for privacy_notice in existing_privacy_notices:
-        if privacy_notice.disabled:
+        if privacy_notice.disabled and ignore_disabled:
             continue
         for region in privacy_notice.regions:
             for data_use in privacy_notice.data_uses:
@@ -261,7 +262,7 @@ def check_conflicting_data_uses(
 
     # now, validate the new (incoming) notices
     for privacy_notice in new_privacy_notices:
-        if privacy_notice.disabled:
+        if privacy_notice.disabled and ignore_disabled:
             # if the incoming notice is disabled, it skips validation
             continue
         # check each of the incoming notice's regions
@@ -270,7 +271,7 @@ def check_conflicting_data_uses(
             # check each of the incoming notice's data uses
             for data_use in privacy_notice.data_uses:
                 for existing_use, notice_name in region_uses:
-                    # we need to check for hierachical overlaps in _both_ directions
+                    # we need to check for hierarchical overlaps in _both_ directions
                     # i.e. whether the incoming DataUse is a parent _or_ a child of
                     # an existing DataUse
                     if existing_use.startswith(data_use) or data_use.startswith(

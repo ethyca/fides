@@ -1,0 +1,31 @@
+privacy_notices:
+- name: Test Privacy Notice
+  id: pri-5bd5cee7-8c8c-4da7-9a5c-7617a7d4dbb2
+  description: This website uses cookies.
+  internal_description: This is an existing template that we are updating to make the default opt_out instead.
+  regions:
+    - ca_nl
+  consent_mechanism: opt_out
+  data_uses:
+    - collect
+  enforcement_level: system_wide
+  disabled: False
+  has_gpc_flag: True
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Other Privacy Notice
+  id: pri-685486d9-f532-4951-bb1a-b15fea586ff8
+  description: This website uses a large amount of cookies.
+  internal_description: We've updated this template to overlap with the data use above, so this update should fail
+  regions:
+    - ca_nl
+  consent_mechanism: opt_out
+  data_uses:
+    - collect
+  enforcement_level: frontend
+  disabled: True
+  has_gpc_flag: False
+  displayed_in_privacy_center: True
+  displayed_in_overlay: False
+  displayed_in_api: False

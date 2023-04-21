@@ -1,5 +1,6 @@
 privacy_notices:
 - name: Essential
+  id: pri_51c85583-40ec-4257-95ef-db3eea860c52
   description: This website uses cookies and other methods which are essential for you to use the website and its features.
   internal_description: These cookies and services are essential for you to browse the website and use its features, such as accessing secure areas of the site. Cookies that allow web shops to hold your items in your cart while you are shopping online are an example of strictly necessary cookies. These cookies will generally be first-party session cookies. While it is not required to obtain consent for these cookies, what they do and why they are necessary should be explained to the user.
   regions:
@@ -40,6 +41,7 @@ privacy_notices:
   displayed_in_overlay: True
   displayed_in_api: False
 - name: Analytics
+  id: pri_4751ba4a-8bf1-4801-a1ac-c049601cebc8
   description: This website uses cookies and services to collect information about how you use the website, like which pages you visited and which links you clicked on. None of this information can be used to identify you. It is all aggregated and, therefore, anonymized. Their sole purpose is to improve website functions. This includes cookies from third-party analytics services but are for the exclusive use of the owner of this website.
   internal_description: These cookies and services collect information about how users use a website, like which pages they visit and which links they click on. None of this information can be used to identify visitors. It is all aggregated and, therefore, anonymized. Their sole purpose is to improve website functions. This includes cookies from third-party analytics services as long as the cookies and services are for your exclusive use.
   regions:
@@ -80,6 +82,7 @@ privacy_notices:
   displayed_in_overlay: True
   displayed_in_api: False
 - name: Marketing
+  id:  pri_4ab96c7f-8363-45dc-be66-a5dabf50d8e1
   description: This website uses cookies and services to track your online activity to help advertisers deliver more relevant advertising or to limit how many times you see an ad. These services can share that information with other organizations or advertisers. These are persistent cookies and almost always of from third-parties.
   internal_description: These cookies and services track online activity of your users to help advertisers deliver more relevant advertising or to limit how many times users see an ad. These services can share that information with other organizations or advertisers. These are persistent cookies and almost always of from third-parties
   regions:
@@ -120,6 +123,7 @@ privacy_notices:
   displayed_in_overlay: True
   displayed_in_api: False
 - name: Data sharing and Targeted Advertising
+  id: pri_dd3186b1-c925-4874-9fd8-9a410f97678d
   description: We may share your information with third parties for the purposes of cross contextual behavioral advertising. You can learn about the information we may share in our privacy notice.
   internal_description: Data of your users is shared with third parties for the purpose of “cross contextual behavioral advertising” in order to provide ads to users on other platforms based on a variety of information shared with the advertising system.
   regions:
@@ -134,6 +138,7 @@ privacy_notices:
   displayed_in_overlay: False
   displayed_in_api: False
 - name: Targeted Advertising
+  id:  pri_cb137930-087e-4a76-bdeb-a7f4dcfaf75b
   description: We may use some of your personal information for the purposes of targeted advertising
   internal_description: Targeted advertising means displaying advertisements to a consumer where the advertisement is selected based on personal data obtained or inferred from that consumer's activities over time and across nonaffiliated Internet web sites or online applications to predict such consumer's preferences or interests.
   regions:
@@ -148,6 +153,7 @@ privacy_notices:
   displayed_in_overlay: True
   displayed_in_api: False
 - name: Essential
+  id: pri_8cfc926d-7cd0-4e91-b848-ec941e28a526
   description:
   internal_description:
   regions:
@@ -174,6 +180,7 @@ privacy_notices:
   displayed_in_overlay: True
   displayed_in_api: False
 - name: Analytics
+  id: pri_5b2fdb5a-531f-45fd-8266-6aeec62f84d4
   description:
   internal_description:
   regions:
@@ -200,6 +207,7 @@ privacy_notices:
   displayed_in_overlay: True
   displayed_in_api: False
 - name: Marketing
+  id:  pri_f38ff38c-029f-4eba-a37c-47c8adf764c4
   description:
   internal_description:
   regions:
