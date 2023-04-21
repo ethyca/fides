@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/dev/development/jetbrains_debugging/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/dev/development/developing_fides/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.2.7">
     
     
       
-        <title>Jetbrains Debugging - Fides</title>
+        <title>Developing Fides - Fides</title>
       
     
     
@@ -75,7 +75,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#debugging-fides-in-intellij-idea-ultimate" class="md-skip">
+        <a href="#developing-fides" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Jetbrains Debugging
+              Developing Fides
             
           </span>
         </div>
@@ -394,12 +394,438 @@ You're not viewing the latest version.
       
       
         <label class="md-nav__link" for="__nav_1_5">
+          Contributing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Contributing" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_5">
+          <span class="md-nav__icon md-icon"></span>
+          Contributing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Developing Fides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Developing Fides
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#terminology" class="md-nav__link">
+    Terminology
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sessions-to-know" class="md-nav__link">
+    Sessions to Know
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting Started
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    Docker
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-the-webserver" class="md-nav__link">
+    Running the Webserver
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opening-a-shell" class="md-nav__link">
+    Opening a Shell
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-your-changes" class="md-nav__link">
+    Checking Your Changes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests" class="md-nav__link">
+    Running Tests
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#static-checks" class="md-nav__link">
+    Static Checks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-fides-in-vscode" class="md-nav__link">
+    Debugging Fides in VSCode
+  </a>
+  
+    <nav class="md-nav" aria-label="Debugging Fides in VSCode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    Setup
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run-fides-with-remote-debugging-enabled" class="md-nav__link">
+    Run Fides with Remote Debugging Enabled
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attach-a-remote-debugger-to-the-fides-server" class="md-nav__link">
+    Attach a Remote Debugger to the Fides Server
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    Debug!
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#links" class="md-nav__link">
+    Links
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-fides-in-intellij-idea-ultimate" class="md-nav__link">
+    Debugging Fides in IntelliJ IDEA Ultimate
+  </a>
+  
+    <nav class="md-nav" aria-label="Debugging Fides in IntelliJ IDEA Ultimate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup_1" class="md-nav__link">
+    Setup
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connect-to-docker-daemon" class="md-nav__link">
+    Connect to Docker daemon
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configure-python-remote-interpreter" class="md-nav__link">
+    Configure Python Remote Interpreter
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rundebug-configuration" class="md-nav__link">
+    Run/Debug Configuration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hit-a-breakpoint" class="md-nav__link">
+    Hit a Breakpoint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#links_1" class="md-nav__link">
+    Links
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development_tips/" class="md-nav__link">
+        Development Tips
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        Testing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code_style/" class="md-nav__link">
+        Code Style
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        UI Development
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+        Documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pull_requests/" class="md-nav__link">
+        Pull Requests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/" class="md-nav__link">
+        Releases
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../postman/using_postman/" class="md-nav__link">
+        Using Postman
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../update_erd_diagram/" class="md-nav__link">
+        Updating the Database Diagram
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fideslog/" class="md-nav__link">
+        User Analytics
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6" type="checkbox" id="__nav_1_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_6">
           Community
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Community" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_5">
+        <label class="md-nav__title" for="__nav_1_6">
           <span class="md-nav__icon md-icon"></span>
           Community
         </label>
@@ -442,368 +868,6 @@ You're not viewing the latest version.
       <a href="../../community/code_of_conduct/" class="md-nav__link">
         Code of Conduct
       </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5_4" type="checkbox" id="__nav_1_5_4" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_1_5_4">
-          Contributing
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Contributing" data-md-level="3">
-        <label class="md-nav__title" for="__nav_1_5_4">
-          <span class="md-nav__icon md-icon"></span>
-          Contributing
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
-        Overview
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../contributing_details/" class="md-nav__link">
-        Contributing Details
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../code_style/" class="md-nav__link">
-        Code Style
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../ui/" class="md-nav__link">
-        UI Development
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fideslog/" class="md-nav__link">
-        Fideslog Analytics
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../database_migration/" class="md-nav__link">
-        Database Migration
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../documentation/" class="md-nav__link">
-        Documentation
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../testing/" class="md-nav__link">
-        Writing Tests
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../testing_environment/" class="md-nav__link">
-        Testing Environment
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../dev_deployment/" class="md-nav__link">
-        Local Fides Deploy
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../pull_requests/" class="md-nav__link">
-        Pull Requests
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../releases/" class="md-nav__link">
-        Releases
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../release_checklist/" class="md-nav__link">
-        Release Checklist
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../vscode_debugging/" class="md-nav__link">
-        VSCode Debugging
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Jetbrains Debugging
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        Jetbrains Debugging
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#setup" class="md-nav__link">
-    Setup
-  </a>
-  
-    <nav class="md-nav" aria-label="Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#connect-to-docker-daemon" class="md-nav__link">
-    Connect to Docker daemon
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#configure-python-remote-interpreter" class="md-nav__link">
-    Configure Python Remote Interpreter
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rundebug-configuration" class="md-nav__link">
-    Run/Debug Configuration
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hit-a-breakpoint" class="md-nav__link">
-    Hit a Breakpoint
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#links" class="md-nav__link">
-    Links
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../postman/using_postman/" class="md-nav__link">
-        Using Postman
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../update_erd_diagram/" class="md-nav__link">
-        Updating the Database Diagram
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
     </li>
   
 
@@ -911,14 +975,145 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
+  <a href="#terminology" class="md-nav__link">
+    Terminology
   </a>
   
 </li>
       
         <li class="md-nav__item">
+  <a href="#sessions-to-know" class="md-nav__link">
+    Sessions to Know
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting Started
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    Docker
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-the-webserver" class="md-nav__link">
+    Running the Webserver
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opening-a-shell" class="md-nav__link">
+    Opening a Shell
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-your-changes" class="md-nav__link">
+    Checking Your Changes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests" class="md-nav__link">
+    Running Tests
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#static-checks" class="md-nav__link">
+    Static Checks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-fides-in-vscode" class="md-nav__link">
+    Debugging Fides in VSCode
+  </a>
+  
+    <nav class="md-nav" aria-label="Debugging Fides in VSCode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#setup" class="md-nav__link">
+    Setup
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run-fides-with-remote-debugging-enabled" class="md-nav__link">
+    Run Fides with Remote Debugging Enabled
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attach-a-remote-debugger-to-the-fides-server" class="md-nav__link">
+    Attach a Remote Debugger to the Fides Server
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    Debug!
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#links" class="md-nav__link">
+    Links
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-fides-in-intellij-idea-ultimate" class="md-nav__link">
+    Debugging Fides in IntelliJ IDEA Ultimate
+  </a>
+  
+    <nav class="md-nav" aria-label="Debugging Fides in IntelliJ IDEA Ultimate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup_1" class="md-nav__link">
     Setup
   </a>
   
@@ -929,6 +1124,11 @@ You're not viewing the latest version.
   <a href="#connect-to-docker-daemon" class="md-nav__link">
     Connect to Docker daemon
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -946,22 +1146,22 @@ You're not viewing the latest version.
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
+          <li class="md-nav__item">
   <a href="#hit-a-breakpoint" class="md-nav__link">
     Hit a Breakpoint
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#links" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#links_1" class="md-nav__link">
     Links
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -977,24 +1177,143 @@ You're not viewing the latest version.
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/jetbrains_debugging.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/developing_fides.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-<h1 id="debugging-fides-in-intellij-idea-ultimate">Debugging Fides in IntelliJ IDEA Ultimate</h1>
+<h1 id="developing-fides">Developing Fides</h1>
+<p>The primary developer interface for Fides is via a tool called Nox. Nox is a pure-Python replacement for tools like <code>make</code>. You can read more about Nox in the official documentation <a href="https://nox.thea.codes/en/stable/index.html">here</a>.</p>
+<p>Additionally, much of what <code>nox</code> helps abstract is related to Docker. This usually makes it possible to troubleshoot potential <code>nox</code> issues by using various Docker commands directly.</p>
+<h2 id="terminology">Terminology</h2>
+<p>For the purposes of this documentation, there is some Nox-specific terminology that is used and is helpful to understand before reading the rest of the guide.</p>
+<ul>
+<li><code>session</code> - This is the equivalent of a single command, or a <code>target</code> in Make. They can be chained together arbitrarily, and the order of execution will be preserved. For example <code>nox -s isort black</code></li>
+<li><code>posarg</code> - This refers to a <em>Positional Argument</em>. These can be provided to <em>any</em> Nox command by putting <code>--</code> at the end of a command followed by the argument that you would like to provide. For instance <code>nox -s dev -- shell</code></li>
+<li><code>param</code> - This is a specified value that is provided directly to a session. For instance <code>nox -s "isort(&lt;param&gt;)"</code>. Note that due to terminal limitations, the <code>session</code> + <code>param</code> must be wrapped in quotes for proper escaping. Additionally, if a <code>session</code> has multiple params but none are specific, all permutations of that session will be run.</li>
+</ul>
+<h2 id="sessions-to-know">Sessions to Know</h2>
+<p>While there are many sessions available in our <code>nox</code> setup, these are the ones that you are most likely to use regularly. This is intended as a brief introduction, as many of these commands will be explained further in specific sections below.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Command</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>nox</code></td>
+<td align="left">This is the default session that runs when no other session is provided. Automatically opens this page.</td>
+</tr>
+<tr>
+<td align="center"><code>nox -l</code></td>
+<td align="left">Provides a list of all available <code>nox</code> sessions.</td>
+</tr>
+<tr>
+<td align="center"><code>nox -s usage -- &lt;command&gt;</code></td>
+<td align="left">Shows the full docstring for a single session. The name of the session is provided as a positional argument. Use this whenever you want to know more about a specific session's usage.</td>
+</tr>
+<tr>
+<td align="center"><code>nox -s dev</code></td>
+<td align="left">Spins up the Fides webserver with all required infrastructure.</td>
+</tr>
+<tr>
+<td align="center"><code>nox -s shell</code></td>
+<td align="left">Opens an interactive shell in a running Fides webserver container.</td>
+</tr>
+<tr>
+<td align="center"><code>nox -s build</code></td>
+<td align="left">Builds and tags docker containers.</td>
+</tr>
+<tr>
+<td align="center"><code>nox -s clean</code></td>
+<td align="left">Completely wipes out all Docker volumes, images, and caches across the entire machine. <em>Note: This should only be used as a last resort! If you find yourself running this command often, there is probably an issue that needs to be addressed.</em></td>
+</tr>
+<tr>
+<td align="center"><code>nox -s teardown</code></td>
+<td align="left">Spins down all of the Docker containers for the Fides project. Including the <code>-- volumes</code> posarg will also delete the application database data.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="getting-started">Getting Started</h2>
+<p>This section will run through the basics of getting everything up and running so that you can start making changes.</p>
+<h3 id="docker">Docker</h3>
+<p>Given that the majority of commands rely on Docker images, the first step is going to be getting some Docker images built. This is handled by the <code>build</code> session. As an excercise, let's check the docs for the <code>build</code> session via the <code>usage</code> session:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>nox<span class="w"> </span>-s<span class="w"> </span>usage<span class="w"> </span>--<span class="w"> </span>build
+</code></pre></div></td></tr></table></div>
+<p>The simplest way to build everything is to run <code>nox -s build</code>. This will build all available Docker images used for development and testing. Additionally, to build only a specific image(s), run <code>nox -s usage -- build</code> to see what params have been documented.</p>
+<h3 id="running-the-webserver">Running the Webserver</h3>
+<p>Now that all of the potential images we'll need are built, it's time to spin up the webserver:</p>
+<p><code>nox -s dev</code></p>
+<p>Depending on your computer, this will take anywhere from ~30 seconds to ~2 minutes. The webserver will log all of its activity to that window which is useful for debugging and checking potential server-side errors.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When running <code>nox -s dev</code>, if you get an <code>importlib.metadata.PackageNotFoundError: fides</code>, it means that <code>fides</code> was not properly installed. Run <code>nox -s dev -- shell</code>, and then run <code>pip install -e .</code></p>
+<p>You can verify Fides is installed with <code>pip list | grep fides</code></p>
+</div>
+<h3 id="opening-a-shell">Opening a Shell</h3>
+<p>Now that the webserver is up and running, a convenient way to interact with it as well as the Fides CLI is to open a shell directly into the running webserver container. Open a new terminal and run the following:</p>
+<p><code>nox -s shell</code></p>
+<p>With the shell open, we'll need to authenticate before we can start using the CLI. Run the following to authenticate the shell and get ready to run the CLI:</p>
+<p><code>fides user login</code></p>
+<p>With that done, we can do things like evaluations:</p>
+<p><code>fides evaluate</code></p>
+<p>Listing all resources of a type:</p>
+<p><code>fides ls system</code></p>
+<p>and more. Run <code>fides -h</code> to see the full list of commands offered by the CLI.</p>
+<h2 id="checking-your-changes">Checking Your Changes</h2>
+<p>Once you've made some changes, it's time to verify that they are working as expected.</p>
+<p>If you've made changes to the CLI, you can verify them directly using the <code>shell</code> method described <a href="#opening-a-shell">here</a>.</p>
+<p>If you've made an API change, there are a few different ways to verify your changes. The first and most simple is to go to <code>localhost:8080/docs</code> and verify that the changes you made show up as expected in the documentation. This is most useful when adding a new endpoint or changing a schema.</p>
+<p>To dig in even deeper, you can use the <strong>Authorize</strong> button at the top of the API docs page to login (credentials are available in the <code>.fides/fides.toml</code> config file). This will allow you to send requests, view responses, etc.</p>
+<h2 id="running-tests">Running Tests</h2>
+<p>For a full walkthrough on testing, head over to the <a href="../testing/">Testing</a> page.</p>
+<h2 id="static-checks">Static Checks</h2>
+<p>For the sake of simplicity, all of the typical pre-commit static checks are packaged into a single session:</p>
+<p><code>nox -s static_checks</code></p>
+<p>This installs and runs the various checks in their own virtual environment for maximum consistency. For more information about code style in Fides, check <a href="../code_style/">Code Style</a>.</p>
+<h2 id="debugging-fides-in-vscode">Debugging Fides in VSCode</h2>
+<p>This is a quick guide to show how VSCode can be used to debug Fides running locally in Docker. The general approach is to allow the local <code>fides</code> Docker Compose service to allow remote debugging connections, and to start a remote debugger from a host VSCode workspace.</p>
+<h3 id="setup">Setup</h3>
+<h4 id="run-fides-with-remote-debugging-enabled">Run Fides with Remote Debugging Enabled</h4>
+<p>In order to accept incoming remote debugging connections, the <code>fides</code> Docker Compose service must be run with slight alterations. To enable this functionality, simply add the <code>remote_debug</code> flag to a <code>nox</code> command. For example:</p>
+<p><code>nox -s dev -- remote_debug</code></p>
+<p>or</p>
+<p><code>nox -s dev -- remote_debug postgres timescale</code></p>
+<p>With those commands, the <code>fides</code> Docker Compose service that's running the Fides server locally is able to accept incoming remote debugging connections.</p>
+<p>Note that, at this point, the <code>remote_debug</code> flag is not enabled for other <code>nox</code> sessions, e.g. <code>fides_env</code>, <code>pytest_ops</code>, etc.</p>
+<h4 id="attach-a-remote-debugger-to-the-fides-server">Attach a Remote Debugger to the Fides Server</h4>
+<p>Now that the running Fides server can accept incoming remote debugging connections, you can attach a remote debugger from a local VSCode workspace to actively debug the server application. A launch configuration is included in the <code>fides</code> repo to facilitate this step.</p>
+<ul>
+<li>Open up the <code>fides</code> repo in a VSCode workspace</li>
+<li>Go to the <code>Run and Debug</code> view</li>
+<li>From the debugger dropdown list, select the <code>Python debugger: Remote Attach Fides</code> configuration</li>
+<li>Click the <code>Start Debugging</code> play button</li>
+<li>The remote debugger should now be attached to the Fides server!</li>
+<li>To confirm the debugger is attached, at least one <code>RUNNING</code> line item should appear in the <code>CALL STACK</code> window</li>
+</ul>
+<h3 id="debug">Debug!</h3>
+<p>At this point, VSCode is ready to debug the running Fides server. Try setting breakpoints and hitting them by, e.g., making certain HTTP requests against the Fides server. <a href="https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger">This guide</a> provides more information on how to use the VSCode Python debugger. </p>
+<h3 id="links">Links</h3>
+<p>Some relevant VSCode documentation for reference:</p>
+<ul>
+<li><a href="https://code.visualstudio.com/docs/python/debugging#_debugging-by-attaching-over-a-network-connection">https://code.visualstudio.com/docs/python/debugging#_debugging-by-attaching-over-a-network-connection</a></li>
+<li><a href="https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger">https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger</a></li>
+</ul>
+<h2 id="debugging-fides-in-intellij-idea-ultimate">Debugging Fides in IntelliJ IDEA Ultimate</h2>
 <p>This guide will show how to use the IntelliJ debugger with Fides running in Docker.
 The setup for PyCharm Professional should be very similar.</p>
-<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="prerequisites">Prerequisites</h3>
 <ul>
 <li><a href="https://www.jetbrains.com/idea/buy/#commercial">Intellij IDEA Ultimate</a> or <a href="https://www.jetbrains.com/pycharm/buy/#commercial">PyCharm Professional</a></li>
 <li><a href="https://plugins.jetbrains.com/plugin/7724-docker">Docker plugin</a></li>
 <li><a href="https://plugins.jetbrains.com/plugin/631-python">Python plugin</a> <em>(this is needed for Intellij)</em></li>
 <li><a href="https://www.docker.com/products/docker-desktop">Docker Desktop</a></li>
 </ul>
-<h2 id="setup">Setup</h2>
-<h3 id="connect-to-docker-daemon">Connect to Docker daemon</h3>
+<h3 id="setup_1">Setup</h3>
+<h4 id="connect-to-docker-daemon">Connect to Docker daemon</h4>
 <p>This step will allow the IDE to connect to Docker Desktop.</p>
 <p>Go to: <strong>Settings/Preferences</strong> -&gt; <strong>Docker</strong> -&gt; <strong>+</strong></p>
 <ul>
@@ -1024,13 +1343,13 @@ The setup for PyCharm Professional should be very similar.</p>
 </ul>
 <p>See screenshot below:</p>
 <p><img alt="Screenshot of Run/Debug Configuration for main.py" src="../../img/ide/debug_config.png" /></p>
-<h2 id="hit-a-breakpoint">Hit a Breakpoint</h2>
+<h3 id="hit-a-breakpoint">Hit a Breakpoint</h3>
 <p>Now the IDE is ready to debug the source code. Click the debug button for <strong>main</strong> <em>(setup in the previous section)</em>.</p>
 <p>Try firing a http request to Fides from Postman or Curl and hit a break point.</p>
 <p>There is a postman collection in this repo: <code>docs/fides/docs/development/postman/Fides.postman_collection.json</code></p>
 <p>Screenshot of hit breakpoint below:</p>
 <p><img alt="Screenshot of Debugging from IntelliJ" src="../../img/ide/debugging.png" /></p>
-<h2 id="links">Links</h2>
+<h3 id="links_1">Links</h3>
 <p>The information is this guide is largely based on these docs</p>
 <ul>
 <li><a href="https://www.jetbrains.com/help/pycharm/using-docker-as-a-remote-interpreter.html">https://www.jetbrains.com/help/pycharm/using-docker-as-a-remote-interpreter.html</a></li>
@@ -1087,9 +1406,9 @@ The setup for PyCharm Professional should be very similar.</p>
       
         
         <a
-          href="../vscode_debugging/"
+          href="../overview/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: VSCode Debugging"
+          aria-label="Previous: Overview"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1100,7 +1419,7 @@ The setup for PyCharm Professional should be very similar.</p>
               <span class="md-footer__direction">
                 Previous
               </span>
-              VSCode Debugging
+              Overview
             </div>
           </div>
         </a>
@@ -1110,9 +1429,9 @@ The setup for PyCharm Professional should be very similar.</p>
       
         
         <a
-          href="../postman/using_postman/"
+          href="../development_tips/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Using Postman"
+          aria-label="Next: Development Tips"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1120,7 +1439,7 @@ The setup for PyCharm Professional should be very similar.</p>
               <span class="md-footer__direction">
                 Next
               </span>
-              Using Postman
+              Development Tips
             </div>
           </div>
           <div class="md-footer__button md-icon">

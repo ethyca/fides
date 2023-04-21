@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/dev/development/testing_environment/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/dev/development/development_tips/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.2.7">
     
     
       
-        <title>Testing Environment - Fides</title>
+        <title>Development Tips - Fides</title>
       
     
     
@@ -75,7 +75,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#testing-environment" class="md-skip">
+        <a href="#development-tips" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Testing Environment
+              Development Tips
             
           </span>
         </div>
@@ -394,12 +394,336 @@ You're not viewing the latest version.
       
       
         <label class="md-nav__link" for="__nav_1_5">
+          Contributing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Contributing" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_5">
+          <span class="md-nav__icon md-icon"></span>
+          Contributing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developing_fides/" class="md-nav__link">
+        Developing Fides
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Development Tips
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Development Tips
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#api-endpoints" class="md-nav__link">
+    API Endpoints
+  </a>
+  
+    <nav class="md-nav" aria-label="API Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#api-urls" class="md-nav__link">
+    API URLs
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-and-models" class="md-nav__link">
+    Database and Models
+  </a>
+  
+    <nav class="md-nav" aria-label="Database and Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-orm-sqlalchemy" class="md-nav__link">
+    The ORM -- SQLAlchemy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-models" class="md-nav__link">
+    Adding models
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-the-database-via-models" class="md-nav__link">
+    Using the database via models
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connecting-to-the-database" class="md-nav__link">
+    Connecting to the database
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alembic-migrations" class="md-nav__link">
+    Alembic migrations
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exception-handling" class="md-nav__link">
+    Exception Handling
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#general-debugging-pdb" class="md-nav__link">
+    General debugging -- pdb
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    Docker
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        Testing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code_style/" class="md-nav__link">
+        Code Style
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        UI Development
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+        Documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pull_requests/" class="md-nav__link">
+        Pull Requests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/" class="md-nav__link">
+        Releases
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../postman/using_postman/" class="md-nav__link">
+        Using Postman
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../update_erd_diagram/" class="md-nav__link">
+        Updating the Database Diagram
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fideslog/" class="md-nav__link">
+        User Analytics
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6" type="checkbox" id="__nav_1_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_6">
           Community
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Community" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_5">
+        <label class="md-nav__title" for="__nav_1_6">
           <span class="md-nav__icon md-icon"></span>
           Community
         </label>
@@ -442,348 +766,6 @@ You're not viewing the latest version.
       <a href="../../community/code_of_conduct/" class="md-nav__link">
         Code of Conduct
       </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5_4" type="checkbox" id="__nav_1_5_4" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_1_5_4">
-          Contributing
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Contributing" data-md-level="3">
-        <label class="md-nav__title" for="__nav_1_5_4">
-          <span class="md-nav__icon md-icon"></span>
-          Contributing
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
-        Overview
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../contributing_details/" class="md-nav__link">
-        Contributing Details
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../code_style/" class="md-nav__link">
-        Code Style
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../ui/" class="md-nav__link">
-        UI Development
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fideslog/" class="md-nav__link">
-        Fideslog Analytics
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../database_migration/" class="md-nav__link">
-        Database Migration
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../documentation/" class="md-nav__link">
-        Documentation
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../testing/" class="md-nav__link">
-        Writing Tests
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Testing Environment
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        Testing Environment
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quickstart" class="md-nav__link">
-    Quickstart
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    Overview
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    Configuration
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#advanced-usage" class="md-nav__link">
-    Advanced Usage
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#automated-cypress-e2e-tests" class="md-nav__link">
-    Automated Cypress E2E Tests
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../dev_deployment/" class="md-nav__link">
-        Local Fides Deploy
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../pull_requests/" class="md-nav__link">
-        Pull Requests
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../releases/" class="md-nav__link">
-        Releases
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../release_checklist/" class="md-nav__link">
-        Release Checklist
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../vscode_debugging/" class="md-nav__link">
-        VSCode Debugging
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../jetbrains_debugging/" class="md-nav__link">
-        Jetbrains Debugging
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../postman/using_postman/" class="md-nav__link">
-        Using Postman
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../update_erd_diagram/" class="md-nav__link">
-        Updating the Database Diagram
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
     </li>
   
 
@@ -891,36 +873,90 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quickstart" class="md-nav__link">
-    Quickstart
+  <a href="#api-endpoints" class="md-nav__link">
+    API Endpoints
+  </a>
+  
+    <nav class="md-nav" aria-label="API Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#api-urls" class="md-nav__link">
+    API URLs
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-and-models" class="md-nav__link">
+    Database and Models
+  </a>
+  
+    <nav class="md-nav" aria-label="Database and Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-orm-sqlalchemy" class="md-nav__link">
+    The ORM -- SQLAlchemy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-models" class="md-nav__link">
+    Adding models
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-the-database-via-models" class="md-nav__link">
+    Using the database via models
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connecting-to-the-database" class="md-nav__link">
+    Connecting to the database
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alembic-migrations" class="md-nav__link">
+    Alembic migrations
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exception-handling" class="md-nav__link">
+    Exception Handling
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    Overview
+  <a href="#general-debugging-pdb" class="md-nav__link">
+    General debugging -- pdb
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    Configuration
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#advanced-usage" class="md-nav__link">
-    Advanced Usage
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#automated-cypress-e2e-tests" class="md-nav__link">
-    Automated Cypress E2E Tests
+  <a href="#docker" class="md-nav__link">
+    Docker
   </a>
   
 </li>
@@ -937,43 +973,136 @@ You're not viewing the latest version.
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/testing_environment.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/development_tips.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-<h1 id="testing-environment">Testing Environment</h1>
-<h2 id="quickstart">Quickstart</h2>
-<ol>
-<li>Use <code>nox -s "fides_env(test)"</code> to launch the test environment</li>
-<li>Read the terminal output for details</li>
-<li>Customize Fides ENV variables by editing <code>.env</code></li>
-</ol>
-<h2 id="overview">Overview</h2>
-<p>To facilitate thorough manual testing of the application, there is a comprehensive testing environment that can be set up via a single <code>nox</code> command: <code>nox -s "fides_env(test)"</code>.</p>
-<p>This test environment includes:
-* Fides Server
-* Fides Admin UI
-* Fides Postgres Database &amp; Redis Cache
-* Sample "Cookie House" Application
-* Test Postgres Database
-* Test Redis Database
-* Sample Resources
-* Sample Connectors
-* etc.</p>
-<p>This test environment is exactly the same environment that users can launch themselves using <code>fides deploy up</code>, and you can find all the configuration and settings in <code>src/fides/data/sample_project</code>.</p>
-<h2 id="configuration">Configuration</h2>
-<p>There are two ways to configure the <code>fides</code> server and CLI:
-1. Editing the ENV file in the project root: <code>.env</code>
-2. Editing the TOML file in the sample project files: <code>src/fides/data/sample_project/fides.toml</code></p>
-<p>The <code>.env</code> file is safest to add secrets and local customizations, since it is <code>.gitignore</code>'d and will not be accidentally committed to version control.</p>
-<p>The <code>fides.toml</code> file should be used for configurations that should be present for all users testing out the application.</p>
-<h2 id="advanced-usage">Advanced Usage</h2>
-<p>The environment will work "out of the box", but can also be configured to enable other features like S3 storage, email notifications, etc.</p>
-<p>To configure these, you'll need to edit the <code>.env</code> file and provide some secrets - see <code>example.env</code> for what is supported.</p>
-<h2 id="automated-cypress-e2e-tests">Automated Cypress E2E Tests</h2>
-<p>The test environment is also used to run automated end-to-end (E2E) tests via Cypress. Use <code>nox -s e2e_test</code> to run this locally.</p>
+<h1 id="development-tips">Development Tips</h1>
+<p>This page is dedicated to providing further context and information around specific implementation details such as code organization, running migrations and more.</p>
+<p>If you're looking for a general getting started guide, please see the <a href="../overview/">Overview</a> and <a href="../developing_fides/">Development Guide</a>.</p>
+<h2 id="api-endpoints">API Endpoints</h2>
+<hr />
+<h3 id="api-urls">API URLs</h3>
+<p>We define API URLs for specific API versions as constants within <code>fides.api.ops.api.v1.urn_registry</code> (where <code>v1</code> can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the <code>APIRouter</code> class instantiation with a different base path (ie. <code>/api/v2</code> instead of <code>/api/v1</code>). For example:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nv">PRIVACY_REQUEST</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/privacy-request&quot;</span>
+<span class="nv">PRIVACY_REQUEST_DETAIL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/privacy-request/{privacy_request_id}&quot;</span>
+</code></pre></div></td></tr></table></div>
+<p>would both resolve as <code>/api/v1/privacy-request</code> and <code>/api/v1/privacy-request/{privacy_request_id}</code> respectively.</p>
+<h2 id="database-and-models">Database and Models</h2>
+<hr />
+<h3 id="the-orm-sqlalchemy">The ORM -- SQLAlchemy</h3>
+<p>SQLAlchemy is an Object Relational Mapper, allowing us to avoid writing direct database queries within our codebase, and access the database via Python code instead. The ORM provides an additional configuration layer allowing user-defined Python classes to be mapped to database tables and other constructs, as well as an object persistence mechanism known as the <code>Session</code>. Some common uses cases are listed below, for a more comprehensive guide see: <a href="https://docs.sqlalchemy.org/en/14/tutorial/index.html">https://docs.sqlalchemy.org/en/14/tutorial/index.html</a></p>
+<h3 id="adding-models">Adding models</h3>
+<p>Database tables are defined with model classes. Model files should live in <code>src/fides/api/ops/models/</code>. Individual model classes must inherit from our custom base class at <code>fides.lib.db.base_class.Base</code> to ensure uniformity within the database. Multiple models per file are encouraged so long as they fit the same logical delineation within the project. An example model declaration is added below. For a comprehensive guide see: <a href="https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping">https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping</a>
+You should also import your model in <code>src/fides/api/ops/db/base.py</code> so it is visible for alembic.</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Book</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;book&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">page_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">author_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;author.id&quot;</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>When models are added to the project, we must then add them to the database in a recordable and repeatable fashion using migrations.</p>
+<h3 id="using-the-database-via-models">Using the database via models</h3>
+<p>Once you've added database tables via project models, you're ready to read, write, and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: <a href="https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query">https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query</a>.</p>
+<ul>
+<li>Import our application's database session: <code>from fides.api.ops.db.session import get_db_session</code></li>
+<li>Instantiate the database interaction object:</li>
+</ul>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">SessionLocal</span> <span class="o">=</span> <span class="n">get_db_session</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">SessionLocal</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<ul>
+<li>Create a new row in a table:</li>
+</ul>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">db_obj</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span>
+    <span class="n">email</span><span class="o">=</span><span class="s2">&quot;admin@fides.app&quot;</span><span class="p">,</span>
+    <span class="n">full_name</span><span class="o">=</span><span class="s2">&quot;Fides Admin&quot;</span><span class="p">,</span>
+    <span class="n">is_superuser</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">is_active</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">db_obj</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">db_obj</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<ul>
+<li>Fetch all objects in a table: <code>users = db.query(User).all()</code></li>
+<li>Fetch all objects in a table that meet some criteria: <code>active_users = db.query(User).filter(User.is_active == True)</code></li>
+<li>Get a specific row in a table: <code>user = db.query(User).get(User.email == "admin@fides.app")</code></li>
+<li>Update a specific row in a table:</li>
+</ul>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">user</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="s2">&quot;updated@fides.app&quot;</span>
+<span class="n">db</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<h3 id="connecting-to-the-database">Connecting to the database</h3>
+<p>When you run <code>nox -s dev</code>, the database will spin up in a Docker container with port <code>5432</code> exposed on localhost. You can connect to it using the credentials found in <code>.fides.toml</code>, e.g.</p>
+<ul>
+<li>Hostname: <code>localhost</code></li>
+<li>Port: <code>5432</code></li>
+<li>Username: see <code>database.user</code> in <code>.fides.toml</code></li>
+<li>Password: see <code>database.password</code> in <code>.fides.toml</code></li>
+</ul>
+<h3 id="alembic-migrations">Alembic migrations</h3>
+<p>Some common Alembic commands are listed below. For a comprehensive guide see: <a href="https://alembic.sqlalchemy.org/en/latest/tutorial.html">https://alembic.sqlalchemy.org/en/latest/tutorial.html</a>.</p>
+<p>The commands will need to be run inside a shell on your Docker containers, which can be opened with <code>nox -s dev -- shell</code>.</p>
+<p>In the <code>/src/fides/api/ctl</code> directory:</p>
+<ul>
+<li>Migrate your database to the latest state: <code>alembic upgrade head</code></li>
+<li>Get revision id of previous migration: <code>alembic current</code></li>
+<li>Automatically generate a new migration: <code>alembic revision --autogenerate -m "&lt;a message describing your changes&gt;"</code></li>
+<li>Create a new migration file to manually fill out: <code>alembic revision -m "&lt;a message describing your changes&gt;"</code></li>
+<li>Migrate your database to a specific state <code>alembic upgrade &lt;revision-id&gt;</code> or <code>alembic downgrade &lt;revision-id&gt;</code>, (or if you want to be smart <code>alembic upgrade &lt;revision-id&gt; || alembic downgrade &lt;revision-id&gt;</code> is handy when you don't know whether the target revision is an upgrade or downgrade)</li>
+<li>NB. You can find the <code>revision-id</code> inside each migration file in <code>alembic/versions/</code> on line 3 next to <code>Revision ID: ...</code></li>
+</ul>
+<p>When working on a PR with a migration, ensure that <code>down_revision</code> in the generated migration file correctly references the previous migration before submitting/merging the PR.</p>
+<h2 id="exception-handling">Exception Handling</h2>
+<p>Our preference for exception handling is by overriding the nearest sensible error, for example:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">SomeException</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="s2">&quot;a docstring&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">some_method</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="n">SomeException</span><span class="p">(</span><span class="s2">&quot;a message&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<h2 id="general-debugging-pdb">General debugging -- pdb</h2>
+<p>The project uses <code>pdb</code> for debugging as a <code>dev-requirement</code>. You can set breakpoints with <code>pdb</code> in much the same way you'd set them using <code>debugger</code> in Javascript. Insert <code>import pdb; pdb.set_trace()</code> into the line where you want the breakpoint to set, then run your Python code.</p>
+<h2 id="docker">Docker</h2>
+<p>As a <strong>last resort</strong> you may need to tear <em>everything</em> down in Docker and rebuild. The following commands will achieve that, but be warned that rebuild times can be long!</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>nox<span class="w"> </span>-s<span class="w"> </span>clean
+</code></pre></div></td></tr></table></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you find yourself feeling the need to run this command regularly, open an issue or slack a member of the dev team as it is not expected that this will need to be run regularly.</p>
+</div>
 
               
             </article>
@@ -1025,9 +1154,9 @@ You're not viewing the latest version.
       
         
         <a
-          href="../testing/"
+          href="../developing_fides/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Writing Tests"
+          aria-label="Previous: Developing Fides"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1038,7 +1167,7 @@ You're not viewing the latest version.
               <span class="md-footer__direction">
                 Previous
               </span>
-              Writing Tests
+              Developing Fides
             </div>
           </div>
         </a>
@@ -1048,9 +1177,9 @@ You're not viewing the latest version.
       
         
         <a
-          href="../dev_deployment/"
+          href="../testing/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Local Fides Deploy"
+          aria-label="Next: Testing"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1058,7 +1187,7 @@ You're not viewing the latest version.
               <span class="md-footer__direction">
                 Next
               </span>
-              Local Fides Deploy
+              Testing
             </div>
           </div>
           <div class="md-footer__button md-icon">
