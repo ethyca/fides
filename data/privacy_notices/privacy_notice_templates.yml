@@ -1,0 +1,227 @@
+privacy_notices:
+- name: Essential
+  description: This website uses cookies and other methods which are essential for you to use the website and its features.
+  internal_description: These cookies and services are essential for you to browse the website and use its features, such as accessing secure areas of the site. Cookies that allow web shops to hold your items in your cart while you are shopping online are an example of strictly necessary cookies. These cookies will generally be first-party session cookies. While it is not required to obtain consent for these cookies, what they do and why they are necessary should be explained to the user.
+  regions:
+    - eu_be
+    - eu_bg
+    - eu_cz
+    - eu_dk
+    - eu_de
+    - eu_ee
+    - eu_ie
+    - eu_el
+    - eu_es
+    - eu_fr
+    - eu_hr
+    - eu_it
+    - eu_cy
+    - eu_lv
+    - eu_lt
+    - eu_lu
+    - eu_hu
+    - eu_mt
+    - eu_nl
+    - eu_at
+    - eu_pl
+    - eu_pt
+    - eu_ro
+    - eu_si
+    - eu_sk
+    - eu_fi
+    - eu_se
+  consent_mechanism: notice_only
+  data_uses:
+    - provide
+  enforcement_level: not_applicable
+  disabled: False
+  has_gpc_flag: False
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Analytics
+  description: This website uses cookies and services to collect information about how you use the website, like which pages you visited and which links you clicked on. None of this information can be used to identify you. It is all aggregated and, therefore, anonymized. Their sole purpose is to improve website functions. This includes cookies from third-party analytics services but are for the exclusive use of the owner of this website.
+  internal_description: These cookies and services collect information about how users use a website, like which pages they visit and which links they click on. None of this information can be used to identify visitors. It is all aggregated and, therefore, anonymized. Their sole purpose is to improve website functions. This includes cookies from third-party analytics services as long as the cookies and services are for your exclusive use.
+  regions:
+    - eu_be
+    - eu_bg
+    - eu_cz
+    - eu_dk
+    - eu_de
+    - eu_ee
+    - eu_ie
+    - eu_el
+    - eu_es
+    - eu_fr
+    - eu_hr
+    - eu_it
+    - eu_cy
+    - eu_lv
+    - eu_lt
+    - eu_lu
+    - eu_hu
+    - eu_mt
+    - eu_nl
+    - eu_at
+    - eu_pl
+    - eu_pt
+    - eu_ro
+    - eu_si
+    - eu_sk
+    - eu_fi
+    - eu_se
+  consent_mechanism: opt_in
+  data_uses:
+    - improve.system
+  enforcement_level: frontend
+  disabled: False
+  has_gpc_flag: False
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Marketing
+  description: This website uses cookies and services to track your online activity to help advertisers deliver more relevant advertising or to limit how many times you see an ad. These services can share that information with other organizations or advertisers. These are persistent cookies and almost always of from third-parties.
+  internal_description: These cookies and services track online activity of your users to help advertisers deliver more relevant advertising or to limit how many times users see an ad. These services can share that information with other organizations or advertisers. These are persistent cookies and almost always of from third-parties
+  regions:
+    - eu_be
+    - eu_bg
+    - eu_cz
+    - eu_dk
+    - eu_de
+    - eu_ee
+    - eu_ie
+    - eu_el
+    - eu_es
+    - eu_fr
+    - eu_hr
+    - eu_it
+    - eu_cy
+    - eu_lv
+    - eu_lt
+    - eu_lu
+    - eu_hu
+    - eu_mt
+    - eu_nl
+    - eu_at
+    - eu_pl
+    - eu_pt
+    - eu_ro
+    - eu_si
+    - eu_sk
+    - eu_fi
+    - eu_se
+  consent_mechanism: opt_in
+  data_uses:
+    - advertising.third_party.personalized
+  enforcement_level: frontend
+  disabled: False
+  has_gpc_flag: True
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Data sharing and Targeted Advertising
+  description: We may share your information with third parties for the purposes of cross contextual behavioral advertising. You can learn about the information we may share in our privacy notice.
+  internal_description: Data of your users is shared with third parties for the purpose of “cross contextual behavioral advertising” in order to provide ads to users on other platforms based on a variety of information shared with the advertising system.
+  regions:
+    - us_ca
+  consent_mechanism: opt_out
+  data_uses:
+    - advertising.third_party.personalized
+  enforcement_level: system_wide
+  disabled: False
+  has_gpc_flag: True
+  displayed_in_privacy_center: True
+  displayed_in_overlay: False
+  displayed_in_api: False
+- name: Targeted Advertising
+  description: We may use some of your personal information for the purposes of targeted advertising
+  internal_description: Targeted advertising means displaying advertisements to a consumer where the advertisement is selected based on personal data obtained or inferred from that consumer's activities over time and across nonaffiliated Internet web sites or online applications to predict such consumer's preferences or interests.
+  regions:
+    - us_ia
+  consent_mechanism: notice_only
+  data_uses:
+    - advertising.third_party.personalized
+  enforcement_level: not_applicable
+  disabled: False
+  has_gpc_flag: False
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Essential
+  description:
+  internal_description:
+  regions:
+    - ca_ab
+    - ca_bc
+    - ca_mb
+    - ca_nb
+    - ca_nl
+    - ca_ns
+    - ca_nt
+    - ca_nu
+    - ca_on
+    - ca_pe
+    - ca_qc
+    - ca_sk
+    - ca_yt
+  consent_mechanism: notice_only
+  data_uses:
+    - provide
+  enforcement_level: not_applicable
+  disabled: False
+  has_gpc_flag: False
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Analytics
+  description:
+  internal_description:
+  regions:
+    - ca_ab
+    - ca_bc
+    - ca_mb
+    - ca_nb
+    - ca_nl
+    - ca_ns
+    - ca_nt
+    - ca_nu
+    - ca_on
+    - ca_pe
+    - ca_qc
+    - ca_sk
+    - ca_yt
+  consent_mechanism: opt_out
+  data_uses:
+    - improve.system
+  enforcement_level: system_wide
+  disabled: False
+  has_gpc_flag: False
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False
+- name: Marketing
+  description:
+  internal_description:
+  regions:
+    - ca_ab
+    - ca_bc
+    - ca_mb
+    - ca_nb
+    - ca_nl
+    - ca_ns
+    - ca_nt
+    - ca_nu
+    - ca_on
+    - ca_pe
+    - ca_qc
+    - ca_sk
+    - ca_yt
+  consent_mechanism: opt_out
+  data_uses:
+    - advertising.third_party.personalized
+  enforcement_level: system_wide
+  disabled: False
+  has_gpc_flag: False
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False

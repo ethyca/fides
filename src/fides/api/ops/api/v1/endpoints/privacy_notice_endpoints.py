@@ -26,6 +26,7 @@ from fides.api.ops.models.privacy_notice import (
 )
 from fides.api.ops.schemas import privacy_notice as schemas
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.consent_util import create_privacy_notices_util
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Privacy Notice"], prefix=urls.V1_URL_PREFIX)
@@ -203,27 +204,11 @@ def create_privacy_notices(
     To avoid any confusing or unexpected behavior, the entire operation is void
     if any of the input data does not satisfy validation criteria.
     """
-    validate_notice_data_uses(privacy_notices, db)
 
-    existing_notices = (
-        PrivacyNotice.query(db).filter(PrivacyNotice.disabled.is_(False)).all()
-    )
-
-    new_notices = [
-        PrivacyNotice(**privacy_notice.dict(exclude_unset=True))
-        for privacy_notice in privacy_notices
-    ]
     try:
-        check_conflicting_data_uses(new_notices, existing_notices)
-    except ValidationError as e:
-        raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
-
-    return [
-        PrivacyNotice.create(
-            db=db, data=privacy_notice.dict(exclude_unset=True), check_name=False
-        )
-        for privacy_notice in privacy_notices
-    ]
+        return create_privacy_notices_util(db, privacy_notices, PrivacyNotice)  # type: ignore[return-value]
+    except (ValueError, ValidationError) as e:
+        raise HTTPException(HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
 
 def prepare_privacy_notice_patches(

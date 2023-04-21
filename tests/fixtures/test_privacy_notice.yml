@@ -1,0 +1,15 @@
+privacy_notices:
+- name: Test Privacy Notice
+  description: This website uses cookies.
+  internal_description: This is a contrived template for testing
+  regions:
+    - ca_nl
+  consent_mechanism: opt_in
+  data_uses:
+    - collect
+  enforcement_level: system_wide
+  disabled: False
+  has_gpc_flag: True
+  displayed_in_privacy_center: False
+  displayed_in_overlay: True
+  displayed_in_api: False

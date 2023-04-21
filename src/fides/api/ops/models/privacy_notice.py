@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from fideslang.validation import FidesKey
 from sqlalchemy import Boolean, Column
@@ -22,10 +22,24 @@ class PrivacyNoticeRegion(Enum):
     Enum is not formalized in the DB because it is subject to frequent change
     """
 
+    ca_ab = "ca_ab"  # alberta
+    ca_bc = "ca_bc"  # british columbia
+    ca_mb = "ca_mb"  # manitoba
+    ca_nb = "ca_nb"  # new brunswick
+    ca_nl = "ca_nl"  # newfoundland and labrador
+    ca_ns = "ca_ns"  # nova scotia
+    ca_nt = "ca_nt"  # northwest territories
+    ca_nu = "ca_nu"  # nunavut
+    ca_on = "ca_on"  # ontario
+    ca_pe = "ca_pe"  # prince edward island
+    ca_qc = "ca_qc"  # quebec
+    ca_sk = "ca_sk"  # saskatchewan
+    ca_yt = "ca_yt"  # yukon
     us_ca = "us_ca"  # california
     us_co = "us_co"  # colorado
     us_va = "us_va"  # virginia
     us_ut = "us_ut"  # utah
+    us_ia = "us_ia"  # iowa
     eu_be = "eu_be"  # belgium
     eu_bg = "eu_bg"  # bulgaria
     eu_cz = "eu_cz"  # czechia
@@ -73,13 +87,12 @@ class EnforcementLevel(Enum):
 
 class PrivacyNoticeBase:
     """
-    Base class to establish the common columns for `PrivacyNotice`s and `PrivacyNoticeHistory`s
+    This class contains the common fields between PrivacyNoticeTemplate, PrivacyNotice, and PrivacyNoticeHistory
     """
 
     name = Column(String, nullable=False)
     description = Column(String)  # User-facing description
     internal_description = Column(String)  # Visible to internal users only
-    origin = Column(String)  # pointer back to an origin template ID
     regions = Column(
         ARRAY(EnumColumn(PrivacyNoticeRegion, native_enum=False)),
         index=True,
@@ -90,7 +103,6 @@ class PrivacyNoticeBase:
         ARRAY(String), nullable=False
     )  # a list of `fides_key`s of `DataUse` records
     enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
-    version = Column(Float, nullable=False, default=1.0)
     disabled = Column(Boolean, nullable=False, default=False)
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
     displayed_in_privacy_center = Column(Boolean, nullable=False, default=True)
@@ -108,11 +120,22 @@ class PrivacyNoticeBase:
         return False
 
 
+class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
+    """
+    This table contains the out-of-the-box Privacy Notices that are shipped with Fides
+    """
+
+
 class PrivacyNotice(PrivacyNoticeBase, Base):
     """
     A notice set up by a system administrator that an end user (i.e., data subject)
     accepts or rejects to indicate their consent for particular data uses
     """
+
+    origin = Column(
+        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+    )  # pointer back to the PrivacyNoticeTemplate
+    version = Column(Float, nullable=False, default=1.0)
 
     histories = relationship(
         "PrivacyNoticeHistory", backref="privacy_notice", lazy="dynamic"
@@ -207,8 +230,8 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
 
 def check_conflicting_data_uses(
-    new_privacy_notices: Iterable[PrivacyNotice],
-    existing_privacy_notices: Iterable[PrivacyNotice],
+    new_privacy_notices: Iterable[Union[PrivacyNotice, PrivacyNoticeTemplate]],
+    existing_privacy_notices: Iterable[Union[PrivacyNotice, PrivacyNoticeTemplate]],
 ) -> None:
     """
     Checks the provided lists of potential "new" (incoming) `PrivacyNotice` records
@@ -266,6 +289,11 @@ class PrivacyNoticeHistory(PrivacyNoticeBase, Base):
     An "audit table" tracking outdated versions of `PrivacyNotice` records whose
     "current" versions are stored in the `PrivacyNotice` table/model
     """
+
+    origin = Column(
+        String, ForeignKey(PrivacyNoticeTemplate.id_field_path), nullable=True
+    )  # pointer back to the PrivacyNoticeTemplate
+    version = Column(Float, nullable=False, default=1.0)
 
     privacy_notice_id = Column(
         String, ForeignKey(PrivacyNotice.id_field_path), nullable=False

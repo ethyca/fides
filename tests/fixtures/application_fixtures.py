@@ -1417,7 +1417,6 @@ def privacy_notice(db: Session) -> Generator:
         data={
             "name": "example privacy notice",
             "description": "a sample privacy notice configuration",
-            "origin": "privacy_notice_template_1",
             "regions": [
                 PrivacyNoticeRegion.us_ca,
                 PrivacyNoticeRegion.us_co,
@@ -1472,7 +1471,6 @@ def privacy_notice_us_co_third_party_sharing(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co third_party_sharing",
             "description": "a sample privacy notice configuration",
-            "origin": "privacy_notice_template_2",
             "regions": [PrivacyNoticeRegion.us_co],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["third_party_sharing"],
@@ -1490,7 +1488,6 @@ def privacy_notice_us_co_provide_service_operations(db: Session) -> Generator:
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "description": "a sample privacy notice configuration",
-            "origin": "privacy_notice_template_2",
             "regions": [PrivacyNoticeRegion.us_co],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["provide.service.operations"],
@@ -1508,7 +1505,6 @@ def privacy_notice_eu_fr_provide_service_frontend_only(db: Session) -> Generator
         data={
             "name": "example privacy notice us_co provide.service.operations",
             "description": "a sample privacy notice configuration",
-            "origin": "privacy_notice_template_2",
             "regions": [PrivacyNoticeRegion.eu_fr],
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["provide.service"],

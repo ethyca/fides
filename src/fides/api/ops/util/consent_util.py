@@ -1,15 +1,25 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
+import yaml
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ctl.sql_models import System  # type: ignore[attr-defined]
+from fides.api.ctl.sql_models import DataUse  # type: ignore[attr-defined]
+from fides.api.custom_types import SafeStr
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.privacy_notice import EnforcementLevel
+from fides.api.ops.models.privacy_notice import (
+    EnforcementLevel,
+    PrivacyNotice,
+    PrivacyNoticeTemplate,
+    check_conflicting_data_uses,
+)
 from fides.api.ops.models.privacy_preference import (
     PrivacyPreferenceHistory,
     UserConsentPreference,
 )
 from fides.api.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fides.api.ops.schemas.privacy_notice import PrivacyNoticeCreation
 
 
 def filter_privacy_preferences_for_propagation(
@@ -165,3 +175,80 @@ def add_errored_system_status_for_consent_reporting(
                 connection_config.system_key,
                 ExecutionLogStatus.error,
             )
+
+
+def validate_notice_data_uses(
+    privacy_notices: List[PrivacyNoticeCreation],
+    db: Session,
+) -> None:
+    """
+    Ensures that all the provided `PrivacyNotice`s have valid data uses.
+    """
+    valid_data_uses = [data_use.fides_key for data_use in DataUse.query(db).all()]
+    for privacy_notice in privacy_notices:
+        privacy_notice.validate_data_uses(valid_data_uses)
+
+
+def create_privacy_notices_util(
+    db: Session,
+    privacy_notice_schemas: List[PrivacyNoticeCreation],
+    model: Union[Type[PrivacyNotice], Type[PrivacyNoticeTemplate]],
+) -> List[Union[PrivacyNotice, PrivacyNoticeTemplate]]:
+    """Reusable method to validate and create a PrivacyNotice or a PrivacyNoticeTemplate.
+
+    Creating a PrivacyNotice also has a side effect of creating a historical record in PrivacyNoticeHistory
+    """
+    validate_notice_data_uses(privacy_notice_schemas, db)
+
+    existing_notices = model.query(db).filter(model.disabled.is_(False)).all()  # type: ignore[attr-defined]
+
+    new_notices = [
+        model(**privacy_notice.dict(exclude_unset=True))
+        for privacy_notice in privacy_notice_schemas
+    ]
+    check_conflicting_data_uses(new_notices, existing_notices)
+
+    return [
+        model.create(
+            db=db, data=privacy_notice.dict(exclude_unset=True), check_name=False
+        )
+        for privacy_notice in privacy_notice_schemas
+    ]
+
+
+def load_default_notices(
+    db: Session, notice_yaml_file_path: str
+) -> List[PrivacyNotice]:
+    """Populates default PrivacyNoticeTemplates, and then loads these templates into the
+    PrivacyNoticeHistory and PrivacyNotice tables, making them available for use.
+    """
+    logger.info("Loading default notices from {}", notice_yaml_file_path)
+    with open(notice_yaml_file_path, "r", encoding="utf-8") as file:
+        notices = yaml.safe_load(file).get("privacy_notices", [])
+
+        template_schemas: List[PrivacyNoticeCreation] = []
+
+        # Validate templates
+        for privacy_notice_data in notices:
+            template_schemas.append(PrivacyNoticeCreation(**privacy_notice_data))
+
+        # Create Privacy Notice Templates
+        privacy_notice_templates: List[
+            PrivacyNoticeTemplate
+        ] = create_privacy_notices_util(
+            db, template_schemas, PrivacyNoticeTemplate
+        )  # type: ignore[assignment]
+
+        # Link Privacy Notice Schemas to the Privacy Notice Templates
+        notice_schemas: List[PrivacyNoticeCreation] = []
+        for template in privacy_notice_templates:
+            privacy_notice_schema = PrivacyNoticeCreation.from_orm(template)
+            privacy_notice_schema.origin = SafeStr(template.id)
+            notice_schemas.append(privacy_notice_schema)
+
+        # Create PrivacyNotice and PrivacyNoticeHistory records
+        privacy_notices: List[PrivacyNotice] = create_privacy_notices_util(  # type: ignore[assignment]
+            db, notice_schemas, PrivacyNotice
+        )
+
+        return privacy_notices

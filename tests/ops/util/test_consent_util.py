@@ -1,11 +1,23 @@
+from typing import List
+
 import pytest
 from sqlalchemy.orm.attributes import flag_modified
 
+from fides.api.ops.models.privacy_notice import (
+    ConsentMechanism,
+    EnforcementLevel,
+    PrivacyNotice,
+    PrivacyNoticeRegion,
+    PrivacyNoticeTemplate,
+)
 from fides.api.ops.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.ops.schemas.privacy_notice import PrivacyNoticeCreation
 from fides.api.ops.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
     cache_initial_status_and_identities_for_consent_reporting,
+    create_privacy_notices_util,
+    load_default_notices,
     should_opt_in_to_service,
 )
 
@@ -411,3 +423,96 @@ class TestCacheSystemStatusesForConsentReporting:
             connection_config.name: "skipped"
         }
         assert privacy_preference_history.secondary_user_ids is None
+
+
+class TestCreatePrivacyNoticesUtil:
+    def test_create_privacy_notices_util(self, db, load_default_data_uses):
+        schema = PrivacyNoticeCreation(
+            name="Test Notice",
+            description="test description",
+            internal_description="internal description",
+            regions=["eu_it"],
+            consent_mechanism="opt_out",
+            data_uses=["train_ai_system"],
+            enforcement_level=EnforcementLevel.not_applicable,
+        )
+
+        privacy_notices: List[PrivacyNotice] = create_privacy_notices_util(
+            db, [schema], PrivacyNotice
+        )
+
+        assert len(privacy_notices) == 1
+        notice = privacy_notices[0]
+        assert notice.name == "Test Notice"
+        assert notice.description == "test description"
+        assert notice.internal_description == "internal description"
+        assert notice.regions == [PrivacyNoticeRegion.eu_it]
+        assert notice.consent_mechanism == ConsentMechanism.opt_out
+        assert notice.enforcement_level == EnforcementLevel.not_applicable
+        assert notice.disabled is False
+        assert notice.has_gpc_flag is False
+        assert notice.displayed_in_privacy_center is True
+        assert notice.displayed_in_overlay is True
+        assert notice.displayed_in_api is True
+
+        assert notice.privacy_notice_history_id is not None
+
+        db.delete(notice.histories[0])
+        db.delete(notice)
+
+    def test_load_default_notices(self, db, load_default_data_uses):
+        privacy_notices = load_default_notices(
+            db, "tests/fixtures/test_privacy_notice.yml"
+        )
+
+        assert len(privacy_notices) == 1
+        notice = privacy_notices[0]
+        assert notice.name == "Test Privacy Notice"
+        assert notice.description == "This website uses cookies."
+        assert notice.internal_description == "This is a contrived template for testing"
+        assert notice.regions == [PrivacyNoticeRegion.ca_nl]
+        assert notice.consent_mechanism == ConsentMechanism.opt_in
+        assert notice.enforcement_level == EnforcementLevel.system_wide
+        assert notice.disabled is False
+        assert notice.has_gpc_flag is True
+        assert notice.displayed_in_privacy_center is False
+        assert notice.displayed_in_overlay is True
+        assert notice.displayed_in_api is False
+        assert notice.version == 1.0
+
+        assert notice.privacy_notice_history_id is not None
+        history = notice.histories[0]
+        assert history.name == "Test Privacy Notice"
+        assert history.description == "This website uses cookies."
+        assert (
+            history.internal_description == "This is a contrived template for testing"
+        )
+        assert history.regions == [PrivacyNoticeRegion.ca_nl]
+        assert history.consent_mechanism == ConsentMechanism.opt_in
+        assert history.enforcement_level == EnforcementLevel.system_wide
+        assert history.disabled is False
+        assert history.has_gpc_flag is True
+        assert history.displayed_in_privacy_center is False
+        assert history.displayed_in_overlay is True
+        assert history.displayed_in_api is False
+        assert history.version == 1.0
+
+        template_id = notice.origin
+        template = db.query(PrivacyNoticeTemplate).get(template_id)
+        assert template.name == "Test Privacy Notice"
+        assert template.description == "This website uses cookies."
+        assert (
+            template.internal_description == "This is a contrived template for testing"
+        )
+        assert template.regions == [PrivacyNoticeRegion.ca_nl]
+        assert template.consent_mechanism == ConsentMechanism.opt_in
+        assert template.enforcement_level == EnforcementLevel.system_wide
+        assert template.disabled is False
+        assert template.has_gpc_flag is True
+        assert template.displayed_in_privacy_center is False
+        assert template.displayed_in_overlay is True
+        assert template.displayed_in_api is False
+
+        history.delete(db)
+        notice.delete(db)
+        template.delete(db)
