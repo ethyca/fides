@@ -3,6 +3,7 @@ This file aggregates nox commands for various development tasks.
 """
 import shutil
 import sys
+import platform
 import webbrowser
 from os.path import isfile
 from subprocess import PIPE, CalledProcessError, run
@@ -22,6 +23,7 @@ from utils_nox import *
 # pylint: enable=unused-wildcard-import, wildcard-import, wrong-import-position
 
 REQUIRED_DOCKER_VERSION = "20.10.17"
+REQUIRED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10"]
 
 nox.options.sessions = ["open_docs"]
 
@@ -135,11 +137,25 @@ def check_docker_version() -> bool:
     )
     if not version_is_valid:
         raise SystemExit(
-            f"Error: Your Docker version (v{docker_version}) is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
+            f"Error: Your Docker version ({docker_version}) is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
         )
     return version_is_valid
 
 
+def check_python_version() -> bool:
+    """Verify the Python version."""
+    python_version = platform.python_version()
+    print(platform.platform())
+    print(f"Python version {python_version}")
+
+    python_major_minor_version = ".".join(platform.python_version_tuple()[0:2])
+    if python_major_minor_version not in REQUIRED_PYTHON_VERSIONS:
+        raise SystemExit(
+            f"Error: Your Python version ({python_version}) is not compatible, please install one of the following versions: {REQUIRED_PYTHON_VERSIONS}!"
+        )
+
+
 # Run startup checks
 check_docker_version()
+check_python_version()
 check_for_env_file()
