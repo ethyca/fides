@@ -223,7 +223,7 @@ async def prepare_and_log_request(
 
 
 @app.on_event("startup")
-async def setup_server() -> None:
+async def setup_server() -> None:  # pylint: disable=too-many-branches,too-many-statements
     "Run all of the required setup steps for the webserver."
     logger.info(f"Starting Fides - v{VERSION}")
     logger.info(
