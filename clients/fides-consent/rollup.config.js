@@ -65,12 +65,6 @@ export default [
       esbuild({
         minify: !isDev,
       }),
-      copy({
-        // Automatically add the built script to the privacy center's static files for testing:
-        targets: [{ src: `dist/${name}.js`, dest: "../../public/" }],
-        verbose: true,
-        hook: "writeBundle",
-      }),
     ],
     output: [
       {

@@ -79,9 +79,6 @@ typings/
 # Next.js build output
 .next
 
-# The consent script is a build artifact. Customizing the Privacy Center changes its defaults.
-public/fides-consent.js
-
 # Fix conflict with root .gitignore Python rule.
 !lib
 
