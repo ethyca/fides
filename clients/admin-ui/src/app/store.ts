@@ -34,24 +34,12 @@ import { reducer as featuresReducer } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
-import {
-  dataQualifierApi,
-  reducer as dataQualifierReducer,
-} from "~/features/data-qualifier/data-qualifier.slice";
-import {
-  dataSubjectsApi,
-  reducer as dataSubjectsReducer,
-} from "~/features/data-subjects/data-subject.slice";
-import {
-  dataUseApi,
-  reducer as dataUseReducer,
-} from "~/features/data-use/data-use.slice";
+import { reducer as dataQualifierReducer } from "~/features/data-qualifier/data-qualifier.slice";
+import { reducer as dataSubjectsReducer } from "~/features/data-subjects/data-subject.slice";
+import { reducer as dataUseReducer } from "~/features/data-use/data-use.slice";
 import { datamapSlice } from "~/features/datamap";
 import { reducer as datasetReducer } from "~/features/dataset";
-import {
-  organizationApi,
-  reducer as organizationReducer,
-} from "~/features/organization";
+import { reducer as organizationReducer } from "~/features/organization";
 import { plusApi } from "~/features/plus/plus.slice";
 import { reducer as privacyNoticesReducer } from "~/features/privacy-notices/privacy-notices.slice";
 import { reducer as systemReducer } from "~/features/system";
@@ -82,12 +70,8 @@ const storage =
 const reducer = {
   [baseApi.reducerPath]: baseApi.reducer,
   [datamapSlice.name]: datamapSlice.reducer,
-  [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
-  [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
-  [dataUseApi.reducerPath]: dataUseApi.reducer,
   [dirtyFormsSlice.name]: dirtyFormsSlice.reducer,
   [healthApi.reducerPath]: healthApi.reducer,
-  [organizationApi.reducerPath]: organizationApi.reducer,
   [plusApi.reducerPath]: plusApi.reducer,
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
   [taxonomyApi.reducerPath]: taxonomyApi.reducer,
@@ -133,11 +117,7 @@ const persistConfig = {
   */
   blacklist: [
     baseApi.reducerPath,
-    dataQualifierApi.reducerPath,
-    dataSubjectsApi.reducerPath,
-    dataUseApi.reducerPath,
     healthApi.reducerPath,
-    organizationApi.reducerPath,
     plusApi.reducerPath,
     privacyRequestApi.reducerPath,
     taxonomyApi.reducerPath,
@@ -158,11 +138,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         },
       }).concat(
         baseApi.middleware,
-        dataQualifierApi.middleware,
-        dataSubjectsApi.middleware,
-        dataUseApi.middleware,
         healthApi.middleware,
-        organizationApi.middleware,
         plusApi.middleware,
         privacyRequestApi.middleware,
         taxonomyApi.middleware,
