@@ -2,33 +2,27 @@
 
 ## Versioning
 
-Fides uses semantic versioning. Due to the rapid development of the project, some minor versions may also contain minor breaking changes. The best practice is to always pin versions, and carefully test before bumping to a new version. 
+Fides uses semantic versioning. Due to the rapid development of the project, some minor versions may also contain minor breaking changes. The best practice is to always pin versions, and carefully test before bumping to a new version.
 
 Patch versions will never cause breaking changes, and are only used to hotfix critical bugs.
 
 ## Release schedule
 
-Fides does not follow a set release schedule, and instead ships versions based on the addition of features and functionality. Each release, with the exception of hotfixes, will contain at least one substantial new feature.
-
-## Planning
-
-For each release, a corresponding [GitHub Project](https://github.com/ethyca/fides/projects) is created. Issues are added to projects as a way to organize what will be included in each release.
-
-Once a release project is complete and the core team signs off on the readiness of the release, a new version is cut using GitHub releases. You can see all Fides releases [here](https://github.com/ethyca/fides/releases). Each new release triggers a GitHub Action that pushes the new version to PyPI, and a clean version to DockerHub. The release project is then marked as `closed`.
-
-Hotfixes are an exception to this, and can be added and pushed as patch versions when needed.
+Fides does not follow a set release schedule, and instead ships versions based on the addition of features and functionality. Each release, with the exception of hotfixes, contains at least one substantial new feature.
 
 ## Branching
 
-Fides uses continuous delivery with a single `main` branch. All code changes are merged into this branch. 
+Fides uses continuous delivery with a single `main` branch. All code changes are merged into this branch.
 
-When releasing, a new tag is created, and the release process proceeds automatically. 
+When it comes times to prepare for a new release, a release branch is created for stability and thoroughly tested.
+
+When releasing, a new tag is created on the release branch and the release process proceeds automatically.
 
 In the case of patches, a branch is created from the relevant tag. Commits are then cherry-picked into this branch, and a new patch version tag is created.
 
 ## Release Steps
 
-We use GitHub’s `release` feature to tag releases that then get automatically deployed to DockerHub and PyPi via GitHub Actions pipelines. We also use a `CHANGELOG.md` to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:
+We use GitHub’s `release` feature to tag releases that then get automatically deployed to DockerHub and PyPi via GitHub Actions. We also use a `CHANGELOG.md` to mitigate surprises to our users and help them plan updates accordingly. The release steps are as follows:
 
 ### Major and Minor
 
@@ -168,6 +162,66 @@ It may be necessary for a patch release to contain only select commits to the `m
 
         ```sh
         git merge tags/1.2.4
-
         ```
+
     1. Handle any merge conflicts, and push to the remote `main` branch
+
+## Release Checklist
+
+The release checklist is a manual set of checks done before each release to ensure functionality of the most critical components of the application. Some of these steps are redundant with automated tests, while others are _only_ tested here as part of this check.
+
+This checklist should be copy/pasted into the final pre-release PR, and checked off as you complete each step.
+
+Additionally, there is a robust [Release Process](https://ethyca.atlassian.net/wiki/spaces/EN/pages/2545483802/Release+Process+Fides) page available in Confluence (_internal only_).
+
+### Pre-Release Steps
+
+#### General
+
+From the release branch, confirm the following:
+
+* [ ] Quickstart works: `nox -s quickstart` (verify you can complete the interactive prompts from the command-line)
+* [ ] Test environment works: `nox -s "fides_env(test)"` (verify the admin UI on localhost:8080, privacy center on localhost:3001, CLI and webserver)
+
+Next, run the following checks via the test environment:
+
+#### API
+
+* [ ] Verify that the generated API docs are correct @ <http://localhost:8080/docs>
+
+#### CLI
+
+Run these from within the test environment shell:
+
+* [ ] Make sure to login your CLI user by running `fides user login -u root_user -p Testpassword1!`
+* [ ] Run a `fides push`
+* [ ] Run a `fides pull`
+* [ ] Run a `fides evaluate`
+* [ ] Generate a dataset with `fides generate dataset db --credentials-id app_postgres test.yml`
+* [ ] Scan a database with `fides scan dataset db --credentials-id app_postgres`
+
+#### Privacy Center
+
+* [ ] Every navigation button works
+* [ ] DSR submission succeeds
+* [ ] Consent request submission succeeds
+
+#### Admin UI
+
+* [ ] Every navigation button works
+* [ ] DSR approval succeeds
+* [ ] DSR execution succeeds
+
+#### Documentation
+
+* [ ] Verify that the CHANGELOG is formatted correctly and clean up verbiage where needed
+* [ ] Verify that the CHANGELOG is representative of the actual changes
+
+### Post-Release Steps
+
+* [ ] Verify the ethyca-fides release is published to PyPi: <https://pypi.org/project/ethyca-fides/#history>
+* [ ] Verify the fides release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides>
+* [ ] Verify the fides-privacy-center release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides-privacy-center>
+* [ ] Verify the fides-sample-app release is published to DockerHub: <https://hub.docker.com/r/ethyca/fides-sample-app>
+* [ ] Smoke test the PyPi & DockerHub releases with a clean `pip install ethyca-fides` and `fides deploy up`
+* [ ] Announce the release!

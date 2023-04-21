@@ -727,7 +727,8 @@ def _create_execution_logs_for_skipped_email_send(
     can_skip_consent_email: List[ConnectionConfig],
 ) -> None:
     """Create skipped execution logs for relevant connectors
-    if this privacy request does not need an email send at all.
+    if this privacy request does not need an email send at all.  For consent requests,
+    cache that the system was skipped on any privacy preferences for consent reporting.
 
     Otherwise, any needed skipped execution logs will be added later
     in the weekly email send.

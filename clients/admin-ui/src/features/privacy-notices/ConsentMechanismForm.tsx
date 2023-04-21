@@ -6,12 +6,14 @@ import FormSection from "~/features/common/form/FormSection";
 import { CustomSelect, CustomSwitch } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
 import {
+  ENFORCEMENT_LEVEL_MAP,
+  MECHANISM_MAP,
+} from "~/features/privacy-notices/constants";
+import {
   ConsentMechanism,
   EnforcementLevel,
   PrivacyNoticeCreation,
 } from "~/types/api";
-
-import { ENFORCEMENT_LEVEL_MAP, MECHANISM_MAP } from "./constants";
 
 const CONSENT_MECHANISM_OPTIONS = enumToOptions(ConsentMechanism).map(
   (opt) => ({
