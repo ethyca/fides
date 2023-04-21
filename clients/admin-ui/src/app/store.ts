@@ -5,10 +5,7 @@ import {
   StateFromReducersMapObject,
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
-import {
-  connectionTypeApi,
-  reducer as connectionTypeReducer,
-} from "connection-type/index";
+import { reducer as connectionTypeReducer } from "connection-type/index";
 import { reducer as datastoreConnectionReducer } from "datastore-connections/index";
 import {
   privacyRequestApi,
@@ -37,7 +34,6 @@ import { reducer as featuresReducer } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
-import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
   dataQualifierApi,
   reducer as dataQualifierReducer,
@@ -85,7 +81,6 @@ const storage =
 
 const reducer = {
   [baseApi.reducerPath]: baseApi.reducer,
-  [connectionTypeApi.reducerPath]: connectionTypeApi.reducer,
   [datamapSlice.name]: datamapSlice.reducer,
   [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
   [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
@@ -95,7 +90,6 @@ const reducer = {
   [organizationApi.reducerPath]: organizationApi.reducer,
   [plusApi.reducerPath]: plusApi.reducer,
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
-  [scannerApi.reducerPath]: scannerApi.reducer,
   [taxonomyApi.reducerPath]: taxonomyApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
   auth: authReducer,
@@ -139,7 +133,6 @@ const persistConfig = {
   */
   blacklist: [
     baseApi.reducerPath,
-    connectionTypeApi.reducerPath,
     dataQualifierApi.reducerPath,
     dataSubjectsApi.reducerPath,
     dataUseApi.reducerPath,
@@ -147,7 +140,6 @@ const persistConfig = {
     organizationApi.reducerPath,
     plusApi.reducerPath,
     privacyRequestApi.reducerPath,
-    scannerApi.reducerPath,
     taxonomyApi.reducerPath,
     userApi.reducerPath,
     dirtyFormsSlice.name,
@@ -166,7 +158,6 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         },
       }).concat(
         baseApi.middleware,
-        connectionTypeApi.middleware,
         dataQualifierApi.middleware,
         dataSubjectsApi.middleware,
         dataUseApi.middleware,
@@ -174,7 +165,6 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         organizationApi.middleware,
         plusApi.middleware,
         privacyRequestApi.middleware,
-        scannerApi.middleware,
         taxonomyApi.middleware,
         userApi.middleware
       ),

@@ -17,6 +17,7 @@ export const baseApi = createApi({
     },
   }),
   tagTypes: [
+    "Connection Type",
     "Data Category",
     "Datamap",
     "DatastoreConnection",
