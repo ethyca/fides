@@ -61,11 +61,7 @@ services:
     volumes:
       - type: bind
         source: ./privacy_center/config
-        target: /fides/clients/privacy-center/config
-        read_only: False
-      - type: bind
-        source: ./privacy_center/public/assets
-        target: /app/public/assets
+        target: /app/config
         read_only: False
 
   fides-db:

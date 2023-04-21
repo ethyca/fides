@@ -9,7 +9,7 @@ declare global {
  *
  * If the GPC value is undefined, then current page URL is checked for a `globalPrivacyControl`
  * query parameter. For example: `privacy-center.example.com/consent?globalPrivacyControl=true`.
- * This allows fides-consent.js to function as if GPC is enabled while testing or demoing without
+ * This allows fides.js to function as if GPC is enabled while testing or demoing without
  * having to modify the browser before the script runs.
  */
 const getGlobalPrivacyControl = (): boolean | undefined => {

@@ -16,11 +16,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Headers } from "headers-polyfill";
 
+import { usePrivacyCenterEnvironment } from "~/app/server-environment";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestOption } from "~/types/config";
-import { hostUrl, config, defaultIdentityInput } from "~/constants";
+import { defaultIdentityInput } from "~/constants";
 import { PhoneInput } from "~/components/phone-input";
 import { ModalViews } from "~/components/modals/types";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
@@ -29,6 +30,7 @@ import {
   nameValidation,
   phoneValidation,
 } from "~/components/modals/validation";
+import { useConfig } from "~/features/common/config.slice";
 
 const usePrivacyRequestForm = ({
   onClose,
@@ -43,6 +45,7 @@ const usePrivacyRequestForm = ({
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 }) => {
+  const environment = usePrivacyCenterEnvironment();
   const identityInputs = action?.identity_inputs ?? defaultIdentityInput;
   const toast = useToast();
   const formik = useFormik({
@@ -88,7 +91,7 @@ const usePrivacyRequestForm = ({
         const headers: Headers = new Headers();
         addCommonHeaders(headers, null);
 
-        const response = await fetch(`${hostUrl}/privacy-request`, {
+        const response = await fetch(`${environment.fidesApiUrl}/privacy-request`, {
           method: "POST",
           headers,
           body: JSON.stringify(body),
@@ -184,6 +187,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
   setPrivacyRequestId,
   isVerificationRequired,
 }) => {
+  const config = useConfig();
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
     : null;

@@ -27,6 +27,10 @@ module.exports = {
     "^subject-request/(.*)$": "<rootDir>/src/features/subject-request/$1",
     "^user-management/(.*)$": "<rootDir>/src/features/user-management/$1",
     "^~/(.*)$": "<rootDir>/src/$1",
+
+     // Handle symlink installed package.
+     // TODO: I think we're doing something wrong here, this definitely doesn't seem to work...
+     "^fides-js$": "<rootDir>/packages/fides-js/dist/fides.mjs",
   },
   // Add more setup options before each test is run
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],

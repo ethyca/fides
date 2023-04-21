@@ -1,6 +1,17 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { BaseQueryFn, createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { usePrivacyCenterEnvironment } from "~/app/server-environment";
 import { addCommonHeaders } from "~/common/CommonHeaders";
-import { hostUrl } from "~/constants";
+
+
+// Thin wrapper around fetchBaseQuery() to allow us to inject the configurable baseUrl at runtime
+const baseApiQueryFn: BaseQueryFn = async (args, api, extraOptions) => {
+  const environment = usePrivacyCenterEnvironment();
+  const baseQuery = fetchBaseQuery({
+    baseUrl: environment.fidesApiUrl,
+    prepareHeaders: (headers) => addCommonHeaders(headers),
+  });
+  return baseQuery(args, api, extraOptions);
+}
 
 /**
  * Uses the code splitting pattern. New endpoints should be injected into this base API which
@@ -10,10 +21,7 @@ import { hostUrl } from "~/constants";
  */
 export const baseApi = createApi({
   reducerPath: "baseApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: hostUrl,
-    prepareHeaders: (headers) => addCommonHeaders(headers),
-  }),
+  baseQuery: baseApiQueryFn,
   tagTypes: [],
   endpoints: () => ({}),
 });

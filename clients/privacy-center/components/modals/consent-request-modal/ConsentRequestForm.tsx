@@ -16,9 +16,10 @@ import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import * as Yup from "yup";
 
+import { usePrivacyCenterEnvironment } from "~/app/server-environment";
 import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
-import { config, defaultIdentityInput, hostUrl } from "~/constants";
+import { defaultIdentityInput } from "~/constants";
 import { PhoneInput } from "~/components/phone-input";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
 import {
@@ -26,6 +27,7 @@ import {
   phoneValidation,
 } from "~/components/modals/validation";
 import { ModalViews, VerificationType } from "~/components/modals/types";
+import { useConfig } from "~/features/common/config.slice";
 
 const useConsentRequestForm = ({
   onClose,
@@ -40,8 +42,11 @@ const useConsentRequestForm = ({
   isVerificationRequired: boolean;
   successHandler: () => void;
 }) => {
+  const config = useConfig();
+  // TODO: this "defaultIdentityInput" feels unnecessary and could be handled in the redux state?
   const identityInputs =
     config.consent?.button.identity_inputs ?? defaultIdentityInput;
+  const environment = usePrivacyCenterEnvironment();
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
@@ -73,7 +78,7 @@ const useConsentRequestForm = ({
         addCommonHeaders(headers, null);
 
         const response = await fetch(
-          `${hostUrl}/${VerificationType.ConsentRequest}`,
+          `${environment.fidesApiUrl}/${VerificationType.ConsentRequest}`,
           {
             method: "POST",
             headers,

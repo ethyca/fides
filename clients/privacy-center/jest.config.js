@@ -21,10 +21,6 @@ module.exports = {
     // Handle module aliases
     "^@/components/(.*)$": "<rootDir>/components/$1",
     "^~/(.*)$": "<rootDir>/$1",
-
-    // Handle symlink installed package.
-    "^fides-consent$":
-      "<rootDir>/packages/fides-consent/dist/fides-consent.mjs",
   },
   // Add more setup options before each test is run
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],

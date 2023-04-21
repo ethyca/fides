@@ -4,7 +4,7 @@
  * Typescript errors will be caught by the initial instantiation of the config object.
  */
 const configIsValid = (
-  /** @type {import('~/types/config').Config} */
+  /** @type {import('~/types/config').LegacyConfig} */
   config
 ) => {
   // Cannot currently have more than one consent be executable
