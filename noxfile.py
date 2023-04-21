@@ -1,9 +1,9 @@
 """
 This file aggregates nox commands for various development tasks.
 """
-
 import shutil
 import sys
+import webbrowser
 from os.path import isfile
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
@@ -23,9 +23,22 @@ from utils_nox import *
 
 REQUIRED_DOCKER_VERSION = "20.10.17"
 
-# Sets the default session to `--list`
-nox.options.sessions = []
+nox.options.sessions = ["open_docs"]
+
+# This is important for caching pip installs
 nox.options.reuse_existing_virtualenvs = True
+
+
+@nox.session()
+def open_docs(session: nox.Session) -> None:
+    """Open the webpage for the developer/contribution docs."""
+    dev_url = "http://localhost:8000/fides/development/developing_fides/"
+    prod_url = "https://ethyca.github.io/fides/stable/development/developing_fides/"
+
+    if "dev" in session.posargs:
+        webbrowser.open(dev_url)
+    else:
+        webbrowser.open(prod_url)
 
 
 @nox.session()
