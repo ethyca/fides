@@ -61,7 +61,7 @@ def test_example_datasets(example_datasets):
     assert example_datasets[9]["fides_key"] == "email_dataset"
     assert len(example_datasets[9]["collections"]) == 3
     assert example_datasets[11]["fides_key"] == "dynamodb_example_test_dataset"
-    assert len(example_datasets[11]["collections"]) == 1
+    assert len(example_datasets[11]["collections"]) == 3
 
 
 class TestValidateDataset:
